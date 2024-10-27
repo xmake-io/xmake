@@ -31,15 +31,11 @@ function _get_linux_headers_sdk(target)
     local linux_headersdir = target:values("linux.driver.linux-headers")
     local linux_builddir = target:values("linux.driver.linux-builddir")
     if linux_headersdir then
-        if linux_builddir then
-            return {
-                sdkdir = linux_headersdir,
-                builddir = linux_builddir,
-                includedir = path.join(linux_headersdir, "include")
-            }
-        else
-            return {sdkdir = linux_headersdir, includedir = path.join(linux_headersdir, "include")}
-        end
+        return {
+            sdkdir = linux_headersdir,
+            builddir = linux_builddir,
+            includedir = path.join(linux_headersdir, "include")
+        }
     end
     local linux_headers = assert(target:pkg("linux-headers"), "please add `add_requires(\"linux-headers\", {configs = {driver_modules = true}})` and `add_packages(\"linux-headers\")` to the given target!")
     local includedirs = linux_headers:get("includedirs") or linux_headers:get("sysincludedirs")
@@ -151,11 +147,7 @@ module_exit(hello_exit);
                                 includedir = cflag:sub(3)
                             end
                             if not path.is_absolute(includedir) then
-                                if builddir then
-                                    includedir = path.absolute(includedir, builddir)
-                                else
-                                    includedir = path.absolute(includedir, sdkdir)
-                                end
+                                includedir = path.absolute(includedir, builddir or sdkdir)
                             end
                             if cflag:startswith("-I") then
                                 cflag = "-I" .. includedir
@@ -177,11 +169,7 @@ module_exit(hello_exit);
                     for _, ldflag in ipairs(os.argv(ldflags)) do
                         if ldflag:endswith(".lds") then
                             if not path.is_absolute(ldflag) then
-                                if builddir then
-                                    ldflag = path.absolute(ldflag, builddir)
-                                else
-                                    ldflag = path.absolute(ldflag, sdkdir)
-                                end
+                                ldflag = path.absolute(ldflag, builddir or sdkdir)
                             end
                         end
                         if ko then
@@ -265,11 +253,7 @@ function link(target, opt)
         local modpost
         local linux_headers = target:data("linux.driver.linux_headers")
         if linux_headers then
-            if linux_headers.builddir then
-                modpost = path.join(linux_headers.builddir, "scripts", "mod", "modpost")
-            else
-                modpost = path.join(linux_headers.sdkdir, "scripts", "mod", "modpost")
-            end
+            modpost = path.join(linux_headers.builddir or linux_headers.sdkdir, "scripts", "mod", "modpost")
         end
         assert(modpost and os.isfile(modpost), "scripts/mod/modpost not found!")
 
