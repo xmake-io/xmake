@@ -20,12 +20,9 @@
 
 -- define toolchain
 toolchain("zig")
-
-    -- set homepage
     set_homepage("https://ziglang.org/")
     set_description("Zig Programming Language Compiler")
 
-    -- on check
     on_check(function (toolchain)
         import("lib.detect.find_tool")
         local paths = {}
@@ -36,25 +33,29 @@ toolchain("zig")
             end
         end
         local zig = get_config("zc")
+        local zig_version
         if not zig then
-            zig = find_tool("zig", {force = true, paths = paths})
+            zig = find_tool("zig", {force = true, version = true, paths = paths})
             if zig and zig.program then
+                zig_version = zig.version
                 zig = zig.program
             end
         end
         if zig then
             toolchain:config_set("zig", zig)
+            toolchain:config_set("zig_version", zig_version)
             toolchain:configs_save()
             return true
         end
     end)
 
-    -- on load
     on_load(function (toolchain)
+        import("core.base.semver")
 
         -- set toolset
         -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
         local zig = toolchain:config("zig") or "zig"
+        local zig_version = toolchain:config("zig_version")
         if toolchain:config("zigcc") ~= false then
             -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
             -- @see https://github.com/xmake-io/xmake/issues/3251
@@ -75,7 +76,11 @@ toolchain("zig")
         elseif toolchain:is_arch("arm", "armv7") then
             arch = "arm"
         elseif toolchain:is_arch("i386", "x86") then
-            arch = "i386"
+            if zig_version and semver.compare(zig_version, "0.11") >= 0 then
+                arch = "x86"
+            else
+                arch = "i386"
+            end
         elseif toolchain:is_arch("riscv64") then
             arch = "riscv64"
         elseif toolchain:is_arch("loong64") then
