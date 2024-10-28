@@ -29,8 +29,13 @@ import("private.tools.ccache")
 -- get linux-headers sdk
 function _get_linux_headers_sdk(target)
     local linux_headersdir = target:values("linux.driver.linux-headers")
+    local linux_builddir = target:values("linux.driver.linux-builddir")
     if linux_headersdir then
-        return {sdkdir = linux_headersdir, includedir = path.join(linux_headersdir, "include")}
+        return {
+            sdkdir = linux_headersdir,
+            builddir = linux_builddir,
+            includedir = path.join(linux_headersdir, "include")
+        }
     end
     local linux_headers = assert(target:pkg("linux-headers"), "please add `add_requires(\"linux-headers\", {configs = {driver_modules = true}})` and `add_packages(\"linux-headers\")` to the given target!")
     local includedirs = linux_headers:get("includedirs") or linux_headers:get("sysincludedirs")
@@ -52,7 +57,7 @@ function _get_linux_headers_sdk(target)
 end
 
 -- get cflags from make
-function _get_cflags_from_make(target, sdkdir)
+function _get_cflags_from_make(target, sdkdir, builddir)
     local key = sdkdir .. target:arch()
     local cflags = memcache.get2("linux.driver", key, "cflags")
     local ldflags_o = memcache.get2("linux.driver", key, "ldflags_o")
@@ -88,6 +93,9 @@ module_init(hello_init);
 module_exit(hello_exit);
         ]])
         local argv = {"-C", sdkdir, "V=1", "M=" .. tmpdir, "modules"}
+        if builddir then
+            table.insert(argv, "O=" .. builddir)
+        end
         if not target:is_plat(os.subhost()) then
             -- e.g.	$(MAKE) -C $(KERN_DIR) V=1 ARCH=arm64 CROSS_COMPILE=/mnt/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu- M=$(PWD) modules
             local arch
@@ -139,7 +147,7 @@ module_exit(hello_exit);
                                 includedir = cflag:sub(3)
                             end
                             if not path.is_absolute(includedir) then
-                                includedir = path.absolute(includedir, sdkdir)
+                                includedir = path.absolute(includedir, builddir or sdkdir)
                             end
                             if cflag:startswith("-I") then
                                 cflag = "-I" .. includedir
@@ -161,7 +169,7 @@ module_exit(hello_exit);
                     for _, ldflag in ipairs(os.argv(ldflags)) do
                         if ldflag:endswith(".lds") then
                             if not path.is_absolute(ldflag) then
-                                ldflag = path.absolute(ldflag, sdkdir)
+                                ldflag = path.absolute(ldflag, builddir or sdkdir)
                             end
                         end
                         if ko then
@@ -224,7 +232,7 @@ function config(target)
     for _, sourcefile in ipairs(target:sourcefiles()) do
         target:fileconfig_set(sourcefile, {defines = "KBUILD_BASENAME=\"" .. path.basename(sourcefile) .. "\""})
     end
-    local cflags, ldflags_o, ldflags_ko = _get_cflags_from_make(target, linux_headers.sdkdir)
+    local cflags, ldflags_o, ldflags_ko = _get_cflags_from_make(target, linux_headers.sdkdir, linux_headers.builddir)
     if cflags then
         target:add("cflags", cflags, {force = true})
         target:data_set("linux.driver.ldflags_o", ldflags_o)
@@ -245,7 +253,7 @@ function link(target, opt)
         local modpost
         local linux_headers = target:data("linux.driver.linux_headers")
         if linux_headers then
-            modpost = path.join(linux_headers.sdkdir, "scripts", "mod", "modpost")
+            modpost = path.join(linux_headers.builddir or linux_headers.sdkdir, "scripts", "mod", "modpost")
         end
         assert(modpost and os.isfile(modpost), "scripts/mod/modpost not found!")
 
