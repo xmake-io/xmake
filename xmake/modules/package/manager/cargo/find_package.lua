@@ -156,6 +156,7 @@ function main(name, opt)
     else
         libfiles_native_host = os.files(path.join(librarydir_host, "*.so"))
     end
+    local libraries_set = {}
     for _, libraryfile in ipairs(table.join(libfiles or {}, libfiles_native or {}, libfiles_native_host)) do
         local filename = path.filename(libraryfile)
         local libraryname = filename:split('-', {plain = true})[1]
@@ -163,11 +164,12 @@ function main(name, opt)
         if not libraryname:startswith("lib") then
             libraryname = "lib" .. libraryname
         end
-        if names:has(libraryname) then
+        if names:has(libraryname) and not libraries_set[libraryname] then
             frameworkdirs = frameworkdirs or {}
             frameworks = frameworks or {}
             table.insert(frameworkdirs, path.directory(libraryfile))
             table.insert(frameworks, libraryfile)
+            libraries_set[libraryname] = true
         end
     end
     local result
