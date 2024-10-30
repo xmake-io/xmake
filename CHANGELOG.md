@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.9.6
+
 ### New features
 
 * [#5527](https://github.com/xmake-io/xmake/issues/5527): Add `set_policy("compatibility.version", "3.0")` to preview v3.0 features.
@@ -1894,6 +1896,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.9.6
 
 ### 新特性
 
