@@ -31,6 +31,7 @@ function _get_triple(arch)
     ,   ["armeabi"]     = "arm-linux-androideabi"   -- removed in ndk r17
     ,   ["armeabi-v7a"] = "arm-linux-androideabi"
     ,   ["arm64-v8a"]   = "aarch64-linux-android"
+    ,   ["riscv64"]     = "riscv64-linux-android"
     ,   i386            = "i686-linux-android"      -- deprecated
     ,   x86             = "i686-linux-android"
     ,   x86_64          = "x86_64-linux-android"
@@ -49,6 +50,7 @@ function _get_target(arch, ndk_sdkver)
     ,   ["armv7-a"]     = "armv7-none-linux-androideabi"    -- deprecated
     ,   ["armeabi-v7a"] = "armv7-none-linux-androideabi"
     ,   ["arm64-v8a"]   = "aarch64-none-linux-android"
+    ,   ["riscv64"]     = "riscv64-none-linux-android"
     ,   ["i386"]        = "i686-none-linux-android"         -- deprecated
     ,   ["x86"]         = "i686-none-linux-android"
     ,   ["x86_64"]      = "x86_64-none-linux-android"
@@ -162,6 +164,7 @@ function main(toolchain)
         ,   ["armeabi"]     = "arch-arm"    -- removed in ndk r17
         ,   ["armeabi-v7a"] = "arch-arm"
         ,   ["arm64-v8a"]   = "arch-arm64"
+        ,   ["riscv64"]     = "arch-riscv64"
         ,   i386            = "arch-x86"    -- deprecated
         ,   x86             = "arch-x86"
         ,   x86_64          = "arch-x86_64"
@@ -264,6 +267,7 @@ function main(toolchain)
                 ,   ["armeabi"]     = "armeabi"         -- removed in ndk r17
                 ,   ["armeabi-v7a"] = "armeabi-v7a"
                 ,   ["arm64-v8a"]   = "arm64-v8a"
+                ,   ["riscv64"]     = "riscv64"
                 ,   i386            = "x86"             -- deprecated
                 ,   x86             = "x86"
                 ,   x86_64          = "x86_64"
