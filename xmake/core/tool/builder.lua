@@ -708,7 +708,9 @@ function builder:_preprocess_flags(flags)
             local flagkey = type(flag) == "table" and table.concat(flag, "") or flag
             if flag and not unique[flagkey] then
                 table.insert(flags_new, flag)
-                unique[flagkey] = true
+                if flagkey:startswith("-l") or flagkey:startswith("-L") or flagkey:startswith("/l") or flagkey:startswith("/L") then
+                    unique[flagkey] = true
+                end
             end
         end
         flags = flags_new
