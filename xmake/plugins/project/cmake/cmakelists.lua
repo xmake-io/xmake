@@ -441,7 +441,7 @@ function _add_target_dependencies(cmakelists, target)
     local deps = {}
     for _, dep in ipairs(target:orderdeps()) do
         if not dep:is_object() then
-            deps:insert(dep:name())
+            table.insert(deps, dep:name())
         end
     end
 
