@@ -2411,15 +2411,15 @@ function _instance:_generate_build_configs(configs, opt)
         local compiler = self:compiler(sourcekind)
         local cxflags = compiler:map_flags("runtime", runtimes, {target = self})
         configs.cxflags = table.wrap(configs.cxflags)
-        table.join2(configs.cxflags, cxflags)
+        table.insert(configs.cxflags, cxflags)
 
         local ldflags = self:linker("binary", sourcekind):map_flags("runtime", runtimes, {target = self})
         configs.ldflags = table.wrap(configs.ldflags)
-        table.join2(configs.ldflags, ldflags)
+        table.insert(configs.ldflags, ldflags)
 
         local shflags = self:linker("shared", sourcekind):map_flags("runtime", runtimes, {target = self})
         configs.shflags = table.wrap(configs.shflags)
-        table.join2(configs.shflags, shflags)
+        table.insert(configs.shflags, shflags)
         self.sourcekinds = nil
     end
     if self:config("lto") then
