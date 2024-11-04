@@ -101,6 +101,9 @@ rule("mode.releasedbg")
             -- enable NDEBUG macros to disables standard-C assertions
             target:add("cxflags", "-DNDEBUG")
             target:add("cuflags", "-DNDEBUG")
+
+            -- #5777: '--device-debug (-G)' overrides '--generate-line-info (-lineinfo)' in nvcc
+            target:add("cuflags", "-lineinfo")
         end
     end)
 
