@@ -34,6 +34,9 @@ rule("mode.debug")
             if not target:get("optimize") then
                 target:set("optimize", "none")
             end
+
+            -- #5777: '--device-debug (-G)' overrides '--generate-line-info (-lineinfo)' in nvcc
+            target:add("cuflags", "-G")
         end
     end)
 
@@ -98,6 +101,9 @@ rule("mode.releasedbg")
             -- enable NDEBUG macros to disables standard-C assertions
             target:add("cxflags", "-DNDEBUG")
             target:add("cuflags", "-DNDEBUG")
+
+            -- #5777: '--device-debug (-G)' overrides '--generate-line-info (-lineinfo)' in nvcc
+            target:add("cuflags", "-lineinfo")
         end
     end)
 
@@ -158,6 +164,9 @@ rule("mode.profile")
             -- enable NDEBUG macros to disables standard-C assertions
             target:add("cxflags", "-DNDEBUG")
             target:add("cuflags", "-DNDEBUG")
+
+            -- #5777: '--device-debug (-G)' overrides '--generate-line-info (-lineinfo)' in nvcc
+            target:add("cuflags", "-lineinfo")
         end
     end)
 
