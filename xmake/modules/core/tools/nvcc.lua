@@ -52,7 +52,9 @@ function nf_symbol(self, level, opt)
     -- debug? generate *.pdb file
     local flags = nil
     if level == "debug" then
-        flags = {"-G", "-g", "-lineinfo"}
+        -- #5777: '--device-debug (-G)' overrides '--generate-line-info (-lineinfo)' in nvcc
+        -- remove '-G' and '-lineinfo' and add them in mode.debug and mode.profile respectively
+        flags = {"-g"}
         if self:is_plat("windows") then
             local host_flags = nil
             local symbolfile = nil
