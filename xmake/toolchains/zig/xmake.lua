@@ -59,6 +59,7 @@ toolchain("zig")
         if toolchain:config("zigcc") ~= false then
             -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
             -- @see https://github.com/xmake-io/xmake/issues/3251
+            toolchain:set("toolset", "as",    zig .. " cc")
             toolchain:set("toolset", "cc",    zig .. " cc")
             toolchain:set("toolset", "cxx",   zig .. " c++")
             toolchain:set("toolset", "ld",    zig .. " c++")
@@ -119,6 +120,7 @@ toolchain("zig")
             target = arch .. "-windows-gnu"
         end
         if target then
+            toolchain:add("zig_cc.asflags", "-target", target)
             toolchain:add("zig_cc.cxflags", "-target", target)
             toolchain:add("zig_cc.shflags", "-target", target)
             toolchain:add("zig_cc.ldflags", "-target", target)
