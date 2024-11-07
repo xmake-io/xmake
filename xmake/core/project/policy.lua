@@ -140,7 +140,7 @@ function policy.policies()
             -- https://github.com/xmake-io/xmake/issues/3952
             ["package.xmake.pass_depconfs"]       = {description = "Automatically passes dependency configuration for inner xmake package", default = true, type = "boolean"},
             -- It will force cmake package use ninja for build
-            ["package.cmake_generator.ninja"]     = {description = "Set cmake package use ninja for build", default = false, type = "boolean"},
+            ["package.cmake_generator.ninja"]     = {description = "Set cmake package use ninja for build", type = "boolean"},
             -- Enable msbuild MultiToolTask
             ["package.msbuild.multi_tool_task"]   = {description = "Enable msbuild MultiToolTask.", default = false, type = "boolean"},
             -- Stop to test on the first failure
