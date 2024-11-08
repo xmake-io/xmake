@@ -104,14 +104,14 @@ function _do_package_target(target)
         end
 
         if target:is_library() and not target:is_headeronly() and not target:is_moduleonly() then
-            file:print([[    add_configs("shared", {description = "Build shared library.", default = %s, type = "boolean", readonly = true}]], target:is_shared() and "true" or "false")
+            file:print([[    add_configs("shared", {description = "Build shared library.", default = %s, type = "boolean", readonly = true})]], target:is_shared() and "true" or "false")
             file:print("")
         end
         file:print([[
     on_load(function (package)
         package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
     end)
-    ]])
+]])
         if target:is_binary() then
             file:print([[
     on_fetch(function (package)
