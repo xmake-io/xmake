@@ -24,9 +24,7 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
-import("core.base.bit")
-import("rules.c++.modules.modules_support.compiler_support", {alias = "module_compiler_support", rootdir = os.programdir()})
-import("rules.c++.modules.modules_support.builder", {alias = "module_builder", rootdir = os.programdir()})
+import("target.action.install")
 
 -- get library deps
 function _get_librarydeps(target)
@@ -40,140 +38,29 @@ function _get_librarydeps(target)
     return librarydeps
 end
 
--- package binary
-function _package_binary(target)
+-- do package target
+function _do_package_target(target)
+    if target:is_phony() then
+        return
+    end
 
-    -- get the output directory
+    -- do install
     local packagedir  = target:packagedir()
-    local packagename = target:name():lower()
-    local binarydir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "bin")
-
-    -- copy the binary file to the output directory
-    local targetfile = target:targetfile()
-    os.mkdir(binarydir)
-    os.vcp(targetfile, binarydir)
-    os.trycp(target:symbolfile(), binarydir)
+    local installdir  = path.join(packagedir, target:plat(), target:arch(), config.mode())
+    install(target, {installdir = installdir, libdir = "lib", bindir = "bin", includedir = "include"})
 
     -- generate xmake.lua
-    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
-    if file then
-        local deps = _get_librarydeps(target)
-        file:print("package(\"%s\")", packagename)
-        local homepage = option.get("homepage")
-        if homepage then
-            file:print("    set_homepage(\"%s\")", homepage)
-        end
-        local description = option.get("description") or ("The " .. packagename .. " package")
-        file:print("    set_description(\"%s\")", description)
-        if target:license() then
-            file:print("    set_license(\"%s\")", target:license())
-        end
-        if #deps > 0 then
-            file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
-        end
-        file:print("")
-        file:print([[
-    on_load(function (package)
-        package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
-    end)
-
-    on_fetch(function (package)
-        return {program = path.join(package:installdir("bin"), "%s")}
-    end)]], #deps > 0 and ("add_deps(\"" .. table.concat(deps, "\", \"") .. "\")") or "",
-            path.filename(targetfile))
-        file:close()
-    end
-
-    -- show tips
-    print("package(%s): %s generated", packagename, packagedir)
-end
-
--- package library
-function _package_library(target)
-
-    -- get the output directory
-    local packagedir  = target:packagedir()
     local packagename = target:name():lower()
-    local binarydir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "bin")
-    local librarydir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "lib")
-    local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
-    local modulesdir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "modules")
-
-    -- copy the library file to the output directory
-    local targetfile = target:targetfile()
-    if target:is_shared() and target:is_plat("windows", "mingw") then
-        os.mkdir(binarydir)
-        os.vcp(targetfile, binarydir)
-        os.trycp(target:symbolfile(), binarydir)
-        local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
-        if os.isfile(targetfile_lib) then
-            os.mkdir(librarydir)
-            os.vcp(targetfile_lib, librarydir)
-        end
-    else
-        os.mkdir(librarydir)
-        if os.islink(targetfile) then
-            local targetfile_with_soname = os.readlink(targetfile)
-            if not path.is_absolute(targetfile_with_soname) then
-                targetfile_with_soname = path.join(target:targetdir(), targetfile_with_soname)
-            end
-            if os.islink(targetfile_with_soname) then
-                local targetfile_with_version = os.readlink(targetfile_with_soname)
-                if not path.is_absolute(targetfile_with_version) then
-                    targetfile_with_version = path.join(target:targetdir(), targetfile_with_version)
-                end
-                os.vcp(targetfile_with_version, librarydir, {symlink = true, force = true})
-            end
-            os.vcp(targetfile_with_soname, librarydir, {symlink = true, force = true})
-            os.vcp(targetfile, librarydir, {symlink = true, force = true})
-        else
-            os.vcp(targetfile, librarydir)
-        end
-        os.trycp(target:symbolfile(), librarydir)
-    end
-
-    -- copy headers
-    local srcheaders, dstheaders = target:headerfiles(headerdir)
-    if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                os.vcp(srcheader, dstheader)
-            end
-            i = i + 1
-        end
-    end
-
-    -- copy modules
-    if target:data("cxx.has_modules") then
-
-        local modules = module_compiler_support.localcache():get2(target:name(), "c++.modules")
-        module_builder.generate_metadata(target, modules)
-
-        local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
-        if sourcebatch and sourcebatch.sourcefiles then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local fileconfig = target:fileconfig(sourcefile)
-                local install = fileconfig and fileconfig.public or false
-                if install then
-                    local modulehash = module_compiler_support.get_modulehash(target, sourcefile)
-                    local prefixdir = path.join(modulesdir, modulehash)
-                    os.vcp(sourcefile, path.join(prefixdir, path.filename(sourcefile)))
-                    local metafile = module_compiler_support.get_metafile(target, sourcefile)
-                    if os.exists(metafile) then
-                        os.vcp(metafile, path.join(prefixdir, path.filename(metafile)))
-                    end
-                end
-            end
-        end
-    end
-
-    -- generate xmake.lua
     local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
-        local deps = _get_librarydeps(target)
         file:print("package(\"%s\")", packagename)
+        if target:is_binary() then
+            file:print("    set_kind(\"binary\")")
+        elseif target:is_headeronly() then
+            file:print("    set_kind(\"library\", {headeronly = true})")
+        elseif target:is_moduleonly() then
+            file:print("    set_kind(\"library\", {moduleonly = true})")
+        end
         local homepage = option.get("homepage")
         if homepage then
             file:print("    set_homepage(\"%s\")", homepage)
@@ -184,36 +71,61 @@ function _package_library(target)
             file:print("    set_license(\"%s\")", target:license())
         end
         file:print("")
+        local has_deps = false
+        local deps = _get_librarydeps(target)
         if #deps > 0 then
             file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
+            has_deps = true
         end
         -- export packages as deps, @see https://github.com/xmake-io/xmake/issues/4202
-        local interface
-        if target:is_shared() then
-            interface = true
-        end
-        for _, pkg in ipairs(target:orderpkgs({interface = interface})) do
-            local requireconf_str
-            local requireconf = pkg:requireconf()
-            if requireconf then
-                local conf = table.clone(requireconf)
-                conf.alias = nil
-                requireconf_str = string.serialize(conf, {indent = false, strip = true})
+        if target:is_library() then
+            local interface
+            if target:is_shared() then
+                interface = true
             end
-            if requireconf_str and requireconf_str ~= "{}" then
-                file:print("    add_deps(\"%s\", %s)", pkg:requirestr(), requireconf_str)
-            else
-                file:print("    add_deps(\"%s\")", pkg:requirestr())
+            for _, pkg in ipairs(target:orderpkgs({interface = interface})) do
+                local requireconf_str
+                local requireconf = pkg:requireconf()
+                if requireconf then
+                    local conf = table.clone(requireconf)
+                    conf.alias = nil
+                    requireconf_str = string.serialize(conf, {indent = false, strip = true})
+                end
+                if requireconf_str and requireconf_str ~= "{}" then
+                    file:print("    add_deps(\"%s\", %s)", pkg:requirestr(), requireconf_str)
+                else
+                    file:print("    add_deps(\"%s\")", pkg:requirestr())
+                end
+                has_deps = true
             end
         end
-        file:print("")
-        file:print([[
-    add_configs("shared", {description = "Build shared library.", default = %s, type = "boolean", readonly = true})
+        if has_deps then
+            file:print("")
+        end
 
+        if target:is_library() and not target:is_headeronly() and not target:is_moduleonly() then
+            file:print([[    add_configs("shared", {description = "Build shared library.", default = %s, type = "boolean", readonly = true})]], target:is_shared() and "true" or "false")
+            file:print("")
+        end
+        file:print([[
     on_load(function (package)
         package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
     end)
-
+]])
+        if target:is_binary() then
+            file:print([[
+    on_fetch(function (package)
+        return {program = path.join(package:installdir("bin"), "%s")}
+    end)]], path.filename(target:targetfile()))
+        elseif target:is_headeronly() or target:is_moduleonly() then
+            file:print([[
+    on_fetch(function (package)
+        local result = {}
+        result.includedirs = package:installdir("include")
+        return result
+    end)]])
+        elseif target:is_library() then
+            file:print([[
     on_fetch(function (package)
         local result = {}
         local libfiledir = (package:config("shared") and package:is_plat("windows", "mingw")) and "bin" or "lib"
@@ -222,161 +134,12 @@ function _package_library(target)
         result.includedirs = package:installdir("include")
         result.libfiles = path.join(package:installdir(libfiledir), "%s")
         return result
-    end)]], target:is_shared() and "true" or "false",
-            target:linkname(),
-            path.filename(targetfile))
+    end)]], target:linkname(), path.filename(target:targetfile()))
+        end
+
         file:close()
     end
-
-    -- show tips
     print("package(%s): %s generated", packagename, packagedir)
-end
-
--- package headeronly library
-function _package_headeronly(target)
-
-    -- get the output directory
-    local packagedir  = target:packagedir()
-    local packagename = target:name():lower()
-    local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
-
-    -- copy headers
-    local srcheaders, dstheaders = target:headerfiles(headerdir)
-    if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                os.vcp(srcheader, dstheader)
-            end
-            i = i + 1
-        end
-    end
-
-    -- generate xmake.lua
-    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
-    if file then
-        local deps = _get_librarydeps(target)
-        file:print("package(\"%s\")", packagename)
-        local homepage = option.get("homepage")
-        if homepage then
-            file:print("    set_homepage(\"%s\")", homepage)
-        end
-        local description = option.get("description") or ("The " .. packagename .. " package")
-        file:print("    set_description(\"%s\")", description)
-        if target:license() then
-            file:print("    set_license(\"%s\")", target:license())
-        end
-        if #deps > 0 then
-            file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
-        end
-        file:print("")
-        file:print([[
-    on_load(function (package)
-        package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
-    end)
-
-    on_fetch(function (package)
-        local result = {}
-        result.includedirs = package:installdir("include")
-        return result
-    end)]])
-        file:close()
-    end
-
-    -- show tips
-    print("package(%s): %s generated", packagename, packagedir)
-end
-
-function _package_moduleonly(target)
-
-    -- get the output directory
-    local packagedir  = target:packagedir()
-    local packagename = target:name():lower()
-    local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
-    local modulesdir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "modules")
-
-    local modules = module_compiler_support.localcache():get2(target:name(), "c++.modules")
-    module_builder.generate_metadata(target, modules)
-
-    -- copy headers
-    local srcheaders, dstheaders = target:headerfiles(headerdir)
-    if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                os.vcp(srcheader, dstheader)
-            end
-            i = i + 1
-        end
-    end
-
-    -- copy modules
-    local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
-    if sourcebatch and sourcebatch.sourcefiles then
-        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            local modulehash = module_compiler_support.get_modulehash(target, sourcefile)
-            local prefixdir = path.join(modulesdir, modulehash)
-            os.vcp(sourcefile, path.join(prefixdir, path.filename(sourcefile)))
-            local metafile = module_compiler_support.get_metafile(target, sourcefile)
-            if os.exists(metafile) then
-                os.vcp(metafile, path.join(prefixdir, path.filename(metafile)))
-            end
-        end
-    end
-
-    -- generate xmake.lua
-    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
-    if file then
-        local deps = _get_librarydeps(target)
-        file:print("package(\"%s\")", packagename)
-        local homepage = option.get("homepage")
-        if homepage then
-            file:print("    set_homepage(\"%s\")", homepage)
-        end
-        local description = option.get("description") or ("The " .. packagename .. " package")
-        file:print("    set_description(\"%s\")", description)
-        if target:license() then
-            file:print("    set_license(\"%s\")", target:license())
-        end
-        if #deps > 0 then
-            file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
-        end
-        file:print("")
-        file:print([[
-    on_load(function (package)
-        package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
-    end)
-
-    on_fetch(function (package)
-        local result = {}
-        result.includedirs = package:installdir("include")
-        return result
-    end)]])
-        file:close()
-    end
-
-    -- show tips
-    print("package(%s): %s generated", packagename, packagedir)
-end
--- do package target
-function _do_package_target(target)
-    if not target:is_phony() then
-        local scripts =
-        {
-            binary     = _package_binary
-        ,   static     = _package_library
-        ,   shared     = _package_library
-        ,   moduleonly = _package_moduleonly
-        ,   headeronly = _package_headeronly
-        }
-        local kind = target:kind()
-        local script = scripts[kind]
-        if script then
-            script(target)
-        end
-    end
 end
 
 -- package target
