@@ -63,16 +63,21 @@ function _make_projects(slnfile, vsinfo)
         slnfile:leave("EndProject")
         local group_path = target:get("group")
         if group_path and #(group_path:trim()) > 0 then
-            for _, group_name in ipairs(path.split(group_path)) do
-                groups[group_name] = hash.uuid4("group." .. group_name)
+            local group_current_path
+            local group_names = path.split(group_path)
+            for idx, group_name in ipairs(group_names) do
+                group_current_path = group_current_path and path.join(group_current_path, group_name) or group_name
+                groups[group_current_path] = hash.uuid4("group." .. group_current_path)
             end
         end
     end
 
     -- make all groups
     local project_group_uuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
-    for group_name, group_uuid in table.orderpairs(groups) do
-        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\", \"{%s}\"", project_group_uuid, group_name, group_name, group_uuid)
+    for group_path, group_uuid in table.orderpairs(groups) do
+        local group_name = path.filename(group_path)
+        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\", \"{%s}\"",
+            project_group_uuid, group_name, group_name, group_uuid)
         slnfile:leave("EndProject")
     end
 end
@@ -117,15 +122,18 @@ function _make_global(slnfile, vsinfo)
         local group_path = target:get("group")
         if group_path then
             -- target -> group
-            local group_name = path.filename(group_path)
-            slnfile:print("{%s} = {%s}", hash.uuid4(targetname), hash.uuid4("group." .. group_name))
+            group_path = path.normalize(group_path)
+            slnfile:print("{%s} = {%s}", hash.uuid4(targetname), hash.uuid4("group." .. group_path))
             -- group -> group -> ...
+            local group_current_path
             local group_names = path.split(group_path)
             for idx, group_name in ipairs(group_names) do
+                group_current_path = group_current_path and path.join(group_current_path, group_name) or group_name
                 local group_name_sub = group_names[idx + 1]
                 local key = group_name .. (group_name_sub or "")
                 if group_name_sub and not subgroups[key] then
-                    slnfile:print("{%s} = {%s}", hash.uuid4("group." .. group_name_sub), hash.uuid4("group." .. group_name))
+                    slnfile:print("{%s} = {%s}", hash.uuid4("group." .. path.join(group_current_path, group_name_sub)),
+                        hash.uuid4("group." .. group_current_path))
                     subgroups[key] = true
                 end
             end
@@ -162,3 +170,4 @@ function make(vsinfo)
     -- exit solution file
     slnfile:close()
 end
+
