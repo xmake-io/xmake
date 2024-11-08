@@ -192,7 +192,18 @@ end
 -- get qt environment
 function _get_qtenvs(qmake)
     local envs = {}
-    local results = try {function () return os.iorunv(qmake, {"-query"}) end}
+    local results = try {
+        function ()
+            return os.iorunv(qmake, {"-query"})
+        end,
+        catch {
+            function (errors)
+                if errors then
+                    dprint(tostring(errors))
+                end
+            end
+        }
+    }
     if results then
         for _, qtenv in ipairs(results:split('\n', {plain = true})) do
             local kv = qtenv:split(':', {plain = true, limit = 2}) -- @note set limit = 2 for supporting value with win-style path, e.g. `key:C:\xxx`
@@ -201,10 +212,6 @@ function _get_qtenvs(qmake)
             end
         end
         return envs
-    else
-        if option.get("verbose") then
-            print("qmake -query failed")
-        end
     end
 end
 
