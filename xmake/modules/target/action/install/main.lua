@@ -41,6 +41,14 @@ function _get_target_bindir(target, opt)
     return path.join(opt.installdir, opt.bindir)
 end
 
+function _get_target_includedir(target, opt)
+    if not opt.installdir then
+        return target:includedir()
+    end
+    assert(opt.includedir, "opt.includedir is missing")
+    return path.join(opt.installdir, opt.includedir)
+end
+
 -- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
 -- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
 function _get_target_package_deplibs(binaryfile, depends, libfiles, opt)
@@ -147,14 +155,14 @@ end
 
 -- install headers
 function _install_headers(target, opt)
-    local srcheaders, dstheaders = target:headerfiles(target:includedir(), {installonly = true})
+    local srcheaders, dstheaders = target:headerfiles(_get_target_includedir(target, opt), {installonly = true})
     if srcheaders and dstheaders then
         for idx, srcheader in ipairs(srcheaders) do
             os.vcp(srcheader, dstheaders[idx])
         end
     end
     for _, dep in ipairs(target:orderdeps()) do
-        local srcfiles, dstfiles = dep:headerfiles(dep:includedir(), {installonly = true, interface = true})
+        local srcfiles, dstfiles = dep:headerfiles(_get_target_includedir(dep, opt), {installonly = true, interface = true})
         if srcfiles and dstfiles then
             for idx, srcfile in ipairs(srcfiles) do
                 os.vcp(srcfile, dstfiles[idx])
