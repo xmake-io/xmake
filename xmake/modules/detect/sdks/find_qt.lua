@@ -200,8 +200,12 @@ function _get_qtenvs(qmake)
                 envs[kv[1]] = kv[2]:trim()
             end
         end
+        return envs
+    else
+        if option.get("verbose") then
+            print("qmake -query failed")
+        end
     end
-    return envs
 end
 
 -- find qt sdk toolchains
