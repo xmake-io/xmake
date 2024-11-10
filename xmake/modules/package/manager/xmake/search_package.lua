@@ -28,7 +28,7 @@ function _search_package(packages, name, opt)
         local packagedata = packageinfo.data
 
         local version
-        local versions = packageinfo.versions
+        local versions = packagedata.versions
         if versions then
             versions = table.copy(versions)
             table.sort(versions, function (a, b) return semver.compare(a, b) > 0 end)
