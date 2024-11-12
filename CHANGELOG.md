@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#5813](https://github.com/xmake-io/xmake/pull/5813): Add `before_config` and `after_config` for rule
+
 ## v2.9.6
 
 ### New features
@@ -1896,6 +1900,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#5813](https://github.com/xmake-io/xmake/pull/5813): 为 rule 添加 `before_config` 和 `after_config`
 
 ## v2.9.6
 
