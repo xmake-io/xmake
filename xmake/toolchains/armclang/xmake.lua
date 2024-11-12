@@ -67,8 +67,12 @@ toolchain("armclang")
             toolchain:set("toolset", "as", as)
             toolchain:add("cxflags", "--target=" .. arch_target)
             toolchain:add("cxflags", "-mcpu="   .. arch_cpu)
-            toolchain:add("asflags", "--target=" .. arch_target)
-            toolchain:add("asflags", (as == "armclang" and "-mcpu=" or "--cpu=") .. arch_cpu)
+            if as == "armclang" then
+                toolchain:add("asflags", "--target=" .. arch_target)
+                toolchain:add("asflags", "-mcpu=" .. arch_cpu)
+            else
+                toolchain:add("asflags", "--cpu=" .. arch_cpu)
+            end
             toolchain:add("ldflags", "--cpu "   .. arch_cpu_ld)
         end
     end)
