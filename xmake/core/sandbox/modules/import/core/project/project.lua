@@ -128,6 +128,13 @@ end
 -- config target
 function sandbox_core_project._config_target(target, opt)
     for _, rule in ipairs(table.wrap(target:orderules())) do
+        local before_config = rule:script("config_before")
+        if before_config then
+            before_config(target, opt)
+        end
+    end
+
+    for _, rule in ipairs(table.wrap(target:orderules())) do
         local on_config = rule:script("config")
         if on_config then
             on_config(target, opt)
@@ -136,6 +143,13 @@ function sandbox_core_project._config_target(target, opt)
     local on_config = target:script("config")
     if on_config then
         on_config(target, opt)
+    end
+
+    for _, rule in ipairs(table.wrap(target:orderules())) do
+        local after_config = rule:script("config_after")
+        if after_config then
+            after_config(target, opt)
+        end
     end
 end
 
