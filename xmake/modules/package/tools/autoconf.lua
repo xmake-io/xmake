@@ -162,7 +162,7 @@ function _get_configs(package, configs)
             table.insert(configs, "--host=" .. host)
         end
     end
-    if package:is_plat("linux", "bsd") and
+    if not package:is_plat("windows", "mingw") and
         package:config("pic") ~= false and _has_with_pic(package) then
         table.insert(configs, "--with-pic")
     end
@@ -319,7 +319,7 @@ function buildenvs(package, opt)
         envs.CPP       = package:build_getenv("cpp")
         envs.RANLIB    = package:build_getenv("ranlib")
     end
-    if package:is_plat("linux", "bsd") and
+    if not package:is_plat("windows", "mingw") and
         package:config("pic") ~= false and not _has_with_pic(package) then
         table.insert(cflags, "-fPIC")
         table.insert(cxxflags, "-fPIC")
