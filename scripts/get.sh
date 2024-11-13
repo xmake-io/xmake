@@ -109,6 +109,9 @@ get_host_speed() {
 }
 
 get_fast_host() {
+    if test_eq "$GITHUB_ACTIONS" "true" || test_eq "$GITHUB_ACTIONS" "1"; then
+        echo "github.com"
+    fi
     speed_gitee=$(get_host_speed "gitee.com")
     speed_github=$(get_host_speed "github.com")
     if [ $speed_gitee -le $speed_github ]; then
