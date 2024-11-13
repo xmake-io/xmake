@@ -420,7 +420,7 @@ function _get_configs_for_generic(package, configs, opt)
     if shflags then
         table.insert(configs, "-DCMAKE_SHARED_LINKER_FLAGS=" .. shflags)
     end
-    if package:config("pic") ~= false then
+    if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
         table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
     end
     if not package:use_external_includes() then
@@ -661,10 +661,9 @@ function _get_configs_for_cross(package, configs, opt)
             system_name = "Linux"
         end
         envs.CMAKE_SYSTEM_NAME = system_name
-    else
-        if package:config("pic") ~= false then
-            table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
-        end
+    end
+    if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
+        table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
     end
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
@@ -716,10 +715,9 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     -- https://github.com/xmake-io/xmake/issues/2170
     if package:is_cross() then
         envs.CMAKE_SYSTEM_NAME     = "Linux"
-    else
-        if package:config("pic") ~= false then
-            table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
-        end
+    end
+    if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
+        table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
     end
     _insert_configs_from_envs(configs, envs, opt)
 end
