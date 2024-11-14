@@ -97,6 +97,62 @@ function get_vcvars()
     return realvcvars
 end
 
+function load_custom_vcenv(opt)
+    opt = opt or {}
+
+    if opt.bat and os.isfile(opt.bat) then
+        local file = io.readfile(opt.bat)
+        if file then
+            local variables = {}
+            for line in file:gmatch("[^\r\n]+") do
+                local key, value = line:match("set%s+(.-)=(.*)")
+                if key and value then
+                    value = value:gsub("%%%{(.-)%}", variables)
+                    if value == "%~dp0" then
+                        value = path.directory(opt.bat) .. "\\"
+                    else
+                        for match in value:gmatch("%%(.-)%%") do
+                            value = value:gsub("%%" .. match .. "%%", variables[match] or "")
+                        end
+                    end
+                    variables[key] = value
+                end
+            end
+        
+            for _, name in ipairs(vcvars) do
+                if variables[name] and #variables[name]:trim() == 0 then
+                    variables[name] = nil
+                end
+            end
+        
+            local vcvarsall = {}
+            if not variables["VCToolsVersion"] then
+                variables.VCToolsVersion = path.filename(variables["VCToolsInstallDir"])
+            end
+            vcvarsall[variables["VSCMD_ARG_TGT_ARCH"]] = variables
+            return vcvarsall
+        end
+    end
+
+    -- TODO: custom search
+    local vs_build_tools = opt.vs_build_tools
+    if vs_build_tools then
+        local VCToolsInstallDir
+        local VCToolsInstallDirs = os.dirs(path.join(vs_build_tools, "VC/Tools/MSVC/*"))
+        for _, ver in ipairs(VCToolsInstallDirs) do
+            if ver == opt.vs_toolset then
+                VCToolsInstallDir = ver
+            end
+        end
+
+        if not VCToolsInstallDir and #VCToolsInstallDirs ~= 0 then
+            VCToolsInstallDir = VCToolsInstallDirs[1]
+        end
+
+        local WindowsSDKDir = path.join(vs_build_tools, "Windows Kits/10")
+    end
+end
+
 -- load vcvarsall environment variables
 function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     opt = opt or {}

@@ -100,6 +100,28 @@ function _check_vstudio(toolchain)
     return vs
 end
 
+-- check the visual studio
+function _check_vc_build_tools(toolchain, bat)
+    local opt = {}
+    opt.bat = bat
+    local vcvarsall = find_vstudio.load_custom_vcenv(opt)
+    local vcvars = vcvarsall[toolchain:arch()]
+    if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
+        -- save vcvars
+        toolchain:config_set("vcvars", vcvars)
+        toolchain:config_set("vcarchs", table.orderkeys(vcvarsall))
+        toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
+        toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
+
+        -- check compiler
+        local cl = find_tool("cl.exe", {version = true, force = true, envs = vcvars})
+        if cl and cl.version then
+            cprint("checking for Microsoft C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), cl.version)
+        end
+        return vcvars
+    end
+end
+
 -- main entry
 function main(toolchain)
 
@@ -113,7 +135,12 @@ function main(toolchain)
     local cxx = path.basename(config.get("cxx") or "cl"):lower()
     local mrc = path.basename(config.get("mrc") or "rc"):lower()
     if cc == "cl" or cxx == "cl" or mrc == "rc" then
-        return _check_vstudio(toolchain)
+        local vc_bat = option.get("vc_bat")
+        if vc_bat then
+            return _check_vc_build_tools(toolchain, vc_bat)
+        else
+            return _check_vstudio(toolchain)
+        end
     end
 end
 
