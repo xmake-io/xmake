@@ -153,8 +153,11 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     file:close()
 
     -- run genvcvars.bat
-    local outdata = try {function () return os.iorun(genvcvars_bat) end}
+    local outdata, errdata = try {function () return os.iorun(genvcvars_bat) end}
     if not outdata then
+        if errdata then
+            wprint("get vcvars failed, %s", errdata)
+        end
         return
     end
 
