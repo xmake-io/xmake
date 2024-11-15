@@ -47,7 +47,7 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
     if (mode != 64 && mode != 128)
     {
         lua_pushnil(lua);
-        lua_pushfstring(lua, "invalid mode(%d))!", (tb_int_t)mode);
+        lua_pushfstring(lua, "invalid mode(%d)!", (tb_int_t)mode);
         return 2;
     }
 
@@ -65,7 +65,7 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
         tb_assert_static(sizeof(lua_Integer) >= sizeof(tb_pointer_t));
 
         // compuate hash
-        tb_byte_t const* buffer;
+        tb_byte_t const* buffer = tb_null;
         XXH64_hash_t value64;
         XXH128_hash_t value128;
         if (mode == 64)
@@ -77,6 +77,12 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
         {
             value128 = XM_XXH3_128bits(data, size);
             buffer = (tb_byte_t const*)&value128;
+        }
+        if (!buffer)
+        {
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "empty buffer!");
+            return 2;
         }
 
         // make xxhash string
