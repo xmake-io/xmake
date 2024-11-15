@@ -124,6 +124,7 @@ function find_build_tools(opt)
     variables.VCToolsVersion = VCToolsVersion
     variables.VCToolsInstallDir = path.join(sdkdir, "VC/Tools/MSVC", VCToolsVersion)
 
+    local tmp_version
     local WindowsSDKVersion
     local WindowsSDKVersionsDirs = os.dirs(path.join(sdkdir, "Windows Kits/10/bin/*"))
     for _, dir in ipairs(WindowsSDKVersionsDirs) do
@@ -132,10 +133,14 @@ function find_build_tools(opt)
             WindowsSDKVersion = ver
             break
         end
+
+        if ver:startswith("10") then
+            tmp_version = ver
+        end
     end
 
     if not WindowsSDKVersion and #WindowsSDKVersionsDirs ~= 0 then
-        WindowsSDKVersion = path.filename(WindowsSDKVersionsDirs[1])
+        WindowsSDKVersion = tmp_version
     else
         return
     end
@@ -164,15 +169,6 @@ function find_build_tools(opt)
         "arm64",
     }
 
-    local vcvars = {
-        BUILD_TOOLS_ROOT = sdkdir,
-        INCLUDE = path.joinenv(includedirs),
-        WindowsSDKDir = variables.WindowsSDKDir,
-        WindowsSDKVersion = WindowsSDKVersion,
-        VCToolsInstallDir = variables.VCToolsInstallDir,
-        VSCMD_ARG_HOST_ARCH = "x64",
-    }
-
     local vcvarsall = {}
     for _, target_arch in ipairs(archs) do
         local lib = {}
@@ -184,6 +180,15 @@ function find_build_tools(opt)
         end
 
         if #lib ~= 0 then
+            local vcvars = {
+                BUILD_TOOLS_ROOT = sdkdir,
+                INCLUDE = path.joinenv(includedirs),
+                WindowsSDKDir = variables.WindowsSDKDir,
+                WindowsSDKVersion = WindowsSDKVersion,
+                VCToolsInstallDir = variables.VCToolsInstallDir,
+                VSCMD_ARG_HOST_ARCH = "x64",
+            }
+
             local host_dir = "Host" .. vcvars.VSCMD_ARG_HOST_ARCH
             local buidl_tools_bin = {
                 path.join(vcvars.VCToolsInstallDir, "bin", host_dir, target_arch),
