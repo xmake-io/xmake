@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
@@ -154,8 +155,8 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
 
     -- run genvcvars.bat
     local outdata, errdata = try {function () return os.iorun(genvcvars_bat) end}
-    if errdata then
-        wprint("get vcvars error: %s", errdata)
+    if errdata and option.get("verbose") and option.get("diagnosis") then
+        cprint("${color.warning}checkinfo: ${clear dim}get vcvars error: %s", errdata)
     end
     if not outdata then
         return
