@@ -100,11 +100,17 @@ function _check_vstudio(toolchain)
     return vs
 end
 
--- check the visual studio
-function _check_vc_build_tools(toolchain, bat)
+function _check_vc_build_tools(toolchain, sdkdir)
     local opt = {}
-    opt.bat = bat
-    local vcvarsall = find_vstudio.load_custom_vcenv(opt)
+    opt.sdkdir = sdkdir
+    opt.vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
+    opt.vs_sdkver = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
+
+    local vcvarsall = find_vstudio.find_build_tools(opt)
+    if not vcvarsall then
+        return
+    end
+
     local vcvars = vcvarsall[toolchain:arch()]
     if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
         -- save vcvars
@@ -125,8 +131,8 @@ end
 -- main entry
 function main(toolchain)
 
-    -- only for windows
-    if not is_host("windows") then
+    -- only for windows or linux (msvc-wine)
+    if not is_host("windows", "linux") then
         return
     end
 
@@ -135,9 +141,9 @@ function main(toolchain)
     local cxx = path.basename(config.get("cxx") or "cl"):lower()
     local mrc = path.basename(config.get("mrc") or "rc"):lower()
     if cc == "cl" or cxx == "cl" or mrc == "rc" then
-        local vc_bat = option.get("vc_bat")
-        if vc_bat then
-            return _check_vc_build_tools(toolchain, vc_bat)
+        local sdkdir = option.get("sdk") or toolchain:config("sdk") or config.get("sdk")
+        if sdkdir then
+            return _check_vc_build_tools(toolchain, sdkdir)
         else
             return _check_vstudio(toolchain)
         end

@@ -43,8 +43,6 @@ platform("windows")
                                                     , "  e.g. --vs_sdkver=10.0.15063.0"             }
                 ,   {nil, "vs_runtime", "kv", nil,    "The Runtime library of Visual Studio (deprecated, please use --runtimes)"
                                                     , values = {"MT", "MTd", "MD", "MDd"}           }
-                ,   {nil, "vc_bat",     "kv", nil,    "The BuildTools bat file"
-                                                    , "  e.g. --vc_bat=C:/BuildTools/devcmd.bat"    }
                 ,   {category = "Cuda SDK Configuration"                                            }
                 ,   {nil, "cuda",       "kv", "auto", "The Cuda SDK Directory"                      }
                 ,   {category = "Qt SDK Configuration"                                              }

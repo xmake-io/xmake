@@ -97,60 +97,116 @@ function get_vcvars()
     return realvcvars
 end
 
-function load_custom_vcenv(opt)
+function find_build_tools(opt)
     opt = opt or {}
 
-    if opt.bat and os.isfile(opt.bat) then
-        local file = io.readfile(opt.bat)
-        if file then
-            local variables = {}
-            for line in file:gmatch("[^\r\n]+") do
-                local key, value = line:match("set%s+(.-)=(.*)")
-                if key and value then
-                    value = value:gsub("%%%{(.-)%}", variables)
-                    if value == "%~dp0" then
-                        value = path.directory(opt.bat) .. "\\"
-                    else
-                        for match in value:gmatch("%%(.-)%%") do
-                            value = value:gsub("%%" .. match .. "%%", variables[match] or "")
-                        end
-                    end
-                    variables[key] = value
-                end
-            end
-        
-            for _, name in ipairs(vcvars) do
-                if variables[name] and #variables[name]:trim() == 0 then
-                    variables[name] = nil
-                end
-            end
-        
-            local vcvarsall = {}
-            if not variables["VCToolsVersion"] then
-                variables.VCToolsVersion = path.filename(variables["VCToolsInstallDir"])
-            end
-            vcvarsall[variables["VSCMD_ARG_TGT_ARCH"]] = variables
-            return vcvarsall
+    local sdkdir = opt.sdkdir
+    if not sdkdir or not os.isdir(sdkdir) then
+        return
+    end
+
+    local variables = {}
+    local VCToolsVersion
+    local VCToolsVersionDirs = os.dirs(path.join(sdkdir, "VC/Tools/MSVC/*"))
+    for _, dir in ipairs(VCToolsVersionDirs) do
+        local ver = path.filename(dir)
+        if ver == opt.vs_toolset then
+            VCToolsVersion = ver
+            break
         end
     end
 
-    -- TODO: custom search
-    local vs_build_tools = opt.vs_build_tools
-    if vs_build_tools then
-        local VCToolsInstallDir
-        local VCToolsInstallDirs = os.dirs(path.join(vs_build_tools, "VC/Tools/MSVC/*"))
-        for _, ver in ipairs(VCToolsInstallDirs) do
-            if ver == opt.vs_toolset then
-                VCToolsInstallDir = ver
+    if not VCToolsVersion and #VCToolsVersionDirs ~= 0 then
+        VCToolsVersion = path.filename(VCToolsVersionDirs[1])
+    else
+        return
+    end
+    variables.VCToolsVersion = VCToolsVersion
+    variables.VCToolsInstallDir = path.join(sdkdir, "VC/Tools/MSVC", VCToolsVersion)
+
+    local WindowsSDKVersion
+    local WindowsSDKVersionsDirs = os.dirs(path.join(sdkdir, "Windows Kits/10/bin/*"))
+    for _, dir in ipairs(WindowsSDKVersionsDirs) do
+        local ver = path.filename(dir)
+        if ver == opt.vs_sdkver then
+            WindowsSDKVersion = ver
+            break
+        end
+    end
+
+    if not WindowsSDKVersion and #WindowsSDKVersionsDirs ~= 0 then
+        WindowsSDKVersion = path.filename(WindowsSDKVersionsDirs[1])
+    else
+        return
+    end
+    variables.WindowsSDKVersion = WindowsSDKVersion
+    variables.WindowsSDKDir = path.join(sdkdir, "Windows Kits/10")
+
+    local includedirs = {
+        path.join(variables.VCToolsInstallDir, "include"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "ucrt"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "shared"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "um"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "winrt"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "cppwinrt"),
+    }
+
+    local linkdirs = {
+        path.join(variables.VCToolsInstallDir, "lib"),
+        path.join(variables.WindowsSDKDir, "Lib", WindowsSDKVersion, "ucrt"),
+        path.join(variables.WindowsSDKDir, "Lib", WindowsSDKVersion, "um"),
+    }
+
+    local archs = {
+        "x86",
+        "x64",
+        "arm",
+        "arm64",
+    }
+
+    local vcvars = {
+        BUILD_TOOLS_ROOT = sdkdir,
+        INCLUDE = path.joinenv(includedirs),
+        WindowsSDKDir = variables.WindowsSDKDir,
+        WindowsSDKVersion = WindowsSDKVersion,
+        VCToolsInstallDir = variables.VCToolsInstallDir,
+        VSCMD_ARG_HOST_ARCH = "x64",
+    }
+
+    local vcvarsall = {}
+    for _, target_arch in ipairs(archs) do
+        local lib = {}
+        for _, lib_dir in ipairs(linkdirs) do
+            local dir = path.join(lib_dir, target_arch)
+            if os.isdir(dir) then
+                table.insert(lib, dir)
             end
         end
 
-        if not VCToolsInstallDir and #VCToolsInstallDirs ~= 0 then
-            VCToolsInstallDir = VCToolsInstallDirs[1]
-        end
+        if #lib ~= 0 then
+            local host_dir = "Host" .. vcvars.VSCMD_ARG_HOST_ARCH
+            local buidl_tools_bin = {
+                path.join(vcvars.VCToolsInstallDir, "bin", host_dir, target_arch),
+                path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion),
+                path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion, "ucrt"),
+            }
 
-        local WindowsSDKDir = path.join(vs_build_tools, "Windows Kits/10")
+            vcvars.VSCMD_ARG_TGT_ARCH = target_arch
+            vcvars.LIB = path.joinenv(lib)
+            vcvars.BUILD_TOOLS_BIN = path.joinenv(buidl_tools_bin)
+
+            local PATH = buidl_tools_bin
+            table.join2(PATH, path.splitenv(os.getenv("PATH")))
+            vcvars.PATH = path.joinenv(PATH)
+
+            vcvarsall[target_arch] = vcvars
+        end
     end
+    -- for _, host_arch in ipairs(archs) do
+    --     local host_dir = "Host" .. arch
+    -- end
+
+    return vcvarsall
 end
 
 -- load vcvarsall environment variables
