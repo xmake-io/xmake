@@ -1184,24 +1184,9 @@ function _get_cmake_generator(package, opt)
     return cmake_generator
 end
 
-function configure(package, configs, opt)
-    opt = opt or {}
-    local oldir = _enter_buildir(package, opt)
-
-    -- pass configurations
-    local argv = {}
-    for name, value in pairs(_get_configs(package, configs, opt)) do
-        value = tostring(value):trim()
-        if type(name) == "number" then
-            if value ~= "" then
-                table.insert(argv, value)
-            end
-        else
-            table.insert(argv, "-D" .. name .. "=" .. value)
-        end
-    end
-    -- shrink cmake arguments, fix too long arguments
-    -- @see https://github.com/xmake-io/xmake-repo/pull/5247#discussion_r1780302212
+-- shrink cmake arguments, fix too long arguments
+-- @see https://github.com/xmake-io/xmake-repo/pull/5247#discussion_r1780302212
+function _shrink_cmake_arguments(argv, oldir, opt)
     local cmake_argv = {}
     local long_options = hashset.of(
         "CMAKE_C_FLAGS",
@@ -1220,18 +1205,74 @@ function configure(package, configs, opt)
         "CMAKE_EXE_LINKER_FLAGS_DEBUG",
         "CMAKE_SHARED_LINKER_FLAGS_DEBUG")
     local shrink = false
+    local add_compile_options = false
+    local add_link_options = false
+    if _get_cmake_version():ge("3.13") then
+        add_compile_options = true
+        add_link_options = true
+    end
+    local buildtypes_map = {
+        RELEASE = "Release",
+        DEBUG = "Debug",
+        RELWITHDEBINFO = "RelWithDebInfo"
+    }
     table.remove_if(argv, function (idx, value)
         local k, v = value:match("%-D(.*)=(.*)")
-        if k and v and long_options:has(k) and #v > 128 then
-            table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, tostring(v)))
-            shrink = true
-            return true
+        if k and v and long_options:has(k) then
+            local kind, mode = k:match("CMAKE_(.+)_FLAGS_(.+)")
+            if not kind then
+                kind = k:match("CMAKE_(.+)_FLAGS")
+            end
+            -- improve cmake flags
+            -- @see https://github.com/xmake-io/xmake/issues/5826
+            local build_type = mode and buildtypes_map[mode] or nil
+            if #v > 0 and add_compile_options and (kind == "C" or kind == "CXX" or kind == "ASM") then
+                if build_type then
+                    table.insert(cmake_argv, ("if(CMAKE_BUILD_TYPE STREQUAL \"%s\")"):format(build_type))
+                end
+                for _, flag in ipairs(os.argv(v)) do
+                    flag = flag:replace(" ", "\\ ")
+                    table.insert(cmake_argv, ("add_compile_options($<$<COMPILE_LANGUAGE:%s>:%s>)"):format(kind, flag))
+                end
+                if build_type then
+                    table.insert(cmake_argv, "endif()")
+                end
+                shrink = true
+                return true
+            end
+            -- shrink long arguments
+            if #v > 128 then
+                table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, v))
+                shrink = true
+                return true
+            end
         end
     end)
     if shrink then
         local cmakefile = path.join(opt.curdir and opt.curdir or oldir, "CMakeLists.txt")
         io.insert(cmakefile, 1, table.concat(cmake_argv, "\n"))
     end
+end
+
+function configure(package, configs, opt)
+    opt = opt or {}
+    local oldir = _enter_buildir(package, opt)
+
+    -- pass configurations
+    local argv = {}
+    for name, value in pairs(_get_configs(package, configs, opt)) do
+        value = tostring(value):trim()
+        if type(name) == "number" then
+            if value ~= "" then
+                table.insert(argv, value)
+            end
+        else
+            table.insert(argv, "-D" .. name .. "=" .. value)
+        end
+    end
+    -- shrink cmake arguments, fix too long arguments
+    -- @see https://github.com/xmake-io/xmake-repo/pull/5247#discussion_r1780302212
+    _shrink_cmake_arguments(argv, oldir, opt)
     table.insert(argv, oldir)
 
     -- do configure
