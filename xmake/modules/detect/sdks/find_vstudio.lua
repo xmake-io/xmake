@@ -189,12 +189,16 @@ function find_build_tools(opt)
                 VSCMD_ARG_HOST_ARCH = "x64",
             }
 
+            local buidl_tools_bin = {}
             local host_dir = "Host" .. vcvars.VSCMD_ARG_HOST_ARCH
-            local buidl_tools_bin = {
-                path.join(vcvars.VCToolsInstallDir, "bin", host_dir, target_arch),
-                path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion),
-                path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion, "ucrt"),
-            }
+            if is_host("windows") then
+                table.insert(buidl_tools_bin, path.join(vcvars.VCToolsInstallDir, "bin", host_dir, target_arch))
+                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion))
+                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion, "ucrt"))
+            elseif is_host("linux") then
+                -- for msvc-wine
+                table.insert(buidl_tools_bin, path.join(sdkdir, "bin", target_arch))
+            end
 
             vcvars.VSCMD_ARG_TGT_ARCH = target_arch
             vcvars.LIB = path.joinenv(lib)

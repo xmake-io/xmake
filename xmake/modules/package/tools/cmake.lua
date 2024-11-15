@@ -473,7 +473,11 @@ function _get_configs_for_windows(package, configs, opt)
     if not opt._configs_str:find("CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY") then
         table.insert(configs, "-DCMAKE_COMPILE_PDB_OUTPUT_DIRECTORY=pdb")
     end
-    _get_configs_for_generic(package, configs, opt)
+    if package:is_cross() then
+        _get_configs_for_cross(package, configs, opt)
+    else
+        _get_configs_for_generic(package, configs, opt)
+    end
 end
 
 -- get configs for android
@@ -659,6 +663,8 @@ function _get_configs_for_cross(package, configs, opt)
         local system_name = package:targetos() or "Linux"
         if system_name == "linux" then
             system_name = "Linux"
+        elseif system_name == "windows" then
+            system_name = "Windows"
         end
         envs.CMAKE_SYSTEM_NAME = system_name
     end
