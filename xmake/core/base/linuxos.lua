@@ -97,6 +97,9 @@ function linuxos.name()
                     name = "deepin"
                 elseif os_release:find("linux mint", 1, true) or os_release:find("linuxmint", 1, true) then
                     name = "linuxmint"
+                -- kylin contains keyword 'UBUNTU_CODENAME', so we check kylin before ubuntu
+                elseif os_release:find("kylin", 1, true) then  
+                    name = "kylin"
                 elseif os_release:find("ubuntu", 1, true) then
                     name = "ubuntu"
                 elseif os_release:find("debian", 1, true) then
@@ -145,11 +148,19 @@ function linuxos.version()
                     -- ubuntu: VERSION="16.04.7 LTS (Xenial Xerus)"
                     -- fedora: VERSION="32 (Container Image)"
                     -- debian: VERSION="9 (stretch)"
+                    -- kylin : VERSION="V10(kylin)"
                     if line:find("version=") then
                         line = line:sub(9)
                         version = semver.match(line)
                         if not version then
                             version = line:match("\"(%d+)%s+.*\"")
+                            if version then
+                                version = semver.new(version .. ".0")
+                            end
+                        end
+                        -- is kylin?
+                        if not version and line:find("kylin", 1, true) then
+                            version = line:match("\"v(%d+)\(kylin\)\"")
                             if version then
                                 version = semver.new(version .. ".0")
                             end
