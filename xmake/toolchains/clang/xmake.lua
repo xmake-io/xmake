@@ -44,6 +44,13 @@ toolchain("clang" .. suffix)
     set_toolset("mrc", "llvm-rc")
 
     on_check(function (toolchain)
+        if toolchain:is_plat("windows") then
+            local result = import("check")(toolchain)
+            if result then
+                return result
+            end
+        end
+
         return import("lib.detect.find_tool")("clang" .. suffix)
     end)
 
@@ -63,6 +70,9 @@ toolchain("clang" .. suffix)
         end
         if toolchain:is_plat("windows") then
             toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
+        end
+        if toolchain:is_plat("windows", "mingw") then
+            import("load")(toolchain)
         end
     end)
 end
