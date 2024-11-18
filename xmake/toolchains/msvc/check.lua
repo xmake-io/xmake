@@ -141,7 +141,7 @@ function main(toolchain)
     local cxx = path.basename(config.get("cxx") or "cl"):lower()
     local mrc = path.basename(config.get("mrc") or "rc"):lower()
     if cc == "cl" or cxx == "cl" or mrc == "rc" then
-        local sdkdir = option.get("sdk") or toolchain:config("sdk") or config.get("sdk")
+        local sdkdir = toolchain:sdkdir()
         if sdkdir then
             return _check_vc_build_tools(toolchain, sdkdir)
         else
