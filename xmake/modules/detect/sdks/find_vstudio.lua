@@ -126,7 +126,7 @@ function find_build_tools(opt)
 
     local tmp_version
     local WindowsSDKVersion
-    local WindowsSDKVersionsDirs = os.dirs(path.join(sdkdir, "Windows Kits/10/bin/*"))
+    local WindowsSDKVersionsDirs = os.dirs(path.join(sdkdir, "Windows Kits/10/Lib/*"))
     for _, dir in ipairs(WindowsSDKVersionsDirs) do
         local ver = path.filename(dir)
         if ver == opt.vs_sdkver then

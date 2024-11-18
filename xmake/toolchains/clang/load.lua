@@ -63,15 +63,27 @@ function main(toolchain)
     if toolchain:is_plat("windows") then
         target = target .. "-windows-msvc"
 
-        -- add vs environments
-        local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
-        local curenvs = os.getenvs()
-        for _, name in ipairs(expect_vars) do
-            _add_vsenv(toolchain, name, curenvs)
-        end
-        for _, name in ipairs(find_vstudio.get_vcvars()) do
-            if not table.contains(expect_vars, name:upper()) then
+        if is_host("windows") then
+            -- add vs environments
+            local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
+            local curenvs = os.getenvs()
+            for _, name in ipairs(expect_vars) do
                 _add_vsenv(toolchain, name, curenvs)
+            end
+            for _, name in ipairs(find_vstudio.get_vcvars()) do
+                if not table.contains(expect_vars, name:upper()) then
+                    _add_vsenv(toolchain, name, curenvs)
+                end
+            end
+        elseif is_host("linux") then
+            local vcvars = toolchain:config("vcvars")
+            if vcvars then
+                for _, dir in ipairs(table.wrap(path.splitenv(vcvars["INCLUDE"]))) do
+                    toolchain:add("includedirs", dir)
+                end
+                for _, dir in ipairs(table.wrap(path.splitenv(vcvars["LIB"]))) do
+                    toolchain:add("linkdirs", dir)
+                end
             end
         end
     elseif toolchain:is_plat("mingw") then
@@ -100,8 +112,8 @@ function main(toolchain)
     end
 
     if target then
-        toolchain:add("cxflags", "-target", target)
-        toolchain:add("ldflags", "-target", target)
-        toolchain:add("shflags", "-target", target)
+        toolchain:add("cxflags", "--target=" .. target)
+        toolchain:add("ldflags", "--target=" .. target)
+        toolchain:add("shflags", "--target=" .. target)
     end
 end
