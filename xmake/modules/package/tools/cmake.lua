@@ -419,6 +419,7 @@ function _get_configs_for_generic(package, configs, opt)
     local shflags = _get_shflags(package, opt)
     if shflags then
         table.insert(configs, "-DCMAKE_SHARED_LINKER_FLAGS=" .. shflags)
+        table.insert(configs, "-DCMAKE_MODULE_LINKER_FLAGS=" .. shflags)
     end
     if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
         table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
@@ -523,6 +524,7 @@ function _get_configs_for_appleos(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     -- https://cmake.org/cmake/help/v3.17/manual/cmake-toolchains.7.html#id25
     if package:is_plat("watchos") then
         envs.CMAKE_SYSTEM_NAME = "watchOS"
@@ -567,6 +569,7 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     envs.CMAKE_SYSTEM_NAME         = "Windows"
     envs.CMAKE_SYSTEM_PROCESSOR    = _get_cmake_system_processor(package)
     -- avoid find and add system include/library path
@@ -653,6 +656,7 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if package:is_cross() then
@@ -711,6 +715,7 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if package:is_cross() then
@@ -884,6 +889,7 @@ function _get_envs_for_runtime_flags(package, configs, opt)
         envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "runtime", runtimes)
         envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "static", {"cxx"}, "runtime", runtimes)
         envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes)
+        envs[format("CMAKE_MODULE_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes)
     end
     return envs
 end
@@ -1194,16 +1200,19 @@ function _shrink_cmake_arguments(argv, oldir, opt)
         "CMAKE_ASM_FLAGS",
         "CMAKE_EXE_LINKER_FLAGS",
         "CMAKE_SHARED_LINKER_FLAGS",
+        "CMAKE_MODULE_LINKER_FLAGS",
         "CMAKE_C_FLAGS_RELEASE",
         "CMAKE_CXX_FLAGS_RELEASE",
         "CMAKE_ASM_FLAGS_RELEASE",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE",
         "CMAKE_SHARED_LINKER_FLAGS_RELEASE",
+        "CMAKE_MODULE_LINKER_FLAGS_RELEASE",
         "CMAKE_C_FLAGS_DEBUG",
         "CMAKE_CXX_FLAGS_DEBUG",
         "CMAKE_ASM_FLAGS_DEBUG",
         "CMAKE_EXE_LINKER_FLAGS_DEBUG",
-        "CMAKE_SHARED_LINKER_FLAGS_DEBUG")
+        "CMAKE_SHARED_LINKER_FLAGS_DEBUG",
+        "CMAKE_MODULE_LINKER_FLAGS_DEBUG")
     local shrink = false
     local add_compile_options = false
     local add_link_options = false
