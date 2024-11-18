@@ -22,6 +22,7 @@
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
+import("lib.detect.find_directory")
 import("core.cache.global_detectcache")
 
 -- init vc variables
@@ -107,48 +108,38 @@ function find_build_tools(opt)
 
     local variables = {}
     local VCToolsVersion
-    local VCToolsVersionDirs = os.dirs(path.join(sdkdir, "VC/Tools/MSVC/*"))
-    for _, dir in ipairs(VCToolsVersionDirs) do
-        local ver = path.filename(dir)
-        if ver == opt.vs_toolset then
-            VCToolsVersion = ver
-            break
-        end
-    end
-
-    if not VCToolsVersion and #VCToolsVersionDirs ~= 0 then
-        VCToolsVersion = path.filename(VCToolsVersionDirs[1])
+    local vs_toolset = opt.vs_toolset
+    if vs_toolset and os.isdir(path.join(sdkdir, "VC/Tools/MSVC", vs_toolset)) then
+        VCToolsVersion = vs_toolset
     else
-        return
+        local dir = find_directory("14*", path.join(sdkdir, "VC/Tools/MSVC"))
+        if dir and os.isdir(dir) then
+            VCToolsVersion = path.filename(dir)
+        else
+            return
+        end
     end
     variables.VCToolsVersion = VCToolsVersion
     variables.VCToolsInstallDir = path.join(sdkdir, "VC/Tools/MSVC", VCToolsVersion)
 
-    local tmp_version
     local WindowsSDKVersion
-    local WindowsSDKVersionsDirs = os.dirs(path.join(sdkdir, "Windows Kits/10/Lib/*"))
-    for _, dir in ipairs(WindowsSDKVersionsDirs) do
-        local ver = path.filename(dir)
-        if ver == opt.vs_sdkver then
-            WindowsSDKVersion = ver
-            break
-        end
-
-        if ver:startswith("10") then
-            tmp_version = ver
-        end
-    end
-
-    if not WindowsSDKVersion and #WindowsSDKVersionsDirs ~= 0 then
-        WindowsSDKVersion = tmp_version
+    local vs_sdkver = opt.vs_sdkver
+    if vs_sdkver and os.isdir(path.join(sdkdir, "Windows Kits/10/Lib", vs_sdkver)) then
+        WindowsSDKVersion = vs_sdkver
     else
-        return
+        local dir = find_directory("10*", path.join(sdkdir, "Windows Kits/10/Lib"))
+        if dir and os.isdir(dir) then
+            WindowsSDKVersion = path.filename(dir)
+        else
+            return
+        end
     end
     variables.WindowsSDKVersion = WindowsSDKVersion
     variables.WindowsSDKDir = path.join(sdkdir, "Windows Kits/10")
 
     local includedirs = {
         path.join(variables.VCToolsInstallDir, "include"),
+        path.join(variables.VCToolsInstallDir, "atlmfc/include"),
         path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "ucrt"),
         path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "shared"),
         path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "um"),
@@ -211,9 +202,6 @@ function find_build_tools(opt)
             vcvarsall[target_arch] = vcvars
         end
     end
-    -- for _, host_arch in ipairs(archs) do
-    --     local host_dir = "Host" .. arch
-    -- end
 
     return vcvarsall
 end
