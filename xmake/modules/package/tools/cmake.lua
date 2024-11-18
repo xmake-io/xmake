@@ -419,6 +419,7 @@ function _get_configs_for_generic(package, configs, opt)
     local shflags = _get_shflags(package, opt)
     if shflags then
         table.insert(configs, "-DCMAKE_SHARED_LINKER_FLAGS=" .. shflags)
+        table.insert(configs, "-DCMAKE_MODULE_LINKER_FLAGS=" .. shflags)
     end
     if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
         table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
@@ -523,6 +524,7 @@ function _get_configs_for_appleos(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     -- https://cmake.org/cmake/help/v3.17/manual/cmake-toolchains.7.html#id25
     if package:is_plat("watchos") then
         envs.CMAKE_SYSTEM_NAME = "watchOS"
@@ -567,6 +569,7 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     envs.CMAKE_SYSTEM_NAME         = "Windows"
     envs.CMAKE_SYSTEM_PROCESSOR    = _get_cmake_system_processor(package)
     -- avoid find and add system include/library path
@@ -653,6 +656,7 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if package:is_cross() then
@@ -711,6 +715,7 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if package:is_cross() then
@@ -884,6 +889,7 @@ function _get_envs_for_runtime_flags(package, configs, opt)
         envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "runtime", runtimes)
         envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "static", {"cxx"}, "runtime", runtimes)
         envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes)
+        envs[format("CMAKE_MODULE_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes)
     end
     return envs
 end
@@ -1184,6 +1190,79 @@ function _get_cmake_generator(package, opt)
     return cmake_generator
 end
 
+-- shrink cmake arguments, fix too long arguments
+-- @see https://github.com/xmake-io/xmake-repo/pull/5247#discussion_r1780302212
+function _shrink_cmake_arguments(argv, oldir, opt)
+    local cmake_argv = {}
+    local long_options = hashset.of(
+        "CMAKE_C_FLAGS",
+        "CMAKE_CXX_FLAGS",
+        "CMAKE_ASM_FLAGS",
+        "CMAKE_EXE_LINKER_FLAGS",
+        "CMAKE_SHARED_LINKER_FLAGS",
+        "CMAKE_MODULE_LINKER_FLAGS",
+        "CMAKE_C_FLAGS_RELEASE",
+        "CMAKE_CXX_FLAGS_RELEASE",
+        "CMAKE_ASM_FLAGS_RELEASE",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE",
+        "CMAKE_SHARED_LINKER_FLAGS_RELEASE",
+        "CMAKE_MODULE_LINKER_FLAGS_RELEASE",
+        "CMAKE_C_FLAGS_DEBUG",
+        "CMAKE_CXX_FLAGS_DEBUG",
+        "CMAKE_ASM_FLAGS_DEBUG",
+        "CMAKE_EXE_LINKER_FLAGS_DEBUG",
+        "CMAKE_SHARED_LINKER_FLAGS_DEBUG",
+        "CMAKE_MODULE_LINKER_FLAGS_DEBUG")
+    local shrink = false
+    local add_compile_options = false
+    local add_link_options = false
+    if _get_cmake_version():ge("3.13") then
+        add_compile_options = true
+        add_link_options = true
+    end
+    local buildtypes_map = {
+        RELEASE = "Release",
+        DEBUG = "Debug",
+        RELWITHDEBINFO = "RelWithDebInfo"
+    }
+    table.remove_if(argv, function (idx, value)
+        local k, v = value:match("%-D(.*)=(.*)")
+        if k and v and long_options:has(k) then
+            local kind, mode = k:match("CMAKE_(.+)_FLAGS_(.+)")
+            if not kind then
+                kind = k:match("CMAKE_(.+)_FLAGS")
+            end
+            -- improve cmake flags
+            -- @see https://github.com/xmake-io/xmake/issues/5826
+            local build_type = mode and buildtypes_map[mode] or nil
+            if #v > 0 and add_compile_options and (kind == "C" or kind == "CXX" or kind == "ASM") then
+                if build_type then
+                    table.insert(cmake_argv, ("if(CMAKE_BUILD_TYPE STREQUAL \"%s\")"):format(build_type))
+                end
+                for _, flag in ipairs(os.argv(v)) do
+                    flag = flag:replace(" ", "\\ ")
+                    table.insert(cmake_argv, ("add_compile_options($<$<COMPILE_LANGUAGE:%s>:%s>)"):format(kind, flag))
+                end
+                if build_type then
+                    table.insert(cmake_argv, "endif()")
+                end
+                shrink = true
+                return true
+            end
+            -- shrink long arguments
+            if #v > 128 then
+                table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, v))
+                shrink = true
+                return true
+            end
+        end
+    end)
+    if shrink then
+        local cmakefile = path.join(opt.curdir and opt.curdir or oldir, "CMakeLists.txt")
+        io.insert(cmakefile, 1, table.concat(cmake_argv, "\n"))
+    end
+end
+
 function configure(package, configs, opt)
     opt = opt or {}
     local oldir = _enter_buildir(package, opt)
@@ -1202,36 +1281,7 @@ function configure(package, configs, opt)
     end
     -- shrink cmake arguments, fix too long arguments
     -- @see https://github.com/xmake-io/xmake-repo/pull/5247#discussion_r1780302212
-    local cmake_argv = {}
-    local long_options = hashset.of(
-        "CMAKE_C_FLAGS",
-        "CMAKE_CXX_FLAGS",
-        "CMAKE_ASM_FLAGS",
-        "CMAKE_EXE_LINKER_FLAGS",
-        "CMAKE_SHARED_LINKER_FLAGS",
-        "CMAKE_C_FLAGS_RELEASE",
-        "CMAKE_CXX_FLAGS_RELEASE",
-        "CMAKE_ASM_FLAGS_RELEASE",
-        "CMAKE_EXE_LINKER_FLAGS_RELEASE",
-        "CMAKE_SHARED_LINKER_FLAGS_RELEASE",
-        "CMAKE_C_FLAGS_DEBUG",
-        "CMAKE_CXX_FLAGS_DEBUG",
-        "CMAKE_ASM_FLAGS_DEBUG",
-        "CMAKE_EXE_LINKER_FLAGS_DEBUG",
-        "CMAKE_SHARED_LINKER_FLAGS_DEBUG")
-    local shrink = false
-    table.remove_if(argv, function (idx, value)
-        local k, v = value:match("%-D(.*)=(.*)")
-        if k and v and long_options:has(k) and #v > 128 then
-            table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, tostring(v)))
-            shrink = true
-            return true
-        end
-    end)
-    if shrink then
-        local cmakefile = path.join(opt.curdir and opt.curdir or oldir, "CMakeLists.txt")
-        io.insert(cmakefile, 1, table.concat(cmake_argv, "\n"))
-    end
+    _shrink_cmake_arguments(argv, oldir, opt)
     table.insert(argv, oldir)
 
     -- do configure
