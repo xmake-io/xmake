@@ -42,7 +42,11 @@ function _add_vsenv(toolchain, name, curenvs)
                 break
             end
         end
-        toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
+        if name == "INCLUDE" or name == "LIB" then
+            toolchain:add("runenvs", name, table.concat(path.splitenv(new), ";"))
+        else
+            toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
+        end
     end
 end
 
@@ -63,28 +67,19 @@ function main(toolchain, suffix)
     if toolchain:is_plat("windows") then
         target = target .. "-windows-msvc"
 
-        if is_host("windows") then
-            -- add vs environments
-            local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
-            local curenvs = os.getenvs()
-            for _, name in ipairs(expect_vars) do
+        -- add vs environments
+        local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
+        local curenvs = os.getenvs()
+        for _, name in ipairs(expect_vars) do
+            _add_vsenv(toolchain, name, curenvs)
+        end
+        for _, name in ipairs(find_vstudio.get_vcvars()) do
+            if not table.contains(expect_vars, name:upper()) then
                 _add_vsenv(toolchain, name, curenvs)
             end
-            for _, name in ipairs(find_vstudio.get_vcvars()) do
-                if not table.contains(expect_vars, name:upper()) then
-                    _add_vsenv(toolchain, name, curenvs)
-                end
-            end
-        elseif is_host("linux") then
-            local vcvars = toolchain:config("vcvars")
-            if vcvars then
-                for _, dir in ipairs(table.wrap(path.splitenv(vcvars["INCLUDE"]))) do
-                    toolchain:add("includedirs", dir)
-                end
-                for _, dir in ipairs(table.wrap(path.splitenv(vcvars["LIB"]))) do
-                    toolchain:add("linkdirs", dir)
-                end
-            end
+        end
+
+        if is_host("linux") then
             toolchain:add("ldflags", "-fuse-ld=lld-link" .. suffix)
             toolchain:add("shflags", "-fuse-ld=lld-link" .. suffix)
         end
