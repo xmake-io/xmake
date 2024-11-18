@@ -22,7 +22,7 @@ import("detect.sdks.find_vstudio")
 import("lib.detect.find_tool")
 import("core.project.config")
 
-function _check_vc_build_tools(toolchain, sdkdir)
+function _check_vc_build_tools(toolchain, sdkdir, suffix)
     local opt = {}
     opt.sdkdir = sdkdir
     opt.vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
@@ -47,7 +47,7 @@ function _check_vc_build_tools(toolchain, sdkdir)
         if pathenv then
             paths = path.splitenv(pathenv)
         end
-        local clang = find_tool("clang", {version = true, force = true, paths = paths, envs = vcvars})
+        local clang = find_tool("clang" .. suffix, {version = true, force = true, paths = paths, envs = vcvars})
         if clang and clang.version then
             cprint("checking for LLVM Clang C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), clang.version)
         end
@@ -55,7 +55,7 @@ function _check_vc_build_tools(toolchain, sdkdir)
     end
 end
 
-function main(toolchain)
+function main(toolchain, suffix)
 
     -- only for windows or linux (msvc-wine)
     if not is_host("windows", "linux") then
@@ -64,6 +64,6 @@ function main(toolchain)
 
     local sdkdir = toolchain:sdkdir()
     if sdkdir then
-        return _check_vc_build_tools(toolchain, sdkdir)
+        return _check_vc_build_tools(toolchain, sdkdir, suffix)
     end
 end

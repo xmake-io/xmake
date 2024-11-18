@@ -45,7 +45,7 @@ toolchain("clang" .. suffix)
 
     on_check(function (toolchain)
         if toolchain:is_plat("windows") then
-            local result = import("check")(toolchain)
+            local result = import("check")(toolchain, suffix)
             if result then
                 return result
             end
@@ -72,7 +72,7 @@ toolchain("clang" .. suffix)
             toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
         end
         if toolchain:is_plat("windows", "mingw") then
-            import("load")(toolchain)
+            import("load")(toolchain, suffix)
         end
     end)
 end

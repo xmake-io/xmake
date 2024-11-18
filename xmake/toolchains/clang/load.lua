@@ -46,7 +46,7 @@ function _add_vsenv(toolchain, name, curenvs)
     end
 end
 
-function main(toolchain)
+function main(toolchain, suffix)
     local target
     if toolchain:is_arch("x86_64", "x64") then
         target = "x86_64"
@@ -85,6 +85,8 @@ function main(toolchain)
                     toolchain:add("linkdirs", dir)
                 end
             end
+            toolchain:add("ldflags", "-fuse-ld=lld-link" .. suffix)
+            toolchain:add("shflags", "-fuse-ld=lld-link" .. suffix)
         end
     elseif toolchain:is_plat("mingw") then
         target = target .. "-windows-gnu"
