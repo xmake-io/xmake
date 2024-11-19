@@ -113,7 +113,7 @@ function find_build_tools(opt)
         VCToolsVersion = vs_toolset
     else
         local dir = find_directory("14*", path.join(sdkdir, "VC/Tools/MSVC"))
-        if dir and os.isdir(dir) then
+        if dir then
             VCToolsVersion = path.filename(dir)
         else
             return
@@ -128,7 +128,7 @@ function find_build_tools(opt)
         WindowsSDKVersion = vs_sdkver
     else
         local dir = find_directory("10*", path.join(sdkdir, "Windows Kits/10/Lib"))
-        if dir and os.isdir(dir) then
+        if dir then
             WindowsSDKVersion = path.filename(dir)
         else
             return
