@@ -45,7 +45,8 @@ toolchain("clang" .. suffix)
 
     on_check(function (toolchain)
         if toolchain:is_plat("windows") then
-            local result = import("check")(toolchain, suffix)
+            local rootdir = path.join(path.directory(os.scriptdir()), "clang")
+            local result = import("check", {rootdir = rootdir})(toolchain, suffix)
             if result then
                 return result
             end
@@ -72,7 +73,8 @@ toolchain("clang" .. suffix)
             toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
         end
         if toolchain:is_plat("windows", "mingw") then
-            import("load")(toolchain, suffix)
+            local rootdir = path.join(path.directory(os.scriptdir()), "clang")
+            import("load", {rootdir = rootdir})(toolchain, suffix)
         end
     end)
 end
