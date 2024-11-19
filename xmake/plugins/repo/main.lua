@@ -115,6 +115,7 @@ function _update()
                     -- only update the local repository with the remote url
                     if not os.isdir(repo:url()) then
                         vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
+                        git.reset({verbose = option.get("verbose"), repodir = repodir, hard = true})
                         git.pull({verbose = option.get("verbose"), branch = repo:branch(), repodir = repodir, force = true})
                         io.save(path.join(repodir, "updated"), {})
                     end
