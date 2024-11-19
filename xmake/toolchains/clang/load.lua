@@ -85,31 +85,11 @@ function main(toolchain, suffix)
         end
     elseif toolchain:is_plat("mingw") then
         target = target .. "-windows-gnu"
-
-        local mingw
-        for _, package in ipairs(toolchain:packages()) do
-            local installdir = package:installdir()
-            if installdir and os.isdir(installdir) then
-                mingw = find_mingw(installdir, {verbose = true, cross = toolchain:cross()})
-                if mingw then
-                    break
-                end
-            end
-        end
-        if not mingw then
-            mingw = find_mingw(toolchain:config("mingw") or config.get("mingw"), {verbose = true, bindir = toolchain:bindir(), cross = toolchain:cross()})
-        end
-
-        if mingw and mingw.sdkdir then
-            local sysroot = "--sysroot=" .. mingw.sdkdir
-            toolchain:add("cxflags", sysroot)
-            toolchain:add("ldflags", sysroot)
-            toolchain:add("shflags", sysroot)
-        end
     end
 
     if target then
         toolchain:add("cxflags", "--target=" .. target)
+        toolchain:add("asflags", "--target=" .. target)
         toolchain:add("ldflags", "--target=" .. target)
         toolchain:add("shflags", "--target=" .. target)
     end
