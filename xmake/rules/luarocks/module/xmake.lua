@@ -71,6 +71,13 @@ rule("luarocks.module")
         end
     end)
     on_install(function (target)
+        if target:is_plat("macosx") then
+            target:set("kind", "shared")
+        end
         local moduledir = path.directory((target:name():gsub('%.', '/')))
-        import('target.action.install')(target, {libdir = path.join('lib', moduledir), bindir = path.join('lib', moduledir)})
+        import("target.action.install")(target, {
+            installdir = target:installdir(),
+            libdir = path.join("lib", moduledir),
+            bindir = path.join("lib", moduledir),
+            includedir = path.join("include", moduledir)})
     end)
