@@ -1245,8 +1245,10 @@ function _shrink_cmake_arguments(argv, oldir, opt)
                 if build_type then
                     table.insert(cmake_argv, ("if(CMAKE_BUILD_TYPE STREQUAL \"%s\")"):format(build_type))
                 end
-                local flags = v:replace(" ", "\\ ")
-                table.insert(cmake_argv, ("add_compile_options($<$<COMPILE_LANGUAGE:%s>:%s>)"):format(kind, flags))
+                for _, flag in ipairs(os.argv(v)) do
+                    flag = flag:replace(" ", "\\ ")
+                    table.insert(cmake_argv, ("add_compile_options($<$<COMPILE_LANGUAGE:%s>:%s>)"):format(kind, flag))
+                end
                 if build_type then
                     table.insert(cmake_argv, "endif()")
                 end
