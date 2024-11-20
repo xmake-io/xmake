@@ -100,11 +100,39 @@ function _check_vstudio(toolchain)
     return vs
 end
 
+function _check_vc_build_tools(toolchain, sdkdir)
+    local opt = {}
+    opt.sdkdir = sdkdir
+    opt.vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
+    opt.vs_sdkver = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
+
+    local vcvarsall = find_vstudio.find_build_tools(opt)
+    if not vcvarsall then
+        return
+    end
+
+    local vcvars = vcvarsall[toolchain:arch()]
+    if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
+        -- save vcvars
+        toolchain:config_set("vcvars", vcvars)
+        toolchain:config_set("vcarchs", table.orderkeys(vcvarsall))
+        toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
+        toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
+
+        -- check compiler
+        local cl = find_tool("cl.exe", {version = true, force = true, envs = vcvars})
+        if cl and cl.version then
+            cprint("checking for Microsoft C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), cl.version)
+        end
+        return vcvars
+    end
+end
+
 -- main entry
 function main(toolchain)
 
-    -- only for windows
-    if not is_host("windows") then
+    -- only for windows or linux (msvc-wine)
+    if not is_host("windows", "linux") then
         return
     end
 
@@ -113,7 +141,12 @@ function main(toolchain)
     local cxx = path.basename(config.get("cxx") or "cl"):lower()
     local mrc = path.basename(config.get("mrc") or "rc"):lower()
     if cc == "cl" or cxx == "cl" or mrc == "rc" then
-        return _check_vstudio(toolchain)
+        local sdkdir = toolchain:sdkdir()
+        if sdkdir then
+            return _check_vc_build_tools(toolchain, sdkdir)
+        else
+            return _check_vstudio(toolchain)
+        end
     end
 end
 

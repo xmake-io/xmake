@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
+import("lib.detect.find_directory")
 import("core.cache.global_detectcache")
 
 -- init vc variables
@@ -96,6 +97,114 @@ function get_vcvars()
         table.insert(realvcvars, v)
     end
     return realvcvars
+end
+
+function find_build_tools(opt)
+    opt = opt or {}
+
+    local sdkdir = opt.sdkdir
+    if not sdkdir or not os.isdir(sdkdir) then
+        return
+    end
+
+    local variables = {}
+    local VCToolsVersion
+    local vs_toolset = opt.vs_toolset
+    if vs_toolset and os.isdir(path.join(sdkdir, "VC/Tools/MSVC", vs_toolset)) then
+        VCToolsVersion = vs_toolset
+    else
+        local dir = find_directory("14*", path.join(sdkdir, "VC/Tools/MSVC"))
+        if dir then
+            VCToolsVersion = path.filename(dir)
+        else
+            return
+        end
+    end
+    variables.VCToolsVersion = VCToolsVersion
+    variables.VCToolsInstallDir = path.join(sdkdir, "VC/Tools/MSVC", VCToolsVersion)
+
+    local WindowsSDKVersion
+    local vs_sdkver = opt.vs_sdkver
+    if vs_sdkver and os.isdir(path.join(sdkdir, "Windows Kits/10/Lib", vs_sdkver)) then
+        WindowsSDKVersion = vs_sdkver
+    else
+        local dir = find_directory("10*", path.join(sdkdir, "Windows Kits/10/Lib"))
+        if dir then
+            WindowsSDKVersion = path.filename(dir)
+        else
+            return
+        end
+    end
+    variables.WindowsSDKVersion = WindowsSDKVersion
+    variables.WindowsSDKDir = path.join(sdkdir, "Windows Kits/10")
+
+    local includedirs = {
+        path.join(variables.VCToolsInstallDir, "include"),
+        path.join(variables.VCToolsInstallDir, "atlmfc/include"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "ucrt"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "shared"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "um"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "winrt"),
+        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "cppwinrt"),
+    }
+
+    local linkdirs = {
+        path.join(variables.VCToolsInstallDir, "lib"),
+        path.join(variables.WindowsSDKDir, "Lib", WindowsSDKVersion, "ucrt"),
+        path.join(variables.WindowsSDKDir, "Lib", WindowsSDKVersion, "um"),
+    }
+
+    local archs = {
+        "x86",
+        "x64",
+        "arm",
+        "arm64",
+    }
+
+    local vcvarsall = {}
+    for _, target_arch in ipairs(archs) do
+        local lib = {}
+        for _, lib_dir in ipairs(linkdirs) do
+            local dir = path.join(lib_dir, target_arch)
+            if os.isdir(dir) then
+                table.insert(lib, dir)
+            end
+        end
+
+        if #lib ~= 0 then
+            local vcvars = {
+                BUILD_TOOLS_ROOT = sdkdir,
+                INCLUDE = path.joinenv(includedirs),
+                WindowsSDKDir = variables.WindowsSDKDir,
+                WindowsSDKVersion = WindowsSDKVersion,
+                VCToolsInstallDir = variables.VCToolsInstallDir,
+                VSCMD_ARG_HOST_ARCH = "x64",
+            }
+
+            local buidl_tools_bin = {}
+            local host_dir = "Host" .. vcvars.VSCMD_ARG_HOST_ARCH
+            if is_host("windows") then
+                table.insert(buidl_tools_bin, path.join(vcvars.VCToolsInstallDir, "bin", host_dir, target_arch))
+                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion))
+                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion, "ucrt"))
+            elseif is_host("linux") then
+                -- for msvc-wine
+                table.insert(buidl_tools_bin, path.join(sdkdir, "bin", target_arch))
+            end
+
+            vcvars.VSCMD_ARG_TGT_ARCH = target_arch
+            vcvars.LIB = path.joinenv(lib)
+            vcvars.BUILD_TOOLS_BIN = path.joinenv(buidl_tools_bin)
+
+            local PATH = buidl_tools_bin
+            table.join2(PATH, path.splitenv(os.getenv("PATH")))
+            vcvars.PATH = path.joinenv(PATH)
+
+            vcvarsall[target_arch] = vcvars
+        end
+    end
+
+    return vcvarsall
 end
 
 -- load vcvarsall environment variables

@@ -60,27 +60,28 @@ function _get_windows_sdk_arguments(target)
     local args = {}
     local msvc = target:toolchain("msvc")
     if msvc then
+        local includedirs = {}
         local envs = msvc:runenvs()
         local WindowsSdkDir = envs.WindowsSdkDir
         local WindowsSDKVersion = envs.WindowsSDKVersion
-        local VCToolsInstallDir = envs.VCToolsInstallDir
         if WindowsSdkDir and WindowsSDKVersion then
-            local includedirs = os.dirs(path.join(WindowsSdkDir, "Include", envs.WindowsSDKVersion, "*"))
+            table.join2(includedirs, os.dirs(path.join(WindowsSdkDir, "Include", envs.WindowsSDKVersion, "*")))
             for _, tool in ipairs({"atlmfc", "diasdk"}) do
                 local tool_dir = path.join(WindowsSdkDir, tool, "include")
                 if os.isdir(tool_dir) then
                     table.insert(includedirs, tool_dir)
                 end
             end
+        end
 
-            if VCToolsInstallDir then
-                table.insert(includedirs, path.join(VCToolsInstallDir, "include"))
-            end
+        local VCToolsInstallDir = envs.VCToolsInstallDir
+        if VCToolsInstallDir then
+            table.insert(includedirs, path.join(VCToolsInstallDir, "include"))
+        end
 
-            for _, dir in ipairs(includedirs) do
-                table.insert(args, "-imsvc")
-                table.insert(args, dir)
-            end
+        for _, dir in ipairs(includedirs) do
+            table.insert(args, "-imsvc")
+            table.insert(args, dir)
         end
     end
     return args

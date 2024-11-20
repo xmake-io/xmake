@@ -44,6 +44,14 @@ toolchain("clang" .. suffix)
     set_toolset("mrc", "llvm-rc")
 
     on_check(function (toolchain)
+        if toolchain:is_plat("windows") then
+            local rootdir = path.join(path.directory(os.scriptdir()), "clang")
+            local result = import("check", {rootdir = rootdir})(toolchain, suffix)
+            if result then
+                return result
+            end
+        end
+
         return import("lib.detect.find_tool")("clang" .. suffix)
     end)
 
@@ -63,6 +71,10 @@ toolchain("clang" .. suffix)
         end
         if toolchain:is_plat("windows") then
             toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
+        end
+        if toolchain:is_plat("windows", "mingw") then
+            local rootdir = path.join(path.directory(os.scriptdir()), "clang")
+            import("load", {rootdir = rootdir})(toolchain, suffix)
         end
     end)
 end
