@@ -165,7 +165,7 @@ task("config")
     set_category("action")
     on_run("main")
     set_menu {
-                usage = "xmake config|f [options] [target]",
+                usage = "xmake config|f [options]",
                 description = "Configure the project.",
                 shortname = 'f',
                 options = {
