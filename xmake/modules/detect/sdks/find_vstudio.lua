@@ -136,22 +136,22 @@ function find_build_tools(opt)
         end
     end
     variables.WindowsSDKVersion = WindowsSDKVersion
-    variables.WindowsSDKDir = path.join(sdkdir, "Windows Kits/10")
+    variables.WindowsSdkDir = path.join(sdkdir, "Windows Kits/10")
 
     local includedirs = {
         path.join(variables.VCToolsInstallDir, "include"),
         path.join(variables.VCToolsInstallDir, "atlmfc/include"),
-        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "ucrt"),
-        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "shared"),
-        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "um"),
-        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "winrt"),
-        path.join(variables.WindowsSDKDir, "Include", WindowsSDKVersion, "cppwinrt"),
+        path.join(variables.WindowsSdkDir, "Include", WindowsSDKVersion, "ucrt"),
+        path.join(variables.WindowsSdkDir, "Include", WindowsSDKVersion, "shared"),
+        path.join(variables.WindowsSdkDir, "Include", WindowsSDKVersion, "um"),
+        path.join(variables.WindowsSdkDir, "Include", WindowsSDKVersion, "winrt"),
+        path.join(variables.WindowsSdkDir, "Include", WindowsSDKVersion, "cppwinrt"),
     }
 
     local linkdirs = {
         path.join(variables.VCToolsInstallDir, "lib"),
-        path.join(variables.WindowsSDKDir, "Lib", WindowsSDKVersion, "ucrt"),
-        path.join(variables.WindowsSDKDir, "Lib", WindowsSDKVersion, "um"),
+        path.join(variables.WindowsSdkDir, "Lib", WindowsSDKVersion, "ucrt"),
+        path.join(variables.WindowsSdkDir, "Lib", WindowsSDKVersion, "um"),
     }
 
     local archs = {
@@ -175,7 +175,7 @@ function find_build_tools(opt)
             local vcvars = {
                 BUILD_TOOLS_ROOT = sdkdir,
                 INCLUDE = path.joinenv(includedirs),
-                WindowsSDKDir = variables.WindowsSDKDir,
+                WindowsSdkDir = variables.WindowsSdkDir,
                 WindowsSDKVersion = WindowsSDKVersion,
                 VCToolsInstallDir = variables.VCToolsInstallDir,
                 VSCMD_ARG_HOST_ARCH = "x64",
@@ -185,8 +185,8 @@ function find_build_tools(opt)
             local host_dir = "Host" .. vcvars.VSCMD_ARG_HOST_ARCH
             if is_host("windows") then
                 table.insert(buidl_tools_bin, path.join(vcvars.VCToolsInstallDir, "bin", host_dir, target_arch))
-                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion))
-                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSDKDir, "bin", WindowsSDKVersion, "ucrt"))
+                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSdkDir, "bin", WindowsSDKVersion))
+                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSdkDir, "bin", WindowsSDKVersion, "ucrt"))
             elseif is_host("linux") then
                 -- for msvc-wine
                 table.insert(buidl_tools_bin, path.join(sdkdir, "bin", target_arch))
