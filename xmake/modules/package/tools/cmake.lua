@@ -1245,8 +1245,9 @@ function _shrink_cmake_arguments(argv, oldir, opt)
                 if build_type then
                     table.insert(cmake_argv, ("if(CMAKE_BUILD_TYPE STREQUAL \"%s\")"):format(build_type))
                 end
-                local flags = v:replace(" ", "\\ ")
-                table.insert(cmake_argv, ("add_compile_options($<$<COMPILE_LANGUAGE:%s>:%s>)"):format(kind, flags))
+                local flags = v:replace("\"", "\\\"")
+                table.insert(cmake_argv, ("set(COMP_%s_FLAGS \"%s\")"):format(kind, flags))
+                table.insert(cmake_argv, ("add_compile_options($<$<COMPILE_LANGUAGE:%s>:${COMP_%s_FLAGS}>)"):format(kind, kind))
                 if build_type then
                     table.insert(cmake_argv, "endif()")
                 end
@@ -1255,14 +1256,14 @@ function _shrink_cmake_arguments(argv, oldir, opt)
             end
             -- shrink long arguments
             if #v > 128 then
-                table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, v))
+                local flags = v:replace("\"", "\\\"")
+                table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, flags))
                 shrink = true
                 return true
             end
         end
     end)
     if shrink then
-        print(cmake_argv)
         local cmakefile = path.join(opt.curdir and opt.curdir or oldir, "CMakeLists.txt")
         io.insert(cmakefile, 1, table.concat(cmake_argv, "\n"))
     end
