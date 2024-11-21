@@ -1240,6 +1240,7 @@ function _shrink_cmake_arguments(argv, oldir, opt)
             end
             -- improve cmake flags
             -- @see https://github.com/xmake-io/xmake/issues/5826
+            --[[
             local build_type = mode and buildtypes_map[mode] or nil
             if #v > 0 and add_compile_options and (kind == "C" or kind == "CXX" or kind == "ASM") then
                 if build_type then
@@ -1253,7 +1254,7 @@ function _shrink_cmake_arguments(argv, oldir, opt)
                 end
                 shrink = true
                 return true
-            end
+            end]]
             -- shrink long arguments
             if #v > 128 then
                 local flags = v:replace("\"", "\\\"")
