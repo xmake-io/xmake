@@ -1240,31 +1240,31 @@ function _shrink_cmake_arguments(argv, oldir, opt)
             end
             -- improve cmake flags
             -- @see https://github.com/xmake-io/xmake/issues/5826
+            --[[
             local build_type = mode and buildtypes_map[mode] or nil
             if #v > 0 and add_compile_options and (kind == "C" or kind == "CXX" or kind == "ASM") then
                 if build_type then
                     table.insert(cmake_argv, ("if(CMAKE_BUILD_TYPE STREQUAL \"%s\")"):format(build_type))
                 end
-                for _, flag in ipairs(os.argv(v)) do
-                    flag = flag:replace(" ", "\\ ")
-                    table.insert(cmake_argv, ("add_compile_options($<$<COMPILE_LANGUAGE:%s>:%s>)"):format(kind, flag))
-                end
+                local flags = v:replace("\"", "\\\"")
+                table.insert(cmake_argv, ("set(COMP_%s_FLAGS \"%s\")"):format(kind, flags))
+                table.insert(cmake_argv, ("add_compile_options($<$<COMPILE_LANGUAGE:%s>:${COMP_%s_FLAGS}>)"):format(kind, kind))
                 if build_type then
                     table.insert(cmake_argv, "endif()")
                 end
                 shrink = true
                 return true
-            end
+            end]]
             -- shrink long arguments
             if #v > 128 then
-                table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, v))
+                local flags = v:replace("\"", "\\\"")
+                table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, flags))
                 shrink = true
                 return true
             end
         end
     end)
     if shrink then
-        print(cmake_argv)
         local cmakefile = path.join(opt.curdir and opt.curdir or oldir, "CMakeLists.txt")
         io.insert(cmakefile, 1, table.concat(cmake_argv, "\n"))
     end
