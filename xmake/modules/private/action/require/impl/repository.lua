@@ -84,6 +84,7 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
                 if network ~= "private" then
                     -- pull the latest commit
                     local remoteurl = proxy.mirror(locked_repo.url) or locked_repo.url
+                    git.reset({verbose = option.get("verbose"), repodir = repodir_local, hard = true})
                     git.pull({verbose = option.get("verbose"), remote = remoteurl, branch = locked_repo.branch, repodir = repodir_local, force = true})
                     -- re-checkout to the given commit
                     ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
