@@ -24,6 +24,7 @@ import("core.project.target")
 import("lib.detect.find_tool")
 import("private.core.base.is_cross")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
+import("get_package_name")
 
 -- find package from list of file inside pacman package
 function _find_package_from_list(list, name, pacman, opt)
@@ -158,7 +159,6 @@ end
 --
 function main(name, opt)
     opt = opt or {}
-    local configs = opt.configs or {}
     if is_cross(opt.plat, opt.arch) then
         return
     end
@@ -169,29 +169,8 @@ function main(name, opt)
         return
     end
 
-    -- for msys2
-    if is_subhost("msys") then
-        local msystem = configs.msystem
-        if not msystem and opt.plat == "mingw" then
-            msystem = "mingw"
-        end
-        -- mingw? mingw-w64-[i686|x86_64]-xxx
-        if msystem == "mingw" then
-            -- try to get the package prefix from the environment first
-            -- https://www.msys2.org/docs/package-naming/
-            local prefix = "mingw-w64-"
-            local arch = (opt.arch == "x86_64" and "x86_64-" or "i686-")
-            local msystem_env = os.getenv("MSYSTEM")
-            if msystem_env and not msystem_env:startswith("MINGW") then
-                local i, j = msystem_env:find("%D+")
-                name = prefix .. msystem_env:sub(i, j):lower() .. "-" .. arch .. name
-            else
-                name = prefix .. arch .. name
-            end
-        else
-            -- TODO other msystem, e.g. clang, msys, ucrt, ...
-        end
-    end
+    -- get package name
+    name = get_package_name(name, opt)
 
     -- get package files list
     local list = name and try { function() return os.iorunv(pacman.program, {"-Q", "-l", name}) end }
