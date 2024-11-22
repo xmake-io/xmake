@@ -38,10 +38,8 @@ function main(name, opt)
             elseif arch == "arm64" then
                 arch = "aarch64"
             end
-            local msystem_env = os.getenv("MSYSTEM")
-            if msystem_env and not msystem_env:startswith("MINGW") then
-                local i, j = msystem_env:find("%D+")
-                name = prefix .. msystem_env:sub(i, j):lower() .. "-" .. arch .. "-" .. name
+            if msystem ~= "mingw" then
+                name = prefix .. msystem .. "-" .. arch .. "-" .. name
             else
                 name = prefix .. arch .. "-" .. name
             end
