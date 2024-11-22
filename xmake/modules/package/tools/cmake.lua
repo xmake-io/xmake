@@ -642,6 +642,9 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
     envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
     envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
+    if package:is_plat("windows") and is_host("linux") then
+        envs.CMAKE_AR = path.join(path.directory(envs.CMAKE_CXX_COMPILER), "lib.exe")
+    end
     _fix_cxx_compiler_cmake(package, envs)
     -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
     -- so we need to set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
@@ -1178,7 +1181,8 @@ function _get_cmake_generator(package, opt)
         if not cmake_generator then
             if package:has_tool("cc", "clang_cl") or package:has_tool("cxx", "clang_cl") then
                 cmake_generator = "Ninja"
-            elseif is_subhost("windows") and package:is_plat("mingw", "wasm") then
+            elseif (is_subhost("windows") and package:is_plat("mingw", "wasm"))
+                or (package:is_plat("windows") and is_host("linux")) then
                 local ninja = _get_ninja(package)
                 if ninja then
                     cmake_generator = "Ninja"
