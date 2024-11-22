@@ -42,12 +42,13 @@ function main(name, opt)
         raise("pacman not found!")
     end
 
-    -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
+    -- for msys2
     if is_subhost("msys") then
         local msystem = configs.msystem
         if not msystem and opt.plat == "mingw" then
             msystem = "mingw"
         end
+        -- mingw? mingw-w64-[i686|x86_64]-xxx
         if msystem == "mingw" then
             -- try to get the package prefix from the environment first
             -- https://www.msys2.org/docs/package-naming/
