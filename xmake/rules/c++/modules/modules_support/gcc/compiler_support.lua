@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.json")
 import("core.base.semver")
 import("core.project.config")
 import("lib.detect.find_tool")
@@ -58,7 +59,9 @@ function load(target)
     -- fix cxxabi issue
     -- @see https://github.com/xmake-io/xmake/issues/2716#issuecomment-1225057760
     -- https://github.com/xmake-io/xmake/issues/3855
-    if target:policy("build.c++.gcc.modules.cxx11abi") then
+
+    -- libstdc++ std modules cannot compile with -D_GLIBCXX_USE_CXX11_ABI=0
+    if target:policy("build.c++.modules.std") or target:policy("build.c++.gcc.modules.cxx11abi") then
         target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=1")
     else
         target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=0")
@@ -132,8 +135,50 @@ function get_target_module_mapperpath(target)
     return path
 end
 
--- not supported atm
+function _get_std_module_manifest_path(target)
+    local compinst = target:compiler("cxx")
+
+    local modules_json_path, _ = try {
+        function()
+            return os.iorunv(compinst:program(), {"-print-file-name=libstdc++.modules.json"}, {envs = compinst:runenvs()})
+        end
+    }
+    modules_json_path = modules_json_path:trim()
+
+    if os.isfile(modules_json_path) then
+        return modules_json_path
+    end
+
+    -- fallback on custom detection
+    -- manifest can be found alongside libstdc++.so
+
+    -- @TODO
+
+end
+
 function get_stdmodules(target)
+    if not target:policy("build.c++.modules.std") then
+        return nil
+    end
+
+    local modules_json_path = _get_std_module_manifest_path(target)
+    if not modules_json_path then
+        return nil
+    end
+
+    local modules_json = json.decode(io.readfile(modules_json_path))
+    if modules_json and modules_json.modules and #modules_json.modules > 0 then
+        local std_module_files = {}
+        local modules_json_dir = path.directory(modules_json_path)
+        for _, module_file in ipairs(modules_json.modules) do
+            local module_file_path = module_file["source-path"]
+            if not path.is_absolute(module_file_path) then
+                module_file_path = path.join(modules_json_dir, module_file_path)
+            end
+            table.join2(std_module_files, {module_file_path})
+        end
+        return std_module_files
+    end
 end
 
 function get_bmi_extension()
@@ -144,7 +189,10 @@ function get_modulesflag(target)
     local modulesflag = _g.modulesflag
     if modulesflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "gcc_modules_ts"}) then
+        -- gcc 15 remove the '-ts' tail for c++ module option.
+        if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "gcc_modules"}) then
+            modulesflag = "-fmodules"
+        elseif compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "gcc_modules_ts"}) then
             modulesflag = "-fmodules-ts"
         end
         assert(modulesflag, "compiler(gcc): does not support c++ module!")
