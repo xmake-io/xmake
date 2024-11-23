@@ -143,10 +143,12 @@ function _get_std_module_manifest_path(target)
             return os.iorunv(compinst:program(), {"-print-file-name=libstdc++.modules.json"}, {envs = compinst:runenvs()})
         end
     }
-    modules_json_path = modules_json_path:trim()
 
-    if os.isfile(modules_json_path) then
-        return modules_json_path
+    if modules_json_path then
+        modules_json_path = modules_json_path:trim()
+        if os.isfile(modules_json_path) then
+            return modules_json_path
+        end
     end
 
     -- fallback on custom detection
@@ -166,7 +168,7 @@ function get_stdmodules(target)
         return nil
     end
 
-    local modules_json = json.decode(io.readfile(modules_json_path))
+    local modules_json = json.loadfile(modules_json_path)
     if modules_json and modules_json.modules and #modules_json.modules > 0 then
         local std_module_files = {}
         local modules_json_dir = path.directory(modules_json_path)
@@ -175,7 +177,7 @@ function get_stdmodules(target)
             if not path.is_absolute(module_file_path) then
                 module_file_path = path.join(modules_json_dir, module_file_path)
             end
-            table.join2(std_module_files, {module_file_path})
+            table.insert(std_module_files, module_file_path)
         end
         return std_module_files
     end
@@ -189,9 +191,14 @@ function get_modulesflag(target)
     local modulesflag = _g.modulesflag
     if modulesflag == nil then
         local compinst = target:compiler("cxx")
-        -- gcc 15 remove the '-ts' tail for c++ module option.
-        if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "gcc_modules"}) then
-            modulesflag = "-fmodules"
+        local gcc_version = get_gcc_version(target)
+        -- GCC 12 and earlier version has a option '-fmodules' for Modula-2
+        if semver.compare(gcc_version, "12") > 0 then
+            if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "gcc_modules"}) then
+                modulesflag = "-fmodules"
+            elseif compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "gcc_modules_ts"}) then
+                modulesflag = "-fmodules-ts"
+            end
         elseif compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "gcc_modules_ts"}) then
             modulesflag = "-fmodules-ts"
         end
@@ -303,3 +310,19 @@ function get_cppversionflag(target)
     return cppversionflag or nil
 end
 
+function get_gcc_version(target)
+    local gcc_version = _g.gcc_version
+    if not gcc_version then
+        local program, toolname = target:tool("cxx")
+        if program and toolname:startswith("gcc") then
+            local gcc = find_tool(toolname, {program = program, version = true,
+                envs = os.getenvs(), cachekey = "modules_support_gcc_" .. toolname})
+            if gcc then
+                gcc_version = gcc.version
+            end
+        end
+        gcc_version = gcc_version or false
+        _g.gcc_version = gcc_version
+    end
+    return gcc_version or nil
+end
