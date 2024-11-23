@@ -174,6 +174,12 @@ function linuxos.version()
                     if line:find("version_id=") and os_release:find("kylin", 1, true) then
                         line = line:sub(12)
                         version = semver.match(line)
+                        if not version then
+                            version = line:match("\"(.*)\"")
+                            if version then
+                                version = semver.new(version)
+                            end
+                        end
                         if version then
                             break
                         end
