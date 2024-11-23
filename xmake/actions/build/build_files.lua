@@ -80,8 +80,6 @@ function _add_batchjobs(batchjobs, rootjob, target, filepatterns)
     end
     if sourcecount > 0 then
         return object.add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, newbatches)
-    else
-        return rootjob, rootjob
     end
 end
 
@@ -106,8 +104,10 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target,
         local targetjob, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
         if targetjob and targetjob_root then
             jobrefs[target:name()] = targetjob_root
-            for _, depname in ipairs(target:get("deps")) do
-                _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, project.target(depname), filepatterns)
+            if not option.get("shallow") then
+                for _, depname in ipairs(target:get("deps")) do
+                    _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, project.target(depname), filepatterns)
+                end
             end
         end
     end
