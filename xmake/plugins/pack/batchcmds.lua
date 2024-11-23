@@ -183,14 +183,14 @@ function _install_target_files(target, batchcmds_, opt)
     local srcfiles, dstfiles = target:installfiles(_get_target_installdir(package, target))
     if srcfiles and dstfiles then
         for idx, srcfile in ipairs(srcfiles) do
-            batchcmds_:cp(srcfile, dstfiles[idx])
+            batchcmds_:cp(srcfile, dstfiles[idx], {symlink=true})
         end
     end
     for _, dep in ipairs(target:orderdeps()) do
         local srcfiles, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
         if srcfiles and dstfiles then
             for idx, srcfile in ipairs(srcfiles) do
-                batchcmds_:cp(srcfile, dstfiles[idx])
+                batchcmds_:cp(srcfile, dstfiles[idx], {symlink=true})
             end
         end
     end
@@ -564,7 +564,7 @@ end
 function _on_installcmd(package, batchcmds_)
     local srcfiles, dstfiles = package:installfiles()
     for idx, srcfile in ipairs(srcfiles) do
-        batchcmds_:cp(srcfile, dstfiles[idx])
+        batchcmds_:cp(srcfile, dstfiles[idx], {symlink=true})
     end
     for _, target in ipairs(package:targets()) do
         _get_target_installcmds(target, batchcmds_, {package = package})
