@@ -156,49 +156,49 @@ end
 -- run command: os.cp
 function _runcmd_cp(cmd, opt)
     if not opt.dryrun then
-        os.cp(cmd.srcpath, cmd.dstpath, opt.opt)
+        os.cp(cmd.srcpath, cmd.dstpath, cmd.opt)
     end
 end
 
 -- run command: os.mv
 function _runcmd_mv(cmd, opt)
     if not opt.dryrun then
-        os.mv(cmd.srcpath, cmd.dstpath, opt.opt)
+        os.mv(cmd.srcpath, cmd.dstpath, cmd.opt)
     end
 end
 
 -- run command: os.ln
 function _runcmd_ln(cmd, opt)
     if not opt.dryrun then
-        os.ln(cmd.srcpath, cmd.dstpath, opt.opt)
+        os.ln(cmd.srcpath, cmd.dstpath, cmd.opt)
     end
 end
 
 -- run command: clean rpath
 function _runcmd_clean_rpath(cmd, opt)
     if not opt.dryrun then
-        rpath_utils.clean(cmd.filepath, opt.opt)
+        rpath_utils.clean(cmd.filepath, cmd.opt)
     end
 end
 
 -- run command: insert rpath
 function _runcmd_insert_rpath(cmd, opt)
     if not opt.dryrun then
-        rpath_utils.insert(cmd.filepath, cmd.rpath, opt.opt)
+        rpath_utils.insert(cmd.filepath, cmd.rpath, cmd.opt)
     end
 end
 
 -- run command: remove rpath
 function _runcmd_remove_rpath(cmd, opt)
     if not opt.dryrun then
-        rpath_utils.remove(cmd.filepath, cmd.rpath, opt.opt)
+        rpath_utils.remove(cmd.filepath, cmd.rpath, cmd.opt)
     end
 end
 
 -- run command: change rpath
 function _runcmd_change_rpath(cmd, opt)
     if not opt.dryrun then
-        rpath_utils.change(cmd.filepath, cmd.rpath_old, cmd.rpath_new, opt.opt)
+        rpath_utils.change(cmd.filepath, cmd.rpath_old, cmd.rpath_new, cmd.opt)
     end
 end
 
