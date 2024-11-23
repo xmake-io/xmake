@@ -143,12 +143,11 @@ function linuxos.version()
         if version == nil and os.isfile("/etc/os-release") then
             local os_release = io.readfile("/etc/os-release")
             if os_release then
-                os_release = os_release:trim():lower():split("\n")
-                for _, line in ipairs(os_release) do
+                os_release_lines = os_release:trim():lower():split("\n")
+                for _, line in ipairs(os_release_lines) do
                     -- ubuntu: VERSION="16.04.7 LTS (Xenial Xerus)"
                     -- fedora: VERSION="32 (Container Image)"
                     -- debian: VERSION="9 (stretch)"
-                    -- kylin : VERSION="V10(kylin)"
                     if line:find("version=") then
                         line = line:sub(9)
                         version = semver.match(line)
@@ -158,13 +157,23 @@ function linuxos.version()
                                 version = semver.new(version .. ".0")
                             end
                         end
-                        -- is kylin?
-                        if not version and line:find("kylin", 1, true) then
-                            version = line:match("\"v(%d+)%(kylin%)\"")
-                            if version then
-                                version = semver.new(version .. ".0")
-                            end
+                        if version then
+                            break
                         end
+                    end
+
+                    -- get kylin version from VERSION_ID
+                    --
+                    -- kylin case 1:
+                    -- VERSION="v10(kylin)"
+                    -- VERSION_ID="V10"
+                    -- 
+                    -- kylin case 2: 
+                    -- VERSION="4.0.2 (juniper)"
+                    -- VERSION_ID="4.0.2"
+                    if line:find("version_id=") and os_release:find("kylin", 1, true) then
+                        line = line:sub(12)
+                        version = semver.match(line)
                         if version then
                             break
                         end
@@ -176,7 +185,7 @@ function linuxos.version()
         -- get it from lsb release
         if version == nil then
             local lsb_release = linuxos._lsb_release()
-            if lsb_release and lsb_release:find("ubuntu", 1, true) then
+            if lsb_release and (lsb_release:find("ubuntu", 1, true)  or lsb_release:find("kylin", 1, true)) then
                 for _, line in ipairs(lsb_release:split("\n")) do
                     -- release:	16.04
                     if line:find("release:") then
