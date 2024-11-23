@@ -471,9 +471,15 @@ function _get_configs_for_windows(package, configs, opt)
     elseif package:has_runtime("MDd") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL")
     end
-    if not opt._configs_str:find("CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY") then
-        table.insert(configs, "-DCMAKE_COMPILE_PDB_OUTPUT_DIRECTORY=pdb")
+
+    local pdb_dir = path.unix(path.join(os.curdir(), "pdb"))
+    if not opt._configs_str:find("CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY", 1, true) then
+        table.insert(configs, "-DCMAKE_COMPILE_PDB_OUTPUT_DIRECTORY=" .. pdb_dir)
     end
+    if not opt._configs_str:find("CMAKE_PDB_OUTPUT_DIRECTORY", 1, true) then
+        table.insert(configs, "-DCMAKE_PDB_OUTPUT_DIRECTORY=" .. pdb_dir)
+    end
+
     if package:is_cross() then
         _get_configs_for_cross(package, configs, opt)
     else
