@@ -59,12 +59,17 @@ rule("utils.glsl2spv")
         -- glsl to spv
         local targetenv = target:extraconf("rules", "utils.glsl2spv", "targetenv") or "vulkan1.0"
         local client = target:extraconf("rules", "utils.glsl2spv", "client") or "vulkan100"
+        local debugsource = target:extraconf("rules", "utils.glsl2spv", "debugsource") or false
         local outputdir = target:extraconf("rules", "utils.glsl2spv", "outputdir") or path.join(target:autogendir(), "rules", "utils", "glsl2spv")
         local spvfilepath = path.join(outputdir, path.filename(sourcefile_glsl) .. ".spv")
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.glsl2spv %s", sourcefile_glsl)
         batchcmds:mkdir(outputdir)
         if glslangValidator then
-            batchcmds:vrunv(glslangValidator.program, {"--target-env", targetenv, "--client", client, "-o", path(spvfilepath), path(sourcefile_glsl)})
+            if debugsource then
+                batchcmds:vrunv(glslangValidator.program, {"--target-env", targetenv, "--client", client, "-gVS", "-o", path(spvfilepath), path(sourcefile_glsl)})
+            else
+                batchcmds:vrunv(glslangValidator.program, {"--target-env", targetenv, "--client", client, "-o", path(spvfilepath), path(sourcefile_glsl)})
+            end
         else
             batchcmds:vrunv(glslc.program, {"--target-env", targetenv, "-o", path(spvfilepath), path(sourcefile_glsl)})
         end
