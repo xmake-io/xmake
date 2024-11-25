@@ -27,8 +27,8 @@ int main(int ac, char **av) {
 		exit(71); /* better, EX_OSERR */
 	}
 
-	/* 
-	 * Initialize the Rectangle members 
+	/*
+	 * Initialize the Rectangle members
 	 */
 
 	/* height */

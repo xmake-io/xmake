@@ -137,7 +137,6 @@ function _check_vc_build_tools(toolchain, sdkdir)
     end
 end
 
--- main entry
 function main(toolchain)
 
     -- only for windows or linux (msvc-wine)
@@ -154,6 +153,18 @@ function main(toolchain)
         if sdkdir then
             return _check_vc_build_tools(toolchain, sdkdir)
         else
+            -- find it from packages
+            for _, package in ipairs(toolchain:packages()) do
+                local installdir = package:installdir()
+                if installdir and os.isdir(installdir) then
+                    local result = _check_vc_build_tools(toolchain, installdir)
+                    if result then
+                        return result
+                    end
+                end
+            end
+
+            -- find it from system
             return _check_vstudio(toolchain)
         end
     end
