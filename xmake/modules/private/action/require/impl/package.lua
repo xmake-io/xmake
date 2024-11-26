@@ -32,6 +32,7 @@ import("core.platform.platform")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.repository")
+import("private.action.require.impl.search_packages")
 import("private.action.require.impl.utils.requirekey", {alias = "_get_requirekey"})
 
 -- get memcache
@@ -967,8 +968,17 @@ function _load_package(packagename, requireinfo, opt)
         package = _load_package_from_system(packagename)
     end
 
-    -- check
-    assert(package, "package(%s) not found!", packagename)
+    -- check unknown package
+    if not package then
+        cprint("${bright color.warning}note: ${clear}the following packages were not found in any repository (check if they are spelled correctly):")
+        local tips
+        local possible_package = get_possible_package(packagename)
+        if possible_package then
+            tips = string.format(", maybe ${bright}%s %s${clear} in %s", possible_package.name, possible_package.version, possible_package.reponame)
+        end
+        cprint("  -> %s%s", packagename, tips or "")
+        raise("package(%s) not found!", packagename)
+    end
 
     -- init requireinfo
     _init_requireinfo(requireinfo, package, {is_toplevel = not opt.parentinfo})
@@ -1282,6 +1292,24 @@ function _compatible_with_previous_librarydeps(package, opt)
         package:data_set("force_reinstall", true)
     end
     return is_compatible
+end
+
+-- get possible package
+function get_possible_package(packagename)
+    local packages_possible = search_packages("*", {description = false})
+    if packages_possible then
+        packages_possible = packages_possible["*"]
+    end
+    local result
+    local distance_min
+    for name, info in pairs(packages_possible) do
+        local distance = packagename:levenshtein(info.name)
+        if distance_min == nil or distance < distance_min and distance < 5 then
+            distance_min = distance
+            result = info
+        end
+    end
+    return result
 end
 
 -- the cache directory

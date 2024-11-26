@@ -29,7 +29,6 @@ import("utils.progress")
 import("net.fasturl")
 import("private.action.require.impl.package")
 import("private.action.require.impl.lock_packages")
-import("private.action.require.impl.search_packages")
 import("private.action.require.impl.register_packages")
 import("private.action.require.impl.actions.check", {alias = "action_check"})
 import("private.action.require.impl.actions.install", {alias = "action_install"})
@@ -682,24 +681,6 @@ function _get_package_installdeps(packages)
     return installdeps
 end
 
--- get possible package
-function _get_possible_package(packagename)
-    local packages_possible = search_packages("*", {description = false})
-    if packages_possible then
-        packages_possible = packages_possible["*"]
-    end
-    local result
-    local distance_min
-    for name, info in pairs(packages_possible) do
-        local distance = packagename:levenshtein(info.name)
-        if distance_min == nil or distance < distance_min and distance < 5 then
-            distance_min = distance
-            result = info
-        end
-    end
-    return result
-end
-
 -- install packages
 function _install_packages(requires, opt)
     opt = opt or {}
@@ -765,7 +746,7 @@ function _install_packages(requires, opt)
         cprint("${bright color.warning}note: ${clear}the following packages were not found in any repository (check if they are spelled correctly):")
         for _, instance in ipairs(packages_unknown) do
             local tips
-            local possible_package = _get_possible_package(instance:name())
+            local possible_package = package.get_possible_package(instance:name())
             if possible_package then
                 tips = string.format(", maybe ${bright}%s %s${clear} in %s", possible_package.name, possible_package.version, possible_package.reponame)
             end
