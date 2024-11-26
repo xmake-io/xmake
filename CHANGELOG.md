@@ -7,6 +7,7 @@
 * [#5813](https://github.com/xmake-io/xmake/pull/5813): Add `before_config` and `after_config` for rule
 * [#5848](https://github.com/xmake-io/xmake/issues/5848): Support custom MSVC build tools, e.g. PortableBuildTools and msvc-wine
 * [#5880](https://github.com/xmake-io/xmake/pull/5880): Use msvc package to build project
+* [#5884](https://github.com/xmake-io/xmake/issues/5884): Add installtips for package
 
 ### Changes
 
@@ -1912,6 +1913,7 @@
 * [#5813](https://github.com/xmake-io/xmake/pull/5813): 为 rule 添加 `before_config` 和 `after_config`
 * [#5848](https://github.com/xmake-io/xmake/issues/5848): 支持自定义 MSVC 构建工具, PortableBuildTools 和 msvc-wine
 * [#5880](https://github.com/xmake-io/xmake/pull/5880): 支持使用 msvc 包去构建工程
+* [#5884](https://github.com/xmake-io/xmake/issues/5884): 为包添加自定义安装提示
 
 ### 改进
 
