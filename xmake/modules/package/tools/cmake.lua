@@ -580,7 +580,7 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
     envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
-    envs.CMAKE_SYSTEM_NAME         = "Windows"
+    envs.CMAKE_SYSTEM_NAME         = is_host("windows") and "" or "Windows"
     envs.CMAKE_SYSTEM_PROCESSOR    = _get_cmake_system_processor(package)
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
