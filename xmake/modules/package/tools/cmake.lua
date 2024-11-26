@@ -581,6 +581,7 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
     envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     -- @see https://cmake.org/cmake/help/latest/variable/CMAKE_CROSSCOMPILING.html
+    -- https://github.com/xmake-io/xmake/pull/5888
     if not is_host("windows") then
         envs.CMAKE_SYSTEM_NAME = "Windows"
     end
