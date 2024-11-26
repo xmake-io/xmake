@@ -580,7 +580,11 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
     envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
-    envs.CMAKE_SYSTEM_NAME         = "Windows"
+    -- @see https://cmake.org/cmake/help/latest/variable/CMAKE_CROSSCOMPILING.html
+    -- https://github.com/xmake-io/xmake/pull/5888
+    if not is_host("windows") then
+        envs.CMAKE_SYSTEM_NAME = "Windows"
+    end
     envs.CMAKE_SYSTEM_PROCESSOR    = _get_cmake_system_processor(package)
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
@@ -948,6 +952,13 @@ function _get_configs(package, configs, opt)
         end
     end
     _insert_configs_from_envs(configs, envs or {}, opt)
+
+    local ccache = package:data("ccache")
+    if ccache then
+        table.insert(configs, "-DCMAKE_C_COMPILER_LAUNCHER=" .. ccache)
+        table.insert(configs, "-DCMAKE_CXX_COMPILER_LAUNCHER=" .. ccache)
+    end
+
     return configs
 end
 
