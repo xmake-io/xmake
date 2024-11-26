@@ -745,7 +745,12 @@ function _install_packages(requires, opt)
     if #packages_unknown > 0 then
         cprint("${bright color.warning}note: ${clear}the following packages were not found in any repository (check if they are spelled correctly):")
         for _, instance in ipairs(packages_unknown) do
-            print("  -> %s", instance:displayname())
+            local tips
+            local possible_package = package.get_possible_package(instance:name())
+            if possible_package then
+                tips = string.format(", maybe ${bright}%s %s${clear} in %s", possible_package.name, possible_package.version, possible_package.reponame)
+            end
+            cprint("  -> %s%s", instance:displayname(), tips or "")
         end
         has_errors = true
     end

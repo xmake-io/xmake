@@ -88,7 +88,7 @@ function find(name, opt)
         if opt.prefix then
             found = packagename:startswith(name)
         else
-            found = packagename:find(name)
+            found = packagename:find(path.pattern(name))
         end
         if not found and opt.description and packagedata.description and packagedata.description:find(name) then
             found = true
