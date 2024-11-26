@@ -60,8 +60,7 @@ function load(target)
     -- @see https://github.com/xmake-io/xmake/issues/2716#issuecomment-1225057760
     -- https://github.com/xmake-io/xmake/issues/3855
 
-    -- libstdc++ std modules cannot compile with -D_GLIBCXX_USE_CXX11_ABI=0
-    if target:policy("build.c++.modules.std") or target:policy("build.c++.gcc.modules.cxx11abi") then
+    if target:policy("build.c++.gcc.modules.cxx11abi") then
         target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=1")
     else
         target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=0")
@@ -158,12 +157,12 @@ end
 
 function get_stdmodules(target)
     if not target:policy("build.c++.modules.std") then
-        return nil
+        return
     end
 
     local modules_json_path = _get_std_module_manifest_path(target)
     if not modules_json_path then
-        return nil
+        return
     end
 
     local modules_json = json.loadfile(modules_json_path)
