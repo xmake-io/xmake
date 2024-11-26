@@ -137,7 +137,6 @@ end
 
 function _get_std_module_manifest_path(target)
     local compinst = target:compiler("cxx")
-
     local modules_json_path, _ = try {
         function()
             return os.iorunv(compinst:program(), {"-print-file-name=libstdc++.modules.json"}, {envs = compinst:runenvs()})
@@ -154,8 +153,7 @@ function _get_std_module_manifest_path(target)
     -- fallback on custom detection
     -- manifest can be found alongside libstdc++.so
 
-    -- @TODO
-
+    -- TODO
 end
 
 function get_stdmodules(target)
@@ -193,7 +191,7 @@ function get_modulesflag(target)
         local compinst = target:compiler("cxx")
         local gcc_version = get_gcc_version(target)
         -- GCC 12 and earlier version has a option '-fmodules' for Modula-2
-        if semver.compare(gcc_version, "12") > 0 then
+        if gcc_version and semver.compare(gcc_version, "12") > 0 then
             if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "gcc_modules"}) then
                 modulesflag = "-fmodules"
             elseif compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "gcc_modules_ts"}) then
