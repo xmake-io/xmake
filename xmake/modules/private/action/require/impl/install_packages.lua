@@ -217,12 +217,26 @@ function _get_confirm(packages, opt)
                         local group = instance:group()
                         if group and packages_group[group] and #packages_group[group] > 1 then
                             for idx, package_in_group in ipairs(packages_group[group]) do
-                                cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or", package_in_group:displayname(), package_in_group:version_str() or "", package.get_configs_str(package_in_group))
+                                cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or",
+                                    package_in_group:displayname(), package_in_group:version_str() or "",
+                                    package.get_configs_str(package_in_group))
+                                for _, tip in ipairs(package_in_group:get("installtips")) do
+                                    if idx == 1 then
+                                        cprint("     ${yellow}*${clear} %s", tip)
+                                    else
+                                        cprint("        ${yellow}*${clear} %s", tip)
+                                    end
+                                end
                                 packages_showed[tostring(package_in_group)] = true
                             end
                             packages_group[group] = nil
                         else
-                            cprint("  ${yellow}->${clear} %s %s ${dim}%s", instance:displayname(), instance:version_str() or "", package.get_configs_str(instance))
+                            cprint("  ${yellow}->${clear} %s %s ${dim}%s",
+                                instance:displayname(), instance:version_str() or "",
+                                package.get_configs_str(instance))
+                            for _, tip in ipairs(instance:get("installtips")) do
+                                cprint("     ${yellow}*${clear} %s", tip)
+                            end
                             packages_showed[tostring(instance)] = true
                         end
                     end

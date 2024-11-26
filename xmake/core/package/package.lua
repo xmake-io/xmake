@@ -2788,6 +2788,7 @@ function package.apis()
         ,   "package.set_arch" -- deprecated
         ,   "package.set_base"
         ,   "package.set_license"
+        ,   "package.set_installtips"
         ,   "package.set_homepage"
         ,   "package.set_description"
         ,   "package.set_parallelize"
