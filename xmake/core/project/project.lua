@@ -371,14 +371,17 @@ function project._load_targets()
         local rulenames = {}
         local extensions = {}
         table.join2(rulenames, t:get("rules"))
-        for _, sourcefile in ipairs(table.wrap(t:get("files"))) do
-            local extension = path.extension((sourcefile:gsub("|.*$", "")))
-            if not extensions[extension] then
-                local lang = language.load_ex(extension)
-                if lang and lang:rules() then
-                    table.join2(rulenames, lang:rules())
+        -- allow extension with wildcard character
+        for _, sourcefile_name in ipairs(table.wrap(t:get("files"))) do
+            for _, sourcefile in pairs(os.files(sourcefile_name)) do
+                local extension = path.extension(sourcefile)
+                if not extensions[extension] then
+                    local lang = language.load_ex(extension)
+                    if lang and lang:rules() then
+                        table.join2(rulenames, lang:rules())
+                    end
+                    extensions[extension] = true
                 end
-                extensions[extension] = true
             end
         end
         rulenames = table.unique(rulenames)
