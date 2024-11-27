@@ -952,13 +952,6 @@ function _get_configs(package, configs, opt)
         end
     end
     _insert_configs_from_envs(configs, envs or {}, opt)
-
-    local ccache = package:data("ccache")
-    if ccache then
-        table.insert(configs, "-DCMAKE_C_COMPILER_LAUNCHER=" .. ccache)
-        table.insert(configs, "-DCMAKE_CXX_COMPILER_LAUNCHER=" .. ccache)
-    end
-
     return configs
 end
 
