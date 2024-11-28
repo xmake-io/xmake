@@ -31,18 +31,34 @@ import("compiler_support")
 import(".builder", {inherit = true})
 
 function _compile_one_step(target, bmifile, sourcefile, objectfile, opt)
-    -- get flags
-    local module_outputflag = compiler_support.get_moduleoutputflag(target)
-    if module_outputflag then
-        local flags = table.join({"-x", "c++-module", module_outputflag .. bmifile}, opt.std and {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier"} or {})
-        if opt and opt.batchcmds then
-            _batchcmds_compile(opt.batchcmds, target, flags, sourcefile, objectfile)
+    if opt.is_mapped_bmi then
+        -- get flags
+        local module_fileflag = compiler_support.get_modulefileflag(target)
+        if module_fileflag then
+            local flags = table.join({module_fileflag .. opt.name .. "=" .. bmifile}, opt.std and {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier"} or {})
+            if opt and opt.batchcmds then
+                _batchcmds_compile(opt.batchcmds, target, flags, bmifile, objectfile)
+            else
+                _compile(target, flags, bmifile, objectfile)
+            end
         else
-            _compile(target, flags, sourcefile, objectfile)
+            _compile_bmi_step(target, bmifile, sourcefile, opt)
+            _compile_objectfile_step(target, bmifile, sourcefile, objectfile, opt)
         end
     else
-        _compile_bmi_step(target, bmifile, sourcefile, opt)
-        _compile_objectfile_step(target, bmifile, sourcefile, objectfile, opt)
+        -- get flags
+        local module_outputflag = compiler_support.get_moduleoutputflag(target)
+        if module_outputflag then
+            local flags = table.join({"-x", "c++-module", module_outputflag .. bmifile}, opt.std and {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier"} or {})
+            if opt and opt.batchcmds then
+                _batchcmds_compile(opt.batchcmds, target, flags, sourcefile, objectfile)
+            else
+                _compile(target, flags, sourcefile, objectfile)
+            end
+        else
+            _compile_bmi_step(target, bmifile, sourcefile, opt)
+            _compile_objectfile_step(target, bmifile, sourcefile, objectfile, opt)
+        end
     end
 end
 
@@ -246,6 +262,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local external = fileconfig and fileconfig.external
                     local from_moduleonly = external and external.moduleonly
                     local bmifile = mapped_bmi or bmifile
+                    local is_mapped_bmi = mapped_bmi ~= nil
                     if external and not from_moduleonly then
                         if not mapped_bmi then
                             progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
@@ -253,7 +270,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                         end
                     else
                         progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                        _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat")})
+                        _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {name = name, std = (name == "std" or name == "std.compat"), is_mapped_bmi = is_mapped_bmi})
                     end
                 else
                     os.tryrm(opt.objectfile) -- force rebuild for .cpp files
@@ -287,6 +304,7 @@ function make_module_buildcmds(target, batchcmds, opt)
         local public = fileconfig and fileconfig.public
         local external = fileconfig and fileconfig.external
         local bmifile = mapped_bmi or bmifile
+        local is_mapped_bmi = mapped_bmi ~= nil
         if external and not from_moduleonly then
             if not mapped_bmi then
                 batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
@@ -294,7 +312,7 @@ function make_module_buildcmds(target, batchcmds, opt)
             end
         else
             batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-            _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat"), batchcmds = batchcmds})
+            _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {name = name, std = (name == "std" or name == "std.compat"), batchcmds = batchcmds, is_mapped_bmi = is_mapped_bmi})
         end
     else
         batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
