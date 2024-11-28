@@ -1191,6 +1191,8 @@ end
 -- cannot be detected at present and can only be resolved by the user
 --
 function _check_package_depconflicts(package)
+    print("_check_package_depconflicts ..")
+    --[[
     local packagekeys = {}
     for _, dep in ipairs(package:librarydeps()) do
         local key = _get_packagekey(dep:name(), dep:requireinfo())
@@ -1200,7 +1202,7 @@ function _check_package_depconflicts(package)
         else
             packagekeys[dep:name()] = key
         end
-    end
+    end]]
 end
 
 -- must depend on the given package?

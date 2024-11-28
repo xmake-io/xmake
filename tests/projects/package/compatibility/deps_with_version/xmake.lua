@@ -1,13 +1,16 @@
 package("foo")
-    add_deps("zlib >=v1.2.13")
+    add_deps("zlib >=1.2.13")
+    on_install(function () end)
 package_end()
 
 package("bar")
     add_deps("zlib")
+    on_install(function () end)
 package_end()
 
 package("test")
     add_deps("foo", "bar")
+    on_install(function () end)
 package_end()
 
 add_requires("test")
