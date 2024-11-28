@@ -245,8 +245,8 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local public = fileconfig and fileconfig.public
                     local external = fileconfig and fileconfig.external
                     local from_moduleonly = external and external.moduleonly
-                    local bmifile = mapped_bmi or bmifile
                     if external and not from_moduleonly then
+                        local bmifile = mapped_bmi or bmifile
                         if not mapped_bmi then
                             progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
                             _compile_bmi_step(target, bmifile, opt.cppfile, {std = (name == "std" or name == "std.compat")})
@@ -286,8 +286,8 @@ function make_module_buildcmds(target, batchcmds, opt)
         local fileconfig = target:fileconfig(opt.cppfile)
         local public = fileconfig and fileconfig.public
         local external = fileconfig and fileconfig.external
-        local bmifile = mapped_bmi or bmifile
         if external and not from_moduleonly then
+            local bmifile = mapped_bmi or bmifile
             if not mapped_bmi then
                 batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
                 _compile_bmi_step(target, bmifile, opt.cppfile, {std = (name == "std" or name == "std.compat"), batchcmds = batchcmds})
