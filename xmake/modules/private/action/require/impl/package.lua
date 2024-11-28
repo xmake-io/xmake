@@ -1176,7 +1176,13 @@ function _get_parents_str(package)
     end
 end
 
--- check dependencies conflicts
+-- check and resolve package conflicts
+function _check_and_resolve_package_conflicts(package1, package2)
+    print(package1:version_str(), package2:version_str())
+    print(package1:requireinfo(), package2:requireinfo())
+end
+
+-- check and resolve dependencies conflicts
 --
 -- It exists conflict for dependent packages for each root packages? resolve it first
 -- e.g.
@@ -1190,8 +1196,8 @@ end
 -- Of course, conflicts caused by `add_packages("foo", "ddd")`
 -- cannot be detected at present and can only be resolved by the user
 --
-function _check_package_depconflicts(package)
-    print("_check_package_depconflicts ..")
+function _check_and_resolve_package_depconflicts(package)
+    print("_check_and_resole_package_depconflicts ..")
     --[[
     local packagekeys = {}
     for _, dep in ipairs(package:librarydeps()) do
@@ -1203,6 +1209,24 @@ function _check_package_depconflicts(package)
             packagekeys[dep:name()] = key
         end
     end]]
+    local same_packages = {}
+    for _, dep in ipairs(package:librarydeps()) do
+        local packages = same_packages[dep:name()]
+        if packages == nil then
+            packages = {}
+            same_packages[dep:name()] = packages
+        end
+        table.insert(packages, dep)
+    end
+    for name, packages in pairs(same_packages) do
+        if #packages > 1 then
+            for i = 1, #packages do
+                for j = i + 1, #packages do
+                    _check_and_resolve_package_conflicts(packages[i], packages[j])
+                end
+            end
+        end
+    end
 end
 
 -- must depend on the given package?
@@ -1449,7 +1473,7 @@ function load_packages(requires, opt)
     local packages = {}
     for _, package in ipairs((_load_packages(requires, opt))) do
         if package:is_toplevel() then
-            _check_package_depconflicts(package)
+            _check_and_resolve_package_depconflicts(package)
         end
         local key = _get_packagekey(package:name(), package:requireinfo())
         if not unique[key] then

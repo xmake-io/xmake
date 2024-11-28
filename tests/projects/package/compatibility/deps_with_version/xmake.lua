@@ -4,7 +4,7 @@ package("foo")
 package_end()
 
 package("bar")
-    add_deps("zlib")
+    add_deps("zlib 1.2.x")
     on_install(function () end)
 package_end()
 
