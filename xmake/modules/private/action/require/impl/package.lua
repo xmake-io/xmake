@@ -139,7 +139,8 @@ function _parse_require(require_str)
 end
 
 -- load require info
-function _load_require(require_str, requires_extra, parentinfo)
+function _load_require(require_str, requires_extra, opt)
+    opt = opt or {}
 
     -- parse require
     local packagename, version, reponame = _parse_require(require_str)
@@ -215,8 +216,25 @@ function _load_require(require_str, requires_extra, parentinfo)
         require_extra.system = false
     end
 
+    -- resolve require info
+    local resolvedinfo = opt.resolvedinfo
+    local requirepath = opt.requirepath
+    if requirepath then
+        requirepath = requirepath .. "." .. packagename
+    else
+        requirepath = packagename
+    end
+    resolvedinfo = resolvedinfo and resolvedinfo[requirepath]
+    if resolvedinfo then
+        -- resolve the conflict package version
+        if resolvedinfo.version then
+            version = resolvedinfo.version
+        end
+    end
+
     -- init required item
     local required = {}
+    local parentinfo = opt.parentinfo
     parentinfo = parentinfo or {}
     required.packagename = packagename
     required.requireinfo =
@@ -1121,7 +1139,7 @@ function _load_packages(requires, opt)
         -- load package
         local requireinfo = requireitem.info
         local requirepath = opt.requirepath and (opt.requirepath .. "." .. requireitem.name) or requireitem.name
-        local package     = _load_package(requireitem.name, requireinfo, table.join(opt, {requirepath = requirepath}))
+        local package = _load_package(requireitem.name, requireinfo, table.join(opt, {requirepath = requirepath}))
 
         -- maybe package not found and optional
         if package then
@@ -1135,6 +1153,7 @@ function _load_packages(requires, opt)
                                                         requires_extra = package:extraconf("deps") or {},
                                                         parentinfo = requireinfo,
                                                         nodeps = opt.nodeps,
+                                                        resolvedinfo = opt.resolvedinfo,
                                                         system = false})
                     for _, dep in ipairs(plaindeps) do
                         dep:parents_add(package)
@@ -1175,6 +1194,22 @@ function _get_parents_str(package)
         end
         return table.concat(parentnames, ",")
     end
+end
+
+-- get require paths
+function _get_requirepaths(package)
+    local requirepaths = {}
+    local parents = package:parents()
+    if parents and #parents > 0 then
+        for _, parent in ipairs(parents) do
+            for _, requirepath in ipairs(_get_requirepaths(parent)) do
+                table.insert(requirepaths, requirepath .. "." .. package:name())
+            end
+        end
+    else
+        table.insert(requirepaths, package:name())
+    end
+    return requirepaths
 end
 
 -- get configs key for compatibility
@@ -1256,7 +1291,7 @@ function _get_package_compatinfo(package)
 end
 
 -- check and resolve package conflicts
-function _check_and_resolve_package_depconflicts_impl(package, name, deps)
+function _check_and_resolve_package_depconflicts_impl(package, name, deps, resolvedinfo)
 
     -- check version compatibility
     local versions
@@ -1283,30 +1318,6 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps)
         end
         print("we can use add_requireconfs(\"**.%s\", {override = true, configs = {version = \"x.x.x\"}}) to override version.", name)
         raise("package(%s): conflict version dependencies!", name)
-    else
-        -- resolve to compatible version for all deps
-        local version_best
-        for version in versions:items() do
-            if version_best == nil or semver.compare(version, version_best) > 0 then
-                version_best = version
-            end
-        end
-        if version_best then
-            for _, dep in ipairs(deps) do
-                local source = "version"
-                if dep:branch() then
-                    source = "branch"
-                elseif dep:tag() then
-                    source = "tag"
-                elseif dep:commit() then
-                    source = "commit"
-                end
-                dep:version_set(version_best, source)
-
-                -- TODO reset buildhash and cache
-                -- ...
-            end
-        end
     end
 
     -- check configs compatibility
@@ -1335,6 +1346,23 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps)
         print("we can use add_requireconfs(\"**.%s\", {override = true, configs = {}}) to override configs.", name)
         raise("package(%s): conflict configs dependencies!", name)
     end
+
+    -- resolve compatible version for all deps
+    if versions and not versions:empty() then
+        local version_best
+        for version in versions:items() do
+            if version_best == nil or semver.compare(version, version_best) > 0 then
+                version_best = version
+            end
+        end
+        if version_best then
+            for _, dep in ipairs(deps) do
+                for _, requirepath in ipairs(_get_requirepaths(dep)) do
+                    resolvedinfo[requirepath] = {version = version_best}
+                end
+            end
+        end
+    end
 end
 
 -- check and resolve dependencies conflicts
@@ -1351,7 +1379,7 @@ end
 -- Of course, conflicts caused by `add_packages("foo", "ddd")`
 -- cannot be detected at present and can only be resolved by the user
 --
-function _check_and_resolve_package_depconflicts(package)
+function _check_and_resolve_package_depconflicts(package, resolvedinfo)
     local some_packagedeps = {}
     for _, dep in ipairs(package:librarydeps()) do
         local deps = some_packagedeps[dep:name()]
@@ -1363,7 +1391,7 @@ function _check_and_resolve_package_depconflicts(package)
     end
     for name, deps in pairs(some_packagedeps) do
         if #deps > 1 then
-            _check_and_resolve_package_depconflicts_impl(package, name, deps)
+            _check_and_resolve_package_depconflicts_impl(package, name, deps, resolvedinfo)
         end
     end
 end
@@ -1599,7 +1627,7 @@ function load_requires(requires, requires_extra, opt)
     opt = opt or {}
     local requireitems = {}
     for _, require_str in ipairs(requires) do
-        local packagename, requireinfo = _load_require(require_str, requires_extra, opt.parentinfo)
+        local packagename, requireinfo = _load_require(require_str, requires_extra, opt)
         table.insert(requireitems, {name = packagename, info = requireinfo})
     end
     return requireitems
@@ -1610,14 +1638,30 @@ function load_packages(requires, opt)
     opt = opt or {}
     local unique = {}
     local packages = {}
-    for _, package in ipairs((_load_packages(requires, opt))) do
+    local resolvedinfo = {}
+    for _, package in ipairs((_load_packages(requires, table.clone(opt)))) do
         if package:is_toplevel() then
-            _check_and_resolve_package_depconflicts(package)
+            _check_and_resolve_package_depconflicts(package, resolvedinfo)
         end
         local key = _get_packagekey(package:name(), package:requireinfo())
         if not unique[key] then
             table.insert(packages, package)
             unique[key] = true
+        end
+    end
+
+    -- we need to reload packages with new resolved deps if there are some dep conflicts
+    if not table.empty(resolvedinfo) then
+        unique = {}
+        packages = {}
+        _memcache():clear()
+        opt = table.join(opt, {resolvedinfo = resolvedinfo})
+        for _, package in ipairs((_load_packages(requires, opt))) do
+            local key = _get_packagekey(package:name(), package:requireinfo())
+            if not unique[key] then
+                table.insert(packages, package)
+                unique[key] = true
+            end
         end
     end
     return packages
