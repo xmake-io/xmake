@@ -39,7 +39,7 @@ xpack("xmake")
                 package:add("installfiles", path.join(winenv, "**"), {rootdir = path.directory(winenv)})
             else
                 local arch = package:arch()
-                local url_7z = "https://github.com/xmake-mirror/7zip/releases/download/24.07/7z24.07-" .. arch .. ".zip"
+                local url_7z = "https://github.com/xmake-mirror/7zip/releases/download/24.08/7z24.08-" .. arch .. ".zip"
                 local curl_version = "8.11.0_4"
                 local url_curl = "https://curl.se/windows/dl-" .. curl_version .. "/curl-" .. curl_version
                 if package:is_arch("x64", "x86_64") then
