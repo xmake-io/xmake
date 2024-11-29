@@ -630,6 +630,19 @@ function _has_color_diagnostics(self)
     return colors_diagnostics
 end
 
+-- has gnu-line-marker flag?
+function _has_gnu_line_marker_flag(self)
+    local gnu_line_marker = _g._HAS_GNU_LINE_MARKER
+    if gnu_line_marker == nil then
+        if self:has_flags({"-Wno-gnu-line-marker", "-Werror"}, "cxflags") then
+            gnu_line_marker = true
+        end
+        gnu_line_marker = gnu_line_marker or false
+        _g._HAS_GNU_LINE_MARKER = gnu_line_marker
+    end
+    return gnu_line_marker
+end
+
 -- get preprocess file path
 function _get_cppfile(sourcefile, objectfile)
     return path.join(path.directory(objectfile), "__cpp_" .. path.basename(objectfile) .. path.extension(sourcefile))
@@ -758,7 +771,7 @@ function _preprocess(program, argv, opt)
 
     -- suppress -Wgnu-line-marker warnings
     -- @see https://github.com/xmake-io/xmake/issues/5737
-    if is_gcc or is_clang then
+    if (is_gcc or is_clang) and _has_gnu_line_marker_flag(tool) then
         table.insert(flags, "-Wno-gnu-line-marker")
     end
 
