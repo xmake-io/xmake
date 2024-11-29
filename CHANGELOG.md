@@ -17,6 +17,7 @@
 ### Bugs fixed
 
 * [#5856](https://github.com/xmake-io/xmake/issues/5856): Fix compile c++modules for clang
+* [#5858](https://github.com/xmake-io/xmake/issues/5858): Fix the precompiled header for gcc
 
 ## v2.9.6
 
@@ -1928,6 +1929,7 @@
 ### Bugs 修复
 
 * [#5856](https://github.com/xmake-io/xmake/issues/5856): 修复 c++modules 在 clang 下的编译
+* [#5858](https://github.com/xmake-io/xmake/issues/5858): 修复 gcc 的头文件预编译问题
 
 ## v2.9.6
 
