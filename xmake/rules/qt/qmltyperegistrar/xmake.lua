@@ -102,7 +102,7 @@ rule("qt.qmltyperegistrar")
 
         -- gen sourcefile
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmltyperegistrar %s", path.filename(sourcefile))
-        qmltype_source = os.vrunv(qmltyperegistrar, table.join(args, metatypefiles))
+        batchcmds:vrunv(qmltyperegistrar, table.join(args, metatypefiles))
 
         -- add objectfile
         local objectfile = target:objectfile(sourcefile)
@@ -118,8 +118,8 @@ rule("qt.qmltyperegistrar")
     end)
 
     after_build(function(target)
-        local qmldir = path.join(target:scriptdir(), target:values("qt.qmlplugin.qmldirfile"))
+        local qmldir = target:values("qt.qmlplugin.qmldirfile")
         if qmldir then
-            os.cp(qmldir, target:targetdir())
+            os.cp(path.join(target:scriptdir(), qmldir), target:targetdir())
         end
     end)
