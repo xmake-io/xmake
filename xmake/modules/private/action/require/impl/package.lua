@@ -1011,6 +1011,7 @@ function _load_package(packagename, requireinfo, opt)
     local version, source = _select_package_version(package, requireinfo, locked_requireinfo)
     if version then
         package:version_set(version, source)
+        package:data_set("__locked_requireinfo", locked_requireinfo)
     end
 
     -- get package key
@@ -1176,10 +1177,69 @@ function _get_parents_str(package)
     end
 end
 
+-- get package compatibility info
+function _get_package_compatinfo(package)
+    local compatinfo = {name = package:name()}
+    if package:data("__locked_requireinfo") then
+        compatinfo.locked = true
+        compatinfo.versions = hashset.from(table.wrap(package:version_str()))
+        return compatinfo
+    end
+
+    -- get compatible version range
+    local requireinfo = package:requireinfo()
+    local require_version = requireinfo.version
+    if require_version then
+        compatinfo.require_version = require_version
+        if semver.is_valid(require_version) or semver.is_valid_range(require_version) then
+            local versions = hashset.new()
+            for _, version in ipairs(package:versions()) do
+                if semver.satisfies(version, require_version) then
+                    versions:insert(version)
+                end
+            end
+            compatinfo.versions = versions
+        elseif require_version == "latest" then
+            compatinfo.versions = hashset.from(table.wrap(package:versions()))
+        else
+            compatinfo.versions = hashset.from(table.wrap(require_version))
+        end
+    else
+        compatinfo.versions = hashset.from(table.wrap(package:versions()))
+    end
+    return compatinfo
+end
+
 -- check and resolve package conflicts
-function _check_and_resolve_package_conflicts(package1, package2)
-    print(package1:version_str(), package2:version_str())
-    print(package1:requireinfo(), package2:requireinfo())
+function _check_and_resolve_package_depconflicts_impl(package, name, deps)
+
+    -- compute versions intersection
+    local versions
+    for _, dep in ipairs(deps) do
+        local compatinfo = _get_package_compatinfo(dep)
+        assert(compatinfo.versions)
+
+        if versions then
+            for version in versions:items() do
+                if not compatinfo.versions:has(version) then
+                    versions:remove(version)
+                end
+            end
+        else
+            versions = compatinfo.versions
+        end
+    end
+
+    if not versions or versions:empty() then
+        print("package(%s): add_deps(%s, ...)", package:name(), name)
+        for idx, dep in ipairs(deps) do
+            local key = _get_packagekey(dep:name(), dep:requireinfo())
+            cprint("  ${color.warning}->${clear} %s %s ${dim}%s",
+                dep:displayname(), dep:version_str() or "", get_configs_str(dep))
+        end
+        raise("package(%s): conflict version dependencies!", name)
+    end
+    print(name, versions)
 end
 
 -- check and resolve dependencies conflicts
@@ -1197,34 +1257,18 @@ end
 -- cannot be detected at present and can only be resolved by the user
 --
 function _check_and_resolve_package_depconflicts(package)
-    print("_check_and_resole_package_depconflicts ..")
-    --[[
-    local packagekeys = {}
+    local some_packagedeps = {}
     for _, dep in ipairs(package:librarydeps()) do
-        local key = _get_packagekey(dep:name(), dep:requireinfo())
-        local prevkey = packagekeys[dep:name()]
-        if prevkey then
-            assert(key == prevkey, "package(%s): conflict dependencies with package(%s) in %s!", key, prevkey, package:name())
-        else
-            packagekeys[dep:name()] = key
+        local deps = some_packagedeps[dep:name()]
+        if deps == nil then
+            deps = {}
+            some_packagedeps[dep:name()] = deps
         end
-    end]]
-    local same_packages = {}
-    for _, dep in ipairs(package:librarydeps()) do
-        local packages = same_packages[dep:name()]
-        if packages == nil then
-            packages = {}
-            same_packages[dep:name()] = packages
-        end
-        table.insert(packages, dep)
+        table.insert(deps, dep)
     end
-    for name, packages in pairs(same_packages) do
-        if #packages > 1 then
-            for i = 1, #packages do
-                for j = i + 1, #packages do
-                    _check_and_resolve_package_conflicts(packages[i], packages[j])
-                end
-            end
+    for name, deps in pairs(some_packagedeps) do
+        if #deps > 1 then
+            _check_and_resolve_package_depconflicts_impl(package, name, deps)
         end
     end
 end
