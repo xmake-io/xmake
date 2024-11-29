@@ -1213,7 +1213,7 @@ end
 -- check and resolve package conflicts
 function _check_and_resolve_package_depconflicts_impl(package, name, deps)
 
-    -- compute versions intersection
+    -- check version compatibility
     local versions
     for _, dep in ipairs(deps) do
         local compatinfo = _get_package_compatinfo(dep)
@@ -1233,13 +1233,35 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps)
     if not versions or versions:empty() then
         print("package(%s): add_deps(%s, ...)", package:name(), name)
         for idx, dep in ipairs(deps) do
-            local key = _get_packagekey(dep:name(), dep:requireinfo())
             cprint("  ${color.warning}->${clear} %s %s ${dim}%s",
                 dep:displayname(), dep:version_str() or "", get_configs_str(dep))
         end
         raise("package(%s): conflict version dependencies!", name)
+    else
+        -- TODO switch to compatible version
     end
-    print(name, versions)
+
+    -- check configs compatibility
+    local prevkey
+    local configs_conflict = false
+    for _, dep in ipairs(deps) do
+        local key = _get_packagekey(dep:name(), dep:requireinfo())
+        if prevkey then
+            if prevkey ~= key then
+                configs_conflict = true
+            end
+        else
+            prevkey = key
+        end
+    end
+    if configs_conflict then
+        print("package(%s): add_deps(%s, ...)", package:name(), name)
+        for idx, dep in ipairs(deps) do
+            cprint("  ${color.warning}->${clear} %s %s ${dim}%s",
+                dep:displayname(), dep:version_str() or "", get_configs_str(dep))
+        end
+        raise("package(%s): conflict configs dependencies!", name)
+    end
 end
 
 -- check and resolve dependencies conflicts
