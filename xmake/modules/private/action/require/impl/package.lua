@@ -1301,6 +1301,9 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps)
                     source = "commit"
                 end
                 dep:version_set(version_best, source)
+
+                -- TODO reset buildhash and cache
+                -- ...
             end
         end
     end
