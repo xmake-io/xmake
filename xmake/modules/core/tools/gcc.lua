@@ -630,6 +630,19 @@ function _has_color_diagnostics(self)
     return colors_diagnostics
 end
 
+-- has gnu-line-marker flag?
+function _has_gnu_line_marker_flag(self)
+    local gnu_line_marker = _g._HAS_GNU_LINE_MARKER
+    if gnu_line_marker == nil then
+        if self:has_flags({"-Wno-gnu-line-marker", "-Werror"}, "cxflags") then
+            gnu_line_marker = true
+        end
+        gnu_line_marker = gnu_line_marker or false
+        _g._HAS_GNU_LINE_MARKER = gnu_line_marker
+    end
+    return gnu_line_marker
+end
+
 -- get preprocess file path
 function _get_cppfile(sourcefile, objectfile)
     return path.join(path.directory(objectfile), "__cpp_" .. path.basename(objectfile) .. path.extension(sourcefile))
@@ -742,6 +755,15 @@ function _preprocess(program, argv, opt)
     if linemarkers == false then
         table.insert(cppflags, "-P")
     end
+    -- if we want to support pch for gcc, we need to enable this flag
+    -- and clang need not this flag, it will use '-include-pch' to include and preprocess header files
+    -- but it will be slower than non-ccache mode.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/5858
+    -- https://musescore.org/en/node/182331
+    if is_gcc then
+        table.insert(cppflags, "-fpch-preprocess")
+    end
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
     table.insert(cppflags, sourcefile)
@@ -758,7 +780,7 @@ function _preprocess(program, argv, opt)
 
     -- suppress -Wgnu-line-marker warnings
     -- @see https://github.com/xmake-io/xmake/issues/5737
-    if is_gcc or is_clang then
+    if (is_gcc or is_clang) and _has_gnu_line_marker_flag(tool) then
         table.insert(flags, "-Wno-gnu-line-marker")
     end
 
@@ -788,8 +810,14 @@ function _compile_preprocessed_file(program, cppinfo, opt)
     end
     local outdata, errdata = os.iorunv(program, argv, opt)
     -- we need to get warning information from output
-    cppinfo.outdata = outdata
-    cppinfo.errdata = errdata
+    -- and we need to reserve warnings output from preprocessing
+    -- @see https://github.com/xmake-io/xmake/issues/5858
+    if outdata then
+        cppinfo.outdata = (cppinfo.outdata or "") .. outdata
+    end
+    if errdata then
+        cppinfo.errdata = (cppinfo.errdata or "") .. errdata
+    end
 end
 
 -- do compile

@@ -25,12 +25,19 @@ import("object")
 function config(target, langkind, opt)
     local pcheaderfile = target:pcheaderfile(langkind)
     if pcheaderfile then
-        local headerfile = target:autogenfile(pcheaderfile)
-        if target:is_plat("windows") and
-            target:has_tool(langkind == "cxx" and "cxx" or "cc", "cl", "clang_cl") then
-             -- fix `#pragma once` for msvc
-             -- https://github.com/xmake-io/xmake/issues/2667
-             if not os.isfile(headerfile) then
+        local sourcekind = language.langkinds()[langkind] or "cxx"
+        if target:has_tool(sourcekind, "cl", "clang_cl", "gcc", "gxx") then
+            local headerfile = target:autogenfile(pcheaderfile)
+            local gcc = false
+            if target:has_tool(sourcekind, "gcc", "gxx") then
+                local pcoutputfile = target:pcoutputfile(langkind)
+                headerfile = path.join(path.directory(pcoutputfile), path.filename(headerfile))
+                gcc = true
+            end
+            -- fix `#pragma once` for msvc
+            -- https://github.com/xmake-io/xmake/issues/2667
+            -- https://github.com/xmake-io/xmake/issues/5858
+            if not os.isfile(headerfile) then
                 io.writefile(headerfile, ([[
 #pragma system_header
 #ifdef __cplusplus
@@ -38,7 +45,11 @@ function config(target, langkind, opt)
 #endif // __cplusplus
                 ]]):format(path.absolute(pcheaderfile):gsub("\\", "/")))
             end
-            target:pcheaderfile_set(langkind, headerfile)
+            -- we need only to add a header wrapper in .gch directory
+            -- @see https://github.com/xmake-io/xmake/issues/5858#issuecomment-2506918167
+            if not gcc then
+                target:pcheaderfile_set(langkind, headerfile)
+            end
         end
     end
 end
