@@ -1213,36 +1213,12 @@ function _get_requirepaths(package)
 end
 
 -- get configs key for compatibility
-function _get_package_compatkey(requireinfo, opt)
-    opt = opt or {}
-    local key = ""
-    if opt.name then
-        key = key .. "/" .. opt.name
-    end
-    if opt.plat then
-        key = key .. "/" .. opt.plat
-    end
-    if opt.arch then
-        key = key .. "/" .. opt.arch
-    end
-    if opt.kind then
-        key = key .. "/" .. opt.kind
-    end
-    if requireinfo.host then
-        if is_subhost(core_package.targetplat()) and os.subarch() == core_package.targetarch() then
-            -- we need to pass plat/arch to avoid repeat installation
-            -- @see https://github.com/xmake-io/xmake/issues/1579
-        else
-            key = key .. "/host"
-        end
-    end
-    if requireinfo.system then
+function _get_package_compatkey(dep)
+    local key = dep:plat() .. "/" .. dep:arch() .. "/" .. (dep:kind() or "")
+    if dep:is_system() then
         key = key .. "/system"
     end
-    if key:startswith("/") then
-        key = key:sub(2)
-    end
-    local configs = requireinfo.configs
+    local configs = dep:requireinfo().configs
     if configs then
         local configs_order = {}
         for k, v in pairs(configs) do
@@ -1324,11 +1300,7 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps, resol
     local prevkey
     local configs_conflict = false
     for _, dep in ipairs(deps) do
-        local key = _get_package_compatkey(dep:requireinfo(), {
-                                           name = dep:name(),
-                                           plat = dep:plat(),
-                                           arch = dep:arch(),
-                                           kind = dep:kind()})
+        local key = _get_package_compatkey(dep)
         if prevkey then
             if prevkey ~= key then
                 configs_conflict = true
