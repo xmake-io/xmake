@@ -1281,6 +1281,7 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps)
             cprint("  ${color.warning}->${clear} %s %s ${dim}%s",
                 dep:displayname(), dep:version_str() or "", get_configs_str(dep))
         end
+        print("we can use add_requireconfs(\"**.%s\", {override = true, configs = {version = \"x.x.x\"}}) to override version.", name)
         raise("package(%s): conflict version dependencies!", name)
     else
         -- resolve to compatible version for all deps
@@ -1331,6 +1332,7 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps)
             cprint("  ${color.warning}->${clear} %s %s ${dim}%s",
                 dep:displayname(), dep:version_str() or "", get_configs_str(dep))
         end
+        print("we can use add_requireconfs(\"**.%s\", {override = true, configs = {}}) to override configs.", name)
         raise("package(%s): conflict configs dependencies!", name)
     end
 end
