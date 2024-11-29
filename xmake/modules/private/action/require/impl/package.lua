@@ -1177,6 +1177,51 @@ function _get_parents_str(package)
     end
 end
 
+-- get configs key for compatibility
+function _get_package_compatkey(requireinfo, opt)
+    opt = opt or {}
+    local key = ""
+    if opt.name then
+        key = key .. "/" .. opt.name
+    end
+    if opt.plat then
+        key = key .. "/" .. opt.plat
+    end
+    if opt.arch then
+        key = key .. "/" .. opt.arch
+    end
+    if opt.kind then
+        key = key .. "/" .. opt.kind
+    end
+    if requireinfo.host then
+        if is_subhost(core_package.targetplat()) and os.subarch() == core_package.targetarch() then
+            -- we need to pass plat/arch to avoid repeat installation
+            -- @see https://github.com/xmake-io/xmake/issues/1579
+        else
+            key = key .. "/host"
+        end
+    end
+    if requireinfo.system then
+        key = key .. "/system"
+    end
+    if key:startswith("/") then
+        key = key:sub(2)
+    end
+    local configs = requireinfo.configs
+    if configs then
+        local configs_order = {}
+        for k, v in pairs(configs) do
+            if type(v) == "table" then
+                v = string.serialize(v, {strip = true, indent = false, orderkeys = true})
+            end
+            table.insert(configs_order, k .. "=" .. tostring(v))
+        end
+        table.sort(configs_order)
+        key = key .. ":" .. string.serialize(configs_order, true)
+    end
+    return key
+end
+
 -- get package compatibility info
 function _get_package_compatinfo(package)
     local compatinfo = {name = package:name()}
@@ -1238,14 +1283,37 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps)
         end
         raise("package(%s): conflict version dependencies!", name)
     else
-        -- TODO switch to compatible version
+        -- resolve to compatible version for all deps
+        local version_best
+        for version in versions:items() do
+            if version_best == nil or semver.compare(version, version_best) > 0 then
+                version_best = version
+            end
+        end
+        if version_best then
+            for _, dep in ipairs(deps) do
+                local source = "version"
+                if dep:branch() then
+                    source = "branch"
+                elseif dep:tag() then
+                    source = "tag"
+                elseif dep:commit() then
+                    source = "commit"
+                end
+                dep:version_set(version_best, source)
+            end
+        end
     end
 
     -- check configs compatibility
     local prevkey
     local configs_conflict = false
     for _, dep in ipairs(deps) do
-        local key = _get_packagekey(dep:name(), dep:requireinfo())
+        local key = _get_package_compatkey(dep:requireinfo(), {
+                                           name = dep:name(),
+                                           plat = dep:plat(),
+                                           arch = dep:arch(),
+                                           kind = dep:kind()})
         if prevkey then
             if prevkey ~= key then
                 configs_conflict = true
