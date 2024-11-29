@@ -1652,6 +1652,12 @@ function load_packages(requires, opt)
 
     -- we need to reload packages with new resolved deps if there are some dep conflicts
     if not table.empty(resolvedinfo) then
+        for _, package in ipairs(packages) do
+            local installdir = package:installdir({readonly = true})
+            if os.isdir(installdir) and os.emptydir(installdir) then
+                os.tryrm(installdir, {emptydirs = true})
+            end
+        end
         unique = {}
         packages = {}
         _memcache():clear()
