@@ -43,7 +43,7 @@ function get_vs_toolset_ver(vs_toolset)
         toolset_ver = "v" .. verinfo:major() .. (tostring(verinfo:minor()):sub(1, 1) or "0")
 
         -- @see https://github.com/xmake-io/xmake/pull/5176
-        if toolset_ver and toolset_ver == "v144" and verinfo:ge("14.40") and verinfo:lt("14.43") then
+        if toolset_ver and toolset_ver == "v144" and verinfo:ge("14.40") and verinfo:lt("14.45") then
             toolset_ver = "v143"
         end
     end
