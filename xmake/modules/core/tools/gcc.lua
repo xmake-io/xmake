@@ -810,6 +810,8 @@ function _compile_preprocessed_file(program, cppinfo, opt)
     end
     local outdata, errdata = os.iorunv(program, argv, opt)
     -- we need to get warning information from output
+    -- and we need to reserve warnings output from preprocessing
+    -- @see https://github.com/xmake-io/xmake/issues/5858
     if outdata then
         cppinfo.outdata = (cppinfo.outdata or "") .. outdata
     end
