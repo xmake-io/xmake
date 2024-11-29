@@ -755,6 +755,15 @@ function _preprocess(program, argv, opt)
     if linemarkers == false then
         table.insert(cppflags, "-P")
     end
+    -- if we want to support pch for gcc, we need to enable this flag
+    -- and clang need not this flag, it will use '-include-pch' to include and preprocess header files
+    -- but it will be slower than non-ccache mode.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/5858
+    -- https://musescore.org/en/node/182331
+    if is_gcc then
+        table.insert(cppflags, "-fpch-preprocess")
+    end
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
     table.insert(cppflags, sourcefile)
@@ -801,8 +810,12 @@ function _compile_preprocessed_file(program, cppinfo, opt)
     end
     local outdata, errdata = os.iorunv(program, argv, opt)
     -- we need to get warning information from output
-    cppinfo.outdata = outdata
-    cppinfo.errdata = errdata
+    if outdata then
+        cppinfo.outdata = (cppinfo.outdata or "") .. outdata
+    end
+    if errdata then
+        cppinfo.errdata = (cppinfo.errdata or "") .. errdata
+    end
 end
 
 -- do compile
