@@ -30,7 +30,6 @@ task("format")
                     {nil, "create",  "k",  nil,   "Create a .clang-format file from a coding style"},
                     {'n', "dry-run", "k",  nil,   "Do not make any changes, just show the files that would be formatted."},
                     {'e', "error",   "k",  nil,   "If set, changes formatting warnings to errors."},
-                    {'v', "verbose", "k",  nil,   "Print verbose information."},
                     {'a', "all",     "k",  nil,   "Format all targets."},
                     {'g', "group",   "kv", nil,   "Format all targets of the given group. It support path pattern matching.",
                                                   "e.g.",
