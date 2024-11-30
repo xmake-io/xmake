@@ -41,8 +41,8 @@ function _find_mingwdir(sdkdir)
             sdkdir = "/opt/homebrew/opt/mingw-w64"
         elseif is_host("linux") then
             sdkdir = "/usr"
-        elseif is_subhost("msys") then
-            local mingw_prefix = os.getenv("MINGW_PREFIX")
+        else
+            local mingw_prefix = is_subhost("msys") and os.getenv("MINGW_PREFIX") or os.getenv("LLVM_MINGW_DIR") or os.getenv("LLVM_MINGW_ROOT")
             if mingw_prefix and os.isdir(mingw_prefix) then
                 sdkdir = mingw_prefix
             end
