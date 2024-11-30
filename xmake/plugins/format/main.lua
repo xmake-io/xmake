@@ -148,8 +148,23 @@ function main()
         table.insert(argv, "--style=" .. option.get("style"))
     end
 
-    -- inplace flag
-    table.insert(argv, "-i")
+    if option.get("dry-run") then
+        -- do not make any changes, just show the files that would be formatted
+        table.insert(argv, "--dry-run")
+    else
+        -- inplace flag
+        table.insert(argv, "-i")
+    end
+
+    -- changes formatting warnings to errors
+    if option.get("error") then
+        table.insert(argv, "--Werror")
+    end
+
+    -- print verbose information
+    if option.get("verbose") then
+        table.insert(argv, "--verbose")
+    end
 
     local targetname
     local group_pattern = option.get("group")
