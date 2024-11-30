@@ -49,7 +49,7 @@ rule("win.sdk.application")
                 end
             end
             if not subsystem then
-                target:add("ldflags", "-subsystem:windows", {force = true})
+                target:add("ldflags", "-subsystem:windows", {force = true, tools = "link"})
             end
         end
 
