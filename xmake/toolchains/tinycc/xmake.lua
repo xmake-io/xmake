@@ -74,6 +74,7 @@ toolchain("tinycc")
         toolchain:add("toolset", "ld", tcc)
         toolchain:add("toolset", "sh", tcc)
         toolchain:add("toolset", "ar", tcc)
+        toolchain:add("toolset", "as", tcc)
 
         -- add includedirs and linkdirs
         for _, package in ipairs(toolchain:packages()) do
