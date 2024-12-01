@@ -69,7 +69,7 @@ function _translate_flags(package, flags)
     if package:is_plat("android") then
         local flags_new = {}
         for _, flag in ipairs(flags) do
-            if flag:startswith("-gcc-toolchain ") or flag:startswith("-target ") or flag:startswith("-isystem ") then
+            if flag:startswith("-gcc-toolchain ") or flag:startswith("--target=") or flag:startswith("-isystem ") then
                 table.join2(flags_new, flag:split(" ", {limit = 2}))
             else
                 table.insert(flags_new, flag)
@@ -173,8 +173,8 @@ function _insert_cross_configs(package, file, opt)
         file:print("endian = 'little'")
     elseif package:is_plat("wasm") then
         file:print("system = 'emscripten'")
-        file:print("cpu_family = 'wasm32'")
-        file:print("cpu = 'wasm32'")
+        file:print("cpu_family = '%s'", package:arch())
+        file:print("cpu = '%s'", package:arch())
         file:print("endian = 'little'")
     else
         local cpu = package:arch()
