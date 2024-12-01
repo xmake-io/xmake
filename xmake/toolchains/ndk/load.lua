@@ -123,10 +123,10 @@ function main(toolchain)
 
         -- add ndk target
         local ndk_target = _get_target(arch, ndk_sdkver)
-        toolchain:add("cxflags", "-target " .. ndk_target)
-        toolchain:add("asflags", "-target " .. ndk_target)
-        toolchain:add("ldflags", "-target " .. ndk_target)
-        toolchain:add("shflags", "-target " .. ndk_target)
+        toolchain:add("cxflags", "--target=" .. ndk_target)
+        toolchain:add("asflags", "--target=" .. ndk_target)
+        toolchain:add("ldflags", "--target=" .. ndk_target)
+        toolchain:add("shflags", "--target=" .. ndk_target)
 
         -- add gcc toolchain
         local gcc_toolchain = toolchain:config("gcc_toolchain")
