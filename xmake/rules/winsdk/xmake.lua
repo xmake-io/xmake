@@ -35,7 +35,7 @@ rule("win.sdk.application")
     after_load(function (target)
 
         -- set subsystem: windows
-        if is_plat("mingw") then
+        if target:is_plat("mingw") then
             target:add("ldflags", "-mwindows", {force = true})
         else
             local subsystem = false
@@ -48,7 +48,7 @@ rule("win.sdk.application")
                     end
                 end
             end
-            if not subsystem then
+            if not subsystem and target:has_tool("ld", "link") then
                 target:add("ldflags", "-subsystem:windows", {force = true})
             end
         end
