@@ -89,6 +89,13 @@ function _get_configs_for_windows(package, configs, opt)
     if package:config("toolchains") and _is_toolchain_compatible_with_host(package) then
         _get_configs_for_host_toolchain(package, configs, opt)
     end
+
+    if not is_host("windows") then
+        local sdkdir = _get_config_from_toolchains(package, "sdkdir") or get_config("sdk")
+        if sdkdir and #sdkdir > 0 then
+            table.insert(configs, "--sdk=" .. sdkdir)
+        end
+    end
 end
 
 -- get configs for appleos
