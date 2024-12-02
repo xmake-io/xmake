@@ -24,7 +24,6 @@ import("core.project.depend")
 import("core.cache.memcache")
 import("lib.detect.find_tool")
 import("utils.progress")
-import("private.tools.ccache")
 
 -- get linux-headers sdk
 function _get_linux_headers_sdk(target)

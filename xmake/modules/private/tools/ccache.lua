@@ -23,18 +23,20 @@ import("core.project.config")
 import("lib.detect.find_tool")
 
 -- get ccache tool
-function _ccache()
+function get()
     local ccache = _g.ccache
     if ccache == nil and config.get("ccache") then
         ccache = find_tool("ccache")
+        if not ccache then
+            ccache = find_tool("sccache")
+        end
         _g.ccache = ccache or false
     end
     return ccache or nil
 end
 
--- exists ccache?
 function exists()
-    return _ccache() ~= nil
+    return get() ~= nil
 end
 
 -- uses ccache to wrap the program and arguments
@@ -44,7 +46,7 @@ end
 function cmdargv(program, argv)
 
     -- uses ccache?
-    local ccache = _ccache()
+    local ccache = get()
     if ccache then
 
         -- parse the filename and arguments, e.g. "xcrun -sdk macosx clang"

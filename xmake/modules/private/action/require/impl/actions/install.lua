@@ -26,7 +26,7 @@ import("core.project.target")
 import("core.project.project")
 import("core.platform.platform")
 import("lib.detect.find_file")
-import("lib.detect.find_tool")
+import("private.tools.ccache")
 import("private.action.require.impl.actions.test")
 import("private.action.require.impl.actions.patch_sources")
 import("private.action.require.impl.actions.download_resources")
@@ -354,11 +354,7 @@ function _enable_ccache(package)
         return
     end
 
-    local ccache = find_tool("ccache")
-    if not ccache then
-        ccache = find_tool("sccache")
-    end
-
+    local ccache = ccache.get()
     if ccache then
         local name = path.basename(ccache.program)
         package:data_set("ccache", name)
