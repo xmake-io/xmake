@@ -59,17 +59,19 @@ toolchain("zig")
         if toolchain:config("zigcc") ~= false then
             -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
             -- @see https://github.com/xmake-io/xmake/issues/3251
-            toolchain:set("toolset", "as",    zig .. " cc")
-            toolchain:set("toolset", "cc",    zig .. " cc")
-            toolchain:set("toolset", "cxx",   zig .. " c++")
-            toolchain:set("toolset", "ld",    zig .. " c++")
-            toolchain:set("toolset", "sh",    zig .. " c++")
+            toolchain:set("toolset", "cc",      zig .. " cc")
+            toolchain:set("toolset", "cxx",     zig .. " c++")
+            toolchain:set("toolset", "ld",      zig .. " c++")
+            toolchain:set("toolset", "sh",      zig .. " c++")
+            toolchain:set("toolset", "ar",      zig .. " ar")
+            toolchain:set("toolset", "ranlib",  zig .. " ranlib")
+            toolchain:set("toolset", "objcopy", zig .. " objcopy")
+            toolchain:set("toolset", "as",      zig .. " cc")
         end
-        toolchain:set("toolset", "ar",   "$(env ZC)", zig)
-        toolchain:set("toolset", "zc",   "$(env ZC)", zig)
-        toolchain:set("toolset", "zcar", "$(env ZC)", zig)
-        toolchain:set("toolset", "zcld", "$(env ZC)", zig)
-        toolchain:set("toolset", "zcsh", "$(env ZC)", zig)
+        toolchain:set("toolset", "zc",   zig)
+        toolchain:set("toolset", "zcar", zig)
+        toolchain:set("toolset", "zcld", zig)
+        toolchain:set("toolset", "zcsh", zig)
 
         -- init arch
         if toolchain:is_arch("arm64", "arm64-v8a") then
