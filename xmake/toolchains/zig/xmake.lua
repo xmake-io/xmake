@@ -52,6 +52,22 @@ toolchain("zig")
     on_load(function (toolchain)
         import("core.base.semver")
 
+        -- @see https://github.com/xmake-io/xmake/issues/5610
+        function _generate_zigcc_wrapper(zig)
+            local tools = {}
+            for _, tool in ipairs { "cc", "c++", "ar", "ranlib", "objcopy" } do
+                local wrapper_path = path.join(os.tmpdir(), "zigcc", tool)
+                if not os.is_host("windows") then
+                    io.writefile(wrapper_path, ("#!/bin/bash\nexec \"%s\" %s \"$@\""):format(zig, tool))
+                    os.runv("chmod", {"+x", wrapper_path})
+                else
+                    io.writefile(wrapper_path .. ".cmd", ("@echo off\n\"%s\" %s %%*"):format(zig, tool))
+                end
+                tools[tool] = wrapper_path
+            end
+            return tools
+        end
+
         -- set toolset
         -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
         local zig = toolchain:config("zig") or "zig"
@@ -59,14 +75,15 @@ toolchain("zig")
         if toolchain:config("zigcc") ~= false then
             -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
             -- @see https://github.com/xmake-io/xmake/issues/3251
-            toolchain:set("toolset", "cc",      zig .. " cc")
-            toolchain:set("toolset", "cxx",     zig .. " c++")
-            toolchain:set("toolset", "ld",      zig .. " c++")
-            toolchain:set("toolset", "sh",      zig .. " c++")
-            toolchain:set("toolset", "ar",      zig .. " ar")
-            toolchain:set("toolset", "ranlib",  zig .. " ranlib")
-            toolchain:set("toolset", "objcopy", zig .. " objcopy")
-            toolchain:set("toolset", "as",      zig .. " cc")
+            local zig_wrapper = _generate_zigcc_wrapper(zig)
+            toolchain:set("toolset", "cc",      zig_wrapper["cc"])
+            toolchain:set("toolset", "cxx",     zig_wrapper["c++"])
+            toolchain:set("toolset", "ld",      zig_wrapper["c++"])
+            toolchain:set("toolset", "sh",      zig_wrapper["c++"])
+            toolchain:set("toolset", "ar",      zig_wrapper["ar"])
+            toolchain:set("toolset", "ranlib",  zig_wrapper["ranlib"])
+            toolchain:set("toolset", "objcopy", zig_wrapper["objcopy"])
+            toolchain:set("toolset", "as",      zig_wrapper["cc"])
         end
         toolchain:set("toolset", "zc",   zig)
         toolchain:set("toolset", "zcar", zig)
