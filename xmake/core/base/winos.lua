@@ -168,7 +168,7 @@ function winos.cmdargv(argv, opt)
     if argn > limit then
         opt = opt or {}
         local argsfile = os.tmpfile(opt.tmpkey or os.args(argv)) .. ".args.txt"
-        local f = io.open(argsfile, 'w', {encoding = is_host("windows") and "ansi"})
+        local f = io.open(argsfile, 'w', {encoding = os.is_host("windows") and "ansi"})
         if f then
             -- we need to split args file to solve `fatal error LNK1170: line in command file contains 131071 or more characters`
             -- @see https://github.com/xmake-io/xmake/issues/812
