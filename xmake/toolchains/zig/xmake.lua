@@ -20,11 +20,32 @@
 
 -- define toolchain
 toolchain("zig")
+    set_kind("standalone")
     set_homepage("https://ziglang.org/")
     set_description("Zig Programming Language Compiler")
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
+
+        -- @see https://github.com/xmake-io/xmake/issues/5610
+        function _setup_zigcc_wrapper(zig)
+            for _, tool in ipairs({"cc", "c++", "ar", "ranlib", "objcopy"}) do
+                local wrapper_path = path.join(os.tmpdir(), "zigcc", tool)
+                if not os.isfile(wrapper_path) then
+                    if is_host("windows") then
+                        io.writefile(wrapper_path .. ".cmd", ("@echo off\n\"%s\" %s %%*"):format(zig, tool))
+                    else
+                        io.writefile(wrapper_path, ("#!/bin/bash\nexec \"%s\" %s \"$@\""):format(zig, tool))
+                        os.runv("chmod", {"+x", wrapper_path})
+                    end
+                end
+                if (tool == "cc" or tool == "c++") and wrapper_path then
+                    wrapper_path = "zig_cc@" .. wrapper_path
+                end
+                toolchain:config_set("toolset_" .. tool, wrapper_path)
+            end
+        end
+
         local paths = {}
         for _, package in ipairs(toolchain:packages()) do
             local envs = package:envs()
@@ -42,6 +63,7 @@ toolchain("zig")
             end
         end
         if zig then
+            _setup_zigcc_wrapper(zig)
             toolchain:config_set("zig", zig)
             toolchain:config_set("zig_version", zig_version)
             toolchain:configs_save()
@@ -59,17 +81,19 @@ toolchain("zig")
         if toolchain:config("zigcc") ~= false then
             -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
             -- @see https://github.com/xmake-io/xmake/issues/3251
-            toolchain:set("toolset", "as",    zig .. " cc")
-            toolchain:set("toolset", "cc",    zig .. " cc")
-            toolchain:set("toolset", "cxx",   zig .. " c++")
-            toolchain:set("toolset", "ld",    zig .. " c++")
-            toolchain:set("toolset", "sh",    zig .. " c++")
+            toolchain:set("toolset", "cc",      toolchain:config("toolset_cc"))
+            toolchain:set("toolset", "cxx",     toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "ld",      toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "sh",      toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "ar",      toolchain:config("toolset_ar"))
+            toolchain:set("toolset", "ranlib",  toolchain:config("toolset_ranlib"))
+            toolchain:set("toolset", "objcopy", toolchain:config("toolset_objcopy"))
+            toolchain:set("toolset", "as",      toolchain:config("toolset_cc"))
         end
-        toolchain:set("toolset", "ar",   "$(env ZC)", zig)
-        toolchain:set("toolset", "zc",   "$(env ZC)", zig)
-        toolchain:set("toolset", "zcar", "$(env ZC)", zig)
-        toolchain:set("toolset", "zcld", "$(env ZC)", zig)
-        toolchain:set("toolset", "zcsh", "$(env ZC)", zig)
+        toolchain:set("toolset", "zc",   zig)
+        toolchain:set("toolset", "zcar", zig)
+        toolchain:set("toolset", "zcld", zig)
+        toolchain:set("toolset", "zcsh", zig)
 
         -- init arch
         if toolchain:is_arch("arm64", "arm64-v8a") then
@@ -120,13 +144,10 @@ toolchain("zig")
             target = arch .. "-windows-gnu"
         end
         if target then
-            toolchain:add("zig_cc.asflags", "-target", target)
-            toolchain:add("zig_cc.cxflags", "-target", target)
-            toolchain:add("zig_cc.shflags", "-target", target)
-            toolchain:add("zig_cc.ldflags", "-target", target)
-            toolchain:add("zig_cxx.cxflags", "-target", target)
-            toolchain:add("zig_cxx.shflags", "-target", target)
-            toolchain:add("zig_cxx.ldflags", "-target", target)
+            toolchain:add("asflags", "-target", target)
+            toolchain:add("cxflags", "-target", target)
+            toolchain:add("shflags", "-target", target)
+            toolchain:add("ldflags", "-target", target)
             toolchain:add("zcflags", "-target", target)
             toolchain:add("zcldflags", "-target", target)
             toolchain:add("zcshflags", "-target", target)
