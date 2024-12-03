@@ -143,6 +143,8 @@ function policy.policies()
             ["package.cmake_generator.ninja"]     = {description = "Set cmake package use ninja for build", type = "boolean"},
             -- Enable msbuild MultiToolTask
             ["package.msbuild.multi_tool_task"]   = {description = "Enable msbuild MultiToolTask.", default = false, type = "boolean"},
+            -- Resolve package dependencies conflict automatically
+            ["package.resolve_depconflict"]       = {description = "Automatically resolve package dependencies conflict.", default = true, type = "boolean"},
             -- Stop to test on the first failure
             ["test.stop_on_first_failure"]        = {description = "Stop to test on the first failure", default = false, type = "boolean"},
             -- Return zero as exit code on failure

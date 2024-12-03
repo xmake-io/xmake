@@ -1223,6 +1223,28 @@ function _get_package_compatkey(dep)
     if dep:is_system() then
         key = key .. "/system"
     end
+    local resolve_depconflict = project.policy("package.resolve_depconflict")
+    if resolve_depconflict == nil then
+        resolve_depconflict = dep:policy("package.resolve_depconflict")
+    end
+    if resolve_depconflict == false then
+        if dep:version_str() then
+            key = key .. "/" .. dep:version_str()
+        end
+        local configs = dep:requireinfo().configs
+        if configs then
+            local configs_order = {}
+            for k, v in pairs(configs) do
+                if type(v) == "table" then
+                    v = string.serialize(v, {strip = true, indent = false, orderkeys = true})
+                end
+                table.insert(configs_order, k .. "=" .. tostring(v))
+            end
+            table.sort(configs_order)
+            key = key .. ":" .. string.serialize(configs_order, true)
+        end
+
+    end
     return key
 end
 
