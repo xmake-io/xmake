@@ -39,6 +39,9 @@ toolchain("zig")
                         os.runv("chmod", {"+x", wrapper_path})
                     end
                 end
+                if (tool == "cc" or tool == "c++") and wrapper_path then
+                    wrapper_path = "zig_cc@" .. wrapper_path
+                end
                 toolchain:config_set("toolset_" .. tool, wrapper_path)
             end
         end
@@ -78,14 +81,14 @@ toolchain("zig")
         if toolchain:config("zigcc") ~= false then
             -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
             -- @see https://github.com/xmake-io/xmake/issues/3251
-            toolchain:set("toolset", "cc",      "zig_cc@" .. toolchain:config("toolset_cc"))
-            toolchain:set("toolset", "cxx",     "zig_cc@" .. toolchain:config("toolset_c++"))
-            toolchain:set("toolset", "ld",      "zig_cc@" .. toolchain:config("toolset_c++"))
-            toolchain:set("toolset", "sh",      "zig_cc@" .. toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "cc",      toolchain:config("toolset_cc"))
+            toolchain:set("toolset", "cxx",     toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "ld",      toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "sh",      toolchain:config("toolset_c++"))
             toolchain:set("toolset", "ar",      toolchain:config("toolset_ar"))
             toolchain:set("toolset", "ranlib",  toolchain:config("toolset_ranlib"))
             toolchain:set("toolset", "objcopy", toolchain:config("toolset_objcopy"))
-            toolchain:set("toolset", "as",      "zig_cc@" .. toolchain:config("toolset_cc"))
+            toolchain:set("toolset", "as",      toolchain:config("toolset_cc"))
         end
         toolchain:set("toolset", "zc",   zig)
         toolchain:set("toolset", "zcar", zig)
