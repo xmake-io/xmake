@@ -136,6 +136,8 @@ function policy.policies()
             -- if true, then any updates to library dependencies, such as buildhash changes due to version changes,
             -- will force the installed packages to be recompiled and installed. @see https://github.com/xmake-io/xmake/issues/2719
             ["package.librarydeps.strict_compatibility"] = {description = "Set strict compatibility for package and it's all library dependencies.", type = "boolean"},
+            -- Resolve package dependencies conflict automatically
+            ["package.resolve_depconflict"]       = {description = "Automatically resolve package dependencies conflict.", default = true, type = "boolean"},
             -- Automatically passes dependency configuration for inner xmake package
             -- https://github.com/xmake-io/xmake/issues/3952
             ["package.xmake.pass_depconfs"]       = {description = "Automatically passes dependency configuration for inner xmake package", default = true, type = "boolean"},
@@ -143,8 +145,6 @@ function policy.policies()
             ["package.cmake_generator.ninja"]     = {description = "Set cmake package use ninja for build", type = "boolean"},
             -- Enable msbuild MultiToolTask
             ["package.msbuild.multi_tool_task"]   = {description = "Enable msbuild MultiToolTask.", default = false, type = "boolean"},
-            -- Resolve package dependencies conflict automatically
-            ["package.resolve_depconflict"]       = {description = "Automatically resolve package dependencies conflict.", default = true, type = "boolean"},
             -- Stop to test on the first failure
             ["test.stop_on_first_failure"]        = {description = "Stop to test on the first failure", default = false, type = "boolean"},
             -- Return zero as exit code on failure
