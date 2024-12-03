@@ -25,6 +25,21 @@ toolchain("zig")
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
+
+        -- @see https://github.com/xmake-io/xmake/issues/5610
+        function _setup_zigcc_wrapper(zig)
+            for _, tool in ipairs({"cc", "c++", "ar", "ranlib", "objcopy"}) do
+                local wrapper_path = path.join(os.tmpdir(), "zigcc", tool)
+                if not is_host("windows") then
+                    io.writefile(wrapper_path, ("#!/bin/bash\nexec \"%s\" %s \"$@\""):format(zig, tool))
+                    os.runv("chmod", {"+x", wrapper_path})
+                else
+                    io.writefile(wrapper_path .. ".cmd", ("@echo off\n\"%s\" %s %%*"):format(zig, tool))
+                end
+                toolchain:config_set("toolset_" .. tool, wrapper_path)
+            end
+        end
+
         local paths = {}
         for _, package in ipairs(toolchain:packages()) do
             local envs = package:envs()
@@ -42,6 +57,7 @@ toolchain("zig")
             end
         end
         if zig then
+            _setup_zigcc_wrapper(zig)
             toolchain:config_set("zig", zig)
             toolchain:config_set("zig_version", zig_version)
             toolchain:configs_save()
@@ -52,22 +68,6 @@ toolchain("zig")
     on_load(function (toolchain)
         import("core.base.semver")
 
-        -- @see https://github.com/xmake-io/xmake/issues/5610
-        function _generate_zigcc_wrapper(zig)
-            local tools = {}
-            for _, tool in ipairs { "cc", "c++", "ar", "ranlib", "objcopy" } do
-                local wrapper_path = path.join(os.tmpdir(), "zigcc", tool)
-                if not os.is_host("windows") then
-                    io.writefile(wrapper_path, ("#!/bin/bash\nexec \"%s\" %s \"$@\""):format(zig, tool))
-                    os.runv("chmod", {"+x", wrapper_path})
-                else
-                    io.writefile(wrapper_path .. ".cmd", ("@echo off\n\"%s\" %s %%*"):format(zig, tool))
-                end
-                tools[tool] = wrapper_path
-            end
-            return tools
-        end
-
         -- set toolset
         -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
         local zig = toolchain:config("zig") or "zig"
@@ -75,15 +75,14 @@ toolchain("zig")
         if toolchain:config("zigcc") ~= false then
             -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
             -- @see https://github.com/xmake-io/xmake/issues/3251
-            local zig_wrapper = _generate_zigcc_wrapper(zig)
-            toolchain:set("toolset", "cc",      zig_wrapper["cc"])
-            toolchain:set("toolset", "cxx",     zig_wrapper["c++"])
-            toolchain:set("toolset", "ld",      zig_wrapper["c++"])
-            toolchain:set("toolset", "sh",      zig_wrapper["c++"])
-            toolchain:set("toolset", "ar",      zig_wrapper["ar"])
-            toolchain:set("toolset", "ranlib",  zig_wrapper["ranlib"])
-            toolchain:set("toolset", "objcopy", zig_wrapper["objcopy"])
-            toolchain:set("toolset", "as",      zig_wrapper["cc"])
+            toolchain:set("toolset", "cc",      toolchain:config("toolset_cc"))
+            toolchain:set("toolset", "cxx",     toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "ld",      toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "sh",      toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "ar",      toolchain:config("toolset_ar"))
+            toolchain:set("toolset", "ranlib",  toolchain:config("toolset_ranlib"))
+            toolchain:set("toolset", "objcopy", toolchain:config("toolset_objcopy"))
+            toolchain:set("toolset", "as",      toolchain:config("toolset_cc"))
         end
         toolchain:set("toolset", "zc",   zig)
         toolchain:set("toolset", "zcar", zig)
