@@ -23,8 +23,10 @@ import("core.base.option")
 import("core.base.tty")
 import("core.package.package", {alias = "core_package"})
 import("core.project.target")
+import("core.project.project")
 import("core.platform.platform")
 import("lib.detect.find_file")
+import("private.tools.ccache")
 import("private.action.require.impl.actions.test")
 import("private.action.require.impl.actions.patch_sources")
 import("private.action.require.impl.actions.download_resources")
@@ -343,6 +345,24 @@ function _enter_package_testenvs(package)
     package:envs_enter()
 end
 
+function _enable_ccache(package)
+    if package:is_local() then
+        return
+    end
+
+    if not project.policy("package.build.ccache") then
+        return
+    end
+
+    local ccache = ccache.get()
+    if ccache then
+        local name = path.basename(ccache.program)
+        package:data_set("ccache", name)
+        local ccache_dir = path.join(path.directory(package:cachedir()), name)
+        os.setenv(name:upper() .. "_DIR", ccache_dir)
+    end
+end
+
 
 function main(package)
 
@@ -386,6 +406,9 @@ function main(package)
 
                     -- enter the environments of all package dependencies
                     _enter_package_installenvs(package)
+
+                    -- set package ccache dir
+                    _enable_ccache(package)
 
                     -- do install
                     if script ~= nil then
