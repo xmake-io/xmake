@@ -20,6 +20,7 @@
 
 -- define toolchain
 toolchain("zig")
+    set_kind("standalone")
     set_homepage("https://ziglang.org/")
     set_description("Zig Programming Language Compiler")
 
@@ -30,11 +31,13 @@ toolchain("zig")
         function _setup_zigcc_wrapper(zig)
             for _, tool in ipairs({"cc", "c++", "ar", "ranlib", "objcopy"}) do
                 local wrapper_path = path.join(os.tmpdir(), "zigcc", tool)
-                if not is_host("windows") then
-                    io.writefile(wrapper_path, ("#!/bin/bash\nexec \"%s\" %s \"$@\""):format(zig, tool))
-                    os.runv("chmod", {"+x", wrapper_path})
-                else
-                    io.writefile(wrapper_path .. ".cmd", ("@echo off\n\"%s\" %s %%*"):format(zig, tool))
+                if not os.isfile(wrapper_path) then
+                    if is_host("windows") then
+                        io.writefile(wrapper_path .. ".cmd", ("@echo off\n\"%s\" %s %%*"):format(zig, tool))
+                    else
+                        io.writefile(wrapper_path, ("#!/bin/bash\nexec \"%s\" %s \"$@\""):format(zig, tool))
+                        os.runv("chmod", {"+x", wrapper_path})
+                    end
                 end
                 toolchain:config_set("toolset_" .. tool, wrapper_path)
             end
@@ -75,14 +78,14 @@ toolchain("zig")
         if toolchain:config("zigcc") ~= false then
             -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
             -- @see https://github.com/xmake-io/xmake/issues/3251
-            toolchain:set("toolset", "cc",      toolchain:config("toolset_cc"))
-            toolchain:set("toolset", "cxx",     toolchain:config("toolset_c++"))
-            toolchain:set("toolset", "ld",      toolchain:config("toolset_c++"))
-            toolchain:set("toolset", "sh",      toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "cc",      "zig_cc@" .. toolchain:config("toolset_cc"))
+            toolchain:set("toolset", "cxx",     "zig_cc@" .. toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "ld",      "zig_cc@" .. toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "sh",      "zig_cc@" .. toolchain:config("toolset_c++"))
             toolchain:set("toolset", "ar",      toolchain:config("toolset_ar"))
             toolchain:set("toolset", "ranlib",  toolchain:config("toolset_ranlib"))
             toolchain:set("toolset", "objcopy", toolchain:config("toolset_objcopy"))
-            toolchain:set("toolset", "as",      toolchain:config("toolset_cc"))
+            toolchain:set("toolset", "as",      "zig_cc@" .. toolchain:config("toolset_cc"))
         end
         toolchain:set("toolset", "zc",   zig)
         toolchain:set("toolset", "zcar", zig)
@@ -138,13 +141,13 @@ toolchain("zig")
             target = arch .. "-windows-gnu"
         end
         if target then
-            toolchain:add("zig_cc.asflags", "-target", target)
-            toolchain:add("zig_cc.cxflags", "-target", target)
-            toolchain:add("zig_cc.shflags", "-target", target)
-            toolchain:add("zig_cc.ldflags", "-target", target)
-            toolchain:add("zig_cxx.cxflags", "-target", target)
-            toolchain:add("zig_cxx.shflags", "-target", target)
-            toolchain:add("zig_cxx.ldflags", "-target", target)
+            toolchain:add("asflags", "-target", target)
+            toolchain:add("cxflags", "-target", target)
+            toolchain:add("shflags", "-target", target)
+            toolchain:add("ldflags", "-target", target)
+            toolchain:add("cxflags", "-target", target)
+            toolchain:add("shflags", "-target", target)
+            toolchain:add("ldflags", "-target", target)
             toolchain:add("zcflags", "-target", target)
             toolchain:add("zcldflags", "-target", target)
             toolchain:add("zcshflags", "-target", target)
