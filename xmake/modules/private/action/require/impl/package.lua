@@ -183,6 +183,26 @@ function _load_require(require_str, requires_extra, opt)
         end
     end
 
+    -- resolve require info
+    local resolvedinfo = opt.resolvedinfo
+    local requirepath = opt.requirepath
+    if requirepath then
+        requirepath = requirepath .. "." .. packagename
+    else
+        requirepath = packagename
+    end
+    resolvedinfo = resolvedinfo and resolvedinfo[requirepath]
+    if resolvedinfo then
+        -- resolve the conflict package version
+        if resolvedinfo.version then
+            version = resolvedinfo.version
+        end
+        -- resolve the conflict package configs
+        if resolvedinfo.configs then
+            require_extra.configs = resolvedinfo.configs
+        end
+    end
+
     -- get required building configurations
     -- we need to clone a new configs object, because the whole requireinfo will be modified later.
     -- @see https://github.com/xmake-io/xmake-repo/pull/2067
@@ -214,22 +234,6 @@ function _load_require(require_str, requires_extra, opt)
     if packagename:startswith("xmake::") then
         packagename = packagename:sub(8)
         require_extra.system = false
-    end
-
-    -- resolve require info
-    local resolvedinfo = opt.resolvedinfo
-    local requirepath = opt.requirepath
-    if requirepath then
-        requirepath = requirepath .. "." .. packagename
-    else
-        requirepath = packagename
-    end
-    resolvedinfo = resolvedinfo and resolvedinfo[requirepath]
-    if resolvedinfo then
-        -- resolve the conflict package version
-        if resolvedinfo.version then
-            version = resolvedinfo.version
-        end
     end
 
     -- init required item
