@@ -261,7 +261,8 @@ function _load_require(require_str, requires_extra, opt)
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
         external         = require_extra.external,  -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
         private          = require_extra.private,   -- default: false, private package, only for installation, do not export any links/includes and environments
-        build            = require_extra.build      -- default: false, always build packages, we do not use the precompiled artifacts
+        build            = require_extra.build,     -- default: false, always build packages, we do not use the precompiled artifacts
+        resolvedinfo     = resolvedinfo             -- the resolved info for the conflict version/configs
     }
     return required.packagename, required.requireinfo
 end
@@ -1601,10 +1602,18 @@ function get_configs_str(package)
     if parents_str then
         table.insert(configs, "from:" .. parents_str)
     end
+    local license = package:get("license")
+    if license then
+        table.insert(configs, "license:" .. license)
+    end
     local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
     local limitwidth = math.floor(os.getwinsize().width * 2 / 3)
     if #configs_str > limitwidth then
         configs_str = configs_str:sub(1, limitwidth) .. " ..)"
+    end
+    local resolvedinfo = requireinfo.resolvedinfo
+    if resolvedinfo then
+        configs_str = configs_str .. " " .. "${color.warning}(conflict resolved)${clear}"
     end
     return configs_str
 end
