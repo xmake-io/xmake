@@ -31,7 +31,7 @@ function _ping(ping, host)
     elseif is_host("macosx") then
         data = try { function () return os.iorun("%s -c 1 -t 1 %s", ping.program, host) end }
     else
-        -- https://github.com/xmake-io/xmake/issues/4470#issuecomment-1840338777
+        -- @see https://github.com/xmake-io/xmake/issues/4470#issuecomment-1840338777
         data = try { function () return os.iorun("%s -c 1 -W 1 -n %s", ping.program, host) end }
         if not data then
             data = try { function () return os.iorun("%s -c 1 -W 1 %s", ping.program, host) end }
@@ -39,7 +39,7 @@ function _ping(ping, host)
     end
     local timeval = "65535"
     if data then
-        timeval = data:match("time[=<]([%d%s%.]-)ms", 1, true) or data:match("[=<]([%d%s%.]-)ms TTL", 1, true) or "65535"
+        timeval = data:match("= [^/]+/([^/]+)/", 1, true) or data:match("[=<]([%d%s%.]-)ms TTL", 1, true) or "65535"
     end
     if timeval then
         timeval = tonumber(timeval:trim())
