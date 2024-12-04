@@ -1,3 +1,4 @@
+
 package("foo")
     add_deps("zlib >=1.2.13")
     set_policy("package.install_locally", true)
@@ -6,15 +7,11 @@ package_end()
 
 package("bar")
     add_deps("zlib 1.2.x")
---    add_deps("libpng dev")
---    add_deps("boost", {system = false, configs = {zlib = false}})
     set_policy("package.install_locally", true)
     on_install(function () end)
 package_end()
 
 package("zoo")
---    add_deps("libpng master")
---    add_deps("boost", {system = false, configs = {zlib = true}})
     set_policy("package.install_locally", true)
     on_install(function () end)
 package_end()
@@ -25,8 +22,10 @@ package("test")
     on_install(function () end)
 package_end()
 
+set_policy("package.sync_requires_to_deps", true)
+
 add_requires("test")
---add_requireconfs("**.boost", {override = true, configs = {zlib = false}})
+add_requires("zlib >=1.2.13", {system = false, configs = {shared = true}})
 
 target("test")
     set_kind("binary")

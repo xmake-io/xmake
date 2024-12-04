@@ -183,6 +183,26 @@ function _load_require(require_str, requires_extra, opt)
         end
     end
 
+    -- resolve require info
+    local resolvedinfo = opt.resolvedinfo
+    local requirepath = opt.requirepath
+    if requirepath then
+        requirepath = requirepath .. "." .. packagename
+    else
+        requirepath = packagename
+    end
+    resolvedinfo = resolvedinfo and resolvedinfo[requirepath]
+    if resolvedinfo then
+        -- resolve the conflict package version
+        if resolvedinfo.version then
+            version = resolvedinfo.version
+        end
+        -- resolve the conflict package configs
+        if resolvedinfo.configs then
+            require_extra.configs = resolvedinfo.configs
+        end
+    end
+
     -- get required building configurations
     -- we need to clone a new configs object, because the whole requireinfo will be modified later.
     -- @see https://github.com/xmake-io/xmake-repo/pull/2067
@@ -216,22 +236,6 @@ function _load_require(require_str, requires_extra, opt)
         require_extra.system = false
     end
 
-    -- resolve require info
-    local resolvedinfo = opt.resolvedinfo
-    local requirepath = opt.requirepath
-    if requirepath then
-        requirepath = requirepath .. "." .. packagename
-    else
-        requirepath = packagename
-    end
-    resolvedinfo = resolvedinfo and resolvedinfo[requirepath]
-    if resolvedinfo then
-        -- resolve the conflict package version
-        if resolvedinfo.version then
-            version = resolvedinfo.version
-        end
-    end
-
     -- init required item
     local required = {}
     local parentinfo = opt.parentinfo
@@ -257,7 +261,8 @@ function _load_require(require_str, requires_extra, opt)
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
         external         = require_extra.external,  -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
         private          = require_extra.private,   -- default: false, private package, only for installation, do not export any links/includes and environments
-        build            = require_extra.build      -- default: false, always build packages, we do not use the precompiled artifacts
+        build            = require_extra.build,     -- default: false, always build packages, we do not use the precompiled artifacts
+        resolvedinfo     = resolvedinfo             -- the resolved info for the conflict version/configs
     }
     return required.packagename, required.requireinfo
 end
@@ -1206,29 +1211,44 @@ function _get_requirepaths(package)
                 table.insert(requirepaths, requirepath .. "." .. package:name())
             end
         end
+        -- we also need to resolve requires conflict in toplevel, if `package.sync_requires_to_deps` policy is enabled.
+        -- @see https://github.com/xmake-io/xmake/issues/5745#issuecomment-2513951471
+        if project.policy("package.sync_requires_to_deps") then
+            table.insert(requirepaths, package:name())
+        end
     else
         table.insert(requirepaths, package:name())
     end
     return requirepaths
 end
 
--- get configs key for compatibility
+-- get compatibility key
 function _get_package_compatkey(dep)
     local key = dep:plat() .. "/" .. dep:arch() .. "/" .. (dep:kind() or "")
     if dep:is_system() then
         key = key .. "/system"
     end
-    local configs = dep:requireinfo().configs
-    if configs then
-        local configs_order = {}
-        for k, v in pairs(configs) do
-            if type(v) == "table" then
-                v = string.serialize(v, {strip = true, indent = false, orderkeys = true})
-            end
-            table.insert(configs_order, k .. "=" .. tostring(v))
+    local resolve_depconflict = project.policy("package.resolve_depconflict")
+    if resolve_depconflict == nil then
+        resolve_depconflict = dep:policy("package.resolve_depconflict")
+    end
+    if resolve_depconflict == false then
+        if dep:version_str() then
+            key = key .. "/" .. dep:version_str()
         end
-        table.sort(configs_order)
-        key = key .. ":" .. string.serialize(configs_order, true)
+        local configs = dep:requireinfo().configs
+        if configs then
+            local configs_order = {}
+            for k, v in pairs(configs) do
+                if type(v) == "table" then
+                    v = string.serialize(v, {strip = true, indent = false, orderkeys = true})
+                end
+                table.insert(configs_order, k .. "=" .. tostring(v))
+            end
+            table.sort(configs_order)
+            key = key .. ":" .. string.serialize(configs_order, true)
+        end
+
     end
     return key
 end
@@ -1298,15 +1318,41 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps, resol
 
     -- check configs compatibility
     local prevkey
+    local configs
     local configs_conflict = false
     for _, dep in ipairs(deps) do
         local key = _get_package_compatkey(dep)
         if prevkey then
             if prevkey ~= key then
                 configs_conflict = true
+                break
             end
         else
             prevkey = key
+        end
+        local depconfigs = dep:requireinfo().configs
+        if configs and depconfigs then
+            for k, v in pairs(depconfigs) do
+                local oldv = configs[k]
+                if oldv ~= nil then
+                    local v_key = tostring(v)
+                    local oldv_key = tostring(oldv)
+                    if type(v) == "table" then
+                        v_key = string.serialize(v, {strip = true, indent = false, orderkeys = true})
+                    end
+                    if type(oldv) == "table" then
+                        oldv_key = string.serialize(oldv, {strip = true, indent = false, orderkeys = true})
+                    end
+                    if v_key ~= oldv_key then
+                        configs_conflict = true
+                        break
+                    end
+                else
+                    configs[k] = v
+                end
+            end
+        else
+            configs = depconfigs
         end
     end
     if configs_conflict then
@@ -1332,6 +1378,16 @@ function _check_and_resolve_package_depconflicts_impl(package, name, deps, resol
                 for _, requirepath in ipairs(_get_requirepaths(dep)) do
                     resolvedinfo[requirepath] = {version = version_best}
                 end
+            end
+        end
+    end
+
+    -- resolve configs
+    if configs then
+        for _, dep in ipairs(deps) do
+            for _, requirepath in ipairs(_get_requirepaths(dep)) do
+                resolvedinfo[requirepath] = resolvedinfo[requirepath] or {}
+                resolvedinfo[requirepath].configs = configs
             end
         end
     end
@@ -1573,10 +1629,18 @@ function get_configs_str(package)
     if parents_str then
         table.insert(configs, "from:" .. parents_str)
     end
+    local license = package:get("license")
+    if license then
+        table.insert(configs, "license:" .. license)
+    end
     local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
     local limitwidth = math.floor(os.getwinsize().width * 2 / 3)
     if #configs_str > limitwidth then
         configs_str = configs_str:sub(1, limitwidth) .. " ..)"
+    end
+    local resolvedinfo = requireinfo.resolvedinfo
+    if resolvedinfo then
+        configs_str = configs_str .. " " .. "${color.warning}(conflict resolved)${clear}"
     end
     return configs_str
 end

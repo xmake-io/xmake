@@ -1030,6 +1030,42 @@ function project.requireconfs_str()
     project.requires_str()
     local requireconfs_str   = project._memcache():get("requireconfs_str")
     local requireconfs_extra = project._memcache():get("requireconfs_extra")
+    -- synchronize requires configuration to all package dependencies.
+    -- @see https://github.com/xmake-io/xmake/issues/5745#issuecomment-2513951471
+    if project.policy("package.sync_requires_to_deps") then
+        local requires_str   = project._memcache():get("requires_str")
+        local requires_extra = project._memcache():get("requires_extra")
+        local sync_requires_to_deps = project._memcache():get("package.sync_requires_to_deps")
+        if requires_str and not sync_requires_to_deps then
+            requires_extra = requires_extra and table.wrap(requires_extra) or {}
+            requireconfs_str = requireconfs_str and table.wrap(requireconfs_str) or {}
+            requireconfs_extra = requireconfs_extra and table.wrap(requireconfs_extra) or {}
+            for _, require_str in ipairs(table.wrap(requires_str)) do
+                if not require_str:find("::", 1, true) then
+                    local splitinfo = require_str:split("%s")
+                    local packagename = splitinfo[1]
+                    local packageversion = splitinfo[2]
+                    local requireconf_str = "**." .. packagename
+                    local requireconf_extra = table.clone(requires_extra[require_str])
+                    if requireconf_extra then
+                        requireconf_extra.configs = table.clone(requireconf_extra.configs) or {}
+                    end
+                    if packageversion then
+                        requireconf_extra = requireconf_extra or {configs = {}}
+                        requireconf_extra.configs.version = packageversion
+                    end
+                    if requireconf_extra then
+                        requireconf_extra.override = true
+                        table.insert(requireconfs_str, requireconf_str)
+                        requireconfs_extra[requireconf_str] = requireconf_extra
+                    end
+                end
+            end
+            project._memcache():set("requireconfs_str", requireconfs_str)
+            project._memcache():set("requireconfs_extra", requireconfs_extra)
+            project._memcache():set("package.sync_requires_to_deps", true)
+        end
+    end
     return requireconfs_str, requireconfs_extra
 end
 
