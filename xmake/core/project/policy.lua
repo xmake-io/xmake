@@ -139,6 +139,9 @@ function policy.policies()
             -- Resolve package dependencies conflict automatically
             -- @see https://github.com/xmake-io/xmake/issues/5745
             ["package.resolve_depconflict"]       = {description = "Automatically resolve package dependencies conflict.", default = true, type = "boolean"},
+            -- Synchronize add_requires configuration in toplevel to all package dependencies for this package
+            -- @see https://github.com/xmake-io/xmake/issues/5745
+            ["package.sync_requires_to_deps"]     = {description = "Synchronize requires configuration to all package dependencies.", default = false, type = "boolean"},
             -- Automatically passes dependency configuration for inner xmake package
             -- @see https://github.com/xmake-io/xmake/issues/3952
             ["package.xmake.pass_depconfs"]       = {description = "Automatically passes dependency configuration for inner xmake package", default = true, type = "boolean"},
