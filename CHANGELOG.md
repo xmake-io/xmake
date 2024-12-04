@@ -8,6 +8,7 @@
 * [#5848](https://github.com/xmake-io/xmake/issues/5848): Support custom MSVC build tools, e.g. PortableBuildTools and msvc-wine
 * [#5880](https://github.com/xmake-io/xmake/pull/5880): Use msvc package to build project
 * [#5884](https://github.com/xmake-io/xmake/issues/5884): Add installtips for package
+* [#5894](https://github.com/xmake-io/xmake/issues/5894): Add package.merge_staticlibs policy to merge package libs
 
 ### Changes
 
@@ -1921,6 +1922,7 @@
 * [#5848](https://github.com/xmake-io/xmake/issues/5848): 支持自定义 MSVC 构建工具, PortableBuildTools 和 msvc-wine
 * [#5880](https://github.com/xmake-io/xmake/pull/5880): 支持使用 msvc 包去构建工程
 * [#5884](https://github.com/xmake-io/xmake/issues/5884): 为包添加自定义安装提示
+* [#5894](https://github.com/xmake-io/xmake/issues/5894): 添加 package.merge_staticlibs 策略去合并包安装的静态库
 
 ### 改进
 
