@@ -13,6 +13,7 @@
 
 * [#5817](https://github.com/xmake-io/xmake/pull/5817): Improve default pic for packages
 * [#5869](https://github.com/xmake-io/xmake/pull/5869): Add libstdc++ standard library modules support for gcc
+* [#5923](https://github.com/xmake-io/xmake/pull/5923): Solve the package version and configs conflict
 
 ### Bugs fixed
 
@@ -1925,6 +1926,7 @@
 
 * [#5817](https://github.com/xmake-io/xmake/pull/5817): 改进安装包的默认 pic 配置
 * [#5869](https://github.com/xmake-io/xmake/pull/5869): 为 gcc 添加 libstdc++ 标准库模块的支持
+* [#5923](https://github.com/xmake-io/xmake/pull/5923): 解决包依赖链中版本和配置冲突
 
 ### Bugs 修复
 
