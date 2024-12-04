@@ -1211,6 +1211,11 @@ function _get_requirepaths(package)
                 table.insert(requirepaths, requirepath .. "." .. package:name())
             end
         end
+        -- we also need to resolve requires conflict in toplevel, if `package.sync_requires_to_deps` policy is enabled.
+        -- @see https://github.com/xmake-io/xmake/issues/5745#issuecomment-2513951471
+        if project.policy("package.sync_requires_to_deps") then
+            table.insert(requirepaths, package:name())
+        end
     else
         table.insert(requirepaths, package:name())
     end

@@ -25,7 +25,7 @@ package_end()
 set_policy("package.sync_requires_to_deps", true)
 
 add_requires("test")
-add_requires("zlib", {system = false, configs = {shared = true}})
+add_requires("zlib >=1.2.13", {system = false, configs = {shared = true}})
 
 target("test")
     set_kind("binary")
