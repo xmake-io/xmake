@@ -149,6 +149,9 @@ function policy.policies()
             ["package.cmake_generator.ninja"]     = {description = "Set cmake package use ninja for build", type = "boolean"},
             -- Enable msbuild MultiToolTask
             ["package.msbuild.multi_tool_task"]   = {description = "Enable msbuild MultiToolTask.", default = false, type = "boolean"},
+            -- Merge all static libraries after installing package
+            -- @see https://github.com/xmake-io/xmake/issues/5894
+            ["package.merge_staticlibs"]          = {description = "Merge all static libraries after installing package", type = "boolean"},
             -- C/C++ build cache
             ["package.build.ccache"]              = {description = "Enable C/C++ package build cache.", default = false, type = "boolean"},
             -- Stop to test on the first failure
