@@ -32,7 +32,7 @@ function _merge_for_ar(target, program, outputfile, libraryfiles, opt)
         -- because on windows/ndk, llvm-ar.exe may fail to write with no permission, even though it's a writable temp file.
         --
         -- @see https://github.com/xmake-io/xmake/issues/1973
-        local archivefile = target:autogenfile((hash.uuid(outputfile):gsub("%-", ""))) .. ".a"
+        local archivefile = target.autogenfile and target:autogenfile((hash.uuid(outputfile):gsub("%-", ""))) .. ".a" or (os.tmpfile() .. ".a")
         os.mkdir(path.directory(archivefile))
         local tmpfile = os.tmpfile()
         local mrifile = io.open(tmpfile, "w")
@@ -56,7 +56,7 @@ function _merge_for_msvclib(target, program, outputfile, libraryfiles, opt)
     vstool.runv(program, table.join("-nologo", "-out:" .. outputfile, libraryfiles), {envs = opt.runenvs})
 end
 
--- merge *.a archive libraries
+-- merge *.a archive libraries, @note target may be package.
 function main(target, outputfile, libraryfiles)
     local program, toolname = target:tool("ar")
     if program and toolname then
