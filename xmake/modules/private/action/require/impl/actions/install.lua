@@ -247,11 +247,12 @@ function _merge_staticlibs(package)
         end
         if #libfiles > 0 then
             local linkdir = linkdirs[1]
+            local linkname = package:name()
             local opt = {plat = package:plat(), arch = package:arch()}
-            local libfile_new = path.join(installdir, linkdir, target.filename(package:name(), "static", opt))
+            local libfile_new = path.join(installdir, linkdir, target.filename(linkname, "static", opt))
 
             merge_staticlib(package, libfile_new, libfiles)
-            package:set("links", target.linkname(path.filename(libfile_new), opt))
+            package:set("links", linkname)
             for _, libfile in ipairs(libfiles) do
                 if libfile ~= libfile_new then
                     os.rm(libfile)
