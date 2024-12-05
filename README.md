@@ -692,4 +692,5 @@ This project exists thanks to all the people who have [contributed](CONTRIBUTING
 * [xq144](https://github.com/xq114): Improve `xrepo env shell`, and contribute a lot of packages to the [xmake-repo](https://github.com/xmake-io/xmake-repo) repository.
 * [star-hengxing](https://github.com/star-hengxing): Contribute a lot of packages to the [xmake-repo](https://github.com/xmake-io/xmake-repo) repository.
 * [Arthapz](https://github.com/Arthapz): Contribue new C++ Modules implementation.
+* [SirLynix](https://github.com/SirLynix): Contributed many packages and let more people know about xmake.
 * `enderger`: Helped smooth out the edges on the English translation of the README
