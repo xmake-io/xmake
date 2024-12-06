@@ -239,6 +239,9 @@
 #define xmi_luaL_fileresult(lua, stat, fname)       (g_lua_ops)->_luaL_fileresult(lua, stat, fname)
 #define xmi_luaL_execresult(lua, stat)              (g_lua_ops)->_luaL_execresult(lua, stat)
 #define xmi_luaL_setfuncs(lua, l, nup)              (g_lua_ops)->_luaL_setfuncs(lua, l, nup)
+#define xmi_luaL_loadfilex(lua, fn, mode)           (g_lua_ops)->_luaL_loadfilex(lua, fn, mode)
+#define xmi_luaL_loadfile(lua, fn)                  xmi_luaL_loadfilex(lua, fn, NULL)
+#define xmi_luaL_loadstring(lua, s)                 (g_lua_ops)->_luaL_loadstring(lua, s)
 
 #define xmi_luaL_newlibtable(lua, l)                xml_lua_createtable(lua, 0, sizeof(l)/sizeof((l)[0]) - 1)
 #define xmi_luaL_newlib(lua, l) \
@@ -422,6 +425,9 @@
 #   define luaL_fileresult          xmi_luaL_fileresult
 #   define luaL_execresult          xmi_luaL_execresult
 #   define luaL_setfuncs            xmi_luaL_setfuncs
+#   define luaL_loadfilex           xmi_luaL_loadfilex
+#   define luaL_loadfile            xmi_luaL_loadfile
+#   define luaL_loadstring          xmi_luaL_loadstring
 
 #   define luaL_newlibtable         xmi_luaL_newlibtable
 #   define luaL_newlib              xmi_luaL_newlib
@@ -650,6 +656,8 @@ typedef struct xmi_lua_ops_t_ {
     int             (*_luaL_fileresult)(lua_State* lua, int stat, const char* fname);
     int             (*_luaL_execresult)(lua_State* lua, int stat);
     void            (*_luaL_setfuncs)(lua_State* lua, const luaL_Reg* l, int nup);
+    int             (*_luaL_loadfilex)(lua_State* lua, const char* filename, const char* mode);
+    int             (*_luaL_loadstring)(lua_State* lua, const char* s);
 
 }xmi_lua_ops_t;
 

@@ -217,6 +217,8 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._luaL_fileresult       = &luaL_fileresult;
         s_luaops._luaL_execresult       = &luaL_execresult;
         s_luaops._luaL_setfuncs         = &luaL_setfuncs;
+        s_luaops._luaL_loadfilex        = &luaL_loadfilex;
+        s_luaops._luaL_loadstring       = &luaL_loadstring;
 
         s_luaops_inited                 = tb_true;
     }
