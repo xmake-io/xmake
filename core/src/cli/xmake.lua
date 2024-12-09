@@ -63,8 +63,6 @@ target("cli")
         add_installfiles("$(projectdir)/../scripts/xrepo.ps1")
         set_prefixdir("/", {bindir = "/"})
         after_install(function (target)
-            os.rm(target:libdir())
-            os.rm(target:includedir())
             os.cp(path.join(os.programdir(), "winenv"), target:installdir())
         end)
     else
