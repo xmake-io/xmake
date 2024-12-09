@@ -9,6 +9,7 @@
 * [#5880](https://github.com/xmake-io/xmake/pull/5880): Use msvc package to build project
 * [#5884](https://github.com/xmake-io/xmake/issues/5884): Add installtips for package
 * [#5894](https://github.com/xmake-io/xmake/issues/5894): Add package.merge_staticlibs policy to merge package libs
+* [#5948](https://github.com/xmake-io/xmake/pull/5948): Add `lua.native-object` rule
 
 ### Changes
 
@@ -1923,6 +1924,7 @@
 * [#5880](https://github.com/xmake-io/xmake/pull/5880): 支持使用 msvc 包去构建工程
 * [#5884](https://github.com/xmake-io/xmake/issues/5884): 为包添加自定义安装提示
 * [#5894](https://github.com/xmake-io/xmake/issues/5894): 添加 package.merge_staticlibs 策略去合并包安装的静态库
+* [#5948](https://github.com/xmake-io/xmake/pull/5948): 添加 `lua.native-object` 规则
 
 ### 改进
 
