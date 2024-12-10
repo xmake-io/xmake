@@ -19,10 +19,22 @@
 --
 
 -- build linux driver module
-rule("platform.linux.driver")
-    on_config(
-        function (target)
-            wprint('deprecated: please use rule("platform.linux.module") instead of rule("platform.linux.driver")')
-        end
-    )
-    add_deps("platform.linux.module")
+rule("platform.linux.module")
+    set_sourcekinds("cc")
+    on_load(function (target)
+        import("driver_modules").load(target)
+    end)
+    on_config(function (target)
+        import("driver_modules").config(target)
+    end)
+    on_link(function (target, opt)
+        import("driver_modules").link(target, opt)
+    end)
+    on_install(function (target)
+        import("driver_modules").install(target)
+    end)
+    on_uninstall(function (target)
+        import("driver_modules").uninstall(target)
+    end)
+
+
