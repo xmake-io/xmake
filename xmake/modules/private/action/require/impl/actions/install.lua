@@ -542,7 +542,7 @@ function main(package)
                     -- failed
                     if not package:requireinfo().optional then
                         if os.isfile(errorfile) then
-                            if errors and option.get("diagnosis") then
+                            if errors then -- and option.get("diagnosis") then
                                 print(tostring(errors))
                             else
                                 if errors then
