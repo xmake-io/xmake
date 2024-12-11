@@ -1,9 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("protobuf-cpp")
-if is_cross() then
-    add_requires("protoc")
-end
+add_requires("protoc", "protobuf-cpp")
+-- add_requireconfs("protoc.protobuf-cpp", {version = "1.0.0"})
 
 target("test")
     set_kind("binary")
@@ -12,8 +10,5 @@ target("test")
     add_files("src/*.cpp")
     add_files("src/**.proto", {proto_rootdir = "src"})
 
-    add_packages("protobuf-cpp")
-    if is_cross() then
-        add_packages("protoc")
-    end
+    add_packages("protoc", "protobuf-cpp")
 
