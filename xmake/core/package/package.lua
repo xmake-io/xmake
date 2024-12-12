@@ -1073,7 +1073,7 @@ function _instance:_rawenvs()
             envs.PATH = table.wrap(bindirs)
         elseif self:is_binary() then
             envs.PATH = {"bin"}
-        elseif os.host() == "windows" and self:is_plat("windows", "mingw") and self:config("shared") then
+        elseif os.host() == "windows" and self:is_plat("windows", "mingw") and self:is_arch(os.arch()) and self:config("shared") then
             -- bin/*.dll for windows
             envs.PATH = {"bin"}
         end
