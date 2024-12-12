@@ -1071,12 +1071,15 @@ function _instance:_rawenvs()
         local bindirs = self:get("bindirs")
         if bindirs then
             envs.PATH = table.wrap(bindirs)
-        elseif self:is_binary() or self:is_plat("windows", "mingw") then -- bin/*.dll for windows
+        elseif self:is_binary() then
+            envs.PATH = {"bin"}
+        elseif os.host() == "windows" and self:is_plat("windows", "mingw") and package:config("shared") then
+            -- bin/*.dll for windows
             envs.PATH = {"bin"}
         end
 
         -- add LD_LIBRARY_PATH to load *.so directory
-        if os.host() ~= "windows" and self:is_plat(os.host()) and self:is_arch(os.arch()) then
+        if os.host() ~= "windows" and self:is_plat(os.host()) and self:is_arch(os.arch()) and package:config("shared") then
             envs.LD_LIBRARY_PATH = {"lib"}
             if os.host() == "macosx" then
                 envs.DYLD_LIBRARY_PATH = {"lib"}
