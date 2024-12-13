@@ -227,7 +227,6 @@ function _install_target_shared_libraries(target, batchcmds_, opt)
 
     -- do install
     for _, libfile in ipairs(libfiles) do
-        local filename = path.filename(libfile)
         _copy_file_with_symlinks(batchcmds_, libfile, bindir)
     end
 end
@@ -275,7 +274,7 @@ function _uninstall_target_shared_libraries(target, batchcmds_, opt)
     -- do uninstall
     for _, libfile in ipairs(libfiles) do
         local filename = path.filename(libfile)
-        batchcmds_:rm(libfile, path.join(bindir, filename), {emptydirs = true})
+        batchcmds_:rm(path.join(bindir, filename), {emptydirs = true})
     end
 end
 
