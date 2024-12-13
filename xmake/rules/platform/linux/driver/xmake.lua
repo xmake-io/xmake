@@ -20,6 +20,6 @@
 
 rule("platform.linux.driver")
     on_config(function (target)
-        wprint('deprecated: please use rule("platform.linux.module") instead of rule("platform.linux.driver")')
+        wprint('deprecated: please use add_rules("platform.linux.module") instead of add_rules("platform.linux.driver")')
     end)
     add_deps("platform.linux.module")
