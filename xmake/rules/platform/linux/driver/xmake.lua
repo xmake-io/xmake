@@ -18,23 +18,8 @@
 -- @file        xmake.lua
 --
 
--- build linux driver module
 rule("platform.linux.driver")
-    set_sourcekinds("cc")
-    on_load(function (target)
-        import("driver_modules").load(target)
-    end)
     on_config(function (target)
-        import("driver_modules").config(target)
+        wprint('deprecated: please use add_rules("platform.linux.module") instead of add_rules("platform.linux.driver")')
     end)
-    on_link(function (target, opt)
-        import("driver_modules").link(target, opt)
-    end)
-    on_install(function (target)
-        import("driver_modules").install(target)
-    end)
-    on_uninstall(function (target)
-        import("driver_modules").uninstall(target)
-    end)
-
-
+    add_deps("platform.linux.module")
