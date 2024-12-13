@@ -20,6 +20,6 @@
 
 rule("luarocks.module")
     on_config(function (target)
-        wprint('deprecated: please use rule("lua.module") instead of rule("luarocks.module")')
+        wprint('deprecated: please use add_rules("lua.module") instead of add_rules("luarocks.module")')
     end)
     add_deps("lua.module")
