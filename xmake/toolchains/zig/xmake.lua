@@ -29,11 +29,12 @@ toolchain("zig")
 
         -- @see https://github.com/xmake-io/xmake/issues/5610
         function _setup_zigcc_wrapper(zig)
+            local script_suffix = is_host("windows") and ".cmd" or ""
             for _, tool in ipairs({"cc", "c++", "ar", "ranlib", "objcopy"}) do
-                local wrapper_path = path.join(os.tmpdir(), "zigcc", tool)
+                local wrapper_path = path.join(os.tmpdir(), "zigcc", tool) .. script_suffix
                 if not os.isfile(wrapper_path) then
                     if is_host("windows") then
-                        io.writefile(wrapper_path .. ".cmd", ("@echo off\n\"%s\" %s %%*"):format(zig, tool))
+                        io.writefile(wrapper_path, ("@echo off\n\"%s\" %s %%*"):format(zig, tool))
                     else
                         io.writefile(wrapper_path, ("#!/bin/bash\nexec \"%s\" %s \"$@\""):format(zig, tool))
                         os.runv("chmod", {"+x", wrapper_path})
