@@ -55,8 +55,6 @@ end
 -- @param name  the package name, e.g. pcre2
 -- @param opt   the options, e.g. {verbose = true}
 --
--- @return      true or false
---
 function main(name, opt)
     local dotnet = find_tool("dotnet")
     if not dotnet then
