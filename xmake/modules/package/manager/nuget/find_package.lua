@@ -26,6 +26,22 @@ import("core.base.json")
 import("core.project.config")
 import("core.project.target")
 
+function _find_package(name, targets, libraries, result)
+    local libinfo = libraries[name]
+    if libinfo then
+        print("find", name, libinfo)
+    end
+    local targetinfo = targets[name]
+    if targetinfo then
+        local dependencies = targetinfo.dependencies
+        if dependencies then
+            for k, v in pairs(dependencies) do
+                _find_package(k .. "/" .. v, targets, libraries, result)
+            end
+        end
+    end
+end
+
 -- find package from the nuget package manager
 --
 -- @param name  the package name, e.g. zlib, pcre
@@ -38,6 +54,31 @@ function main(name, opt)
     local installdir = assert(opt.installdir, "installdir not found!")
     local stubdir = path.join(installdir, "stub")
     local manifestfile = path.join(stubdir, "obj", "project.assets.json")
+    if not os.isfile(manifestfile) then
+        return
+    end
     local manifest = json.loadfile(manifestfile)
-    print(manifest)
+    local targets
+    for k, v in pairs(manifest.targets) do
+        targets = v
+        break
+    end
+    local target_root
+    if targets then
+        for k, v in pairs(targets) do
+            if k:startswith(name) then
+                target_root = k
+                break
+            end
+        end
+    end
+    local libraries = manifest.libraries
+    if target_root and libraries then
+        local result = {}
+        _find_package(target_root, targets, libraries, result)
+        if result.links or result.includedirs then
+            return result
+        end
+    end
 end
+
