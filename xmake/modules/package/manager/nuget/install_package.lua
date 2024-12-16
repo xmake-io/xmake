@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.option")
-import("core.base.json")
 import("core.base.semver")
 import("lib.detect.find_tool")
 
@@ -49,9 +48,6 @@ function _install(dotnet, name, opt)
 
     -- install package
     os.vrunv(dotnet, argv, {curdir = stubdir})
-
-    local manifestfile = path.join(stubdir, "obj", "project.assets.json")
-    io.cat(manifestfile)
 end
 
 -- install package

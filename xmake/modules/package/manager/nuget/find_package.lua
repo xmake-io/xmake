@@ -22,6 +22,7 @@
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("core.base.option")
+import("core.base.json")
 import("core.project.config")
 import("core.project.target")
 
@@ -32,4 +33,11 @@ import("core.project.target")
 --
 function main(name, opt)
     opt = opt or {}
+
+    -- load manifest info
+    local installdir = assert(opt.installdir, "installdir not found!")
+    local stubdir = path.join(installdir, "stub")
+    local manifestfile = path.join(stubdir, "obj", "project.assets.json")
+    local manifest = json.loadfile(manifestfile)
+    print(manifest)
 end
