@@ -26,17 +26,20 @@ import("core.base.json")
 import("core.project.config")
 import("core.project.target")
 
-function _find_package(name, targets, libraries, result)
-    local libinfo = libraries[name]
+function _find_package(name, metainfo, result)
+    local libinfo = metainfo.libraries[name]
     if libinfo then
-        print("find", name, libinfo)
+        for _, file in ipairs(libinfo.files) do
+            local filepath = path.join(metainfo.packagesdir, name, file)
+            print(filepath, os.isfile(filepath))
+        end
     end
-    local targetinfo = targets[name]
+    local targetinfo = metainfo.targets[name]
     if targetinfo then
         local dependencies = targetinfo.dependencies
         if dependencies then
             for k, v in pairs(dependencies) do
-                _find_package(k .. "/" .. v, targets, libraries, result)
+                _find_package(k .. "/" .. v, metainfo, result)
             end
         end
     end
@@ -72,10 +75,15 @@ function main(name, opt)
             end
         end
     end
-    local libraries = manifest.libraries
-    if target_root and libraries then
+    local metainfo = {}
+    metainfo.targets = targets
+    metainfo.libraries = manifest.libraries
+    if manifest.project and manifest.project.restore then
+        metainfo.packagesdir = manifest.project.restore.packagesPath
+    end
+    if target_root and metainfo.targets and metainfo.libraries and metainfo.packagesdir then
         local result = {}
-        _find_package(target_root, targets, libraries, result)
+        _find_package(target_root, metainfo, result)
         if result.links or result.includedirs then
             return result
         end
