@@ -60,17 +60,24 @@ import("core.project.target")
 function _find_package(name, result, opt)
     local arch = opt.arch
     local plat = opt.plat
-    local mode = opt.mode
+    local configs = opt.configs or {}
     local libinfo = opt.libraries[name]
     if libinfo then
+        local libarchs = {x64 = "x64", x86 = "Win32", arm64 = "arm64"}
+        local runtimes = {
+            MT = "MultiThreaded",
+            MTd = "MultiThreadedDebug",
+            MD = "MultiThreadedDLL",
+            MDd = "MultiThreadedDebugDLL"}
         local installdir = path.join(opt.packagesdir, name)
         local libdir = "build/native/lib"
-        local runtime = "MultiThreadedDLL"
+        local runtime = assert(runtimes[configs.runtimes], "unknown runtimes %s", configs.runtimes)
         local toolset = "v142"
-        local libmode = mode == "debug" and "Debug" or "Release"
+        local libarch = libarchs[arch] or "x64"
+        local libmode = configs.debug and "Debug" or "Release"
         for _, file in ipairs(libinfo.files) do
             local filepath = path.join(installdir, file)
-            file = file:lower():trim()
+            file = file:trim()
 
             -- get includedirs
             if file:find("/include/", 1, true) then
@@ -80,8 +87,8 @@ function _find_package(name, result, opt)
 
             -- get linkdirs and links
             if file:endswith(".lib") then
-                local libfile = path.unix(path.join(libdir, toolset, libmode, runtime))
-                if file:startswith(libfile) then
+                local libfile = path.unix(path.join(libdir, libarch, toolset, libmode, runtime))
+                if file:startswith(libfile .. "/") then
                     result.links = result.links or {}
                     result.linkdirs = result.linkdirs or {}
                     result.libfiles = result.libfiles or {}
@@ -137,6 +144,7 @@ function main(name, opt)
     metainfo.plat = opt.plat
     metainfo.arch = opt.arch
     metainfo.mode = opt.mode
+    metainfo.configs = opt.configs
     metainfo.targets = targets
     metainfo.libraries = manifest.libraries
     if manifest.project and manifest.project.restore then
@@ -150,4 +158,5 @@ function main(name, opt)
         end
     end
 end
+
 
