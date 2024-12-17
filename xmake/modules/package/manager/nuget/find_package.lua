@@ -23,8 +23,10 @@ import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("core.base.option")
 import("core.base.json")
+import("core.tool.toolchain")
 import("core.project.config")
 import("core.project.target")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- find native package files
 -- e.g.
@@ -72,7 +74,7 @@ function _find_package(name, result, opt)
         local installdir = path.join(opt.packagesdir, name)
         local libdir = "build/native/lib"
         local runtime = assert(runtimes[configs.runtimes], "unknown runtimes %s", configs.runtimes)
-        local toolset = "v142"
+        local toolset = toolchain_utils.get_vs_toolset_ver(toolchain.load("msvc", {plat = plat, arch = arch}):config("vs_toolset") or config.get("vs_toolset"))
         local libarch = libarchs[arch] or "x64"
         local libmode = configs.debug and "Debug" or "Release"
         for _, file in ipairs(libinfo.files) do
