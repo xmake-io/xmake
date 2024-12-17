@@ -2638,7 +2638,7 @@ _get_toolchain_item() {
 _set_toolchain_item() {
     local name=${1}
     local key=${2}
-    local value=${3}
+    local value="${3}"
     if test_nz "${name}"; then
         _map_set "toolchains" "${name}_${key}" "${value}"
     else
