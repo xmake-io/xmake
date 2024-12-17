@@ -3091,11 +3091,14 @@ toolchain_end
 
 # tinycc toolchain
 toolchain "tinycc"
-    set_toolset "as" "tcc"
+    set_toolset "as" "tcc" "gcc" "clang"
     set_toolset "cc" "tcc"
+    set_toolset "cxx" "gcc" "g++" "clang" "clang++"
+    set_toolset "mm" "gcc" "clang"
+    set_toolset "mxx" "gcc" "g++" "clang" "clang++"
     set_toolset "ld" "tcc"
     set_toolset "sh" "tcc"
-    set_toolset "ar" "tcc -ar"
+    set_toolset "ar" "tcc -ar" "ar"
 toolchain_end
 
 # check platform
@@ -3399,8 +3402,6 @@ _toolchain_try_toolset() {
                 echo "checking for the ${description} (${kind}) ... ${program}"
                 return 0
             fi
-        else
-            return 0
         fi
     done
     return 1
