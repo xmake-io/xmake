@@ -10,6 +10,7 @@
 * [#5884](https://github.com/xmake-io/xmake/issues/5884): Add installtips for package
 * [#5894](https://github.com/xmake-io/xmake/issues/5894): Add package.merge_staticlibs policy to merge package libs
 * [#5948](https://github.com/xmake-io/xmake/pull/5948): Add `lua.native-object` rule
+* [#5911](https://github.com/xmake-io/xmake/issues/5911): Support for nuget packages
 
 ### Changes
 
@@ -1925,6 +1926,7 @@
 * [#5884](https://github.com/xmake-io/xmake/issues/5884): 为包添加自定义安装提示
 * [#5894](https://github.com/xmake-io/xmake/issues/5894): 添加 package.merge_staticlibs 策略去合并包安装的静态库
 * [#5948](https://github.com/xmake-io/xmake/pull/5948): 添加 `lua.native-object` 规则
+* [#5911](https://github.com/xmake-io/xmake/issues/5911): 支持 nuget 包集成
 
 ### 改进
 
