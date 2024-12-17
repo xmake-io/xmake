@@ -432,6 +432,8 @@ path_toolname() {
         */cc) toolname="gcc";;
         c++) toolname="gxx";;
         */c++) toolname="gxx";;
+        tcc) toolname="tcc";;
+        */tcc) toolname="tcc";;
         *) raise "unknown tool ${1}";;
     esac
     _ret="${toolname}"
@@ -988,6 +990,7 @@ _get_abstract_flags() {
             emxx) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
             cosmocc) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
             cosmocxx) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
+            tcc) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
             *) raise "unknown toolname(${toolname})!" ;;
         esac
         if test_nz "${flag}"; then
@@ -1692,6 +1695,42 @@ _get_target_toolchain_flags_for_clang() {
     _ret="${flags}"
 }
 
+# get toolchain flags for tcc in target
+_get_target_toolchain_flags_for_tcc() {
+    local name="${1}"
+    local toolkind="${2}"
+    local flags=""
+    if is_arch "i386"; then
+        flags="${flags} -m32"
+    fi
+    _get_target_item "${name}" "kind"; local targetkind="${_ret}"
+    if test_eq "${targetkind}" "shared"; then
+        if test_eq "${toolkind}" "sh"; then
+            flags="${flags} -shared -fPIC"
+        elif test_eq "${toolkind}" "cc" || test_eq "${toolkind}" "cxx"; then
+            flags="${flags} -fPIC"
+        fi
+        # @see https://github.com/tboox/tbox/issues/214
+        if test_eq "${toolkind}" "sh"; then
+            _get_target_soname "${name}"; local soname="${_ret}"
+            if test_nz "${soname}"; then
+                if is_plat "macosx"; then
+                    flags="${flags} -Wl,-install_name,${soname}"
+                else
+                    flags="${flags} -Wl,-soname,${soname}"
+                fi
+            fi
+        fi
+    fi
+    if is_plat "macosx"; then
+        _os_iorunv "xcrun" "-sdk" "macosx" "--show-sdk-path"; local sdkdir="${_ret}"
+        if test_nz "${sdkdir}"; then
+            flags="${flags} -isysroot \"${sdkdir}\""
+        fi
+    fi
+    _ret="${flags}"
+}
+
 # get toolchain flags in target
 _get_target_toolchain_flags() {
     local name="${1}"
@@ -1707,6 +1746,7 @@ _get_target_toolchain_flags() {
         emxx) _get_target_toolchain_flags_for_clang "${name}" "${toolkind}"; flags="${_ret}";;
         cosmocc) _get_target_toolchain_flags_for_gcc "${name}" "${toolkind}"; flags="${_ret}";;
         cosmocxx) _get_target_toolchain_flags_for_gcc "${name}" "${toolkind}"; flags="${_ret}";;
+        tcc) _get_target_toolchain_flags_for_tcc "${name}" "${toolkind}"; flags="${_ret}";;
         ar) _get_target_toolchain_flags_for_ar "${name}" "${toolkind}"; flags="${_ret}";;
         emar) _get_target_toolchain_flags_for_ar "${name}" "${toolkind}"; flags="${_ret}";;
         cosmoar) _get_target_toolchain_flags_for_ar "${name}" "${toolkind}"; flags="${_ret}";;
@@ -2744,6 +2784,7 @@ Common options:
                             - clang
                             - gcc
                             - emcc
+                            - tinycc
                             - cosmocc
   --buildir=DIR           Set build directory. (default: '"${xmake_sh_buildir}"')
 
@@ -3048,6 +3089,15 @@ toolchain "cosmocc"
     set_toolset "ar" "cosmoar"
 toolchain_end
 
+# tinycc toolchain
+toolchain "tinycc"
+    set_toolset "as" "tcc"
+    set_toolset "cc" "tcc"
+    set_toolset "ld" "tcc"
+    set_toolset "sh" "tcc"
+    set_toolset "ar" "tcc -ar"
+toolchain_end
+
 # check platform
 _check_platform() {
     if test "x${_target_plat}" = "x"; then
@@ -3116,6 +3166,7 @@ _toolchain_compcmd() {
         emxx) _toolchain_compcmd_for_gcc_clang "${program}" "${objectfile}" "${sourcefile}" "${flags}"; compcmd="${_ret}";;
         cosmocc) _toolchain_compcmd_for_gcc_clang "${program}" "${objectfile}" "${sourcefile}" "${flags}"; compcmd="${_ret}";;
         cosmocxx) _toolchain_compcmd_for_gcc_clang "${program}" "${objectfile}" "${sourcefile}" "${flags}"; compcmd="${_ret}";;
+        tcc) _toolchain_compcmd_for_gcc_clang "${program}" "${objectfile}" "${sourcefile}" "${flags}"; compcmd="${_ret}";;
         *) raise "unknown toolname(${toolname})!" ;;
     esac
     _ret="${compcmd}"
@@ -3138,6 +3189,7 @@ _toolchain_linkcmd() {
         emxx) _toolchain_linkcmd_for_gcc_clang "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         cosmocc) _toolchain_linkcmd_for_gcc_clang "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         cosmocxx) _toolchain_linkcmd_for_gcc_clang "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
+        tcc) _toolchain_linkcmd_for_gcc_clang "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         ar) _toolchain_linkcmd_for_ar "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         emar) _toolchain_linkcmd_for_ar "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         cosmoar) _toolchain_linkcmd_for_ar "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
@@ -3236,6 +3288,24 @@ _toolchain_try_clangxx() {
     return 1
 }
 
+# try tcc
+_toolchain_try_tcc() {
+    if test "x${_toolchain_try_tcc_result}" = "xok"; then
+        return 0
+    elif test "x${_toolchain_try_tcc_result}" = "xno"; then
+        return 1
+    fi
+
+    local kind="${1}"
+    local program="${2}"
+    if _os_runv "${program}" "-v"; then
+        _toolchain_try_tcc_result="ok"
+        return 0
+    fi
+    _toolchain_try_tcc_result="no"
+    return 1
+}
+
 # try ar
 _toolchain_try_ar() {
     local kind="${1}"
@@ -3297,6 +3367,7 @@ _toolchain_try_program() {
         emxx) _toolchain_try_clangxx "${kind}" "${program}" && ok=true;;
         cosmocc) _toolchain_try_gcc "${kind}" "${program}" && ok=true;;
         cosmocxx) _toolchain_try_gxx "${kind}" "${program}" && ok=true;;
+        tcc) _toolchain_try_tcc "${kind}" "${program}" && ok=true;;
         ar) _toolchain_try_ar "${kind}" "${program}" && ok=true;;
         emar) _toolchain_try_ar "${kind}" "${program}" && ok=true;;
         cosmoar) _toolchain_try_cosmoar "${kind}" "${program}" && ok=true;;
@@ -3328,6 +3399,8 @@ _toolchain_try_toolset() {
                 echo "checking for the ${description} (${kind}) ... ${program}"
                 return 0
             fi
+        else
+            return 0
         fi
     done
     return 1
@@ -4031,6 +4104,7 @@ _gmake_add_build_object() {
         emxx) _gmake_add_build_object_for_gcc_clang "${sourcekind}" "${sourcefile}" "${objectfile}" "${flagname}";;
         cosmocc) _gmake_add_build_object_for_gcc_clang "${sourcekind}" "${sourcefile}" "${objectfile}" "${flagname}";;
         cosmocxx) _gmake_add_build_object_for_gcc_clang "${sourcekind}" "${sourcefile}" "${objectfile}" "${flagname}";;
+        tcc) _gmake_add_build_object_for_gcc_clang "${sourcekind}" "${sourcefile}" "${objectfile}" "${flagname}";;
         *) raise "unknown toolname(${toolname})!" ;;
     esac
     echo "" >> "${xmake_sh_makefile}"
@@ -4113,6 +4187,7 @@ _gmake_add_build_target() {
         emxx) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         cosmocc) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         cosmocxx) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
+        tcc) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         ar) _gmake_add_build_target_for_ar "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         emar) _gmake_add_build_target_for_ar "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         cosmoar) _gmake_add_build_target_for_ar "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
