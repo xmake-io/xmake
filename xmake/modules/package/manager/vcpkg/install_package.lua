@@ -139,8 +139,6 @@ end
 -- @param name  the package name, e.g. pcre2, pcre2/libpcre2-8
 -- @param opt   the options, e.g. {verbose = true}
 --
--- @return      true or false
---
 function main(name, opt)
 
     -- attempt to find vcpkg
