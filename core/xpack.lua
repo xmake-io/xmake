@@ -125,7 +125,7 @@ xpack("xmakesrc")
         local format = package:format()
         if format == "srpm" or format == "deb" then
             batchcmds:runv("./configure")
-            batchcmds:runv("make")
+            batchcmds:runv("make", {"-j4"})
         end
     end)
 

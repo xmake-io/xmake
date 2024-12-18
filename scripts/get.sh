@@ -223,7 +223,7 @@ if test_nq "$2" "__install_only__"; then
         ./configure || raise "configure failed!"
         cd - || raise 'chdir failed!'
     fi
-    $make -C $projectdir --no-print-directory || raise "make failed!"
+    $make -C $projectdir --no-print-directory -j4 || raise "make failed!"
 fi
 
 # do install
