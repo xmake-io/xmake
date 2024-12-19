@@ -104,12 +104,9 @@ end
 -- escape path in flag
 -- @see https://github.com/xmake-io/xmake/issues/3161
 function _escape_path_in_flag(target, flag)
-    
-    if is_host("windows") and (target:has_tool("cc", "cl") 
-        or  target:is_plat("android") -- e.g. -isystem\ c:/path/to/ndk/28.0.12674087/
-        ) then
-        -- e.g. /ManifestInput:xx, /def:xxx
-        if flag:find(":", 1, true) then
+    if is_host("windows") then
+        -- e.g. /ManifestInput:..\..\, /def:xxx, -isystem c:\xxx, -Ic:\..
+        if flag:find("\\", 1, true) then
             flag = _escape_path(flag)
         end
     end
