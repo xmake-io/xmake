@@ -5,6 +5,7 @@
 ### New features
 
 * [#5994](https://github.com/xmake-io/xmake/issues/5994): Profile process performance
+* [#5995](https://github.com/xmake-io/xmake/pull/5995): Add profile support for vs generator
 
 ## v2.9.7
 
@@ -1927,6 +1928,7 @@
 ### 新特性
 
 * [#5994](https://github.com/xmake-io/xmake/issues/5994): 分析进程执行性能
+* [#5995](https://github.com/xmake-io/xmake/pull/5995): 为 vs generator 添加 profile 支持
 
 ## v2.9.7
 
