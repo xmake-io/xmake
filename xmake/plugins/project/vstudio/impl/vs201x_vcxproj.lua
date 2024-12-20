@@ -816,6 +816,9 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
         -- save subsystem
         local subsystem = "Console"
 
+        -- save profile
+        local profile = false
+
         -- make linker flags
         local flags = {}
         local excludes = {
@@ -836,6 +839,8 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
             elseif flag_lower:find("[^%-/].+%.lib") then
                 -- link file
                 table.insert(links, flag)
+            elseif flag_lower:find("[%-/]profile") then
+                profile = true
             else
                 local excluded = false
                 for _, exclude in ipairs(excludes) do
@@ -869,6 +874,9 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
 
         -- generate debug infomation?
         if linkerkinds[targetinfo.targetkind] == "Link" then
+
+            -- enable profile?
+            vcxprojfile:print("<Profile>%s</Profile>", tostring(profile))
 
             -- enable debug infomation?
             local debug = false
