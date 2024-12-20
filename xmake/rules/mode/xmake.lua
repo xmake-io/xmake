@@ -156,10 +156,15 @@ rule("mode.profile")
                 end
             end
 
-            -- enable gprof
-            target:add("cxflags", "-pg")
-            target:add("mxflags", "-pg")
-            target:add("ldflags", "-pg")
+            if target:is_plat("windows") then
+                -- enable vs profile
+                target:add("ldflags", "/profile")
+            else
+                -- enable gprof
+                target:add("cxflags", "-pg")
+                target:add("mxflags", "-pg")
+                target:add("ldflags", "-pg")
+            end
 
             -- enable NDEBUG macros to disables standard-C assertions
             target:add("cxflags", "-DNDEBUG")
