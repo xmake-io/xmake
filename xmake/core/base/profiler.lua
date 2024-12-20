@@ -247,7 +247,7 @@ function profiler:leave(name, ...)
     end
 end
 
--- get profiler mode, e.g. perf:call, perf:tag, trace
+-- get profiler mode, e.g. perf:call, perf:tag, perf:process, trace
 function profiler:mode()
     local mode = self._MODE
     if mode == nil then

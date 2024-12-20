@@ -279,8 +279,48 @@ function os._is_tracing_process()
     return is_tracing
 end
 
+-- profile process performance?
+function os._is_profiling_process_perf()
+    local is_profiling = os._IS_PROFILING_PROCESS_PERF
+    if is_profiling == nil then
+        local profile = os.getenv("XMAKE_PROFILE")
+        if profile then
+            profile = profile:trim()
+            if profile == "perf:process" then
+                is_profiling = true
+            end
+        end
+        is_profiling = is_profiling or false
+        os._IS_PROFILING_PROCESS_PERF = is_profiling
+    end
+    return is_profiling
+end
+
 -- run all exit callback
 function os._run_exit_cbs(ok, errors)
+
+    -- show process performance reports
+    local profileperf = os._is_profiling_process_perf()
+    if profileperf then
+        if os._PROCESS_PROFILEINFO then
+            local perfinfo = {}
+            local totaltime = 0
+            for runcmd, profileinfo in pairs(os._PROCESS_PROFILEINFO) do
+                profileinfo.runcmd = runcmd
+                totaltime = totaltime + profileinfo.totaltime
+                table.insert(perfinfo, profileinfo)
+            end
+            table.sort(perfinfo, function (a, b) return a.totaltime > b.totaltime end)
+            for _, profileinfo in ipairs(perfinfo) do
+                local percent = (profileinfo.totaltime / totaltime) * 100
+                if percent < 1 then
+                    break
+                end
+                utils.print("%6.3f, %6.2f%%, %7d, %s", profileinfo.totaltime, percent, profileinfo.runcount, profileinfo.runcmd)
+            end
+        end
+    end
+
     local exit_callbacks = os._EXIT_CALLBACKS
     if exit_callbacks then
         for _, cb in ipairs(exit_callbacks) do
@@ -905,6 +945,13 @@ function os.execv(program, argv, opt)
         detach = opt.detach,
         exclusive = opt.exclusive}
 
+    -- profile process performance
+    local runtime
+    local profileperf = os._is_profiling_process_perf()
+    if profileperf then
+        runtime = os.mclock()
+    end
+
     -- open command
     local ok = -1
     local errors
@@ -936,6 +983,30 @@ function os.execv(program, argv, opt)
 
         -- close process
         proc:close()
+
+        -- save profile info
+        if profileperf then
+            runtime = os.mclock() - runtime
+
+            local profileinfo = os._PROCESS_PROFILEINFO
+            if profileinfo == nil then
+                profileinfo = {}
+                os._PROCESS_PROFILEINFO = profileinfo
+            end
+
+            local runcmd
+            runcmd = filename
+            if argv and #argv > 0 then
+                runcmd = runcmd .. " " .. os.args(argv)
+            end
+            local perfinfo = profileinfo[runcmd]
+            if perfinfo == nil then
+                perfinfo = {}
+                profileinfo[runcmd] = perfinfo
+            end
+            perfinfo.totaltime = (perfinfo.totaltime or 0) + runtime
+            perfinfo.runcount = (perfinfo.runcount or 0) + 1
+        end
     else
         -- cannot execute process
         return nil, os.strerror()
