@@ -152,14 +152,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     {
         function ()
 
-            -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
-            if depfile and _g._HAS_MMD_MF == nil then
-                _g._HAS_MMD_MF = self:has_flags({"-MD", "-MF", os.nuldev()}, "cflags", { flagskey = "-MD -MF" }) or false
-            end
-
             -- generate includes file
             local compflags = flags
-            if depfile and _g._HAS_MMD_MF then
+            if depfile then
                 compflags = table.join(compflags, "-MD", "-MF", depfile)
             end
 
