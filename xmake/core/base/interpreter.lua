@@ -680,6 +680,8 @@ function interpreter.new()
     instance:api_register(nil, "add_subdirs",  interpreter.api_builtin_add_subdirs)
     instance:api_register(nil, "add_subfiles", interpreter.api_builtin_add_subfiles)
     instance:api_register(nil, "set_xmakever", interpreter.api_builtin_set_xmakever)
+    instance:api_register(nil, "namespace",    interpreter.api_builtin_namespace)
+    instance:api_register(nil, "namespace_end",interpreter.api_builtin_namespace_end)
 
     -- register the interpreter interfaces
     instance:api_register(nil, "interp_save_scope",    interpreter.api_interp_save_scope)
@@ -1842,6 +1844,14 @@ function interpreter:api_builtin_add_subfiles(...)
     self:api_builtin_includes(...)
     local files = {...}
     deprecated.add("includes(%s)", "add_subfiles(%s)", table.concat(files, ", "), table.concat(files, ", "))
+end
+
+-- the builtin api: namespace()
+function interpreter:api_builtin_namespace(...)
+end
+
+-- the builtin api: namespace_end()
+function interpreter:api_builtin_namespace_end(...)
 end
 
 -- the interpreter api: interp_save_scope()
