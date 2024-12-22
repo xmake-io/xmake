@@ -1847,11 +1847,25 @@ function interpreter:api_builtin_add_subfiles(...)
 end
 
 -- the builtin api: namespace()
-function interpreter:api_builtin_namespace(...)
+function interpreter:api_builtin_namespace(name, callback)
+    local namespace = self._NAMESPACE
+    if namespace == nil then
+        namespace = {}
+        self._NAMESPACE = namespace
+    end
+    table.insert(namespace, name)
+    if callback and type(callback) == "function" then
+        callback()
+        self:api_builtin_namespace_end()
+    end
 end
 
 -- the builtin api: namespace_end()
-function interpreter:api_builtin_namespace_end(...)
+function interpreter:api_builtin_namespace_end()
+    local namespace = self._NAMESPACE
+    if namespace then
+        table.remove(namespace)
+    end
 end
 
 -- the interpreter api: interp_save_scope()
