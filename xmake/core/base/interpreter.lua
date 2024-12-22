@@ -954,6 +954,7 @@ function interpreter:api_register_scope(...)
         local scope_args = table.pack(...)
         local scope_name = scope_args[1]
         local scope_info = scope_args[2]
+        local namespace = self._NAMESPACE_STR
 
         -- check invalid scope name, @see https://github.com/xmake-io/xmake/issues/4547
         if scope_args.n > 0 and type(scope_name) ~= "string" then
