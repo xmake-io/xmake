@@ -1854,6 +1854,7 @@ function interpreter:api_builtin_namespace(name, callback)
         self._NAMESPACE = namespace
     end
     table.insert(namespace, name)
+    self._NAMESPACE_STR = table.concat(namespace, "::")
     if callback and type(callback) == "function" then
         callback()
         self:api_builtin_namespace_end()
@@ -1865,6 +1866,7 @@ function interpreter:api_builtin_namespace_end()
     local namespace = self._NAMESPACE
     if namespace then
         table.remove(namespace)
+        self._NAMESPACE_STR = table.concat(namespace, "::")
     end
 end
 
