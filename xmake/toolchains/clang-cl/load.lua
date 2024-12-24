@@ -75,16 +75,24 @@ function main(toolchain)
         end
     end
 
-    local march
+    local target
     if toolchain:is_arch("x86_64", "x64") then
-        march = "-m64"
-    elseif toolchain:is_arch("i386", "x86") then
-        march = "-m32"
+        target = "x86_64-pc"
+    elseif toolchain:is_arch("i386", "x86", "i686") then
+        target = "i686-pc"
+    elseif toolchain:is_arch("arm64", "aarch64") then
+        target = "aarch64"
+    elseif toolchain:is_arch("arm64ec") then
+        target = "arm64ec"
+    elseif toolchain:is_arch("arm") then
+        target = "armv7"
     end
-    if march then
-        toolchain:add("cxflags", march)
-        toolchain:add("mxflags", march)
-        toolchain:add("asflags", march)
+
+    target = target .. "-windows-msvc"
+    if target then
+        toolchain:add("cxflags", "--target=" .. target)
+        toolchain:add("mxflags", "--target=" .. target)
+        toolchain:add("asflags", "--target=" .. target)
     end
 end
 
