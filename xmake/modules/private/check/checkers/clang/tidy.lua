@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
+import("core.base.semver")
 import("core.project.config")
 import("core.project.project")
 import("lib.detect.find_tool")
@@ -108,13 +109,35 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
     if opt.quiet then
         table.insert(argv, "--quiet")
     end
-    for _, sourcefile in ipairs(sourcefiles) do
-        if not path.is_absolute(sourcefile) then
-            sourcefile = path.absolute(sourcefile, projectdir)
+    -- https://github.com/llvm/llvm-project/pull/120547
+    if clang_tidy.version and semver.compare(clang_tidy.version, "19.1.6") > 0 and #sourcefiles > 32 then
+        for _, sourcefile in ipairs(sourcefiles) do
+            if not path.is_absolute(sourcefile) then
+                sourcefile = path.absolute(sourcefile, projectdir)
+            end
+            table.insert(argv, sourcefile)
         end
-        table.insert(argv, sourcefile)
+        local argsfile = os.tmpfile() .. ".args.txt"
+        io.writefile(argsfile, os.args(argv))
+        argv = {"@" .. argsfile}
+        os.execv(clang_tidy.program, argv, {curdir = projectdir})
+        os.rm(argsfile)
+    elseif #sourcefiles <= 32 then
+        for _, sourcefile in ipairs(sourcefiles) do
+            if not path.is_absolute(sourcefile) then
+                sourcefile = path.absolute(sourcefile, projectdir)
+            end
+            table.insert(argv, sourcefile)
+        end
+        os.execv(clang_tidy.program, argv, {curdir = projectdir})
+    else
+        for _, sourcefile in ipairs(sourcefiles) do
+            if not path.is_absolute(sourcefile) then
+                sourcefile = path.absolute(sourcefile, projectdir)
+            end
+            os.execv(clang_tidy.program, table.join(argv, sourcefile), {curdir = projectdir})
+        end
     end
-    os.execv(clang_tidy, argv, {curdir = projectdir})
 end
 
 -- do check
@@ -181,7 +204,7 @@ function main(argv)
 
     -- find clang-tidy
     local packages = {}
-    local clang_tidy = find_tool("clang-tidy")
+    local clang_tidy = find_tool("clang-tidy", {version = true})
     if not clang_tidy then
         table.join2(packages, install_packages("llvm"))
     end
@@ -193,9 +216,10 @@ function main(argv)
 
     -- we need to force detect and flush detect cache after loading all environments
     if not clang_tidy then
-        clang_tidy = find_tool("clang-tidy", {force = true})
+        clang_tidy = find_tool("clang-tidy", {force = true, version = true})
     end
     assert(clang_tidy, "clang-tidy not found!")
+    print(clang_tidy)
 
     -- list checks
     if args.list then
@@ -203,7 +227,7 @@ function main(argv)
     elseif args.create then
         _create_config(clang_tidy.program, args)
     else
-        _check(clang_tidy.program, args)
+        _check(clang_tidy, args)
     end
     os.setenvs(oldenvs)
 end
