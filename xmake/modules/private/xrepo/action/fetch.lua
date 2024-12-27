@@ -42,6 +42,7 @@ function menu_options()
                                        "    - xrepo fetch --configs=\"regex=true,thread=true\" boost"                                                   },
         {nil, "system",         "k", "false", "Only fetch package on current system."                                                                   },
         {                                                                                                                                               },
+        {nil, "sdk",            "kv", nil, "Set the SDK directory of cross toolchain."                                                                  },
         {nil, "toolchain",      "kv", nil, "Set the toolchain name."                                                                                    },
         {nil, "toolchain_host", "kv", nil, "Set the host toolchain name."                                                                               },
         {nil, "includes",       "kv", nil, "Includes extra lua configuration files.",
@@ -135,6 +136,10 @@ function _fetch_packages(packages)
     if option.get("arch") then
         table.insert(config_argv, "-a")
         table.insert(config_argv, option.get("arch"))
+    end
+    -- for cross toolchain
+    if option.get("sdk") then
+        table.insert(config_argv, "--sdk=" .. option.get("sdk"))
     end
     if option.get("toolchain") then
         table.insert(config_argv, "--toolchain=" .. option.get("toolchain"))
