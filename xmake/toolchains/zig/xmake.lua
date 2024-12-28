@@ -34,7 +34,7 @@ toolchain("zig")
                 local wrapper_path = path.join(os.tmpdir(), "zigcc", tool) .. script_suffix
                 if not os.isfile(wrapper_path) then
                     if is_host("windows") then
-                        io.writefile(wrapper_path, ("@echo off\n\"%s\" %s %%*"):format(zig, tool))
+                        io.writefile(wrapper_path, ("@echo off || true\n" .. [["%s" %s %%* || exec "zig" c++ "$@"]]):format(zig, tool))
                     else
                         io.writefile(wrapper_path, ("#!/bin/bash\nexec \"%s\" %s \"$@\""):format(zig, tool))
                         os.runv("chmod", {"+x", wrapper_path})
