@@ -27,7 +27,12 @@ import("private.utils.toolchain", {alias = "toolchain_utils"})
 -- translate bin path
 function _translate_bin_path(bin_path)
     if is_host("windows") and bin_path then
-        return bin_path:gsub("\\", "/") .. ".exe"
+        bin_path = bin_path:gsub("\\", "/")
+        local bin_path_lower = bin_path:lower()
+        if not bin_path_lower:endswith(".exe") and not bin_path_lower:endswith(".cmd") and not bin_path_lower:endswith(".bat") then
+            bin_path = bin_path .. ".exe"
+        end
+        return bin_path
     end
     return bin_path
 end

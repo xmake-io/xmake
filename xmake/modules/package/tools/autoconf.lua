@@ -60,7 +60,11 @@ end
 function _translate_windows_bin_path(bin_path)
     if bin_path then
         local argv = os.argv(bin_path)
-        argv[1] = path.unix(argv[1]) .. ".exe"
+        argv[1] = path.unix(argv[1])
+        local path_lower = argv[1]:lower()
+        if not path_lower:endswith(".exe") and not path_lower:endswith(".cmd") and not path_lower:endswith(".bat") then
+            argv[1] = argv[1] .. ".exe"
+        end
         return os.args(argv)
     end
 end
