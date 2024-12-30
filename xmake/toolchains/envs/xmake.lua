@@ -18,17 +18,13 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("envs")
-
-    -- set description
     set_description("Environment variables toolchain")
 
-    -- set toolset
     set_toolset("cc",    "$(env CC)")
     set_toolset("cxx",   "$(env CXX)")
-    set_toolset("ld",    "$(env LD)", "$(env CXX)")
-    set_toolset("sh",    "$(env SH)", "$(env LD)", "$(env CXX)")
+    set_toolset("ld",    "$(env CXX)", "$(env CC)", "$(env LD)")
+    set_toolset("sh",    "$(env CXX)", "$(env CC)", "$(env SH)", "$(env LD)")
     set_toolset("ar",    "$(env AR)")
     set_toolset("strip", "$(env STRIP)")
     set_toolset("ranlib","$(env RANLIB)")
