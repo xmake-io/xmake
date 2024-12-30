@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.base.colors")
 import("core.project.project")
 import("core.project.config")
@@ -1337,8 +1338,10 @@ function make(outputdir)
     -- enter project directory
     local oldir = os.cd(os.projectdir())
 
+    -- determine the filename
+    local filename = option.get("outputfile") or "CMakeLists.txt"
     -- open the cmakelists
-    local cmakelists = io.open(path.join(outputdir, "CMakeLists.txt"), "w")
+    local cmakelists = io.open(path.join(outputdir, filename), "w")
 
     -- generate cmakelists
     _generate_cmakelists(cmakelists, outputdir)

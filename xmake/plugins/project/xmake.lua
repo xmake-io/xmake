@@ -66,6 +66,7 @@ task("project")
                                                         ,   "    - xmake project -k compile_commands --lsp=clangd"
                                                         ,   values = {"clangd", "cpptools", "ccls"}}
                 ,   {nil, "outputdir", "v"  , "."       ,   "Set the output directory."                                                     }
+                ,   {nil, "outputfile", "v"  , nil       ,  "Set the output file (cmake only) ."                                                     }
                 }
             }
 
