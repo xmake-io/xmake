@@ -174,7 +174,11 @@ function find_build_tools(opt)
         if #lib ~= 0 then
             local vcvars = {
                 BUILD_TOOLS_ROOT = sdkdir,
-                INCLUDE = path.joinenv(includedirs),
+
+                -- vs runs in a windows ctx, so the envsep is always ";"
+                INCLUDE = path.joinenv(includedirs, ';'),
+                LIB = path.joinenv(lib, ';'),
+
                 WindowsSdkDir = variables.WindowsSdkDir,
                 WindowsSDKVersion = WindowsSDKVersion,
                 VCToolsInstallDir = variables.VCToolsInstallDir,
@@ -193,7 +197,6 @@ function find_build_tools(opt)
             end
 
             vcvars.VSCMD_ARG_TGT_ARCH = target_arch
-            vcvars.LIB = path.joinenv(lib)
             vcvars.BUILD_TOOLS_BIN = path.joinenv(buidl_tools_bin)
 
             local PATH = buidl_tools_bin
