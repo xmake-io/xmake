@@ -98,7 +98,7 @@ function linuxos.name()
                 elseif os_release:find("linux mint", 1, true) or os_release:find("linuxmint", 1, true) then
                     name = "linuxmint"
                 -- kylin contains keyword 'UBUNTU_CODENAME', so we check kylin before ubuntu
-                elseif os_release:find("kylin", 1, true) then  
+                elseif os_release:find("kylin", 1, true) then
                     name = "kylin"
                 elseif os_release:find("ubuntu", 1, true) then
                     name = "ubuntu"
