@@ -823,6 +823,9 @@ function _get_default_flags(package, configs, buildtype, opt)
         local dummy_cmakelist = path.join(tmpdir, "CMakeLists.txt")
 
         io.writefile(dummy_cmakelist, format([[
+    cmake_minimum_required(VERSION 3.15)
+    project(XMakeDummyProject)
+
     message(STATUS "CMAKE_C_FLAGS is ${CMAKE_C_FLAGS}")
     message(STATUS "CMAKE_C_FLAGS_%s is ${CMAKE_C_FLAGS_%s}")
 
