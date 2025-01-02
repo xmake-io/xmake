@@ -652,7 +652,7 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
     envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
     envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
-    if package:is_plat("windows") then
+    if package:is_plat("windows") and package:has_tool("cxx", "cl") then
         envs.CMAKE_AR = path.join(path.directory(envs.CMAKE_CXX_COMPILER), "lib.exe")
     end
     _fix_cxx_compiler_cmake(package, envs)

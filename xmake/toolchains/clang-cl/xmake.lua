@@ -31,7 +31,7 @@
 --
 toolchain("clang-cl")
     set_kind("standalone")
-    set_homepage("https://visualstudio.microsoft.com")
+    set_homepage("https://clang.llvm.org/")
     set_description("LLVM Clang C/C++ Compiler compatible with msvc")
     set_runtimes("MT", "MTd", "MD", "MDd")
 
