@@ -484,7 +484,7 @@ function main()
                             http.download(url, installerfile)
                         end
                     else
-                        git.clone(url, {depth = 1, recurse_submodules = not script_only, branch = version, outputdir = sourcedir})
+                        git.clone(url, {depth = 1, shallow_submodules = true, recurse_submodules = not script_only, branch = version, outputdir = sourcedir})
                     end
                     return true
                 end,
