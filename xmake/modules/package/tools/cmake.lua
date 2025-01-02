@@ -822,6 +822,8 @@ function _get_default_flags(package, configs, buildtype, opt)
         local tmpdir = path.join(os.tmpfile() .. ".dir", package:displayname(), package:mode())
         local dummy_cmakelist = path.join(tmpdir, "CMakeLists.txt")
 
+        -- About the minimum cmake version requirement
+        -- @see https://github.com/xmake-io/xmake/pull/6032
         io.writefile(dummy_cmakelist, format([[
     cmake_minimum_required(VERSION 3.15)
     project(XMakeDummyProject)
