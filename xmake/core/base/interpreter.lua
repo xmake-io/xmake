@@ -680,6 +680,8 @@ function interpreter.new()
     instance:api_register(nil, "add_subdirs",  interpreter.api_builtin_add_subdirs)
     instance:api_register(nil, "add_subfiles", interpreter.api_builtin_add_subfiles)
     instance:api_register(nil, "set_xmakever", interpreter.api_builtin_set_xmakever)
+    instance:api_register(nil, "namespace",    interpreter.api_builtin_namespace)
+    instance:api_register(nil, "namespace_end",interpreter.api_builtin_namespace_end)
 
     -- register the interpreter interfaces
     instance:api_register(nil, "interp_save_scope",    interpreter.api_interp_save_scope)
@@ -952,6 +954,7 @@ function interpreter:api_register_scope(...)
         local scope_args = table.pack(...)
         local scope_name = scope_args[1]
         local scope_info = scope_args[2]
+        local namespace = self._NAMESPACE_STR
 
         -- check invalid scope name, @see https://github.com/xmake-io/xmake/issues/4547
         if scope_args.n > 0 and type(scope_name) ~= "string" then
@@ -1836,6 +1839,30 @@ function interpreter:api_builtin_add_subfiles(...)
     self:api_builtin_includes(...)
     local files = {...}
     deprecated.add("includes(%s)", "add_subfiles(%s)", table.concat(files, ", "), table.concat(files, ", "))
+end
+
+-- the builtin api: namespace()
+function interpreter:api_builtin_namespace(name, callback)
+    local namespace = self._NAMESPACE
+    if namespace == nil then
+        namespace = {}
+        self._NAMESPACE = namespace
+    end
+    table.insert(namespace, name)
+    self._NAMESPACE_STR = table.concat(namespace, "::")
+    if callback and type(callback) == "function" then
+        callback()
+        self:api_builtin_namespace_end()
+    end
+end
+
+-- the builtin api: namespace_end()
+function interpreter:api_builtin_namespace_end()
+    local namespace = self._NAMESPACE
+    if namespace then
+        table.remove(namespace)
+        self._NAMESPACE_STR = table.concat(namespace, "::")
+    end
 end
 
 -- the interpreter api: interp_save_scope()
