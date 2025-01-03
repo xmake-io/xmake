@@ -425,10 +425,12 @@ function buildenvs(package, opt)
             name = name:gsub("gcc%-", "g++-")
             envs.CXX = dir and path.join(dir, name) or name
         end
-    elseif package:is_plat("windows") and not package:config("toolchains") then
+    end
+    if package:is_plat("windows") and not package:config("toolchains") then
         envs.PATH = os.getenv("PATH") -- we need to reserve PATH on msys2
         envs = os.joinenvs(envs, _get_msvc(package):runenvs())
     end
+
     if is_host("windows") then
         envs.CC       = _translate_windows_bin_path(envs.CC)
         envs.AS       = _translate_windows_bin_path(envs.AS)
