@@ -299,8 +299,8 @@ function get_stdmodules(target)
                 -- end
             end
         end
+        wprint("std and std.compat modules not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
     end
-    wprint("std and std.compat modules not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
 end
 
 function get_bmi_extension()
@@ -488,4 +488,3 @@ function get_print_library_module_manifest_path_flag(target)
     end
     return print_library_module_manifest_path_flag or nil
 end
-
