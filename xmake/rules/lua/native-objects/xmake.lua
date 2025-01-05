@@ -39,7 +39,7 @@ rule("lua.native-objects")
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.nobj.lua %s", sourcefile)
         batchcmds:mkdir(path.directory(sourcefile_c))
-        batchcmds:vrunv("native_objects.lua",
+        batchcmds:vrunv("native_objects",
             { "-outpath", path(dirname), "-gen", "lua", path(sourcefile) })
         -- remember to add_rules("c") if you need
         batchcmds:compile(sourcefile_c, objectfile)
