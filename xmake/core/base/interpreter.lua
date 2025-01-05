@@ -1712,7 +1712,16 @@ function interpreter:api_builtin_includes(...)
         end
         -- find the given files from the project directory
         if not found then
-            local files = os.match(subpath, not subpath:endswith(".lua"))
+            local files
+            if subpath:endswith(".lua") then
+                files = os.files(subpath)
+            else
+                -- @see https://github.com/xmake-io/xmake/issues/6026
+                local file = path.join(subpath, path.filename(curfile))
+                if os.isfile(file) then
+                    files = {file}
+                end
+            end
             if files and #files > 0 then
                 table.join2(subpaths_matched, files)
                 found = true
