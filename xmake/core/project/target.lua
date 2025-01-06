@@ -55,9 +55,9 @@ local sandbox_module  = require("sandbox/modules/import/core/sandbox/module")
 -- new a target instance
 function _instance.new(name, info)
     local instance     = table.inherit(_instance)
-    instance._NAME     = name
     instance._INFO     = info
     instance._CACHEID  = 1
+    instance:name_set(name)
     return instance
 end
 
@@ -253,9 +253,9 @@ function _instance:_build_deps()
         self._DEPS        = self._DEPS or {}
         self._ORDERDEPS   = self._ORDERDEPS or {}
         self._INHERITDEPS = self._INHERITDEPS or {}
-        instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:name()})
+        instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:fullname()})
         -- @see https://github.com/xmake-io/xmake/issues/4689
-        instance_deps.load_deps(self, instances, {}, self._INHERITDEPS, {self:name()}, function (t, dep)
+        instance_deps.load_deps(self, instances, {}, self._INHERITDEPS, {self:fullname()}, function (t, dep)
             local depinherit = t:extraconf("deps", dep:name(), "inherit")
             return depinherit == nil or depinherit
         end)
@@ -518,9 +518,9 @@ end
 -- clone target, @note we can just call it in after_load()
 function _instance:clone()
     if not self:_is_loaded() then
-        os.raise("please call target:clone() in after_load().", self:name())
+        os.raise("please call target:clone() in after_load().", self:fullname())
     end
-    local instance = target.new(self:name(), self._INFO:clone())
+    local instance = target.new(self:fullname(), self._INFO:clone())
     if self._DEPS then
         instance._DEPS = table.clone(self._DEPS)
     end
@@ -886,7 +886,23 @@ end
 
 -- set the target name
 function _instance:name_set(name)
-    self._NAME = name
+    local parts = name:split("::", {plain = true})
+    self._NAME = parts[#parts]
+    table.remove(parts)
+    if #parts > 0 then
+        self._NAMESPACE = table.concat(parts, "::")
+    end
+end
+
+-- get the namespace
+function _instance:namespace()
+    return self._NAMESPACE
+end
+
+-- get the full name
+function _instance:fullname()
+    local namespace = self:namespace()
+    return namespace and namespace .. "::" .. self:name() or self:name()
 end
 
 -- get the target kind
@@ -1371,7 +1387,12 @@ function _instance:objectdir(opt)
     if not objectdir then
         objectdir = path.join(config.buildir(), ".objs")
     end
-    objectdir = path.join(objectdir, self:name())
+    local namespace = self:namespace()
+    if namespace then
+        objectdir = path.join(objectdir, (namespace:replace("::", path.sep())), self:name())
+    else
+        objectdir = path.join(objectdir, self:name())
+    end
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
@@ -1403,7 +1424,12 @@ function _instance:dependir(opt)
     if not dependir then
         dependir = path.join(config.buildir(), ".deps")
     end
-    dependir = path.join(dependir, self:name())
+    local namespace = self:namespace()
+    if namespace then
+        dependir = path.join(dependir, (namespace:replace("::", path.sep())), self:name())
+    else
+        dependir = path.join(dependir, self:name())
+    end
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
@@ -1435,7 +1461,12 @@ function _instance:autogendir(opt)
     if not autogendir then
         autogendir = path.join(config.buildir(), ".gens")
     end
-    autogendir = path.join(autogendir, self:name())
+    local namespace = self:namespace()
+    if namespace then
+        autogendir = path.join(autogendir, (namespace:replace("::", path.sep())), self:name())
+    else
+        autogendir = path.join(autogendir, self:name())
+    end
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
@@ -1532,6 +1563,10 @@ function _instance:targetdir()
         local mode = config.mode()
         if mode then
             targetdir = path.join(targetdir, mode)
+        end
+        local namespace = self:namespace()
+        if namespace then
+            targetdir = path.join(targetdir, (namespace:replace("::", path.sep())))
         end
     end
     return targetdir
@@ -1916,7 +1951,8 @@ function _instance:sourcefiles()
         end
         if #results == 0 then
             local sourceinfo = self:sourceinfo("files", file) or {}
-            utils.warning("%s:%d${clear}: cannot match %s_files(\"%s\") in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, (removed and "remove" or "add"), file, self:type(), self:name())
+            utils.warning("%s:%d${clear}: cannot match %s_files(\"%s\") in %s(%s)",
+                sourceinfo.file or "", sourceinfo.line or -1, (removed and "remove" or "add"), file, self:type(), self:fullname())
         end
 
         -- process source files
@@ -2478,9 +2514,9 @@ end
 function _instance:tool(toolkind)
     -- we cannot get tool in on_load, because target:toolchains() has been not checked in configuration stage.
     if not self._LOADED_AFTER then
-        os.raise("we cannot get tool(%s) before target(%s) is loaded, maybe it is called on_load(), please call it in on_config().", toolkind, self:name())
+        os.raise("we cannot get tool(%s) before target(%s) is loaded, maybe it is called on_load(), please call it in on_config().", toolkind, self:fullname())
     end
-    return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
+    return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:fullname(), plat = self:plat(), arch = self:arch(),
                                                         before_get = function()
         -- get program from set_toolset
         local program = self:get("toolset." .. toolkind)
@@ -2517,7 +2553,7 @@ end
 
 -- get tool configuration from the toolchains
 function _instance:toolconfig(name)
-    return toolchain.toolconfig(self:toolchains(), name, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
+    return toolchain.toolconfig(self:toolchains(), name, {cachekey = "target_" .. self:fullname(), plat = self:plat(), arch = self:arch(),
                                                           after_get = function(toolchain_inst)
         -- get flags from target.on_xxflags()
         local script = toolchain_inst:get("target.on_" .. name)
