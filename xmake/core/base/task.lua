@@ -481,12 +481,12 @@ function task:name()
 end
 
 -- get the namespace
-function _instance:namespace()
+function task:namespace()
     return self._NAMESPACE
 end
 
 -- get the full name
-function _instance:fullname()
+function task:fullname()
     local namespace = self:namespace()
     return namespace and namespace .. "::" .. self:name() or self:name()
 end
@@ -508,8 +508,6 @@ function task:run(...)
 
     -- restore the current directory
     os.cd(curdir)
-
-    -- ok?
     return ok, errors
 end
 
