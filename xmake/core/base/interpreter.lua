@@ -239,11 +239,16 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
     local implementation = function (self, scopes, apiname, ...)
 
         -- init root scopes
+        local namespace = self._NAMESPACE_STR
         scopes._ROOT = scopes._ROOT or {}
 
         -- init current root scope
-        local root = scopes._ROOT[scope_kind] or {}
-        scopes._ROOT[scope_kind] = root
+        local rootkey = scope_kind
+        if namespace then
+            rootkey = scope_kind .. "@@" .. namespace .. "::"
+        end
+        local root = scopes._ROOT[rootkey] or {}
+        scopes._ROOT[rootkey] = root
 
         -- clear the current scope if be not belong to the current scope kind
         if scopes._CURRENT and scopes._CURRENT_KIND ~= scope_kind then
@@ -926,7 +931,7 @@ end
 --      {
 --          scope_kind1
 --          {
---              "scope_name1"
+--              "namespace1::scope_name1"
 --              {
 --
 --              }
@@ -934,7 +939,7 @@ end
 --
 --          scope_kind2
 --          {
---              "scope_name1"
+--              "namespace1::namespace2::scope_name1"
 --              {
 --
 --              }
@@ -955,6 +960,9 @@ function interpreter:api_register_scope(...)
         local scope_name = scope_args[1]
         local scope_info = scope_args[2]
         local namespace = self._NAMESPACE_STR
+        if scope_name ~= nil and namespace then
+            scope_name = namespace .. "::" .. scope_name
+        end
 
         -- check invalid scope name, @see https://github.com/xmake-io/xmake/issues/4547
         if scope_args.n > 0 and type(scope_name) ~= "string" then
@@ -995,6 +1003,8 @@ function interpreter:api_register_scope(...)
         scopes._ROOT = scopes._ROOT or {}
         if scope_name ~= nil then
             scopes._ROOT[scope_kind .. "@@" .. scope_name] = {}
+        elseif namespace then
+            scopes._ROOT[scope_kind .. "@@" .. namespace .. "::"] = {}
         end
 
         -- with scope info? translate it
@@ -1061,13 +1071,17 @@ end
 --          {
 --              scope_kind
 --              {
+--                  name1 = {"value3"}
+--              }
+--              scope_kind@@namespace::
+--              {
 --                  name2 = {"value3"}
 --              }
 --          }
 --
 --          scope_kind
 --          {
---              "scope_name" <-- _SCOPES._CURRENT
+--              "namespace::scope_name" <-- _SCOPES._CURRENT
 --              {
 --                  name1 = {"value1"}
 --                  name2 = {"value1", "value2", ...}
