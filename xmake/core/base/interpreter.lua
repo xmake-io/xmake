@@ -1717,10 +1717,7 @@ function interpreter:api_builtin_includes(...)
                 files = os.files(subpath)
             else
                 -- @see https://github.com/xmake-io/xmake/issues/6026
-                local file = path.join(subpath, path.filename(curfile))
-                if os.isfile(file) then
-                    files = {file}
-                end
+                files = os.files(path.join(subpath, path.filename(curfile)))
             end
             if files and #files > 0 then
                 table.join2(subpaths_matched, files)
