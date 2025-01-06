@@ -86,7 +86,7 @@ function interpreter._traceback(errors)
 end
 
 -- merge the current root values to the previous scope
-function interpreter._merge_root_scope(root, root_prev, override)
+function interpreter:_merge_root_scope(root, root_prev, override)
 
     -- merge it
     root_prev = root_prev or {}
@@ -118,9 +118,7 @@ end
 
 -- fetch the root values to the child values in root scope
 -- and we will only use the child values if be override mode
-function interpreter._fetch_root_scope(root)
-
-    -- fetch it
+function interpreter:_fetch_root_scope(root)
     for scope_kind_and_name, _ in pairs(root or {}) do
 
         -- is scope_kind@@scope_name?
@@ -551,7 +549,7 @@ function interpreter:_make(scope_kind, deduplicate, enable_filter)
         if scope_for_kind then
 
             -- fetch the root values in root scope first
-            interpreter._fetch_root_scope(scopes._ROOT)
+            self:_fetch_root_scope(scopes._ROOT)
 
             -- merge results
             for scope_name, scope in pairs(scope_for_kind) do
@@ -1828,12 +1826,12 @@ function interpreter:api_builtin_includes(...)
                 scopes._CURRENT = scope_prev
 
                 -- fetch the root values in root scopes first
-                interpreter._fetch_root_scope(scopes._ROOT)
+                self:_fetch_root_scope(scopes._ROOT)
 
                 -- restore the previous root scope and merge current root scope
                 -- it will override the previous values if the current values are override mode
                 -- so we priority use the values in subdirs scope
-                scopes._ROOT = interpreter._merge_root_scope(scopes._ROOT, root_prev, true)
+                scopes._ROOT = self:_merge_root_scope(scopes._ROOT, root_prev, true)
 
                 -- get mtime of the file
                 self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
@@ -1881,7 +1879,11 @@ function interpreter:api_builtin_namespace_end()
     local namespace = self._NAMESPACE
     if namespace then
         table.remove(namespace)
+    end
+    if namespace and #namespace > 0 then
         self._NAMESPACE_STR = table.concat(namespace, "::")
+    else
+        self._NAMESPACE_STR = nil
     end
 end
 
