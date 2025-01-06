@@ -64,7 +64,8 @@ function get_target_buildcmd_files(target, cmds, sourcebatch, opt)
 
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-    local ruleinst = assert(target:rule(rulename) or project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+    local ruleinst = assert(target:rule(rulename) or project.rule(rulename, {namespace = target:namespace()}) or
+                        rule.rule(rulename), "unknown rule: %s", rulename)
     local ignored_rules = hashset.from(opt.ignored_rules or {})
     if ignored_rules:has(ruleinst:name()) then
         return

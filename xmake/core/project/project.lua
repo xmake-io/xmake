@@ -383,7 +383,7 @@ function project._load_targets()
         end
         rulenames = table.unique(rulenames)
         for _, rulename in ipairs(rulenames) do
-            local r = project.rule(rulename) or rule.rule(rulename)
+            local r = project.rule(rulename, {namespace = t:namespace()}) or rule.rule(rulename)
             if r then
                 -- only add target rules
                 if r:kind() == "target" then
@@ -1087,8 +1087,13 @@ function project.requireslock_version()
 end
 
 -- get the given rule
-function project.rule(name)
-    return project.rules()[name]
+function project.rule(name, opt)
+    opt = opt or {}
+    local r = project.rules()[name]
+    if r == nil and opt.namespace then
+        r = project.rules()[opt.namespace .. "::" .. name]
+    end
+    return r
 end
 
 -- get project rules

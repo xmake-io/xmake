@@ -60,12 +60,12 @@ function _instance:_build_deps()
     end
     self._DEPS      = self._DEPS or {}
     self._ORDERDEPS = self._ORDERDEPS or {}
-    instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:name()})
+    instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:fullname()})
 end
 
 -- clone rule
 function _instance:clone()
-    local instance = rule.new(self:name(), self._INFO:clone())
+    local instance = rule.new(self:fullname(), self._INFO:clone())
     instance._DEPS = self._DEPS
     instance._ORDERDEPS = self._ORDERDEPS
     instance._PACKAGE = self._PACKAGE
@@ -106,7 +106,23 @@ end
 
 -- set the rule name
 function _instance:name_set(name)
-    self._NAME = name
+    local parts = name:split("::", {plain = true})
+    self._NAME = parts[#parts]
+    table.remove(parts)
+    if #parts > 0 then
+        self._NAMESPACE = table.concat(parts, "::")
+    end
+end
+
+-- get the namespace
+function _instance:namespace()
+    return self._NAMESPACE
+end
+
+-- get the full name
+function _instance:fullname()
+    local namespace = self:namespace()
+    return namespace and namespace .. "::" .. self:name() or self:name()
 end
 
 -- get the rule kind
@@ -331,7 +347,7 @@ end
 function rule.new(name, info, opt)
     opt = opt or {}
     local instance = table.inherit(_instance)
-    instance._NAME = name
+    instance:name_set(name)
     instance._INFO = info
     instance._PACKAGE = opt.package
     if opt.package then

@@ -75,7 +75,7 @@ end
 function _instance:_load_rule(ruleinst, suffix)
 
     -- init cache
-    local key = ruleinst:name() .. (suffix and ("_" .. suffix) or "")
+    local key = ruleinst:fullname() .. (suffix and ("_" .. suffix) or "")
     local cache = self._RULES_LOADED or {}
 
     -- do load
@@ -90,7 +90,7 @@ function _instance:_load_rule(ruleinst, suffix)
 
         -- before_load has been deprecated
         if on_load and suffix == "before" then
-            deprecated.add(ruleinst:name() .. ".on_load", ruleinst:name() .. ".before_load")
+            deprecated.add(ruleinst:fullname() .. ".on_load", ruleinst:fullname() .. ".before_load")
         end
     end
 
@@ -208,7 +208,7 @@ function _instance:_update_filerules()
     end
     rulenames = table.unique(rulenames)
     for _, rulename in ipairs(rulenames) do
-        local r = target._project() and target._project().rule(rulename) or rule.rule(rulename)
+        local r = target._project() and target._project().rule(rulename, {namespace = self:namespace()}) or rule.rule(rulename)
         if r then
             -- only add target rules
             if r:kind() == "target" then
@@ -1163,7 +1163,11 @@ end
 -- get target rule from the given rule name
 function _instance:rule(name)
     if self._RULES then
-        return self._RULES[name]
+        local r = self._RULES[name]
+        if r == nil and self:namespace() then
+            r = self._RULES[self:namespace() .. "::" .. name]
+        end
+        return r
     end
 end
 
@@ -1173,7 +1177,7 @@ end
 -- it will be replaced in the target:rules() and target:orderules(), but will be not replaced globally in the project.rules()
 function _instance:rule_add(r)
     self._RULES = self._RULES or {}
-    self._RULES[r:name()] = r
+    self._RULES[r:fullname()] = r
     self._ORDERULES = nil
 end
 
@@ -1750,7 +1754,8 @@ function _instance:filerules(sourcefile)
         if filerules then
             override = filerules.override
             for _, rulename in ipairs(table.wrap(filerules)) do
-                local r = target._project().rule(rulename) or rule.rule(rulename) or self:rule(rulename)
+                local r = target._project().rule(rulename, {namespace = self:namespace()}) or
+                            rule.rule(rulename) or self:rule(rulename)
                 if r then
                     table.insert(rules, r)
                 end
