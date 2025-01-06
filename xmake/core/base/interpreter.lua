@@ -164,27 +164,15 @@ end
 -- register scope end: scopename_end()
 function interpreter:_api_register_scope_end(...)
     assert(self and self._PUBLIC and self._PRIVATE)
-
-    -- done
     for _, apiname in ipairs({...}) do
-
-        -- check
-        assert(apiname)
 
         -- register scope api
         self:api_register(nil, apiname .. "_end", function (self, ...)
-
-            -- check
             assert(self and self._PRIVATE and apiname)
 
-            -- the scopes
-            local scopes = self._PRIVATE._SCOPES
-            assert(scopes)
-
             -- enter root scope
+            local scopes = self._PRIVATE._SCOPES
             scopes._CURRENT = nil
-
-            -- clear scope kind
             scopes._CURRENT_KIND = nil
         end)
     end
@@ -1861,6 +1849,14 @@ end
 
 -- the builtin api: namespace()
 function interpreter:api_builtin_namespace(name, callback)
+
+    -- enter root scope
+    self:api_interp_save_scope()
+    local scopes = self._PRIVATE._SCOPES
+    scopes._CURRENT = nil
+    scopes._CURRENT_KIND = nil
+
+    -- enter namespace
     local namespace = self._NAMESPACE
     if namespace == nil then
         namespace = {}
@@ -1876,6 +1872,7 @@ end
 
 -- the builtin api: namespace_end()
 function interpreter:api_builtin_namespace_end()
+    assert(self and self._PRIVATE)
     local namespace = self._NAMESPACE
     if namespace then
         table.remove(namespace)
@@ -1885,6 +1882,7 @@ function interpreter:api_builtin_namespace_end()
     else
         self._NAMESPACE_STR = nil
     end
+    self:api_interp_restore_scope()
 end
 
 -- the interpreter api: interp_save_scope()
