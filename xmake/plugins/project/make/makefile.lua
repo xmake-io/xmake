@@ -547,7 +547,7 @@ function _add_build_target(makefile, target, targetflags, outputdir)
 
     -- make dependence for the dependent targets
     for _, depname in ipairs(target:get("deps")) do
-        local dep = project.target(depname)
+        local dep = project.target(depname, {namespace = target:namespace()})
         makefile:write(" " .. (dep:is_phony() and depname or _get_relative_unix_path(dep:targetfile(), outputdir)))
     end
 

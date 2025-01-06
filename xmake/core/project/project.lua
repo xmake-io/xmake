@@ -911,9 +911,16 @@ function project.is_loaded()
 end
 
 -- get the given target
-function project.target(name)
+function project.target(name, opt)
+    opt = opt or {}
     local targets = project.targets()
-    return targets and targets[name]
+    if targets then
+        local t = targets[name]
+        if not t and opt.namespace then
+            t = targets[opt.namespace .. "::" .. name]
+        end
+        return t
+    end
 end
 
 -- add the given target, @note if the target name is the same, it will be replaced

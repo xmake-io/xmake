@@ -106,7 +106,8 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target,
             jobrefs[target:name()] = targetjob_root
             if not option.get("shallow") then
                 for _, depname in ipairs(target:get("deps")) do
-                    _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, project.target(depname), filepatterns)
+                    _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs,
+                        project.target(depname, {namespace = target:namespace()}), filepatterns)
                 end
             end
         end

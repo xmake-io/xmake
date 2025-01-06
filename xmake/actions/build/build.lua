@@ -217,7 +217,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, target, jobrefs,
             jobrefs[target:name()] = job_build_after
             jobrefs_before[target:name()] = job_build_before
             for _, depname in ipairs(target:get("deps")) do
-                local dep = project.target(depname)
+                local dep = project.target(depname, {namespace = target:namespace()})
                 local targetjob = job_build
                 -- @see https://github.com/xmake-io/xmake/discussions/2500
                 if dep:policy("build.across_targets_in_parallel") == false then

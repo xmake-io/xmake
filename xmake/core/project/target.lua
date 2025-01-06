@@ -257,6 +257,9 @@ function _instance:_build_deps()
         -- @see https://github.com/xmake-io/xmake/issues/4689
         instance_deps.load_deps(self, instances, {}, self._INHERITDEPS, {self:fullname()}, function (t, dep)
             local depinherit = t:extraconf("deps", dep:name(), "inherit")
+            if depinherit == nil then
+                depinherit = t:extraconf("deps", dep:fullname(), "inherit")
+            end
             return depinherit == nil or depinherit
         end)
     end
@@ -1107,7 +1110,14 @@ end
 function _instance:dep(name)
     local deps = self:deps()
     if deps then
-        return deps[name]
+        local dep = deps[name]
+        if dep == nil then
+            local namespace = self:namespace()
+            if namespace then
+                dep = deps[namespace .. "::" .. name]
+            end
+        end
+        return dep
     end
 end
 
