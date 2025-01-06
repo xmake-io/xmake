@@ -98,15 +98,15 @@ function sandbox_core_project.check_options()
         if opt then
             -- check deps of this option first
             for _, dep in ipairs(opt:orderdeps()) do
-                if not checked[dep:name()] then
+                if not checked[dep:fullname()] then
                     dep:check()
-                    checked[dep:name()] = true
+                    checked[dep:fullname()] = true
                 end
             end
             -- check this option
-            if not checked[opt:name()] then
+            if not checked[opt:fullname()] then
                 opt:check()
-                checked[opt:name()] = true
+                checked[opt:fullname()] = true
             end
         end
     end

@@ -1278,7 +1278,13 @@ function _instance:orderopts(opt)
         orderopts = {}
         for _, name in ipairs(table.wrap(self:get("options", opt))) do
             local opt_ = nil
-            if config.get(name) then opt_ = option.load(name) end
+            local enabled = config.get(name)
+            if enabled == nil and self:namespace() then
+                enabled = config.get(self:namespace() .. "::" .. name)
+            end
+            if enabled then
+                opt_ = option.load(name, {namespace = self:namespace()})
+            end
             if opt_ then
                 table.insert(orderopts, opt_)
             end

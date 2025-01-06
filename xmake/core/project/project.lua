@@ -1191,7 +1191,7 @@ function project.menu()
         options_by_category[category] = options_by_category[category] or {}
 
         -- append option to the current category
-        options_by_category[category][opt:name()] = opt
+        options_by_category[category][opt:fullname()] = opt
     end
 
     -- make menu by category
