@@ -3001,7 +3001,16 @@ function package.load_from_project(packagename, project)
 
     -- get package info
     local packageinfo = packages[packagename]
-    if not packageinfo then
+    if packageinfo == nil and project.namespaces() then
+        for _, namespace in ipairs(project.namespaces()) do
+            packageinfo = packages[namespace .. "::" .. packagename]
+            if packageinfo then
+                packagename = namespace .. "::" .. packagename
+                break
+            end
+        end
+    end
+    if packageinfo == nil then
         return
     end
 
