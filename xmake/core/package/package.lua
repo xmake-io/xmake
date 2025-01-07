@@ -55,12 +55,24 @@ local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 -- new an instance
 function _instance.new(name, info, opt)
     opt = opt or {}
-    local instance = table.inherit(_instance)
     local parts = name:split("::", {plain = true})
-    instance._NAME = parts[#parts]
-    table.remove(parts)
-    if #parts > 0 then
-        instance._NAMESPACE = table.concat(parts, "::")
+    local instance = table.inherit(_instance)
+    local managers = package._memcache():get("managers")
+    if managers == nil and #parts == 2 then
+        managers = hashset.new()
+        for _, dir in ipairs(os.dirs(path.join(os.programdir(), "modules/package/manager/*"))) do
+            managers:insert(path.filename(dir))
+        end
+        package._memcache():set("managers", managers)
+    end
+    if #parts == 2 and managers and managers:has(parts[1]) then
+        instance._NAME = name
+    else
+        instance._NAME = parts[#parts]
+        table.remove(parts)
+        if #parts > 0 then
+            instance._NAMESPACE = table.concat(parts, "::")
+        end
     end
     instance._INFO      = info
     instance._REPO      = opt.repo

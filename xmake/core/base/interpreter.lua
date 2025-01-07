@@ -260,7 +260,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
 
         -- init current root scope
         local rootkey = scope_kind
-        if namespace then
+        if namespace and scope_kind ~= "__rootkind" then
             rootkey = scope_kind .. "@@" .. namespace .. "::"
         end
         local root = scopes._ROOT[rootkey] or {}

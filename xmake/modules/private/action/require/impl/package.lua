@@ -1064,9 +1064,6 @@ function _load_package(packagename, requireinfo, opt)
         end
         _memcache():set2("packageids", packagename, (packageid or 0) + 1)
     end
-    if displayname and package:namespace() then
-        displayname = package:namespace() .. "::" .. displayname
-    end
     package:displayname_set(displayname)
 
     -- disable parallelize if the package cache directory conflicts
