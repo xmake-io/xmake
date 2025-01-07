@@ -56,7 +56,12 @@ local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 function _instance.new(name, info, opt)
     opt = opt or {}
     local instance = table.inherit(_instance)
-    instance._NAME      = name
+    local parts = name:split("::", {plain = true})
+    instance._NAME = parts[#parts]
+    table.remove(parts)
+    if #parts > 0 then
+        instance._NAMESPACE = table.concat(parts, "::")
+    end
     instance._INFO      = info
     instance._REPO      = opt.repo
     instance._SCRIPTDIR = opt.scriptdir and path.absolute(opt.scriptdir)
@@ -76,6 +81,17 @@ end
 -- get the package name
 function _instance:name()
     return self._NAME
+end
+
+-- get the namespace
+function _instance:namespace()
+    return self._NAMESPACE
+end
+
+-- get the full name
+function _instance:fullname()
+    local namespace = self:namespace()
+    return namespace and namespace .. "::" .. self:name() or self:name()
 end
 
 -- get the type: package
@@ -1276,6 +1292,7 @@ function _instance:toolchains()
             local toolchain_opt = project and project.extraconf("target.toolchains", name) or {}
             toolchain_opt.plat = self:plat()
             toolchain_opt.arch = self:arch()
+            toolchain_opt.namespace = self:namespace()
             local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
             if not toolchain_inst and project then
                 toolchain_inst = project.toolchain(name, toolchain_opt)
