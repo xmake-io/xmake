@@ -87,8 +87,6 @@ end
 
 -- merge the current root values to the previous scope
 function interpreter:_merge_root_scope(root, root_prev, override)
-
-    -- merge it
     root_prev = root_prev or {}
     for scope_kind_and_name, _ in pairs(root or {}) do
         -- only merge sub-scope for each kind("target@@xxxx") or __rootkind
