@@ -260,7 +260,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
 
         -- init current root scope
         local rootkey = scope_kind
-        if namespace and scope_kind ~= "__rootkind" then
+        if namespace then
             rootkey = scope_kind .. "@@" .. namespace .. "::"
         end
         local root = scopes._ROOT[rootkey] or {}
@@ -543,7 +543,6 @@ function interpreter:_make(scope_kind, deduplicate, enable_filter)
     local results = {}
     local scope_opt = {interpreter = self, deduplicate = deduplicate, enable_filter = enable_filter}
     if scope_kind and scope_kind:startswith("root.") then
-
         local root_scope = scopes._ROOT[scope_kind:sub(6)]
         if root_scope then
             results = self:_handle(root_scope, deduplicate, enable_filter)
@@ -552,8 +551,21 @@ function interpreter:_make(scope_kind, deduplicate, enable_filter)
 
     -- get the root scope info without scope kind
     elseif scope_kind == "root" or scope_kind == nil then
-
-        local root_scope = scopes._ROOT["__rootkind"]
+        local root_scope = {}
+        local empty = true
+        for scopekind, scope in pairs(scopes._ROOT) do
+            if scopekind:startswith("__rootkind") then
+                local namespace = scopekind:match("__rootkind@@(.+)::")
+                for k, v in pairs(scope) do
+                    if namespace then
+                        root_scope[namespace .. "::" .. k] = v
+                    else
+                        root_scope[k] = v
+                    end
+                end
+                empty = false
+            end
+        end
         if root_scope then
             results = self:_handle(root_scope, deduplicate, enable_filter)
         end
