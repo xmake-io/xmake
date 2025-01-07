@@ -1112,8 +1112,12 @@ end
 
 -- get the given toolchain
 function project.toolchain(name, opt)
+    opt = opt or {}
     local toolchain_name = toolchain.parsename(name) -- we need to ignore `@packagename`
     local info = project._toolchains()[toolchain_name]
+    if info == nil and opt.namespace then
+        info = project._toolchains()[opt.namespace .. "::" .. toolchain_name]
+    end
     if info then
         return toolchain.load_withinfo(name, info, opt)
     end

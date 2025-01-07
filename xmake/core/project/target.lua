@@ -2495,6 +2495,7 @@ function _instance:toolchains()
                 local toolchain_opt = table.copy(self:extraconf("toolchains", name))
                 toolchain_opt.arch = self:arch()
                 toolchain_opt.plat = self:plat()
+                toolchain_opt.namespace = self:namespace()
                 local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
                 -- attempt to load toolchain from project
                 if not toolchain_inst and target._project() then
