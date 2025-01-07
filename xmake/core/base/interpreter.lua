@@ -543,8 +543,25 @@ function interpreter:_make(scope_kind, deduplicate, enable_filter)
     local results = {}
     local scope_opt = {interpreter = self, deduplicate = deduplicate, enable_filter = enable_filter}
     if scope_kind and scope_kind:startswith("root.") then
-        local root_scope = scopes._ROOT[scope_kind:sub(6)]
-        if root_scope then
+        local root_scope = {}
+        local empty = true
+        local kind_prefix = scope_kind:sub(6)
+        for kind, scope in pairs(scopes._ROOT) do
+            if kind:startswith(kind_prefix) then
+                local namespace = kind:match(kind_prefix .. "@@(.+)::")
+                if namespace or kind == kind_prefix then
+                    for k, v in pairs(scope) do
+                        if namespace then
+                            root_scope[namespace .. "::" .. k] = v
+                        else
+                            root_scope[k] = v
+                        end
+                    end
+                end
+                empty = false
+            end
+        end
+        if root_scope and not empty then
             results = self:_handle(root_scope, deduplicate, enable_filter)
         end
         return scopeinfo.new(scope_kind, results, scope_opt)
@@ -553,20 +570,22 @@ function interpreter:_make(scope_kind, deduplicate, enable_filter)
     elseif scope_kind == "root" or scope_kind == nil then
         local root_scope = {}
         local empty = true
-        for scopekind, scope in pairs(scopes._ROOT) do
-            if scopekind:startswith("__rootkind") then
-                local namespace = scopekind:match("__rootkind@@(.+)::")
-                for k, v in pairs(scope) do
-                    if namespace then
-                        root_scope[namespace .. "::" .. k] = v
-                    else
-                        root_scope[k] = v
+        for kind, scope in pairs(scopes._ROOT) do
+            if kind:startswith("__rootkind") then
+                local namespace = kind:match("__rootkind@@(.+)::")
+                if namespace or kind == "__rootkind" then
+                    for k, v in pairs(scope) do
+                        if namespace then
+                            root_scope[namespace .. "::" .. k] = v
+                        else
+                            root_scope[k] = v
+                        end
                     end
                 end
                 empty = false
             end
         end
-        if root_scope then
+        if root_scope and not empty then
             results = self:_handle(root_scope, deduplicate, enable_filter)
         end
         return scopeinfo.new(scope_kind, results, scope_opt)

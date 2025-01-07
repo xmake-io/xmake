@@ -785,6 +785,7 @@ function project.filelock()
 end
 
 -- get the root configuration
+-- and we get values in namespace, e.g. project.get("ns1::ns2::name"), project.get("target.ns1::ns2::name")
 function project.get(name)
     local rootinfo
     if name and name:startswith("target.") then

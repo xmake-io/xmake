@@ -1,4 +1,5 @@
 
+set_version("1.0.0")
 add_requires("package0", {system = false})
 
 package("package0")
@@ -9,6 +10,7 @@ package("package0")
 
 namespace("ns1", function ()
 
+    set_version("1.0.1")
     add_requires("package1", {system = false})
 
     package("package1")
@@ -24,6 +26,7 @@ namespace("ns1", function ()
 
     namespace("ns2", function()
 
+        set_version("1.0.2")
         add_requires("package2", {system = false})
 
         package("package2")
