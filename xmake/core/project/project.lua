@@ -828,6 +828,11 @@ function project.version()
     return project.get("target.version")
 end
 
+-- get the project namespaces
+function project.namespaces()
+    return project.interpreter():namespaces()
+end
+
 -- init default policies
 -- @see https://github.com/xmake-io/xmake/issues/5527
 function project._init_default_policies()

@@ -27,6 +27,7 @@ local path       = require("base/path")
 local table      = require("base/table")
 local utils      = require("base/utils")
 local string     = require("base/string")
+local hashset    = require("base/hashset")
 local scopeinfo  = require("base/scopeinfo")
 local deprecated = require("base/deprecated")
 local sandbox    = require("sandbox/sandbox")
@@ -255,7 +256,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
     local implementation = function (self, scopes, apiname, ...)
 
         -- init root scopes
-        local namespace = self._NAMESPACE_STR
+        local namespace = self._PRIVATE._NAMESPACE_STR
         scopes._ROOT = scopes._ROOT or {}
 
         -- init current root scope
@@ -819,6 +820,12 @@ function interpreter:mtimes()
     return self._PRIVATE._MTIMES
 end
 
+-- get namespaces
+function interpreter:namespaces()
+    local namespaces = self._PRIVATE._NAMESPACES
+    return namespaces and namespaces:to_array()
+end
+
 -- get filter
 function interpreter:filter()
     assert(self and self._PRIVATE)
@@ -1006,7 +1013,7 @@ function interpreter:api_register_scope(...)
         local scope_args = table.pack(...)
         local scope_name = scope_args[1]
         local scope_info = scope_args[2]
-        local namespace = self._NAMESPACE_STR
+        local namespace = self._PRIVATE._NAMESPACE_STR
         if scope_name ~= nil and namespace then
             scope_name = namespace .. "::" .. scope_name
         end
@@ -1918,13 +1925,20 @@ function interpreter:api_builtin_namespace(name, callback)
     scopes._CURRENT_KIND = nil
 
     -- enter namespace
-    local namespace = self._NAMESPACE
+    local namespace = self._PRIVATE._NAMESPACE
     if namespace == nil then
         namespace = {}
-        self._NAMESPACE = namespace
+        self._PRIVATE._NAMESPACE = namespace
     end
     table.insert(namespace, name)
-    self._NAMESPACE_STR = table.concat(namespace, "::")
+    self._PRIVATE._NAMESPACE_STR = table.concat(namespace, "::")
+    -- save namespaces
+    local namespaces = self._PRIVATE._NAMESPACES
+    if namespaces == nil then
+        namespaces = hashset.new()
+        self._PRIVATE._NAMESPACES = namespaces
+    end
+    namespaces:insert(self._PRIVATE._NAMESPACE_STR)
     if callback and type(callback) == "function" then
         callback()
         self:api_builtin_namespace_end()
@@ -1934,14 +1948,14 @@ end
 -- the builtin api: namespace_end()
 function interpreter:api_builtin_namespace_end()
     assert(self and self._PRIVATE)
-    local namespace = self._NAMESPACE
+    local namespace = self._PRIVATE._NAMESPACE
     if namespace then
         table.remove(namespace)
     end
     if namespace and #namespace > 0 then
-        self._NAMESPACE_STR = table.concat(namespace, "::")
+        self._PRIVATE._NAMESPACE_STR = table.concat(namespace, "::")
     else
-        self._NAMESPACE_STR = nil
+        self._PRIVATE._NAMESPACE_STR = nil
     end
     self:api_interp_restore_scope()
 end

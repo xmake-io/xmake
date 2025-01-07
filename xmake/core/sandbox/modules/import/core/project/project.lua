@@ -71,6 +71,7 @@ sandbox_core_project.tmpdir               = project.tmpdir
 sandbox_core_project.tmpfile              = project.tmpfile
 sandbox_core_project.is_loaded            = project.is_loaded
 sandbox_core_project.apis                 = project.apis
+sandbox_core_project.namespaces           = project.namespaces
 
 -- check project options
 function sandbox_core_project.check_options()
