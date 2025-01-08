@@ -90,7 +90,7 @@ function _instance:_memcache()
     return cache
 end
 
--- get the package name
+-- get the package name without namespace
 function _instance:name()
     return self._NAME
 end
@@ -100,10 +100,20 @@ function _instance:namespace()
     return self._NAMESPACE
 end
 
--- get the full name
+-- get the full name (with namespace)
 function _instance:fullname()
     local namespace = self:namespace()
     return namespace and namespace .. "::" .. self:name() or self:name()
+end
+
+-- get the display name (with namespace and ~label)
+function _instance:displayname()
+    return self._DISPLAYNAME
+end
+
+-- set the display name
+function _instance:displayname_set(fullname)
+    self._DISPLAYNAME = displayname
 end
 
 -- get the type: package
@@ -1545,16 +1555,6 @@ end
 function _instance:label()
     local requireinfo = self:requireinfo()
     return requireinfo and requireinfo.label
-end
-
--- get the display name
-function _instance:displayname()
-    return self._DISPLAYNAME
-end
-
--- set the display name
-function _instance:displayname_set(displayname)
-    self._DISPLAYNAME = displayname
 end
 
 -- invalidate configs
