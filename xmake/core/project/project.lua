@@ -524,7 +524,7 @@ function project._load_requires()
         end
 
         -- add require info
-        requires[alias or packagename] = instance
+        requires[name] = instance
     end
     return requires
 end

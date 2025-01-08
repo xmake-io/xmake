@@ -1339,6 +1339,17 @@ function _instance:orderpkgs(opt)
         if requires then
             for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
                 local pkg = requires[packagename]
+                -- attempt to get package with namespace
+                if pkg == nil and packagename:find("::", 1, true) then
+                    local parts = packagename:split("::", {plain = true})
+                    local namespace_pkg = requires[parts[#parts]]
+                    if namespace_pkg and namespace_pkg:namespace() then
+                        local fullname = namespace_pkg:fullname()
+                        if fullname:endswith(packagename) then
+                            pkg = namespace_pkg
+                        end
+                    end
+                end
                 if pkg and pkg:enabled() then
                     table.insert(packages, pkg)
                 end
