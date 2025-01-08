@@ -979,8 +979,16 @@ function project.ordertargets()
 end
 
 -- get the given option
-function project.option(name)
-    return project.options()[name]
+function project.option(name, opt)
+    opt = opt or {}
+    local options = project.options()
+    if options then
+        local o = options[name]
+        if not o and opt.namespace then
+            o = options[opt.namespace .. "::" .. name]
+        end
+        return o
+    end
 end
 
 -- get options

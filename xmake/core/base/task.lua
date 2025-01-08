@@ -221,17 +221,12 @@ end
 
 -- bind script with a sandbox instance
 function task._bind_script(interp, script)
-
-    -- make sandbox instance with the given script
-    local instance, errors = sandbox.new(script, interp:filter(), interp:rootdir())
+    local instance, errors = sandbox.new(script, {
+        filter = interp:filter(), rootdir = interp:rootdir(), namespace = interp:namespace()})
     if not instance then
         return nil, errors
     end
-
-    -- check
     assert(instance:script())
-
-    -- update option script
     return instance:script()
 end
 

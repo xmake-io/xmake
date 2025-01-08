@@ -20,8 +20,14 @@
 
 -- return module
 local config  = require("project/config")
+local sandbox = require("sandbox/sandbox")
 
 return function (...)
-    return config.has(table.pack(...))
+    local namespace
+    local instance = sandbox.instance()
+    if instance then
+        namespace = instance:namespace()
+    end
+    return config.has(table.pack(...), {namespace = namespace})
 end
 

@@ -647,7 +647,7 @@ function interpreter:_script(script)
     end
 
     -- make sandbox instance with the given script
-    local instance, errors = sandbox.new(script, self:filter(), self:scriptdir())
+    local instance, errors = sandbox.new(script, {filter = self:filter(), rootdir = self:scriptdir(), namespace = self:namespace()})
     if not instance then
         return nil, errors
     end

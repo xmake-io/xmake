@@ -2945,7 +2945,7 @@ function package.load_from_system(packagename)
         end
 
         -- make sandbox instance with the given script
-        instance, errors = sandbox.new(on_install, interp:filter())
+        instance, errors = sandbox.new(on_install, {filter = interp:filter(), namespace = interp:namespace()})
         if not instance then
             return nil, errors
         end
