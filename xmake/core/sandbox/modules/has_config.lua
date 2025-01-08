@@ -18,7 +18,6 @@
 -- @file        has_config.lua
 --
 
--- return module
 local config  = require("project/config")
 local sandbox = require("sandbox/sandbox")
 

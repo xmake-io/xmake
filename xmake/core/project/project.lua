@@ -143,7 +143,12 @@ end
 
 -- get config from the given name
 function project._api_get_config(interp, name)
-    return config.get(name)
+    local value = config.get(name)
+    local namespace = interp:namespace()
+    if value == nil and namespace then
+        value = config.get(namespace .. "::" .. name)
+    end
+    return value
 end
 
 -- add module directories
