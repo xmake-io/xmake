@@ -25,8 +25,8 @@ local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 
 -- define module
-local sandbox_core_base_process            = sandbox_core_base_process or {}
-local sandbox_core_base_instance = sandbox_core_base_instance or {}
+local sandbox_core_base_process       = sandbox_core_base_process or {}
+local sandbox_core_base_instance      = sandbox_core_base_instance or {}
 sandbox_core_base_process._subprocess = sandbox_core_base_process._subprocess or process._subprocess
 
 -- wait subprocess

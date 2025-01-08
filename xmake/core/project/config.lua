@@ -297,10 +297,17 @@ function config.is_value(name, ...)
 end
 
 -- has the given configs?
-function config.has(...)
-    for _, name in ipairs(table.pack(...)) do
-        if name and type(name) == "string" and config.get(name) then
-            return true
+function config.has(names, opt)
+    opt = opt or {}
+    for _, name in ipairs(names) do
+        if name and type(name) == "string" then
+            local value = config.get(name)
+            if value == nil and opt.namespace then
+                value = config.get(opt.namespace .. "::" .. name)
+            end
+            if value then
+                return true
+            end
         end
     end
     return false

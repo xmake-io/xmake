@@ -113,7 +113,7 @@ end
 
 -- some configs are enabled?
 function project._api_has_config(interp, ...)
-    return config.has(...)
+    return config.has(table.pack(...), {namespace = interp:namespace()})
 end
 
 -- some packages are enabled?

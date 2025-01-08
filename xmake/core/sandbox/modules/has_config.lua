@@ -19,5 +19,9 @@
 --
 
 -- return module
-return require("project/config").has
+local config  = require("project/config")
+
+return function (...)
+    return config.has(table.pack(...))
+end
 

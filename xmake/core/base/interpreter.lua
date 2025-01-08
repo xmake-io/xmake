@@ -820,6 +820,11 @@ function interpreter:mtimes()
     return self._PRIVATE._MTIMES
 end
 
+-- get current namespace
+function interpreter:namespace()
+    return self._PRIVATE._NAMESPACE_STR
+end
+
 -- get namespaces
 function interpreter:namespaces()
     local namespaces = self._PRIVATE._NAMESPACES

@@ -79,12 +79,8 @@ function sandbox._traceback(errors)
         else
             results = results .. string.format("    [%s:%d]:\n", info.short_src, info.currentline)
         end
-
-        -- next
         level = level + 1
     end
-
-    -- ok?
     return results
 end
 
@@ -118,20 +114,13 @@ end
 
 -- new a sandbox instance with the given script
 function sandbox.new(script, filter, rootdir)
-
-    -- check
     assert(script)
 
     -- new instance
     local self = sandbox._new()
-
-    -- check
     assert(self and self._PUBLIC and self._PRIVATE)
 
-    -- save filter
     self._PRIVATE._FILTER = filter
-
-    -- save root directory
     self._PRIVATE._ROOTDIR = rootdir
 
     -- invalid script?
