@@ -277,17 +277,17 @@ end
 
 -- the current mode is belong to the given modes?
 function config.is_mode(...)
-    return config.is_value("mode", ...)
+    return config._is_value(config.get("mode"), ...)
 end
 
 -- the current platform is belong to the given platforms?
 function config.is_plat(...)
-    return config.is_value("plat", ...)
+    return config._is_value(config.get("plat"), ...)
 end
 
 -- the current architecture is belong to the given architectures?
 function config.is_arch(...)
-    return config.is_value("arch", ...)
+    return config._is_value(config.get("arch"), ...)
 end
 
 -- is cross-compilation?
