@@ -23,8 +23,19 @@ return function (...)
     require("sandbox/modules/import/core/sandbox/module").import("core.project.project")
     local requires = project.required_packages()
     if requires then
-        for _, name in ipairs(table.join(...)) do
-            local pkg = requires[name]
+        for _, packagename in ipairs(table.join(...)) do
+            local pkg = requires[packagename]
+            -- attempt to get package with namespace
+            if pkg == nil and packagename:find("::", 1, true) then
+                local parts = packagename:split("::", {plain = true})
+                local namespace_pkg = requires[parts[#parts]]
+                if namespace_pkg and namespace_pkg:namespace() then
+                    local fullname = namespace_pkg:fullname()
+                    if fullname:endswith(packagename) then
+                        pkg = namespace_pkg
+                    end
+                end
+            end
             if pkg and pkg:enabled() then
                 return true
             end

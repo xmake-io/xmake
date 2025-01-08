@@ -137,8 +137,19 @@ function project._api_has_package(interp, ...)
     -- only for loading targets
     local requires = project._memcache():get("requires")
     if requires then
-        for _, name in ipairs(table.pack(...)) do
-            local pkg = requires[name]
+        for _, packagename in ipairs(table.pack(...)) do
+            local pkg = requires[packagename]
+            -- attempt to get package with namespace
+            if pkg == nil and packagename:find("::", 1, true) then
+                local parts = packagename:split("::", {plain = true})
+                local namespace_pkg = requires[parts[#parts]]
+                if namespace_pkg and namespace_pkg:namespace() then
+                    local fullname = namespace_pkg:fullname()
+                    if fullname:endswith(packagename) then
+                        pkg = namespace_pkg
+                    end
+                end
+            end
             if pkg and pkg:enabled() then
                 return true
             end

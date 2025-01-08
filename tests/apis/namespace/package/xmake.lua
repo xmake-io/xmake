@@ -21,6 +21,9 @@ namespace("ns1", function ()
         set_kind("static")
         add_files("src/foo.cpp")
         add_packages("package1")
+        if has_package("package1") then
+            add_defines("HAS_PACKAGE1")
+        end
 
     namespace("ns2", function()
 
@@ -36,6 +39,9 @@ namespace("ns1", function ()
             set_kind("static")
             add_files("src/bar.cpp")
             add_packages("package2")
+            if has_package("package2") then
+                add_defines("HAS_PACKAGE2")
+            end
     end)
 
     target("test")
@@ -43,5 +49,16 @@ namespace("ns1", function ()
         add_deps("foo", "ns2::bar")
         add_files("src/main.cpp")
         add_packages("package0", "package1", "ns2::package2")
+        on_load(function (target)
+            if has_package("package0") then
+                target:add("defines", "HAS_PACKAGE0")
+            end
+            if has_package("package1") then
+                target:add("defines", "HAS_PACKAGE1")
+            end
+            if has_package("ns2::package2") then
+                target:add("defines", "HAS_PACKAGE2")
+            end
+        end)
 end)
 
