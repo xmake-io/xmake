@@ -296,23 +296,6 @@ function config.is_value(name, ...)
     return false
 end
 
--- has the given configs?
-function config.has(names, opt)
-    opt = opt or {}
-    for _, name in ipairs(names) do
-        if name and type(name) == "string" then
-            local value = config.get(name)
-            if value == nil and opt.namespace then
-                value = config.get(opt.namespace .. "::" .. name)
-            end
-            if value then
-                return true
-            end
-        end
-    end
-    return false
-end
-
 -- dump the configure
 function config.dump()
     if not option.get("quiet") then

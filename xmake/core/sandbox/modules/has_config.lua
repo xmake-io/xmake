@@ -28,6 +28,16 @@ return function (...)
     if instance then
         namespace = instance:namespace()
     end
-    return config.has(table.pack(...), {namespace = namespace})
+    local names = table.pack(...)
+    for _, name in ipairs(names) do
+        local value = config.get(name)
+        if value == nil and namespace then
+            value = config.get(namespace .. "::" .. name)
+        end
+        if value then
+            return true
+        end
+    end
+    return false
 end
 

@@ -113,7 +113,18 @@ end
 
 -- some configs are enabled?
 function project._api_has_config(interp, ...)
-    return config.has(table.pack(...), {namespace = interp:namespace()})
+    local names = table.pack(...)
+    local namespace = interp:namespace()
+    for _, name in ipairs(names) do
+        local value = config.get(name)
+        if value == nil and namespace then
+            value = config.get(namespace .. "::" .. name)
+        end
+        if value then
+            return true
+        end
+    end
+    return false
 end
 
 -- some packages are enabled?
