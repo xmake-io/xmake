@@ -112,7 +112,7 @@ function _instance:displayname()
 end
 
 -- set the display name
-function _instance:displayname_set(fullname)
+function _instance:displayname_set(displayname)
     self._DISPLAYNAME = displayname
 end
 
