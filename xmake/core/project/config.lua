@@ -52,6 +52,23 @@ function config._use_workingdir()
     return use_workingdir
 end
 
+-- the current config is belong to the given config values?
+function config._is_value(value, ...)
+    if value == nil then
+        return false
+    end
+
+    value = tostring(value)
+    for _, v in ipairs(table.pack(...)) do
+        -- escape '-'
+        v = tostring(v)
+        if value == v or value:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+    return false
+end
+
 -- get the current given configuration
 function config.get(name)
     local value = nil
@@ -276,24 +293,6 @@ end
 -- is cross-compilation?
 function config.is_cross()
     return is_cross(config.plat(), config.arch())
-end
-
--- the current config is belong to the given config values?
-function config.is_value(name, ...)
-    local value = config.get(name)
-    if value == nil then
-        return false
-    end
-
-    value = tostring(value)
-    for _, v in ipairs(table.pack(...)) do
-        -- escape '-'
-        v = tostring(v)
-        if value == v or value:find("^" .. v:gsub("%-", "%%-") .. "$") then
-            return true
-        end
-    end
-    return false
 end
 
 -- dump the configure

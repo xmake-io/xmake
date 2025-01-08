@@ -108,7 +108,12 @@ end
 
 -- the current config is belong to the given config values?
 function project._api_is_config(interp, name, ...)
-    return config.is_value(name, ...)
+    local value = config.get(name)
+    local namespace = interp:namespace()
+    if value == nil and namespace then
+        value = config.get(namespace .. "::" .. name)
+    end
+    return config._is_value(value, ...)
 end
 
 -- some configs are enabled?
