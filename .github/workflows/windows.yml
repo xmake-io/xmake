@@ -93,6 +93,13 @@ jobs:
           name: xmake-latest.${{env.RELEASE_NAME}}.exe
           path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
 
+      - name: Upload artifacts for Win32XP (exe)
+        if: matrix.os == 'windows-2019' && matrix.arch == 'x86'
+        uses: actions/upload-artifact@v4
+        with:
+          name: xmake-latest.${{env.RELEASE_NAME}}XP.exe
+          path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
+
       - name: Upload artifacts (zip)
         if: matrix.os == 'windows-2022'
         uses: actions/upload-artifact@v4
@@ -185,5 +192,16 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
           asset_name: xmake-bundle-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
+          asset_content_type: application/zip
+
+      - name: Publish
+        if: github.event.action == 'published' && matrix.os == 'windows-2019' && matrix.arch == 'x86'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}XP.exe
           asset_content_type: application/zip
 
