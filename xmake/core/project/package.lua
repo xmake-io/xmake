@@ -69,6 +69,12 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the full name
+function _instance:fullname()
+    local namespace = self:namespace()
+    return namespace and namespace .. "::" .. self:name() or self:name()
+end
+
 -- get the package version
 function _instance:version()
 
@@ -105,6 +111,11 @@ end
 -- get the require string
 function _instance:requirestr()
     return self:get("__requirestr")
+end
+
+-- get the namespace
+function _instance:namespace()
+    return self:get("__namespace")
 end
 
 -- get the require configuration from the given name
@@ -369,7 +380,7 @@ end
 -- we need to sort package set keys by this string
 -- @see https://github.com/xmake-io/xmake/pull/2971#issuecomment-1290052169
 function _instance:__tostring()
-    return "<package: " .. self:name() .. ">"
+    return "<package: " .. self:fullname() .. ">"
 end
 
 -- get cache

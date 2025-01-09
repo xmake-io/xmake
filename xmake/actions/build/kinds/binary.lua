@@ -39,9 +39,13 @@ function _do_link_target(target, opt)
     local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
-        local targetfile = target:targetfile()
-        progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", path.filename(targetfile))
+        local filename = target:filename()
+        if target:namespace() then
+            filename = target:namespace() .. "::" .. filename
+        end
+        progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", filename)
 
+        local targetfile = target:targetfile()
         local objectfiles = target:objectfiles()
         local verbose = option.get("verbose")
         if verbose then

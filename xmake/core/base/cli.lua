@@ -90,6 +90,10 @@ function cli.parsev(argv, flags)
         elseif value:startswith("--") then
             -- "--key:value", "--key=value", "--long-flag"
             local sep = value:find("[=:]", 3, false)
+            -- ignore namespace, e.g. `--namespace::opt=`
+            if sep and value:sub(sep, sep + 1) == "::" then
+                sep = value:find("=", 3, false)
+            end
             if sep then
                 table.insert(parsed, cli._make_option(value:sub(3, sep - 1), value:sub(sep + 1), false, argv, index))
             else

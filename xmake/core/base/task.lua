@@ -221,17 +221,12 @@ end
 
 -- bind script with a sandbox instance
 function task._bind_script(interp, script)
-
-    -- make sandbox instance with the given script
-    local instance, errors = sandbox.new(script, interp:filter(), interp:rootdir())
+    local instance, errors = sandbox.new(script, {
+        filter = interp:filter(), rootdir = interp:rootdir(), namespace = interp:namespace()})
     if not instance then
         return nil, errors
     end
-
-    -- check
     assert(instance:script())
-
-    -- update option script
     return instance:script()
 end
 
@@ -373,7 +368,12 @@ end
 -- new a task instance
 function task.new(name, info)
     local instance = table.inherit(task)
-    instance._NAME = name
+    local parts = name:split("::", {plain = true})
+    instance._NAME = parts[#parts]
+    table.remove(parts)
+    if #parts > 0 then
+        instance._NAMESPACE = table.concat(parts, "::")
+    end
     instance._INFO = info
     return instance
 end
@@ -475,13 +475,24 @@ function task:name()
     return self._NAME
 end
 
+-- get the namespace
+function task:namespace()
+    return self._NAMESPACE
+end
+
+-- get the full name
+function task:fullname()
+    local namespace = self:namespace()
+    return namespace and namespace .. "::" .. self:name() or self:name()
+end
+
 -- run given task
 function task:run(...)
 
     -- check
     local on_run = self:get("run")
     if not on_run then
-        return false, string.format("task(\"%s\"): no run script, please call on_run() first!", self:name())
+        return false, string.format("task(\"%s\"): no run script, please call on_run() first!", self:fullname())
     end
 
     -- save the current directory
@@ -492,8 +503,6 @@ function task:run(...)
 
     -- restore the current directory
     os.cd(curdir)
-
-    -- ok?
     return ok, errors
 end
 

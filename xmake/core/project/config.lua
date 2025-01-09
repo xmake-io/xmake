@@ -52,6 +52,23 @@ function config._use_workingdir()
     return use_workingdir
 end
 
+-- the current config is belong to the given config values?
+function config._is_value(value, ...)
+    if value == nil then
+        return false
+    end
+
+    value = tostring(value)
+    for _, v in ipairs(table.pack(...)) do
+        -- escape '-'
+        v = tostring(v)
+        if value == v or value:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+    return false
+end
+
 -- get the current given configuration
 function config.get(name)
     local value = nil
@@ -260,50 +277,22 @@ end
 
 -- the current mode is belong to the given modes?
 function config.is_mode(...)
-    return config.is_value("mode", ...)
+    return config._is_value(config.get("mode"), ...)
 end
 
 -- the current platform is belong to the given platforms?
 function config.is_plat(...)
-    return config.is_value("plat", ...)
+    return config._is_value(config.get("plat"), ...)
 end
 
 -- the current architecture is belong to the given architectures?
 function config.is_arch(...)
-    return config.is_value("arch", ...)
+    return config._is_value(config.get("arch"), ...)
 end
 
 -- is cross-compilation?
 function config.is_cross()
     return is_cross(config.plat(), config.arch())
-end
-
--- the current config is belong to the given config values?
-function config.is_value(name, ...)
-    local value = config.get(name)
-    if value == nil then
-        return false
-    end
-
-    value = tostring(value)
-    for _, v in ipairs(table.pack(...)) do
-        -- escape '-'
-        v = tostring(v)
-        if value == v or value:find("^" .. v:gsub("%-", "%%-") .. "$") then
-            return true
-        end
-    end
-    return false
-end
-
--- has the given configs?
-function config.has(...)
-    for _, name in ipairs(table.pack(...)) do
-        if name and type(name) == "string" and config.get(name) then
-            return true
-        end
-    end
-    return false
 end
 
 -- dump the configure

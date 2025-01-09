@@ -102,12 +102,11 @@ end
 
 -- check target
 function _check_target(target, checked_targets)
-    if not checked_targets[target:name()] then
-        checked_targets[target:name()] = target
+    if not checked_targets[target:fullname()] then
+        checked_targets[target:fullname()] = target
         for _, depname in ipairs(target:get("deps")) do
-            assert(depname ~= target:name(), "the target(%s) cannot depend self!", depname)
-            local deptarget = project.target(depname)
-            assert(deptarget, "unknown target(%s) for %s.deps!", depname, target:name())
+            local deptarget = project.target(depname, {namespace = target:namespace()})
+            assert(deptarget, "unknown target(%s) for %s.deps!", depname, target:fullname())
             _check_target(deptarget, checked_targets)
         end
     end

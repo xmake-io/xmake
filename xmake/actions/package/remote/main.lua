@@ -30,7 +30,7 @@ import("core.base.bit")
 function _get_librarydeps(target)
     local librarydeps = {}
     for _, depname in ipairs(target:get("deps")) do
-        local dep = project.target(depname)
+        local dep = project.target(depname, {namespace = target:namespace()})
         if not ((target:is_binary() or target:is_shared()) and dep:is_static()) then
             table.insert(librarydeps, dep:name():lower())
         end

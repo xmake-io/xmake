@@ -131,7 +131,14 @@ if is_plat("windows") then
 end
 
 -- add projects
-includes("src/sv", "src/lz4", "src/tbox", "src/xmake", "src/cli")
+includes("src/sv", "src/lz4", "src/xmake", "src/cli")
+if false then --namespace then
+    namespace("tbox", function ()
+        includes("src/tbox")
+    end)
+else
+    includes("src/tbox")
+end
 if has_config("lua_cjson") then
     includes("src/lua-cjson")
 end

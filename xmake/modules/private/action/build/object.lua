@@ -76,7 +76,11 @@ function _do_build_file(target, sourcefile, opt)
 
     -- trace progress info
     if not opt.quiet then
-        progress.show(opt.progress, "${color.build.object}%scompiling.$(mode) %s", prefix, sourcefile)
+        local filepath = sourcefile
+        if target:namespace() then
+            filepath = target:namespace() .. "::" .. filepath
+        end
+        progress.show(opt.progress, "${color.build.object}%scompiling.$(mode) %s", prefix, filepath)
     end
 
     -- trace verbose info

@@ -108,12 +108,28 @@ end
 
 -- the current config is belong to the given config values?
 function project._api_is_config(interp, name, ...)
-    return config.is_value(name, ...)
+    local value = config.get(name)
+    local namespace = interp:namespace()
+    if value == nil and namespace then
+        value = config.get(namespace .. "::" .. name)
+    end
+    return config._is_value(value, ...)
 end
 
 -- some configs are enabled?
 function project._api_has_config(interp, ...)
-    return config.has(...)
+    local names = table.pack(...)
+    local namespace = interp:namespace()
+    for _, name in ipairs(names) do
+        local value = config.get(name)
+        if value == nil and namespace then
+            value = config.get(namespace .. "::" .. name)
+        end
+        if value then
+            return true
+        end
+    end
+    return false
 end
 
 -- some packages are enabled?
@@ -121,8 +137,19 @@ function project._api_has_package(interp, ...)
     -- only for loading targets
     local requires = project._memcache():get("requires")
     if requires then
-        for _, name in ipairs(table.pack(...)) do
-            local pkg = requires[name]
+        for _, packagename in ipairs(table.pack(...)) do
+            local pkg = requires[packagename]
+            -- attempt to get package with namespace
+            if pkg == nil and packagename:find("::", 1, true) then
+                local parts = packagename:split("::", {plain = true})
+                local namespace_pkg = requires[parts[#parts]]
+                if namespace_pkg and namespace_pkg:namespace() then
+                    local fullname = namespace_pkg:fullname()
+                    if fullname:endswith(packagename) then
+                        pkg = namespace_pkg
+                    end
+                end
+            end
             if pkg and pkg:enabled() then
                 return true
             end
@@ -132,7 +159,12 @@ end
 
 -- get config from the given name
 function project._api_get_config(interp, name)
-    return config.get(name)
+    local value = config.get(name)
+    local namespace = interp:namespace()
+    if value == nil and namespace then
+        value = config.get(namespace .. "::" .. name)
+    end
+    return value
 end
 
 -- add module directories
@@ -383,7 +415,7 @@ function project._load_targets()
         end
         rulenames = table.unique(rulenames)
         for _, rulename in ipairs(rulenames) do
-            local r = project.rule(rulename) or rule.rule(rulename)
+            local r = project.rule(rulename, {namespace = t:namespace()}) or rule.rule(rulename)
             if r then
                 -- only add target rules
                 if r:kind() == "target" then
@@ -524,7 +556,7 @@ function project._load_requires()
         end
 
         -- add require info
-        requires[alias or packagename] = instance
+        requires[name] = instance
     end
     return requires
 end
@@ -785,6 +817,10 @@ function project.filelock()
 end
 
 -- get the root configuration
+--
+-- get root values in project, e.g project.get("name")
+-- get root values in target, e.g. project.get("target.name")
+-- get root values in specific namespace, e.g. project.get("ns1::ns2::name"), project.get("target.ns1::ns2::name")
 function project.get(name)
     local rootinfo
     if name and name:startswith("target.") then
@@ -822,6 +858,11 @@ end
 -- get the project version, the root version of the target scope
 function project.version()
     return project.get("target.version")
+end
+
+-- get the project namespaces
+function project.namespaces()
+    return project.interpreter():namespaces()
 end
 
 -- init default policies
@@ -911,9 +952,16 @@ function project.is_loaded()
 end
 
 -- get the given target
-function project.target(name)
+function project.target(name, opt)
+    opt = opt or {}
     local targets = project.targets()
-    return targets and targets[name]
+    if targets then
+        local t = targets[name]
+        if not t and opt.namespace then
+            t = targets[opt.namespace .. "::" .. name]
+        end
+        return t
+    end
 end
 
 -- add the given target, @note if the target name is the same, it will be replaced
@@ -963,8 +1011,16 @@ function project.ordertargets()
 end
 
 -- get the given option
-function project.option(name)
-    return project.options()[name]
+function project.option(name, opt)
+    opt = opt or {}
+    local options = project.options()
+    if options then
+        local o = options[name]
+        if not o and opt.namespace then
+            o = options[opt.namespace .. "::" .. name]
+        end
+        return o
+    end
 end
 
 -- get options
@@ -1014,11 +1070,38 @@ function project.requires_str()
 
         -- get raw requires
         requires_str, requires_extra = project.get("requires"), project.get("__extra_requires")
+        local namespaces = project.namespaces()
+        if namespaces then
+            for _, namespace in ipairs(namespaces) do
+                local ns_requires_str, ns_requires_extra = project.get(namespace .. "::requires"), project.get(namespace .. "::__extra_requires")
+                if ns_requires_str then
+                    requires_str = table.wrap(requires_str)
+                    table.insert(requires_str, ns_requires_str)
+                end
+                if ns_requires_extra then
+                    requires_extra = table.wrap(requires_extra)
+                    table.join2(requires_extra, ns_requires_extra)
+                end
+            end
+        end
         project._memcache():set("requires_str", requires_str or false)
         project._memcache():set("requires_extra", requires_extra)
 
         -- get raw requireconfs
         local requireconfs_str, requireconfs_extra = project.get("requireconfs"), project.get("__extra_requireconfs")
+        if namespaces then
+            for _, namespace in ipairs(project.namespaces()) do
+                local ns_requireconfs_str, ns_requireconfs_extra = project.get(namespace .. "::requireconfs"), project.get(namespace .. "::__extra_requireconfs")
+                if ns_requireconfs_str then
+                    requireconfs_str = table.wrap(requireconfs_str)
+                    table.insert(requireconfs_str, ns_requireconfs_str)
+                end
+                if ns_requireconfs_extra then
+                    requireconfs_extra = table.wrap(requireconfs_extra)
+                    table.join2(requireconfs_extra, ns_requireconfs_extra)
+                end
+            end
+        end
         project._memcache():set("requireconfs_str", requireconfs_str or false)
         project._memcache():set("requireconfs_extra", requireconfs_extra)
     end
@@ -1080,8 +1163,13 @@ function project.requireslock_version()
 end
 
 -- get the given rule
-function project.rule(name)
-    return project.rules()[name]
+function project.rule(name, opt)
+    opt = opt or {}
+    local r = project.rules()[name]
+    if r == nil and opt.namespace then
+        r = project.rules()[opt.namespace .. "::" .. name]
+    end
+    return r
 end
 
 -- get project rules
@@ -1100,8 +1188,12 @@ end
 
 -- get the given toolchain
 function project.toolchain(name, opt)
+    opt = opt or {}
     local toolchain_name = toolchain.parsename(name) -- we need to ignore `@packagename`
     local info = project._toolchains()[toolchain_name]
+    if info == nil and opt.namespace then
+        info = project._toolchains()[opt.namespace .. "::" .. toolchain_name]
+    end
     if info then
         return toolchain.load_withinfo(name, info, opt)
     end
@@ -1184,7 +1276,7 @@ function project.menu()
         options_by_category[category] = options_by_category[category] or {}
 
         -- append option to the current category
-        options_by_category[category][opt:name()] = opt
+        options_by_category[category][opt:fullname()] = opt
     end
 
     -- make menu by category

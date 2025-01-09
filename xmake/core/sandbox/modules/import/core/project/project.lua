@@ -71,6 +71,7 @@ sandbox_core_project.tmpdir               = project.tmpdir
 sandbox_core_project.tmpfile              = project.tmpfile
 sandbox_core_project.is_loaded            = project.is_loaded
 sandbox_core_project.apis                 = project.apis
+sandbox_core_project.namespaces           = project.namespaces
 
 -- check project options
 function sandbox_core_project.check_options()
@@ -98,15 +99,15 @@ function sandbox_core_project.check_options()
         if opt then
             -- check deps of this option first
             for _, dep in ipairs(opt:orderdeps()) do
-                if not checked[dep:name()] then
+                if not checked[dep:fullname()] then
                     dep:check()
-                    checked[dep:name()] = true
+                    checked[dep:fullname()] = true
                 end
             end
             -- check this option
-            if not checked[opt:name()] then
+            if not checked[opt:fullname()] then
                 opt:check()
-                checked[opt:name()] = true
+                checked[opt:fullname()] = true
             end
         end
     end

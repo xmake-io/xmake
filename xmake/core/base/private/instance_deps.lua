@@ -46,6 +46,12 @@ function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath,
         -- @see https://github.com/xmake-io/xmake/issues/3144
         local depname = plaindeps[total + 1 - idx]
         local depinst = instances[depname]
+        if depinst == nil and instance.namespace then
+            local namespace = instance:namespace()
+            if namespace then
+                depinst = instances[namespace .. "::" .. depname]
+            end
+        end
         if depinst then
             local continue_walk = true
             if walkdep then
@@ -79,6 +85,12 @@ function instance_deps._sort_instance(instance, instances, orderinstances, insta
         instancerefs[instance:name()] = true
         for _, depname in ipairs(table.wrap(instance:get("deps"))) do
             local depinst = instances[depname]
+            if depinst == nil and instance.namespace then
+                local namespace = instance:namespace()
+                if namespace then
+                    depinst = instances[namespace .. "::" .. depname]
+                end
+            end
             if depinst then
                 local depspath_sub
                 if depspath then

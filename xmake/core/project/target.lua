@@ -55,9 +55,9 @@ local sandbox_module  = require("sandbox/modules/import/core/sandbox/module")
 -- new a target instance
 function _instance.new(name, info)
     local instance     = table.inherit(_instance)
-    instance._NAME     = name
     instance._INFO     = info
     instance._CACHEID  = 1
+    instance:name_set(name)
     return instance
 end
 
@@ -75,7 +75,7 @@ end
 function _instance:_load_rule(ruleinst, suffix)
 
     -- init cache
-    local key = ruleinst:name() .. (suffix and ("_" .. suffix) or "")
+    local key = ruleinst:fullname() .. (suffix and ("_" .. suffix) or "")
     local cache = self._RULES_LOADED or {}
 
     -- do load
@@ -90,7 +90,7 @@ function _instance:_load_rule(ruleinst, suffix)
 
         -- before_load has been deprecated
         if on_load and suffix == "before" then
-            deprecated.add(ruleinst:name() .. ".on_load", ruleinst:name() .. ".before_load")
+            deprecated.add(ruleinst:fullname() .. ".on_load", ruleinst:fullname() .. ".before_load")
         end
     end
 
@@ -208,7 +208,7 @@ function _instance:_update_filerules()
     end
     rulenames = table.unique(rulenames)
     for _, rulename in ipairs(rulenames) do
-        local r = target._project() and target._project().rule(rulename) or rule.rule(rulename)
+        local r = target._project() and target._project().rule(rulename, {namespace = self:namespace()}) or rule.rule(rulename)
         if r then
             -- only add target rules
             if r:kind() == "target" then
@@ -253,10 +253,13 @@ function _instance:_build_deps()
         self._DEPS        = self._DEPS or {}
         self._ORDERDEPS   = self._ORDERDEPS or {}
         self._INHERITDEPS = self._INHERITDEPS or {}
-        instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:name()})
+        instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:fullname()})
         -- @see https://github.com/xmake-io/xmake/issues/4689
-        instance_deps.load_deps(self, instances, {}, self._INHERITDEPS, {self:name()}, function (t, dep)
+        instance_deps.load_deps(self, instances, {}, self._INHERITDEPS, {self:fullname()}, function (t, dep)
             local depinherit = t:extraconf("deps", dep:name(), "inherit")
+            if depinherit == nil then
+                depinherit = t:extraconf("deps", dep:fullname(), "inherit")
+            end
             return depinherit == nil or depinherit
         end)
     end
@@ -518,9 +521,9 @@ end
 -- clone target, @note we can just call it in after_load()
 function _instance:clone()
     if not self:_is_loaded() then
-        os.raise("please call target:clone() in after_load().", self:name())
+        os.raise("please call target:clone() in after_load().", self:fullname())
     end
-    local instance = target.new(self:name(), self._INFO:clone())
+    local instance = target.new(self:fullname(), self._INFO:clone())
     if self._DEPS then
         instance._DEPS = table.clone(self._DEPS)
     end
@@ -886,7 +889,23 @@ end
 
 -- set the target name
 function _instance:name_set(name)
-    self._NAME = name
+    local parts = name:split("::", {plain = true})
+    self._NAME = parts[#parts]
+    table.remove(parts)
+    if #parts > 0 then
+        self._NAMESPACE = table.concat(parts, "::")
+    end
+end
+
+-- get the namespace
+function _instance:namespace()
+    return self._NAMESPACE
+end
+
+-- get the full name
+function _instance:fullname()
+    local namespace = self:namespace()
+    return namespace and namespace .. "::" .. self:name() or self:name()
 end
 
 -- get the target kind
@@ -1091,7 +1110,14 @@ end
 function _instance:dep(name)
     local deps = self:deps()
     if deps then
-        return deps[name]
+        local dep = deps[name]
+        if dep == nil then
+            local namespace = self:namespace()
+            if namespace then
+                dep = deps[namespace .. "::" .. name]
+            end
+        end
+        return dep
     end
 end
 
@@ -1137,7 +1163,11 @@ end
 -- get target rule from the given rule name
 function _instance:rule(name)
     if self._RULES then
-        return self._RULES[name]
+        local r = self._RULES[name]
+        if r == nil and self:namespace() then
+            r = self._RULES[self:namespace() .. "::" .. name]
+        end
+        return r
     end
 end
 
@@ -1147,7 +1177,7 @@ end
 -- it will be replaced in the target:rules() and target:orderules(), but will be not replaced globally in the project.rules()
 function _instance:rule_add(r)
     self._RULES = self._RULES or {}
-    self._RULES[r:name()] = r
+    self._RULES[r:fullname()] = r
     self._ORDERULES = nil
 end
 
@@ -1252,7 +1282,13 @@ function _instance:orderopts(opt)
         orderopts = {}
         for _, name in ipairs(table.wrap(self:get("options", opt))) do
             local opt_ = nil
-            if config.get(name) then opt_ = option.load(name) end
+            local enabled = config.get(name)
+            if enabled == nil and self:namespace() then
+                enabled = config.get(self:namespace() .. "::" .. name)
+            end
+            if enabled then
+                opt_ = option.load(name, {namespace = self:namespace()})
+            end
             if opt_ then
                 table.insert(orderopts, opt_)
             end
@@ -1303,6 +1339,17 @@ function _instance:orderpkgs(opt)
         if requires then
             for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
                 local pkg = requires[packagename]
+                -- attempt to get package with namespace
+                if pkg == nil and packagename:find("::", 1, true) then
+                    local parts = packagename:split("::", {plain = true})
+                    local namespace_pkg = requires[parts[#parts]]
+                    if namespace_pkg and namespace_pkg:namespace() then
+                        local fullname = namespace_pkg:fullname()
+                        if fullname:endswith(packagename) then
+                            pkg = namespace_pkg
+                        end
+                    end
+                end
                 if pkg and pkg:enabled() then
                     table.insert(packages, pkg)
                 end
@@ -1371,7 +1418,12 @@ function _instance:objectdir(opt)
     if not objectdir then
         objectdir = path.join(config.buildir(), ".objs")
     end
-    objectdir = path.join(objectdir, self:name())
+    local namespace = self:namespace()
+    if namespace then
+        objectdir = path.join(objectdir, (namespace:replace("::", path.sep())), self:name())
+    else
+        objectdir = path.join(objectdir, self:name())
+    end
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
@@ -1403,7 +1455,12 @@ function _instance:dependir(opt)
     if not dependir then
         dependir = path.join(config.buildir(), ".deps")
     end
-    dependir = path.join(dependir, self:name())
+    local namespace = self:namespace()
+    if namespace then
+        dependir = path.join(dependir, (namespace:replace("::", path.sep())), self:name())
+    else
+        dependir = path.join(dependir, self:name())
+    end
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
@@ -1435,7 +1492,12 @@ function _instance:autogendir(opt)
     if not autogendir then
         autogendir = path.join(config.buildir(), ".gens")
     end
-    autogendir = path.join(autogendir, self:name())
+    local namespace = self:namespace()
+    if namespace then
+        autogendir = path.join(autogendir, (namespace:replace("::", path.sep())), self:name())
+    else
+        autogendir = path.join(autogendir, self:name())
+    end
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
@@ -1532,6 +1594,10 @@ function _instance:targetdir()
         local mode = config.mode()
         if mode then
             targetdir = path.join(targetdir, mode)
+        end
+        local namespace = self:namespace()
+        if namespace then
+            targetdir = path.join(targetdir, (namespace:replace("::", path.sep())))
         end
     end
     return targetdir
@@ -1699,7 +1765,8 @@ function _instance:filerules(sourcefile)
         if filerules then
             override = filerules.override
             for _, rulename in ipairs(table.wrap(filerules)) do
-                local r = target._project().rule(rulename) or rule.rule(rulename) or self:rule(rulename)
+                local r = target._project().rule(rulename, {namespace = self:namespace()}) or
+                            rule.rule(rulename) or self:rule(rulename)
                 if r then
                     table.insert(rules, r)
                 end
@@ -1916,7 +1983,8 @@ function _instance:sourcefiles()
         end
         if #results == 0 then
             local sourceinfo = self:sourceinfo("files", file) or {}
-            utils.warning("%s:%d${clear}: cannot match %s_files(\"%s\") in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, (removed and "remove" or "add"), file, self:type(), self:name())
+            utils.warning("%s:%d${clear}: cannot match %s_files(\"%s\") in %s(%s)",
+                sourceinfo.file or "", sourceinfo.line or -1, (removed and "remove" or "add"), file, self:type(), self:fullname())
         end
 
         -- process source files
@@ -2438,6 +2506,7 @@ function _instance:toolchains()
                 local toolchain_opt = table.copy(self:extraconf("toolchains", name))
                 toolchain_opt.arch = self:arch()
                 toolchain_opt.plat = self:plat()
+                toolchain_opt.namespace = self:namespace()
                 local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
                 -- attempt to load toolchain from project
                 if not toolchain_inst and target._project() then
@@ -2478,9 +2547,9 @@ end
 function _instance:tool(toolkind)
     -- we cannot get tool in on_load, because target:toolchains() has been not checked in configuration stage.
     if not self._LOADED_AFTER then
-        os.raise("we cannot get tool(%s) before target(%s) is loaded, maybe it is called on_load(), please call it in on_config().", toolkind, self:name())
+        os.raise("we cannot get tool(%s) before target(%s) is loaded, maybe it is called on_load(), please call it in on_config().", toolkind, self:fullname())
     end
-    return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
+    return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:fullname(), plat = self:plat(), arch = self:arch(),
                                                         before_get = function()
         -- get program from set_toolset
         local program = self:get("toolset." .. toolkind)
@@ -2517,7 +2586,7 @@ end
 
 -- get tool configuration from the toolchains
 function _instance:toolconfig(name)
-    return toolchain.toolconfig(self:toolchains(), name, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
+    return toolchain.toolconfig(self:toolchains(), name, {cachekey = "target_" .. self:fullname(), plat = self:plat(), arch = self:arch(),
                                                           after_get = function(toolchain_inst)
         -- get flags from target.on_xxflags()
         local script = toolchain_inst:get("target.on_" .. name)

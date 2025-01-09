@@ -44,9 +44,14 @@ local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
 function _instance.new(name, info)
-    local instance    = table.inherit(_instance)
-    instance._NAME    = name
-    instance._INFO    = info
+    local instance = table.inherit(_instance)
+    local parts = name:split("::", {plain = true})
+    instance._NAME = parts[#parts]
+    table.remove(parts)
+    if #parts > 0 then
+        instance._NAMESPACE = table.concat(parts, "::")
+    end
+    instance._INFO = info
     instance._CACHEID = 1
     return instance
 end
@@ -63,7 +68,7 @@ function _instance:_save()
     self:set("check_before", nil)
 
     -- save option
-    option._cache():set(self:name(), self:info())
+    option._cache():set(self:fullname(), self:info())
 
     -- restore scripts
     self:set("check", check)
@@ -73,7 +78,7 @@ end
 
 -- clear the option info for cache
 function _instance:_clear()
-    option._cache():set(self:name(), nil)
+    option._cache():set(self:fullname(), nil)
 end
 
 -- check snippets
@@ -129,7 +134,7 @@ function _instance:_do_check_cxsnippets(snippets)
                     end
                 end
                 if #table.keys(snippets_output) > 1 then
-                    return false, -1, string.format("option(%s): only support for only one snippet with output!", self:name())
+                    return false, -1, string.format("option(%s): only support for only one snippet with output!", self:fullname())
                 end
             end
 
@@ -309,6 +314,10 @@ function _instance:_check()
     if name:startswith("__") then
         name = name:sub(3)
     end
+    local namespace = self:namespace()
+    if namespace then
+        name = namespace .. "::" .. name
+    end
 
     -- trace
     local result
@@ -336,7 +345,7 @@ end
 function _instance:check()
 
     -- the option name
-    local name = self:name()
+    local name = self:fullname()
 
     -- get default value, TODO: enable will be deprecated
     local default = self:get("default")
@@ -378,24 +387,24 @@ end
 
 -- get the option value
 function _instance:value()
-    return config.get(self:name())
+    return config.get(self:fullname())
 end
 
 -- set the option value
 function _instance:set_value(value)
-    config.set(self:name(), value)
+    config.set(self:fullname(), value)
     self:_save()
 end
 
 -- clear the option status and need recheck it
 function _instance:clear()
-    config.set(self:name(), nil)
+    config.set(self:fullname(), nil)
     self:_clear()
 end
 
 -- this option is enabled?
 function _instance:enabled()
-    return config.get(self:name())
+    return config.get(self:fullname())
 end
 
 -- enable or disable this option
@@ -409,8 +418,8 @@ function _instance:enable(enabled, opt)
     opt = opt or {}
 
     -- enable or disable this option?
-    if not config.readonly(self:name()) or opt.force then
-        config.set(self:name(), enabled, opt)
+    if not config.readonly(self:fullname()) or opt.force then
+        config.set(self:fullname(), enabled, opt)
     end
 
     -- save or clear this option in cache
@@ -474,7 +483,14 @@ end
 function _instance:dep(name)
     local deps = self:deps()
     if deps then
-        return deps[name]
+        local dep = deps[name]
+        if dep == nil then
+            local namespace = self:namespace()
+            if namespace then
+                dep = deps[namespace .. "::" .. name]
+            end
+        end
+        return dep
     end
 end
 
@@ -493,9 +509,20 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the namespace
+function _instance:namespace()
+    return self._NAMESPACE
+end
+
+-- get the full name
+function _instance:fullname()
+    local namespace = self:namespace()
+    return namespace and namespace .. "::" .. self:name() or self:name()
+end
+
 -- get the option description
 function _instance:description()
-    return self:get("description") or ("The " .. self:name() .. " option")
+    return self:get("description") or ("The " .. self:fullname() .. " option")
 end
 
 -- get the cache key
@@ -645,13 +672,12 @@ function option.new(name, info)
 end
 
 -- load the option info from the cache
-function option.load(name)
-
-    -- check
-    assert(name)
-
-    -- get info
+function option.load(name, opt)
+    opt = opt or {}
     local info = option._cache():get(name)
+    if info == nil and opt.namespace then
+        info = option._cache():get(opt.namespace .. "::" .. name)
+    end
     if info == nil then
         return
     end

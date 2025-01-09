@@ -42,7 +42,12 @@ local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 -- new an instance
 function _instance.new(name, info, cachekey, is_builtin, configs)
     local instance       = table.inherit(_instance)
-    instance._NAME       = name
+    local parts = name:split("::", {plain = true})
+    instance._NAME = parts[#parts]
+    table.remove(parts)
+    if #parts > 0 then
+        instance._NAMESPACE = table.concat(parts, "::")
+    end
     instance._INFO       = info
     instance._IS_BUILTIN = is_builtin
     instance._CACHE      = toolchain._localcache()
@@ -66,6 +71,17 @@ end
 -- get toolchain name
 function _instance:name()
     return self._NAME
+end
+
+-- get the namespace
+function _instance:namespace()
+    return self._NAMESPACE
+end
+
+-- get the full name
+function _instance:fullname()
+    local namespace = self:namespace()
+    return namespace and namespace .. "::" .. self:name() or self:name()
 end
 
 -- get toolchain platform

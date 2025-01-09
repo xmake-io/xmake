@@ -18,6 +18,19 @@
 -- @file        get_config.lua
 --
 
--- return module
-return require("project/config").get
+local config  = require("project/config")
+local sandbox = require("sandbox/sandbox")
+
+return function (name)
+    local namespace
+    local instance = sandbox.instance()
+    if instance then
+        namespace = instance:namespace()
+    end
+    local value = config.get(name)
+    if value == nil and namespace then
+        value = config.get(namespace .. "::" .. name)
+    end
+    return value
+end
 

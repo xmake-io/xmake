@@ -27,6 +27,7 @@ local path       = require("base/path")
 local table      = require("base/table")
 local utils      = require("base/utils")
 local string     = require("base/string")
+local hashset    = require("base/hashset")
 local scopeinfo  = require("base/scopeinfo")
 local deprecated = require("base/deprecated")
 local sandbox    = require("sandbox/sandbox")
@@ -86,9 +87,7 @@ function interpreter._traceback(errors)
 end
 
 -- merge the current root values to the previous scope
-function interpreter._merge_root_scope(root, root_prev, override)
-
-    -- merge it
+function interpreter:_merge_root_scope(root, root_prev, override)
     root_prev = root_prev or {}
     for scope_kind_and_name, _ in pairs(root or {}) do
         -- only merge sub-scope for each kind("target@@xxxx") or __rootkind
@@ -111,16 +110,12 @@ function interpreter._merge_root_scope(root, root_prev, override)
             root_prev[scope_kind_and_name] = scope_values
         end
     end
-
-    -- ok?
     return root_prev
 end
 
 -- fetch the root values to the child values in root scope
 -- and we will only use the child values if be override mode
-function interpreter._fetch_root_scope(root)
-
-    -- fetch it
+function interpreter:_fetch_root_scope(root)
     for scope_kind_and_name, _ in pairs(root or {}) do
 
         -- is scope_kind@@scope_name?
@@ -128,21 +123,55 @@ function interpreter._fetch_root_scope(root)
         if #scope_kind_and_name == 2 then
             local scope_kind = scope_kind_and_name[1]
             local scope_name = scope_kind_and_name[2]
-            local scope_values = root[scope_kind .. "@@" .. scope_name] or {}
-            local scope_root = root[scope_kind] or {}
-            for name, values in pairs(scope_root) do
-                if not name:startswith("__override_") then
-                    if scope_root["__override_" .. name] then
-                        if scope_values[name] == nil then
-                            scope_values[name] = values
-                            scope_values["__override_" .. name] = true
+
+            -- we only fetch the root values to the target values, e.g. target@@ns1::ns2::bar"
+            -- and ignore root namespace values, e.g. target@@ns1::ns2::
+            if not scope_name:endswith("::") then
+                local scope_values = root[scope_kind .. "@@" .. scope_name] or {}
+                local namespaces = scope_name:split("::", {plain = true})
+                table.remove(namespaces)
+                table.insert(namespaces, 1, "")
+
+                -- add values in global root scope, all namespace root scopes
+                local namespace
+                local scope_rootkeys = {}
+                for idx, namespace_part in ipairs(namespaces) do
+                    local scope_rootkey = scope_kind
+                    if idx ~= 1 then
+                        if not namespace then
+                            namespace = namespace_part
+                        else
+                            namespace = namespace .. "::" .. namespace_part
                         end
-                    else
-                        scope_values[name] = table.join(values, scope_values[name] or {})
+                        scope_rootkey = scope_kind .. "@@" .. namespace .. "::"
+                    end
+                    table.insert(scope_rootkeys, scope_rootkey)
+                end
+                -- we need to add root values in head
+                --
+                -- e.g.
+                -- add root values to ns1::ns2::bar from target@@ns1::ns2::
+                -- add root values to ns1::ns2::bar from target@@ns1::
+                -- add root values to ns1::ns2::bar from target
+                --
+                for idx = #scope_rootkeys, 1, -1 do
+                    local scope_rootkey = scope_rootkeys[idx]
+                    local scope_root = root[scope_rootkey] or {}
+                    for name, values in pairs(scope_root) do
+                        if not name:startswith("__override_") then
+                            if scope_root["__override_" .. name] then
+                                if scope_values[name] == nil then
+                                    scope_values[name] = values
+                                    scope_values["__override_" .. name] = true
+                                end
+                            else
+                                scope_values[name] = table.join(values, scope_values[name] or {})
+                            end
+                        end
                     end
                 end
+                root[scope_kind .. "@@" .. scope_name] = scope_values
             end
-            root[scope_kind .. "@@" .. scope_name] = scope_values
         end
     end
 end
@@ -166,27 +195,15 @@ end
 -- register scope end: scopename_end()
 function interpreter:_api_register_scope_end(...)
     assert(self and self._PUBLIC and self._PRIVATE)
-
-    -- done
     for _, apiname in ipairs({...}) do
-
-        -- check
-        assert(apiname)
 
         -- register scope api
         self:api_register(nil, apiname .. "_end", function (self, ...)
-
-            -- check
             assert(self and self._PRIVATE and apiname)
 
-            -- the scopes
-            local scopes = self._PRIVATE._SCOPES
-            assert(scopes)
-
             -- enter root scope
+            local scopes = self._PRIVATE._SCOPES
             scopes._CURRENT = nil
-
-            -- clear scope kind
             scopes._CURRENT_KIND = nil
         end)
     end
@@ -239,11 +256,16 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
     local implementation = function (self, scopes, apiname, ...)
 
         -- init root scopes
+        local namespace = self._PRIVATE._NAMESPACE_STR
         scopes._ROOT = scopes._ROOT or {}
 
         -- init current root scope
-        local root = scopes._ROOT[scope_kind] or {}
-        scopes._ROOT[scope_kind] = root
+        local rootkey = scope_kind
+        if namespace then
+            rootkey = scope_kind .. "@@" .. namespace .. "::"
+        end
+        local root = scopes._ROOT[rootkey] or {}
+        scopes._ROOT[rootkey] = root
 
         -- clear the current scope if be not belong to the current scope kind
         if scopes._CURRENT and scopes._CURRENT_KIND ~= scope_kind then
@@ -522,18 +544,49 @@ function interpreter:_make(scope_kind, deduplicate, enable_filter)
     local results = {}
     local scope_opt = {interpreter = self, deduplicate = deduplicate, enable_filter = enable_filter}
     if scope_kind and scope_kind:startswith("root.") then
-
-        local root_scope = scopes._ROOT[scope_kind:sub(6)]
-        if root_scope then
+        local root_scope = {}
+        local empty = true
+        local kind_prefix = scope_kind:sub(6)
+        for kind, scope in pairs(scopes._ROOT) do
+            if kind:startswith(kind_prefix) then
+                local namespace = kind:match(kind_prefix .. "@@(.+)::")
+                if namespace or kind == kind_prefix then
+                    for k, v in pairs(scope) do
+                        if namespace then
+                            root_scope[namespace .. "::" .. k] = v
+                        else
+                            root_scope[k] = v
+                        end
+                    end
+                end
+                empty = false
+            end
+        end
+        if root_scope and not empty then
             results = self:_handle(root_scope, deduplicate, enable_filter)
         end
         return scopeinfo.new(scope_kind, results, scope_opt)
 
     -- get the root scope info without scope kind
     elseif scope_kind == "root" or scope_kind == nil then
-
-        local root_scope = scopes._ROOT["__rootkind"]
-        if root_scope then
+        local root_scope = {}
+        local empty = true
+        for kind, scope in pairs(scopes._ROOT) do
+            if kind:startswith("__rootkind") then
+                local namespace = kind:match("__rootkind@@(.+)::")
+                if namespace or kind == "__rootkind" then
+                    for k, v in pairs(scope) do
+                        if namespace then
+                            root_scope[namespace .. "::" .. k] = v
+                        else
+                            root_scope[k] = v
+                        end
+                    end
+                end
+                empty = false
+            end
+        end
+        if root_scope and not empty then
             results = self:_handle(root_scope, deduplicate, enable_filter)
         end
         return scopeinfo.new(scope_kind, results, scope_opt)
@@ -546,7 +599,7 @@ function interpreter:_make(scope_kind, deduplicate, enable_filter)
         if scope_for_kind then
 
             -- fetch the root values in root scope first
-            interpreter._fetch_root_scope(scopes._ROOT)
+            self:_fetch_root_scope(scopes._ROOT)
 
             -- merge results
             for scope_name, scope in pairs(scope_for_kind) do
@@ -594,7 +647,7 @@ function interpreter:_script(script)
     end
 
     -- make sandbox instance with the given script
-    local instance, errors = sandbox.new(script, self:filter(), self:scriptdir())
+    local instance, errors = sandbox.new(script, {filter = self:filter(), rootdir = self:scriptdir(), namespace = self:namespace()})
     if not instance then
         return nil, errors
     end
@@ -680,6 +733,8 @@ function interpreter.new()
     instance:api_register(nil, "add_subdirs",  interpreter.api_builtin_add_subdirs)
     instance:api_register(nil, "add_subfiles", interpreter.api_builtin_add_subfiles)
     instance:api_register(nil, "set_xmakever", interpreter.api_builtin_set_xmakever)
+    instance:api_register(nil, "namespace",    interpreter.api_builtin_namespace)
+    instance:api_register(nil, "namespace_end",interpreter.api_builtin_namespace_end)
 
     -- register the interpreter interfaces
     instance:api_register(nil, "interp_save_scope",    interpreter.api_interp_save_scope)
@@ -763,6 +818,17 @@ end
 function interpreter:mtimes()
     assert(self and self._PRIVATE)
     return self._PRIVATE._MTIMES
+end
+
+-- get current namespace
+function interpreter:namespace()
+    return self._PRIVATE._NAMESPACE_STR
+end
+
+-- get namespaces
+function interpreter:namespaces()
+    local namespaces = self._PRIVATE._NAMESPACES
+    return namespaces and namespaces:to_array()
 end
 
 -- get filter
@@ -924,7 +990,7 @@ end
 --      {
 --          scope_kind1
 --          {
---              "scope_name1"
+--              "namespace1::scope_name1"
 --              {
 --
 --              }
@@ -932,7 +998,7 @@ end
 --
 --          scope_kind2
 --          {
---              "scope_name1"
+--              "namespace1::namespace2::scope_name1"
 --              {
 --
 --              }
@@ -952,6 +1018,10 @@ function interpreter:api_register_scope(...)
         local scope_args = table.pack(...)
         local scope_name = scope_args[1]
         local scope_info = scope_args[2]
+        local namespace = self._PRIVATE._NAMESPACE_STR
+        if scope_name ~= nil and namespace then
+            scope_name = namespace .. "::" .. scope_name
+        end
 
         -- check invalid scope name, @see https://github.com/xmake-io/xmake/issues/4547
         if scope_args.n > 0 and type(scope_name) ~= "string" then
@@ -992,6 +1062,8 @@ function interpreter:api_register_scope(...)
         scopes._ROOT = scopes._ROOT or {}
         if scope_name ~= nil then
             scopes._ROOT[scope_kind .. "@@" .. scope_name] = {}
+        elseif namespace then
+            scopes._ROOT[scope_kind .. "@@" .. namespace .. "::"] = {}
         end
 
         -- with scope info? translate it
@@ -1058,13 +1130,17 @@ end
 --          {
 --              scope_kind
 --              {
+--                  name1 = {"value3"}
+--              }
+--              scope_kind@@namespace::
+--              {
 --                  name2 = {"value3"}
 --              }
 --          }
 --
 --          scope_kind
 --          {
---              "scope_name" <-- _SCOPES._CURRENT
+--              "namespace::scope_name" <-- _SCOPES._CURRENT
 --              {
 --                  name1 = {"value1"}
 --                  name2 = {"value1", "value2", ...}
@@ -1811,12 +1887,12 @@ function interpreter:api_builtin_includes(...)
                 scopes._CURRENT = scope_prev
 
                 -- fetch the root values in root scopes first
-                interpreter._fetch_root_scope(scopes._ROOT)
+                self:_fetch_root_scope(scopes._ROOT)
 
                 -- restore the previous root scope and merge current root scope
                 -- it will override the previous values if the current values are override mode
                 -- so we priority use the values in subdirs scope
-                scopes._ROOT = interpreter._merge_root_scope(scopes._ROOT, root_prev, true)
+                scopes._ROOT = self:_merge_root_scope(scopes._ROOT, root_prev, true)
 
                 -- get mtime of the file
                 self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
@@ -1842,6 +1918,51 @@ function interpreter:api_builtin_add_subfiles(...)
     self:api_builtin_includes(...)
     local files = {...}
     deprecated.add("includes(%s)", "add_subfiles(%s)", table.concat(files, ", "), table.concat(files, ", "))
+end
+
+-- the builtin api: namespace()
+function interpreter:api_builtin_namespace(name, callback)
+
+    -- enter root scope
+    self:api_interp_save_scope()
+    local scopes = self._PRIVATE._SCOPES
+    scopes._CURRENT = nil
+    scopes._CURRENT_KIND = nil
+
+    -- enter namespace
+    local namespace = self._PRIVATE._NAMESPACE
+    if namespace == nil then
+        namespace = {}
+        self._PRIVATE._NAMESPACE = namespace
+    end
+    table.insert(namespace, name)
+    self._PRIVATE._NAMESPACE_STR = table.concat(namespace, "::")
+    -- save namespaces
+    local namespaces = self._PRIVATE._NAMESPACES
+    if namespaces == nil then
+        namespaces = hashset.new()
+        self._PRIVATE._NAMESPACES = namespaces
+    end
+    namespaces:insert(self._PRIVATE._NAMESPACE_STR)
+    if callback and type(callback) == "function" then
+        callback()
+        self:api_builtin_namespace_end()
+    end
+end
+
+-- the builtin api: namespace_end()
+function interpreter:api_builtin_namespace_end()
+    assert(self and self._PRIVATE)
+    local namespace = self._PRIVATE._NAMESPACE
+    if namespace then
+        table.remove(namespace)
+    end
+    if namespace and #namespace > 0 then
+        self._PRIVATE._NAMESPACE_STR = table.concat(namespace, "::")
+    else
+        self._PRIVATE._NAMESPACE_STR = nil
+    end
+    self:api_interp_restore_scope()
 end
 
 -- the interpreter api: interp_save_scope()

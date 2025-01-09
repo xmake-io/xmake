@@ -2,7 +2,12 @@ target("xmake")
     set_kind("static")
 
     -- add deps
-    add_deps("sv", "lz4", "tbox")
+    add_deps("sv", "lz4")
+    if false then--namespace then
+        add_deps("tbox::tbox")
+    else
+        add_deps("tbox")
+    end
     if is_config("runtime", "luajit") then
         add_deps("luajit")
     else

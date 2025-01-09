@@ -961,6 +961,12 @@ function _load_package(packagename, requireinfo, opt)
     local package
     if os.isfile(os.projectfile()) then
         package = _load_package_from_project(packagename)
+        if package and package:namespace() then
+            packagename = package:namespace() .. "::" .. packagename
+            if displayname then
+                displayname = package:namespace() .. "::" .. displayname
+            end
+        end
     end
 
     -- load package from repositories

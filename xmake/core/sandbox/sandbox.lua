@@ -79,12 +79,8 @@ function sandbox._traceback(errors)
         else
             results = results .. string.format("    [%s:%d]:\n", info.short_src, info.currentline)
         end
-
-        -- next
         level = level + 1
     end
-
-    -- ok?
     return results
 end
 
@@ -111,28 +107,20 @@ function sandbox._new()
 
     -- bind instance to the public script envirnoment
     instance:bind(instance._PUBLIC)
-
-    -- ok?
     return instance
 end
 
 -- new a sandbox instance with the given script
-function sandbox.new(script, filter, rootdir)
-
-    -- check
-    assert(script)
+function sandbox.new(script, opt)
+    opt = opt or {}
 
     -- new instance
     local self = sandbox._new()
-
-    -- check
     assert(self and self._PUBLIC and self._PRIVATE)
 
-    -- save filter
-    self._PRIVATE._FILTER = filter
-
-    -- save root directory
-    self._PRIVATE._ROOTDIR = rootdir
+    self._PRIVATE._FILTER = opt.filter
+    self._PRIVATE._ROOTDIR = opt.rootdir
+    self._PRIVATE._NAMESPACE = opt.namespace
 
     -- invalid script?
     if type(script) ~= "function" then
@@ -189,23 +177,17 @@ function sandbox:fork(script, rootdir)
 
     -- init a new sandbox instance
     local instance = sandbox._new()
-
-    -- check
     assert(instance and instance._PUBLIC and instance._PRIVATE)
 
-    -- inherit the filter
     instance._PRIVATE._FILTER = self:filter()
-
-    -- inherit the root directory
     instance._PRIVATE._ROOTDIR = rootdir or self:rootdir()
+    instance._PRIVATE._NAMESPACE = self:namespace()
 
     -- bind public scope
     if script then
         setfenv(script, instance._PUBLIC)
         instance._PRIVATE._SCRIPT = script
     end
-
-    -- ok?
     return instance
 end
 
@@ -255,6 +237,12 @@ end
 function sandbox:rootdir()
     assert(self and self._PRIVATE)
     return self._PRIVATE._ROOTDIR
+end
+
+-- get current namespace
+function sandbox:namespace()
+    assert(self and self._PRIVATE)
+    return self._PRIVATE._NAMESPACE
 end
 
 -- get current instance in the sandbox modules

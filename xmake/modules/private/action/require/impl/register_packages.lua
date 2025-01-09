@@ -66,6 +66,11 @@ function _register_required_package_libs(instance, required_package, is_deps)
                 required_package:set("__components_orderlist", instance:components_orderlist())
             end
 
+            -- save namespace
+            if instance:namespace() then
+                required_package:set("__namespace", instance:namespace())
+            end
+
             -- merge into the components values
             local required_components = required_package:get("components")
             if required_components then
