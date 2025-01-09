@@ -7,6 +7,7 @@
 * [#5994](https://github.com/xmake-io/xmake/issues/5994): Profile process performance
 * [#5995](https://github.com/xmake-io/xmake/pull/5995): Add profile support for vs generator
 * [#5949](https://github.com/xmake-io/xmake/pull/5949): Add rule nodejs.module
+* [#3380](https://github.com/xmake-io/xmake/issues/3380): Add namespace support
 
 ## v2.9.7
 
@@ -1931,6 +1932,7 @@
 * [#5994](https://github.com/xmake-io/xmake/issues/5994): 分析进程执行性能
 * [#5995](https://github.com/xmake-io/xmake/pull/5995): 为 vs generator 添加 profile 支持
 * [#5949](https://github.com/xmake-io/xmake/pull/5949): 添加 nodejs.module 规则
+* [#3380](https://github.com/xmake-io/xmake/issues/3380): 添加命名空间支持
 
 ## v2.9.7
 
