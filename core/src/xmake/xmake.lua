@@ -3,7 +3,7 @@ target("xmake")
 
     -- add deps
     add_deps("sv", "lz4")
-    if false then--namespace then
+    if namespace then
         add_deps("tbox::tbox")
     else
         add_deps("tbox")

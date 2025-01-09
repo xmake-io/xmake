@@ -132,7 +132,7 @@ end
 
 -- add projects
 includes("src/sv", "src/lz4", "src/xmake", "src/cli")
-if false then --namespace then
+if namespace then
     namespace("tbox", function ()
         includes("src/tbox")
     end)
