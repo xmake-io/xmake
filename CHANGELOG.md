@@ -9,6 +9,10 @@
 * [#5949](https://github.com/xmake-io/xmake/pull/5949): Add rule nodejs.module
 * [#3380](https://github.com/xmake-io/xmake/issues/3380): Add namespace support
 
+### Bugs fixed
+
+* [#272](https://github.com/tboox/tbox/issues/272): Fix xmake stuck when readfile always return zero for msvc + /O1
+
 ## v2.9.7
 
 ### New features
@@ -1933,6 +1937,10 @@
 * [#5995](https://github.com/xmake-io/xmake/pull/5995): 为 vs generator 添加 profile 支持
 * [#5949](https://github.com/xmake-io/xmake/pull/5949): 添加 nodejs.module 规则
 * [#3380](https://github.com/xmake-io/xmake/issues/3380): 添加命名空间支持
+
+### Bugs 修复
+
+* [#272](https://github.com/tboox/tbox/issues/272): 修复 msvc + /O1 时候，错误的编译器优化导致 xmake 加载卡住
 
 ## v2.9.7
 
