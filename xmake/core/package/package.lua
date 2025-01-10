@@ -2721,14 +2721,17 @@ end
 --
 function _instance:check_importfiles(names, opt)
     opt = opt or {}
-    if opt.configdirs == nil then
-        local configdirs = {}
+    if opt.PKG_CONFIG_PATH == nil then
+        local PKG_CONFIG_PATH = {}
         local linkdirs = table.wrap(self:get("linkdirs") or "lib")
         local installdir = self:installdir()
         for _, linkdir in ipairs(linkdirs) do
-            table.insert(configdirs, path.join(installdir, linkdir))
+            table.insert(PKG_CONFIG_PATH, path.join(installdir, linkdir, "pkgconfig"))
         end
-        opt.configdirs = configdirs
+        opt.PKG_CONFIG_PATH = PKG_CONFIG_PATH
+    end
+    if opt.CMAKE_PREFIX_PATH == nil then
+        opt.CMAKE_PREFIX_PATH = self:installdir()
     end
     return sandbox_module.import("lib.detect.check_importfiles", {anonymous = true})(names or ("pkgconfig::" .. self:name()), opt)
 end

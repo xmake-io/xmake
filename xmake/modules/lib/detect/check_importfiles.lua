@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.pkgconfig")
+import("package.manager.cmake.find_package", {alias = "cmake_find_package"})
 
 -- check the given importfiles for pkgconfig/cmake
 --
@@ -28,6 +29,10 @@ import("lib.detect.pkgconfig")
 -- @param opt   the argument options, e.g. { verbose = true, configdirs = {"lib"}}
 --
 function main(names, opt)
+    local verbose
+    if opt.verbose or option.get("verbose") or option.get("diagnosis") then
+        verbose = true
+    end
     for _, name in ipairs(names) do
         local kind
         local parts = name:split("::")
@@ -38,16 +43,30 @@ function main(names, opt)
         if kind == nil then
             kind = "pkgconfig"
         end
+        if verbose then
+            cprint("${dim}> checking for %s/%s", kind, name)
+        end
         if kind == "pkgconfig" then
+            opt.configdirs = opt.PKG_CONFIG_PATH
             local result = pkgconfig.libinfo(name, opt)
-            if opt.verbose or option.get("verbose") or option.get("diagnosis") then
-                cprint("${dim}> checking for pkgconfig/%s.pc", name)
-                if result then
-                    print(result)
-                end
+            if verbose and result then
+                print(result)
             end
             if not result then
                 return false, string.format("pkgconfig/%s.pc not found!", name)
+            end
+        elseif kind == "cmake" then
+            if opt.CMAKE_PREFIX_PATH then
+                opt.configs = opt.configs or {}
+                opt.configs.envs = opt.configs.envs or {}
+                opt.configs.envs.CMAKE_PREFIX_PATH = path.joinenv(opt.CMAKE_PREFIX_PATH)
+            end
+            local result = cmake_find_package(name, opt)
+            if verbose and result then
+                print(result)
+            end
+            if not result then
+                return false, string.format("cmake/%s.cmake not found!", name)
             end
         end
     end
