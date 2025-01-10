@@ -38,8 +38,7 @@ end]]
 
 -- for the windows platform (msvc)
 if is_plat("windows") then
-    set_runtimes("MT")
-    add_ldflags("-nodefaultlib:msvcrt.lib")
+    set_runtimes("MD")
     add_links("kernel32", "user32", "gdi32")
 end
 
