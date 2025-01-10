@@ -2712,14 +2712,14 @@ function _instance:check_fcsnippets(snippets, opt)
     return sandbox_module.import("lib.detect.check_fcsnippets", {anonymous = true})(snippets, opt)
 end
 
--- check the given pkgconfig file?
+-- check the given importfiles?
 --
--- @param name      the .pc filename (without .pc extension)
+-- @param names     the import filenames (without .pc/.cmake extension), e.g. pkgconfig::libxml-2.0, cmake::CURL
 -- @param opt       the argument options
 --
 -- @return          true or false, errors
 --
-function _instance:check_pkgconfig(name, opt)
+function _instance:check_importfiles(names, opt)
     opt = opt or {}
     if opt.configdirs == nil then
         local configdirs = {}
@@ -2730,7 +2730,7 @@ function _instance:check_pkgconfig(name, opt)
         end
         opt.configdirs = configdirs
     end
-    return sandbox_module.import("lib.detect.check_pkgconfig", {anonymous = true})(name or self:name(), opt)
+    return sandbox_module.import("lib.detect.check_importfiles", {anonymous = true})(names or ("pkgconfig::" .. self:name()), opt)
 end
 
 -- the current mode is belong to the given modes?
