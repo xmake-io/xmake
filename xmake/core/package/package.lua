@@ -2712,6 +2712,30 @@ function _instance:check_fcsnippets(snippets, opt)
     return sandbox_module.import("lib.detect.check_fcsnippets", {anonymous = true})(snippets, opt)
 end
 
+-- check the given importfiles?
+--
+-- @param names     the import filenames (without .pc/.cmake extension), e.g. pkgconfig::libxml-2.0, cmake::CURL
+-- @param opt       the argument options
+--
+-- @return          true or false, errors
+--
+function _instance:check_importfiles(names, opt)
+    opt = opt or {}
+    if opt.PKG_CONFIG_PATH == nil then
+        local PKG_CONFIG_PATH = {}
+        local linkdirs = table.wrap(self:get("linkdirs") or "lib")
+        local installdir = self:installdir()
+        for _, linkdir in ipairs(linkdirs) do
+            table.insert(PKG_CONFIG_PATH, path.join(installdir, linkdir, "pkgconfig"))
+        end
+        opt.PKG_CONFIG_PATH = PKG_CONFIG_PATH
+    end
+    if opt.CMAKE_PREFIX_PATH == nil then
+        opt.CMAKE_PREFIX_PATH = self:installdir()
+    end
+    return sandbox_module.import("lib.detect.check_importfiles", {anonymous = true})(names or ("pkgconfig::" .. self:name()), opt)
+end
+
 -- the current mode is belong to the given modes?
 function package._api_is_mode(interp, ...)
     return config.is_mode(...)
