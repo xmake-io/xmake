@@ -2712,6 +2712,27 @@ function _instance:check_fcsnippets(snippets, opt)
     return sandbox_module.import("lib.detect.check_fcsnippets", {anonymous = true})(snippets, opt)
 end
 
+-- check the given pkgconfig file?
+--
+-- @param name      the .pc filename (without .pc extension)
+-- @param opt       the argument options
+--
+-- @return          true or false, errors
+--
+function _instance:check_pkgconfig(name, opt)
+    opt = opt or {}
+    if opt.configdirs == nil then
+        local configdirs = {}
+        local linkdirs = table.wrap(self:get("linkdirs") or "lib")
+        local installdir = self:installdir()
+        for _, linkdir in ipairs(linkdirs) do
+            table.insert(configdirs, path.join(installdir, linkdir))
+        end
+        opt.configdirs = configdirs
+    end
+    return sandbox_module.import("lib.detect.check_pkgconfig", {anonymous = true})(name or self:name(), opt)
+end
+
 -- the current mode is belong to the given modes?
 function package._api_is_mode(interp, ...)
     return config.is_mode(...)
