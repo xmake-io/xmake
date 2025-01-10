@@ -59,7 +59,7 @@ function main(names, opt)
             if opt.CMAKE_PREFIX_PATH then
                 opt.configs = opt.configs or {}
                 opt.configs.envs = opt.configs.envs or {}
-                opt.configs.envs.CMAKE_PREFIX_PATH = path.joinenv(opt.CMAKE_PREFIX_PATH)
+                opt.configs.envs.CMAKE_PREFIX_PATH = path.joinenv(table.wrap(opt.CMAKE_PREFIX_PATH))
             end
             local result = cmake_find_package(name, opt)
             if verbose and result then
