@@ -51,7 +51,7 @@ jobs:
           if ("${{ matrix.arch }}" -eq "x64") {
             Write-Output "RELEASE_NAME=win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           } elseif ("${{ matrix.arch }}" -eq "arm64") {
-            Write-Output "RELEASE_NAME=winarm64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
+            Write-Output "RELEASE_NAME=arm64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           } else {
             Write-Output "RELEASE_NAME=win32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           }
