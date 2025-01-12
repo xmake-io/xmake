@@ -22,14 +22,14 @@
 --
 -- target("foo")
 -- do
---     add_rules("luarocks.module", "lua-native-objects", "c")
+--     add_rules("lua.module", "lua.native-objects", "c")
 --     add_files("*.nobj.lua")
 -- end
 rule("lua.native-objects")
     set_extensions(".nobj.lua")
     before_buildcmd_file(function(target, batchcmds, sourcefile, opt)
         -- get c source file for lua.native-objects
-        local dirname = path.join(target:autogendir(), "rules", "lua-native-objects")
+        local dirname = path.join(target:autogendir(), "rules", "lua", "native-objects")
         local sourcefile_c = path.join(dirname, path.basename(sourcefile) .. ".c")
 
         -- add objectfile
