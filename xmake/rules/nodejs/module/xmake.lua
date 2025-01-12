@@ -20,13 +20,13 @@
 
 -- usage:
 --
--- npm add -D node-addon-api node-api-headers
+-- add_requires("node-addon-api")
 --
 -- target("foo")
 -- do
 --     set_languages("cxx17")
 --     add_rules("nodejs.module")
---     add_includedirs("node_modules/node-addon-api", "node_modules/node-api-headers/include")
+--     add_packages("node-addon-api")
 --     add_files("*.cc")
 -- end
 rule("nodejs.module")
