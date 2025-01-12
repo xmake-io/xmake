@@ -101,7 +101,7 @@ end
 function _check_try_running(flags, opt, islinker)
 
     -- make an stub source file
-    local snippet = opt.snippet or "int main(int argc, char** argv)\n{return 0;}"
+    local snippet = opt.snippet or "int main(int argc, char** argv)\n{return 0;}\n"
     local sourcefile = os.tmpfile("nvcc_has_flags:" .. snippet) .. ".cu"
     if not os.isfile(sourcefile) then
         io.writefile(sourcefile, snippet)

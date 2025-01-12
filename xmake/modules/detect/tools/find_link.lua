@@ -60,7 +60,7 @@ function main(opt)
             local sourcefile = os.tmpfile() .. ".c"
 
             -- compile sourcefile first
-            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}\n")
             os.runv(cl.program, {"-c", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
 
             -- do link

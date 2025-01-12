@@ -44,7 +44,7 @@ function main(opt)
             -- @see https://github.com/xmake-io/xmake/issues/3057
             local objectfile = os.tmpfile() .. ".obj"
             local sourcefile = os.tmpfile() .. ".c"
-            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}\n")
             os.runv(program, {"-c", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
             os.rm(objectfile)
             os.rm(sourcefile)
