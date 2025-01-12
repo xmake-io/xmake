@@ -103,7 +103,9 @@ function _fetch_packages(packages)
     local rcfiles = {}
     local includes = option.get("includes")
     if includes then
-        table.join2(rcfiles, path.splitenv(includes))
+        for _, includefile in ipairs(path.splitenv(includes)) do
+            table.insert(rcfiles, path.absolute(includefile))
+        end
     end
 
     -- enter working project directory
