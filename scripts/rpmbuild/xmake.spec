@@ -3,7 +3,7 @@
 
 Name:       xmake
 Version:    2.9.7
-Release:    3%{?dist}
+Release:    4%{?dist}
 Summary:    A cross-platform build utility based on Lua
 
 # Application and 3rd-party modules licensing:
@@ -52,11 +52,10 @@ rm -rf core/src/{lua,luajit,lua-cjson,lz4,pdcurses}/*/
 
 %build
 %set_build_flags
-%configure --external=yes
 %if %{use_luajit}
-  --runtime=luajit
+%configure --external=y --runtime=luajit
 %else
-  --runtime=lua
+%configure --external=y --runtime=lua
 %endif
 
 %make_build
