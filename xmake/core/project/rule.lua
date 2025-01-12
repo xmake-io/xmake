@@ -347,7 +347,9 @@ end
 function rule.new(name, info, opt)
     opt = opt or {}
     local instance = table.inherit(_instance)
-    instance:name_set(name)
+    if name then
+        instance:name_set(name)
+    end
     instance._INFO = info
     instance._PACKAGE = opt.package
     if opt.package then

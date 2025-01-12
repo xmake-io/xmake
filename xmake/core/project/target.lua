@@ -57,7 +57,9 @@ function _instance.new(name, info)
     local instance     = table.inherit(_instance)
     instance._INFO     = info
     instance._CACHEID  = 1
-    instance:name_set(name)
+    if name then
+        instance:name_set(name)
+    end
     return instance
 end
 

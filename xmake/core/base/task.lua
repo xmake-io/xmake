@@ -368,11 +368,13 @@ end
 -- new a task instance
 function task.new(name, info)
     local instance = table.inherit(task)
-    local parts = name:split("::", {plain = true})
-    instance._NAME = parts[#parts]
-    table.remove(parts)
-    if #parts > 0 then
-        instance._NAMESPACE = table.concat(parts, "::")
+    if name then
+        local parts = name:split("::", {plain = true})
+        instance._NAME = parts[#parts]
+        table.remove(parts)
+        if #parts > 0 then
+            instance._NAMESPACE = table.concat(parts, "::")
+        end
     end
     instance._INFO = info
     return instance

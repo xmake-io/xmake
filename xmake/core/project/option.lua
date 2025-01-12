@@ -45,11 +45,13 @@ local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 -- new an instance
 function _instance.new(name, info)
     local instance = table.inherit(_instance)
-    local parts = name:split("::", {plain = true})
-    instance._NAME = parts[#parts]
-    table.remove(parts)
-    if #parts > 0 then
-        instance._NAMESPACE = table.concat(parts, "::")
+    if name then
+        local parts = name:split("::", {plain = true})
+        instance._NAME = parts[#parts]
+        table.remove(parts)
+        if #parts > 0 then
+            instance._NAMESPACE = table.concat(parts, "::")
+        end
     end
     instance._INFO = info
     instance._CACHEID = 1
