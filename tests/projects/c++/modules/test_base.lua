@@ -58,11 +58,11 @@ function main(t)
         end
         local clang = find_tool("clang", {version = true})
         if clang and clang.version and semver.compare(clang.version, "14.0") >= 0 then
-            os.vexec("xmake clean -a")
-            os.vexec("xmake f --toolchain=clang -c --yes")
+            os.exec("xmake clean -a")
+            os.exec("xmake f --toolchain=clang -c --yes")
             _build()
-            os.vexec("xmake clean -a")
-            os.vexec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
+            os.exec("xmake clean -a")
+            os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
             _build()
         end
     end
