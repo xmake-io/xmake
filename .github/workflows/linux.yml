@@ -45,6 +45,7 @@ jobs:
           cd core
           xrepo env -b zig xmake f --embed=y --toolchain=zig --cross=x86_64-linux-gnu.2.29 -c
           xmake
+          mkdir ../artifacts
           cp build/xmake ../artifacts/xmake-bundle
           cd ..
       - uses: actions/upload-artifact@v4
