@@ -124,25 +124,26 @@ toolchain("zig")
         end
 
         -- init target
-        local target
-        if toolchain:is_plat("cross") then
-            -- xmake f -p cross --toolchain=zig --cross=mips64el-linux-gnuabi64
-            target = toolchain:cross()
-        elseif toolchain:is_plat("macosx") then
-            --@see https://github.com/ziglang/zig/issues/14226
-            target = arch .. "-macos-none"
-        elseif toolchain:is_plat("linux") then
-            if arch == "arm" then
-                target = "arm-linux-gnueabi"
-            elseif arch == "mips64" or arch == "mips64el" then
-                target = arch .. "-linux-gnuabi64"
-            else
-                target = arch .. "-linux-gnu"
+        local target = toolchain:cross()
+        if target == nil then
+            if toolchain:is_plat("cross") then
+                -- xmake f -p cross --toolchain=zig --cross=mips64el-linux-gnuabi64
+            elseif toolchain:is_plat("macosx") then
+                --@see https://github.com/ziglang/zig/issues/14226
+                target = arch .. "-macos-none"
+            elseif toolchain:is_plat("linux") then
+                if arch == "arm" then
+                    target = "arm-linux-gnueabi"
+                elseif arch == "mips64" or arch == "mips64el" then
+                    target = arch .. "-linux-gnuabi64"
+                else
+                    target = arch .. "-linux-gnu"
+                end
+            elseif toolchain:is_plat("windows") then
+                target = arch .. "-windows-msvc"
+            elseif toolchain:is_plat("mingw") then
+                target = arch .. "-windows-gnu"
             end
-        elseif toolchain:is_plat("windows") then
-            target = arch .. "-windows-msvc"
-        elseif toolchain:is_plat("mingw") then
-            target = arch .. "-windows-gnu"
         end
         if target then
             toolchain:add("asflags", "-target", target)
