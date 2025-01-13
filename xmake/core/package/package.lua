@@ -351,9 +351,17 @@ function _instance:url_version(url)
     return self:extraconf("urls", url, "version")
 end
 
--- get the excludes list of url for the archive extractor, @note need raw url
+-- get the excludes paths of url
+-- @note it supports the path pattern, but it only supports for archiver.
 function _instance:url_excludes(url)
     return self:extraconf("urls", url, "excludes")
+end
+
+-- get the includes paths of url
+-- @note it does not support the path pattern, and it only supports for git url now.
+-- @see https://github.com/xmake-io/xmake/issues/6071
+function _instance:url_includes(url)
+    return self:extraconf("urls", url, "includes")
 end
 
 -- get the http headers of url, @note need raw url
