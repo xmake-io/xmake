@@ -51,7 +51,7 @@ function main(t)
         end
         local clang = find_tool("clang", {version = true})
         if clang and clang.version then
-            if semver.compare(clang.version, "16.0") >= 0 then
+            if semver.compare(clang.version, "19.0") >= 0 then
                 os.exec("xmake clean -a")
                 -- clang-scan-deps dependency detection doesn't support header units atm
                 os.exec("xmake f --toolchain=clang --policies=build.c++.clang.fallbackscanner -c --yes")
