@@ -1,9 +1,10 @@
 %global     debug_package %{nil}
 %define     use_luajit 0
+%undefine   __brp_mangle_shebangs
 
 Name:       xmake
 Version:    2.9.7
-Release:    4%{?dist}
+Release:    5%{?dist}
 Summary:    A cross-platform build utility based on Lua
 
 # Application and 3rd-party modules licensing:
