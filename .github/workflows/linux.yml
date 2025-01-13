@@ -33,11 +33,24 @@ jobs:
           sudo apt install -y ruby ruby-dev rubygems build-essential llvm libc++-dev
           sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev
           clang --version
+          xrepo install zig
 
       - name: Tests
         run: |
           xmake lua -v -D tests/run.lua
           xrepo --version
+
+      - name: Artifact
+        run: |
+          cd core
+          xrepo env -b zig xmake f --embed=y --toolchain=zig --cross=x86_64-linux-gnu.2.29 -c
+          xmake
+          cp build/xmake ../artifacts/xmake-bundle
+          cd ..
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xmake-bundle.linux.x86_64
+          path: artifacts/xmake-bundle
 
       - name: Publish
         if: github.event.action == 'published'
@@ -57,3 +70,14 @@ jobs:
           scripts/makeppa bionic # 18.04
           scripts/makeppa xenial # 16.04
           scripts/makeppa trusty # 14.04
+
+      - name: Publish bundle binary
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/xmake-bundle
+          asset_name: xmake-bundle-${{ steps.tagName.outputs.tag }}.linux.x86_64
+          asset_content_type: application/zip
