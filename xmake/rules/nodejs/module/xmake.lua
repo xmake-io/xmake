@@ -69,7 +69,8 @@ rule("nodejs.module")
             target:set("kind", "shared")
         end
         local moduledir = path.directory((target:name():gsub('%.', '/')))
-        local installdir = path.join("build", get_config("mode"))
+        local mode = get_config("mode")
+        local installdir = path.join("build", mode:sub(1, 1):upper() .. mode:sub(2))
         import("target.action.install")(target, {
             installdir = installdir,
             libdir = moduledir,
