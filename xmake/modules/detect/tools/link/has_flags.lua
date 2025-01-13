@@ -63,9 +63,9 @@ function _check_try_running(flags, opt)
     local sourcefile = path.join(os.tmpdir(), "detect", (winmain and "winmain_" or "") .. "link_has_flags.c")
     if not os.isfile(sourcefile) then
         if winmain then
-            io.writefile(sourcefile, "int WinMain(void* instance, void* previnst, char** argv, int argc)\n{return 0;}")
+            io.writefile(sourcefile, "int WinMain(void* instance, void* previnst, char** argv, int argc)\n{return 0;}\n")
         else
-            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}\n")
         end
     end
 

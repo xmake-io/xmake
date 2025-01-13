@@ -48,7 +48,7 @@ function main(opt)
         local libraryfile = os.tmpfile() .. ".lib"
         local objectfile  = os.tmpfile() .. ".obj"
         local sourcefile  = os.tmpfile() .. ".c"
-        io.writefile(sourcefile, "int test(void)\n{return 0;}")
+        io.writefile(sourcefile, "int test(void)\n{return 0;}\n")
 
         -- check it
         local cl = assert(find_tool("cl", {envs = opt.envs}))

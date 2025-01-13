@@ -60,7 +60,7 @@ function main(opt)
         local libraryfile   = os.tmpfile() .. ".a"
         local objectfile    = os.tmpfile() .. ".o"
         local sourcefile    = os.tmpfile() .. ".c"
-        io.writefile(sourcefile, "int test(void)\n{return 0;}")
+        io.writefile(sourcefile, "int test(void)\n{return 0;}\n")
 
         -- compile it
         os.runv(emcc.program, {"-c", "-o" .. objectfile, sourcefile}, {envs = opt.envs})
