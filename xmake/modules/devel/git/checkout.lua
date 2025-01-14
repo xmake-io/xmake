@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("lib.detect.find_tool")
 
 -- checkout to given branch, tag or commit
@@ -38,7 +39,7 @@ import("lib.detect.find_tool")
 --
 function main(commit, opt)
     opt = opt or {}
-    local git = assert(find_tool("git"), "git not found!")
+    local git = assert(find_tool("git", {version = true}), "git not found!")
     local argv = {}
     if opt.fsmonitor then
         table.insert(argv, "-c")
@@ -46,6 +47,13 @@ function main(commit, opt)
     else
         table.insert(argv, "-c")
         table.insert(argv, "core.fsmonitor=false")
+    end
+
+    -- @see https://github.com/xmake-io/xmake/issues/6071
+    -- https://github.blog/open-source/git/bring-your-monorepo-down-to-size-with-sparse-checkout/
+    if opt.includes and git.version and semver.compare(git.version, "2.25") >= 0 then
+        os.vrunv(git.program, {"sparse-checkout", "init", "--cone"}, {curdir = opt.repodir})
+        os.vrunv(git.program, table.join({"sparse-checkout", "set"}, opt.includes), {curdir = opt.repodir})
     end
 
     table.insert(argv, "checkout")

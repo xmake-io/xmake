@@ -125,7 +125,7 @@ function _checkout(package, url, sourcedir, opt)
             git.clone(url, {treeless = true, checkout = false, longpaths = longpaths, outputdir = packagedir})
 
             -- attempt to checkout the given version
-            git.checkout(revision, {repodir = packagedir})
+            git.checkout(revision, {repodir = packagedir, includes = opt.url_includes})
 
             -- update all submodules
             if os.isfile(path.join(packagedir, ".gitmodules")) and opt.url_submodules ~= false then
@@ -260,11 +260,7 @@ end
 
 -- download codes from script
 function _download_from_script(package, script, opt)
-
-    -- do download
     script(package, opt)
-
-    -- trace
     tty.erase_line_to_start().cr()
     cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", opt.url)
 end
@@ -314,6 +310,7 @@ function main(package, opt)
     for idx, url in ipairs(urls) do
         local url_alias = package:url_alias(url)
         local url_excludes = package:url_excludes(url)
+        local url_includes = package:url_includes(url)
         local url_http_headers = package:url_http_headers(url)
         local url_submodules = package:extraconf("urls", url, "submodules")
 
@@ -349,16 +346,19 @@ function main(package, opt)
                         url = url,
                         url_alias = url_alias,
                         url_excludes = url_excludes,
+                        url_includes = url_includes,
                         url_submodules = url_submodules})
                 elseif git.checkurl(url) then
                     _checkout(package, url, sourcedir, {
                         url_alias = url_alias,
+                        url_includes = url_includes,
                         url_submodules = url_submodules})
                 else
                     _download(package, url, sourcedir, {
                         download_only = opt.download_only,
                         url_alias = url_alias,
                         url_excludes = url_excludes,
+                        url_includes = url_includes,
                     url_http_headers = url_http_headers})
                 end
                 return true
