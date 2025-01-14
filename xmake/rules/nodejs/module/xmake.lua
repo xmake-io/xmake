@@ -34,7 +34,6 @@ rule("nodejs.module")
         -- imports
         import("core.cache.detectcache")
         import("core.project.target", { alias = "project_target" })
-        import("devel.git")
 
         -- set kind
         if target:is_plat("macosx") then
