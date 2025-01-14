@@ -67,7 +67,15 @@ function is_enabled(target)
         end
         -- disable ccache on ci
         if result == nil and ci_is_running() then
-            result = false
+            local action_build_cache = _g._ACTION_BUILD_CACHE
+            if action_build_cache == nil then
+                action_build_cache = os.getenv("XMAKE_ACTION_BUILD_CACHE")
+                _g._ACTION_BUILD_CACHE = action_build_cache or false
+            end
+            -- we cannot disable it if github-action-setup-xmake/build-cache is enabled
+            if not action_build_cache then
+                result = false
+            end
         end
         -- disable ccache for msvc, because cl.exe preprocessor is too slower
         -- @see https://github.com/xmake-io/xmake/issues/3532
