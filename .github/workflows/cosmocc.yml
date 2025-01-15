@@ -1,0 +1,62 @@
+name: Cosmocc (linux-x86_64)
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        arch: [x86_64]
+
+    runs-on: ${{ matrix.os }}
+
+    concurrency:
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Cosmocc-${{ matrix.arch }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Prepare local xmake
+        run: cp -rf . ../xmake-source
+
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: local#../xmake-source
+
+      - uses: bjia56/setup-cosmocc@main
+        with:
+          version: "4.0.2"
+
+      - name: Build
+        run: |
+          cd core
+          xmake f -p linux --cosmocc=y --embed=y -y -cvD
+          xmake -v
+          cd ..
+
+      - name: Prepare
+        run: |
+          sudo apt update
+          sudo apt install -y ruby ruby-dev rubygems build-essential llvm libc++-dev
+          sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev
+          clang --version
+          
+      - name: Tests
+        run: |
+          ls -l core/build/
+          core/build/xmake --version
+          core/build/xmake lua -v -D tests/run.lua
+
+      - name: Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xmake-cosmocc
+          path: core/build/xmake
