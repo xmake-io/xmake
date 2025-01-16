@@ -27,7 +27,9 @@
 -- end
 rule("lua.native-objects")
     set_extensions(".nobj.lua")
+    add_deps("c")
     before_buildcmd_file(function(target, batchcmds, sourcefile, opt)
+        import("lib.detect.find_tool")
         -- get c source file for lua.native-objects
         local dirname = path.join(target:autogendir(), "rules", "lua", "native-objects")
         local sourcefile_c = path.join(dirname, path.basename(sourcefile) .. ".c")
@@ -39,9 +41,10 @@ rule("lua.native-objects")
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.nobj.lua %s", sourcefile)
         batchcmds:mkdir(path.directory(sourcefile_c))
-        batchcmds:vrunv("native_objects",
+        local native_objects = find_tool("native_objects")
+        assert(native_objects, "native_objects not found! please `luarocks install luanativeobjects`.")
+        batchcmds:vrunv(native_objects.program,
             { "-outpath", path(dirname), "-gen", "lua", path(sourcefile) })
-        -- remember to add_rules("c") if you need
         batchcmds:compile(sourcefile_c, objectfile)
 
         -- add deps
