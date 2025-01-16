@@ -2,7 +2,7 @@ import("net.fasturl")
 
 function mirror(url)
     local configs = {}
-    local proxyurls = {"hub.nuaa.cf"}
+    local proxyurls = {}
     fasturl.add(proxyurls)
     proxyurls = fasturl.sort(proxyurls)
     if #proxyurls > 0 then
