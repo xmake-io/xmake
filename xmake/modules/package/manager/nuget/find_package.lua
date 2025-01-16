@@ -89,14 +89,18 @@ function _find_package(name, result, opt)
 
             -- get linkdirs and links
             if file:endswith(".lib") then
-                local libfile = path.unix(path.join(libdir, libarch, toolset, libmode, runtime))
-                if file:startswith(libfile .. "/") then
-                    result.links = result.links or {}
-                    result.linkdirs = result.linkdirs or {}
-                    result.libfiles = result.libfiles or {}
-                    table.insert(result.linkdirs, path.directory(filepath))
-                    table.insert(result.links, target.linkname(path.filename(filepath), {plat = plat}))
-                    table.insert(result.libfiles, filepath)
+                local searchdirs = {}
+                table.insert(searchdirs, path.unix(path.join(libdir, libarch, toolset, libmode, runtime)))
+                table.insert(searchdirs, path.unix(path.join(libdir, libarch)))
+                for _, searchdir in ipairs(searchdirs) do
+                    if file:startswith(searchdir .. "/") then
+                        result.links = result.links or {}
+                        result.linkdirs = result.linkdirs or {}
+                        result.libfiles = result.libfiles or {}
+                        table.insert(result.linkdirs, path.directory(filepath))
+                        table.insert(result.links, target.linkname(path.filename(filepath), {plat = plat}))
+                        table.insert(result.libfiles, filepath)
+                    end
                 end
             end
         end
