@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Cosmocc-${{ matrix.arch }}
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Cosmocc-Linux-${{ matrix.arch }}
       cancel-in-progress: true
 
     steps:
