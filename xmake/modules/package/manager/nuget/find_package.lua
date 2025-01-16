@@ -82,7 +82,7 @@ function _find_package(name, result, opt)
             file = file:trim()
 
             -- get includedirs
-            if file:find("/include/", 1, true) then
+            if file:find("/include/", 1, true) or file:startswith("include/") then
                 result.includedirs = result.includedirs or {}
                 table.insert(result.includedirs, path.join(installdir, "include"))
             end
