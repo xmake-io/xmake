@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        arch: [x64, x86]
+        arch: [x64, x86, arm64]
 
     runs-on: ${{ matrix.os }}
 
@@ -50,6 +50,8 @@ jobs:
         run: |
           if ("${{ matrix.arch }}" -eq "x64") {
             Write-Output "RELEASE_NAME=win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
+          } elseif ("${{ matrix.arch }}" -eq "arm64") {
+            Write-Output "RELEASE_NAME=arm64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           } else {
             Write-Output "RELEASE_NAME=win32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           }
@@ -74,6 +76,7 @@ jobs:
           cd ..
 
       - name: Tests
+        if: matrix.arch != 'arm64'
         run: |
           Copy-Item ./core/build/xmake.exe ./xmake
           Copy-Item ./scripts/xrepo.bat ./xmake
@@ -204,4 +207,3 @@ jobs:
           asset_path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}xp.exe
           asset_content_type: application/zip
-
