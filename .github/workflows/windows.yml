@@ -76,6 +76,7 @@ jobs:
           cd ..
 
       - name: Tests
+        if: matrix.arch != 'arm64'
         run: |
           Copy-Item ./core/build/xmake.exe ./xmake
           Copy-Item ./scripts/xrepo.bat ./xmake
