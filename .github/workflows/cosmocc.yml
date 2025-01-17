@@ -42,13 +42,19 @@ jobs:
           xmake -v
           cd ..
 
-      - name: Prepare
+      - name: Prepare (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update
           sudo apt install -y ruby ruby-dev rubygems build-essential llvm libc++-dev
           sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev
           clang --version
+
+      - name: Prepare (macOS)
+        if: matrix.os == 'macos-13'
+        run: |
+          brew install dmd
+          brew install dub
           
       - name: Tests
         run: |
@@ -67,5 +73,5 @@ jobs:
       - name: Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: xmake-cosmocc
+          name: xmake-bundle.cosmocc
           path: core/build/xmake
