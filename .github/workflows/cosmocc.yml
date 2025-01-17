@@ -59,12 +59,6 @@ jobs:
           brew install dmd
           brew install dub
           
-      - name: Tests
-        run: |
-          ls -l core/build/
-          core/build/xmake --version
-          core/build/xmake lua -v -D tests/run.lua
-          
       # In the tests, cmake tries to use make from the cosmopolitan toolchain and fails, so uninstall it
       - name: Remove cosmocc
         run: |
@@ -73,6 +67,12 @@ jobs:
           echo "::remove-path::${INSTALL_DIR}/bin"
           rm -r "${INSTALL_DIR}"
 
+      - name: Tests
+        run: |
+          ls -l core/build/
+          core/build/xmake --version
+          core/build/xmake lua -v -D tests/run.lua
+          
       - name: Artifact
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
