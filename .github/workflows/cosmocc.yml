@@ -61,6 +61,7 @@ jobs:
           
       # In the tests, cmake tries to use make from the cosmopolitan toolchain and fails, so uninstall it
       - name: Remove cosmocc
+        if: matrix.os == 'macos-13'
         run: |
           INSTALL_DIR="${{runner.temp}}/cosmocc-4.0.2"
           echo "Removing cosmocc from PATH"
