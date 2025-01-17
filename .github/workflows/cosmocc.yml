@@ -1,4 +1,4 @@
-name: Cosmocc (linux-x86_64)
+name: Cosmocc
 
 on:
   pull_request:
@@ -10,13 +10,13 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-13]
         arch: [x86_64]
 
     runs-on: ${{ matrix.os }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Cosmocc-Linux-${{ matrix.arch }}
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Cosmocc-${{ matrix.os }}-${{ matrix.arch }}
       cancel-in-progress: true
 
     steps:
@@ -43,6 +43,7 @@ jobs:
           cd ..
 
       - name: Prepare
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update
           sudo apt install -y ruby ruby-dev rubygems build-essential llvm libc++-dev
@@ -54,6 +55,14 @@ jobs:
           ls -l core/build/
           core/build/xmake --version
           core/build/xmake lua -v -D tests/run.lua
+          
+      # In the tests, cmake tries to use make from the cosmopolitan toolchain and fails, so uninstall it
+      - name: Remove cosmocc
+        run: |
+          INSTALL_DIR="${{runner.temp}}/cosmocc-4.0.2"
+          echo "Removing cosmocc from PATH"
+          echo "::remove-path::${INSTALL_DIR}/bin"
+          rm -r "${INSTALL_DIR}"
 
       - name: Artifact
         uses: actions/upload-artifact@v4
