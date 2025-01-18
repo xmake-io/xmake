@@ -208,7 +208,9 @@ end
 
 -- add warning message
 function utils.warning(format, ...)
-    assert(format)
+    if option.get("quiet") then
+        return
+    end
 
     -- format message
     local args = table.pack(...)
