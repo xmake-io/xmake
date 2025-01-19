@@ -102,7 +102,7 @@ wget https://xmake.io/shget.text -O - | bash
 ### With PowerShell
 
 ```sh
-Invoke-Expression (Invoke-Webrequest 'https://xmake.io/psget.text' -UseBasicParsing).Content
+irm https://xmake.io/psget.text | iex
 ```
 
 ### Other installation methods
