@@ -44,7 +44,8 @@ function main(t)
         -- _build()
     elseif is_host("linux") then
         local gcc = find_tool("gcc", {version = true})
-        if gcc and gcc.version and semver.compare(gcc.version, "11.0") >= 0 then
+        if gcc and gcc.version and semver.compare(gcc.version, "11.0") >= 0 and
+            os.arch() ~= "arm64" then -- gcc/arm64: internal compiler error: in core_vals, at cp/module.cc:6108
             -- gcc dependency detection doesn't support header units atm
             os.exec("xmake f --policies=build.c++.gcc.fallbackscanner -c --yes")
             _build()
