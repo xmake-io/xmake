@@ -56,7 +56,7 @@ function generate_dependency_for(target, sourcefile, opt)
                 print(os.args(table.join(clangscandeps, dependency_flags)))
             end
             local outdata, errdata = os.iorunv(clangscandeps, dependency_flags)
-            assert(errdata, errdata)
+            assert(outdata, errdata)
 
             io.writefile(jsonfile, outdata)
         else

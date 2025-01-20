@@ -30,8 +30,6 @@ jobs:
 
       - name: Tests
         run: |
-          gcc --version
-          xmake l os.arch
           xmake lua -v -D tests/run.lua
           xrepo --version
 
