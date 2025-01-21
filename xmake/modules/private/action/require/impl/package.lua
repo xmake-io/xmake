@@ -1437,6 +1437,14 @@ function _must_depend_on(package, dep)
         local librarydeps = hashset.from(manifest.librarydeps)
         return librarydeps:has(dep:name())
     end
+    -- If we mark it as public, even if binary package is already installed,
+    -- we need also to install it's public dep and export the it's envs.
+    --
+    -- @see https://github.com/xmake-io/xmake-repo/pull/6207
+    -- https://github.com/xmake-io/xmake/pull/6101
+    if package:is_binary() and package:extraconf("deps", dep:name(), "public") then
+        return true
+    end
 end
 
 -- compatible with all previous link dependencies?

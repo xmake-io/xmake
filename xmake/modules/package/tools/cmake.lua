@@ -601,9 +601,6 @@ function _get_configs_for_mingw(package, configs, opt)
     if is_subhost("windows") and opt.cmake_generator ~= "Ninja" then
         envs.CMAKE_MAKE_PROGRAM = _get_mingw32_make(package)
     end
-    if opt.cmake_generator == "Ninja" then
-        envs.CMAKE_MAKE_PROGRAM = "ninja"
-    end
     _fix_cxx_compiler_cmake(package, envs)
     _insert_configs_from_envs(configs, envs, opt)
 end
@@ -618,12 +615,7 @@ function _get_configs_for_wasm(package, configs, opt)
     assert(emscripten_cmakefile, "Emscripten.cmake not found!")
     table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
     if is_subhost("windows") then
-        if opt.cmake_generator == "Ninja" then
-            local ninja = _get_ninja(package)
-            if ninja then
-                table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. ninja)
-            end
-        else
+        if opt.cmake_generator ~= "Ninja" then
             local mingw_make = _get_mingw32_make(package)
             if mingw_make then
                 table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. mingw_make)
@@ -782,6 +774,10 @@ function _get_configs_for_generator(package, configs, opt)
                 table.insert(configs, "-DCMAKE_JOB_POOL_COMPILE:STRING=compile")
                 table.insert(configs, "-DCMAKE_JOB_POOL_LINK:STRING=link")
                 table.insert(configs, ("-DCMAKE_JOB_POOLS:STRING=compile=%s;link=%s"):format(jobs, linkjobs))
+            end
+            local ninja = _get_ninja(package)
+            if ninja then
+                table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. ninja)
             end
         end
     elseif package:is_plat("mingw") and is_subhost("msys") then
