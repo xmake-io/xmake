@@ -1,4 +1,4 @@
-add_requires("verilator 5.016")
+add_requires("verilator")
 
 target("hello")
     add_rules("verilator.binary")
