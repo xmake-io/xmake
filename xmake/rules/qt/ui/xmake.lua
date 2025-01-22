@@ -22,16 +22,16 @@ rule("qt.ui")
     add_deps("qt.env")
     set_extensions(".ui")
     on_config(function (target)
+        import("lib.detect.find_file")
 
         -- get uic
         local qt = assert(target:data("qt"), "Qt not found!")
-        local uic = path.join(qt.bindir, is_host("windows") and "uic.exe" or "uic")
-        if not os.isexec(uic) and qt.libexecdir then
-            uic = path.join(qt.libexecdir, is_host("windows") and "uic.exe" or "uic")
-        end
-        if not os.isexec(uic) and qt.libexecdir_host then
-            uic = path.join(qt.libexecdir_host, is_host("windows") and "uic.exe" or "uic")
-        end
+        local search_dirs = {}
+        if qt.bindir_host then table.insert(search_dirs, qt.bindir_host) end
+        if qt.bindir then table.insert(search_dirs, qt.bindir) end
+        if qt.libexecdir_host then table.insert(search_dirs, qt.libexecdir_host) end
+        if qt.libexecdir then table.insert(search_dirs, qt.libexecdir) end
+        local uic = find_file(is_host("windows") and "uic.exe" or "uic", search_dirs)
         assert(uic and os.isexec(uic), "uic not found!")
 
         -- add includedirs, @note we need to create this directory first to suppress warning (file not found).

@@ -71,10 +71,10 @@ function main(target, opt)
     end
 
     -- get androiddeployqt
-    local androiddeployqt = path.join(qt.bindir, "androiddeployqt" .. (is_host("windows") and ".exe" or ""))
-    if not os.isexec(androiddeployqt) and qt.bindir_host then
-        androiddeployqt = path.join(qt.bindir_host, "androiddeployqt" .. (is_host("windows") and ".exe" or ""))
-    end
+    local search_dirs = {}
+    if qt.bindir_host then table.insert(search_dirs, qt.bindir_host) end
+    if qt.bindir then table.insert(search_dirs, qt.bindir) end
+    local androiddeployqt = find_file("androiddeployqt" .. (is_host("windows") and ".exe" or ""), search_dirs)
     assert(os.isexec(androiddeployqt), "androiddeployqt not found!")
 
     -- get working directory
@@ -152,18 +152,18 @@ function main(target, opt)
         settings_file:print('   "target-architecture": "%s",', target_arch)
         settings_file:print('   "qml-root-path": "%s",', _escape_path(os.projectdir()))
         -- for 6.2.x
-        local qmlimportscanner = path.join(qt.libexecdir, "qmlimportscanner")
-        if not os.isexec(qmlimportscanner) and qt.libexecdir_host then
-            qmlimportscanner = path.join(qt.libexecdir_host, "qmlimportscanner")
-        end
+        local search_dirs = {}
+        if qt.libexecdir_host then table.insert(search_dirs, qt.libexecdir_host) end
+        if qt.libexecdir then table.insert(search_dirs, qt.libexecdir) end
+        local qmlimportscanner = find_file("qmlimportscanner" .. (is_host("windows") and ".exe" or ""), search_dirs)
         if os.isexec(qmlimportscanner) then
             settings_file:print('   "qml-importscanner-binary": "%s",', _escape_path(qmlimportscanner))
         end
         -- for 6.3.x
-        local rcc = path.join(qt.bindir, "rcc")
-        if not os.isexec(rcc) and qt.bindir_host then
-            rcc = path.join(qt.bindir_host, "rcc")
-        end
+        local search_dirs = {}
+        if qt.bindir_host then table.insert(search_dirs, qt.bindir_host) end
+        if qt.bindir then table.insert(search_dirs, qt.bindir) end
+        local rcc = find_file("rcc" .. (is_host("windows") and ".exe" or ""), search_dirs)
         if os.isexec(rcc) then
             settings_file:print('   "rcc-binary": "%s",', _escape_path(rcc))
         end

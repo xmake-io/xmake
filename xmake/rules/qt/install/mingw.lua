@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.tool.toolchain")
 import("lib.detect.find_path")
+import("lib.detect.find_file")
 import("detect.sdks.find_qt")
 
 -- get install directory
@@ -42,7 +43,10 @@ function main(target, opt)
     local qt = assert(find_qt(), "Qt SDK not found!")
 
     -- get windeployqt
-    local windeployqt = path.join(qt.bindir, "windeployqt.exe")
+    local search_dirs = {}
+    if qt.bindir_host then table.insert(search_dirs, qt.bindir_host) end
+    if qt.bindir then table.insert(search_dirs, qt.bindir) end
+    local windeployqt = find_file("windeployqt" .. (is_host("windows") and ".exe" or ""), search_dirs)
     assert(os.isexec(windeployqt), "windeployqt.exe not found!")
 
     -- find qml directory
