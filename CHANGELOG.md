@@ -19,6 +19,7 @@
 ### Bugs fixed
 
 * [#272](https://github.com/tboox/tbox/issues/272): Fix xmake stuck when readfile always return zero for msvc + /O1
+* [#6089](https://github.com/tboox/tbox/issues/6089): Fix depend.is_changed for cuda
 
 ## v2.9.7
 
@@ -1955,6 +1956,7 @@
 ### Bugs 修复
 
 * [#272](https://github.com/tboox/tbox/issues/272): 修复 msvc + /O1 时候，错误的编译器优化导致 xmake 加载卡住
+* [#6089](https://github.com/tboox/tbox/issues/6089): 修复 depend.is_changed
 
 ## v2.9.7
 
