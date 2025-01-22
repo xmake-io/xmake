@@ -147,6 +147,15 @@ function _add_rules_for_compiler_clang(ninjafile, sourcekind, program)
     return _add_rules_for_compiler_gcc(ninjafile, sourcekind, program)
 end
 
+-- add rules for complier (clang-cl)
+function _add_rules_for_compiler_clang_cl(ninjafile, sourcekind, program)
+    ninjafile:print("rule %s", sourcekind)
+    ninjafile:print(" command = %s -showIncludes -c $ARGS $in -Fo$out", program)
+    ninjafile:print(" deps = msvc")
+    ninjafile:print(" description = compiling.%s $in", config.mode())
+    ninjafile:print("")
+end
+
 -- add rules for complier (msvc/cl)
 function _add_rules_for_compiler_msvc_cl(ninjafile, sourcekind, program)
     ninjafile:print("rule %s", sourcekind)
@@ -203,16 +212,17 @@ function _add_rules_for_compiler(ninjafile)
     end
     local add_compiler_rules =
     {
-        gcc     = _add_rules_for_compiler_gcc,
-        gxx     = _add_rules_for_compiler_gcc,
-        clang   = _add_rules_for_compiler_clang,
-        clangxx = _add_rules_for_compiler_clang,
-        cl      = _add_rules_for_compiler_msvc_cl,
-        ml      = _add_rules_for_compiler_msvc_ml,
-        ml64    = _add_rules_for_compiler_msvc_ml,
-        rc      = _add_rules_for_compiler_msvc_rc,
-        windres = _add_rules_for_compiler_windres,
-        nvcc    = _add_rules_for_compiler_nvcc
+        gcc      = _add_rules_for_compiler_gcc,
+        gxx      = _add_rules_for_compiler_gcc,
+        clang    = _add_rules_for_compiler_clang,
+        clangxx  = _add_rules_for_compiler_clang,
+        cl       = _add_rules_for_compiler_msvc_cl,
+        clang_cl = _add_rules_for_compiler_clang_cl,
+        ml       = _add_rules_for_compiler_msvc_ml,
+        ml64     = _add_rules_for_compiler_msvc_ml,
+        rc       = _add_rules_for_compiler_msvc_rc,
+        windres  = _add_rules_for_compiler_windres,
+        nvcc     = _add_rules_for_compiler_nvcc
     }
     for sourcekind, _ in pairs(language.sourcekinds()) do
         local program, toolname = platform.tool(sourcekind)
@@ -468,3 +478,4 @@ function make(outputdir)
     -- leave project directory
     os.cd(oldir)
 end
+
