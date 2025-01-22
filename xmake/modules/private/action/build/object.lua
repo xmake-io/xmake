@@ -58,7 +58,7 @@ function _do_build_file(target, sourcefile, opt)
     --
     -- optimization:
     -- we enable time cache to speed up is_changed, because there are a lot of header files in depfiles.
-    -- but we need to cache it in link stage, maybe some objectfiles will be updated.
+    -- but we cannot cache it in link stage, maybe some objectfiles will be updated.
     -- @see https://github.com/xmake-io/xmake/issues/6089
     local depvalues = {compinst:program(), compflags}
     local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
