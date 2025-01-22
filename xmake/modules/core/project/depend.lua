@@ -103,14 +103,23 @@ function is_changed(dependinfo, opt)
     end
 
     -- check whether the dependent files are changed
+    local timecache = opt.timecache
     local lastmtime = opt.lastmtime or 0
     _g.files_mtime = _g.files_mtime or {}
     local files_mtime = _g.files_mtime
     for _, file in ipairs(files) do
 
         -- get and cache the file mtime
-        local mtime = files_mtime[file] or os.mtime(file)
-        files_mtime[file] = mtime
+        local mtime
+        if timecache then
+            mtime = files_mtime[file]
+            if mtime == nil then
+                mtime = os.mtime(file)
+                files_mtime[file] = mtime
+            end
+        else
+            mtime = os.mtime(file)
+        end
 
         -- source and header files have been changed or not exists?
         if mtime == 0 or mtime > lastmtime then
@@ -186,8 +195,6 @@ end
 --       files = {sourcefile, ...}})
 --
 function on_changed(callback, opt)
-
-    -- init option
     opt = opt or {}
 
     -- dry run? we only do callback directly and do not change any status
@@ -209,7 +216,10 @@ function on_changed(callback, opt)
 
     -- @note we use mtime(dependfile) instead of mtime(objectfile) to ensure the object file is is fully compiled.
     -- @see https://github.com/xmake-io/xmake/issues/748
-    if not is_changed(dependinfo, {lastmtime = opt.lastmtime or os.mtime(dependfile), values = opt.values, files = opt.files}) then
+    if not is_changed(dependinfo, {
+            timecache = opt.timecache,
+            lastmtime = opt.lastmtime or os.mtime(dependfile),
+            values = opt.values, files = opt.files}) then
         return
     end
 
