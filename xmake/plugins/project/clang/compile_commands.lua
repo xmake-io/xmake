@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.tool.compiler")
 import("core.project.rule")
 import("core.project.project")
@@ -44,6 +45,16 @@ function _sourcebatch_is_built(sourcebatch)
         or rulename == "objc.build" or rulename == "objc++.build" then
         return true
     end
+end
+
+-- Is there other supported source file, which come from custom rules?
+function _is_other_sourcefile(sourcefile)
+    local extensions = _g._other_supported_exts
+    if extensions == nil then
+        extensions = hashset.from({".v", ".sv"})
+        _g._other_supported_exts = extensions
+    end
+    return extensions:has(path.extension(sourcefile))
 end
 
 -- get LSP, clangd, ccls, ...
@@ -154,6 +165,10 @@ function _make_arguments(jsonfile, arguments, opt)
             local sourcekind = try {function () return language.sourcekind_of(path.filename(arg)) end}
             if sourcekind and os.isfile(arg) then
                 sourcefile = tostring(arg)
+            elseif _is_other_sourcefile(arg) and os.isfile(arg) then
+                sourcefile = tostring(arg)
+            end
+            if sourcefile then
                 break
             end
         end
