@@ -47,6 +47,7 @@ platform("windows")
                 ,   {nil, "cuda",       "kv", "auto", "The Cuda SDK Directory"                      }
                 ,   {category = "Qt SDK Configuration"                                              }
                 ,   {nil, "qt",         "kv", "auto", "The Qt SDK Directory"                        }
+                ,   {nil, "qt_host",    "kv", "auto", "The Qt Host SDK Directory"                   }
                 ,   {nil, "qt_sdkver",  "kv", "auto", "The Qt SDK Version"                          }
                 ,   {category = "WDK Configuration"                                                 }
                 ,   {nil, "wdk",        "kv", "auto", "The WDK Directory"                           }
@@ -71,6 +72,7 @@ platform("windows")
                 ,   {nil, "cuda",       "kv", "auto", "The Cuda SDK Directory"                      }
                 ,   {category = "Qt SDK Configuration"                                              }
                 ,   {nil, "qt",         "kv", "auto", "The Qt SDK Directory"                        }
+                ,   {nil, "qt_host",    "kv", "auto", "The Qt Host SDK Directory"                   }
                 ,   {category = "WDK Configuration"                                                 }
                 ,   {nil, "wdk",        "kv", "auto", "The WDK Directory"                           }
                 ,   {category = "Vcpkg Configuration"                                               }

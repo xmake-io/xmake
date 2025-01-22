@@ -24,16 +24,16 @@ rule("qt.moc")
     set_extensions(".h", ".hpp")
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
         import("core.tool.compiler")
+        import("lib.detect.find_file")
 
         -- get moc
         local qt = assert(target:data("qt"), "Qt not found!")
-        local moc = path.join(qt.bindir, is_host("windows") and "moc.exe" or "moc")
-        if not os.isexec(moc) and qt.libexecdir then
-            moc = path.join(qt.libexecdir, is_host("windows") and "moc.exe" or "moc")
-        end
-        if not os.isexec(moc) and qt.libexecdir_host then
-            moc = path.join(qt.libexecdir_host, is_host("windows") and "moc.exe" or "moc")
-        end
+        local search_dirs = {}
+        if qt.bindir_host then table.insert(search_dirs, qt.bindir_host) end
+        if qt.bindir then table.insert(search_dirs, qt.bindir) end
+        if qt.libexecdir_host then table.insert(search_dirs, qt.libexecdir_host) end
+        if qt.libexecdir then table.insert(search_dirs, qt.libexecdir) end
+        local moc = find_file(is_host("windows") and "moc.exe" or "moc", search_dirs)
         assert(moc and os.isexec(moc), "moc not found!")
 
         -- get c++ source file for moc

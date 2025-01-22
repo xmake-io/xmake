@@ -3,6 +3,8 @@ rule("qt.ts")
     set_extensions(".ts")
 
     on_config(function (target)
+        import("lib.detect.find_file")
+
         -- get source file
         local lupdate_argv = {"-no-obsolete"}
         local sourcefile_ts
@@ -20,22 +22,19 @@ rule("qt.ts")
         if sourcefile_ts then
             -- get lupdate and lrelease
             local qt = assert(target:data("qt"), "qt not found!")
-            local lupdate = path.join(qt.bindir, is_host("windows") and "lupdate.exe" or "lupdate")
-            local lrelease = path.join(qt.bindir, is_host("windows") and "lrelease.exe" or "lrelease")
-            if not os.isexec(lupdate) and qt.libexecdir then
-                lupdate = path.join(qt.libexecdir, is_host("windows") and "lupdate.exe" or "lupdate")
-            end
-            if not os.isexec(lrelease) and qt.libexecdir then
-                lrelease = path.join(qt.libexecdir, is_host("windows") and "lrelease.exe" or "lrelease")
-            end
-            if not os.isexec(lupdate) and qt.libexecdir_host then
-                lupdate = path.join(qt.libexecdir_host, is_host("windows") and "lupdate.exe" or "lupdate")
-            end
-            if not os.isexec(lrelease) and qt.libexecdir_host then
-                lrelease = path.join(qt.libexecdir_host, is_host("windows") and "lrelease.exe" or "lrelease")
-            end
+
+            local search_dirs = {}
+            if qt.bindir_host then table.insert(search_dirs, qt.bindir_host) end
+            if qt.bindir then table.insert(search_dirs, qt.bindir) end
+            if qt.libexecdir_host then table.insert(search_dirs, qt.libexecdir_host) end
+            if qt.libexecdir then table.insert(search_dirs, qt.libexecdir) end
+
+            local lupdate = find_file(is_host("windows") and "lupdate.exe" or "lupdate", search_dirs)
             assert(os.isexec(lupdate), "lupdate not found!")
+
+            local lrelease = find_file(is_host("windows") and "lrelease.exe" or "lrelease", search_dirs)
             assert(os.isexec(lrelease), "lrelease not found!")
+
             for _, tsfile in ipairs(sourcefile_ts) do
                 local tsargv = {}
                 table.join2(tsargv, lupdate_argv)

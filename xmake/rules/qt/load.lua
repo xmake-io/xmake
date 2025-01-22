@@ -449,7 +449,12 @@ function main(target, opt)
         target:add("linkdirs", qt.libdir)
         target:add("syslinks", "ws2_32", "gdi32", "ole32", "advapi32", "shell32", "user32", "opengl32", "imm32", "winmm", "iphlpapi")
         -- for debugger, https://github.com/xmake-io/xmake-vscode/issues/225
-        target:add("runenvs", "PATH", qt.bindir)
+        if qt.bindir_host then
+            target:add("runenvs", "PATH", qt.bindir_host)
+        end
+        if qt.bindir then
+            target:add("runenvs", "PATH", qt.bindir)
+        end
     elseif target:is_plat("mingw") then
         target:set("frameworks", nil)
         -- we need to fix it, because gcc maybe does not work on latest mingw when `-isystem D:\a\_temp\msys64\mingw64\include` is passed.

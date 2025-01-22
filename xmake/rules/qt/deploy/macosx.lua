@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.depend")
 import("core.tool.toolchain")
+import("lib.detect.find_file")
 import("lib.detect.find_path")
 import("detect.sdks.find_qt")
 import("utils.progress")
@@ -91,7 +92,10 @@ function main(target, opt)
     local qt = assert(find_qt(), "Qt SDK not found!")
 
     -- get macdeployqt
-    local macdeployqt = path.join(qt.bindir, "macdeployqt")
+    local search_dirs = {}
+    if qt.bindir_host then table.insert(search_dirs, qt.bindir_host) end
+    if qt.bindir then table.insert(search_dirs, qt.bindir) end
+    local macdeployqt = find_file("macdeployqt" .. (is_host("windows") and ".exe" or ""), search_dirs)
     assert(os.isexec(macdeployqt), "macdeployqt not found!")
 
     -- generate target app
