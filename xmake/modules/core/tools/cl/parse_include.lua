@@ -24,7 +24,7 @@ import("core.base.hashset")
 import("core.tool.toolchain")
 import("core.cache.detectcache")
 import("lib.detect.find_tool")
-import("private.tools.vstool")
+import("core.tools.vstool")
 
 -- probe include note prefix from cl
 function probe_include_note_from_cl()

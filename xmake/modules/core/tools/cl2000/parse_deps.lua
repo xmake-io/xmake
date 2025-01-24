@@ -19,5 +19,5 @@
 --
 
 -- imports
-inherit("private.tools.cl6x.parse_deps")
+inherit("core.tools.cl6x.parse_deps")
 

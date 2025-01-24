@@ -20,7 +20,7 @@
 
 -- imports
 import("core.project.config")
-import("private.tools.vstool")
+import("core.tools.vstool")
 
 -- init it
 function init(self)

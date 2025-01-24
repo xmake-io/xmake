@@ -23,7 +23,7 @@ if is_host("windows") then
     -- imports
     inherit("cl")
     inherit("link")
-    import("private.tools.vstool")
+    import("core.tools.vstool")
 
     -- init it
     function init(self)
