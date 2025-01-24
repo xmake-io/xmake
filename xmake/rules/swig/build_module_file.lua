@@ -182,7 +182,8 @@ function swig_build_file(target, sourcefile, opt, par)
     local deps = io.readfile(swigdep, {continuation = "\\"})
     os.tryrm(swigdep)
     dependinfo.files = {sourcefile}
-    dependinfo.depfiles_gcc = deps
+    dependinfo.depfiles_format = "gcc"
+    dependinfo.depfiles = deps
     dependinfo.values = argv
     depend.save(dependinfo, target:dependfile(objectfile))
 
