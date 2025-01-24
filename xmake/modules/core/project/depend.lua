@@ -45,9 +45,9 @@ function _get_depfiles_parser(depfiles_format)
     local parser = depfiles_parsers[depfiles_format]
     if parser == nil then
         parser = import("private.tools." .. depfiles_format .. ".parse_deps", {anonymous = true})
-        depfiles_parsers[depfiles_format] = parser
+        depfiles_parsers[depfiles_format] = parser or false
     end
-    return parser
+    return parser or nil
 end
 
 -- load dependent info from the given file (.d)
