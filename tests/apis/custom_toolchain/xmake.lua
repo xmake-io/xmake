@@ -1,7 +1,7 @@
-includes("toolchains/my-c6000")
 add_rules("mode.debug", "mode.release")
 
 set_toolchains("my-c6000")
+add_toolchaindirs("toolchains")
 
 target("test")
     set_kind("static")

@@ -397,27 +397,19 @@ end
 
 -- get platform directories
 function platform.directories()
-
-    -- init directories
     local dirs = platform._DIRS or  {   path.join(global.directory(), "platforms")
                                     ,   path.join(os.programdir(), "platforms")
                                     }
-
-    -- save directories to cache
     platform._DIRS = dirs
     return dirs
 end
 
 -- add platform directories
 function platform.add_directories(...)
-
-    -- add directories
     local dirs = platform.directories()
     for _, dir in ipairs({...}) do
         table.insert(dirs, 1, dir)
     end
-
-    -- remove unique directories
     platform._DIRS = table.unique(dirs)
 end
 

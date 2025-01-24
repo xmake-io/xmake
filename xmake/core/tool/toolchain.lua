@@ -640,6 +640,15 @@ function toolchain.directories()
     return dirs
 end
 
+-- add toolchain directories
+function toolchain.add_directories(...)
+    local dirs = toolchain.directories()
+    for _, dir in ipairs({...}) do
+        table.insert(dirs, 1, dir)
+    end
+    toolchain._DIRS = table.unique(dirs)
+end
+
 -- load toolchain
 function toolchain.load(name, opt)
 
