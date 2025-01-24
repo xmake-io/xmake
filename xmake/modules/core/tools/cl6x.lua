@@ -192,7 +192,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 -- generate the dependent includes
                 if depfile and os.isfile(depfile) then
                     if dependinfo then
-                        dependinfo.depfiles_cl6x = io.readfile(depfile, {continuation = "\\"})
+                        dependinfo.depfiles_format = "cl6x"
+                        dependinfo.depfiles = io.readfile(depfile, {continuation = "\\"})
                     end
 
                     -- remove the temporary dependent file

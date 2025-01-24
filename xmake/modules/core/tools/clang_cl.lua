@@ -216,6 +216,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
     -- generate the dependent includes
     if dependinfo and outdata then
-        dependinfo.depfiles_cl = outdata
+        dependinfo.depfiles_format = "cl"
+        dependinfo.depfiles = outdata
     end
 end

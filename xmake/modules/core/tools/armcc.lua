@@ -186,7 +186,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 -- generate the dependent includes
                 if depfile and os.isfile(depfile) then
                     if dependinfo then
-                        dependinfo.depfiles_armcc = io.readfile(depfile, {continuation = "\\"})
+                        dependinfo.depfiles_format = "armcc"
+                        dependinfo.depfiles = io.readfile(depfile, {continuation = "\\"})
                     end
 
                     -- remove the temporary dependent file

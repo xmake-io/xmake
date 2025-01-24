@@ -436,7 +436,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 if depfile and os.isfile(depfile) then
                     if dependinfo then
                         -- nvcc uses gcc-style depfiles
-                        dependinfo.depfiles_gcc = io.readfile(depfile, {continuation = "\\"})
+                        dependinfo.depfiles_format = "gcc"
+                        dependinfo.depfiles = io.readfile(depfile, {continuation = "\\"})
                     end
 
                     -- remove the temporary dependent file

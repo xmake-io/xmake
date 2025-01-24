@@ -267,7 +267,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 if depfile and os.isfile(depfile) then
                     if dependinfo then
                         -- it use makefile/gcc compatiable format
-                        dependinfo.depfiles_gcc = io.readfile(depfile, {continuation = "\\"})
+                        dependinfo.depfiles_format = "gcc"
+                        dependinfo.depfiles = io.readfile(depfile, {continuation = "\\"})
                     end
 
                     -- remove the temporary dependent file

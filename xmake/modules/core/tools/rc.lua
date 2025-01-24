@@ -157,7 +157,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             end
             file:close()
             if dependinfo then
-                dependinfo.depfiles_rc = depfiles_rc
+                dependinfo.depfiles_format = "rc"
+                dependinfo.depfiles = depfiles_rc
             end
         end
         os.tryrm(outfile)

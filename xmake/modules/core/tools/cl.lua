@@ -778,10 +778,12 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     -- generate the dependent includes
     if dependinfo then
         if depfile and os.isfile(depfile) then
-            dependinfo.depfiles_cl_json = io.readfile(depfile)
+            dependinfo.depfiles_format = "cl_json"
+            dependinfo.depfiles = io.readfile(depfile)
             os.tryrm(depfile)
         elseif outdata then
-            dependinfo.depfiles_cl = outdata
+            dependinfo.depfiles_format = "cl"
+            dependinfo.depfiles = outdata
         end
     end
 end
