@@ -27,9 +27,6 @@ import("core.tool.toolchain")
 
 -- find tool from modules
 function _find_from_modules(name, opt)
-    -- TODO
-    print(toolchain.directories())
-
     local find_tool = import("detect.tools.find_" .. name, {try = true})
     if find_tool then
         local program, version, toolname = find_tool(opt)

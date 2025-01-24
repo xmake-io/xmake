@@ -202,17 +202,6 @@ function project._api_add_platformdirs(interp, ...)
     end
 end
 
--- add toolchain directories
-function project._api_add_toolchaindirs(interp, ...)
-    local scriptdir = project.interpreter():scriptdir()
-    for _, dir in ipairs({...}) do
-        if not path.is_absolute(dir) then
-            dir = path.absolute(dir, scriptdir)
-        end
-        toolchain.add_directories(dir)
-    end
-end
-
 -- load the project file
 function project._load(force, disable_filter)
 
@@ -669,7 +658,6 @@ function project.apis()
         ,   {"add_moduledirs",          project._api_add_moduledirs    }
         ,   {"add_plugindirs",          project._api_add_plugindirs    }
         ,   {"add_platformdirs",        project._api_add_platformdirs  }
-        ,   {"add_toolchaindirs",       project._api_add_toolchaindirs }
         }
     }
 end
