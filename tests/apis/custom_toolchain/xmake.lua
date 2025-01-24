@@ -1,7 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
-add_moduledirs("toolchains/modules")
 includes("toolchains/my-c6000")
+add_moduledirs("toolchains/modules")
 
 set_toolchains("my-c6000")
 
