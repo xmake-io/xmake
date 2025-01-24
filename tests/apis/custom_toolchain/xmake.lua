@@ -1,7 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
-includes("toolchains/my-c6000")
-add_moduledirs("modules")
+includes("xmake/toolchains/my-c6000")
+add_moduledirs("xmake/modules")
 
 set_toolchains("my-c6000")
 
