@@ -28,7 +28,7 @@ toolchain("ti-c2000")
     set_toolset("ld", "cl2000")
     set_toolset("sh", "cl2000")
     set_toolset("ar", "ar2000")
-    set_toolset("strip", "strip2000")
+    set_toolset("strip", "strip6x")
     set_toolset("as", "cl2000")
 
     on_check(function (toolchain)
@@ -36,5 +36,12 @@ toolchain("ti-c2000")
     end)
 
     on_load(function (toolchain)
-        -- TODO
+        local march = {"-ml", "-mt", "-v28"} -- TODO
+        if march then
+            toolchain:add("cxflags", march)
+            toolchain:add("mxflags", march)
+            toolchain:add("asflags", march)
+            toolchain:add("ldflags", march)
+            toolchain:add("shflags", march)
+        end
     end)
