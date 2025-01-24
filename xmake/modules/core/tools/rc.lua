@@ -22,7 +22,7 @@
 import("core.base.option")
 import("core.base.hashset")
 import("core.project.project")
-import("core.tools.vstool")
+import("private.tools.vstool")
 
 -- normailize path of a dependecy
 function _normailize_dep(dep, projectdir)

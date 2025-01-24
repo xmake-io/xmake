@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("core.tools.vstool")
+import("private.tools.vstool")
 import("core.base.hashset")
 
 -- init it
