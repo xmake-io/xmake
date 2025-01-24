@@ -26,6 +26,7 @@ import("private.tools.cl.parse_deps_json", {alias = "parse_deps_cl_json"})
 import("private.tools.rc.parse_deps", {alias = "parse_deps_rc"})
 import("private.tools.gcc.parse_deps", {alias = "parse_deps_gcc"})
 import("private.tools.armcc.parse_deps", {alias = "parse_deps_armcc"})
+import("private.tools.cl6x.parse_deps", {alias = "parse_deps_cl6x"})
 
 -- load depfiles
 function _load_depfiles(parser, dependinfo, depfiles, opt)
@@ -62,6 +63,9 @@ function load(dependfile, opt)
             elseif dependinfo.depfiles_armcc then
                 _load_depfiles(parse_deps_armcc, dependinfo, dependinfo.depfiles_armcc, opt)
                 dependinfo.depfiles_armcc = nil
+            elseif dependinfo.depfiles_cl6x then
+                _load_depfiles(parse_deps_cl6x, dependinfo, dependinfo.depfiles_cl6x, opt)
+                dependinfo.depfiles_cl6x = nil
             end
             return dependinfo
         end
