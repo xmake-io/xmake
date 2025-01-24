@@ -16,12 +16,5 @@ toolchain("my-c6000")
     end)
 
     on_load(function (toolchain)
-        local march = "-mv64+"
-        if march then
-            toolchain:add("cxflags", march)
-            toolchain:add("mxflags", march)
-            toolchain:add("asflags", march)
-            toolchain:add("ldflags", march)
-            toolchain:add("shflags", march)
-        end
+        toolchain:add("cxflags", "-Dxxx")
     end)
