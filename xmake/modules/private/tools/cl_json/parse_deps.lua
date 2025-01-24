@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        parse_deps_json.lua
+-- @file        parse_deps.lua
 --
 
 -- imports
