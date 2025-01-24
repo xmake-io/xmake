@@ -21,7 +21,7 @@
 toolchain("ti-c6000")
     set_kind("standalone")
     set_homepage("https://www.ti.com")
-    set_description("TI-CGT compiler for C6000 DSP")
+    set_description("TI-CGT C6000 compiler")
 
     set_toolset("cc", "cl6x")
     set_toolset("cxx", "cl6x")
