@@ -44,7 +44,7 @@ function _get_depfiles_parser(depfiles_format)
     end
     local parser = depfiles_parsers[depfiles_format]
     if parser == nil then
-        parser = import("private.tools." .. depfiles_format .. ".parse_deps", {anonymous = true})
+        parser = import("core.tools." .. depfiles_format .. ".parse_deps", {anonymous = true})
         depfiles_parsers[depfiles_format] = parser or false
     end
     return parser or nil
