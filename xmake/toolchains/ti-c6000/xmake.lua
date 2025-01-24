@@ -29,7 +29,7 @@ toolchain("ti-c6000")
     set_toolset("sh", "cl6x")
     set_toolset("ar", "ar6x")
     set_toolset("strip", "strip6x")
-    set_toolset("as", "asm6x")
+    set_toolset("as", "cl6x")
 
     on_check(function (toolchain)
         return import("lib.detect.find_tool")("cl6x")

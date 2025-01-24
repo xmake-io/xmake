@@ -80,6 +80,35 @@ function nf_sysincludedir(self, dir)
     return nf_includedir(self, dir)
 end
 
+-- make the link flag
+function nf_link(self, lib)
+    if not lib:endswith(".a") and not lib:endswith(".so") then
+         lib = "lib" .. lib .. ".a"
+    end
+    return "-l" .. lib
+end
+
+-- make the syslink flag
+function nf_syslink(self, lib)
+    return nf_link(self, lib)
+end
+
+-- make the linkdir flag
+function nf_linkdir(self, dir)
+    return {"-i" .. path.translate(dir)}
+end
+
+-- make the rpathdir flag
+function nf_rpathdir(self, dir, opt)
+    opt = opt or {}
+    local extra = opt.extra
+    if extra and extra.installonly then
+        return
+    end
+    dir = path.translate(dir)
+    return {"-rpath=" .. dir}
+end
+
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     local argv = table.join("-z", "--output_file=" .. targetfile, objectfiles, flags)

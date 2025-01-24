@@ -20,9 +20,24 @@
 
 -- imports
 import("lib.detect.find_program")
-import("lib.detect.find_programver")
 
--- find ar6x
+-- check
+function _check(program)
+
+    -- make a stub object file
+    local libraryfile = os.tmpfile() .. ".a"
+    local objectfile  = os.tmpfile() .. ".o"
+    io.writefile(objectfile, "")
+
+    -- archive it
+    os.execv(program, {"-r", libraryfile, objectfile})
+
+    -- remove files
+    os.rm(objectfile)
+    os.rm(libraryfile)
+end
+
+-- find ar
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,19 +45,14 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local ar6x = find_ar6x()
--- local ar6x, version = find_ar6x({program = "ar6x", version = true})
+-- local ar = find_ar6x()
+-- local ar, version = find_ar6x({program = "xcrun -sdk macosx g++", version = true})
 --
 -- @endcode
 --
 function main(opt)
-    opt = opt or {}
-    opt.check = "--help"
-    opt.command = "--help"
-    local program = find_program(opt.program or "ar6x", opt)
-    local version = nil
-    if program and opt.version then
-        version = find_programver(program, opt)
-    end
-    return program, version
+    opt       = opt or {}
+    opt.check = opt.check or _check
+    return find_program(opt.program or "ar6x", opt)
 end
+
