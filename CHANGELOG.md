@@ -11,7 +11,7 @@
 * [#5945](https://github.com/xmake-io/xmake/issues/5945): Check pkgconfig/cmake importfiles for package
 * [#6054](https://github.com/xmake-io/xmake/issues/6054): Add xmake bundle for linux
 * [#6071](https://github.com/xmake-io/xmake/issues/6071): Improve to download package for git url, support for sparse-checkout
-* [#5163](https://github.com/xmake-io/xmake/issues/5163): Support TI-CGT C6000 compiler
+* [#5163](https://github.com/xmake-io/xmake/issues/5163): Support TI-CGT C2000/C6000 compiler
 
 ### Changes
 
@@ -1950,7 +1950,7 @@
 * [#5945](https://github.com/xmake-io/xmake/issues/5945): 检测 pkgconfig/cmake 导入文件
 * [#6054](https://github.com/xmake-io/xmake/issues/6054): 为 linux 添加 xmake bundle 包
 * [#6071](https://github.com/xmake-io/xmake/issues/6071): 改进 git 包下载，支持仅仅 clone 指定子目录
-* [#5163](https://github.com/xmake-io/xmake/issues/5163): 支持 TI-CGT C6000 编译器
+* [#5163](https://github.com/xmake-io/xmake/issues/5163): 支持 TI-CGT C2000/C6000 编译器
 
 ### 改进
 
