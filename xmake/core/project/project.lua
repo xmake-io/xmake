@@ -202,6 +202,17 @@ function project._api_add_platformdirs(interp, ...)
     end
 end
 
+-- add toolchain directories
+function project._api_add_toolchaindirs(interp, ...)
+    local scriptdir = project.interpreter():scriptdir()
+    for _, dir in ipairs({...}) do
+        if not path.is_absolute(dir) then
+            dir = path.absolute(dir, scriptdir)
+        end
+        toolchain.add_directories(dir)
+    end
+end
+
 -- load the project file
 function project._load(force, disable_filter)
 
@@ -642,22 +653,23 @@ function project.apis()
     ,   custom =
         {
             -- is_xxx
-            {"is_os",                   project._api_is_os            }
-        ,   {"is_kind",                 project._api_is_kind          }
-        ,   {"is_arch",                 project._api_is_arch          }
-        ,   {"is_mode",                 project._api_is_mode          }
-        ,   {"is_plat",                 project._api_is_plat          }
-        ,   {"is_cross",                project._api_is_cross         }
-        ,   {"is_config",               project._api_is_config        }
+            {"is_os",                   project._api_is_os             }
+        ,   {"is_kind",                 project._api_is_kind           }
+        ,   {"is_arch",                 project._api_is_arch           }
+        ,   {"is_mode",                 project._api_is_mode           }
+        ,   {"is_plat",                 project._api_is_plat           }
+        ,   {"is_cross",                project._api_is_cross          }
+        ,   {"is_config",               project._api_is_config         }
             -- get_xxx
-        ,   {"get_config",              project._api_get_config       }
+        ,   {"get_config",              project._api_get_config        }
             -- has_xxx
-        ,   {"has_config",              project._api_has_config       }
-        ,   {"has_package",             project._api_has_package      }
+        ,   {"has_config",              project._api_has_config        }
+        ,   {"has_package",             project._api_has_package       }
             -- add_xxx
-        ,   {"add_moduledirs",          project._api_add_moduledirs   }
-        ,   {"add_plugindirs",          project._api_add_plugindirs   }
-        ,   {"add_platformdirs",        project._api_add_platformdirs }
+        ,   {"add_moduledirs",          project._api_add_moduledirs    }
+        ,   {"add_plugindirs",          project._api_add_plugindirs    }
+        ,   {"add_platformdirs",        project._api_add_platformdirs  }
+        ,   {"add_toolchaindirs",       project._api_add_toolchaindirs }
         }
     }
 end

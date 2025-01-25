@@ -68,8 +68,8 @@ function main(name, opt)
         return result
     end
 
-    -- detect.tools.xxx.features(opt)?
-    local features = import("detect.tools." .. tool.name .. ".features", {try = true})
+    -- core.tools.xxx.features(opt)?
+    local features = import("core.tools." .. tool.name .. ".features", {try = true})
     if features then
         result = features(opt)
     end

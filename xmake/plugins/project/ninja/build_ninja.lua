@@ -27,7 +27,7 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("lib.detect.find_tool")
 import("lib.detect.find_toolname")
-import("private.tools.cl.parse_include")
+import("core.tools.cl.parse_include")
 
 -- this sourcebatch is built?
 function _sourcebatch_is_built(sourcebatch)

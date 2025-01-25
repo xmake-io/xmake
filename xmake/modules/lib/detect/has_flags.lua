@@ -118,8 +118,8 @@ function main(name, flags, opt)
     -- start profile
     profiler.enter("has_flags", tool.name, checkflags[1])
 
-    -- detect.tools.xxx.has_flags(flags, opt)?
-    local hasflags = import("detect.tools." .. tool.name .. ".has_flags", {try = true})
+    -- core.tools.xxx.has_flags(flags, opt)?
+    local hasflags = import("core.tools." .. tool.name .. ".has_flags", {try = true})
     local errors = nil
     if hasflags then
         result, errors = hasflags(checkflags, opt)

@@ -1,10 +1,6 @@
--- define toolchain
 toolchain("myclang")
-
-    -- mark as standalone toolchain
     set_kind("standalone")
 
-    -- set toolset
     set_toolset("cc", "clang")
     set_toolset("cxx", "clang", "clang++")
     set_toolset("ld", "clang++", "clang")
@@ -23,7 +19,7 @@ add_rules("mode.debug", "mode.release")
 
 target("test")
     set_kind("static")
-    add_files("src/interface.cpp")
+    add_files("src/foo.cpp")
     set_toolset("ar", "ar")
 
 target("demo")
