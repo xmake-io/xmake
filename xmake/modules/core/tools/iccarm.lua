@@ -60,6 +60,24 @@ function nf_optimize(self, level)
     return maps[level]
 end
 
+-- make the vector extension flag
+function nf_vectorext(self, extension)
+    local maps = {
+        all = "--vectorize"
+    }
+    return maps[extension]
+end
+
+-- make the language flag
+function nf_language(self, stdname)
+    if _g.cmaps == nil then
+        _g.cmaps = {
+            c89 = "--c89"
+        }
+    end
+    return _g.cmaps[stdname]
+end
+
 -- make the define flag
 function nf_define(self, macro)
     return "-D" .. macro
