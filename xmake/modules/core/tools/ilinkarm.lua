@@ -36,9 +36,6 @@ end
 
 -- make the link flag
 function nf_link(self, lib)
-    if not lib:endswith(".a") and not lib:endswith(".so") then
-         lib = "lib" .. lib .. ".a"
-    end
     return "-l" .. lib
 end
 
