@@ -21,5 +21,5 @@
 inherit("ar")
 
 function init(self)
-    self:set("arflags", "-r")
+    self:set("arflags", "--create")
 end
