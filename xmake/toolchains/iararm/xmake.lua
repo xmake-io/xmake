@@ -35,5 +35,10 @@ toolchain("iararm")
     end)
 
     on_load(function (toolchain)
-        -- TODO
+        local arch = toolchain:arch()
+        if arch then
+            toolchain:add("cxflags", "--cpu " .. arch)
+            toolchain:add("asflags", "--cpu " .. arch)
+            toolchain:add("ldflags", "--cpu " .. arch)
+        end
     end)
