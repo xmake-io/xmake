@@ -21,5 +21,5 @@
 inherit("ar")
 
 function init(self)
-    _super.init(self)
+    self:set("arflags", "-r")
 end
