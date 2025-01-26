@@ -19,3 +19,24 @@
 --
 
 inherit("gcc")
+
+-- make the symbol flag
+function nf_symbol(self, level)
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps = _g.symbol_maps
+        if not maps then
+            maps = {
+                debug  = "-g"
+            }
+            _g.symbol_maps = maps
+        end
+        return maps[level .. '_' .. kind] or maps[level]
+    elseif kind == "ld" or kind == "sh" then
+        local plat = self:plat()
+        if level == "debug" and is_host("windows") then
+            return "-g"
+        end
+    end
+end
+
