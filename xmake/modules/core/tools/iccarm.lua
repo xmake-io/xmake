@@ -140,7 +140,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             function (ok, warnings)
 
                 -- print some warnings
-                if warnings and #warnings > 0 and policy.build_warnings(opt) then
+                if warnings and #warnings > 0 and not warnings:find("Warnings: none", 1, true) and policy.build_warnings(opt) then
                     if progress.showing_without_scroll() then
                         print("")
                     end
