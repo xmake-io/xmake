@@ -18,6 +18,7 @@
 -- @file        iccarm.lua
 --
 
+import("core.language.language")
 inherit("gcc")
 
 -- make the symbol flag
