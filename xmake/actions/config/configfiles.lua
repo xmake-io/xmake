@@ -72,6 +72,13 @@ function _get_configfiles()
                 -- save targets
                 srcinfo.targets = srcinfo.targets or {}
                 table.insert(srcinfo.targets, target)
+
+                -- save preprocessors
+                local preprocessor = target:extraconf("configfiles", srcfile, "preprocessor")
+                if preprocessor then
+                    srcinfo.preprocessors = srcinfo.preprocessors or {}
+                    table.insert(srcinfo.preprocessors, preprocessor)
+                end
             end
         end
     end
@@ -153,8 +160,123 @@ function _get_builtinvars_global()
     return builtinvars
 end
 
+function _preprocess_define_value(name, value, opt)
+    opt = opt or {}
+    local extraconf = opt.extraconf
+    if value == nil then
+        value = ("/* #undef %s */"):format(name)
+    elseif type(value) == "boolean" then
+        if value then
+            value = ("#define %s 1"):format(name)
+        else
+            value = ("/* #define %s 0 */"):format(name)
+        end
+    elseif type(value) == "number" then
+        value = ("#define %s %d"):format(name, value)
+    elseif type(value) == "string" then
+        local quote = true
+        local escape = false
+        if extraconf then
+            -- disable to wrap quote, @see https://github.com/xmake-io/xmake/issues/1694
+            if extraconf.quote == false then
+                quote = false
+            end
+            -- escape path seperator when with quote, @see https://github.com/xmake-io/xmake/issues/1872
+            if quote and extraconf.escape then
+                escape = true
+            end
+        end
+        if quote then
+            if escape then
+                value = value:gsub("\\", "\\\\")
+            end
+            value = ("#define %s \"%s\""):format(name, value)
+        else
+            value = ("#define %s %s"):format(name, value)
+        end
+    else
+        raise("unknown variable(%s) type: %s", name, type(value))
+    end
+    return value
+end
+
+function _preprocess_default_value(name, value, opt)
+    opt = opt or {}
+    local default = table.unpack(opt.argv or {})
+    assert(default ~= nil, "please set default value for variable(%s)", variable)
+
+    if value == nil then
+        value = default
+    else
+        value = tostring(value)
+    end
+    return value
+end
+
+function _preprocess_define_export_value(name, value, opt)
+    value = ([[#ifdef %s_STATIC
+#  define %s_EXPORT
+#else
+#  if defined(_WIN32)
+#    define %s_EXPORT __declspec(dllexport)
+#  elif defined(__GNUC__) && ((__GNUC__ >= 4) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3))
+#    define %s_EXPORT __attribute__((visibility("default")))
+#  else
+#    define %s_EXPORT
+#  endif
+#endif
+]]):format(name, name, name, name, name)
+    return value
+end
+
+-- get variable value
+function _get_variable_value(variables, name, opt)
+    opt = opt or {}
+    local preprocessor_name = opt.preprocessor_name
+    local preprocessor_argv = opt.preprocessor_argv
+    local configfile = opt.configfile
+    local value = variables[name]
+    local extraconf = variables["__extraconf_" .. name]
+    if preprocessor_name then
+        local preprocessed = false
+        if opt.preprocessors then
+            for _, preprocessor in ipairs(opt.preprocessors) do
+                value = preprocessor(preprocessor_name, name, value, {argv = preprocessor_argv, extraconf = extraconf})
+                if value ~= nil then
+                    preprocessed = true
+                    break
+                end
+            end
+        end
+        if not preprocessed then
+            local preprocessors = _g._preprocessors
+            if preprocessors == nil then
+                preprocessors = {
+                    define = _preprocess_define_value,
+                    default = _preprocess_default_value,
+                    define_export = _preprocess_define_export_value
+                }
+                _g._preprocessors = preprocessors
+            end
+            local preprocessor = preprocessors[preprocessor_name]
+            if preprocessor == nil then
+                raise("unknown variable keyword, ${%s %s}", preprocessor_name, name)
+            end
+            value = preprocessor(name, value, {argv = preprocessor_argv, extraconf = extraconf})
+        end
+        assert(value ~= nil, "cannot get variable(%s %s) in %s.", preprocessor_name, name, configfile)
+    else
+        assert(value ~= nil, "cannot get variable(%s) in %s.", name, configfile)
+    end
+    dprint("  > replace %s -> %s", name, value)
+    if type(value) == "table" then
+        dprint("invalid variable value", value)
+    end
+    return value
+end
+
 -- generate the configuration file
-function _generate_configfile(srcfile, dstfile, fileinfo, targets)
+function _generate_configfile(srcfile, dstfile, fileinfo, targets, preprocessors)
 
     -- trace
     if option.get("verbose") then
@@ -220,80 +342,19 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         -- replace all variables
         local pattern = fileinfo.pattern or "%${([^\n]-)}"
         io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable)
-
-            -- get variable name
             variable = variable:trim()
 
-            -- is ${define variable}?
-            local isdefine = false
-            if variable:startswith("define ") then
-                variable = variable:split("%s")[2]
-                isdefine = true
+            local preprocessor_argv
+            local preprocessor_name
+            local parts = variable:split("%s")
+            if #parts > 1 then
+                preprocessor_name = parts[1]
+                variable = parts[2]
+                preprocessor_argv = table.slice(parts, 3)
             end
 
-            -- is ${default variable xxx}?
-            local default = nil
-            local isdefault = false
-            if variable:startswith("default ") then
-                local varinfo = variable:split("%s")
-                variable  = varinfo[2]
-                default   = varinfo[3]
-                isdefault = true
-                assert(default ~= nil, "please set default value for variable(%s)", variable)
-            end
-
-            -- get variable value
-            local value = variables[variable]
-            local extraconf = variables["__extraconf_" .. variable]
-            if isdefine then
-                if value == nil then
-                    value = ("/* #undef %s */"):format(variable)
-                elseif type(value) == "boolean" then
-                    if value then
-                        value = ("#define %s 1"):format(variable)
-                    else
-                        value = ("/* #define %s 0 */"):format(variable)
-                    end
-                elseif type(value) == "number" then
-                    value = ("#define %s %d"):format(variable, value)
-                elseif type(value) == "string" then
-                    local quote = true
-                    local escape = false
-                    if extraconf then
-                        -- disable to wrap quote, @see https://github.com/xmake-io/xmake/issues/1694
-                        if extraconf.quote == false then
-                            quote = false
-                        end
-                        -- escape path seperator when with quote, @see https://github.com/xmake-io/xmake/issues/1872
-                        if quote and extraconf.escape then
-                            escape = true
-                        end
-                    end
-                    if quote then
-                        if escape then
-                            value = value:gsub("\\", "\\\\")
-                        end
-                        value = ("#define %s \"%s\""):format(variable, value)
-                    else
-                        value = ("#define %s %s"):format(variable, value)
-                    end
-                else
-                    raise("unknown variable(%s) type: %s", variable, type(value))
-                end
-            elseif isdefault then
-                if value == nil then
-                    value = default
-                else
-                    value = tostring(value)
-                end
-            else
-                assert(value ~= nil, "cannot get variable(%s) in %s.", variable, srcfile)
-            end
-            dprint("  > replace %s -> %s", variable, value)
-            if type(value) == "table" then
-                dprint("invalid variable value", value)
-            end
-            return value
+            return _get_variable_value(variables, variable, {preprocessor_name = preprocessor_name,
+                preprocessor_argv = preprocessor_argv, configfile = srcfile, preprocessors = preprocessors})
         end)
 
         -- update file if the content is changed
@@ -327,12 +388,11 @@ function main(opt)
     opt = opt or {}
     local oldir = os.cd(project.directory())
 
-
     -- generate all configuration files
     local configfiles = _get_configfiles()
     for dstfile, srcinfo in pairs(configfiles) do
         depend.on_changed(function ()
-            _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets)
+            _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets, srcinfo.preprocessors)
         end, {files = srcinfo.srcfile,
               lastmtime = os.mtime(dstfile),
               dependfile = srcinfo.dependfile,
