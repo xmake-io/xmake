@@ -446,7 +446,7 @@ function _extract(archivefile, outputdir, extension, extractors, opt)
             return true
         end
     end
-    raise("cannot extract %s, %s!", path.filename(archivefile), errors or "extractors not found!")
+    raise("cannot extract %s, %s!", path.filename(archivefile), errors or "no extractor found")
 end
 
 -- extract file
