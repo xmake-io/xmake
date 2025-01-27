@@ -131,10 +131,10 @@ function main(toolchain)
         -- add gcc toolchain
         local gcc_toolchain = toolchain:config("gcc_toolchain")
         if gcc_toolchain then
-            toolchain:add("cxflags", "-gcc-toolchain " .. gcc_toolchain)
-            toolchain:add("asflags", "-gcc-toolchain " .. gcc_toolchain)
-            toolchain:add("ldflags", "-gcc-toolchain " .. gcc_toolchain)
-            toolchain:add("shflags", "-gcc-toolchain " .. gcc_toolchain)
+            toolchain:add("cxflags", "--gcc-toolchain=" .. gcc_toolchain)
+            toolchain:add("asflags", "--gcc-toolchain=" .. gcc_toolchain)
+            toolchain:add("ldflags", "--gcc-toolchain=" .. gcc_toolchain)
+            toolchain:add("shflags", "--gcc-toolchain=" .. gcc_toolchain)
         end
     else
         local march = arch
