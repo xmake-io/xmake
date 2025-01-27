@@ -25,7 +25,12 @@ target("test")
     set_configvar("module", "test")
     set_configdir("$(buildir)/config")
     add_configfiles("test.c.in", {filename = "mytest.c"})
-    add_configfiles("config.h.in", {variables = {hello = "xmake"}, prefixdir = "header"})
+    add_configfiles("config.h.in", {variables = {hello = "xmake"}, prefixdir = "header",
+        preprocessor = function (preprocessor_name, name, value, opt)
+            if preprocessor_name == "define_custom" then
+                return string.format("#define CUSTOM_%s %s", name, value)
+            end
+        end})
     add_configfiles("*.man", {onlycopy = true, prefixdir = "man"})
     add_includedirs("$(buildir)/config/header")
 

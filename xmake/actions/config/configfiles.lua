@@ -72,6 +72,13 @@ function _get_configfiles()
                 -- save targets
                 srcinfo.targets = srcinfo.targets or {}
                 table.insert(srcinfo.targets, target)
+
+                -- save preprocessors
+                local preprocessor = target:extraconf("configfiles", srcfile, "preprocessor")
+                if preprocessor then
+                    srcinfo.preprocessors = srcinfo.preprocessors or {}
+                    table.insert(srcinfo.preprocessors, preprocessor)
+                end
             end
         end
     end
@@ -231,20 +238,32 @@ function _get_variable_value(variables, name, opt)
     local value = variables[name]
     local extraconf = variables["__extraconf_" .. name]
     if preprocessor_name then
-        local preprocessors = _g._preprocessors
-        if preprocessors == nil then
-            preprocessors = {
-                define = _preprocess_define_value,
-                default = _preprocess_default_value,
-                define_export = _preprocess_define_export_value
-            }
-            _g._preprocessors = preprocessors
+        local preprocessed = false
+        if opt.preprocessors then
+            for _, preprocessor in ipairs(opt.preprocessors) do
+                value = preprocessor(preprocessor_name, name, value, {argv = preprocessor_argv, extraconf = extraconf})
+                if value ~= nil then
+                    preprocessed = true
+                    break
+                end
+            end
         end
-        local preprocessor = preprocessors[preprocessor_name]
-        if preprocessor == nil then
-            raise("unknown variable keyword, ${%s %s}", preprocessor_name, name)
+        if not preprocessed then
+            local preprocessors = _g._preprocessors
+            if preprocessors == nil then
+                preprocessors = {
+                    define = _preprocess_define_value,
+                    default = _preprocess_default_value,
+                    define_export = _preprocess_define_export_value
+                }
+                _g._preprocessors = preprocessors
+            end
+            local preprocessor = preprocessors[preprocessor_name]
+            if preprocessor == nil then
+                raise("unknown variable keyword, ${%s %s}", preprocessor_name, name)
+            end
+            value = preprocessor(name, value, {argv = preprocessor_argv, extraconf = extraconf})
         end
-        value = preprocessor(name, value, {argv = preprocessor_argv, extraconf = extraconf})
         assert(value ~= nil, "cannot get variable(%s %s) in %s.", preprocessor_name, name, configfile)
     else
         assert(value ~= nil, "cannot get variable(%s) in %s.", name, configfile)
@@ -257,7 +276,7 @@ function _get_variable_value(variables, name, opt)
 end
 
 -- generate the configuration file
-function _generate_configfile(srcfile, dstfile, fileinfo, targets)
+function _generate_configfile(srcfile, dstfile, fileinfo, targets, preprocessors)
 
     -- trace
     if option.get("verbose") then
@@ -335,7 +354,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
             end
 
             return _get_variable_value(variables, variable, {preprocessor_name = preprocessor_name,
-                preprocessor_argv = preprocessor_argv, configfile = srcfile})
+                preprocessor_argv = preprocessor_argv, configfile = srcfile, preprocessors = preprocessors})
         end)
 
         -- update file if the content is changed
@@ -369,12 +388,11 @@ function main(opt)
     opt = opt or {}
     local oldir = os.cd(project.directory())
 
-
     -- generate all configuration files
     local configfiles = _get_configfiles()
     for dstfile, srcinfo in pairs(configfiles) do
         depend.on_changed(function ()
-            _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets)
+            _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets, srcinfo.preprocessors)
         end, {files = srcinfo.srcfile,
               lastmtime = os.mtime(dstfile),
               dependfile = srcinfo.dependfile,

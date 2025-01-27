@@ -11,5 +11,6 @@ ${define FOO2_ENABLE2}
 ${define FOO2_STRING}
 
 ${define_export MYLIB}
+${define_custom FOO_STRING arg1 arg2}
 
 #define HAVE_SSE2 ${default HAVE_SSE2 0}
