@@ -220,7 +220,20 @@ function _download(package, url, sourcedir, opt)
     local sourcedir_tmp = sourcedir .. ".tmp"
     os.rm(sourcedir_tmp)
     local extension = archive.extension(packagefile)
-    local ok = try {function() archive.extract(packagefile, sourcedir_tmp, {excludes = opt.url_excludes}); return true end}
+    local errors
+    local ok = try {
+        function() 
+            archive.extract(packagefile, sourcedir_tmp, {excludes = opt.url_excludes})
+            return true 
+        end,
+        catch {
+            function (errs)
+                if errs then
+                    errors = tostring(errs)
+                end
+            end
+        }
+    }
     if ok then
         -- move to source directory and we skip it to avoid long path issues on windows if only one root directory
         os.rm(sourcedir)
@@ -241,7 +254,7 @@ function _download(package, url, sourcedir, opt)
         -- create an empty source directory if do not extract package file
         os.tryrm(sourcedir)
         os.mkdir(sourcedir)
-        raise("cannot extract %s, maybe extractors(like unzip, ...) are not found!", packagefile)
+        raise(errors or string.format("cannot extract %s, maybe missing extractor or invalid package file!", packagefile))
     else
         -- if it is not archive file, we only need to create empty source directory and use package:originfile()
         os.tryrm(sourcedir)
@@ -439,5 +452,3 @@ function main(package, opt)
     os.cd(oldir)
     return ok
 end
-
-
