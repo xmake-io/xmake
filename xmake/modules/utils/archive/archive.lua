@@ -306,7 +306,7 @@ function _archive(archivefile, inputfiles, extension, archivers, opt)
             return true
         end
     end
-    raise("cannot archive %s, %s!", path.filename(archivefile), errors or "no archiver found")
+    raise("cannot archive %s, %s!", path.filename(archivefile), errors or "no archiver(like zip, ...) found")
 end
 
 -- only archive tar file
