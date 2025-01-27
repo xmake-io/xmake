@@ -241,7 +241,7 @@ function _download(package, url, sourcedir, opt)
         -- create an empty source directory if do not extract package file
         os.tryrm(sourcedir)
         os.mkdir(sourcedir)
-        raise("cannot extract %s, maybe missing extractor or invalid package file!", packagefile)
+        raise("cannot extract %s, maybe extractors(like unzip, ...) are not found!", packagefile)
     else
         -- if it is not archive file, we only need to create empty source directory and use package:originfile()
         os.tryrm(sourcedir)
