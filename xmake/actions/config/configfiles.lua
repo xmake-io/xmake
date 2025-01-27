@@ -207,6 +207,19 @@ function _preprocess_default_value(name, value, opt)
 end
 
 function _preprocess_define_export_value(name, value, opt)
+    value = ([[#ifdef %s_STATIC
+#  define %s_EXPORT
+#else
+#  if defined(_WIN32)
+#    define %s_EXPORT __declspec(dllexport)
+#  elif defined(__GNUC__) && ((__GNUC__ >= 4) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3))
+#    define %s_EXPORT __attribute__((visibility("default")))
+#  else
+#    define %s_EXPORT
+#  endif
+#endif
+]]):format(name, name, name, name, name)
+    return value
 end
 
 -- get variable value
@@ -232,8 +245,10 @@ function _get_variable_value(variables, name, opt)
             raise("unknown variable keyword, ${%s %s}", preprocessor_name, name)
         end
         value = preprocessor(name, value, {argv = preprocessor_argv, extraconf = extraconf})
+        assert(value ~= nil, "cannot get variable(%s %s) in %s.", preprocessor_name, name, configfile)
+    else
+        assert(value ~= nil, "cannot get variable(%s) in %s.", name, configfile)
     end
-    assert(value ~= nil, "cannot get variable(%s) in %s.", name, configfile)
     dprint("  > replace %s -> %s", name, value)
     if type(value) == "table" then
         dprint("invalid variable value", value)

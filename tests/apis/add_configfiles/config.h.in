@@ -10,6 +10,6 @@ ${define FOO2_ENABLE}
 ${define FOO2_ENABLE2}
 ${define FOO2_STRING}
 
-//{define_export MYLIB_EXPORT}
+${define_export MYLIB}
 
 #define HAVE_SSE2 ${default HAVE_SSE2 0}
