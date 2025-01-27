@@ -69,7 +69,7 @@ function _translate_flags(package, flags)
     if package:is_plat("android") then
         local flags_new = {}
         for _, flag in ipairs(flags) do
-            if flag:startswith("-gcc-toolchain ") or flag:startswith("--target=") or flag:startswith("-isystem ") then
+            if flag:startswith("--gcc-toolchain=") or flag:startswith("--target=") or flag:startswith("-isystem ") then
                 table.join2(flags_new, flag:split(" ", {limit = 2}))
             else
                 table.insert(flags_new, flag)
