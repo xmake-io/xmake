@@ -107,14 +107,27 @@ function _patch(package, patchinfo)
         local patchdir = patch_file .. ".dir"
         local patchdir_tmp = patchdir .. ".tmp"
         os.tryrm(patchdir_tmp)
-        local ok = try {function() archive.extract(patch_file, patchdir_tmp); return true end}
+        local errors
+        local ok = try {
+            function() 
+                archive.extract(patch_file, patchdir_tmp)
+                return true 
+            end,
+            catch {
+                function (errs)
+                    if errs then
+                        errors = tostring(errs)
+                    end
+                end
+            }
+        }
         if ok then
             os.tryrm(patchdir)
             os.mv(patchdir_tmp, patchdir)
         else
             os.tryrm(patchdir_tmp)
             os.tryrm(patchdir)
-            raise("cannot extract %s", patch_file)
+            raise(errors or string.format("cannot extract %s", patch_file))
         end
 
         -- apply patch files

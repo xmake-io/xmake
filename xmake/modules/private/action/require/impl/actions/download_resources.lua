@@ -135,14 +135,27 @@ function _download(package, resource_name, resource_url, resource_hash)
     local resourcedir_tmp = resourcedir .. ".tmp"
     os.tryrm(resourcedir_tmp)
     local extension = archive.extension(resource_file)
-    local ok = try {function() archive.extract(resource_file, resourcedir_tmp); return true end}
+    local errors
+    local ok = try {
+        function() 
+            archive.extract(resource_file, resourcedir_tmp)
+            return true 
+        end,
+        catch {
+            function (errs)
+                if errs then
+                    errors = tostring(errs)
+                end
+            end
+        }
+    }
     if ok then
         os.tryrm(resourcedir)
         os.mv(resourcedir_tmp, resourcedir)
     elseif extension and extension ~= "" then
         os.tryrm(resourcedir_tmp)
         os.tryrm(resourcedir)
-        raise("cannot extract %s", resource_file)
+        raise(errors or string.format("cannot extract %s", resource_file))
     else
         -- if it is not archive file, we only need to create empty resource directory and use package:resourcefile(resource_name)
         os.tryrm(resourcedir)
