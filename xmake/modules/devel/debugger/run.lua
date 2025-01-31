@@ -32,6 +32,7 @@ import("detect.tools.find_ollydbg")
 import("detect.tools.find_devenv")
 import("detect.tools.find_vsjitdebugger")
 import("detect.tools.find_renderdoc")
+import("detect.tools.find_raddbg")
 import("lib.detect.find_tool")
 import("private.action.run.runenvs")
 
@@ -330,6 +331,25 @@ function _run_seergdb(program, argv, opt)
     return true
 end
 
+-- run rad debugger
+function _run_raddbg(program, argv, opt)
+
+    -- find raddbg
+    opt = opt or {}
+    local raddbg = find_raddbg({program = config.get("debugger")})
+    if not raddbg then
+        return false
+    end
+
+    -- patch arguments
+    argv = argv or {}
+    table.insert(argv, 1, program)
+
+    -- run it
+    os.execv(raddbg, argv, table.join(opt, {exclusive = true}))
+    return true
+end
+
 -- run program with debugger
 --
 -- @param program   the program name
@@ -365,6 +385,7 @@ function main(program, argv, opt)
         table.insert(debuggers, 1, {"x64dbg",           _run_x64dbg})
         table.insert(debuggers, 1, {"vsjitdebugger",    _run_vsjitdebugger})
         table.insert(debuggers, 1, {"devenv",           _run_devenv})
+        table.insert(debuggers, 1, {"raddbg",           _run_raddbg})
     end
 
     -- get debugger from configuration
