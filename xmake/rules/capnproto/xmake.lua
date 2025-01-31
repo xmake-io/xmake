@@ -20,7 +20,11 @@
 
 -- define rule: capnproto.cpp
 rule("capnproto.cpp")
+    add_deps("c++")
     set_extensions(".capnp")
+    after_load(function (target)
+        return import("capnp").load(target)
+    end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_capnp, opt)
         return import("capnp").buildcmd(target, batchcmds, sourcefile_capnp, opt)
     end)

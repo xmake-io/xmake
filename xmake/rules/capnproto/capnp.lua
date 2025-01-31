@@ -38,8 +38,40 @@ function _get_capnp(target)
 end
 
 -- generate build commands
-function buildcmd(target, batchcmds, sourcefile_capnp, opt)
+function load(target)
+    -- get the first sourcefile
+    local sourcefile_capnp
+    local sourcebatch = target:sourcebatches()["capnproto.cpp"]
+    if sourcebatch and sourcebatch.sourcefiles then
+        sourcefile_capnp = sourcebatch.sourcefiles[1]
+    end
+    if not sourcefile_capnp then
+        return
+    end
 
+    -- get c/c++ source file for capnproto
+    local prefixdir
+    local public
+    local fileconfig = target:fileconfig(sourcefile_capnp)
+    if fileconfig then
+        public = fileconfig.capnp_public
+        prefixdir = fileconfig.capnp_rootdir
+    end
+    local rootdir = path.join(target:autogendir(), "rules", "capnproto")
+    local filename = path.basename(sourcefile_capnp) .. ".capnp.c++"
+    local sourcefile_cx = target:autogenfile(sourcefile_capnp, {rootdir = rootdir, filename = filename})
+    local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
+
+    -- add includedirs
+    target:add("includedirs", sourcefile_dir, {public = true})
+
+    -- add objectfile, @see https://github.com/xmake-io/xmake/issues/5426
+    local objectfile = target:objectfile(sourcefile_cx)
+    table.insert(target:objectfiles(), objectfile)
+end
+
+-- generate build commands
+function buildcmd(target, batchcmds, sourcefile_capnp, opt)
     -- get capnp
     local capnp = _get_capnp(target)
 
@@ -56,12 +88,8 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
     local sourcefile_cx = target:autogenfile(sourcefile_capnp, {rootdir = rootdir, filename = filename})
     local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
 
-    -- add includedirs
-    target:add("includedirs", sourcefile_dir, {public = public})
-
     -- add objectfile
     local objectfile = target:objectfile(sourcefile_cx)
-    table.insert(target:objectfiles(), objectfile)
 
     -- add commands
     batchcmds:mkdir(sourcefile_dir)
@@ -77,10 +105,10 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
         table.insert(argv, path(prefixdir, function (p) return "--src-prefix=" .. p end))
     end
     table.insert(argv, "-o")
-    table.insert(argv, path(sourcefile_dir, function (p) return "c++:" .. p end))
+    table.insert(argv, path(rootdir, function (p) return "c++:" .. p end))
     table.insert(argv, path(sourcefile_capnp))
     batchcmds:vrunv(capnp, argv)
-    local configs = {includedirs = sourcefile_dir, languages = "c++14"}
+    local configs = {includedirs = sourcefile_dir, languages = (fileconfig and fileconfig.cpp_version) or "c++14"}
     if target:is_plat("windows") then
         configs.cxflags = "/TP"
     end
