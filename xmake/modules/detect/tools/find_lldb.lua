@@ -37,19 +37,11 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
     opt = opt or {}
-
-    -- find program
     local program = find_program(opt.program or "lldb", opt)
-
-    -- find program version
     local version = nil
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end
