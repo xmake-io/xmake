@@ -22,26 +22,14 @@
 import("core.base.json")
 import("core.base.option")
 import("core.project.config")
-import("detect.tools.find_cudagdb")
-import("detect.tools.find_cudamemcheck")
-import("detect.tools.find_gdb")
-import("detect.tools.find_lldb")
-import("detect.tools.find_windbg")
-import("detect.tools.find_x64dbg")
-import("detect.tools.find_ollydbg")
-import("detect.tools.find_devenv")
-import("detect.tools.find_vsjitdebugger")
-import("detect.tools.find_renderdoc")
-import("detect.tools.find_raddbg")
 import("lib.detect.find_tool")
+import("private.utils.executable_path")
 import("private.action.run.runenvs")
 
 -- run gdb
 function _run_gdb(program, argv, opt)
-
-    -- find gdb
     opt = opt or {}
-    local gdb = find_gdb({program = config.get("debugger")})
+    local gdb = find_tool("gdb", {program = config.get("debugger")})
     if not gdb then
         return false
     end
@@ -52,16 +40,14 @@ function _run_gdb(program, argv, opt)
     table.insert(argv, 1, "--args")
 
     -- run it
-    os.execv(gdb, argv, table.join(opt, {exclusive = true}))
+    os.execv(gdb.program, argv, table.join(opt, {exclusive = true}))
     return true
 end
 
 -- run cuda-gdb
 function _run_cudagdb(program, argv, opt)
-
-    -- find cudagdb
     opt = opt or {}
-    local gdb = find_cudagdb({program = config.get("debugger")})
+    local gdb = find_tool("cudagdb", {program = config.get("debugger")})
     if not gdb then
         return false
     end
@@ -72,42 +58,32 @@ function _run_cudagdb(program, argv, opt)
     table.insert(argv, 1, "--args")
 
     -- run it
-    os.execv(gdb, argv, table.join(opt, {exclusive = true}))
+    os.execv(gdb.program, argv, table.join(opt, {exclusive = true}))
     return true
 end
 
 -- run lldb
 function _run_lldb(program, argv, opt)
-
-    -- find lldb
     opt = opt or {}
-    local lldb = find_lldb({program = config.get("debugger")})
+    local lldb = find_tool("lldb", {program = config.get("debugger")})
     if not lldb then
         return false
     end
-
-    -- attempt to split name, e.g. xcrun -sdk macosx lldb
-    local names = lldb:split("%s")
 
     -- patch arguments
     argv = argv or {}
     table.insert(argv, 1, "--")
     table.insert(argv, 1, program)
     table.insert(argv, 1, "-f")
-    for i = #names, 2, -1 do
-        table.insert(argv, 1, names[i])
-    end
 
     -- run it
-    os.execv(names[1], argv, table.join(opt, {exclusive = true}))
+    os.execv(executable_path(lldb.program), argv, table.join(opt, {exclusive = true}))
     return true
 end
 
 -- run windbg
 function _run_windbg(program, argv, opt)
-
-    -- find windbg
-    local windbg = find_windbg({program = config.get("debugger")})
+    local windbg = find_tool("windbg", {program = config.get("debugger")})
     if not windbg then
         return false
     end
@@ -118,15 +94,13 @@ function _run_windbg(program, argv, opt)
 
     -- run it
     opt.detach = true
-    os.execv(windbg, argv, opt)
+    os.execv(windbg.program, argv, opt)
     return true
 end
 
 -- run cuda-memcheck
 function _run_cudamemcheck(program, argv, opt)
-
-    -- find cudamemcheck
-    local cudamemcheck = find_cudamemcheck({program = config.get("debugger")})
+    local cudamemcheck = find_tool("cudamemcheck", {program = config.get("debugger")})
     if not cudamemcheck then
         return false
     end
@@ -136,15 +110,13 @@ function _run_cudamemcheck(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- run it
-    os.execv(cudamemcheck, argv, opt)
+    os.execv(cudamemcheck.program, argv, opt)
     return true
 end
 
 -- run x64dbg
 function _run_x64dbg(program, argv, opt)
-
-    -- find x64dbg
-    local x64dbg = find_x64dbg({program = config.get("debugger")})
+    local x64dbg = find_tool("x64dbg", {program = config.get("debugger")})
     if not x64dbg then
         return false
     end
@@ -155,15 +127,13 @@ function _run_x64dbg(program, argv, opt)
 
     -- run it
     opt.detach = true
-    os.execv(x64dbg, argv, opt)
+    os.execv(x64dbg.program, argv, opt)
     return true
 end
 
 -- run ollydbg
 function _run_ollydbg(program, argv, opt)
-
-    -- find ollydbg
-    local ollydbg = find_ollydbg({program = config.get("debugger")})
+    local ollydbg = find_tool("ollydbg", {program = config.get("debugger")})
     if not ollydbg then
         return false
     end
@@ -174,15 +144,13 @@ function _run_ollydbg(program, argv, opt)
 
     -- run it
     opt.detach = true
-    os.execv(ollydbg, argv, opt)
+    os.execv(ollydbg.program, argv, opt)
     return true
 end
 
 -- run vsjitdebugger
 function _run_vsjitdebugger(program, argv, opt)
-
-    -- find vsjitdebugger
-    local vsjitdebugger = find_vsjitdebugger({program = config.get("debugger")})
+    local vsjitdebugger = find_tool("vsjitdebugger", {program = config.get("debugger")})
     if not vsjitdebugger then
         return false
     end
@@ -193,15 +161,13 @@ function _run_vsjitdebugger(program, argv, opt)
 
     -- run it
     opt.detach = true
-    os.execv(vsjitdebugger, argv, opt)
+    os.execv(vsjitdebugger.program, argv, opt)
     return true
 end
 
 -- run devenv
 function _run_devenv(program, argv, opt)
-
-    -- find devenv
-    local devenv = find_devenv({program = config.get("debugger")})
+    local devenv = find_tool("devenv", {program = config.get("debugger")})
     if not devenv then
         return false
     end
@@ -213,15 +179,13 @@ function _run_devenv(program, argv, opt)
 
     -- run it
     opt.detach = true
-    os.execv(devenv, argv, opt)
+    os.execv(devenv.program, argv, opt)
     return true
 end
 
 -- run renderdoc
 function _run_renderdoc(program, argv, opt)
-
-    -- find renderdoc
-    local renderdoc = find_renderdoc({program = config.get("debugger")})
+    local renderdoc = find_tool("renderdoc", {program = config.get("debugger")})
     if not renderdoc then
         return false
     end
@@ -285,15 +249,14 @@ function _run_renderdoc(program, argv, opt)
     opt.detach = true
     opt.addenvs = nil
     opt.setenvs = nil
-    os.execv(renderdoc, { capturefile }, opt)
+    os.execv(renderdoc.program, { capturefile }, opt)
     return true
 end
 
 -- run gede
 function _run_gede(program, argv, opt)
-
-    -- find gede
     opt = opt or {}
+
     -- 'gede --version' return with non-zero code
     local gede = find_tool("gede", {program = config.get("debugger"), norun = true})
     if not gede then
@@ -313,8 +276,6 @@ end
 
 -- run seergdb
 function _run_seergdb(program, argv, opt)
-
-    -- find seergdb
     opt = opt or {}
     local seergdb = find_tool("seergdb", {program = config.get("debugger")})
     if not seergdb then
@@ -333,10 +294,8 @@ end
 
 -- run rad debugger
 function _run_raddbg(program, argv, opt)
-
-    -- find raddbg
     opt = opt or {}
-    local raddbg = find_raddbg({program = config.get("debugger")})
+    local raddbg = find_tool("raddbg", {program = config.get("debugger")})
     if not raddbg then
         return false
     end
@@ -346,7 +305,7 @@ function _run_raddbg(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- run it
-    os.execv(raddbg, argv, table.join(opt, {exclusive = true}))
+    os.execv(raddbg.program, argv, table.join(opt, {exclusive = true}))
     return true
 end
 

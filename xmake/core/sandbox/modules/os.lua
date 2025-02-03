@@ -285,7 +285,7 @@ end
 -- quietly run command with arguments list and echo verbose info if [-v|--verbose] option is enabled
 function sandbox_os.vrunv(program, argv, opt)
     if option.get("verbose") then
-        print(vformat(program) .. " " .. sandbox_os.args(argv))
+        print(vformat(program) .. " " .. sandbox_os.args(argv or {}))
     end
     if not (opt and opt.dryrun) then
         (option.get("verbose") and sandbox_os.execv or sandbox_os.runv)(program, argv, opt)
