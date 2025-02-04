@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.9.8
+
 ### New features
 
 * [#5994](https://github.com/xmake-io/xmake/issues/5994): Profile process performance
@@ -1944,6 +1946,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.9.8
 
 ### 新特性
 
