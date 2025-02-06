@@ -18,46 +18,39 @@
 -- @file        xmake.lua
 --
 
--- define rule: xmake cli program
 rule("xmake.cli")
+    set_extensions(".lua")
+
     on_load(function (target)
         target:set("kind", "binary")
         assert(target:pkg("libxmake"), 'please add_packages("libxmake") to target(%s) first!', target:name())
+
+        local headerdir = path.join(target:autogendir(), "rules", "xmake.cli", "include")
+        if not os.isdir(headerdir) then
+            os.mkdir(headerdir)
+        end
+        target:add("includedirs", headerdir)
     end)
-    after_install(function (target)
-        local scriptdir = path.join(target:scriptdir(), "src")
-        if not os.isfile(path.join(scriptdir, "lua", "main.lua")) then
-            import("lib.detect.find_path")
-            scriptdir = find_path("lua/main.lua", path.join(target:scriptdir(), "**"))
-        end
 
-        local installdir = path.join(target:installdir(), "share", target:name())
-        if not os.isdir(installdir) then
-            os.mkdir(installdir)
-        end
+    before_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
+        local sourcefiles = sourcebatch.sourcefiles
+        local archivefile = path.join(target:autogendir(), "rules", "xmake.cli", "luafiles.xmz")
+        local dependfile = archivefile .. ".d"
+        batchcmds:show_progress(opt.progress, "${color.build.target}archiving.luafiles %s", target:name())
 
-        -- install xmake/cli lua scripts
-        --
-        --  - bin
-        --    - hello
-        --  - share
-        --    - hello
-        --      - modules
-        --        - lua
-        --          - main.lua
-        --
+        local argv = {"lua", "cli.archive", "-r", "-w", path(path.join(target:scriptdir(), "src")), "-o", path(archivefile)}
+        for _, sourcefile in ipairs(sourcefiles) do
+            table.insert(argv, path(sourcefile))
+        end
+        batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
 
-        if scriptdir then
-            os.vcp(path.join(scriptdir, "lua"), path.join(installdir, "modules"))
-        end
-    end)
-    before_run(function (target)
-        local scriptdir = path.join(target:scriptdir(), "src")
-        if not os.isfile(path.join(scriptdir, "lua", "main.lua")) then
-            import("lib.detect.find_path")
-            scriptdir = find_path("lua/main.lua", path.join(target:scriptdir(), "**"))
-        end
-        if scriptdir then
-            os.setenv("XMAKE_MODULES_DIR", scriptdir)
-        end
+        local headerdir = path.join(target:autogendir(), "rules", "xmake.cli", "include")
+        local headerfile = path.join(headerdir, "luafiles.xmz.h")
+        target:add("includedirs", headerdir)
+        argv = {"lua", "private.utils.bin2c", "--nozeroend", "-i", path(archivefile), "-o", path(headerfile)}
+        batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
+
+        batchcmds:add_depfiles(sourcefiles)
+        batchcmds:set_depmtime(os.mtime(dependfile))
+        batchcmds:set_depcache(dependfile)
     end)

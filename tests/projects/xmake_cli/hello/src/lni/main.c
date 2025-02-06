@@ -1,5 +1,9 @@
 #include <xmake/xmake.h>
 
+static unsigned char g_luafiles_data[] = {
+    #include "luafiles.xmz.h"
+};
+
 static tb_int_t lni_test_hello(lua_State* lua) {
     lua_pushliteral(lua, "hello xmake!");
     return 1;
