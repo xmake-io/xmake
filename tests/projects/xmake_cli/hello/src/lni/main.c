@@ -1,6 +1,6 @@
 #include <xmake/xmake.h>
 
-static unsigned char g_luafiles_data[] = {
+static tb_byte_t const g_luafiles_data[] = {
     #include "luafiles.xmz.h"
 };
 
@@ -15,6 +15,7 @@ static tb_void_t lni_initalizer(xm_engine_ref_t engine, lua_State* lua) {
     ,   {tb_null, tb_null}
     };
     xm_engine_register(engine, "test", lni_test_funcs);
+    xm_engine_add_embedfiles(engine, g_luafiles_data, sizeof(g_luafiles_data));
 }
 
 tb_int_t main(tb_int_t argc, tb_char_t** argv) {

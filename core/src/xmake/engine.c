@@ -98,6 +98,11 @@ typedef struct __xm_engine_t
 #ifdef XM_EMBED_ENABLE
     // the temporary directory
     tb_char_t               tmpdir[TB_PATH_MAXN];
+
+    // the embed files
+    tb_byte_t const*        embeddata[32];
+    tb_size_t               embedsize[32];
+    tb_size_t               embedcount;
 #endif
 
 }xm_engine_t;
@@ -812,8 +817,15 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
     do
     {
 #ifdef XM_EMBED_ENABLE
-        // get it from the temporary directory
-        tb_strlcpy(path, engine->tmpdir, maxn);
+        tb_size_t embedcount = engine->embedcount;
+        if (embedcount)
+        {
+            tb_uint32_t crc32 = 0;
+            for (tb_size_t i = 0; i < embedcount; i++)
+                crc32 += tb_crc32_make(engine->embeddata[i], engine->embedsize[i], 0);
+            tb_snprintf(path, maxn, "%s/%x", engine->tmpdir, crc32);
+        }
+        else tb_strlcpy(path, engine->tmpdir, maxn);
         ok = tb_true;
         break;
 #endif
@@ -1189,14 +1201,8 @@ static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data,
 #endif
 
 #ifdef XM_EMBED_ENABLE
-static tb_bool_t xm_engine_extract_programfiles(xm_engine_t* engine, tb_char_t const* programdir)
+static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t* engine, tb_char_t const* programdir, tb_byte_t const* data, tb_size_t size)
 {
-    tb_file_info_t info = {0};
-    if (tb_file_info(programdir, &info)) return tb_true;
-
-    tb_byte_t const* data = g_xmake_xmz_data;
-    tb_size_t size = sizeof(g_xmake_xmz_data);
-
     // do decompress
     tb_bool_t ok = tb_false;
     LZ4F_errorCode_t code;
@@ -1288,6 +1294,28 @@ static tb_bool_t xm_engine_extract_programfiles(xm_engine_t* engine, tb_char_t c
     }
     tb_buffer_exit(&result);
     return ok;
+}
+
+static tb_bool_t xm_engine_extract_programfiles(xm_engine_t* engine, tb_char_t const* programdir)
+{
+    tb_file_info_t info = {0};
+    if (!tb_file_info(programdir, &info))
+    {
+        tb_byte_t const* data = g_xmake_xmz_data;
+        tb_size_t size = sizeof(g_xmake_xmz_data);
+        if (!xm_engine_extract_programfiles_impl(engine, programdir, data, size))
+            return tb_false;
+
+        tb_size_t embedcount = engine->embedcount;
+        for (tb_size_t i = 0; i < embedcount; i++)
+        {
+            data = engine->embeddata[i];
+            size = engine->embedsize[i];
+            if (!xm_engine_extract_programfiles_impl(engine, programdir, data, size))
+                return tb_false;
+        }
+    }
+    return tb_true;
 }
 #endif
 
@@ -1560,6 +1588,18 @@ tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const* module, luaL
     xm_lua_register(engine->lua, tb_null, funcs);
     lua_rawset(engine->lua, -3);
 }
+#ifdef XM_EMBED_ENABLE
+tb_void_t xm_engine_add_embedfiles(xm_engine_ref_t self, tb_byte_t const* data, tb_size_t size)
+{
+    // check
+    xm_engine_t* engine = (xm_engine_t*)self;
+    tb_assert_and_check_return(engine && engine->embedcount < tb_arrayn(engine->embedsize) && data && size);
+
+    engine->embeddata[engine->embedcount] = data;
+    engine->embedsize[engine->embedcount] = size;
+    engine->embedcount++;
+}
+#endif
 tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv, xm_engine_lni_initalizer_cb_t lni_initalizer)
 {
     tb_int_t ok = -1;
@@ -1575,3 +1615,4 @@ tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, t
     }
     return ok;
 }
+

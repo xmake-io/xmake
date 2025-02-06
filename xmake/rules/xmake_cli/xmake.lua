@@ -33,14 +33,21 @@ rule("xmake.cli")
     end)
 
     before_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
+        import("private.core.base.match_copyfiles")
         local sourcefiles = sourcebatch.sourcefiles
         local archivefile = path.join(target:autogendir(), "rules", "xmake.cli", "luafiles.xmz")
         local dependfile = archivefile .. ".d"
         batchcmds:show_progress(opt.progress, "${color.build.target}archiving.luafiles %s", target:name())
 
-        local argv = {"lua", "cli.archive", "-r", "-w", path(path.join(target:scriptdir(), "src")), "-o", path(archivefile)}
-        for _, sourcefile in ipairs(sourcefiles) do
-            table.insert(argv, path(sourcefile))
+        local luadir = path.join(target:autogendir(), "rules", "xmake.cli", "luafiles")
+        local argv = {"lua", "cli.archive", "-r", "-w", path(luadir), "-o", path(archivefile)}
+        local srcfiles, dstfiles = match_copyfiles(target, "files", path.join(luadir, "modules"))
+        for idx, srcfile in ipairs(srcfiles) do
+            if srcfile:endswith(".lua") then
+                local dstfile = dstfiles[idx]
+                batchcmds:cp(srcfile, dstfile)
+                table.insert(argv, path(dstfile))
+            end
         end
         batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
 

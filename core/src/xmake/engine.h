@@ -79,6 +79,14 @@ tb_int_t                    xm_engine_main(xm_engine_ref_t engine, tb_int_t argc
  */
 tb_void_t                   xm_engine_register(xm_engine_ref_t engine, tb_char_t const* module, luaL_Reg const funcs[]);
 
+/*! add the embed files
+ *
+ * @param name              the engine name
+ * @param data              the embedfiles data
+ * @param size              the data size
+ */
+tb_void_t                   xm_engine_add_embedfiles(xm_engine_ref_t engine, tb_byte_t const* data, tb_size_t size);
+
 /*! run main entry of the engine singleton
  *
  * @param name              the engine name
