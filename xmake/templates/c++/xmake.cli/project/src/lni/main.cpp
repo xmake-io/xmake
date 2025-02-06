@@ -1,4 +1,6 @@
+extern "C" {
 #include <xmake/xmake.h>
+}
 
 static tb_byte_t const g_luafiles_data[] = {
     #include "luafiles.xmz.h"
