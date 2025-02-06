@@ -25,31 +25,15 @@ rule("xmake.cli")
         assert(target:pkg("libxmake"), 'please add_packages("libxmake") to target(%s) first!', target:name())
     end)
     after_install(function (target)
-
-        -- get lua script directory
         local scriptdir = path.join(target:scriptdir(), "src")
         if not os.isfile(path.join(scriptdir, "lua", "main.lua")) then
             import("lib.detect.find_path")
             scriptdir = find_path("lua/main.lua", path.join(target:scriptdir(), "**"))
         end
 
-        -- install xmake-core lua scripts first
-        local libxmake = target:pkg("libxmake")
-        local programdir = path.join(libxmake:installdir(), "share", "xmake")
         local installdir = path.join(target:installdir(), "share", target:name())
-        assert(os.isdir(programdir), "%s not found!", programdir)
         if not os.isdir(installdir) then
             os.mkdir(installdir)
-        end
-        if scriptdir then
-            os.mkdir(path.join(installdir, "plugins"))
-            os.vcp(path.join(programdir, "core"), installdir)
-            os.vcp(path.join(programdir, "modules"), installdir)
-            os.vcp(path.join(programdir, "themes"), installdir)
-            os.vcp(path.join(programdir, "plugins", "lua"), path.join(installdir, "plugins"))
-            os.vcp(path.join(programdir, "actions", "build", "xmake.lua"), path.join(installdir, "actions", "build", "xmake.lua"))
-        else
-            os.vcp(path.join(programdir, "*"), installdir)
         end
 
         -- install xmake/cli lua scripts
@@ -76,8 +60,4 @@ rule("xmake.cli")
         if scriptdir then
             os.setenv("XMAKE_MODULES_DIR", scriptdir)
         end
-        local libxmake = target:pkg("libxmake")
-        local programdir = path.join(libxmake:installdir(), "share", "xmake")
-        assert(os.isdir(programdir), "%s not found!", programdir)
-        os.setenv("XMAKE_PROGRAM_DIR", programdir)
     end)
