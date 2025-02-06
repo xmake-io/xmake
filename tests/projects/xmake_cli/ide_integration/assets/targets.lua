@@ -1,7 +1,7 @@
--- imports
 import("core.project.config")
 import("core.project.project")
 import("core.base.json")
+import("lib.lni")
 
 function main ()
     config.load()
@@ -14,9 +14,5 @@ function main ()
     if json.mark_as_array then
         json.mark_as_array(names)
     end
-    local localjson =  json.encode(names)
-
-    print("__begin__")
-    print(localjson)
-    print("__end__")
+    lni.result = json.encode(names)
 end

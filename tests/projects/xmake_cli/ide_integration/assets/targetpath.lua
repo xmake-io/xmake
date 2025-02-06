@@ -1,5 +1,6 @@
 import("core.project.config")
 import("core.project.project")
+import("lib.lni")
 
 function main (targetname)
     config.load()
@@ -20,16 +21,12 @@ function main (targetname)
             end
         end
     end
-    
-    print("__begin__")
 
     if target then
         local targetfile = target:targetfile()
         if not path.is_absolute(targetfile) then
             targetfile = path.absolute(targetfile, os.projectdir())
         end
-        print(targetfile)
+        lni.result = targetfile
     end
-
-    print("__end__")
 end
