@@ -5,6 +5,7 @@
 ### New features
 
 * [#6137](https://github.com/xmake-io/xmake/issues/6137): IDE integration
+* [#6138](https://github.com/xmake-io/xmake/issues/6138): Use libxmake to build binary with xmake lua apis
 
 ## v2.9.8
 
@@ -1954,6 +1955,7 @@
 ### 新特性
 
 * [#6137](https://github.com/xmake-io/xmake/issues/6137): IDE 整合
+* [#6138](https://github.com/xmake-io/xmake/issues/6138): 使用 libxmake/xmake APIs 去构建二进制
 
 ## v2.9.8
 
