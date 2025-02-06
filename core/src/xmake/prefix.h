@@ -117,14 +117,21 @@ static __tb_inline__ tb_pointer_t xm_lua_topointer(lua_State* lua, tb_int_t idx)
 static __tb_inline__ tb_void_t xm_lua_register(lua_State *lua, tb_char_t const* libname, luaL_Reg const* l)
 {
 #if LUA_VERSION_NUM >= 504
-    lua_getglobal(lua, libname);
-    if (lua_isnil(lua, -1))
+    if (libname)
     {
-        lua_pop(lua, 1);
-        lua_newtable(lua);
+        lua_getglobal(lua, libname);
+        if (lua_isnil(lua, -1))
+        {
+            lua_pop(lua, 1);
+            lua_newtable(lua);
+        }
+        luaL_setfuncs(lua, l, 0);
+        lua_setglobal(lua, libname);
     }
-    luaL_setfuncs(lua, l, 0);
-    lua_setglobal(lua, libname);
+    else
+    {
+        luaL_setfuncs(lua, l, 0);
+    }
 #else
     luaL_register(lua, libname, l);
 #endif
