@@ -1095,7 +1095,7 @@ function _build_for_cmakebuild(package, configs, opt)
         table.insert(argv, "--target")
         if #targets > 1 then
             -- https://stackoverflow.com/questions/47553569/how-can-i-build-multiple-targets-using-cmake-build
-            if _get_cmake_version():ge("3.15") then
+            if _get_cmake_version() and _get_cmake_version():ge("3.15") then
                 table.join2(argv, targets)
             else
                 raise("Build multiple targets need cmake >=3.15")
@@ -1244,7 +1244,7 @@ function _shrink_cmake_arguments(argv, oldir, opt)
     local shrink = false
     local add_compile_options = false
     local add_link_options = false
-    if _get_cmake_version():ge("3.13") then
+    if _get_cmake_version() and _get_cmake_version():ge("3.13") then
         add_compile_options = true
         add_link_options = true
     end
