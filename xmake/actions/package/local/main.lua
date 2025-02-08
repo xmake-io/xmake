@@ -25,6 +25,7 @@ import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("target.action.install")
+import("lib.detect.check_targetname")
 
 -- get library deps
 function _get_librarydeps(target)
@@ -230,7 +231,7 @@ function main()
 
     -- package the given target?
     if targetname then
-        local target = project.target(targetname)
+        local target = assert(check_targetname(targetname))
         _package_targets(target:orderdeps())
         _package_target(target)
     else
