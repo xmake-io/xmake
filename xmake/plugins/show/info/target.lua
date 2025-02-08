@@ -22,8 +22,8 @@
 import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
-import("core.project.project")
 import("core.language.language")
+import("lib.detect.check_targetname")
 
 -- get source info string
 function _get_sourceinfo_str(target, name, item, opt)
@@ -247,7 +247,7 @@ function main(name)
 
     -- get target
     config.load()
-    local target = assert(project.target(name), "target(%s) not found!", name)
+    local target = assert(check_targetname(name))
 
     -- show target information
     _show_target(target)
