@@ -383,12 +383,21 @@ function string:wcswidth(idx)
 end
 
 -- compute the Levenshtein distance between two strings
-function string:levenshtein(str2)
+--
+-- @param str2  the string to compare against
+-- @param opt   the options, e.g. {sub = 1, ins = 1, del = 1}
+--
+-- @return      the levenshtein distance
+--
+function string:levenshtein(str2, opt)
+    opt = opt or {}
+    local sub = opt.sub or 1
+    local ins = opt.ins or 1
+    local del = opt.del or 1
+
     local str1 = self
     local len1 = #str1
     local len2 = #str2
-    local matrix = {}
-    local cost = 0
 
     if len1 == 0 then
         return len2
@@ -398,25 +407,22 @@ function string:levenshtein(str2)
         return 0
     end
 
-    for i = 0, len1, 1 do
-        matrix[i] = {}
-        matrix[i][0] = i
-    end
-    for j = 0, len2, 1 do
-        matrix[0][j] = j
-    end
+    local row1 = {}
+    local row2 = {}
+    local sub_cost = 0
 
-    for i = 1, len1, 1 do
-        for j = 1, len2, 1 do
-            if (str1:byte(i) == str2:byte(j)) then
-                cost = 0
-            else
-                cost = 1
-            end
-            matrix[i][j] = math.min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
-        end
+    for i = 1, len2 + 1 do
+        row1[i] = (i - 1) * ins
     end
-    return matrix[len1][len2]
+    for i = 1, len1 do
+        row2[1] = i * del
+        for j = 1, len2 do
+            sub_cost = (str1:byte(i) == str2:byte(j)) and 0 or sub
+            row2[j + 1] = math.min(row1[j + 1] + del, row2[j] + ins, row1[j] + sub_cost)
+        end
+        row1, row2 = row2, row1
+    end
+    return row1[len2 + 1]
 end
 
 -- return module: string
