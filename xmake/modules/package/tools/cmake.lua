@@ -676,6 +676,7 @@ function _get_configs_for_cross(package, configs, opt)
             system_name = "Windows"
         end
         envs.CMAKE_SYSTEM_NAME = system_name
+        envs.CMAKE_SYSTEM_PROCESSOR = _get_cmake_system_processor(package)
     end
     if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
         table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
