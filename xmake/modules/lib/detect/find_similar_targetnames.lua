@@ -42,7 +42,7 @@ function main(targetname)
         if name:lower():find(targetname_lower, 1, true) then
             table.insert(matching_targetnames, name)
         else
-            local distance = targetname:levenshtein(name, {sub = 2, ins = 1, del = 1})
+            local distance = targetname:levenshtein(name, {sub = 2})
             if distance < 5 then
                 matching_levenshtein[name] = distance
             end
