@@ -29,7 +29,7 @@ import("devel.debugger")
 import("async.runjobs")
 import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
-import("lib.detect.check_targetname")
+import("private.detect.check_targetname")
 import("lib.detect.find_tool")
 
 -- run target

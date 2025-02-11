@@ -25,7 +25,7 @@ import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("core.base.bit")
-import("lib.detect.check_targetname")
+import("private.detect.check_targetname")
 
 -- get library deps
 function _get_librarydeps(target)

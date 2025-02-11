@@ -24,7 +24,7 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
-import("lib.detect.check_targetname")
+import("private.detect.check_targetname")
 
 -- package library
 function _package_library(target)

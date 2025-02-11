@@ -24,7 +24,7 @@ import("core.base.graph")
 import("core.project.config")
 import("core.project.task")
 import("core.project.project")
-import("lib.detect.check_targetname")
+import("private.detect.check_targetname")
 
 -- the options
 local options =

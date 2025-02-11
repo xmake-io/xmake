@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.language.language")
-import("lib.detect.check_targetname")
+import("private.detect.check_targetname")
 
 -- get source info string
 function _get_sourceinfo_str(target, name, item, opt)

@@ -29,7 +29,7 @@ import("core.platform.platform")
 import("private.action.clean.remove_files")
 import("target.action.clean", {alias = "_do_clean_target"})
 import("private.service.remote_build.action", {alias = "remote_build_action"})
-import("lib.detect.check_targetname")
+import("private.detect.check_targetname")
 
 -- on clean target
 function _on_clean_target(target)
