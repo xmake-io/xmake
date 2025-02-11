@@ -124,7 +124,8 @@ function build(package, configs, opt)
 
     -- do build
     local buildir = _get_buildir(opt)
-    ninja.build(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+    local argv = opt.argv or {}
+    ninja.build(package, argv, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- install package
