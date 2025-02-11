@@ -20,7 +20,7 @@
 
 -- imports
 import("core.project.project")
-import("lib.detect.find_similar_targetnames")
+import("private.detect.find_similar_targetnames")
 
 -- check if a target name is valid
 --
