@@ -30,7 +30,7 @@ task("project")
     -- set menu
     set_menu {
                 -- usage
-                usage = "xmake project [options] [target]"
+                usage = "xmake project [options] [outputdir]"
 
                 -- description
             ,   description = "Generate the project file."
