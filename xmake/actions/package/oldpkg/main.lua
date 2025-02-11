@@ -24,6 +24,7 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
+import("private.detect.check_targetname")
 
 -- package library
 function _package_library(target)
@@ -193,7 +194,7 @@ function main()
 
     -- package the given target?
     if targetname then
-        local target = project.target(targetname)
+        local target = assert(check_targetname(targetname))
         _package_targets(target:orderdeps())
         _package_target(target)
     else

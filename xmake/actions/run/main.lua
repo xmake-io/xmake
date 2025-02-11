@@ -29,6 +29,7 @@ import("devel.debugger")
 import("async.runjobs")
 import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
+import("private.detect.check_targetname")
 import("lib.detect.find_tool")
 
 -- run target
@@ -95,20 +96,6 @@ function _add_target_pkgenvs(target, targets_added)
     end
 end
 
--- find target names matching a specific name
-function _find_matching_target_names(targetname)
-    targetname = targetname:lower()
-    local matching_targetnames = {}
-    for _, target in ipairs(project.ordertargets()) do
-        if target:name():lower():find(targetname, 1, true) then
-            table.insert(matching_targetnames, target:name())
-        end
-    end
-
-    table.sort(matching_targetnames)
-    return matching_targetnames
-end
-
 -- run the given target
 function _run(target)
 
@@ -163,17 +150,7 @@ function _check_targets(targetname, group_pattern)
     -- get targets
     local targets = {}
     if targetname then
-        local target = project.target(targetname)
-        if not target then
-            -- check if the name is part of other target to help
-            local possible_targetnames = _find_matching_target_names(targetname)
-            local errors = targetname .. " is not a valid target name for this project"
-            if #possible_targetnames > 0 then
-                errors = errors .. "\nlist of valid target names close to your input:\n - " .. table.concat(possible_targetnames, '\n - ')
-            end
-            raise(errors)
-        end
-
+        local target = assert(check_targetname(targetname))
         table.insert(targets, target)
     else
         for _, target in ipairs(project.ordertargets()) do
