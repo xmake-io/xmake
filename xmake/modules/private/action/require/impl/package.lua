@@ -467,6 +467,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
     local version = nil
     local require_version = requireinfo.version
     local require_verify  = requireinfo.verify
+    local is_system = requireinfo.system
     if (not package:get("versions") or require_verify == false)
         and (semver.is_valid(require_version) or semver.is_valid_range(require_version)) then
         -- no version list in package() or need not verify sha256sum? try selecting this version directly
@@ -491,7 +492,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         version = "latest"
         source = "version"
     end
-    if not version and not package:is_thirdparty() then
+    if not version and not package:is_thirdparty() and is_system ~= true then
         raise("package(%s): version(%s) not found!", package:name(), require_version)
     end
     return version, source
@@ -1101,7 +1102,7 @@ function _load_package(packagename, requireinfo, opt)
 
     -- save artifacts info, we need to add it at last before buildhash need depend on package configurations
     -- it will switch to install precompiled binary package from xmake-mirror/build-artifacts
-    if from_repo and not option.get("build") and not requireinfo.build then
+    if from_repo and not option.get("build") and not requireinfo.build and requireinfo.system ~= true then
         local artifacts_manifest = repository.artifacts_manifest(packagename, version)
         if artifacts_manifest then
             _select_artifacts(package, artifacts_manifest)
