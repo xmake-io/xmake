@@ -859,7 +859,7 @@ function _instance:cachedir()
             local name = self:displayname():lower():gsub("::", "_"):gsub("#", "_")
             local version_str = self:version_str()
             -- strip invalid characters on windows, e.g. `>= <=`
-            if os.is_host("windows") then
+            if version_str and os.is_host("windows") then
                 version_str = version_str:gsub("[>=<|%*]", "")
             end
             if self:is_local() then
