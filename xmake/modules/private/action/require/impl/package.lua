@@ -468,7 +468,8 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
     local require_version = requireinfo.version
     local require_verify  = requireinfo.verify
     local is_system = requireinfo.system
-    if (not package:get("versions") or require_verify == false)
+    local has_versionlist = package:get("versions") or package:get("versionfiles")
+    if (not has_versionlist or require_verify == false)
         and (semver.is_valid(require_version) or semver.is_valid_range(require_version)) then
         -- no version list in package() or need not verify sha256sum? try selecting this version directly
         -- @see
