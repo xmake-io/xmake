@@ -19,7 +19,7 @@
 --
 
 -- build linux driver module
-rule("platform.linux.driver")
+rule("platform.linux.module")
     set_sourcekinds("cc")
     on_load(function (target)
         import("driver_modules").load(target)
