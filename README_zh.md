@@ -310,6 +310,7 @@ hdk           Harmony SDK
 ti-c2000      TI-CGT C2000 compiler
 ti-c6000      TI-CGT C6000 compiler
 iararm        IAR ARM C/C++ Compiler
+kotlin-native Kotlin Native Programming Language Compiler
 ```
 
 ## 支持语言
@@ -333,6 +334,7 @@ iararm        IAR ARM C/C++ Compiler
 * YASM
 * MASM32
 * Cppfront
+* Kotlin
 
 ## 支持特性
 
