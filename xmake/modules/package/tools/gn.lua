@@ -124,7 +124,8 @@ function build(package, configs, opt)
 
     -- do build
     local buildir = _get_buildir(opt)
-    ninja.build(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+    local targets = table.wrap(opt.target)
+    ninja.build(package, targets, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- install package
@@ -136,5 +137,6 @@ function install(package, configs, opt)
 
     -- do build and install
     local buildir = _get_buildir(opt)
-    ninja.install(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+    local targets = table.wrap(opt.target)
+    ninja.install(package, targets, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
 end
