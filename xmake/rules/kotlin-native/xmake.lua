@@ -20,9 +20,6 @@
 
 rule("kotlin-native.build")
     set_sourcekinds("kc")
-    on_load(function (target)
-        -- TODO
-    end)
     on_build("build.target")
 
 rule("kotlin-native")
