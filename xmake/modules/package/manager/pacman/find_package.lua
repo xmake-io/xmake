@@ -48,10 +48,11 @@ function _find_package_from_list(list, name, pacman, opt)
 
     -- iterate over each file path inside the pacman package
     local result = {}
+    local msystem_include = msystem and "/" .. msystem .. "/include/" or ""
     for _, line in ipairs(list:split('\n', {plain = true})) do -- on msys cygpath should be used to convert local path to windows path
         line = line:trim():split('%s+')[2]
         if line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
-            if not line:startswith("/usr/include/") then
+            if not line:startswith("/usr/include/") and not line:startswith(msystem_include) then
                 result.includedirs = result.includedirs or {}
                 local hpath = line
                 if is_subhost("msys") and opt.plat == "mingw" then
