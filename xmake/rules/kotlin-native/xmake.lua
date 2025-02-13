@@ -20,6 +20,11 @@
 
 rule("kotlin-native.build")
     set_sourcekinds("kc")
+    on_load(function (target)
+        if target:is_static() then
+            target:add("kcflags", {"-produce", "static"}, {force = true})
+        end
+    end)
     on_build("build.target")
 
 rule("kotlin-native")
