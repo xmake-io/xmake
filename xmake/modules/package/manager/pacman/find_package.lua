@@ -52,14 +52,16 @@ function _find_package_from_list(list, name, pacman, opt)
         line = line:trim():split('%s+')[2]
         if line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
             if not line:startswith("/usr/include/") then
-                result.includedirs = result.includedirs or {}
-                local hpath = line
-                if is_subhost("msys") and opt.plat == "mingw" then
-                    hpath = path.join(pathtomsys, line)
-                    local basehpath = path.join(pathtomsys, msystem .. "/include")
-                    table.insert(result.includedirs, basehpath)
+                if not (msystem and line:startswith("/" .. msystem .. "/include/")) then
+                    result.includedirs = result.includedirs or {}
+                    local hpath = line
+                    if is_subhost("msys") and opt.plat == "mingw" then
+                        hpath = path.join(pathtomsys, line)
+                        local basehpath = path.join(pathtomsys, msystem .. "/include")
+                        table.insert(result.includedirs, basehpath)
+                    end
+                    table.insert(result.includedirs, path.directory(hpath))
                 end
-                table.insert(result.includedirs, path.directory(hpath))
             end
         -- remove lib and .a, .dll.a and .so to have the links
         elseif line:endswith(".dll.a") then -- only for mingw
