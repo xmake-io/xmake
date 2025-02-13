@@ -19,7 +19,7 @@
 --
 
 language("kotlin")
-    add_rules("kotlin")
+    add_rules("kotlin-native")
     set_sourcekinds {kc = ".kt"}
     set_sourceflags {kc = "kcflags"}
     set_targetkinds {binary = "kcld", static = "kcar", shared = "kcsh"}
