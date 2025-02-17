@@ -57,5 +57,43 @@ toolchain("kotlin-native")
     end)
 
     on_load(function (toolchain)
-        -- TODO
+        import("private.core.base.is_cross")
+
+        -- kotlinc-native -list-targets
+        local target_plat = toolchain:plat()
+        local target_arch = toolchain:arch()
+        if target_plat and target_arch and is_cross(target_plat, target_arch) then
+            if target_plat == "macosx" then
+                target_plat = "macos"
+            elseif target_plat == "iphoneos" then
+                target_plat = "ios"
+                local simulator = toolchain:config("appledev") == "simulator"
+                if simulator then
+                    target_plat = target_plat .. "_simulator"
+                end
+            elseif target_plat == "appletvos" then
+                target_plat = "tvos"
+                local simulator = toolchain:config("appledev") == "simulator"
+                if simulator then
+                    target_plat = target_plat .. "_simulator"
+                end
+            elseif target_plat == "harmony" then
+                -- we need to port kotlin-native source code to add ohos_arm64 target support
+                target_plat = "ohos"
+            end
+            if target_arch == "x86_64" then
+                target_arch = "x64"
+            elseif target_arch == "i386" then
+                target_arch = "x86"
+            elseif target_arch == "arm64-v8a" then
+                target_arch = "arm64"
+            elseif target_arch == "armeabi-v7a" then
+                target_arch = "arm32"
+            end
+            local target = target_plat .. "_" .. target_arch
+            toolchain:add("kcflags", {"-target", target})
+        else
+            toolchain:set("kcshflags", "")
+            toolchain:set("kcldflags", "")
+        end
     end)
