@@ -30,7 +30,7 @@ function _find_clang_cl(vcvars)
     if pathenv then
         paths = path.splitenv(pathenv)
     end
-    return find_tool("clang-cl.exe", {version = true, force = true, paths = paths, envs = vcvars})
+    return find_tool("clang-cl", {version = true, force = true, paths = paths, envs = vcvars})
 end
 
 -- attempt to check vs environment
