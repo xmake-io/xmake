@@ -23,10 +23,11 @@ toolchain("kotlin-native")
     set_homepage("https://kotlinlang.org")
     set_description("The Kotlin Programming Language Compiler. ")
 
-    set_toolset("kc",   "$(env KC)", "kotlinc-native")
-    set_toolset("kcld", "$(env KC)", "kotlinc-native")
-    set_toolset("kcsh", "$(env KC)", "kotlinc-native")
-    set_toolset("kcar", "$(env KC)", "kotlinc-native")
+    local suffix = is_host("windows") and ".bat" or ""
+    set_toolset("kc",   "$(env KC)", "kotlinc-native" .. suffix)
+    set_toolset("kcld", "$(env KC)", "kotlinc-native" .. suffix)
+    set_toolset("kcsh", "$(env KC)", "kotlinc-native" .. suffix)
+    set_toolset("kcar", "$(env KC)", "kotlinc-native" .. suffix)
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
