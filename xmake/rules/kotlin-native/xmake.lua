@@ -27,7 +27,7 @@ rule("kotlin-native.build")
             target:add("kcflags", "-opt-in=kotlin.experimental.ExperimentalNativeApi", {force = true})
             if target:is_plat("macosx") then
                 target:add("frameworks", "Foundation", "CoreFoundation", {interface = true})
-            elseif target:is_plat("windows", "mingw") then
+            elseif target:is_plat("mingw") then
                 target:add("syslinks", "pthread", {interface = true})
             end
         elseif target:is_shared() then
