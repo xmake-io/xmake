@@ -24,11 +24,13 @@ rule("kotlin-native.build")
         if target:is_static() then
             target:add("arflags", {"-produce", "static"}, {force = true})
             target:add("includedirs", target:targetdir(), {interface = true})
+            target:add("kcflags", "-opt-in=kotlin.experimental.ExperimentalNativeApi", {force = true})
             if target:is_plat("macosx") then
                 target:add("frameworks", "Foundation", "CoreFoundation", {interface = true})
             end
         elseif target:is_shared() then
             target:add("shflags", {"-produce", "dynamic"}, {force = true})
+            target:add("kcflags", "-opt-in=kotlin.experimental.ExperimentalNativeApi", {force = true})
             target:add("includedirs", target:targetdir(), {interface = true})
         end
         target:set("policy", "build.fence", true)
