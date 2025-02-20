@@ -40,7 +40,13 @@ function main(opt)
     opt.check   = opt.check or "-version"
     opt.command = opt.command or "-version"
 
-    local program = find_program(opt.program or ("kotlinc-native" .. (is_host("windows") and ".bat" or "")), opt)
+    local program = opt.program or "kotlinc-native"
+    if is_host("windows") then
+        program = program .. ".bat"
+    elseif is_host("linux") then
+        opt.shell = true
+    end
+    program = find_program(program, opt)
     local version = nil
     if program and opt and opt.version then
         version = find_programver(program, opt)

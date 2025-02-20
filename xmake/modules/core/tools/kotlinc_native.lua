@@ -29,14 +29,15 @@ function init(self)
 end
 
 -- make the build arguments list
-function buildargv(self, sourcefiles, targetkind, targetfile, flags)
+function buildargv(self, sourcefiles, targetkind, targetfile, flags, opt)
     return self:program(), table.join(flags, sourcefiles, "-o", targetfile)
 end
 
 -- build the target file
-function build(self, sourcefiles, targetkind, targetfile, flags)
+function build(self, sourcefiles, targetkind, targetfile, flags, opt)
     os.mkdir(path.directory(targetfile))
-    os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags))
+    local program, argv = buildargv(self, sourcefiles, targetkind, targetfile, flags)
+    os.runv(program, argv, {envs = self:runenvs()})
     if targetkind == "binary" then
         local targetfile_real = targetfile .. (self:is_plat("windows") and ".exe" or ".kexe")
         if os.isfile(targetfile_real) then
