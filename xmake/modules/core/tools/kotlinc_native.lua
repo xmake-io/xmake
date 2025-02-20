@@ -49,6 +49,23 @@ function build(self, sourcefiles, targetkind, targetfile, flags)
                 end
             end
         end
+    elseif targetkind == "static" and self:is_plat("windows", "mingw") then
+        local headerfile_real = targetfile .. "_api.h"
+        local headerfile = path.join(path.directory(targetfile), "lib" .. path.basename(targetfile) .. "_api.h")
+        if os.isfile(headerfile_real) then
+            os.mv(headerfile_real, headerfile)
+        end
+
+        local targetfile_real = path.join(path.directory(targetfile), "lib" .. path.basename(targetfile) .. ".lib.a")
+        if os.isfile(targetfile_real) then
+            os.mv(targetfile_real, targetfile)
+        end
+    elseif targetkind == "shared" and self:is_plat("windows", "mingw") then
+        local headerfile_real = path.join(path.directory(targetfile), path.basename(targetfile) .. "_api.h")
+        local headerfile = path.join(path.directory(targetfile), "lib" .. path.basename(targetfile) .. "_api.h")
+        if os.isfile(headerfile_real) then
+            os.mv(headerfile_real, headerfile)
+        end
     end
 end
 
