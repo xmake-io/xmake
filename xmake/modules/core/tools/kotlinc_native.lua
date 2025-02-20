@@ -23,6 +23,8 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
+import("core.tool.toolchain")
+import("lib.detect.find_tool")
 
 -- init it
 function init(self)
@@ -67,6 +69,18 @@ function build(self, sourcefiles, targetkind, targetfile, flags, opt)
         if os.isfile(headerfile_real) then
             os.mv(headerfile_real, headerfile)
         end
+        local deffile = path.join(path.directory(targetfile), path.basename(targetfile) .. ".def")
+        local libfile = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
+        if os.isfile(deffile) then
+            local msvc = toolchain.load("msvc", {plat = self:plat(), arch = self:arch()})
+            if msvc:check() then
+                local lib = find_tool("lib", {envs = msvc:runenvs()})
+                if lib then
+                    os.runv(lib.program, {"/def:" .. deffile, "/out:" .. libfile}, {envs = msvc:runenvs()})
+                end
+            end
+        end
     end
 end
+
 
