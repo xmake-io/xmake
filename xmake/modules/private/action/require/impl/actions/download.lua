@@ -222,9 +222,9 @@ function _download(package, url, sourcedir, opt)
     local extension = archive.extension(packagefile)
     local errors
     local ok = try {
-        function() 
+        function()
             archive.extract(packagefile, sourcedir_tmp, {excludes = opt.url_excludes})
-            return true 
+            return true
         end,
         catch {
             function (errs)
