@@ -30,9 +30,7 @@ function _add_lto_optimization(target, sourcekind)
     local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
     if cc == "cl" then
         target:add(cflag, "-GL")
-    elseif cc == "clang_cl" then
-        target:add(cflag, "/clang:-flto=thin")
-    elseif cc == "clang" or cc == "clangxx" then
+    elseif cc == "clang" or cc == "clangxx" or cc == "clang_cl" then
         target:add(cflag, "-flto=thin")
     elseif cc == "gcc" or cc == "gxx" then
         target:add(cflag, "-flto")
