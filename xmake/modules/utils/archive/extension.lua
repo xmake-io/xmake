@@ -27,9 +27,9 @@ function main(archivefile)
     local filename = path.filename(archivefile)
     local extensionset = hashset.from({
         ".xmz", -- xmake compression format
-        ".zip", ".7z", ".gz", ".xz", ".tgz",
+        ".zip", ".7z", ".gz", ".xz", ".zst", ".tgz",
         ".bz2", ".tar", ".tar.gz", ".tar.xz",
-        ".tar.bz2", ".tar.Z"})
+        ".tar.zst", ".tar.bz2", ".tar.Z"})
     local i = filename:lastof(".", true)
     if i then
         local p = filename:sub(1, i - 1):lastof(".", true)
