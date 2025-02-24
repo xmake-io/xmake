@@ -2389,7 +2389,7 @@ function _instance:_generate_lto_configs(sourcekind)
         local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
         if cc == "cl" then
             configs[cflag] = "-GL"
-        elseif cc == "clang" or cc == "clangxx" then
+        elseif cc == "clang" or cc == "clangxx" or cc == "clang_cl" then
             configs[cflag] = "-flto=thin"
         elseif cc == "gcc" or cc == "gxx" then
             configs[cflag] = "-flto"
