@@ -101,11 +101,11 @@ end
 function _extract_using_7z(archivefile, outputdir, extension, opt)
 
     -- find 7z
-    local 7z = find_tool("7z")
-    if not 7z then
+    local z7 = find_tool("7z")
+    if not z7 then
         return false
     end
-    local program = 7z.program
+    local program = z7.program
 
     -- p7zip cannot extract other archive format on msys/cygwin, but it can extract .tgz
     -- https://github.com/xmake-io/xmake/issues/1575#issuecomment-898205462
