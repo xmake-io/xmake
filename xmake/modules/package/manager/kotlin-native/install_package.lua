@@ -33,20 +33,20 @@ import("core.base.semver")
 function _select_package_version(name, opt)
     local installdir = opt.installdir
     local require_version = opt.require_version
-    local manifest_file = path.join(installdir, "maven-metadata.xml")
+    local metadata_file = path.join(installdir, "maven-metadata.xml")
     for _, repository in ipairs(opt.repositories) do
-        local manifest_url = ("%s/%s-%s/maven-metadata.xml"):format(repository, (name:gsub("%.", "/"):gsub(":", "/")), opt.triplet)
+        local metadata_url = ("%s/%s-%s/maven-metadata.xml"):format(repository, (name:gsub("%.", "/"):gsub(":", "/")), opt.triplet)
         local ok = try {
             function()
-                http.download(manifest_url, manifest_file, {
+                http.download(metadata_url, metadata_file, {
                     insecure = global.get("insecure-ssl")})
                 return true
             end
         }
-        if ok and os.isfile(manifest_file) then
-            local manifest = io.readfile(manifest_file)
+        if ok and os.isfile(metadata_file) then
+            local metadata = io.readfile(metadata_file)
             local versions = {}
-            for _, line in ipairs(manifest:split("\n")) do
+            for _, line in ipairs(metadata:split("\n")) do
                 local v = line:match("<version>(.*)</version>")
                 if v then
                     table.insert(versions, v)
@@ -69,6 +69,13 @@ function _install_package(name, opt)
     local library_url = ("%s/%s-%s/%s-%s.klib"):format(opt.repository, (name:gsub("%.", "/"):gsub(":", "/")), opt.triplet, basename, opt.version)
     http.download(library_url, library_file, {
         insecure = global.get("insecure-ssl")})
+
+    local manifest_file = path.join(installdir, "installed_manifest.txt")
+    io.save(manifest_file, {
+        links = basename,
+        linkdirs = path.directory(library_file),
+        libfiles = library_file,
+        version = opt.version})
 end
 
 -- install package

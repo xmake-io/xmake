@@ -35,17 +35,8 @@ function main(name, opt)
     opt = opt or {}
     local result = {}
     local installdir = assert(opt.installdir, "installdir not found!")
-    local libraries = os.files(path.join(installdir, "lib", "*.klib"))
-    for _, libraryfile in ipairs(libraries) do
-        result.libfiles = result.libfiles or {}
-        result.links = result.links or {}
-        result.linkdirs = result.linkdirs or {}
-        table.insert(result.links, path.basename(libraryfile))
-        table.insert(result.linkdirs, path.directory(libraryfile))
-        table.insert(result.libfiles, libraryfile)
-    end
-    if result.links then
-    print(result)
-        return result
+    local manifest_file = path.join(installdir, "installed_manifest.txt")
+    if os.isfile(manifest_file) then
+        return io.load(manifest_file)
     end
 end
