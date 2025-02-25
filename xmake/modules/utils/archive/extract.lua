@@ -22,13 +22,6 @@
 import("core.base.option")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
-import("detect.tools.find_xz")
-import("detect.tools.find_zstd")
-import("detect.tools.find_7z")
-import("detect.tools.find_tar")
-import("detect.tools.find_gzip")
-import("detect.tools.find_unzip")
-import("detect.tools.find_bzip2")
 import("extract_xmz")
 import("extension", {alias = "get_archive_extension"})
 
@@ -48,10 +41,11 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
     end
 
     -- find tar
-    local program = find_tar()
-    if not program then
+    local tar = find_tool("tar")
+    if not tar then
         return false
     end
+    local program = tar.program
 
     -- init argv
     local argv = {}
@@ -107,10 +101,11 @@ end
 function _extract_using_7z(archivefile, outputdir, extension, opt)
 
     -- find 7z
-    local program = find_7z()
-    if not program then
+    local 7z = find_tool("7z")
+    if not 7z then
         return false
     end
+    local program = 7z.program
 
     -- p7zip cannot extract other archive format on msys/cygwin, but it can extract .tgz
     -- https://github.com/xmake-io/xmake/issues/1575#issuecomment-898205462
@@ -180,10 +175,11 @@ end
 function _extract_using_gzip(archivefile, outputdir, extension, opt)
 
     -- find gzip
-    local program = find_gzip()
-    if not program then
+    local gzip = find_tool("gzip")
+    if not gzip then
         return false
     end
+    local program = gzip.program
 
     -- extract to *.tar file first
     local outputdir_old = nil
@@ -223,10 +219,11 @@ end
 function _extract_using_xz(archivefile, outputdir, extension, opt)
 
     -- find xz
-    local program = find_xz()
-    if not program then
+    local xz = find_tool("xz")
+    if not xz then
         return false
     end
+    local program = xz.program
 
     -- extract to *.tar file first
     local outputdir_old = nil
@@ -266,10 +263,11 @@ end
 function _extract_using_zstd(archivefile, outputdir, extension, opt)
 
     -- find zstd
-    local program = find_zstd()
-    if not program then
+    local zstd = find_tool("zstd")
+    if not zstd then
         return false
     end
+    local program = zstd.program
 
     -- extract to *.tar file first
     local outputdir_old = nil
@@ -309,10 +307,11 @@ end
 function _extract_using_unzip(archivefile, outputdir, extension, opt)
 
     -- find unzip
-    local program = find_unzip()
-    if not program then
+    local unzip = find_tool("unzip")
+    if not unzip then
         return false
     end
+    local program = unzip.program
 
     -- extract to *.tar file first
     local outputdir_old = nil
@@ -390,10 +389,11 @@ end
 function _extract_using_bzip2(archivefile, outputdir, extension, opt)
 
     -- find bzip2
-    local program = find_bzip2()
-    if not program then
+    local bzip2 = find_tool("bzip2")
+    if not bzip2 then
         return false
     end
+    local program = bzip2.program
 
     -- extract to *.tar file first
     local outputdir_old = nil
