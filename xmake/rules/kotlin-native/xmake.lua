@@ -21,6 +21,7 @@
 rule("kotlin-native.build")
     set_sourcekinds("kc")
     on_load(function (target)
+        target:add("kcflags", "-opt-in=kotlinx.cinterop.ExperimentalForeignApi", {force = true})
         if target:is_static() then
             target:add("arflags", {"-produce", "static"}, {force = true})
             target:add("includedirs", target:targetdir(), {interface = true})

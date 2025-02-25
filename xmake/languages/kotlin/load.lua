@@ -26,25 +26,26 @@ function _get_apis()
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
     ,   "target.add_shflags"
-    ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
+    ,   "target.add_links"
         -- option.add_xxx
     ,   "option.add_kcflags"
     ,   "option.add_ldflags"
     ,   "option.add_arflags"
     ,   "option.add_shflags"
-    ,   "option.add_rpathdirs"
+    ,   "option.add_links"
         -- toolchain.add_xxx
     ,   "toolchain.add_kcflags"
     ,   "toolchain.add_ldflags"
     ,   "toolchain.add_arflags"
-    ,   "toolchain.add_shflags"
-    ,   "toolchain.add_rpathdirs"
+    ,   "toolchain.add_links"
     }
     apis.paths = {
         -- target.add_xxx
         "target.add_linkdirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_linkdirs"
     }
     return apis
 end

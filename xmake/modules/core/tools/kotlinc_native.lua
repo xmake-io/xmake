@@ -30,6 +30,11 @@ import("lib.detect.find_tool")
 function init(self)
 end
 
+-- make the link flag
+function nf_link(self, lib)
+    return {"-l", lib}
+end
+
 -- make the build arguments list
 function buildargv(self, sourcefiles, targetkind, targetfile, flags, opt)
     return self:program(), table.join(flags, sourcefiles, "-o", targetfile)
