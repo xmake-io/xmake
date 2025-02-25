@@ -6,7 +6,7 @@
 
 * [#6137](https://github.com/xmake-io/xmake/issues/6137): IDE integration
 * [#6138](https://github.com/xmake-io/xmake/issues/6138): Use libxmake to build binary with xmake lua apis
-* [#6154](https://github.com/xmake-io/xmake/issues/6154): Add kotlin language and kotlin-native compiler support
+* [#6154](https://github.com/xmake-io/xmake/issues/6154): Add kotlin language and kotlin-native compiler and packages support
 
 ## v2.9.8
 
@@ -1957,7 +1957,7 @@
 
 * [#6137](https://github.com/xmake-io/xmake/issues/6137): IDE 整合
 * [#6138](https://github.com/xmake-io/xmake/issues/6138): 使用 libxmake/xmake APIs 去构建二进制
-* [#6154](https://github.com/xmake-io/xmake/issues/6154): 添加 kotlin native 构建支持
+* [#6154](https://github.com/xmake-io/xmake/issues/6154): 添加 kotlin native 构建支持和包依赖集成支持
 
 ## v2.9.8
 
