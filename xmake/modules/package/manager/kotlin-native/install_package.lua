@@ -65,15 +65,14 @@ end
 function _install_package(name, opt)
     local installdir = opt.installdir
     local basename = name:split(":")[2] .. "-" .. opt.triplet
-    local library_file = path.join(installdir, "lib", basename .. ".klib")
-    local library_url = ("%s/%s-%s/%s-%s.klib"):format(opt.repository, (name:gsub("%.", "/"):gsub(":", "/")), opt.triplet, basename, opt.version)
+    local library_file = path.join(installdir, "klib", "platform", opt.plat .. "_" .. opt.arch, basename .. ".klib")
+    local library_url = ("%s/%s-%s/%s/%s-%s.klib"):format(opt.repository, (name:gsub("%.", "/"):gsub(":", "/")), opt.triplet, opt.version, basename, opt.version)
     http.download(library_url, library_file, {
         insecure = global.get("insecure-ssl")})
 
     local manifest_file = path.join(installdir, "installed_manifest.txt")
     io.save(manifest_file, {
-        links = basename,
-        linkdirs = path.directory(library_file),
+        links = library_file,
         libfiles = library_file,
         version = opt.version})
 end
@@ -107,6 +106,8 @@ function main(name, opt)
 
     -- do install
     _install_package(name, {
+        plat = plat,
+        arch = arch,
         triplet = triplet,
         installdir = installdir,
         version = version,
