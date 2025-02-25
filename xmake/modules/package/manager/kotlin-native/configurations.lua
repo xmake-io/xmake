@@ -34,7 +34,7 @@ end
 -- get platform for kotlin-native
 function plat(plat)
     local plats = {
-        macosx          = "macOS",
+        macosx          = "macos",
         iphoneos        = "ios",
         appletvos       = "tvos",
         windows         = "mingw"

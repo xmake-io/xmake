@@ -26,14 +26,16 @@ import("core.base.semver")
 import("lib.detect.find_tool")
 import("package.manager.kotlin-native.configurations")
 import("net.http")
+import("core.base.semver")
 
 -- select package version
 -- e.g. https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-iosarm64/maven-metadata.xml
 function _select_package_version(name, opt)
     local installdir = opt.installdir
+    local require_version = opt.require_version
     local manifest_file = path.join(installdir, "maven-metadata.xml")
     for _, repository in ipairs(opt.repositories) do
-        local manifest_url = ("%s/%s-%s/maven-metadata.xml", repository, (name:gsub("%.", "/"):gsub(":", "/")), opt.triplet)
+        local manifest_url = ("%s/%s-%s/maven-metadata.xml"):format(repository, (name:gsub("%.", "/"):gsub(":", "/")), opt.triplet)
         local ok = try {
             function()
                 http.download(manifest_url, manifest_file, {
@@ -43,9 +45,30 @@ function _select_package_version(name, opt)
         }
         if ok and os.isfile(manifest_file) then
             local manifest = io.readfile(manifest_file)
-            print(manifest)
+            local versions = {}
+            for _, line in ipairs(manifest:split("\n")) do
+                local v = line:match("<version>(.*)</version>")
+                if v then
+                    table.insert(versions, v)
+                end
+            end
+            local version = semver.select(require_version, versions)
+            if version then
+                return version, repository
+            end
         end
     end
+end
+
+-- install package
+-- e.g. https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-iosarm64/1.8.0/kotlinx-serialization-json-iosarm64-1.8.0.klib
+function _install_package(name, opt)
+    local installdir = opt.installdir
+    local basename = name:split(":")[2] .. "-" .. opt.triplet
+    local library_file = path.join(installdir, "lib", basename .. ".klib")
+    local library_url = ("%s/%s-%s/%s-%s.klib"):format(opt.repository, (name:gsub("%.", "/"):gsub(":", "/")), opt.triplet, basename, opt.version)
+    http.download(library_url, library_file, {
+        insecure = global.get("insecure-ssl")})
 end
 
 -- install package
@@ -56,7 +79,7 @@ end
 function main(name, opt)
     opt = opt or {}
     local configs = opt.configs or {}
-    local repositories = opt.repositories
+    local repositories = configs.repositories
 
     -- init triplet
     local arch = opt.arch
@@ -68,17 +91,17 @@ function main(name, opt)
     -- select version
     local installdir = assert(opt.installdir, "installdir not found!")
     local require_version = opt.require_version
-    if require_version == "latest" then
-        require_version = nil
-    end
     local version, repository = _select_package_version(name, {
         triplet = triplet,
-        version = require_version,
         installdir = installdir,
+        require_version = require_version,
         repositories = repositories})
     assert(version and repository, "package(%s): %s not found for %s!", name, require_version, triplet)
 
-
-
-
+    -- do install
+    _install_package(name, {
+        triplet = triplet,
+        installdir = installdir,
+        version = version,
+        repository = repository})
 end
