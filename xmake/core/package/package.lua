@@ -1966,6 +1966,9 @@ function _instance:find_tool(name, opt)
                                   bindirs = self:get("bindirs"),
                                   version = true, -- we alway check version
                                   require_version = opt.require_version,
+                                  check = opt.check,
+                                  command = opt.command,
+                                  parse = opt.parse,
                                   norun = opt.norun,
                                   system = opt.system,
                                   force = opt.force})
