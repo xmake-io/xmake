@@ -34,6 +34,12 @@ function _concat_packages(a, b)
                 -- we need to ensure link orders when removing repeat values
                 v = table.reverse_unique(v)
             end
+        elseif k == "static" or k == "shared" then
+            v = table.unwrap(table.unique(v))
+            if type(v) == "table" then
+                -- conflict, {true, false}
+                v = true
+            end
         else
             v = table.unique(v)
         end
