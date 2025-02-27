@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_vstudio")
+import("core.project.project")
 
 -- add the given vs environment
 function _add_vsenv(toolchain, name, curenvs)
@@ -59,9 +60,15 @@ function main(toolchain)
     else
         toolchain:set("toolset", "as",  "ml.exe")
     end
-    toolchain:set("toolset", "ld",  "link.exe")
-    toolchain:set("toolset", "sh",  "link.exe")
-    toolchain:set("toolset", "ar",  "link.exe")
+    if project.policy("build.optimization.lto") then
+        toolchain:set("toolset", "ld",  "lld-link")
+        toolchain:set("toolset", "sh",  "lld-link")
+        toolchain:set("toolset", "ar",  "llvm-ar")
+    else
+        toolchain:set("toolset", "ld",  "link.exe")
+        toolchain:set("toolset", "sh",  "link.exe")
+        toolchain:set("toolset", "ar",  "link.exe")
+    end
 
     -- add vs environments
     local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
@@ -92,7 +99,6 @@ function main(toolchain)
     if target then
         toolchain:add("cxflags", "--target=" .. target)
         toolchain:add("mxflags", "--target=" .. target)
-        toolchain:add("asflags", "--target=" .. target)
     end
 end
 
