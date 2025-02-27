@@ -92,7 +92,6 @@ function main(toolchain)
     if target then
         toolchain:add("cxflags", "--target=" .. target)
         toolchain:add("mxflags", "--target=" .. target)
-        toolchain:add("asflags", "--target=" .. target)
     end
 end
 
