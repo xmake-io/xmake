@@ -275,7 +275,7 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
 
     -- run genvcvars.bat
     local outdata, errdata = try {function () return os.iorun(genvcvars_bat) end}
-    if errdata and option.get("verbose") and option.get("diagnosis") then
+    if errdata and #errdata > 0 and option.get("verbose") and option.get("diagnosis") then
         cprint("${color.warning}checkinfo: ${clear dim}get vcvars error: %s", errdata)
     end
     if not outdata then
