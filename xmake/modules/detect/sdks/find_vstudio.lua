@@ -234,16 +234,16 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     local host_arch = os.arch()
     if is_vsdevcmd then
         if vsver and tonumber(vsver) >= 16 then
-            if opt.vcvars_ver then
-                file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, host_arch, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+            if opt.toolset then
+                file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, host_arch, arch, opt.sdkver or "", opt.toolset or opt.vcvars_ver or "")
             else
                 file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s > nul", vcvarsall, host_arch, arch, opt.sdkver and opt.sdkver or "")
             end
         else
-            if opt.vcvars_ver then
-                file:print("call \"%s\" -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+            if opt.toolset then
+                file:print("call \"%s\" -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver or "", opt.toolset or opt.vcvars_ver or "")
             else
-                file:print("call \"%s\" -arch=%s -winsdk=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+                file:print("call \"%s\" -arch=%s -winsdk=%s > nul", vcvarsall, arch, opt.sdkver or "")
             end
         end
     else
@@ -254,10 +254,10 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
             end
             arch = host_arch .. "_" .. arch
         end
-        if opt.vcvars_ver then
-            file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+        if opt.toolset then
+            file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver or "", opt.toolset or opt.vcvars_ver or "")
         else
-            file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+            file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver or "")
         end
     end
     for idx, var in ipairs(get_vcvars()) do
@@ -578,7 +578,7 @@ end
 
 -- find vstudio environment
 --
--- @param opt   the options, e.g. {vcvars_ver = 14.0, sdkver = "10.0.15063.0"}
+-- @param opt   the options, e.g. {toolset = 14.0, sdkver = "10.0.15063.0"}
 --
 -- @return      { 2008 = {version = "9.0", vcvarsall = {x86 = {path = .., lib = .., include = ..}}}
 --              , 2017 = {version = "15.0", vcvarsall = {x64 = {path = .., lib = ..}}}}
@@ -592,8 +592,8 @@ function main(opt)
     end
 
     local key = "vstudio"
-    if opt.vcvars_ver then
-        key = key .. opt.vcvars_ver
+    if opt.toolset then
+        key = key .. opt.toolset
     end
     if opt.sdkver then
         key = key .. opt.sdkver
