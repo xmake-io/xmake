@@ -211,7 +211,7 @@ function find_build_tools(opt)
 end
 
 -- load vcvarsall environment variables
-function _load_vcvarsall(vcvarsall, vsver, arch, opt)
+function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
     opt = opt or {}
 
     -- is VsDevCmd.bat?
@@ -344,6 +344,17 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     variables.include = nil
     variables.libpath = nil
     return variables
+end
+
+function _load_vcvarsall(vcvarsall, vsver, arch, opt)
+    opt = opt or {}
+    local vs_toolset = opt.toolset or opt.vcvars_ver
+    local result = _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
+    if result and not vs_toolset then
+        -- if no vs toolset version is specified, we default to the latest version.
+        print(result)
+    end
+    return result
 end
 
 -- find vstudio for msvc
