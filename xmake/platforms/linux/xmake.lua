@@ -21,7 +21,7 @@
 platform("linux")
     set_os("linux")
     set_hosts("macosx", "linux", "windows", "bsd")
-    set_archs("i386", "x86_64", "armv7", "armv7s", "arm64-v8a", "mips", "mips64", "mipsel", "mips64el", "loong64")
+    set_archs("i386", "x86_64", "armv7", "armv7s", "arm64", "mips", "mips64", "mipsel", "mips64el", "loong64")
 
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
