@@ -49,7 +49,7 @@ function _check_vsenv(toolchain)
     -- find vstudio
     local vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
     local vs_sdkver  = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
-    local vstudio = find_vstudio({vcvars_ver = vs_toolset, sdkver = vs_sdkver})
+    local vstudio = find_vstudio({toolset = vs_toolset, sdkver = vs_sdkver})
     if vstudio then
 
         -- make order vsver

@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
@@ -113,9 +114,16 @@ function find_build_tools(opt)
     if vs_toolset and os.isdir(path.join(sdkdir, "VC/Tools/MSVC", vs_toolset)) then
         VCToolsVersion = vs_toolset
     else
-        local dir = find_directory("14*", path.join(sdkdir, "VC/Tools/MSVC"))
-        if dir then
-            VCToolsVersion = path.filename(dir)
+        -- https://github.com/xmake-io/xmake/issues/6159
+        local latest_toolset
+        for _, dir in ipairs(os.dirs(path.join(sdkdir, "VC/Tools/MSVC/*"))) do
+            local toolset = path.filename(dir)
+            if not latest_toolset or semver.compare(toolset, latest_toolset) > 0 then
+                latest_toolset = toolset
+            end
+        end
+        if latest_toolset then
+            VCToolsVersion = latest_toolset
         else
             return
         end
@@ -211,7 +219,7 @@ function find_build_tools(opt)
 end
 
 -- load vcvarsall environment variables
-function _load_vcvarsall(vcvarsall, vsver, arch, opt)
+function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
     opt = opt or {}
 
     -- is VsDevCmd.bat?
@@ -234,16 +242,16 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     local host_arch = os.arch()
     if is_vsdevcmd then
         if vsver and tonumber(vsver) >= 16 then
-            if opt.vcvars_ver then
-                file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, host_arch, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+            if opt.toolset then
+                file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, host_arch, arch, opt.sdkver or "", opt.toolset or "")
             else
-                file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s > nul", vcvarsall, host_arch, arch, opt.sdkver and opt.sdkver or "")
+                file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s > nul", vcvarsall, host_arch, arch, opt.sdkver or "")
             end
         else
-            if opt.vcvars_ver then
-                file:print("call \"%s\" -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+            if opt.toolset then
+                file:print("call \"%s\" -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver or "", opt.toolset or "")
             else
-                file:print("call \"%s\" -arch=%s -winsdk=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+                file:print("call \"%s\" -arch=%s -winsdk=%s > nul", vcvarsall, arch, opt.sdkver or "")
             end
         end
     else
@@ -254,10 +262,10 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
             end
             arch = host_arch .. "_" .. arch
         end
-        if opt.vcvars_ver then
-            file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+        if opt.toolset then
+            file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver or "", opt.toolset or "")
         else
-            file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+            file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver or "")
         end
     end
     for idx, var in ipairs(get_vcvars()) do
@@ -267,7 +275,7 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
 
     -- run genvcvars.bat
     local outdata, errdata = try {function () return os.iorun(genvcvars_bat) end}
-    if errdata and option.get("verbose") and option.get("diagnosis") then
+    if errdata and #errdata > 0 and option.get("verbose") and option.get("diagnosis") then
         cprint("${color.warning}checkinfo: ${clear dim}get vcvars error: %s", errdata)
     end
     if not outdata then
@@ -344,6 +352,44 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     variables.include = nil
     variables.libpath = nil
     return variables
+end
+
+-- strip toolset version, e.g. 14.16.27023 -> 14.16
+function _strip_toolset_ver(vs_toolset)
+    local version = semver.new(vs_toolset)
+    if version then
+        return version:major() .. "." .. version:minor()
+    end
+    return vs_toolset
+end
+
+function _load_vcvarsall(vcvarsall, vsver, arch, opt)
+    opt = opt or {}
+    local vs_toolset = opt.toolset or opt.vcvars_ver
+    if vs_toolset then
+        opt.toolset = _strip_toolset_ver(vs_toolset)
+    end
+    local result = _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
+    if result and not vs_toolset then
+        -- if no vs toolset version is specified, we default to the latest version.
+        -- https://github.com/xmake-io/xmake/issues/6159
+        local latest_toolset
+        local VCToolsVersion = result.VCToolsVersion
+        local VCInstallDir = result.VCInstallDir
+        if VCToolsVersion and VCInstallDir then
+            for _, dir in ipairs(os.dirs(path.join(VCInstallDir, "Tools/MSVC/*"))) do
+                local toolset = path.filename(dir)
+                if not latest_toolset or semver.compare(toolset, latest_toolset) > 0 then
+                    latest_toolset = toolset
+                end
+            end
+        end
+        if latest_toolset and VCToolsVersion and semver.compare(latest_toolset, VCToolsVersion) > 0 then
+            opt.toolset = _strip_toolset_ver(latest_toolset)
+            result = _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
+        end
+    end
+    return result
 end
 
 -- find vstudio for msvc
@@ -578,7 +624,7 @@ end
 
 -- find vstudio environment
 --
--- @param opt   the options, e.g. {vcvars_ver = 14.0, sdkver = "10.0.15063.0"}
+-- @param opt   the options, e.g. {toolset = 14.0, sdkver = "10.0.15063.0"}
 --
 -- @return      { 2008 = {version = "9.0", vcvarsall = {x86 = {path = .., lib = .., include = ..}}}
 --              , 2017 = {version = "15.0", vcvarsall = {x64 = {path = .., lib = ..}}}}
@@ -592,8 +638,8 @@ function main(opt)
     end
 
     local key = "vstudio"
-    if opt.vcvars_ver then
-        key = key .. opt.vcvars_ver
+    if opt.toolset then
+        key = key .. opt.toolset
     end
     if opt.sdkver then
         key = key .. opt.sdkver
