@@ -58,9 +58,17 @@ function _add_lto_optimization(target, sourcekind)
         end
     end
 
-    if cc == "clang_cl" and ld == "link" then
-        wprint([[clang-cl + msvc link unsupported lto, please use `set_toolset("ld", "lld-link")`]])
-        target:set("toolset", "ld", "lld-link")
+    local program, ar = target:tool("ar")
+    if cc == "clang_cl" then
+        if ld == "link" then
+            wprint([[Unsupported toolset(%s) for lto, please use `set_toolset("ld", "lld-link")`]], ld)
+            target:set("toolset", "ld", "lld-link")
+            target:set("toolset", "sh", "lld-link")
+        end
+        if ar ~= "llvm-ar" and ar ~= "llvm_ar" then
+            wprint([[Unsupported toolset(%s) for lto, please use `set_toolset("ar", "llvm-ar")`]], ar)
+            target:set("toolset", "ar", "llvm-ar")
+        end
     end
 end
 

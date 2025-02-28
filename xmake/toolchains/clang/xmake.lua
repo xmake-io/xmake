@@ -56,6 +56,13 @@ toolchain("clang" .. suffix)
     end)
 
     on_load(function (toolchain)
+        import("core.project.project")
+
+        if project.policy("build.optimization.lto") then
+            toolchain:set("toolset", "ar",  "llvm-ar" .. suffix)
+            toolchain:set("toolset", "ranlib",  "llvm-ranlib" .. suffix)
+        end
+
         local march
         if toolchain:is_arch("x86_64", "x64") then
             march = "-m64"
