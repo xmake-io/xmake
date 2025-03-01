@@ -289,14 +289,11 @@ function get_stdmodules(target)
                 -- msstl std module file is not compatible with llvm <= 19
                 local toolchain = target:toolchain("clang") or target:toolchain("clang-cl")
                 local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
-                if msvc then
+                if msvc and msvc:check() then
                     local vcvars = msvc:config("vcvars")
                     if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                        modules = {}
-                
                         local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
                         assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
-                
                         return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
                     end
                 end
