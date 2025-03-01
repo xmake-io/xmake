@@ -29,7 +29,7 @@ function _compiler_support(target)
     local cachekey = tostring(target)
     local compiler_support = memcache():get2("compiler_support", cachekey)
     if compiler_support == nil then
-        if target:has_tool("cxx", "clang", "clangxx") then
+        if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
             compiler_support = import("clang.compiler_support", {anonymous = true})
         elseif target:has_tool("cxx", "gcc", "gxx") then
             compiler_support = import("gcc.compiler_support", {anonymous = true})
