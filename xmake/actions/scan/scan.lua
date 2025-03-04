@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki, Arthapz
--- @file        xmake.lua
+-- @file        scan.lua
 --
 
 import("core.base.option")
