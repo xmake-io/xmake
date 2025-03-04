@@ -190,6 +190,9 @@ function main()
     end
     task.run("config", {}, {disable_dump = true})
 
+    -- then scan it
+    task.run("scan", {}, {disable_dump = true})
+
     -- enter project directory
     local oldir = os.cd(project.directory())
 
