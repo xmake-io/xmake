@@ -20,7 +20,7 @@ end
 function main(t)
     if is_subhost("windows") then
         local clang = find_tool("clang", {version = true})
-        if clang and clang.version and semver.compare(clang.version, "19.0") >= 0 then
+        if clang and clang.version and semver.compare(clang.version, "20.0") >= 0 then
             -- clang don't support msstl std modules atm
             -- os.exec("xmake f --toolchain=clang -c --yes")
             -- _build()
