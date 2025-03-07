@@ -95,7 +95,12 @@ function _update()
     environment.enter()
 
     -- trace
-    printf("updating repositories .. ")
+    local name = option.get("name")
+    if name then
+        cprintf("updating repository ${bright}%s${clear} .. ", name)
+    else
+        printf("updating repositories .. ")
+    end
     if option.get("verbose") then
         print("")
     end
@@ -105,6 +110,14 @@ function _update()
 
         -- get all repositories (local first)
         local repos = table.join(repository.repositories(false), repository.repositories(true))
+        if name then
+            for _, repo in ipairs(repos) do
+                if repo:name() == name then
+                    repos = {repo}
+                    break
+                end
+            end
+        end
 
         -- pull all repositories
         local pulled = {}
