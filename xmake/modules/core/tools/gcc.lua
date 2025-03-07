@@ -602,9 +602,25 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     end
 end
 
--- has color diagnostics?
-function _has_color_diagnostics(self)
-    local colors_diagnostics = _g._HAS_COLOR_DIAGNOSTICS
+-- get `-MMD -MF depfile.d` flags, some old gcc does not support it at same time
+function _get_depfile_flags(self)
+    local depfile_flags = _g._DEPFILE_FLAGS
+    if depfile_flags == nil then
+        local nuldev = os.nuldev()
+        if self:name():startswith("cosmoc") then
+            nuldev = os.tmpfile()
+        end
+        if self:has_flags({"-MMD", "-MF", nuldev}, "cxflags", { flagskey = "-MMD -MF" }) then
+            depfile_flags = {"-MMD", "-MF"}
+        end
+        _g._DEPFILE_FLAGS = depfile_flags or false
+    end
+    return depfile_flags
+end
+
+-- get color diagnostics flag
+function _get_color_diagnostics_flag(self)
+    local colors_diagnostics = _g._COLOR_DIAGNOSTICS
     if colors_diagnostics == nil then
         if io.isatty() and (tty.has_color8() or tty.has_color256()) then
             local theme = colors.theme()
@@ -625,7 +641,7 @@ function _has_color_diagnostics(self)
             end
         end
         colors_diagnostics = colors_diagnostics or false
-        _g._HAS_COLOR_DIAGNOSTICS = colors_diagnostics
+        _g._COLOR_DIAGNOSTICS = colors_diagnostics
     end
     return colors_diagnostics
 end
@@ -908,19 +924,17 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     {
         function ()
 
-            -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
-            if depfile and _g._HAS_MMD_MF == nil then
-                _g._HAS_MMD_MF = self:has_flags({"-MMD", "-MF", os.nuldev()}, "cxflags", { flagskey = "-MMD -MF" }) or false
-            end
-
             -- generate includes file
             local compflags = flags
-            if depfile and _g._HAS_MMD_MF then
-                compflags = table.join(compflags, "-MMD", "-MF", depfile)
+            if depfile then
+                local depfile_flags = _get_depfile_flags(self)
+                if depfile_flags then
+                    compflags = table.join(compflags, depfile_flags, depfile)
+                end
             end
 
-            -- has color diagnostics? enable it
-            local colors_diagnostics = _has_color_diagnostics(self)
+            -- attempt to enable color diagnostics
+            local colors_diagnostics = _get_color_diagnostics_flag(self)
             if colors_diagnostics then
                 compflags = table.join(compflags, colors_diagnostics)
             end
