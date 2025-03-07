@@ -235,7 +235,7 @@ function _builder(target)
     local cachekey = tostring(target)
     local builder = compiler_support.memcache():get2("builder", cachekey)
     if builder == nil then
-        if target:has_tool("cxx", "clang", "clangxx") then
+        if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
             builder = import("clang.builder", {anonymous = true})
         elseif target:has_tool("cxx", "gcc", "gxx") then
             builder = import("gcc.builder", {anonymous = true})

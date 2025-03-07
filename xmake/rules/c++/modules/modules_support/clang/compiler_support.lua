@@ -247,6 +247,9 @@ function get_clang_scan_deps(target)
         if program and toolname:startswith("clang") then
             local dir = path.directory(program)
             local basename = path.basename(program)
+            if basename == "clang-cl" then
+                basename = "clang"
+            end
             local extension = path.extension(program)
             program = (basename:rtrim("+"):gsub("clang", "clang-scan-deps")) .. extension
             if dir and dir ~= "." and os.isdir(dir) then
@@ -277,26 +280,32 @@ function get_stdmodules(target)
                         if not path.is_absolute(std_module_directory) then
                             std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
                         end
-                        return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
+                        if os.isdir(std_module_directory) then
+                            return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
+                        end
                     end
                 end
             elseif cpplib == "stdc++" then
                 -- libstdc++ doesn't have a std module file atm
             elseif cpplib == "msstl" then
-                -- msstl std module file is not compatible with llvm <= 19
-                -- local toolchain = target:toolchain("clang")
-                -- local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
-                -- if msvc then
-                --     local vcvars = msvc:config("vcvars")
-                --     if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                --         modules = {}
-                --
-                --         local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-                --         assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
-                --
-                --         return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
-                --     end
-                -- end
+                -- msstl std module file is not compatible with llvm < 19
+                local clang_version = get_clang_version(target)
+                if clang_version and semver.compare(clang_version, "19.0") >= 0 then
+                    local toolchain = target:toolchain("clang") or target:toolchain("clang-cl")
+                    local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
+                    if msvc and msvc:check() then
+                        local vcvars = msvc:config("vcvars")
+                        if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                            local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+                            if os.isdir(stdmodulesdir) then
+                                return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
+                            end
+                        end
+                    end
+                else
+                    wprint("msstl std module file is not compatible with llvm < 19, please upgrade clang/clang-cl version!")
+                    return
+                end
             end
         end
         wprint("std and std.compat modules not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
