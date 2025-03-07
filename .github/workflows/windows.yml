@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2019, windows-2025]
         arch: [x64, x86, arm64]
 
     runs-on: ${{ matrix.os }}
@@ -41,7 +41,7 @@ jobs:
 
       # Cache xmake dependencies
       - name: Retrieve xmake cache for packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: xmake-cache
           key: ${{ matrix.os }}-${{ matrix.arch }}

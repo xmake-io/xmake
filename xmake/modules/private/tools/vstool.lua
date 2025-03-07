@@ -51,7 +51,8 @@ function runv(program, argv, opt)
     if ok ~= 0 then
 
         -- read errors
-        local outdata = os.isfile(outpath) and io.readfile(outpath, {encoding = "utf16le"}) or nil
+        local encoding = is_host("windows") and "utf16le" or nil
+        local outdata = os.isfile(outpath) and io.readfile(outpath, {encoding = encoding}) or nil
         local errdata = os.isfile(errpath) and io.readfile(errpath) or nil
         local errors = errdata or ""
         if #errors:trim() == 0 then
@@ -116,7 +117,8 @@ function iorunv(program, argv, opt)
 
     -- get output and error data
     outfile:close()
-    local outdata = os.isfile(outpath) and io.readfile(outpath, {encoding = "utf16le"}) or nil
+    local encoding = is_host("windows") and "utf16le" or nil
+    local outdata = os.isfile(outpath) and io.readfile(outpath, {encoding = encoding}) or nil
     local errdata = os.isfile(errpath) and io.readfile(errpath) or nil
 
     -- remove the temporary output and error file
