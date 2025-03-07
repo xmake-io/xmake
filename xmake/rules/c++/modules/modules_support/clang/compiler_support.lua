@@ -280,7 +280,9 @@ function get_stdmodules(target)
                         if not path.is_absolute(std_module_directory) then
                             std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
                         end
-                        return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
+                        if os.isdir(std_module_directory) then
+                            return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
+                        end
                     end
                 end
             elseif cpplib == "stdc++" then
@@ -293,8 +295,9 @@ function get_stdmodules(target)
                     local vcvars = msvc:config("vcvars")
                     if vcvars.VCInstallDir and vcvars.VCToolsVersion then
                         local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-                        assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
-                        return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
+                        if os.isdir(stdmodulesdir) then
+                            return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
+                        end
                     end
                 end
             end
