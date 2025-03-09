@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-          
+
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
@@ -58,7 +58,7 @@ jobs:
         run: |
           brew install dmd
           brew install dub
-          
+
       # In the tests, cmake tries to use make from the cosmopolitan toolchain and fails, so uninstall it
       - name: Remove cosmocc
         if: matrix.os == 'macos-13'
@@ -73,14 +73,14 @@ jobs:
           ls -l core/build/
           core/build/xmake --version
           core/build/xmake lua -v -D tests/run.lua
-          
+
       - name: Artifact
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: xmake-bundle.cosmocc.x86_64
+          name: xmake-bundle.cosmocc
           path: core/build/xmake
-          
+
       - name: Publish bundle binary
         if: github.event.action == 'published' && matrix.os == 'ubuntu-latest'
         uses: actions/upload-release-asset@v1.0.1
@@ -89,5 +89,5 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: core/build/xmake
-          asset_name: xmake-bundle-${{ steps.tagName.outputs.tag }}.cosmocc.x86_64
+          asset_name: xmake-bundle-${{ steps.tagName.outputs.tag }}.cosmocc
           asset_content_type: application/zip
