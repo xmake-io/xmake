@@ -384,7 +384,8 @@ function buildenvs(package, opt)
                 -- force to apply shflags on macosx https://gmplib.org/manual/Known-Build-Problems
                 envs.CC = envs.CC .. " -arch " .. package:arch()
             end
-            if package:is_plat("cross") or package:has_tool("ar", "ar", "emar") then
+            -- android r27 will use llmv-ar instead of ar, https://github.com/xmake-io/xmake/issues/6206
+            if package:is_plat("cross") or package:has_tool("ar", "ar", "emar", "llvm_ar") then
                 -- only for cross-toolchain
                 envs.CXX = package:build_getenv("cxx")
                 if not envs.ARFLAGS or envs.ARFLAGS == "" then
