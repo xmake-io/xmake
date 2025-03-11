@@ -128,6 +128,10 @@ end
 
 -- config target
 function sandbox_core_project._config_target(target, opt)
+    local before_config = target:script("config_before")
+    if before_config then
+        before_config(target, opt)
+    end
     for _, rule in ipairs(table.wrap(target:orderules())) do
         local before_config = rule:script("config_before")
         if before_config then
@@ -152,9 +156,13 @@ function sandbox_core_project._config_target(target, opt)
             after_config(target, opt)
         end
     end
+    local config_after = target:script("config_after")
+    if config_after then
+        config_after(target, opt)
+    end
 end
 
--- config targets
+-- config targets, TODO: We should support parallel configuration
 --
 -- @param opt   the extra option, e.g. {recheck = false}
 --
