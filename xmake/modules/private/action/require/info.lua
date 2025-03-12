@@ -188,6 +188,7 @@ function main(requires_raw)
         local fetchinfo = instance:fetch()
         if fetchinfo then
             for name, info in pairs(fetchinfo) do
+                info = table.unwrap(info)
                 if type(info) ~= "table" then
                     info = tostring(info)
                 end
