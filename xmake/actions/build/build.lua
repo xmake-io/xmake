@@ -28,6 +28,7 @@ import("private.utils.batchcmds")
 import("core.base.hashset")
 import("private.service.remote_cache.client", {alias = "remote_cache_client"})
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
+import("prepare", {alias = "prepare_build"})
 
 -- clean target for rebuilding
 function _clean_target(target)
@@ -299,8 +300,10 @@ function get_batchjobs(targetnames, group_pattern)
     return batchjobs
 end
 
--- the main entry
 function main(targetnames, group_pattern)
+
+    -- prepare to build
+    prepare_build(targetnames, {group_pattern = group_pattern})
 
     -- enable distcc?
     local distcc
