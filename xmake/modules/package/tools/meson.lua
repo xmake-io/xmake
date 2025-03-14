@@ -346,6 +346,7 @@ function _get_configs(package, configs, opt)
 
     -- add vs runtimes flags
     if package:is_plat("windows") then
+        table.insert(configs, "--vsenv")
         if package:has_runtime("MT") then
             table.insert(configs, "-Db_vscrt=mt")
         elseif package:has_runtime("MTd") then
