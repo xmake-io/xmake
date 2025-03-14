@@ -59,6 +59,9 @@ function _find_ndkdir(sdkdir)
         if not sdkdir and is_host("macosx") then
             sdkdir = find_directory("NDK", "/Applications/AndroidNDK*.app/Contents")
             if not sdkdir then
+                sdkdir = find_directory("*", "~/Library/Android/sdk/ndk")
+            end
+            if not sdkdir then
                 sdkdir = "~/Library/Android/sdk/ndk-bundle"
             end
         end
