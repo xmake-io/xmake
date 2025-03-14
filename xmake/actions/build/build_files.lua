@@ -26,6 +26,7 @@ import("core.project.project")
 import("private.async.jobpool")
 import("async.runjobs")
 import("kinds.object")
+import("prepare", {alias = "prepare_build"})
 
 -- match source files
 function _match_sourcefiles(sourcefile, filepatterns)
@@ -195,6 +196,9 @@ end
 
 -- the main entry
 function main(targetname, group_pattern, sourcefiles)
+
+    -- prepare to build
+    prepare_build(targetnames, {group_pattern = group_pattern, sourcefiles = sourcefiles})
 
     -- convert all sourcefiles to lua pattern
     local filepatterns = _get_file_patterns(sourcefiles)
