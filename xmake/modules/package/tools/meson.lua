@@ -494,6 +494,9 @@ function buildenvs(package, opt)
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
+    local CMAKE_LIBRARY_PATH = {}
+    local CMAKE_INCLUDE_PATH = {}
+    local CMAKE_PREFIX_PATH  = {}
     for _, dep in ipairs(package:librarydeps({private = true})) do
         local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
         if os.isdir(pkgconfig) then
@@ -503,6 +506,17 @@ function buildenvs(package, opt)
         if os.isdir(pkgconfig) then
             table.insert(PKG_CONFIG_PATH, pkgconfig)
         end
+        -- meson may also use cmake to find dependencies
+        if dep:is_system() then
+            local fetchinfo = dep:fetch()
+            if fetchinfo then
+                table.join2(CMAKE_LIBRARY_PATH, fetchinfo.linkdirs)
+                table.join2(CMAKE_INCLUDE_PATH, fetchinfo.includedirs)
+                table.join2(CMAKE_INCLUDE_PATH, fetchinfo.sysincludedirs)
+            end
+        else
+            table.join2(CMAKE_PREFIX_PATH, dep:installdir())
+        end
     end
     -- some binary packages contain it too. e.g. libtool
     for _, dep in ipairs(package:orderdeps()) do
@@ -511,8 +525,11 @@ function buildenvs(package, opt)
             table.insert(ACLOCAL_PATH, aclocal)
         end
     end
-    envs.ACLOCAL_PATH    = path.joinenv(ACLOCAL_PATH)
-    envs.PKG_CONFIG_PATH = path.joinenv(PKG_CONFIG_PATH)
+    envs.ACLOCAL_PATH       = path.joinenv(ACLOCAL_PATH)
+    envs.CMAKE_LIBRARY_PATH = path.joinenv(CMAKE_LIBRARY_PATH)
+    envs.CMAKE_INCLUDE_PATH = path.joinenv(CMAKE_INCLUDE_PATH)
+    envs.CMAKE_PREFIX_PATH  = path.joinenv(CMAKE_PREFIX_PATH)
+    envs.PKG_CONFIG_PATH    = path.joinenv(PKG_CONFIG_PATH)
     return envs
 end
 
