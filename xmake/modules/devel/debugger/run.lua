@@ -305,7 +305,8 @@ function _run_raddbg(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- run it
-    os.execv(raddbg.program, argv, table.join(opt, {exclusive = true}))
+    opt.detach = true
+    os.execv(raddbg.program, argv, opt)
     return true
 end
 
