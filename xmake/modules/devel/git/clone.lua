@@ -148,5 +148,9 @@ function main(url, opt)
     end
 
     -- clone it
-    os.vrunv(git.program, argv, {envs = envs})
+    if opt.verbose then
+        os.execv(git.program, argv, {envs = envs})
+    else
+        os.vrunv(git.program, argv, {envs = envs})
+    end
 end
