@@ -20,17 +20,23 @@
 
 -- imports
 import("core.base.object")
+import("core.base.list")
 import("core.base.graph")
 
 -- define module
-local jobgraph = jobgraph or object {_init = {"_size"}}
+local jobgraph = jobgraph or object {_init = {"_jobs", "_graph"}}
+
+-- get jobs
+function jobgraph:jobs()
+    return self._jobs
+end
 
 -- tostring
 function jobgraph:__tostring()
-    return "<jobgraph>"
+    return string.format("<jobgraph:%s>", self:jobs():size())
 end
 
 -- new a jobgraph
 function new()
-    return jobgraph {0}
+    return jobgraph {list.new(), graph.new(true)}
 end
