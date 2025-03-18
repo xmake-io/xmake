@@ -239,18 +239,12 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
         end
     end
 
-    -- attempt to find it directly in current environment
-    --
-    -- @note must be detected at the end, because full path is more accurate
-    --
-    local program_path_real = sandbox_lib_detect_find_program._check(name, opt)
-    if program_path_real then
-        return program_path_real
-    end
-
     -- attempt to find it use `where.exe program.exe` command
-    --
     -- and we need to add `.exe` suffix to avoid find some incorrect programs. e.g. pkg-config.bat
+    --
+    -- it will return the absolute path, so we call it first
+    -- https://github.com/xmake-io/xmake/discussions/6223#discussioncomment-12537122
+    --
     if os.host() == "windows" then
         local program_name = name:lower()
         if not program_name:endswith(".exe") then
@@ -268,6 +262,15 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
                 end
             end
         end
+    end
+
+    -- attempt to find it directly in current environment
+    --
+    -- @note must be detected at the end, because full path is more accurate
+    --
+    local program_path_real = sandbox_lib_detect_find_program._check(name, opt)
+    if program_path_real then
+        return program_path_real
     end
 end
 
