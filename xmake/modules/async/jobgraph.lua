@@ -25,7 +25,7 @@ import("core.base.graph")
 
 -- define module
 local jobqueue = jobqueue or object {_init = {"_jobgraph"}}
-local jobgraph = jobgraph or object {_init = {"_jobs", "_size", "_deps", "_dirty"}}
+local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_deps", "_dirty"}}
 
 -- build the job queue
 function jobqueue:_build()
@@ -87,9 +87,21 @@ end
 
 -- add job deps, e.g. add_deps(a, b, c, ...): a -> b -> c, ...
 function jobgraph:add_deps(...)
-    -- TODO
-    local deps = table.pack(...)
-    self._dirty = true
+    local prev
+    local dirty
+    local jobs = self._jobs
+    local deps = self._deps
+    for _, name in ipairs(table.pack(...)) do
+        local curr = assert(jobs[name], "job(%s) not found in jobgraph(%s)", name, self)
+        if prev then
+            deps:add_edge(prev, curr)
+            dirty = true
+        end
+        prev = curr
+    end
+    if dirty then
+        self._dirty = true
+    end
 end
 
 -- add jog group
@@ -108,6 +120,11 @@ function jobgraph:jobs()
     return self._jobs
 end
 
+-- get jobgraph name
+function jobgraph:name()
+    return self._name
+end
+
 -- get job size
 function jobgraph:size()
     return self._size
@@ -115,10 +132,10 @@ end
 
 -- tostring
 function jobgraph:__tostring()
-    return string.format("<jobgraph:%s>", self:size())
+    return string.format("<jobgraph:%s/%d>", self:name() or "anonymous", self:size())
 end
 
 -- new a jobgraph
-function new()
-    return jobgraph {{}, 0, graph.new(true), false}
+function new(name)
+    return jobgraph {name, {}, 0, graph.new(true), false}
 end

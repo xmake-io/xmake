@@ -11,7 +11,7 @@ function _jobfunc(index, total, opt)
 end
 
 function main()
-    print("==================================== test jobpool ====================================")
+    print("==================================== test jobgraph ====================================")
     local jobs = jobgraph.new()
     jobs:add("job/root", _jobfunc)
     for i = 1, 3 do
