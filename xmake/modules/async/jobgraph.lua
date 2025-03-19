@@ -31,6 +31,21 @@ function jobgraph:jobs()
     return self._jobs
 end
 
+-- add a job to the jobgraph
+--
+-- e.g.
+-- jobgraph:add_job("xxx", function (job, opt)
+-- end)
+--
+-- @param name      the job name
+-- @param run       the job run command/script
+-- @param opt       the job options
+--
+function jobgraph:add_job(name, run, opt)
+    local job = {name = name, run = run, opt = opt}
+    self:jobs():insert(job)
+end
+
 -- tostring
 function jobgraph:__tostring()
     return string.format("<jobgraph:%s>", self:jobs():size())
