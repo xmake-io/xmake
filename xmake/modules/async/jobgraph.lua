@@ -25,13 +25,16 @@ import("core.base.graph")
 
 -- define module
 local jobqueue = jobqueue or object {_init = {"_jobgraph"}}
-local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_deps", "_dirty"}}
+local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag", "_dirty"}}
 
 -- build the job queue
 function jobqueue:_build()
     local graph = self._jobgraph
-    -- TODO
-    print("build job queue")
+    local dag = graph._dag
+    local queue = dag:topological_sort()
+    for _, v in ipairs(queue) do
+        print(v.name)
+    end
 end
 
 -- update the job queue
@@ -89,12 +92,12 @@ end
 function jobgraph:add_deps(...)
     local prev
     local dirty
+    local dag = self._dag
     local jobs = self._jobs
-    local deps = self._deps
     for _, name in ipairs(table.pack(...)) do
         local curr = assert(jobs[name], "job(%s) not found in jobgraph(%s)", name, self)
         if prev then
-            deps:add_edge(prev, curr)
+            dag:add_edge(prev, curr)
             dirty = true
         end
         prev = curr
