@@ -2,22 +2,23 @@ import("core.base.scheduler")
 import("async.jobgraph")
 import("async.runjobs")
 
-function _jobfunc(job, opt)
-    print("%s: run job (%s)", scheduler.co_running(), job.name)
+function _jobfunc(index, total, opt)
+    print("%s: run job (%d/%d)", scheduler.co_running(), index, total)
     local dt = os.mclock()
     os.sleep(1000)
     dt = os.mclock() - dt
-    print("%s: run job (%s) end, progress: %s, dt: %d ms", scheduler.co_running(), job.name, opt.progress, dt)
+    print("%s: run job (%d/%d) end, progress: %s, dt: %d ms", scheduler.co_running(), index, total, opt.progress, dt)
 end
 
 function main()
     print("==================================== test jobpool ====================================")
     local jobs = jobgraph.new()
-    jobs:add_job("job/root", _jobfunc)
+    jobs:add("job/root", _jobfunc)
     for i = 1, 3 do
-        jobs:add_job("job/" .. i, _jobfunc)
+        jobs:add("job/" .. i, _jobfunc)
         for j = 1, 50 do
-            jobs:add_job("job/" .. i .. "/" .. j, _jobfunc)
+            jobs:add("job/" .. i .. "/" .. j, _jobfunc)
+            jobs:add_deps("job/" .. i .. "/" .. j, "job/" .. i, "job/root")
         end
     end
     t = os.mclock()
