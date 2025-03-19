@@ -24,7 +24,16 @@ import("core.base.list")
 import("core.base.graph")
 
 -- define module
-local jobgraph = jobgraph or object {_init = {"_jobs", "_graph"}}
+local jobqueue = jobqueue or object {_init = {"_jobgraph"}}
+local jobgraph = jobgraph or object {_init = {"_jobs", "_graph", "_dirty"}}
+
+-- remove the given job from the job queue
+function jobqueue:remove(job)
+end
+
+-- get a free job from the job queue
+function jobqueue:getfree()
+end
 
 -- get jobs
 function jobgraph:jobs()
@@ -34,24 +43,49 @@ end
 -- add a job to the jobgraph
 --
 -- e.g.
--- jobgraph:add_job("xxx", function (job, opt)
+-- jobgraph:add("xxx", function (index, total, opt)
 -- end)
 --
 -- @param name      the job name
 -- @param run       the job run command/script
 -- @param opt       the job options
 --
-function jobgraph:add_job(name, run, opt)
+function jobgraph:add(name, run, opt)
     local job = {name = name, run = run, opt = opt}
     self:jobs():insert(job)
+    self._dirty = true
+end
+
+-- remove a given job
+function jobgraph:remove(name)
+    self._dirty = true
+end
+
+-- add job deps, e.g. add_deps(a, b, c, ...): a -> b -> c, ...
+function jobgraph:add_deps(...)
+    local deps = table.pack(...)
+end
+
+-- add jog group
+function jobgraph:add_group(name, callback)
+end
+
+-- build a job queue
+function jobgraph:build()
+    return jobqueue {self}
+end
+
+-- get job size
+function jobgraph:size()
+    return self:jobs():size()
 end
 
 -- tostring
 function jobgraph:__tostring()
-    return string.format("<jobgraph:%s>", self:jobs():size())
+    return string.format("<jobgraph:%s>", self:size())
 end
 
 -- new a jobgraph
 function new()
-    return jobgraph {list.new(), graph.new(true)}
+    return jobgraph {list.new(), graph.new(true), false}
 end
