@@ -24,16 +24,17 @@ import("core.base.list")
 import("core.base.graph")
 
 -- define module
-local jobqueue = jobqueue or object {_init = {"_jobgraph"}}
+local jobqueue = jobqueue or object {_init = {"_jobgraph", "_queue"}}
 local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag", "_dirty"}}
 
 -- build the job queue
 function jobqueue:_build()
     local graph = self._jobgraph
     local dag = graph._dag
-    local queue = dag:topological_sort()
-    for _, v in ipairs(queue) do
-        print(v.name)
+    local queue = self._queue
+    queue:clear()
+    for _, job in ipairs(dag:topological_sort()) do
+        queue:insert(job)
     end
 end
 
@@ -48,13 +49,18 @@ end
 
 -- remove the given job from the job queue
 function jobqueue:remove(job)
+    local queue = self._queue
+    queue:remove(job)
 end
 
 -- get a free job from the job queue
 function jobqueue:getfree()
-
-    -- update the job queue first
     self:_update()
+
+    local queue = self._queue
+    if queue:empty() then
+        return
+    end
 end
 
 -- add a job to the jobgraph
@@ -115,7 +121,7 @@ end
 
 -- build a job queue
 function jobgraph:build()
-    return jobqueue {self}
+    return jobqueue {self, list.new()}
 end
 
 -- get jobs
