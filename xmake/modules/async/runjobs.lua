@@ -64,6 +64,11 @@ function main(name, jobs, opt)
     local group_name = name
     local jobs_cb = type(jobs) == "function" and jobs or nil
     assert(timeout < 60000, "runjobs: invalid timeout!")
+
+    -- build jobs queue
+    if jobs.build then
+        jobs = jobs:build()
+    end
     assert(jobs, "runjobs: no jobs!")
 
     -- show waiting tips?
