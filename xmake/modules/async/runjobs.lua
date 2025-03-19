@@ -66,7 +66,7 @@ function main(name, jobs, opt)
     assert(timeout < 60000, "runjobs: invalid timeout!")
 
     -- build jobs queue
-    if jobs.build then
+    if type(jobs) == "table" and jobs.build then
         jobs = jobs:build()
     end
     assert(jobs, "runjobs: no jobs!")
