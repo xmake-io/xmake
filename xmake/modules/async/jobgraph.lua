@@ -22,10 +22,24 @@
 import("core.base.object")
 import("core.base.list")
 import("core.base.graph")
+import("core.base.hashset")
 
 -- define module
 local jobqueue = jobqueue or object {_init = {"_jobgraph", "_queue"}}
 local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag", "_dirty"}}
+
+-- add job dependency
+function jobqueue:_add_dep(job, dep)
+    job._deps = job._deps or hashset.new()
+    job._deps:insert(dep)
+
+    local parents = dep._parents
+    if not parents then
+        parents = {}
+        dep._parents = parents
+    end
+    table.insert(parents, job)
+end
 
 -- build the job queue
 function jobqueue:_build()
@@ -46,9 +60,16 @@ function jobqueue:_build()
 
     -- build job queue
     queue:clear()
-    for _, job in ipairs(dag:topological_sort()) do
-        print("build job", job.name)
+    for _, job in ipairs(dag:topological_sort({reverse = true})) do
+        job._deps = nil
+        job._parents = nil
         queue:insert(job)
+    end
+
+    -- build job dependencies
+    for _, e in ipairs(dag:edges()) do
+        self:_add_dep(e:from(), e:to())
+        print("%s -> %s", e:from().name, e:to().name)
     end
 end
 
@@ -64,7 +85,9 @@ end
 -- remove the given job from the job queue
 function jobqueue:remove(job)
     local queue = self._queue
+    print("remove", job.name)
     queue:remove(job)
+    -- TODO remove deps
 end
 
 -- get a free job from the job queue
@@ -74,6 +97,12 @@ function jobqueue:getfree()
     local queue = self._queue
     if queue:empty() then
         return
+    end
+
+    -- TODO
+    for job in queue:ritems() do
+        print("get free job", job.name)
+        return job
     end
 end
 

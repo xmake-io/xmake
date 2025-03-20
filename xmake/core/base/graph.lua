@@ -119,7 +119,8 @@ function graph:remove_vertex(v)
 end
 
 -- topological sort
-function graph:topological_sort()
+function graph:topological_sort(opt)
+    opt = opt or {}
     local visited = {}
     for _, v in ipairs(self:vertices()) do
         visited[v] = false
@@ -143,7 +144,11 @@ function graph:topological_sort()
             dfs(v)
         end
     end
-    return table.reverse(order_vertices)
+    if opt.reverse then
+        return order_vertices
+    else
+        return table.reverse(order_vertices)
+    end
 end
 
 -- find cycle
