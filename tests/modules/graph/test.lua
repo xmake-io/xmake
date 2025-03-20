@@ -52,5 +52,8 @@ function test_find_cycle(t)
     end
     local cycle = dag:find_cycle()
     t:are_equal(cycle, {1, 6, 0})
+
+    local _, has_cycle = dag:topological_sort()
+    t:require(has_cycle)
 end
 
