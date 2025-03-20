@@ -33,7 +33,9 @@ function jobqueue:_build()
     local dag = graph._dag
     local queue = self._queue
     queue:clear()
+    -- TODO find cycle
     for _, job in ipairs(dag:topological_sort()) do
+        print("build job", job.name)
         queue:insert(job)
     end
 end
@@ -86,9 +88,12 @@ end
 -- remove a given job
 function jobgraph:remove(name)
     local jobs = self._jobs
-    if jobs[name] then
+    local job = jobs[name]
+    local dag = self._dag
+    if job then
         assert(self._size > 0)
         jobs[name] = nil
+        dag:remove_vertex(job)
         self._size = self._size - 1
         self._dirty = true
     end
@@ -103,8 +108,10 @@ function jobgraph:add_deps(...)
     for _, name in ipairs(table.pack(...)) do
         local curr = assert(jobs[name], "job(%s) not found in jobgraph(%s)", name, self)
         if prev then
-            dag:add_edge(prev, curr)
-            dirty = true
+            if not dag:has_edge(prev, curr) then
+                dag:add_edge(prev, curr)
+                dirty = true
+            end
         end
         prev = curr
     end
