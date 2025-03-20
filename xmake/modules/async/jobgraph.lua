@@ -47,20 +47,21 @@ function jobqueue:_build()
     local dag = graph._dag
     local queue = self._queue
 
-    -- check circular dependencies
-    local cycle = dag:find_cycle()
-    if cycle then
-        local names = {}
-        for _, job in ipairs(cycle) do
-            table.insert(names, job.name)
-        end
-        table.insert(names, names[1])
-        raise("%s: circular job dependency detected!\n%s", graph, table.concat(names, "\n   -> "))
-    end
-
     -- build job queue
     queue:clear()
-    for _, job in ipairs(dag:topological_sort({reverse = true})) do
+    local order_jobs, has_cycle = dag:topological_sort({reverse = true})
+    if has_cycle then
+        local cycle = dag:find_cycle()
+        if cycle then
+            local names = {}
+            for _, job in ipairs(cycle) do
+                table.insert(names, job.name)
+            end
+            table.insert(names, names[1])
+            raise("%s: circular job dependency detected!\n%s", graph, table.concat(names, "\n   -> "))
+        end
+    end
+    for _, job in ipairs(order_jobs) do
         job._deps = nil
         job._parents = nil
         queue:insert(job)

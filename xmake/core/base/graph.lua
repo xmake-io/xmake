@@ -125,29 +125,40 @@ function graph:topological_sort(opt)
     for _, v in ipairs(self:vertices()) do
         visited[v] = false
     end
+    local in_stack = {}
     local order_vertices = {}
     local function dfs(v)
         visited[v] = true
+        in_stack[v] = true
         local edges = self:adjacent_edges(v)
         if edges then
             for _, e in ipairs(edges) do
                 local w = e:other(v)
                 if not visited[w] then
-                    dfs(w)
+                    if dfs(w) then
+                        return true
+                    end
+                elseif in_stack[w] then
+                    return true
                 end
             end
         end
+        in_stack[v] = false
         table.insert(order_vertices, v)
     end
+    local has_cycle = false
     for _, v in ipairs(self:vertices()) do
         if not visited[v] then
-            dfs(v)
+            if dfs(v) then
+                has_cycle = true
+                break
+            end
         end
     end
     if opt.reverse then
-        return order_vertices
+        return order_vertices, has_cycle
     else
-        return table.reverse(order_vertices)
+        return table.reverse(order_vertices), has_cycle
     end
 end
 
