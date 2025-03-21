@@ -669,7 +669,7 @@ function builder:_sort_links_of_items(items, opt)
         end
         if not gh:empty() then
             local has_cycle
-            links, has_cycle = gh:topological_sort()
+            links, has_cycle = gh:topo_sort()
             if has_cycle then
                 local cycle = gh:find_cycle()
                 if cycle then

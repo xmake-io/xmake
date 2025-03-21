@@ -25,18 +25,20 @@ import("core.base.graph")
 import("core.base.hashset")
 
 -- define module
-local jobqueue = jobqueue or object {_init = {"_jobgraph", "_queue"}}
+local jobqueue = jobqueue or object {_init = {"_jobgraph"}}
 local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag", "_dirty"}}
 
--- build the job queue
-function jobqueue:_build()
+-- remove the given job from the job queue
+function jobqueue:remove(job)
+end
+
+-- get a free job from the job queue
+function jobqueue:getfree()
     local graph = self._jobgraph
     local dag = graph._dag
-    local queue = self._queue
 
     -- build job queue
-    queue:clear()
-    local order_jobs, has_cycle = dag:topological_sort()
+    local order_jobs, has_cycle = dag:partial_topo_sort_next(1)
     if has_cycle then
         local cycle = dag:find_cycle()
         if cycle then
@@ -48,42 +50,8 @@ function jobqueue:_build()
             raise("%s: circular job dependency detected!\n%s", graph, table.concat(names, "\n   -> "))
         end
     end
-    for _, job in ipairs(order_jobs) do
-        print("insert", job.name)
-        queue:insert(job)
-    end
-end
-
--- update the job queue
-function jobqueue:_update()
-    local graph = self._jobgraph
-    if graph._dirty then
-        self:_build()
-        graph._dirty = false
-    end
-end
-
--- remove the given job from the job queue
-function jobqueue:remove(job)
-    local queue = self._queue
-    print("remove", job.name)
-    queue:remove(job)
-    -- TODO remove deps
-end
-
--- get a free job from the job queue
-function jobqueue:getfree()
-    self:_update()
-
-    local queue = self._queue
-    if queue:empty() then
-        return
-    end
-
-    -- TODO
-    for job in queue:ritems() do
-        print("get free job", job.name)
-        return job
+    if order_jobs then
+        return table.unwrap(order_jobs)
     end
 end
 
@@ -150,7 +118,7 @@ end
 
 -- build a job queue
 function jobgraph:build()
-    return jobqueue {self, list.new()}
+    return jobqueue {self}
 end
 
 -- get jobs
