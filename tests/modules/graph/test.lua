@@ -50,6 +50,9 @@ function test_paritail_topo_sort(t)
                 break
             end
             table.insert(order_vertices, node)
+            if node then
+                dag:partial_topo_sort_remove(node)
+            end
         end
 
         return order_vertices, has_cycle

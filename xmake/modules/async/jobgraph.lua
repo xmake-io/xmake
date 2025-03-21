@@ -25,11 +25,13 @@ import("core.base.graph")
 import("core.base.hashset")
 
 -- define module
-local jobqueue = jobqueue or object {_init = {"_dag"}}
+local jobqueue = jobqueue or object {_init = {"_jobgraph", "_dag"}}
 local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag"}}
 
--- nothing to do, we need not to remove it
+-- remove the finished job
 function jobqueue:remove(job)
+    local dag = self._dag
+    dag:partial_topo_sort_remove(job)
 end
 
 -- get a free job from the job queue
@@ -37,15 +39,15 @@ function jobqueue:getfree()
     local dag = self._dag
     local freejob, has_cycle = dag:partial_topo_sort_next()
     if has_cycle then
+        local names = {}
         local cycle = dag:find_cycle()
         if cycle then
-            local names = {}
             for _, job in ipairs(cycle) do
                 table.insert(names, job.name)
             end
             table.insert(names, names[1])
-            raise("%s: circular job dependency detected!\n%s", graph, table.concat(names, "\n   -> "))
         end
+        raise("%s: circular job dependency detected!\n%s", self._jobgraph, table.concat(names, "\n   -> "))
     end
     return freejob
 end
@@ -107,7 +109,7 @@ end
 function jobgraph:build()
     local dag = self._dag
     dag:partial_topo_sort_reset()
-    return jobqueue {dag}
+    return jobqueue {self, dag}
 end
 
 -- get jobs
