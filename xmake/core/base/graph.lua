@@ -223,28 +223,19 @@ function graph:partial_topo_sort_next(limit)
         end
     end
 
-    -- return empty batch if queue is empty (all processed or cycle detected)
+    local node
     if self._partial_topo_queue:empty() then
-        -- check if all vertices were processed
+        -- return empty node if queue is empty (all processed or cycle detected)
         local processed_count = self._partial_topo_processed:size()
         self._partial_topo_has_cycle = processed_count ~= #self:vertices()
-
-        -- if this is the first call and we detect a cycle, mark as complete
-        if processed_count == 0 then
-            self._partial_topo_in_progress = false
-        end
-
         return nil, self._partial_topo_has_cycle
-    end
-
-    -- get one node with zero in-degree
-    local node
-    if not self._partial_topo_queue:empty() then
+    else
+        -- get one node with zero in-degree
         node = self._partial_topo_queue:pop()
         self._partial_topo_processed:insert(node)
         self._partial_topo_remaining_count = self._partial_topo_remaining_count - 1
 
-        -- update in-degrees based on the nodes in this batch
+        -- update in-degrees based on the nodes in this node
         local edges = self:adjacent_edges(node)
         if edges then
             for _, e in ipairs(edges) do
@@ -256,7 +247,7 @@ function graph:partial_topo_sort_next(limit)
                     if self._partial_topo_in_degree[w] == 0 then
                         self._partial_topo_non_zero_indegree_count = self._partial_topo_non_zero_indegree_count - 1
 
-                        -- if in-degree becomes zero, add to queue for next batch
+                        -- if in-degree becomes zero, add to queue for next node
                         if not self._partial_topo_processed:has(w) then
                             self._partial_topo_queue:push(w)
                         end
@@ -271,13 +262,10 @@ function graph:partial_topo_sort_next(limit)
         return node, true
     end
 
-    -- if queue is now empty and all vertices processed, reset state
+    -- if queue is empty but we still have unprocessed nodes, we have a cycle
     if self._partial_topo_queue:empty() then
         local processed_count = self._partial_topo_processed:size()
-        if processed_count == #self:vertices() then
-            self._partial_topo_in_progress = false
-        else
-            -- if queue is empty but we still have unprocessed nodes, we have a cycle
+        if processed_count ~= #self:vertices() then
             self._partial_topo_has_cycle = true
         end
     end
