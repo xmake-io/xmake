@@ -22,7 +22,6 @@
 local table   = require("base/table")
 local queue   = require("base/queue")
 local object  = require("base/object")
-local hashset = require("base/hashset")
 
 -- define module
 local graph = graph or object { _init = {"_directed"} } {true}
@@ -131,8 +130,8 @@ function graph:partial_topo_sort_reset()
     self._partial_topo_in_progress = false
     self._partial_topo_in_degree = nil
     self._partial_topo_queue = nil
-    self._partial_topo_processed = nil
-    self._partial_topo_pending = 0
+    self._partial_topo_processed = 0
+    self._partial_topo_finished = 0
     self._partial_topo_has_cycle = nil
     self._partial_topo_dirty = false
 end
@@ -178,8 +177,7 @@ function graph:partial_topo_sort_next(limit)
     local node
     if not self._partial_topo_queue:empty() then
         node = self._partial_topo_queue:pop()
-        self._partial_topo_processed:insert(node)
-        self._partial_topo_pending = self._partial_topo_pending + 1
+        self._partial_topo_processed = self._partial_topo_processed + 1
     end
 
     return node, self._partial_topo_has_cycle
@@ -190,8 +188,7 @@ function graph:partial_topo_sort_remove(node)
     if node == nil then
         return
     end
-    assert(self._partial_topo_pending > 0)
-    self._partial_topo_pending = self._partial_topo_pending - 1
+    self._partial_topo_finished = self._partial_topo_finished + 1
     local edges = self:adjacent_edges(node)
     if edges then
         for _, e in ipairs(edges) do
@@ -199,17 +196,14 @@ function graph:partial_topo_sort_remove(node)
                 local w = e:to()
                 self._partial_topo_in_degree[w] = self._partial_topo_in_degree[w] - 1
                 if self._partial_topo_in_degree[w] == 0 then
-                    if not self._partial_topo_processed:has(w) then
-                        self._partial_topo_queue:push(w)
-                    end
+                    self._partial_topo_queue:push(w)
                 end
             end
         end
     end
 
-    if self._partial_topo_queue:empty() and self._partial_topo_pending == 0 then
-        local processed_count = self._partial_topo_processed:size()
-        self._partial_topo_has_cycle = processed_count ~= #self:vertices()
+    if self._partial_topo_queue:empty() and self._partial_topo_processed == self._partial_topo_finished then
+        self._partial_topo_has_cycle = self._partial_topo_finished ~= #self:vertices()
     end
 end
 
@@ -454,9 +448,6 @@ function graph:_partial_topo_sort_init()
             self._partial_topo_queue:push(v)
         end
     end
-
-    -- track processed vertices
-    self._partial_topo_processed = hashset.new()
 end
 
 -- new graph
