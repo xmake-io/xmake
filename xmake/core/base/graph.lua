@@ -119,47 +119,19 @@ function graph:remove_vertex(v)
     end
 end
 
--- topological sort, use DFS algorithom
-function graph:_topological_sort_dfs()
-    local visited = {}
-    for _, v in ipairs(self:vertices()) do
-        visited[v] = false
-    end
-    local in_stack = {}
-    local order_vertices = {}
-    local function dfs(v)
-        visited[v] = true
-        in_stack[v] = true
-        local edges = self:adjacent_edges(v)
-        if edges then
-            for _, e in ipairs(edges) do
-                local w = e:other(v)
-                if not visited[w] then
-                    if dfs(w) then
-                        return true
-                    end
-                elseif in_stack[w] then
-                    return true
-                end
-            end
-        end
-        in_stack[v] = false
-        table.insert(order_vertices, v)
-    end
-    local has_cycle = false
-    for _, v in ipairs(self:vertices()) do
-        if not visited[v] then
-            if dfs(v) then
-                has_cycle = true
-                break
-            end
-        end
-    end
-    return table.reverse(order_vertices), has_cycle
-end
-
 -- topological sort, use Kahn's algorithm
-function graph:_topological_sort_kahn()
+--
+-- e.g.
+--
+-- add_edge(a, b) -- a depend on b
+-- add_edge(b, c) -- b depend on c
+--
+-- it will return {c, b, a}
+function graph:topological_sort(opt)
+    opt = opt or {}
+    if not self:is_directed() then
+        return
+    end
 
     -- calculate in-degree for each vertex
     local in_degree = {}
@@ -217,29 +189,6 @@ function graph:_topological_sort_kahn()
     local has_cycle = #order_vertices ~= #self:vertices()
 
     return order_vertices, has_cycle
-end
-
--- topological sort (default: Kahn's algorithm)
---
--- @param opt   the options, we can use `{algorithm = "dfs/kahn"}` to select sort algorithm,
---              and the Kahn is the default algorithm.
---
--- e.g.
---
--- add_edge(a, b) -- a depend on b
--- add_edge(b, c) -- b depend on c
---
--- it will return {c, b, a}
-function graph:topological_sort(opt)
-    opt = opt or {}
-    if not self:is_directed() then
-        return
-    end
-    if opt.algorithm == "dfs" then
-        return self:_topological_sort_dfs()
-    else
-        return self:_topological_sort_kahn()
-    end
 end
 
 -- find cycle
