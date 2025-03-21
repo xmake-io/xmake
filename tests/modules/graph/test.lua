@@ -42,16 +42,14 @@ function test_paritail_topo_sort(t)
     local function partiail_topo_sort(dag)
         dag:partial_topo_sort_reset()
 
+        local node, has_cycle
         local order_vertices = {}
-        local batch, has_cycle = dag:partial_topo_sort_next()
-        while #batch > 0 do
-            for _, v in ipairs(batch) do
-                table.insert(order_vertices, v)
-            end
-            batch, has_cycle = dag:partial_topo_sort_next()
-            if has_cycle then
+        while true do
+            node, has_cycle = dag:partial_topo_sort_next()
+            if node == nil or has_cycle then
                 break
             end
+            table.insert(order_vertices, node)
         end
 
         return order_vertices, has_cycle

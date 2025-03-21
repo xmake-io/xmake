@@ -148,7 +148,7 @@ function graph:partial_topo_sort_reset()
     self._partial_topo_dirty = false
 end
 
--- get next batch of nodes in topological order with limit
+-- get next node in topological order
 --
 -- @param limit     the maximum number of nodes to return
 -- @return          array of nodes with zero in-degree, empty when complete
@@ -159,15 +159,15 @@ end
 -- add_edge(a, b) -- a depend on b
 -- add_edge(b, c) -- b depend on c
 --
--- local batch1, has_cycle = g:partial_topo_sort_next(1) -- returns {c}
--- local batch2, has_cycle = g:partial_topo_sort_next(1) -- returns {b}
--- local batch3, has_cycle = g:partial_topo_sort_next(1) -- returns {a}
--- local batch4, has_cycle = g:partial_topo_sort_next(1) -- returns {} (empty, all done)
+-- local node1, has_cycle = g:partial_topo_sort_next() -- returns c
+-- local node2, has_cycle = g:partial_topo_sort_next() -- returns b
+-- local node3, has_cycle = g:partial_topo_sort_next() -- returns a
+-- local node4, has_cycle = g:partial_topo_sort_next() -- returns nil (empty, all done)
 --
 function graph:partial_topo_sort_next(limit)
     limit = limit or math.huge
     if not self:is_directed() then
-        return {}, false
+        return nil, false
     end
 
     if self._partial_topo_dirty then
@@ -176,7 +176,7 @@ function graph:partial_topo_sort_next(limit)
 
     -- check if we already detected a cycle
     if self._partial_topo_has_cycle then
-        return {}, true
+        return nil, true
     end
 
     -- initialize topological sort state if not already in progress
@@ -219,7 +219,7 @@ function graph:partial_topo_sort_next(limit)
         -- quick cycle detection: if no nodes have zero in-degree, we have a cycle
         if self._partial_topo_queue:empty() and self._partial_topo_remaining_count > 0 then
             self._partial_topo_has_cycle = true
-            return {}, true
+            return nil, true
         end
     end
 
@@ -234,24 +234,21 @@ function graph:partial_topo_sort_next(limit)
             self._partial_topo_in_progress = false
         end
 
-        return {}, self._partial_topo_has_cycle
+        return nil, self._partial_topo_has_cycle
     end
 
-    -- collect up to 'limit' nodes with zero in-degree
-    local batch = {}
-    while not self._partial_topo_queue:empty() and #batch < limit do
-        local v = self._partial_topo_queue:pop()
-        table.insert(batch, v)
-        self._partial_topo_processed:insert(v)
+    -- get one node with zero in-degree
+    local node
+    if not self._partial_topo_queue:empty() then
+        node = self._partial_topo_queue:pop()
+        self._partial_topo_processed:insert(node)
         self._partial_topo_remaining_count = self._partial_topo_remaining_count - 1
-    end
 
-    -- update in-degrees based on the nodes in this batch
-    for _, v in ipairs(batch) do
-        local edges = self:adjacent_edges(v)
+        -- update in-degrees based on the nodes in this batch
+        local edges = self:adjacent_edges(node)
         if edges then
             for _, e in ipairs(edges) do
-                if e:from() == v then
+                if e:from() == node then
                     local w = e:to()
                     self._partial_topo_in_degree[w] = self._partial_topo_in_degree[w] - 1
 
@@ -271,7 +268,7 @@ function graph:partial_topo_sort_next(limit)
 
     -- early cycle detection - if all remaining nodes have in-degree > 0
     if self:_check_cycle_in_remaining() then
-        return batch, true
+        return node, true
     end
 
     -- if queue is now empty and all vertices processed, reset state
@@ -285,7 +282,7 @@ function graph:partial_topo_sort_next(limit)
         end
     end
 
-    return batch, self._partial_topo_has_cycle
+    return node, self._partial_topo_has_cycle
 end
 
 -- topological sort, use kahn's algorithm
