@@ -165,6 +165,7 @@ end
 -- local batch4, has_cycle = g:partial_topo_sort_next(1) -- returns {} (empty, all done)
 --
 function graph:partial_topo_sort_next(limit)
+    limit = limit or math.huge
     if not self:is_directed() then
         return {}, false
     end
@@ -172,8 +173,6 @@ function graph:partial_topo_sort_next(limit)
     if self._partial_topo_dirty then
         self:partial_topo_sort_reset()
     end
-
-    limit = limit or math.huge
 
     -- check if we already detected a cycle
     if self._partial_topo_has_cycle then
