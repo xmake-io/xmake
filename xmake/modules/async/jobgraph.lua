@@ -26,7 +26,7 @@ import("core.base.hashset")
 
 -- define module
 local jobqueue = jobqueue or object {_init = {"_jobgraph", "_dag"}}
-local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag"}}
+local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag", "_groups"}}
 
 -- remove the finished job
 function jobqueue:remove(job)
@@ -60,7 +60,7 @@ end
 --
 -- @param name      the job name
 -- @param run       the job run command/script
--- @param opt       the job options
+-- @param opt       the job options, e.g. {group = "xxx"}
 --
 function jobgraph:add(name, run, opt)
     local jobs = self._jobs
@@ -68,6 +68,16 @@ function jobgraph:add(name, run, opt)
         local job = {name = name, run = run, opt = opt}
         jobs[name] = job
         self._size = self._size + 1
+
+        local group_name = opt.group
+        if group_name then
+            local groups = self._groups[group_name]
+            if not groups then
+                groups = {}
+                self._groups[group_name] = groups
+            end
+            table.insert(groups, job)
+        end
     end
 end
 
@@ -98,11 +108,8 @@ function jobgraph:add_deps(...)
         end
         prev = curr
     end
-end
-
--- add jog group
-function jobgraph:add_group(name, callback)
     -- TODO
+    -- add groups jobs
 end
 
 -- build a job queue
@@ -134,5 +141,5 @@ end
 
 -- new a jobgraph
 function new(name)
-    return jobgraph {name, {}, 0, graph.new(true)}
+    return jobgraph {name, {}, 0, graph.new(true), {}}
 end
