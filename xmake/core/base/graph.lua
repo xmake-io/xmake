@@ -126,16 +126,6 @@ function graph:remove_vertex(v)
     end
 end
 
--- check if there's a cycle in the remaining unprocessed nodes
-function graph:_check_cycle_in_remaining()
-    -- if all remaining nodes have in-degree > 0, we have a cycle
-    if self._partial_topo_remaining_count > 0 and self._partial_topo_remaining_count == self._partial_topo_non_zero_indegree_count then
-        self._partial_topo_has_cycle = true
-        return true
-    end
-    return false
-end
-
 -- reset partial topological sort state
 function graph:partial_topo_sort_reset()
     self._partial_topo_in_progress = false
@@ -159,10 +149,10 @@ end
 -- add_edge(a, b) -- a depend on b
 -- add_edge(b, c) -- b depend on c
 --
--- local node1, has_cycle = g:partial_topo_sort_next() -- returns c
--- local node2, has_cycle = g:partial_topo_sort_next() -- returns b
--- local node3, has_cycle = g:partial_topo_sort_next() -- returns a
--- local node4, has_cycle = g:partial_topo_sort_next() -- returns nil (empty, all done)
+-- local node1, has_cycle = g:partial_topo_sort_next() -- return c
+-- local node2, has_cycle = g:partial_topo_sort_next() -- return b
+-- local node3, has_cycle = g:partial_topo_sort_next() -- return a
+-- local node4, has_cycle = g:partial_topo_sort_next() -- return nil (empty, all done)
 --
 function graph:partial_topo_sort_next(limit)
     limit = limit or math.huge
@@ -181,44 +171,9 @@ function graph:partial_topo_sort_next(limit)
 
     -- initialize topological sort state if not already in progress
     if not self._partial_topo_in_progress then
-        -- calculate in-degree for each vertex
-        self._partial_topo_in_degree = {}
-        for _, v in ipairs(self:vertices()) do
-            self._partial_topo_in_degree[v] = 0
-        end
-
-        -- count incoming edges for each vertex
-        for _, v in ipairs(self:vertices()) do
-            local edges = self:adjacent_edges(v)
-            if edges then
-                for _, e in ipairs(edges) do
-                    if e:from() == v then
-                        local w = e:to()
-                        self._partial_topo_in_degree[w] = (self._partial_topo_in_degree[w] or 0) + 1
-                    end
-                end
-            end
-        end
-
-        -- initialize queue with vertices that have no incoming edges
-        self._partial_topo_queue = queue.new()
-        for _, v in ipairs(self:vertices()) do
-            if self._partial_topo_in_degree[v] == 0 then
-                self._partial_topo_queue:push(v)
-            end
-        end
-
-        -- track processed vertices
-        self._partial_topo_processed = hashset.new()
+        self:_partial_topo_sort_init()
         self._partial_topo_in_progress = true
-
-        -- track counts for efficient cycle detection
-        self._partial_topo_remaining_count = #self:vertices()
-        self._partial_topo_non_zero_indegree_count = self._partial_topo_remaining_count - self._partial_topo_queue:size()
-
-        -- quick cycle detection: if no nodes have zero in-degree, we have a cycle
-        if self._partial_topo_queue:empty() and self._partial_topo_remaining_count > 0 then
-            self._partial_topo_has_cycle = true
+        if self._partial_topo_has_cycle then
             return nil, true
         end
     end
@@ -483,6 +438,59 @@ function graph:dump()
     for _, e in ipairs(edges) do
         print(string.format("  %s -> %s", e:from(), e:to()))
     end
+end
+
+-- initialize topological sort state if not already in progress
+function graph:_partial_topo_sort_init()
+
+    -- calculate in-degree for each vertex
+    self._partial_topo_in_degree = {}
+    for _, v in ipairs(self:vertices()) do
+        self._partial_topo_in_degree[v] = 0
+    end
+
+    -- count incoming edges for each vertex
+    for _, v in ipairs(self:vertices()) do
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                if e:from() == v then
+                    local w = e:to()
+                    self._partial_topo_in_degree[w] = (self._partial_topo_in_degree[w] or 0) + 1
+                end
+            end
+        end
+    end
+
+    -- initialize queue with vertices that have no incoming edges
+    self._partial_topo_queue = queue.new()
+    for _, v in ipairs(self:vertices()) do
+        if self._partial_topo_in_degree[v] == 0 then
+            self._partial_topo_queue:push(v)
+        end
+    end
+
+    -- track processed vertices
+    self._partial_topo_processed = hashset.new()
+
+    -- track counts for efficient cycle detection
+    self._partial_topo_remaining_count = #self:vertices()
+    self._partial_topo_non_zero_indegree_count = self._partial_topo_remaining_count - self._partial_topo_queue:size()
+
+    -- quick cycle detection: if no nodes have zero in-degree, we have a cycle
+    if self._partial_topo_queue:empty() and self._partial_topo_remaining_count > 0 then
+        self._partial_topo_has_cycle = true
+    end
+end
+
+-- check if there's a cycle in the remaining unprocessed nodes
+function graph:_check_cycle_in_remaining()
+    -- if all remaining nodes have in-degree > 0, we have a cycle
+    if self._partial_topo_remaining_count > 0 and self._partial_topo_remaining_count == self._partial_topo_non_zero_indegree_count then
+        self._partial_topo_has_cycle = true
+        return true
+    end
+    return false
 end
 
 -- new graph
