@@ -19,7 +19,8 @@
 --
 
 -- load modules
-local table = require("base/table")
+local table  = require("base/table")
+local list   = require("base/list")
 local object = require("base/object")
 
 -- define module
@@ -180,10 +181,10 @@ function graph:_topological_sort_kahn()
     end
 
     -- queue of vertices with no incoming edges (no dependencies)
-    local queue = {}
+    local queue = list.new()
     for _, v in ipairs(self:vertices()) do
         if in_degree[v] == 0 then
-            table.insert(queue, v)
+            queue:insert(v)
         end
     end
 
@@ -191,9 +192,9 @@ function graph:_topological_sort_kahn()
     local order_vertices = {}
 
     -- process queue
-    while #queue > 0 do
+    while not queue:empty() do
         -- remove a vertex with no incoming edges
-        local v = table.remove(queue, 1)
+        local v = queue:remove_first()
         table.insert(order_vertices, v)
 
         -- for each outgoing edge, remove it and update in-degrees
@@ -205,7 +206,7 @@ function graph:_topological_sort_kahn()
                     in_degree[w] = in_degree[w] - 1
                     -- if in-degree becomes zero, add to queue
                     if in_degree[w] == 0 then
-                        table.insert(queue, w)
+                        queue:insert(w)
                     end
                 end
             end
