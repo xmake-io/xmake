@@ -46,12 +46,14 @@ function test_paritail_topo_sort(t)
         local order_vertices = {}
         while true do
             node, has_cycle = dag:partial_topo_sort_next()
-            if node == nil or has_cycle then
-                break
-            end
-            table.insert(order_vertices, node)
             if node then
+                table.insert(order_vertices, node)
                 dag:partial_topo_sort_remove(node)
+            else
+                if has_cycle then
+                    raise("has cycle!")
+                end
+                break
             end
         end
 

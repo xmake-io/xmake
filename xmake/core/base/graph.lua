@@ -142,6 +142,25 @@ end
 -- @return          array of nodes with zero in-degree, empty when complete
 -- @return          has_cycle indicates if a cycle was detected
 --
+-- @code
+--      dag:partial_topo_sort_reset()
+--
+--      local node, has_cycle
+--      local order_vertices = {}
+--      while true do
+--          node, has_cycle = dag:partial_topo_sort_next()
+--          if node then
+--              table.insert(order_vertices, node)
+--              dag:partial_topo_sort_remove(node)
+--          else
+--              if has_cycle then
+--                  -- find cycle
+--              end
+--              break
+--          end
+--      end
+-- @endcode
+--
 -- e.g.
 --
 -- add_edge(a, b) -- a depend on b
