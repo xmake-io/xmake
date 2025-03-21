@@ -43,14 +43,12 @@ function test_paritail_topo_sort(t)
         dag:partial_topo_sort_reset()
 
         local order_vertices = {}
-        local batch_size = math.huge
-        local batch, has_cycle = dag:partial_topo_sort_next(batch_size)
+        local batch, has_cycle = dag:partial_topo_sort_next()
         while #batch > 0 do
             for _, v in ipairs(batch) do
                 table.insert(order_vertices, v)
             end
-            batch, has_cycle = dag:partial_topo_sort_next(batch_size)
-
+            batch, has_cycle = dag:partial_topo_sort_next()
             if has_cycle then
                 break
             end
