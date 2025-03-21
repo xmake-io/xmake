@@ -118,9 +118,8 @@ function graph:remove_vertex(v)
     end
 end
 
--- topological sort
-function graph:topological_sort(opt)
-    opt = opt or {}
+-- topological sort, use DFS algorithom
+function graph:_topological_sort_dfs()
     local visited = {}
     for _, v in ipairs(self:vertices()) do
         visited[v] = false
@@ -155,10 +154,90 @@ function graph:topological_sort(opt)
             end
         end
     end
-    if opt.reverse then
-        return order_vertices, has_cycle
+    return table.reverse(order_vertices), has_cycle
+end
+
+-- topological sort, use Kahn's algorithm
+function graph:_topological_sort_kahn()
+
+    -- calculate in-degree for each vertex
+    local in_degree = {}
+    for _, v in ipairs(self:vertices()) do
+        in_degree[v] = 0
+    end
+
+    -- count incoming edges for each vertex
+    for _, v in ipairs(self:vertices()) do
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                if e:from() == v then
+                    local w = e:to()
+                    in_degree[w] = (in_degree[w] or 0) + 1
+                end
+            end
+        end
+    end
+
+    -- queue of vertices with no incoming edges (no dependencies)
+    local queue = {}
+    for _, v in ipairs(self:vertices()) do
+        if in_degree[v] == 0 then
+            table.insert(queue, v)
+        end
+    end
+
+    -- result list for topologically sorted vertices
+    local order_vertices = {}
+
+    -- process queue
+    while #queue > 0 do
+        -- remove a vertex with no incoming edges
+        local v = table.remove(queue, 1)
+        table.insert(order_vertices, v)
+
+        -- for each outgoing edge, remove it and update in-degrees
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                if e:from() == v then
+                    local w = e:to()
+                    in_degree[w] = in_degree[w] - 1
+                    -- if in-degree becomes zero, add to queue
+                    if in_degree[w] == 0 then
+                        table.insert(queue, w)
+                    end
+                end
+            end
+        end
+    end
+
+    -- if we couldn't process all vertices, there must be a cycle
+    local has_cycle = #order_vertices ~= #self:vertices()
+
+    return order_vertices, has_cycle
+end
+
+-- topological sort (default: Kahn's algorithm)
+--
+-- @param opt   the options, we can use `{algorithm = "dfs/kahn"}` to select sort algorithm,
+--              and the Kahn is the default algorithm.
+--
+-- e.g.
+--
+-- add_edge(a, b) -- a depend on b
+-- add_edge(b, c) -- b depend on c
+--
+-- it will return {c, b, a}
+function graph:topological_sort(opt)
+    opt = opt or {}
+    if not self:is_directed() then
+        return
+    end
+    if opt.algorithm == "dfs" then
+        return self:_topological_sort_dfs()
     else
-        return table.reverse(order_vertices), has_cycle
+        return self:_topological_sort_kahn()
     end
 end
 
