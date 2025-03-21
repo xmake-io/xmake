@@ -19,9 +19,10 @@
 --
 
 -- load modules
-local table  = require("base/table")
-local list   = require("base/list")
-local object = require("base/object")
+local table   = require("base/table")
+local queue   = require("base/queue")
+local object  = require("base/object")
+local hashset = require("base/hashset")
 
 -- define module
 local graph = graph or object { _init = {"_directed"} } {true}
@@ -58,6 +59,9 @@ function graph:clear()
     self._edges = {}
     self._adjacent_edges = {}
     self._edges_map = {}
+
+    -- clear partial topological sort state
+    self:partial_topo_sort_reset()
 end
 
 -- is empty?
@@ -116,10 +120,171 @@ function graph:remove_vertex(v)
                 end
             end
         end
+
+        -- reset partial topological sort state since graph structure changed
+        self:partial_topo_sort_reset()
     end
 end
 
--- topological sort, use Kahn's algorithm
+-- check if there's a cycle in the remaining unprocessed nodes
+function graph:_check_cycle_in_remaining()
+    -- if all remaining nodes have in-degree > 0, we have a cycle
+    if self._topo_remaining_count > 0 and self._topo_remaining_count == self._topo_non_zero_indegree_count then
+        self._topo_has_cycle = true
+        return true
+    end
+    return false
+end
+
+-- reset partial topological sort state
+function graph:partial_topo_sort_reset()
+    self._topo_in_progress = false
+    self._topo_in_degree = nil
+    self._topo_queue = nil
+    self._topo_processed = nil
+    self._topo_has_cycle = nil
+    self._topo_remaining_count = nil
+    self._topo_non_zero_indegree_count = nil
+end
+
+-- get next batch of nodes in topological order with limit
+--
+-- @param limit     the maximum number of nodes to return
+-- @return          array of nodes with zero in-degree, empty when complete
+-- @return          has_cycle indicates if a cycle was detected
+--
+-- e.g.
+--
+-- add_edge(a, b) -- a depend on b
+-- add_edge(b, c) -- b depend on c
+--
+-- local batch1, has_cycle = g:partial_topo_sort_next(1) -- returns {c}
+-- local batch2, has_cycle = g:partial_topo_sort_next(1) -- returns {b}
+-- local batch3, has_cycle = g:partial_topo_sort_next(1) -- returns {a}
+-- local batch4, has_cycle = g:partial_topo_sort_next(1) -- returns {} (empty, all done)
+--
+function graph:partial_topo_sort_next(limit)
+    if not self:is_directed() then
+        return {}, false
+    end
+
+    limit = limit or math.huge
+
+    -- check if we already detected a cycle
+    if self._topo_has_cycle then
+        return {}, true
+    end
+
+    -- initialize topological sort state if not already in progress
+    if not self._topo_in_progress then
+        -- calculate in-degree for each vertex
+        self._topo_in_degree = {}
+        for _, v in ipairs(self:vertices()) do
+            self._topo_in_degree[v] = 0
+        end
+
+        -- count incoming edges for each vertex
+        for _, v in ipairs(self:vertices()) do
+            local edges = self:adjacent_edges(v)
+            if edges then
+                for _, e in ipairs(edges) do
+                    if e:from() == v then
+                        local w = e:to()
+                        self._topo_in_degree[w] = (self._topo_in_degree[w] or 0) + 1
+                    end
+                end
+            end
+        end
+
+        -- initialize queue with vertices that have no incoming edges
+        self._topo_queue = queue.new()
+        for _, v in ipairs(self:vertices()) do
+            if self._topo_in_degree[v] == 0 then
+                self._topo_queue:push(v)
+            end
+        end
+
+        -- track processed vertices
+        self._topo_processed = hashset.new()
+        self._topo_in_progress = true
+
+        -- track counts for efficient cycle detection
+        self._topo_remaining_count = #self:vertices()
+        self._topo_non_zero_indegree_count = self._topo_remaining_count - self._topo_queue:size()
+
+        -- quick cycle detection: if no nodes have zero in-degree, we have a cycle
+        if self._topo_queue:empty() and self._topo_remaining_count > 0 then
+            self._topo_has_cycle = true
+            return {}, true
+        end
+    end
+
+    -- return empty batch if queue is empty (all processed or cycle detected)
+    if self._topo_queue:empty() then
+        -- check if all vertices were processed
+        local processed_count = self._topo_processed:size()
+        self._topo_has_cycle = processed_count ~= #self:vertices()
+
+        -- if this is the first call and we detect a cycle, mark as complete
+        if processed_count == 0 then
+            self._topo_in_progress = false
+        end
+
+        return {}, self._topo_has_cycle
+    end
+
+    -- collect up to 'limit' nodes with zero in-degree
+    local batch = {}
+    while not self._topo_queue:empty() and #batch < limit do
+        local v = self._topo_queue:pop()
+        table.insert(batch, v)
+        self._topo_processed:insert(v)
+        self._topo_remaining_count = self._topo_remaining_count - 1
+    end
+
+    -- update in-degrees based on the nodes in this batch
+    for _, v in ipairs(batch) do
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                if e:from() == v then
+                    local w = e:to()
+                    self._topo_in_degree[w] = self._topo_in_degree[w] - 1
+
+                    -- update non-zero in-degree count
+                    if self._topo_in_degree[w] == 0 then
+                        self._topo_non_zero_indegree_count = self._topo_non_zero_indegree_count - 1
+
+                        -- if in-degree becomes zero, add to queue for next batch
+                        if not self._topo_processed:has(w) then
+                            self._topo_queue:push(w)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- early cycle detection - if all remaining nodes have in-degree > 0
+    if self:_check_cycle_in_remaining() then
+        return batch, true
+    end
+
+    -- if queue is now empty and all vertices processed, reset state
+    if self._topo_queue:empty() then
+        local processed_count = self._topo_processed:size()
+        if processed_count == #self:vertices() then
+            self._topo_in_progress = false
+        else
+            -- if queue is empty but we still have unprocessed nodes, we have a cycle
+            self._topo_has_cycle = true
+        end
+    end
+
+    return batch, self._topo_has_cycle
+end
+
+-- topological sort, use kahn's algorithm
 --
 -- e.g.
 --
@@ -127,8 +292,35 @@ end
 -- add_edge(b, c) -- b depend on c
 --
 -- it will return {c, b, a}
-function graph:topological_sort(opt)
-    opt = opt or {}
+--[[
+function graph:topo_sort()
+    if not self:is_directed() then
+        return
+    end
+
+    -- reset partial sort state to ensure we start fresh
+    self:partial_topo_sort_reset()
+
+    local order_vertices = {}
+    local batch_size = math.huge  -- no limit, get all at once
+
+    -- get all nodes in one go
+    local batch, has_cycle = self:partial_topo_sort_next(batch_size)
+    while #batch > 0 do
+        for _, v in ipairs(batch) do
+            table.insert(order_vertices, v)
+        end
+        batch, has_cycle = self:partial_topo_sort_next(batch_size)
+
+        -- quick exit if cycle is detected
+        if has_cycle then
+            break
+        end
+    end
+
+    return order_vertices, has_cycle
+end]]
+function graph:topo_sort()
     if not self:is_directed() then
         return
     end
@@ -153,10 +345,10 @@ function graph:topological_sort(opt)
     end
 
     -- queue of vertices with no incoming edges (no dependencies)
-    local queue = list.new()
+    local queue = queue.new()
     for _, v in ipairs(self:vertices()) do
         if in_degree[v] == 0 then
-            queue:insert(v)
+            queue:push(v)
         end
     end
 
@@ -166,7 +358,7 @@ function graph:topological_sort(opt)
     -- process queue
     while not queue:empty() do
         -- remove a vertex with no incoming edges
-        local v = queue:remove_first()
+        local v = queue:pop()
         table.insert(order_vertices, v)
 
         -- for each outgoing edge, remove it and update in-degrees
@@ -178,7 +370,7 @@ function graph:topological_sort(opt)
                     in_degree[w] = in_degree[w] - 1
                     -- if in-degree becomes zero, add to queue
                     if in_degree[w] == 0 then
-                        queue:insert(w)
+                        queue:push(w)
                     end
                 end
             end
@@ -263,6 +455,9 @@ function graph:add_edge(from, to)
         edges_map[to][from] = true
     end
     table.insert(self._edges, e)
+
+    -- reset partial topological sort state since graph structure changed
+    self:partial_topo_sort_reset()
 end
 
 -- has the given edge?
@@ -340,4 +535,3 @@ end
 
 -- return module: graph
 return graph
-

@@ -415,7 +415,7 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
     for _, e in ipairs(edges) do
         dag:add_edge(e[1], e[2])
     end
-    local objectfiles_sorted, has_cycle = dag:topological_sort({reverse = true})
+    local objectfiles_sorted, has_cycle = dag:topo_sort()
     if has_cycle then
         local cycle = dag:find_cycle()
         if cycle then
@@ -429,6 +429,7 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
             raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
         end
     end
+    objectfiles_sorted = table.reverse(objectfiles_sorted)
     local objectfiles_sorted_set = hashset.from(objectfiles_sorted)
     for _, objectfile in ipairs(objectfiles) do
         if not objectfiles_sorted_set:has(objectfile) then

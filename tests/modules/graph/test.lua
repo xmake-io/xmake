@@ -1,6 +1,6 @@
 import("core.base.graph")
 
-function test_topological_sort(t)
+function test_topo_sort(t)
     local edges = {
         {0, 5},
         {0, 2},
@@ -18,7 +18,7 @@ function test_topological_sort(t)
     for _, e in ipairs(edges) do
         dag:add_edge(e[1], e[2])
     end
-    local order_path = dag:topological_sort()
+    local order_path = dag:topo_sort()
     local orders = {}
     for i, v in ipairs(order_path) do
         orders[v] = i
@@ -28,7 +28,7 @@ function test_topological_sort(t)
     end
 
     dag = dag:reverse()
-    order_path = dag:topological_sort()
+    order_path = dag:topo_sort()
     orders = {}
     for i, v in ipairs(order_path) do
         orders[v] = i
@@ -53,7 +53,7 @@ function test_find_cycle(t)
     local cycle = dag:find_cycle()
     t:are_equal(cycle, {1, 6, 0})
 
-    local _, has_cycle = dag:topological_sort()
+    local _, has_cycle = dag:topo_sort()
     t:require(has_cycle)
 end
 
