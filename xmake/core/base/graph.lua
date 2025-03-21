@@ -190,6 +190,7 @@ function graph:partial_topo_sort_remove(node)
     if node == nil then
         return
     end
+    assert(self._partial_topo_pending > 0)
     self._partial_topo_pending = self._partial_topo_pending - 1
     local edges = self:adjacent_edges(node)
     if edges then
