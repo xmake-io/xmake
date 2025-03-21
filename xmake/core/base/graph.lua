@@ -152,11 +152,7 @@ end
 -- local node3, has_cycle = g:partial_topo_sort_next() -- return a
 -- local node4, has_cycle = g:partial_topo_sort_next() -- return nil (empty, all done)
 --
-function graph:partial_topo_sort_next(limit)
-    limit = limit or math.huge
-    if not self:is_directed() then
-        return nil, false
-    end
+function graph:partial_topo_sort_next()
 
     if self._partial_topo_dirty then
         self:partial_topo_sort_reset()
@@ -169,7 +165,9 @@ function graph:partial_topo_sort_next(limit)
 
     -- initialize topological sort state if not already in progress
     if not self._partial_topo_in_progress then
-        self:_partial_topo_sort_init()
+        if not self:_partial_topo_sort_init() then
+            return nil, false
+        end
         self._partial_topo_in_progress = true
     end
 
@@ -191,11 +189,13 @@ function graph:partial_topo_sort_remove(node)
     self._partial_topo_finished = self._partial_topo_finished + 1
     local edges = self:adjacent_edges(node)
     if edges then
+        local partial_topo_in_degree = self._partial_topo_in_degree
         for _, e in ipairs(edges) do
             if e:from() == node then
                 local w = e:to()
-                self._partial_topo_in_degree[w] = self._partial_topo_in_degree[w] - 1
-                if self._partial_topo_in_degree[w] == 0 then
+                local in_degree = partial_topo_in_degree[w] - 1
+                partial_topo_in_degree[w] = in_degree
+                if in_degree == 0 then
                     self._partial_topo_queue:push(w)
                 end
             end
@@ -260,9 +260,9 @@ function graph:topo_sort()
             for _, e in ipairs(edges) do
                 if e:from() == v then
                     local w = e:to()
-                    in_degree[w] = in_degree[w] - 1
-                    -- if in-degree becomes zero, add to queue
-                    if in_degree[w] == 0 then
+                    local d = in_degree[w] - 1
+                    in_degree[w] = d
+                    if d == 0 then
                         queue:push(w)
                     end
                 end
@@ -272,7 +272,6 @@ function graph:topo_sort()
 
     -- if we couldn't process all vertices, there must be a cycle
     local has_cycle = #order_vertices ~= #self:vertices()
-
     return order_vertices, has_cycle
 end
 
@@ -421,6 +420,9 @@ end
 
 -- initialize topological sort state if not already in progress
 function graph:_partial_topo_sort_init()
+    if not self:is_directed() then
+        return false
+    end
 
     -- calculate in-degree for each vertex
     self._partial_topo_in_degree = {}
@@ -432,10 +434,11 @@ function graph:_partial_topo_sort_init()
     for _, v in ipairs(self:vertices()) do
         local edges = self:adjacent_edges(v)
         if edges then
+            local partial_topo_in_degree = self._partial_topo_in_degree
             for _, e in ipairs(edges) do
                 if e:from() == v then
                     local w = e:to()
-                    self._partial_topo_in_degree[w] = (self._partial_topo_in_degree[w] or 0) + 1
+                    partial_topo_in_degree[w] = (partial_topo_in_degree[w] or 0) + 1
                 end
             end
         end
@@ -448,6 +451,7 @@ function graph:_partial_topo_sort_init()
             self._partial_topo_queue:push(v)
         end
     end
+    return true
 end
 
 -- new graph
