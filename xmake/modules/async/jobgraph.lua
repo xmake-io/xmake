@@ -25,20 +25,17 @@ import("core.base.graph")
 import("core.base.hashset")
 
 -- define module
-local jobqueue = jobqueue or object {_init = {"_jobgraph"}}
-local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag", "_dirty"}}
+local jobqueue = jobqueue or object {_init = {"_dag"}}
+local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag"}}
 
--- remove the given job from the job queue
+-- nothing to do, we need not to remove it
 function jobqueue:remove(job)
 end
 
 -- get a free job from the job queue
 function jobqueue:getfree()
-    local graph = self._jobgraph
-    local dag = graph._dag
-
-    -- build job queue
-    local order_jobs, has_cycle = dag:partial_topo_sort_next(1)
+    local dag = self._dag
+    local freejob, has_cycle = dag:partial_topo_sort_next()
     if has_cycle then
         local cycle = dag:find_cycle()
         if cycle then
@@ -50,9 +47,7 @@ function jobqueue:getfree()
             raise("%s: circular job dependency detected!\n%s", graph, table.concat(names, "\n   -> "))
         end
     end
-    if order_jobs then
-        return table.unwrap(order_jobs)
-    end
+    return freejob
 end
 
 -- add a job to the jobgraph
@@ -71,7 +66,6 @@ function jobgraph:add(name, run, opt)
         local job = {name = name, run = run, opt = opt}
         jobs[name] = job
         self._size = self._size + 1
-        self._dirty = true
     end
 end
 
@@ -85,14 +79,12 @@ function jobgraph:remove(name)
         jobs[name] = nil
         dag:remove_vertex(job)
         self._size = self._size - 1
-        self._dirty = true
     end
 end
 
 -- add job deps, e.g. add_deps(a, b, c, ...): a -> b -> c, ...
 function jobgraph:add_deps(...)
     local prev
-    local dirty
     local dag = self._dag
     local jobs = self._jobs
     for _, name in ipairs(table.pack(...)) do
@@ -100,25 +92,22 @@ function jobgraph:add_deps(...)
         if prev then
             if not dag:has_edge(prev, curr) then
                 dag:add_edge(prev, curr)
-                dirty = true
             end
         end
         prev = curr
-    end
-    if dirty then
-        self._dirty = true
     end
 end
 
 -- add jog group
 function jobgraph:add_group(name, callback)
     -- TODO
-    self._dirty = true
 end
 
 -- build a job queue
 function jobgraph:build()
-    return jobqueue {self}
+    local dag = self._dag
+    dag:partial_topo_sort_reset()
+    return jobqueue {dag}
 end
 
 -- get jobs
@@ -143,5 +132,5 @@ end
 
 -- new a jobgraph
 function new(name)
-    return jobgraph {name, {}, 0, graph.new(true), false}
+    return jobgraph {name, {}, 0, graph.new(true)}
 end
