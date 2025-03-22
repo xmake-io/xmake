@@ -22,6 +22,7 @@
 local table   = require("base/table")
 local queue   = require("base/queue")
 local object  = require("base/object")
+local hashset = require("base/hashset")
 
 -- define module
 local graph = graph or object { _init = {"_directed"} } {true}
@@ -130,7 +131,7 @@ function graph:partial_topo_sort_reset()
     self._partial_topo_in_progress = false
     self._partial_topo_in_degree = nil
     self._partial_topo_queue = nil
-    self._partial_topo_processed = 0
+    self._partial_topo_processed = nil
     self._partial_topo_finished = 0
     self._partial_topo_has_cycle = nil
     self._partial_topo_dirty = false
@@ -173,8 +174,9 @@ end
 --
 function graph:partial_topo_sort_next()
 
+    -- recompute all nodes if has dirty nodes
     if self._partial_topo_dirty then
-        self:partial_topo_sort_reset()
+        self:_partial_topo_sort_recompute_all()
     end
 
     -- check if we already detected a cycle
@@ -192,9 +194,17 @@ function graph:partial_topo_sort_next()
 
     -- get one node with zero in-degree
     local node
-    if not self._partial_topo_queue:empty() then
-        node = self._partial_topo_queue:pop()
-        self._partial_topo_processed = self._partial_topo_processed + 1
+    local partial_topo_queue = self._partial_topo_queue
+    local partial_topo_processed = self._partial_topo_processed
+    while not partial_topo_queue:empty() do
+        local v = partial_topo_queue:pop()
+        if partial_topo_processed:has(v) then
+            self:partial_topo_sort_remove(v)
+        else
+            node = v
+            partial_topo_processed:insert(node)
+            break
+        end
     end
 
     return node, self._partial_topo_has_cycle
@@ -209,19 +219,20 @@ function graph:partial_topo_sort_remove(node)
     local edges = self:adjacent_edges(node)
     if edges then
         local partial_topo_in_degree = self._partial_topo_in_degree
+        local partial_topo_queue = self._partial_topo_queue
         for _, e in ipairs(edges) do
             if e:from() == node then
                 local w = e:to()
                 local in_degree = partial_topo_in_degree[w] - 1
                 partial_topo_in_degree[w] = in_degree
                 if in_degree == 0 then
-                    self._partial_topo_queue:push(w)
+                    partial_topo_queue:push(w)
                 end
             end
         end
     end
 
-    if self._partial_topo_queue:empty() and self._partial_topo_processed == self._partial_topo_finished then
+    if self._partial_topo_queue:empty() and self._partial_topo_processed:size() == self._partial_topo_finished then
         self._partial_topo_has_cycle = self._partial_topo_finished ~= #self:vertices()
     end
 end
@@ -450,10 +461,10 @@ function graph:_partial_topo_sort_init()
     end
 
     -- count incoming edges for each vertex
+    local partial_topo_in_degree = self._partial_topo_in_degree
     for _, v in ipairs(self:vertices()) do
         local edges = self:adjacent_edges(v)
         if edges then
-            local partial_topo_in_degree = self._partial_topo_in_degree
             for _, e in ipairs(edges) do
                 if e:from() == v then
                     local w = e:to()
@@ -465,12 +476,25 @@ function graph:_partial_topo_sort_init()
 
     -- initialize queue with vertices that have no incoming edges
     self._partial_topo_queue = queue.new()
+    local partial_topo_queue = self._partial_topo_queue
     for _, v in ipairs(self:vertices()) do
-        if self._partial_topo_in_degree[v] == 0 then
-            self._partial_topo_queue:push(v)
+        if partial_topo_in_degree[v] == 0 then
+            partial_topo_queue:push(v)
         end
     end
+
+    self._partial_topo_processed = self._partial_topo_processed or hashset.new()
     return true
+end
+
+-- recompute all nodes
+function graph:_partial_topo_sort_recompute_all()
+    self._partial_topo_in_progress = false
+    self._partial_topo_in_degree = nil
+    self._partial_topo_queue = nil
+    self._partial_topo_finished = 0
+    self._partial_topo_has_cycle = nil
+    self._partial_topo_dirty = false
 end
 
 -- new graph
