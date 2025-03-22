@@ -119,7 +119,7 @@ function jobgraph:add_deps(...)
         assert(curr, "job(%s) not found in jobgraph(%s)", name, self)
         if prev then
             if prev_is_group and curr_is_group then
-                -- we use a fake task as a node to bridge the two groups.
+                -- we use a fake job as a node to bridge the two groups.
                 local fakejob = {}
                 for _, job in ipairs(prev) do
                     if not dag:has_edge(job, fakejob) then
