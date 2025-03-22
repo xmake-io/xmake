@@ -37,6 +37,7 @@ end
 -- get a free job from the job queue
 function jobqueue:getfree()
     local dag = self._dag
+::continue::
     local freejob, has_cycle = dag:partial_topo_sort_next()
     if has_cycle then
         local names = {}
@@ -49,6 +50,11 @@ function jobqueue:getfree()
         end
         raise("%s: circular job dependency detected!\n%s", self._jobgraph, table.concat(names, "\n   -> "))
     end
+    -- if it's a fake job, we need to skip it and continue to get the next job
+    if freejob and not freejob.run then
+        dag:partial_topo_sort_remove(freejob)
+        goto continue
+    end
     return freejob
 end
 
@@ -60,23 +66,25 @@ end
 --
 -- @param name      the job name
 -- @param run       the job run command/script
--- @param opt       the job options, e.g. {group = "xxx"}
+-- @param opt       the job options, e.g. {groups = {"xxx"}}
 --
 function jobgraph:add(name, run, opt)
+    opt = opt or {}
     local jobs = self._jobs
     if not jobs[name] then
         local job = {name = name, run = run, opt = opt}
         jobs[name] = job
         self._size = self._size + 1
 
-        local group_name = opt.group
-        if group_name then
-            local groups = self._groups[group_name]
-            if not groups then
-                groups = {}
-                self._groups[group_name] = groups
+        if opt.groups then
+            for _, group_name in ipairs(opt.groups) do
+                local groups = self._groups[group_name]
+                if not groups then
+                    groups = {}
+                    self._groups[group_name] = groups
+                end
+                table.insert(groups, job)
             end
-            table.insert(groups, job)
         end
     end
 end
@@ -97,19 +105,53 @@ end
 -- add job deps, e.g. add_deps(a, b, c, ...): a -> b -> c, ...
 function jobgraph:add_deps(...)
     local prev
+    local prev_is_group
     local dag = self._dag
     local jobs = self._jobs
+    local groups = self._groups
     for _, name in ipairs(table.pack(...)) do
-        local curr = assert(jobs[name], "job(%s) not found in jobgraph(%s)", name, self)
+        local curr_is_group = false
+        local curr = jobs[name]
+        if not curr then
+            curr = groups[name]
+            curr_is_group = true
+        end
+        assert(curr, "job(%s) not found in jobgraph(%s)", name, self)
         if prev then
-            if not dag:has_edge(prev, curr) then
-                dag:add_edge(prev, curr)
+            if prev_is_group and curr_is_group then
+                -- we use a fake task as a node to bridge the two groups.
+                local fakejob = {}
+                for _, job in ipairs(prev) do
+                    if not dag:has_edge(job, fakejob) then
+                        dag:add_edge(job, fakejob)
+                    end
+                end
+                for _, job in ipairs(curr) do
+                    if not dag:has_edge(fakejob, job) then
+                        dag:add_edge(fakejob, job)
+                    end
+                end
+            elseif curr_is_group then
+                for _, job in ipairs(curr) do
+                    if not dag:has_edge(prev, job) then
+                        dag:add_edge(prev, job)
+                    end
+                end
+            elseif prev_is_group then
+                for _, job in ipairs(prev) do
+                    if not dag:has_edge(job, curr) then
+                        dag:add_edge(job, curr)
+                    end
+                end
+            else
+                if not dag:has_edge(prev, curr) then
+                    dag:add_edge(prev, curr)
+                end
             end
         end
         prev = curr
+        prev_is_group = curr_is_group
     end
-    -- TODO
-    -- add groups jobs
 end
 
 -- build a job queue
