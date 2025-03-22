@@ -390,7 +390,7 @@ function _insert_configs_from_envs(configs, envs, opt)
     opt = opt or {}
     local configs_str = opt._configs_str
     for k, v in pairs(envs) do
-        if configs_str and configs_str:find(k, 1, true) then
+        if configs_str and configs_str:find("-D" .. k .. "=", 1, true) then
             -- use user custom configuration
         else
             table.insert(configs, "-D" .. k .. "=" .. v)
