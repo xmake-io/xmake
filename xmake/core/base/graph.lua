@@ -107,17 +107,15 @@ function graph:remove_vertex(v)
         self._edges_map[v] = nil
         self._adjacent_edges[v] = nil
         -- remove the adjacent edge with this vertex in the other vertices
-        if not self:is_directed() then
-            for _, w in ipairs(self:vertices()) do
-                local edges = self:adjacent_edges(w)
-                if edges then
-                    table.remove_if(edges, function (_, e)
-                        if e:other(w) == v then
-                            self._edges_map[w] = nil
-                            return true
-                        end
-                    end)
-                end
+        for _, w in ipairs(self:vertices()) do
+            local edges = self:adjacent_edges(w)
+            if edges then
+                table.remove_if(edges, function (_, e)
+                    if e:other(w) == v then
+                        self._edges_map[w] = nil
+                        return true
+                    end
+                end)
             end
         end
 
@@ -176,7 +174,7 @@ function graph:partial_topo_sort_next()
 
     -- recompute all nodes if has dirty nodes
     if self._partial_topo_dirty then
-        self:_partial_topo_sort_recompute_all()
+        self:_partial_topo_sort_recompute_dirty()
     end
 
     -- check if we already detected a cycle
@@ -487,8 +485,10 @@ function graph:_partial_topo_sort_init()
     return true
 end
 
--- recompute all nodes
-function graph:_partial_topo_sort_recompute_all()
+-- recompute all dirty nodes
+--
+-- TODO we recompute all nodes now, but we should optimize to recompute only dirty nodes
+function graph:_partial_topo_sort_recompute_dirty()
     self._partial_topo_in_progress = false
     self._partial_topo_in_degree = nil
     self._partial_topo_queue = nil
