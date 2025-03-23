@@ -40,6 +40,7 @@ function main(toolchain)
     toolchain:add("toolset", "ar", cross .. "gcc-ar", cross .. "ar")
     toolchain:add("toolset", "ranlib", cross .. "gcc-ranlib", cross .. "ranlib")
     toolchain:add("toolset", "strip", cross .. "strip")
+    toolchain:add("toolset", "objcopy", cross .. "objcopy")
 
     -- add bin search library for loading some dependent .dll files windows
     local bindir = toolchain:bindir()
