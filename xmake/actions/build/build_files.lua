@@ -115,15 +115,28 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target,
 end
 
 -- get batch jobs
-function _get_batchjobs(targetname, opt)
+function _get_batchjobs(targetnames, opt)
 
     -- convert all sourcefiles to lua pattern
     local filepatterns = _get_file_patterns(opt.sourcefiles)
 
     -- get root targets
     local targets_root = {}
-    if targetname then
-        table.insert(targets_root, project.target(targetname))
+    if targetnames then
+        for _, targetname in ipairs(table.wrap(targetnames)) do
+            local target = project.target(targetname)
+            if target then
+                table.insert(targets_root, target)
+                if option.get("rebuild") then
+                    target:data_set("rebuilt", true)
+                    if not option.get("shallow") then
+                        for _, dep in ipairs(target:orderdeps()) do
+                            dep:data_set("rebuilt", true)
+                        end
+                    end
+                end
+            end
+        end
     else
         local group_pattern = opt.group_pattern
         local depset = hashset.new()
@@ -140,6 +153,14 @@ function _get_batchjobs(targetname, opt)
         for _, target in pairs(targets) do
             if not depset:has(target:name()) then
                 table.insert(targets_root, target)
+                if option.get("rebuild") then
+                    target:data_set("rebuilt", true)
+                    if not option.get("shallow") then
+                        for _, dep in ipairs(target:orderdeps()) do
+                            dep:data_set("rebuilt", true)
+                        end
+                    end
+                end
             end
         end
     end
@@ -198,13 +219,13 @@ function _get_file_patterns(sourcefiles)
 end
 
 -- the main entry
-function main(targetname, opt)
+function main(targetnames, opt)
 
     -- prepare to build files
     prepare_build_files(targetnames, opt)
 
     -- build all jobs
-    local batchjobs = _get_batchjobs(targetname, opt)
+    local batchjobs = _get_batchjobs(targetnames, opt)
     if batchjobs and batchjobs:size() > 0 then
         local curdir = os.curdir()
         runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1, curdir = curdir})
