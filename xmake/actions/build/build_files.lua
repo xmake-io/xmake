@@ -26,7 +26,7 @@ import("core.project.project")
 import("private.async.jobpool")
 import("async.runjobs")
 import("kinds.object")
-import("prepare", {alias = "prepare_build"})
+import("prepare_files", {alias = "prepare_build_files"})
 
 -- match source files
 function _match_sourcefiles(sourcefile, filepatterns)
@@ -49,7 +49,6 @@ end
 
 -- add batch jobs
 function _add_batchjobs(batchjobs, rootjob, target, filepatterns)
-
     local newbatches = {}
     local sourcecount = 0
     for rulename, sourcebatch in pairs(target:sourcebatches()) do
@@ -116,13 +115,17 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target,
 end
 
 -- get batch jobs
-function _get_batchjobs(targetname, group_pattern, filepatterns)
+function _get_batchjobs(targetname, opt)
+
+    -- convert all sourcefiles to lua pattern
+    local filepatterns = _get_file_patterns(opt.sourcefiles)
 
     -- get root targets
     local targets_root = {}
     if targetname then
         table.insert(targets_root, project.target(targetname))
     else
+        local group_pattern = opt.group_pattern
         local depset = hashset.new()
         local targets = {}
         for _, target in pairs(project.targets()) do
@@ -195,22 +198,19 @@ function _get_file_patterns(sourcefiles)
 end
 
 -- the main entry
-function main(targetname, group_pattern, sourcefiles)
+function main(targetname, opt)
 
-    -- prepare to build
-    prepare_build(targetnames, {group_pattern = group_pattern, sourcefiles = sourcefiles})
-
-    -- convert all sourcefiles to lua pattern
-    local filepatterns = _get_file_patterns(sourcefiles)
+    -- prepare to build files
+    prepare_build_files(targetnames, opt)
 
     -- build all jobs
-    local batchjobs = _get_batchjobs(targetname, group_pattern, filepatterns)
+    local batchjobs = _get_batchjobs(targetname, opt)
     if batchjobs and batchjobs:size() > 0 then
         local curdir = os.curdir()
         runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1, curdir = curdir})
         os.cd(curdir)
     else
-        wprint("%s not found!", sourcefiles)
+        wprint("%s not found!", opt.sourcefiles)
     end
 end
 
