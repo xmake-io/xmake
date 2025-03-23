@@ -231,7 +231,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, target, jobrefs,
 end
 
 -- get batch jobs, @note we need to export it for private.diagnosis.dump_buildjobs
-function get_batchjobs(targetnames, group_pattern)
+function get_batchjobs(targetnames, opt)
 
     -- get root targets
     local targets_root = {}
@@ -251,6 +251,7 @@ function get_batchjobs(targetnames, group_pattern)
             end
         end
     else
+        local group_pattern = opt.group_pattern
         local depset = hashset.new()
         local targets = {}
         for _, target in ipairs(project.ordertargets()) do
@@ -300,10 +301,10 @@ function get_batchjobs(targetnames, group_pattern)
     return batchjobs
 end
 
-function main(targetnames, group_pattern)
+function main(targetnames, opt)
 
     -- prepare to build
-    prepare_build(targetnames, {group_pattern = group_pattern})
+    prepare_build(targetnames, opt)
 
     -- enable distcc?
     local distcc
@@ -312,7 +313,7 @@ function main(targetnames, group_pattern)
     end
 
     -- build all jobs
-    local batchjobs = get_batchjobs(targetnames, group_pattern)
+    local batchjobs = get_batchjobs(targetnames, opt)
     if batchjobs and batchjobs:size() > 0 then
         local curdir = os.curdir()
         runjobs("build", batchjobs, {on_exit = function (errors)
