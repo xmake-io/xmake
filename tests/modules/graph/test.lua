@@ -110,11 +110,14 @@ function test_paritail_topo_sort_dynamic(t)
             if node then
                 if not dynamic_adjust then
                     dag:add_edge(1, 4)
-                    dag:add_edge(2, 9)
-                    dynamic_adjust = true
+                    dag:remove_vertex(6)
                 end
                 table.insert(order_vertices, node)
                 dag:partial_topo_sort_remove(node)
+                if not dynamic_adjust then
+                    dag:add_edge(2, 9)
+                    dynamic_adjust = true
+                end
             else
                 if has_cycle then
                     raise("has cycle!")
@@ -148,8 +151,20 @@ function test_paritail_topo_sort_dynamic(t)
     for i, v in ipairs(order_path) do
         orders[v] = i
     end
-    table.insert(edges, {1, 4})
-    table.insert(edges, {2, 9})
+    edges = {
+        {0, 5},
+        {0, 2},
+        {0, 1},
+        -- {3, 6},
+        {3, 5},
+        {3, 4},
+        {5, 4},
+        -- {6, 4},
+        -- {6, 0},
+        {3, 2},
+        {1, 4},
+        {2, 9}
+    }
     for _, e in ipairs(edges) do
         t:require(orders[e[1]] < orders[e[2]])
     end
