@@ -116,13 +116,10 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target,
 end
 
 -- get batch jobs
-function _get_batchjobs(targetnames, opt)
+function _get_batchjobs(targets_root, opt)
 
     -- convert all sourcefiles to lua pattern
     local filepatterns = _get_file_patterns(opt.sourcefiles)
-
-    -- get root targets
-    local targets_root = target_utils.get_root_targets(targetnames, opt)
 
     -- generate batch jobs for default or all targets
     local jobrefs = {}
@@ -180,11 +177,14 @@ end
 -- the main entry
 function main(targetnames, opt)
 
+    -- get root targets
+    local targets_root = target_utils.get_root_targets(targetnames, opt)
+
     -- prepare to build files
-    prepare_build_files(targetnames, opt)
+    prepare_build_files(targets_root, opt)
 
     -- build all jobs
-    local batchjobs = _get_batchjobs(targetnames, opt)
+    local batchjobs = _get_batchjobs(targets_root, opt)
     if batchjobs and batchjobs:size() > 0 then
         local curdir = os.curdir()
         runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1, curdir = curdir})

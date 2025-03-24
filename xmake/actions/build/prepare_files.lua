@@ -22,5 +22,5 @@
 import("core.base.option")
 import("core.project.config")
 
-function main(targetnames, opt)
+function main(targets_root, opt)
 end
