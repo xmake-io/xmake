@@ -26,6 +26,7 @@ import("core.project.project")
 import("private.async.jobpool")
 import("async.runjobs")
 import("kinds.object")
+import("target_utils")
 import("prepare_files", {alias = "prepare_build_files"})
 
 -- match source files
@@ -121,49 +122,7 @@ function _get_batchjobs(targetnames, opt)
     local filepatterns = _get_file_patterns(opt.sourcefiles)
 
     -- get root targets
-    local targets_root = {}
-    if targetnames then
-        for _, targetname in ipairs(table.wrap(targetnames)) do
-            local target = project.target(targetname)
-            if target then
-                table.insert(targets_root, target)
-                if option.get("rebuild") then
-                    target:data_set("rebuilt", true)
-                    if not option.get("shallow") then
-                        for _, dep in ipairs(target:orderdeps()) do
-                            dep:data_set("rebuilt", true)
-                        end
-                    end
-                end
-            end
-        end
-    else
-        local group_pattern = opt.group_pattern
-        local depset = hashset.new()
-        local targets = {}
-        for _, target in pairs(project.targets()) do
-            local group = target:get("group")
-            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                for _, depname in ipairs(target:get("deps")) do
-                    depset:insert(depname)
-                end
-                table.insert(targets, target)
-            end
-        end
-        for _, target in pairs(targets) do
-            if not depset:has(target:name()) then
-                table.insert(targets_root, target)
-                if option.get("rebuild") then
-                    target:data_set("rebuilt", true)
-                    if not option.get("shallow") then
-                        for _, dep in ipairs(target:orderdeps()) do
-                            dep:data_set("rebuilt", true)
-                        end
-                    end
-                end
-            end
-        end
-    end
+    local targets_root = target_utils.get_root_targets(targetnames, opt)
 
     -- generate batch jobs for default or all targets
     local jobrefs = {}
