@@ -25,52 +25,11 @@ import("async.runjobs")
 import("async.jobgraph", {alias = "async_jobgraph"})
 
 -- get prepare jobs
-function _get_prepare_jobs(targetnames, opt)
+function _get_prepare_jobs(targets_root, opt)
     local jobgraph = async_jobgraph.new()
     return jobgraph
 
-    -- get root targets
     --[[
-    local targets_root = {}
-    if targetnames then
-        for _, targetname in ipairs(table.wrap(targetnames)) do
-            local target = project.target(targetname)
-            if target then
-                table.insert(targets_root, target)
-                if option.get("rebuild") then
-                    target:data_set("rebuilt", true)
-                    if not option.get("shallow") then
-                        for _, dep in ipairs(target:orderdeps()) do
-                            dep:data_set("rebuilt", true)
-                        end
-                    end
-                end
-            end
-        end
-    else
-        local group_pattern = opt.group_pattern
-        local depset = hashset.new()
-        local targets = {}
-        for _, target in ipairs(project.ordertargets()) do
-            if target:is_enabled() then
-                local group = target:get("group")
-                if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                    for _, depname in ipairs(target:get("deps")) do
-                        depset:insert(depname)
-                    end
-                    table.insert(targets, target)
-                end
-            end
-        end
-        for _, target in ipairs(targets) do
-            if not depset:has(target:name()) then
-                table.insert(targets_root, target)
-            end
-            if option.get("rebuild") then
-                target:data_set("rebuilt", true)
-            end
-        end
-    end
 
     -- generate batch jobs for default or all targets
     local jobrefs = {}
@@ -98,8 +57,8 @@ function _get_prepare_jobs(targetnames, opt)
     return jobgraph]]
 end
 
-function main(targetnames, opt)
-    local jobgraph = _get_prepare_jobs(targetnames, opt)
+function main(targets_root, opt)
+    local jobgraph = _get_prepare_jobs(targets_root, opt)
     if jobgraph and not jobgraph:empty() then
         local curdir = os.curdir()
         runjobs("prepare", jobgraph, {on_exit = function (errors)
