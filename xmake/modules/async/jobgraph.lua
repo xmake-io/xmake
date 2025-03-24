@@ -176,6 +176,11 @@ function jobgraph:size()
     return self._size
 end
 
+-- is empty?
+function jobgraph:empty()
+    return self:size() == 0
+end
+
 -- tostring
 function jobgraph:__tostring()
     return string.format("<jobgraph:%s/%d>", self:name() or "anonymous", self:size())

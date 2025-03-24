@@ -29,6 +29,7 @@ import("core.base.hashset")
 import("private.service.remote_cache.client", {alias = "remote_cache_client"})
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 import("prepare", {alias = "prepare_build"})
+import("target_utils")
 
 -- clean target for rebuilding
 function _clean_target(target)
@@ -234,46 +235,7 @@ end
 function get_batchjobs(targetnames, opt)
 
     -- get root targets
-    local targets_root = {}
-    if targetnames then
-        for _, targetname in ipairs(table.wrap(targetnames)) do
-            local target = project.target(targetname)
-            if target then
-                table.insert(targets_root, target)
-                if option.get("rebuild") then
-                    target:data_set("rebuilt", true)
-                    if not option.get("shallow") then
-                        for _, dep in ipairs(target:orderdeps()) do
-                            dep:data_set("rebuilt", true)
-                        end
-                    end
-                end
-            end
-        end
-    else
-        local group_pattern = opt.group_pattern
-        local depset = hashset.new()
-        local targets = {}
-        for _, target in ipairs(project.ordertargets()) do
-            if target:is_enabled() then
-                local group = target:get("group")
-                if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                    for _, depname in ipairs(target:get("deps")) do
-                        depset:insert(depname)
-                    end
-                    table.insert(targets, target)
-                end
-            end
-        end
-        for _, target in ipairs(targets) do
-            if not depset:has(target:name()) then
-                table.insert(targets_root, target)
-            end
-            if option.get("rebuild") then
-                target:data_set("rebuilt", true)
-            end
-        end
-    end
+    local targets_root = target_utils.get_root_targets(targetnames, opt)
 
     -- generate batch jobs for default or all targets
     local jobrefs = {}

@@ -15,22 +15,20 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        prepare.lua
+-- @file        target_utils.lua
 --
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.config")
-import("async.runjobs")
-import("async.jobgraph", {alias = "async_jobgraph"})
+import("core.project.project")
 
--- get prepare jobs
-function _get_prepare_jobs(targetnames, opt)
-    local jobgraph = async_jobgraph.new()
-    return jobgraph
+-- get all root targets
+function get_root_targets(targetnames, opt)
+    opt = opt or {}
 
     -- get root targets
-    --[[
     local targets_root = {}
     if targetnames then
         for _, targetname in ipairs(table.wrap(targetnames)) do
@@ -71,43 +69,5 @@ function _get_prepare_jobs(targetnames, opt)
             end
         end
     end
-
-    -- generate batch jobs for default or all targets
-    local jobrefs = {}
-    local jobrefs_before = {}
-    local jobgraph = jobpool.new()
-    for _, target in ipairs(targets_root) do
-        _add_jobgraph_for_target_and_deps(jobgraph, jobgraph:rootjob(), target, jobrefs, jobrefs_before)
-    end
-
-    -- add fence jobs, @see https://github.com/xmake-io/xmake/issues/5003
-    for _, target in ipairs(project.ordertargets()) do
-        local target_job_before = jobrefs_before[target:name()]
-        if target_job_before then
-            for _, dep in ipairs(target:orderdeps()) do
-                if dep:policy("build.fence") then
-                    local fence_job = jobrefs[dep:name()]
-                    if fence_job then
-                        jobgraph:add(fence_job, target_job_before)
-                    end
-                end
-            end
-        end
-    end
-
-    return jobgraph]]
-end
-
-function main(targetnames, opt)
-    local jobgraph = _get_prepare_jobs(targetnames, opt)
-    if jobgraph and not jobgraph:empty() then
-        local curdir = os.curdir()
-        runjobs("prepare", jobgraph, {on_exit = function (errors)
-            import("utils.progress")
-            if errors and progress.showing_without_scroll() then
-                print("")
-            end
-        end, comax = option.get("jobs") or 1, curdir = curdir})
-        os.cd(curdir)
-    end
+    return targets_root
 end
