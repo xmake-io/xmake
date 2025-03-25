@@ -58,6 +58,7 @@ function main(toolchain)
     -- get sdk directory
     local sdkdir = toolchain:sdkdir()
     local bindir = toolchain:bindir()
+    local cross  = toolchain:cross()
     if not sdkdir and not bindir then
         bindir = try {function () return os.iorunv("llvm-config", {"--bindir"}) end}
         if bindir then
@@ -83,7 +84,7 @@ function main(toolchain)
     end
 
     -- find cross toolchain from external envirnoment
-    local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir})
+    local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir, cross = cross})
     if not cross_toolchain then
         -- find it from packages
         for _, package in ipairs(toolchain:packages()) do
@@ -103,6 +104,10 @@ function main(toolchain)
         toolchain:configs_save()
     else
         raise("llvm toolchain not found!")
+    end
+
+    if toolchain:is_plat("cross") and (not toolchain:cross() or toolchain:cross():match("^%s*$")) then
+        raise("Missing cross target. Use `--cross=name` to specify.")
     end
 
     -- attempt to find xcode to pass `-isysroot` on macos
