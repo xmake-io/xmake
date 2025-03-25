@@ -20,41 +20,36 @@
 
 -- imports
 import("core.base.option")
-import("core.project.config")
+import("core.project.project")
 import("async.runjobs")
 import("async.jobgraph", {alias = "async_jobgraph"})
+
+-- add prepare jobs for the given target
+function _add_prepare_jobs_for_target(jobgraph, target)
+    print("prepare", target:fullname())
+end
+
+-- add prepare jobs for the given target and deps
+function _add_preprare_jobs_for_target_and_deps(jobgraph, target, targetrefs)
+    local targetname = target:fullname()
+    if not targetrefs[targetname] then
+        targetrefs[targetname] = target
+        _add_prepare_jobs_for_target(jobgraph, target)
+        for _, depname in ipairs(target:get("deps")) do
+            local dep = project.target(depname, {namespace = target:namespace()})
+            _add_preprare_jobs_for_target_and_deps(jobgraph, dep, targetrefs)
+        end
+    end
+end
 
 -- get prepare jobs
 function _get_prepare_jobs(targets_root, opt)
     local jobgraph = async_jobgraph.new()
-    return jobgraph
-
-    --[[
-
-    -- generate batch jobs for default or all targets
-    local jobrefs = {}
-    local jobrefs_before = {}
-    local jobgraph = jobpool.new()
+    local targetrefs = {}
     for _, target in ipairs(targets_root) do
-        _add_jobgraph_for_target_and_deps(jobgraph, jobgraph:rootjob(), target, jobrefs, jobrefs_before)
+        _add_preprare_jobs_for_target_and_deps(jobgraph, target, targetrefs)
     end
-
-    -- add fence jobs, @see https://github.com/xmake-io/xmake/issues/5003
-    for _, target in ipairs(project.ordertargets()) do
-        local target_job_before = jobrefs_before[target:name()]
-        if target_job_before then
-            for _, dep in ipairs(target:orderdeps()) do
-                if dep:policy("build.fence") then
-                    local fence_job = jobrefs[dep:name()]
-                    if fence_job then
-                        jobgraph:add(fence_job, target_job_before)
-                    end
-                end
-            end
-        end
-    end
-
-    return jobgraph]]
+    return jobgraph
 end
 
 function main(targets_root, opt)
