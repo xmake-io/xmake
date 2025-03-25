@@ -180,9 +180,11 @@ function _make_arguments(jsonfile, arguments, opt)
     -- translate some unsupported arguments
     arguments = _translate_arguments(arguments)
 
+    -- https://github.com/xmake-io/xmake/issues/6058
     local lsp = _get_lsp()
     local target = opt.target
-    if lsp and lsp == "clangd" and target and target:is_plat("windows") then
+    local cc = path.basename(arguments[1]):lower()
+    if lsp and lsp == "clangd" and target and target:is_plat("windows") and cc ~= "nvcc" then
         table.join2(arguments, _get_windows_sdk_arguments(target))
     end
 
