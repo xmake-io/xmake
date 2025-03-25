@@ -180,6 +180,7 @@ function _make_arguments(jsonfile, arguments, opt)
     -- translate some unsupported arguments
     arguments = _translate_arguments(arguments)
 
+    -- https://github.com/xmake-io/xmake/issues/6058
     local lsp = _get_lsp()
     local target = opt.target
     local cc = path.basename(arguments[1]):lower()
