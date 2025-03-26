@@ -23,6 +23,6 @@ import("target_utils")
 
 function main(targets_root, opt)
     opt = opt or {}
-    opt.jobkind = "prepare"
+    opt.job_kind = "prepare"
     target_utils.runjobs(targets_root, opt)
 end

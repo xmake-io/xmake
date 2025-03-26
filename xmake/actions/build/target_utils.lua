@@ -23,25 +23,54 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
-import("async.runjobs")
+import("async.runjobs", {alias = "async_runjobs"})
 import("async.jobgraph", {alias = "async_jobgraph"})
+import("private.utils.batchcmds")
 
 -- add jobs for the given target
-function _add_jobs_for_target(jobgraph, target)
+function _add_jobs_for_target(jobgraph, target, opt)
+    opt = opt or {}
     if not target:is_enabled() then
         return
     end
+
+    -- add after_xxx jobs for target
+    local job_kind = opt.job_kind
+    local job_after = target:fullname() .. "/after_" .. job_kind
+    --[[
+    jobgraph:add(job_after, function (index, total, opt)
+        local progress = opt.progress
+        local script_aftername = job_kind .. "_after"
+        local script_after = target:script(script_aftername)
+        if script_after then
+            script_after(target, {progress = progress})
+        end
+        for _, r in ipairs(target:orderules()) do
+            local script_after = r:script(script_aftername)
+            if script_after then
+                script_after(target, {progress = progress})
+            else
+                local scriptcmd_aftername = job_kind .. "cmd_after"
+                local scriptcmd_after = r:script(scriptcmd_aftername)
+                if scriptcmd_after then
+                    local batchcmds_ = batchcmds.new({target = target})
+                    scriptcmd_after(target, batchcmds_, {progress = progress})
+                    batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+                end
+            end
+        end
+    end)]]
 end
 
 -- add jobs for the given target and deps
-function _add_jobs_for_target_and_deps(jobgraph, target, targetrefs)
+function _add_jobs_for_target_and_deps(jobgraph, target, targetrefs, opt)
     local targetname = target:fullname()
     if not targetrefs[targetname] then
         targetrefs[targetname] = target
-        _add_jobs_for_target(jobgraph, target)
+        _add_jobs_for_target(jobgraph, target, opt)
         for _, depname in ipairs(target:get("deps")) do
             local dep = project.target(depname, {namespace = target:namespace()})
-            _add_jobs_for_target_and_deps(jobgraph, dep, targetrefs)
+            _add_jobs_for_target_and_deps(jobgraph, dep, targetrefs, opt)
         end
     end
 end
@@ -51,7 +80,7 @@ function _get_jobs(targets_root, opt)
     local jobgraph = async_jobgraph.new()
     local targetrefs = {}
     for _, target in ipairs(targets_root) do
-        _add_jobs_for_target_and_deps(jobgraph, target, targetrefs)
+        _add_jobs_for_target_and_deps(jobgraph, target, targetrefs, opt)
     end
     return jobgraph
 end
@@ -106,11 +135,11 @@ end
 
 function runjobs(targets_root, opt)
     opt = opt or {}
-    local jobkind = opt.jobkind
+    local job_kind = opt.job_kind
     local jobgraph = _get_jobs(targets_root, opt)
     if jobgraph and not jobgraph:empty() then
         local curdir = os.curdir()
-        runjobs(jobkind, jobgraph, {on_exit = function (errors)
+        async_runjobs(job_kind, jobgraph, {on_exit = function (errors)
             import("utils.progress")
             if errors and progress.showing_without_scroll() then
                 print("")
