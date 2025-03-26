@@ -27,17 +27,30 @@ import("async.runjobs", {alias = "async_runjobs"})
 import("async.jobgraph", {alias = "async_jobgraph"})
 import("private.utils.batchcmds")
 
--- add jobs for the given target
-function _add_jobs_for_target(jobgraph, target, opt)
+-- add stage jobs for the given target
+-- stage: before, after or ""
+function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
     opt = opt or {}
-    if not target:is_enabled() then
-        return
+    local job_kind = opt.job_kind
+
+    -- the stage group, e.g. foo/after_prepare, bar/before_build
+    local group_name = string.format("%s/%s_%s", target:fullname(), stage, job_kind)
+
+    -- call target script first, e.g. before/after_prepare, before/after_build
+    local progress = opt.progress
+    local script_name = job_kind .. "_" .. stage
+    local script = target:script(script_name)
+    if script then
+        local jobname = target:fullname() .. "/" .. script_name
+        jobgraph:add(jobname, function (index, total, opt)
+            -- TODO bind target envs
+            script(target, {progress = progress})
+        end, {groups = group_name})
     end
 
-    -- add after_xxx jobs for target
-    local job_kind = opt.job_kind
-    local job_after = target:fullname() .. "/after_" .. job_kind
+
     -- TODO we should remove root job, use group instead of it
+    --[[
     jobgraph:add(job_after, function (index, total, opt)
         local progress = opt.progress
         local script_aftername = job_kind .. "_after"
@@ -59,7 +72,21 @@ function _add_jobs_for_target(jobgraph, target, opt)
                 end
             end
         end
-    end)
+    end)]]
+end
+
+-- add jobs for the given target
+function _add_jobs_for_target(jobgraph, target, opt)
+    opt = opt or {}
+    if not target:is_enabled() then
+        return
+    end
+
+    -- add group jobs for target, e.g. after_xxx -> (depend on) on_xxx -> before_xxx
+    local group        = _add_stage_jobs_for_target(jobgraph, target, "", opt)
+    local group_before = _add_stage_jobs_for_target(jobgraph, target, "before", opt)
+    local group_after  = _add_stage_jobs_for_target(jobgraph, target, "after", opt)
+    jobgraph:add_deps(group_after, group, group_before)
 end
 
 -- add jobs for the given target and deps
