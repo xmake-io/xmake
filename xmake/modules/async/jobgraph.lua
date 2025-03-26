@@ -105,54 +105,61 @@ function jobgraph:remove(name)
 end
 
 -- add job deps, e.g. add_deps(a, b, c, ...): a -> b -> c, ...
+--
+-- and it supports nil, e.g add_deps("foo", nil, "bar", ...)
+--
 function jobgraph:add_deps(...)
     local prev
     local prev_is_group
     local dag = self._dag
     local jobs = self._jobs
     local groups = self._groups
-    for _, name in ipairs(table.pack(...)) do
-        local curr_is_group = false
-        local curr = jobs[name]
-        if not curr then
-            curr = groups[name]
-            curr_is_group = true
-        end
-        assert(curr, "job(%s) not found in jobgraph(%s)", name, self)
-        if prev then
-            if prev_is_group and curr_is_group then
-                -- we use a fake job as a node to bridge the two groups.
-                local fakejob = {}
-                for _, job in ipairs(prev) do
-                    if not dag:has_edge(job, fakejob) then
-                        dag:add_edge(job, fakejob)
+    local deps = table.pack(...)
+    for i = 1, deps.n do
+        local name = deps[i]
+        if name then
+            local curr_is_group = false
+            local curr = jobs[name]
+            if not curr then
+                curr = groups[name]
+                curr_is_group = true
+            end
+            assert(curr, "job(%s) not found in jobgraph(%s)", name, self)
+            if prev then
+                if prev_is_group and curr_is_group then
+                    -- we use a fake job as a node to bridge the two groups.
+                    local fakejob = {}
+                    for _, job in ipairs(prev) do
+                        if not dag:has_edge(job, fakejob) then
+                            dag:add_edge(job, fakejob)
+                        end
                     end
-                end
-                for _, job in ipairs(curr) do
-                    if not dag:has_edge(fakejob, job) then
-                        dag:add_edge(fakejob, job)
+                    for _, job in ipairs(curr) do
+                        if not dag:has_edge(fakejob, job) then
+                            dag:add_edge(fakejob, job)
+                        end
                     end
-                end
-            elseif curr_is_group then
-                for _, job in ipairs(curr) do
-                    if not dag:has_edge(prev, job) then
-                        dag:add_edge(prev, job)
+                elseif curr_is_group then
+                    for _, job in ipairs(curr) do
+                        if not dag:has_edge(prev, job) then
+                            dag:add_edge(prev, job)
+                        end
                     end
-                end
-            elseif prev_is_group then
-                for _, job in ipairs(prev) do
-                    if not dag:has_edge(job, curr) then
-                        dag:add_edge(job, curr)
+                elseif prev_is_group then
+                    for _, job in ipairs(prev) do
+                        if not dag:has_edge(job, curr) then
+                            dag:add_edge(job, curr)
+                        end
                     end
-                end
-            else
-                if not dag:has_edge(prev, curr) then
-                    dag:add_edge(prev, curr)
+                else
+                    if not dag:has_edge(prev, curr) then
+                        dag:add_edge(prev, curr)
+                    end
                 end
             end
+            prev = curr
+            prev_is_group = curr_is_group
         end
-        prev = curr
-        prev_is_group = curr_is_group
     end
 end
 
