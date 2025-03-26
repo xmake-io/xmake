@@ -19,52 +19,10 @@
 --
 
 -- imports
-import("core.base.option")
-import("core.project.project")
-import("async.runjobs")
-import("async.jobgraph", {alias = "async_jobgraph"})
-
--- add prepare jobs for the given target
-function _add_prepare_jobs_for_target(jobgraph, target)
-    if not target:is_enabled() then
-        return
-    end
-
-end
-
--- add prepare jobs for the given target and deps
-function _add_preprare_jobs_for_target_and_deps(jobgraph, target, targetrefs)
-    local targetname = target:fullname()
-    if not targetrefs[targetname] then
-        targetrefs[targetname] = target
-        _add_prepare_jobs_for_target(jobgraph, target)
-        for _, depname in ipairs(target:get("deps")) do
-            local dep = project.target(depname, {namespace = target:namespace()})
-            _add_preprare_jobs_for_target_and_deps(jobgraph, dep, targetrefs)
-        end
-    end
-end
-
--- get prepare jobs
-function _get_prepare_jobs(targets_root, opt)
-    local jobgraph = async_jobgraph.new()
-    local targetrefs = {}
-    for _, target in ipairs(targets_root) do
-        _add_preprare_jobs_for_target_and_deps(jobgraph, target, targetrefs)
-    end
-    return jobgraph
-end
+import("target_utils")
 
 function main(targets_root, opt)
-    local jobgraph = _get_prepare_jobs(targets_root, opt)
-    if jobgraph and not jobgraph:empty() then
-        local curdir = os.curdir()
-        runjobs("prepare", jobgraph, {on_exit = function (errors)
-            import("utils.progress")
-            if errors and progress.showing_without_scroll() then
-                print("")
-            end
-        end, comax = option.get("jobs") or 1, curdir = curdir})
-        os.cd(curdir)
-    end
+    opt = opt or {}
+    opt.jobkind = "prepare"
+    target_utils.runjobs(targets_root, opt)
 end
