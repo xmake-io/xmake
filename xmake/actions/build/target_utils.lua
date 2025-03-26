@@ -43,9 +43,14 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
     -- the command script name, e.g. before/after_preparecmd, before/after_buildcmd
     local scriptcmd_name = stage ~= "" and (job_kind .. "cmd_" .. stage) or (job_kind .. "cmd")
 
+    -- TODO sort them
+    local instances = {target}
+    for _, r in ipairs(target:orderules()) do
+        table.insert(instances, r)
+    end
+
     -- call target and rules script
     local jobdeps = {}
-    local instances = table.join(target, target:orderules()) -- TODO sort them
     for _, instance in ipairs(instances) do
         local script = instance:script(script_name)
         if script then
@@ -60,6 +65,7 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
             if scriptcmd then
                 local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
                 jobgraph:add(jobname, function (index, total, opt)
+                    -- TODO bind target envs
                     local batchcmds_ = batchcmds.new({target = target})
                     scriptcmd(target, batchcmds_, {progress = progress})
                     batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
