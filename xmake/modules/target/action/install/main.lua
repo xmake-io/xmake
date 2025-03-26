@@ -79,7 +79,7 @@ function _get_target_package_libfiles(target, opt)
         if pkg:enabled() and pkg:get("libfiles") then
             for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
                 local filename = path.filename(libfile)
-                if filename:endswith(".dll") or filename:endswith(".so") or filename:find("%.so%.%d+$") or filename:endswith(".dylib") then
+                if filename:endswith(".dll") or (filename:match("%.so$") or filename:match("%.so%.%d+")) or filename:endswith(".dylib") then
                     table.insert(libfiles, libfile)
                 end
             end
