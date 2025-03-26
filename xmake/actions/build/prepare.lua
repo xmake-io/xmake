@@ -26,7 +26,10 @@ import("async.jobgraph", {alias = "async_jobgraph"})
 
 -- add prepare jobs for the given target
 function _add_prepare_jobs_for_target(jobgraph, target)
-    print("prepare", target:fullname())
+    if not target:is_enabled() then
+        return
+    end
+
 end
 
 -- add prepare jobs for the given target and deps
