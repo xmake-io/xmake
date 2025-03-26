@@ -107,6 +107,7 @@ end
 -- add job deps, e.g. add_deps(a, b, c, ...): a -> b -> c, ...
 --
 -- and it supports nil, e.g add_deps("foo", nil, "bar", ...)
+-- and it also supports to add deps list, e.g. add_deps(deps)
 --
 function jobgraph:add_deps(...)
     local prev
@@ -115,7 +116,12 @@ function jobgraph:add_deps(...)
     local jobs = self._jobs
     local groups = self._groups
     local deps = table.pack(...)
-    for i = 1, deps.n do
+    local count = deps.n
+    if count == 1 and type(deps[1]) == "table" then
+        deps = deps[1]
+        count = #deps
+    end
+    for i = 1, count do
         local name = deps[i]
         if name then
             local curr_is_group = false
