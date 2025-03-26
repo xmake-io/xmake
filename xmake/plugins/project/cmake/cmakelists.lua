@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.base.colors")
 import("core.project.project")
 import("core.project.config")
@@ -727,24 +728,13 @@ function _add_target_compile_options(cmakelists, target, outputdir)
         cl = "MSVC",
         link = "MSVC"
     }
-    for _, toolname in toolnames:keys() do
-        local name = compilernames[toolname]
-        if name then
-            cmakelists:print("if(%s)", name)
-            _add_target_compile_options_for_compiler(toolname)
-            cmakelists:print("endif()")
-        end
-    end
-
-    -- add cflags/cxxflags for the specific source files
-    local sourcebatches = target:sourcebatches()
-    for _, sourcebatch in table.orderpairs(sourcebatches) do
-        if _sourcebatch_is_built(sourcebatch) then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                _add_target_sourcefiles_flags(cmakelists, target, sourcefile, "cxxflags", outputdir)
-                _add_target_sourcefiles_flags(cmakelists, target, sourcefile, "cflags", outputdir)
-                _add_target_sourcefiles_flags(cmakelists, target, sourcefile, "cxflags", outputdir)
-                _add_target_sourcefiles_flags(cmakelists, target, sourcefile, "cuflags", outputdir)
+    if not target:is_plat("android") then
+        for _, toolname in toolnames:keys() do
+            local name = compilernames[toolname]
+            if name then
+                cmakelists:print("if(%s)", name)
+                _add_target_compile_options_for_compiler(toolname)
+                cmakelists:print("endif()")
             end
         end
     end
@@ -757,22 +747,29 @@ function _add_target_values(cmakelists, target, name)
         if name:endswith("s") then
             name = name:sub(1, #name - 1)
         end
-        cmakelists:print("if(MSVC)")
-        local flags_cl = _map_compflags("cl", "c", name, values)
-        for _, flag in ipairs(flags_cl) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+        if target:is_plat("android") then
+            local flags_clang = _map_compflags("clang", "c", name, values)
+            for _, flag in ipairs(flags_clang) do
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+            end
+        else
+            cmakelists:print("if(MSVC)")
+            local flags_cl = _map_compflags("cl", "c", name, values)
+            for _, flag in ipairs(flags_cl) do
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+            end
+            cmakelists:print("elseif(Clang)")
+            local flags_clang = _map_compflags("clang", "c", name, values)
+            for _, flag in ipairs(flags_clang) do
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+            end
+            cmakelists:print("elseif(Gcc)")
+            local flags_gcc = _map_compflags("gcc", "c", name, values)
+            for _, flag in ipairs(flags_gcc) do
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+            end
+            cmakelists:print("endif()")
         end
-        cmakelists:print("elseif(Clang)")
-        local flags_clang = _map_compflags("clang", "c", name, values)
-        for _, flag in ipairs(flags_clang) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
-        end
-        cmakelists:print("elseif(Gcc)")
-        local flags_gcc = _map_compflags("gcc", "c", name, values)
-        for _, flag in ipairs(flags_gcc) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
-        end
-        cmakelists:print("endif()")
     end
 end
 
@@ -887,11 +884,15 @@ function _add_target_optimization(cmakelists, target)
     }
     local optimization = target:get("optimize")
     if optimization then
-        cmakelists:print("if(MSVC)")
-        cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[optimization])
-        cmakelists:print("else()")
-        cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[optimization])
-        cmakelists:print("endif()")
+        if target:is_plat("android") then
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[optimization])
+        else
+            cmakelists:print("if(MSVC)")
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[optimization])
+            cmakelists:print("else()")
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[optimization])
+            cmakelists:print("endif()")
+        end
     end
 end
 
@@ -915,15 +916,22 @@ function _add_target_symbols(cmakelists, target)
         if levels:has("hidden") then
             table.insert(flags_gcc, "-fvisibility=hidden")
         end
-        cmakelists:print("if(MSVC)")
-        if #flags_msvc > 0 then
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), table.concat(flags_msvc, " "))
+
+        if target:is_plat("android") then
+            if #flags_gcc > 0 then
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), table.concat(flags_gcc, " "))
+            end
+        else
+            cmakelists:print("if(MSVC)")
+            if #flags_msvc > 0 then
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), table.concat(flags_msvc, " "))
+            end
+            cmakelists:print("else()")
+            if #flags_gcc > 0 then
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), table.concat(flags_gcc, " "))
+            end
+            cmakelists:print("endif()")
         end
-        cmakelists:print("else()")
-        if #flags_gcc > 0 then
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), table.concat(flags_gcc, " "))
-        end
-        cmakelists:print("endif()")
     end
 end
 
@@ -934,7 +942,7 @@ end
 --
 function _add_target_runtimes(cmakelists, target)
     local cmake_minver = _get_cmake_minver()
-    if cmake_minver:ge("3.15.0") then
+    if cmake_minver:ge("3.15.0") and not target:is_plat("android") then
         local runtimes = target:get("runtimes")
         cmakelists:print("if(MSVC)")
         if runtimes then
@@ -1110,12 +1118,14 @@ function _add_target_link_options(cmakelists, target, outputdir)
         cl = "MSVC",
         link = "MSVC"
     }
-    for _, toolname in toolnames:keys() do
-        local name = linkernames[toolname]
-        if name then
-            cmakelists:print("if(%s)", name)
-            _add_target_link_options_for_linker(toolname)
-            cmakelists:print("endif()")
+    if not target:is_plat("android") then
+        for _, toolname in toolnames:keys() do
+            local name = linkernames[toolname]
+            if name then
+                cmakelists:print("if(%s)", name)
+                _add_target_link_options_for_linker(toolname)
+                cmakelists:print("endif()")
+            end
         end
     end
 end
@@ -1337,8 +1347,10 @@ function make(outputdir)
     -- enter project directory
     local oldir = os.cd(os.projectdir())
 
+    -- determine the filename
+    local filename = option.get("outputfile") or "CMakeLists.txt"
     -- open the cmakelists
-    local cmakelists = io.open(path.join(outputdir, "CMakeLists.txt"), "w")
+    local cmakelists = io.open(path.join(outputdir, filename), "w")
 
     -- generate cmakelists
     _generate_cmakelists(cmakelists, outputdir)
