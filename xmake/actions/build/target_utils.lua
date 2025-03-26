@@ -23,6 +23,38 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
+import("async.runjobs")
+import("async.jobgraph", {alias = "async_jobgraph"})
+
+-- add jobs for the given target
+function _add_jobs_for_target(jobgraph, target)
+    if not target:is_enabled() then
+        return
+    end
+end
+
+-- add jobs for the given target and deps
+function _add_jobs_for_target_and_deps(jobgraph, target, targetrefs)
+    local targetname = target:fullname()
+    if not targetrefs[targetname] then
+        targetrefs[targetname] = target
+        _add_jobs_for_target(jobgraph, target)
+        for _, depname in ipairs(target:get("deps")) do
+            local dep = project.target(depname, {namespace = target:namespace()})
+            _add_jobs_for_target_and_deps(jobgraph, dep, targetrefs)
+        end
+    end
+end
+
+-- get jobs
+function _get_jobs(targets_root, opt)
+    local jobgraph = async_jobgraph.new()
+    local targetrefs = {}
+    for _, target in ipairs(targets_root) do
+        _add_jobs_for_target_and_deps(jobgraph, target, targetrefs)
+    end
+    return jobgraph
+end
 
 -- get all root targets
 function get_root_targets(targetnames, opt)
@@ -70,4 +102,20 @@ function get_root_targets(targetnames, opt)
         end
     end
     return targets_root
+end
+
+function runjobs(targets_root, opt)
+    opt = opt or {}
+    local jobkind = opt.jobkind
+    local jobgraph = _get_jobs(targets_root, opt)
+    if jobgraph and not jobgraph:empty() then
+        local curdir = os.curdir()
+        runjobs(jobkind, jobgraph, {on_exit = function (errors)
+            import("utils.progress")
+            if errors and progress.showing_without_scroll() then
+                print("")
+            end
+        end, comax = option.get("jobs") or 1, curdir = curdir})
+        os.cd(curdir)
+    end
 end
