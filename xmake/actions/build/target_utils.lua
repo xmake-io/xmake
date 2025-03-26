@@ -32,47 +32,45 @@ import("private.utils.batchcmds")
 function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
+    local progress = opt.progress
 
-    -- the stage group, e.g. foo/after_prepare, bar/before_build
+    -- the group name, e.g. foo/after_prepare, bar/before_build
     local group_name = string.format("%s/%s_%s", target:fullname(), stage, job_kind)
 
-    -- call target script first, e.g. before/after_prepare, before/after_build
-    local progress = opt.progress
-    local script_name = job_kind .. "_" .. stage
-    local script = target:script(script_name)
-    if script then
-        local jobname = target:fullname() .. "/" .. script_name
-        jobgraph:add(jobname, function (index, total, opt)
-            -- TODO bind target envs
-            script(target, {progress = progress})
-        end, {groups = group_name})
-    end
+    -- the script name, e.g. before/after_prepare, before/after_build
+    local script_name = stage ~= "" and (job_kind .. "_" .. stage) or job_kind
 
+    -- the command script name, e.g. before/after_preparecmd, before/after_buildcmd
+    local scriptcmd_name = stage ~= "" and (job_kind .. "cmd_" .. stage) or (job_kind .. "cmd")
 
-    -- TODO we should remove root job, use group instead of it
-    --[[
-    jobgraph:add(job_after, function (index, total, opt)
-        local progress = opt.progress
-        local script_aftername = job_kind .. "_after"
-        local script_after = target:script(script_aftername)
-        if script_after then
-            script_after(target, {progress = progress})
-        end
-        for _, r in ipairs(target:orderules()) do
-            local script_after = r:script(script_aftername)
-            if script_after then
-                script_after(target, {progress = progress})
-            else
-                local scriptcmd_aftername = job_kind .. "cmd_after"
-                local scriptcmd_after = r:script(scriptcmd_aftername)
-                if scriptcmd_after then
+    -- call target and rules script
+    local jobdeps = {}
+    local instances = table.join(target, target:orderules()) -- TODO sort them
+    for _, instance in ipairs(instances) do
+        local script = instance:script(script_name)
+        if script then
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                -- TODO bind target envs
+                script(target, {progress = progress})
+            end, {groups = group_name})
+            table.insert(jobdeps, jobname)
+        else
+            local scriptcmd = instance:script(scriptcmd_name)
+            if scriptcmd then
+                local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
+                jobgraph:add(jobname, function (index, total, opt)
                     local batchcmds_ = batchcmds.new({target = target})
-                    scriptcmd_after(target, batchcmds_, {progress = progress})
+                    scriptcmd(target, batchcmds_, {progress = progress})
                     batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
-                end
+                end, {groups = group_name})
+                table.insert(jobdeps, jobname)
             end
         end
-    end)]]
+    end
+
+    -- add job deps
+    jobgraph:add_deps(jobdeps)
 end
 
 -- add jobs for the given target
