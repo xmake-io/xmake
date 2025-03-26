@@ -94,6 +94,17 @@ function graph:has_vertex(v)
     return table.contains(self:vertices(), v)
 end
 
+-- add an isolated without edges
+function graph:add_vertex(v)
+    if not self:has_vertex(v) then
+        table.insert(self._vertices, v)
+        self._adjacent_edges[v] = {}
+    end
+
+    -- reset partial topological sort state since graph structure changed
+    self._partial_topo_dirty = true
+end
+
 -- remove the given vertex?
 function graph:remove_vertex(v)
     local contains = false

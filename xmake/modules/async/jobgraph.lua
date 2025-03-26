@@ -70,10 +70,12 @@ end
 --
 function jobgraph:add(name, run, opt)
     opt = opt or {}
+    local dag = self._dag
     local jobs = self._jobs
     if not jobs[name] then
         local job = {name = name, run = run, opt = opt}
         jobs[name] = job
+        dag:add_vertex(job)
         self._size = self._size + 1
 
         if opt.groups then
@@ -91,9 +93,9 @@ end
 
 -- remove a given job
 function jobgraph:remove(name)
+    local dag = self._dag
     local jobs = self._jobs
     local job = jobs[name]
-    local dag = self._dag
     if job then
         assert(self._size > 0)
         jobs[name] = nil

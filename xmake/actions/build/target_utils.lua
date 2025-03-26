@@ -37,7 +37,7 @@ function _add_jobs_for_target(jobgraph, target, opt)
     -- add after_xxx jobs for target
     local job_kind = opt.job_kind
     local job_after = target:fullname() .. "/after_" .. job_kind
-    --[[
+    -- TODO we should remove root job, use group instead of it
     jobgraph:add(job_after, function (index, total, opt)
         local progress = opt.progress
         local script_aftername = job_kind .. "_after"
@@ -59,7 +59,7 @@ function _add_jobs_for_target(jobgraph, target, opt)
                 end
             end
         end
-    end)]]
+    end)
 end
 
 -- add jobs for the given target and deps
