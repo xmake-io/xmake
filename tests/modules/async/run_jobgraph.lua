@@ -33,9 +33,11 @@ function _test_group()
     jobs:add("job/root", _jobfunc)
     for i = 1, 3 do
         jobs:add("job/" .. i, _jobfunc, {groups = "bar"})
-        for j = 1, 50 do
-            jobs:add("job/" .. i .. "/" .. j, _jobfunc, {groups = "foo"})
-        end
+        jobgraph:group("foo", function ()
+            for j = 1, 50 do
+                jobs:add("job/" .. i .. "/" .. j, _jobfunc)
+            end
+        end)
     end
     jobs:add_orders("foo", "bar", "job/root")
     t = os.mclock()

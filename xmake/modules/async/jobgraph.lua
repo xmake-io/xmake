@@ -78,8 +78,9 @@ function jobgraph:add(name, run, opt)
         dag:add_vertex(job)
         self._size = self._size + 1
 
-        if opt.groups then
-            for _, group_name in ipairs(opt.groups) do
+        if self._current_groups or opt.groups then
+            local job_groups = table.join(self._current_groups or {}, opt.groups)
+            for _, group_name in ipairs(job_groups) do
                 local groups = self._groups[group_name]
                 if not groups then
                     groups = {}
@@ -102,6 +103,28 @@ function jobgraph:remove(name)
         dag:remove_vertex(job)
         self._size = self._size - 1
     end
+end
+
+-- enter group to add jobs
+--
+-- e.g.
+-- jobgraph:group("foo", function ()
+--     jobgraph:add("job1", function (index, total, opt)
+--         TODO
+--     end)
+--     jobgraph:add("job2", function (index, total, opt)
+--         TODO
+--     end)
+-- end)
+function jobgraph:group(name, callback)
+    local current_groups = self._current_groups
+    if current_groups == nil then
+        current_groups = {}
+        self._current_groups = current_groups
+    end
+    table.insert(current_groups, name)
+    callback()
+    table.remove(current_groups)
 end
 
 -- add job orders, e.g. add_orders(a, b, c, ...): a -> b -> c, ...
