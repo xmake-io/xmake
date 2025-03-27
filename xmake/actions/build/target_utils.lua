@@ -26,6 +26,7 @@ import("core.project.project")
 import("async.runjobs", {alias = "async_runjobs"})
 import("async.jobgraph", {alias = "async_jobgraph"})
 import("private.utils.batchcmds")
+import("builtin.prepare_files")
 
 -- clean target for rebuilding
 function _clean_target(target)
@@ -38,60 +39,15 @@ end
 -- add jobs for the builtin script
 function _add_jobs_for_builtin_script(jobgraph, target, job_kind)
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
-        local script = import("builtin." .. job_kind .. "_" .. target:kind(), {anonymous = true})
-        if script then
-            script(jobgraph, target)
-        end
-    end
-end
-
--- add jobs for the given script
-function _add_jobs_for_script(jobgraph, instance, script_name, scriptcmd_name)
-    local has_script = false
-    local script = instance:script(script_name)
-    if script then
-        -- call custom script with jobgraph
-        -- e.g.
-        --
-        -- target("test")
-        --     on_build(function (target, jobgraph, opt)
-        --     end, {jobgraph = true})
-        if instance:extraconf(script_name, "jobgraph") then
-            script(target, jobgraph)
-        elseif instance:extraconf(script_name, "batch") then
-            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.", instance:fullname(), script_name)
+        if job_kind == "prepare" then
+            prepare_files(jobgraph, target)
         else
-            -- call custom script directly
-            -- e.g.
-            --
-            -- target("test")
-            --     on_build(function (target, opt)
-            --     end)
-            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
-            jobgraph:add(jobname, function (index, total, opt)
-                script(target, {progress = opt.progress})
-            end)
-        end
-        has_script = true
-    else
-        -- call command script
-        -- e.g.
-        --
-        -- target("test")
-        --     on_buildcmd(function (target, batchcmds, opt)
-        --     end)
-        local scriptcmd = instance:script(scriptcmd_name)
-        if scriptcmd then
-            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
-            jobgraph:add(jobname, function (index, total, opt)
-                local batchcmds_ = batchcmds.new({target = target})
-                scriptcmd(target, batchcmds_, {progress = opt.progress})
-                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
-            end)
-            has_script = true
+            local script = import("builtin.build_" .. target:kind(), {anonymous = true})
+            if script then
+                script(jobgraph, target)
+            end
         end
     end
-    return has_script
 end
 
 -- add jobs for the given target stage
@@ -120,7 +76,7 @@ function _add_jobs_for_target_stage(jobgraph, target, stage, opt)
     jobgraph:group(group_name, function ()
         local has_script = false
         for _, instance in ipairs(instances) do
-            if _add_jobs_for_script(jobgraph, instance, script_name, scriptcmd_name) then
+            if add_jobs_for_script(jobgraph, instance, script_name, scriptcmd_name) then
                 has_script = true
             end
         end
@@ -218,6 +174,55 @@ function _get_jobs(targets_root, opt)
         _add_jobs_for_target_and_deps(jobgraph, target, targetrefs, opt)
     end
     return jobgraph
+end
+
+-- add jobs for the given script
+function add_jobs_for_script(jobgraph, instance, script_name, scriptcmd_name)
+    local has_script = false
+    local script = instance:script(script_name)
+    if script then
+        -- call custom script with jobgraph
+        -- e.g.
+        --
+        -- target("test")
+        --     on_build(function (target, jobgraph, opt)
+        --     end, {jobgraph = true})
+        if instance:extraconf(script_name, "jobgraph") then
+            script(target, jobgraph)
+        elseif instance:extraconf(script_name, "batch") then
+            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.", instance:fullname(), script_name)
+        else
+            -- call custom script directly
+            -- e.g.
+            --
+            -- target("test")
+            --     on_build(function (target, opt)
+            --     end)
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                script(target, {progress = opt.progress})
+            end)
+        end
+        has_script = true
+    else
+        -- call command script
+        -- e.g.
+        --
+        -- target("test")
+        --     on_buildcmd(function (target, batchcmds, opt)
+        --     end)
+        local scriptcmd = instance:script(scriptcmd_name)
+        if scriptcmd then
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                local batchcmds_ = batchcmds.new({target = target})
+                scriptcmd(target, batchcmds_, {progress = opt.progress})
+                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+            end)
+            has_script = true
+        end
+    end
+    return has_script
 end
 
 -- get all root targets

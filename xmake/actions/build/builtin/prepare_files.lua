@@ -15,8 +15,14 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        prepare_object.lua
+-- @file        prepare_files.lua
 --
 
 -- imports
-inherit("prepare_sourcefiles")
+import("core.base.option")
+
+function main(jobgraph, target)
+    jobgraph:add("prepare_files", function (index, total, opt)
+        print("prepare sourcefiles")
+    end)
+end
