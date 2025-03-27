@@ -39,7 +39,6 @@ end
 function _add_script_job(jobgraph, instance, script_name, scriptcmd_name, opt)
     opt = opt or {}
     local joborders = opt.joborders
-    local group_name = opt.group_name
     local script = instance:script(script_name)
     if script then
         -- call custom script with jobgraph
@@ -49,6 +48,7 @@ function _add_script_job(jobgraph, instance, script_name, scriptcmd_name, opt)
         --     on_build(function (target, jobgraph, opt)
         --     end, {jobgraph = true})
         if instance:extraconf(script_name, "jobgraph") then
+            -- TODO group and joborders
             script(target, jobgraph)
         elseif instance:extraconf(script_name, "batch") then
             wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it.", instance:fullname(), script_name)
@@ -62,9 +62,11 @@ function _add_script_job(jobgraph, instance, script_name, scriptcmd_name, opt)
             local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
             jobgraph:add(jobname, function (index, total, opt)
                 script(target, {progress = opt.progress})
-            end, {groups = group_name})
+            end)
             table.insert(joborders, jobname)
         end
+    elseif false then
+        -- TODO call builtin script
     else
         -- call command script
         -- e.g.
@@ -79,7 +81,7 @@ function _add_script_job(jobgraph, instance, script_name, scriptcmd_name, opt)
                 local batchcmds_ = batchcmds.new({target = target})
                 scriptcmd(target, batchcmds_, {progress = opt.progress})
                 batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
-            end, {groups = group_name})
+            end)
             table.insert(joborders, jobname)
         end
     end
@@ -108,12 +110,13 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
 
     -- call target and rules script
     local joborders = {}
-    for _, instance in ipairs(instances) do
-        _add_script_job(jobgraph, instance, script_name, scriptcmd_name, {
-            group_name = group_name,
-            joborders = joborders
-        })
-    end
+    jobgraph:group(group_name, function ()
+        for _, instance in ipairs(instances) do
+            _add_script_job(jobgraph, instance, script_name, scriptcmd_name, {
+                joborders = joborders
+            })
+        end
+    end)
 
     -- add job orders
     if #joborders > 0 then
