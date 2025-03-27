@@ -35,12 +35,61 @@ function _clean_target(target)
     end
 end
 
+-- add script job
+function _add_script_job(jobgraph, instance, script_name, scriptcmd_name, opt)
+    opt = opt or {}
+    local joborders = opt.joborders
+    local group_name = opt.group_name
+    local script = instance:script(script_name)
+    if script then
+        -- call custom script with jobgraph
+        -- e.g.
+        --
+        -- target("test")
+        --     on_build(function (target, jobgraph, opt)
+        --     end, {jobgraph = true})
+        if instance:extraconf(script_name, "jobgraph") then
+            script(target, jobgraph)
+        elseif instance:extraconf(script_name, "batch") then
+            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it.", instance:fullname(), script_name)
+        else
+            -- call custom script directly
+            -- e.g.
+            --
+            -- target("test")
+            --     on_build(function (target, opt)
+            --     end)
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                script(target, {progress = opt.progress})
+            end, {groups = group_name})
+            table.insert(joborders, jobname)
+        end
+    else
+        -- call command script
+        -- e.g.
+        --
+        -- target("test")
+        --     on_buildcmd(function (target, batchcmds, opt)
+        --     end)
+        local scriptcmd = instance:script(scriptcmd_name)
+        if scriptcmd then
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                local batchcmds_ = batchcmds.new({target = target})
+                scriptcmd(target, batchcmds_, {progress = opt.progress})
+                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+            end, {groups = group_name})
+            table.insert(joborders, jobname)
+        end
+    end
+end
+
 -- add stage jobs for the given target
 -- stage: before, after or ""
 function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
-    local progress = opt.progress
 
     -- the group name, e.g. foo/after_prepare, bar/before_build
     local group_name = string.format("%s/%s_%s", target:fullname(), stage, job_kind)
@@ -60,25 +109,10 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
     -- call target and rules script
     local joborders = {}
     for _, instance in ipairs(instances) do
-        local script = instance:script(script_name)
-        if script then
-            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
-            jobgraph:add(jobname, function (index, total, opt)
-                script(target, {progress = progress})
-            end, {groups = group_name})
-            table.insert(joborders, jobname)
-        else
-            local scriptcmd = instance:script(scriptcmd_name)
-            if scriptcmd then
-                local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
-                jobgraph:add(jobname, function (index, total, opt)
-                    local batchcmds_ = batchcmds.new({target = target})
-                    scriptcmd(target, batchcmds_, {progress = progress})
-                    batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
-                end, {groups = group_name})
-                table.insert(joborders, jobname)
-            end
-        end
+        _add_script_job(jobgraph, instance, script_name, scriptcmd_name, {
+            group_name = group_name,
+            joborders = joborders
+        })
     end
 
     -- add job orders
