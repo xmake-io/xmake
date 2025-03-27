@@ -19,7 +19,4 @@
 --
 
 -- imports
-import("core.base.option")
-
-function main(jobgraph, target)
-end
+inherit("prepare_sourcefiles")
