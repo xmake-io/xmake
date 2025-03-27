@@ -38,7 +38,8 @@ end
 -- add jobs for the builtin script
 function _add_jobs_for_builtin_script(jobgraph, target, job_kind)
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
-        local script = import("kinds." .. target:kind(), {anonymous = true})[job_kind]
+        -- TODO
+        local script = import("deprecated.kinds." .. target:kind(), {anonymous = true})[job_kind]
         if script then
             script(jobgraph, target)
         end
@@ -59,7 +60,7 @@ function _add_jobs_for_script(jobgraph, instance, script_name, scriptcmd_name)
         if instance:extraconf(script_name, "jobgraph") then
             script(target, jobgraph)
         elseif instance:extraconf(script_name, "batch") then
-            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it.", instance:fullname(), script_name)
+            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.", instance:fullname(), script_name)
         else
             -- call custom script directly
             -- e.g.

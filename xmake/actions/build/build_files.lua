@@ -23,174 +23,28 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
-import("private.async.jobpool")
-import("async.runjobs")
-import("kinds.object")
 import("target_utils")
-import("prepare_files", {alias = "prepare_build_files"})
+import("deprecated.build_files", {alias = "deprecated_build_files"})
 
--- match source files
-function _match_sourcefiles(sourcefile, filepatterns)
-    for _, filepattern in ipairs(filepatterns) do
-        if sourcefile:match(filepattern.pattern) == sourcefile then
-            if filepattern.excludes then
-                if filepattern.rootdir and sourcefile:startswith(filepattern.rootdir) then
-                    sourcefile = sourcefile:sub(#filepattern.rootdir + 2)
-                end
-                for _, exclude in ipairs(filepattern.excludes) do
-                    if sourcefile:match(exclude) == sourcefile then
-                        return false
-                    end
-                end
-            end
-            return true
-        end
-    end
+function _prepare_files(targets_root, opt)
 end
 
--- add batch jobs
-function _add_batchjobs(batchjobs, rootjob, target, filepatterns)
-    local newbatches = {}
-    local sourcecount = 0
-    for rulename, sourcebatch in pairs(target:sourcebatches()) do
-        local objectfiles = sourcebatch.objectfiles
-        local dependfiles = sourcebatch.dependfiles
-        local sourcekind  = sourcebatch.sourcekind
-        for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            if _match_sourcefiles(sourcefile, filepatterns) then
-                local newbatch = newbatches[rulename]
-                if not newbatch then
-                    newbatch             = {}
-                    newbatch.sourcekind  = sourcekind
-                    newbatch.rulename    = rulename
-                    newbatch.sourcefiles = {}
-                end
-                table.insert(newbatch.sourcefiles, sourcefile)
-                if objectfiles then
-                    newbatch.objectfiles = newbatch.objectfiles or {}
-                    table.insert(newbatch.objectfiles, objectfiles[idx])
-                end
-                if dependfiles then
-                    newbatch.dependfiles = newbatch.dependfiles or {}
-                    table.insert(newbatch.dependfiles, dependfiles[idx])
-                end
-                newbatches[rulename] = newbatch
-                sourcecount = sourcecount + 1
-            end
-        end
-    end
-    if sourcecount > 0 then
-        return object.add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, newbatches)
-    end
+function _build_files(targets_root, opt)
 end
 
--- add batch jobs for the given target
-function _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
-
-    -- has been disabled?
-    if not target:is_enabled() then
-        return
-    end
-
-    -- add batch jobs for target
-    return _add_batchjobs(batchjobs, rootjob, target, filepatterns)
-end
-
--- add batch jobs for the given target and deps
-function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target, filepatterns)
-    local targetjob_ref = jobrefs[target:name()]
-    if targetjob_ref then
-        batchjobs:add(targetjob_ref, rootjob)
-    else
-        local targetjob, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
-        if targetjob and targetjob_root then
-            jobrefs[target:name()] = targetjob_root
-            if not option.get("shallow") then
-                for _, depname in ipairs(target:get("deps")) do
-                    _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs,
-                        project.target(depname, {namespace = target:namespace()}), filepatterns)
-                end
-            end
-        end
-    end
-end
-
--- get batch jobs
-function _get_batchjobs(targets_root, opt)
-
-    -- convert all sourcefiles to lua pattern
-    local filepatterns = _get_file_patterns(opt.sourcefiles)
-
-    -- generate batch jobs for default or all targets
-    local jobrefs = {}
-    local batchjobs = jobpool.new()
-    for _, target in pairs(targets_root) do
-        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), jobrefs, target, filepatterns)
-    end
-    return batchjobs
-end
-
--- convert all sourcefiles to lua pattern
-function _get_file_patterns(sourcefiles)
-    local patterns = {}
-    for _, sourcefile in ipairs(path.splitenv(sourcefiles)) do
-
-        -- get the excludes
-        local pattern  = sourcefile:trim()
-        local excludes = pattern:match("|.*$")
-        if excludes then excludes = excludes:split("|", {plain = true}) end
-
-        -- translate excludes
-        if excludes then
-            local _excludes = {}
-            for _, exclude in ipairs(excludes) do
-                exclude = path.translate(exclude)
-                exclude = path.pattern(exclude)
-                table.insert(_excludes, exclude)
-            end
-            excludes = _excludes
-        end
-
-        -- translate path and remove some repeat separators
-        pattern = path.translate(pattern:gsub("|.*$", ""))
-
-        -- remove "./" or '.\\' prefix
-        if pattern:sub(1, 2):find('%.[/\\]') then
-            pattern = pattern:sub(3)
-        end
-
-        -- get the root directory
-        local rootdir = pattern
-        local startpos = pattern:find("*", 1, true)
-        if startpos then
-            rootdir = rootdir:sub(1, startpos - 1)
-        end
-        rootdir = path.directory(rootdir)
-
-        -- convert to lua path pattern
-        pattern = path.pattern(pattern)
-        table.insert(patterns, {pattern = pattern, excludes = excludes, rootdir = rootdir})
-    end
-    return patterns
-end
-
--- the main entry
 function main(targetnames, opt)
 
     -- get root targets
     local targets_root = target_utils.get_root_targets(targetnames, opt)
 
     -- prepare to build files
-    prepare_build_files(targets_root, opt)
+    _prepare_files(targets_root, opt)
 
-    -- build all jobs
-    local batchjobs = _get_batchjobs(targets_root, opt)
-    if batchjobs and batchjobs:size() > 0 then
-        local curdir = os.curdir()
-        runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1, curdir = curdir})
-        os.cd(curdir)
+    -- do build files
+    if project.policy("build.jobgraph") then
+        _build_files(targets_root, opt)
     else
-        wprint("%s not found!", opt.sourcefiles)
+        deprecated_build_files(targets_root, opt)
     end
 end
 
