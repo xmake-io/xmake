@@ -104,25 +104,25 @@ function jobgraph:remove(name)
     end
 end
 
--- add job deps, e.g. add_deps(a, b, c, ...): a -> b -> c, ...
+-- add job orders, e.g. add_orders(a, b, c, ...): a -> b -> c, ...
 --
--- and it supports nil, e.g add_deps("foo", nil, "bar", ...)
--- and it also supports to add deps list, e.g. add_deps(deps)
+-- and it supports nil, e.g add_orders("foo", nil, "bar", ...)
+-- and it also supports to add orders list, e.g. add_orders(orders)
 --
-function jobgraph:add_deps(...)
+function jobgraph:add_orders(...)
     local prev
     local prev_is_group
     local dag = self._dag
     local jobs = self._jobs
     local groups = self._groups
-    local deps = table.pack(...)
-    local count = deps.n
-    if count == 1 and type(deps[1]) == "table" then
-        deps = deps[1]
-        count = #deps
+    local orders = table.pack(...)
+    local count = orders.n
+    if count == 1 and type(orders[1]) == "table" then
+        orders = orders[1]
+        count = #orders
     end
     for i = 1, count do
-        local name = deps[i]
+        local name = orders[i]
         if name then
             local curr_is_group = false
             local curr = jobs[name]
