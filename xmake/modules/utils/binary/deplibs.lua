@@ -81,7 +81,7 @@ function _get_all_depends_by_objdump(binaryfile, opt)
                 else
                     if line:startswith("NEEDED") then
                         local filename = line:split("%s+")[2]
-                        if filename and filename:endswith(".so") then
+                        if filename and filename:endswith(".so") or filename:find("%.so%.%d+$") then
                             depends = depends or {}
                             table.insert(depends, filename)
                         end
