@@ -50,7 +50,7 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
     end
 
     -- call target and rules script
-    local jobdeps = {}
+    local joborders = {}
     for _, instance in ipairs(instances) do
         local script = instance:script(script_name)
         if script then
@@ -59,7 +59,7 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
                 -- TODO bind target envs
                 script(target, {progress = progress})
             end, {groups = group_name})
-            table.insert(jobdeps, jobname)
+            table.insert(joborders, jobname)
         else
             local scriptcmd = instance:script(scriptcmd_name)
             if scriptcmd then
@@ -70,13 +70,16 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
                     scriptcmd(target, batchcmds_, {progress = progress})
                     batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
                 end, {groups = group_name})
-                table.insert(jobdeps, jobname)
+                table.insert(joborders, jobname)
             end
         end
     end
 
-    -- add job deps
-    jobgraph:add_deps(jobdeps)
+    -- add job orders
+    if #joborders > 0 then
+        jobgraph:add_orders(joborders)
+        return group_name
+    end
 end
 
 -- add jobs for the given target
@@ -90,7 +93,7 @@ function _add_jobs_for_target(jobgraph, target, opt)
     local group        = _add_stage_jobs_for_target(jobgraph, target, "", opt)
     local group_before = _add_stage_jobs_for_target(jobgraph, target, "before", opt)
     local group_after  = _add_stage_jobs_for_target(jobgraph, target, "after", opt)
-    jobgraph:add_deps(group_after, group, group_before)
+    jobgraph:add_orders(group_before, group, group_after)
 end
 
 -- add jobs for the given target and deps

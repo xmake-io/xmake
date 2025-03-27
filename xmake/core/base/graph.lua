@@ -173,12 +173,14 @@ end
 --
 -- e.g.
 --
--- add_edge(a, b) -- a depend on b
--- add_edge(b, c) -- b depend on c
+-- edges: a (indegree: 0) -> b -> c
 --
--- local node1, has_cycle = g:partial_topo_sort_next() -- return c
+-- add_edge(a, b)
+-- add_edge(b, c)
+--
+-- local node1, has_cycle = g:partial_topo_sort_next() -- return a
 -- local node2, has_cycle = g:partial_topo_sort_next() -- return b
--- local node3, has_cycle = g:partial_topo_sort_next() -- return a
+-- local node3, has_cycle = g:partial_topo_sort_next() -- return c
 -- local node4, has_cycle = g:partial_topo_sort_next() -- return nil (empty, all done)
 --
 function graph:partial_topo_sort_next()
@@ -250,10 +252,12 @@ end
 --
 -- e.g.
 --
--- add_edge(a, b) -- a depend on b
--- add_edge(b, c) -- b depend on c
+-- edges: a (indegree: 0) -> b -> c
 --
--- it will return {c, b, a}
+-- add_edge(a, b)
+-- add_edge(b, c)
+--
+-- it will return {a, b, c}
 function graph:topo_sort()
     if not self:is_directed() then
         return
