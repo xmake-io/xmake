@@ -38,8 +38,7 @@ end
 -- add jobs for the builtin script
 function _add_jobs_for_builtin_script(jobgraph, target, job_kind)
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
-        -- TODO
-        local script = import("deprecated.kinds." .. target:kind(), {anonymous = true})[job_kind]
+        local script = import("builtin." .. job_kind .. "_" .. target:kind(), {anonymous = true})
         if script then
             script(jobgraph, target)
         end

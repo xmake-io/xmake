@@ -31,6 +31,7 @@ function _prepare(targets_root, opt)
     target_utils.runjobs(targets_root, opt)
 end
 
+-- TODO distcc
 function _build(targets_root, opt)
     --[[
     opt = opt or {}
