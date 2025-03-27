@@ -35,10 +35,19 @@ function _clean_target(target)
     end
 end
 
--- add script job
-function _add_script_job(jobgraph, instance, script_name, scriptcmd_name, opt)
-    opt = opt or {}
-    local joborders = opt.joborders
+-- add jobs for the builtin script
+function _add_jobs_for_builtin_script(jobgraph, target, job_kind)
+    if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
+        local script = import("kinds." .. target:kind(), {anonymous = true})[job_kind]
+        if script then
+            script(jobgraph, target)
+        end
+    end
+end
+
+-- add jobs for the given script
+function _add_jobs_for_script(jobgraph, instance, script_name, scriptcmd_name)
+    local has_script = false
     local script = instance:script(script_name)
     if script then
         -- call custom script with jobgraph
@@ -48,7 +57,6 @@ function _add_script_job(jobgraph, instance, script_name, scriptcmd_name, opt)
         --     on_build(function (target, jobgraph, opt)
         --     end, {jobgraph = true})
         if instance:extraconf(script_name, "jobgraph") then
-            -- TODO group and joborders
             script(target, jobgraph)
         elseif instance:extraconf(script_name, "batch") then
             wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it.", instance:fullname(), script_name)
@@ -63,10 +71,8 @@ function _add_script_job(jobgraph, instance, script_name, scriptcmd_name, opt)
             jobgraph:add(jobname, function (index, total, opt)
                 script(target, {progress = opt.progress})
             end)
-            table.insert(joborders, jobname)
         end
-    elseif false then
-        -- TODO call builtin script
+        has_script = true
     else
         -- call command script
         -- e.g.
@@ -82,14 +88,15 @@ function _add_script_job(jobgraph, instance, script_name, scriptcmd_name, opt)
                 scriptcmd(target, batchcmds_, {progress = opt.progress})
                 batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
             end)
-            table.insert(joborders, jobname)
+            has_script = true
         end
     end
+    return has_script
 end
 
--- add stage jobs for the given target
+-- add jobs for the given target stage
 -- stage: before, after or ""
-function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
+function _add_jobs_for_target_stage(jobgraph, target, stage, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
 
@@ -102,25 +109,29 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
     -- the command script name, e.g. before/after_preparecmd, before/after_buildcmd
     local scriptcmd_name = stage ~= "" and (job_kind .. "cmd_" .. stage) or (job_kind .. "cmd")
 
-    -- TODO sort them
+    -- TODO sort rules and jobs
     local instances = {target}
     for _, r in ipairs(target:orderules()) do
         table.insert(instances, r)
     end
 
     -- call target and rules script
-    local joborders = {}
+    local jobsize = jobgraph:size()
     jobgraph:group(group_name, function ()
+        local has_script = false
         for _, instance in ipairs(instances) do
-            _add_script_job(jobgraph, instance, script_name, scriptcmd_name, {
-                joborders = joborders
-            })
+            if _add_jobs_for_script(jobgraph, instance, script_name, scriptcmd_name) then
+                has_script = true
+            end
+        end
+
+        -- call builtin script, e.g. on_prepare, on_build, ...
+        if not has_script and stage == "" then
+            _add_jobs_for_builtin_script(jobgraph, target, job_kind)
         end
     end)
 
-    -- add job orders
-    if #joborders > 0 then
-        jobgraph:add_orders(joborders)
+    if jobgraph:size() > jobsize then
         return group_name
     end
 end
@@ -179,10 +190,10 @@ function _add_jobs_for_target(jobgraph, target, opt)
         end
     end)
 
-    -- add group jobs for target, e.g. after_xxx -> (depend on) on_xxx -> before_xxx
-    local group        = _add_stage_jobs_for_target(jobgraph, target, "", opt)
-    local group_before = _add_stage_jobs_for_target(jobgraph, target, "before", opt)
-    local group_after  = _add_stage_jobs_for_target(jobgraph, target, "after", opt)
+    -- add jobs for target stage, e.g. after_xxx -> (depend on) on_xxx -> before_xxx
+    local group        = _add_jobs_for_target_stage(jobgraph, target, "", opt)
+    local group_before = _add_jobs_for_target_stage(jobgraph, target, "before", opt)
+    local group_after  = _add_jobs_for_target_stage(jobgraph, target, "after", opt)
     jobgraph:add_orders(job_begin, group_before, group, group_after, job_end)
 end
 
