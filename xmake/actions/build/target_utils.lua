@@ -27,6 +27,14 @@ import("async.runjobs", {alias = "async_runjobs"})
 import("async.jobgraph", {alias = "async_jobgraph"})
 import("private.utils.batchcmds")
 
+-- clean target for rebuilding
+function _clean_target(target)
+    if target:targetfile() then
+        os.tryrm(target:symbolfile())
+        os.tryrm(target:targetfile())
+    end
+end
+
 -- add stage jobs for the given target
 -- stage: before, after or ""
 function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
@@ -56,7 +64,6 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
         if script then
             local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
             jobgraph:add(jobname, function (index, total, opt)
-                -- TODO bind target envs
                 script(target, {progress = progress})
             end, {groups = group_name})
             table.insert(joborders, jobname)
@@ -65,7 +72,6 @@ function _add_stage_jobs_for_target(jobgraph, target, stage, opt)
             if scriptcmd then
                 local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
                 jobgraph:add(jobname, function (index, total, opt)
-                    -- TODO bind target envs
                     local batchcmds_ = batchcmds.new({target = target})
                     scriptcmd(target, batchcmds_, {progress = progress})
                     batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
@@ -89,11 +95,58 @@ function _add_jobs_for_target(jobgraph, target, opt)
         return
     end
 
+    local pkgenvs = _g.pkgenvs
+    if pkgenvs == nil then
+        pkgenvs = {}
+        _g.pkgenvs = pkgenvs
+    end
+
+    local job_kind = opt.job_kind
+    local job_begin = string.format("target/%s/begin_%s", target:fullname(), job_kind)
+    local job_end = string.format("target/%s/end_%s", target:fullname(), job_kind)
+    jobgraph:add(job_begin, function (index, total, opt)
+        -- enter package environments
+        -- https://github.com/xmake-io/xmake/issues/4033
+        --
+        -- maybe mixing envs isn't a great solution,
+        -- but it's the most efficient compromise compared to setting envs in every on_build_file.
+        --
+        if target:pkgenvs() then
+            pkgenvs.oldenvs = pkgenvs.oldenvs or os.getenvs()
+            pkgenvs.newenvs = pkgenvs.newenvs or {}
+            pkgenvs.newenvs[target] = target:pkgenvs()
+            local newenvs = pkgenvs.oldenvs
+            for _, envs in pairs(pkgenvs.newenvs) do
+                newenvs = os.joinenvs(envs, newenvs)
+            end
+            os.setenvs(newenvs)
+        end
+
+        -- clean target first if rebuild
+        if job_kind == "prepare" and target:is_rebuilt() and not option.get("dry-run") then
+            _clean_target(target)
+        end
+    end)
+
+    jobgraph:add(job_end, function (index, total, opt)
+        -- restore environments
+        if target:pkgenvs() then
+            pkgenvs.oldenvs = pkgenvs.oldenvs or os.getenvs()
+            pkgenvs.newenvs = pkgenvs.newenvs or {}
+            pkgenvs.newenvs[target] = nil
+            local newenvs = pkgenvs.oldenvs
+            for _, envs in pairs(pkgenvs.newenvs) do
+                newenvs = os.joinenvs(envs, newenvs)
+            end
+            os.setenvs(newenvs)
+        end
+    end)
+
     -- add group jobs for target, e.g. after_xxx -> (depend on) on_xxx -> before_xxx
     local group        = _add_stage_jobs_for_target(jobgraph, target, "", opt)
     local group_before = _add_stage_jobs_for_target(jobgraph, target, "before", opt)
     local group_after  = _add_stage_jobs_for_target(jobgraph, target, "after", opt)
-    jobgraph:add_orders(group_before, group, group_after)
+    jobgraph:add_orders(job_begin, group_before, group, group_after, job_end)
 end
 
 -- add jobs for the given target and deps
