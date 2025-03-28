@@ -21,12 +21,21 @@
 -- imports
 import("core.base.option")
 import("core.base.hashset")
+import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("async.runjobs", {alias = "async_runjobs"})
 import("async.jobgraph", {alias = "async_jobgraph"})
 import("private.utils.batchcmds")
 import("builtin.prepare_files")
+
+-- get rule
+-- @note we need to get rule from target first, because we maybe will inject and replace builtin rule in target
+function _get_rule(target, rulename)
+    local ruleinst = assert(target:rule(rulename) or project.rule(rulename, {namespace = target:namespace()}) or
+        rule.rule(rulename), "unknown rule: %s", rulename)
+    return ruleinst
+end
 
 -- clean target for rebuilding
 function _clean_target(target)
@@ -195,7 +204,7 @@ function _add_targetjobs(jobgraph, target, opt)
         end
     end)
 
-    -- add jobs with target stage, e.g. after_xxx -> (depend on) on_xxx -> before_xxx
+    -- add jobs with target stage, e.g. begin -> before_xxx -> on_xxx -> after_xxx
     local group        = _add_targetjobs_with_stage(jobgraph, target, "", opt)
     local group_before = _add_targetjobs_with_stage(jobgraph, target, "before", opt)
     local group_after  = _add_targetjobs_with_stage(jobgraph, target, "after", opt)
@@ -280,6 +289,122 @@ function _match_sourcebatches(target, filepatterns)
     end
 end
 
+-- add file jobs for the builtin script
+function _add_filejobs_for_builtin_script(jobgraph, target, sourcebatch, job_kind)
+end
+
+-- add file jobs for the given script, TODO on single file
+function _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_name, scriptcmd_name)
+    local has_script = false
+    local script = instance:script(script_name)
+    if script then
+        -- call custom script with jobgraph
+        -- e.g.
+        --
+        -- target("test")
+        --     on_build_files(function (target, jobgraph, sourcebatch, opt)
+        --     end, {jobgraph = true})
+        if instance:extraconf(script_name, "jobgraph") then
+            script(target, jobgraph, sourcebatch)
+        elseif instance:extraconf(script_name, "batch") then
+            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.", instance:fullname(), script_name)
+        else
+            -- call custom script directly
+            -- e.g.
+            --
+            -- target("test")
+            --     on_build_files(function (target, sourcebatch, opt)
+            --     end)
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                script(target, sourcebatch, {progress = opt.progress})
+            end)
+        end
+        has_script = true
+    else
+        -- call command script
+        -- e.g.
+        --
+        -- target("test")
+        --     on_buildcmd(function (target, batchcmds, sourcebatch, opt)
+        --     end)
+        local scriptcmd = instance:script(scriptcmd_name)
+        if scriptcmd then
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                local batchcmds_ = batchcmds.new({target = target})
+                scriptcmd(target, batchcmds_, sourcebatch, {progress = opt.progress})
+                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+            end)
+            has_script = true
+        end
+    end
+    return has_script
+end
+
+-- add file jobs with the given stage
+-- stage: before, after or ""
+--
+function _add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
+    opt = opt or {}
+    local job_kind = opt.job_kind
+    local job_kind_files = job_kind .. "_files"
+
+    -- the group name, e.g. foo/after_prepare_files, bar/before_build_files
+    local group_name = string.format("%s/%s_%s_files", target:fullname(), stage, job_kind)
+
+    -- the script name, e.g. before/after_prepare_files, before/after_build_files
+    local script_name = stage ~= "" and (job_kind_files .. "_" .. stage) or job_kind_files
+
+    -- the command script name, e.g. before/after_preparecmd_files, before/after_buildcmd_files
+    local scriptcmd_name = stage ~= "" and (job_kind_files .. "cmd_" .. stage) or (job_kind_files .. "cmd")
+
+    -- build sourcebatches map
+    local sourcebatches_map = {}
+    for _, sourcebatch in ipairs(sourcebatches) do
+        local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
+        local ruleinst = _get_rule(target, rulename)
+        sourcebatches_map[ruleinst] = sourcebatch
+    end
+
+    -- TODO sort rules and jobs
+    local instances = {target}
+    for _, r in ipairs(target:orderules()) do
+        table.insert(instances, r)
+    end
+
+    -- call target and rules script
+    local jobsize = jobgraph:size()
+    jobgraph:group(group_name, function ()
+        local has_script = false
+        for _, instance in ipairs(instances) do
+            if instance == target then
+                for _, sourcebatch in ipairs(sourcebatches) do
+                    if _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_name, scriptcmd_name) then
+                        has_script = true
+                    end
+                end
+            else -- rule
+                local sourcebatch = sourcebatches_map[instance]
+                if sourcebatch and _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_name, scriptcmd_name) then
+                    has_script = true
+                end
+            end
+        end
+
+        -- call builtin script, e.g. on_prepare_files, on_build_files, ...
+        if not has_script and stage == "" then
+            for _, sourcebatch in ipairs(sourcebatches) do
+                _add_filejobs_for_builtin_script(jobgraph, target, sourcebatch, job_kind)
+            end
+        end
+    end)
+
+    if jobgraph:size() > jobsize then
+        return group_name
+    end
+end
+
 -- add file jobs for the given target
 function _add_filejobs(jobgraph, target, opt)
     opt = opt or {}
@@ -291,6 +416,34 @@ function _add_filejobs(jobgraph, target, opt)
     local filepatterns = opt.filepatterns
     local sourcebatches = filepatterns and _match_sourcebatches(target, filepatterns) or target:sourcebatches()
 
+    -- we just build sourcebatch with on_build_files scripts
+    --
+    -- for example, c++.build and c++.build.modules.builder rules have same sourcefiles,
+    -- but we just build it for c++.build
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/3171
+    --
+    local sourcebatches_result = {}
+    for _, sourcebatch in pairs(sourcebatches) do
+        local rulename = sourcebatch.rulename
+        if rulename then
+            local ruleinst = _get_rule(target, rulename)
+            if ruleinst:script("build_file") or ruleinst:script("build_files") then
+                table.insert(sourcebatches_result, sourcebatch)
+            end
+        else
+            table.insert(sourcebatches_result, sourcebatch)
+        end
+    end
+    if #sourcebatches_result == 0 then
+        return
+    end
+
+    -- add file jobs with target stage, e.g. before_xxx_files -> on_xxx_files -> after_xxx_files
+    local group        = _add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "", opt)
+    local group_before = _add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "before", opt)
+    local group_after  = _add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "after", opt)
+    jobgraph:add_orders(group_before, group, group_after)
 end
 
 -- add file jobs for the given target and deps
