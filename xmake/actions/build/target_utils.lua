@@ -225,12 +225,72 @@ function _get_targetjobs(targets_root, opt)
     return jobgraph
 end
 
+-- match source files
+function _match_sourcefiles(sourcefile, filepatterns)
+    for _, filepattern in ipairs(filepatterns) do
+        if sourcefile:match(filepattern.pattern) == sourcefile then
+            if filepattern.excludes then
+                if filepattern.rootdir and sourcefile:startswith(filepattern.rootdir) then
+                    sourcefile = sourcefile:sub(#filepattern.rootdir + 2)
+                end
+                for _, exclude in ipairs(filepattern.excludes) do
+                    if sourcefile:match(exclude) == sourcefile then
+                        return false
+                    end
+                end
+            end
+            return true
+        end
+    end
+end
+
+-- match sourcebatches
+function _match_sourcebatches(target, filepatterns)
+    local newbatches = {}
+    local sourcecount = 0
+    for rulename, sourcebatch in pairs(target:sourcebatches()) do
+        local objectfiles = sourcebatch.objectfiles
+        local dependfiles = sourcebatch.dependfiles
+        local sourcekind  = sourcebatch.sourcekind
+        for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            if _match_sourcefiles(sourcefile, filepatterns) then
+                local newbatch = newbatches[rulename]
+                if not newbatch then
+                    newbatch             = {}
+                    newbatch.sourcekind  = sourcekind
+                    newbatch.rulename    = rulename
+                    newbatch.sourcefiles = {}
+                end
+                table.insert(newbatch.sourcefiles, sourcefile)
+                if objectfiles then
+                    newbatch.objectfiles = newbatch.objectfiles or {}
+                    table.insert(newbatch.objectfiles, objectfiles[idx])
+                end
+                if dependfiles then
+                    newbatch.dependfiles = newbatch.dependfiles or {}
+                    table.insert(newbatch.dependfiles, dependfiles[idx])
+                end
+                newbatches[rulename] = newbatch
+                sourcecount = sourcecount + 1
+            end
+        end
+    end
+    if sourcecount > 0 then
+        return newbatches
+    end
+end
+
 -- add file jobs for the given target
 function _add_filejobs(jobgraph, target, opt)
     opt = opt or {}
     if not target:is_enabled() then
         return
     end
+
+    -- get sourcebatches
+    local filepatterns = opt.filepatterns
+    local sourcebatches = filepatterns and _match_sourcebatches(target, filepatterns) or target:sourcebatches()
+
 end
 
 -- add file jobs for the given target and deps
