@@ -20,9 +20,8 @@
 
 -- imports
 import("core.base.option")
+import(".target_utils")
 
 function main(jobgraph, target)
-    jobgraph:add("prepare_files", function (index, total, opt)
-        print("prepare sourcefiles")
-    end)
+    target_utils.add_filejobs(jobgraph, target, {job_kind = "prepare"})
 end

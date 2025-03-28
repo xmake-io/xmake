@@ -27,7 +27,6 @@ import("core.project.project")
 import("async.runjobs", {alias = "async_runjobs"})
 import("async.jobgraph", {alias = "async_jobgraph"})
 import("private.utils.batchcmds")
-import("builtin.prepare_files")
 
 -- get rule
 -- @note we need to get rule from target first, because we maybe will inject and replace builtin rule in target
@@ -45,22 +44,74 @@ function _clean_target(target)
     end
 end
 
+-- match source files
+function _match_sourcefiles(sourcefile, filepatterns)
+    for _, filepattern in ipairs(filepatterns) do
+        if sourcefile:match(filepattern.pattern) == sourcefile then
+            if filepattern.excludes then
+                if filepattern.rootdir and sourcefile:startswith(filepattern.rootdir) then
+                    sourcefile = sourcefile:sub(#filepattern.rootdir + 2)
+                end
+                for _, exclude in ipairs(filepattern.excludes) do
+                    if sourcefile:match(exclude) == sourcefile then
+                        return false
+                    end
+                end
+            end
+            return true
+        end
+    end
+end
+
+-- match sourcebatches
+function _match_sourcebatches(target, filepatterns)
+    local newbatches = {}
+    local sourcecount = 0
+    for rulename, sourcebatch in pairs(target:sourcebatches()) do
+        local objectfiles = sourcebatch.objectfiles
+        local dependfiles = sourcebatch.dependfiles
+        local sourcekind  = sourcebatch.sourcekind
+        for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            if _match_sourcefiles(sourcefile, filepatterns) then
+                local newbatch = newbatches[rulename]
+                if not newbatch then
+                    newbatch             = {}
+                    newbatch.sourcekind  = sourcekind
+                    newbatch.rulename    = rulename
+                    newbatch.sourcefiles = {}
+                end
+                table.insert(newbatch.sourcefiles, sourcefile)
+                if objectfiles then
+                    newbatch.objectfiles = newbatch.objectfiles or {}
+                    table.insert(newbatch.objectfiles, objectfiles[idx])
+                end
+                if dependfiles then
+                    newbatch.dependfiles = newbatch.dependfiles or {}
+                    table.insert(newbatch.dependfiles, dependfiles[idx])
+                end
+                newbatches[rulename] = newbatch
+                sourcecount = sourcecount + 1
+            end
+        end
+    end
+    if sourcecount > 0 then
+        return newbatches
+    end
+end
+
 -- add target jobs for the builtin script
-function _add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
+function add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
         if job_kind == "prepare" then
-            prepare_files(jobgraph, target)
+            import("builtin.prepare_files", {anonymous = true})(jobgraph, target)
         else
-            local script = import("builtin.build_" .. target:kind(), {anonymous = true})
-            if script then
-                script(jobgraph, target)
-            end
+            import("builtin.build_" .. target:kind(), {anonymous = true})(jobgraph, target)
         end
     end
 end
 
 -- add target jobs for the given script
-function _add_targetjobs_for_script(jobgraph, instance, opt)
+function add_targetjobs_for_script(jobgraph, instance, opt)
     opt = opt or {}
     local has_script = false
 
@@ -119,7 +170,7 @@ end
 
 -- add target jobs with the given stage
 -- stage: before, after or ""
-function _add_targetjobs_with_stage(jobgraph, target, stage, opt)
+function add_targetjobs_with_stage(jobgraph, target, stage, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
 
@@ -147,14 +198,14 @@ function _add_targetjobs_with_stage(jobgraph, target, stage, opt)
             scriptcmd_name = scriptcmd_name
         }
         for _, instance in ipairs(instances) do
-            if _add_targetjobs_for_script(jobgraph, instance, script_opt) then
+            if add_targetjobs_for_script(jobgraph, instance, script_opt) then
                 has_script = true
             end
         end
 
         -- call builtin script, e.g. on_prepare, on_build, ...
         if not has_script and stage == "" then
-            _add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
+            add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
         end
     end)
 
@@ -164,7 +215,7 @@ function _add_targetjobs_with_stage(jobgraph, target, stage, opt)
 end
 
 -- add target jobs for the given target
-function _add_targetjobs(jobgraph, target, opt)
+function add_targetjobs(jobgraph, target, opt)
     opt = opt or {}
     if not target:is_enabled() then
         return
@@ -218,92 +269,37 @@ function _add_targetjobs(jobgraph, target, opt)
     end)
 
     -- add jobs with target stage, e.g. begin -> before_xxx -> on_xxx -> after_xxx
-    local group        = _add_targetjobs_with_stage(jobgraph, target, "", opt)
-    local group_before = _add_targetjobs_with_stage(jobgraph, target, "before", opt)
-    local group_after  = _add_targetjobs_with_stage(jobgraph, target, "after", opt)
+    local group        = add_targetjobs_with_stage(jobgraph, target, "", opt)
+    local group_before = add_targetjobs_with_stage(jobgraph, target, "before", opt)
+    local group_after  = add_targetjobs_with_stage(jobgraph, target, "after", opt)
     jobgraph:add_orders(job_begin, group_before, group, group_after, job_end)
 end
 
 -- add target jobs for the given target and deps
-function _add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
+function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
     local targetname = target:fullname()
     if not targetrefs[targetname] then
         targetrefs[targetname] = target
-        _add_targetjobs(jobgraph, target, opt)
+        add_targetjobs(jobgraph, target, opt)
         for _, depname in ipairs(target:get("deps")) do
             local dep = project.target(depname, {namespace = target:namespace()})
-            _add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
+            add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
         end
     end
 end
 
 -- get target jobs
-function _get_targetjobs(targets_root, opt)
+function get_targetjobs(targets_root, opt)
     local jobgraph = async_jobgraph.new()
     local targetrefs = {}
     for _, target in ipairs(targets_root) do
-        _add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
+        add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
     end
     return jobgraph
 end
 
--- match source files
-function _match_sourcefiles(sourcefile, filepatterns)
-    for _, filepattern in ipairs(filepatterns) do
-        if sourcefile:match(filepattern.pattern) == sourcefile then
-            if filepattern.excludes then
-                if filepattern.rootdir and sourcefile:startswith(filepattern.rootdir) then
-                    sourcefile = sourcefile:sub(#filepattern.rootdir + 2)
-                end
-                for _, exclude in ipairs(filepattern.excludes) do
-                    if sourcefile:match(exclude) == sourcefile then
-                        return false
-                    end
-                end
-            end
-            return true
-        end
-    end
-end
-
--- match sourcebatches
-function _match_sourcebatches(target, filepatterns)
-    local newbatches = {}
-    local sourcecount = 0
-    for rulename, sourcebatch in pairs(target:sourcebatches()) do
-        local objectfiles = sourcebatch.objectfiles
-        local dependfiles = sourcebatch.dependfiles
-        local sourcekind  = sourcebatch.sourcekind
-        for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            if _match_sourcefiles(sourcefile, filepatterns) then
-                local newbatch = newbatches[rulename]
-                if not newbatch then
-                    newbatch             = {}
-                    newbatch.sourcekind  = sourcekind
-                    newbatch.rulename    = rulename
-                    newbatch.sourcefiles = {}
-                end
-                table.insert(newbatch.sourcefiles, sourcefile)
-                if objectfiles then
-                    newbatch.objectfiles = newbatch.objectfiles or {}
-                    table.insert(newbatch.objectfiles, objectfiles[idx])
-                end
-                if dependfiles then
-                    newbatch.dependfiles = newbatch.dependfiles or {}
-                    table.insert(newbatch.dependfiles, dependfiles[idx])
-                end
-                newbatches[rulename] = newbatch
-                sourcecount = sourcecount + 1
-            end
-        end
-    end
-    if sourcecount > 0 then
-        return newbatches
-    end
-end
-
 -- add file jobs for the given script, TODO on single file
-function _add_filejobs_for_script(jobgraph, instance, sourcebatch, opt)
+function add_filejobs_for_script(jobgraph, instance, sourcebatch, opt)
     opt = opt or {}
     local has_script = false
 
@@ -429,7 +425,7 @@ end
 -- add file jobs with the given stage
 -- stage: before, after or ""
 --
-function _add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
+function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
     local job_kind_file = job_kind .. "_file"
@@ -472,12 +468,12 @@ function _add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
         for _, instance in ipairs(instances) do
             if instance == target then
                 for _, sourcebatch in ipairs(sourcebatches) do
-                    _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt)
+                    add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt)
                 end
             else -- rule
                 local sourcebatch = sourcebatches_map[instance]
                 if sourcebatch then
-                    _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt)
+                    add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt)
                 end
             end
         end
@@ -489,7 +485,7 @@ function _add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
 end
 
 -- add file jobs for the given target
-function _add_filejobs(jobgraph, target, opt)
+function add_filejobs(jobgraph, target, opt)
     opt = opt or {}
     if not target:is_enabled() then
         return
@@ -523,31 +519,31 @@ function _add_filejobs(jobgraph, target, opt)
     end
 
     -- add file jobs with target stage, e.g. before_xxx_files -> on_xxx_files -> after_xxx_files
-    local group        = _add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "", opt)
-    local group_before = _add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "before", opt)
-    local group_after  = _add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "after", opt)
+    local group        = add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "", opt)
+    local group_before = add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "before", opt)
+    local group_after  = add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "after", opt)
     jobgraph:add_orders(group_before, group, group_after)
 end
 
 -- add file jobs for the given target and deps
-function _add_filejobs_and_deps(jobgraph, target, targetrefs, opt)
+function add_filejobs_and_deps(jobgraph, target, targetrefs, opt)
     local targetname = target:fullname()
     if not targetrefs[targetname] then
         targetrefs[targetname] = target
-        _add_filejobs(jobgraph, target, opt)
+        add_filejobs(jobgraph, target, opt)
         for _, depname in ipairs(target:get("deps")) do
             local dep = project.target(depname, {namespace = target:namespace()})
-            _add_filejobs_and_deps(jobgraph, dep, targetrefs, opt)
+            add_filejobs_and_deps(jobgraph, dep, targetrefs, opt)
         end
     end
 end
 
 -- get files jobs
-function _get_filejobs(targets_root, opt)
+function get_filejobs(targets_root, opt)
     local jobgraph = async_jobgraph.new()
     local targetrefs = {}
     for _, target in ipairs(targets_root) do
-        _add_filejobs_and_deps(jobgraph, target, targetrefs, opt)
+        add_filejobs_and_deps(jobgraph, target, targetrefs, opt)
     end
     return jobgraph
 end
@@ -604,7 +600,7 @@ end
 function run_targetjobs(targets_root, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
-    local jobgraph = _get_targetjobs(targets_root, opt)
+    local jobgraph = get_targetjobs(targets_root, opt)
     if jobgraph and not jobgraph:empty() then
         local curdir = os.curdir()
         async_runjobs(job_kind, jobgraph, {on_exit = function (errors)
@@ -622,7 +618,7 @@ end
 function run_filejobs(targets_root, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
-    local jobgraph = _get_filejobs(targets_root, opt)
+    local jobgraph = get_filejobs(targets_root, opt)
     if jobgraph and not jobgraph:empty() then
         local curdir = os.curdir()
         async_runjobs(job_kind, jobgraph, {on_exit = function (errors)
