@@ -20,6 +20,9 @@
 
 -- imports
 import("core.base.option")
+import("build_object")
 
 function main(jobgraph, target)
+    build_object(jobgraph, target)
+    -- TODO add link jobs
 end
