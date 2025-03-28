@@ -63,39 +63,45 @@ end
 function _add_targetjobs_for_script(jobgraph, instance, opt)
     opt = opt or {}
     local has_script = false
-    local script_name = opt.script_name
-    local script = instance:script(script_name)
-    if script then
-        -- call custom script with jobgraph
-        -- e.g.
-        --
-        -- target("test")
-        --     on_build(function (target, jobgraph, opt)
-        --     end, {jobgraph = true})
-        if instance:extraconf(script_name, "jobgraph") then
-            script(target, jobgraph)
-        elseif instance:extraconf(script_name, "batch") then
-            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.", instance:fullname(), script_name)
-        else
-            -- call custom script directly
+
+    -- call script
+    if not has_script then
+        local script_name = opt.script_name
+        local script = instance:script(script_name)
+        if script then
+            -- call custom script with jobgraph
             -- e.g.
             --
             -- target("test")
-            --     on_build(function (target, opt)
-            --     end)
-            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
-            jobgraph:add(jobname, function (index, total, opt)
-                script(target, {progress = opt.progress})
-            end)
+            --     on_build(function (target, jobgraph, opt)
+            --     end, {jobgraph = true})
+            if instance:extraconf(script_name, "jobgraph") then
+                script(target, jobgraph)
+            elseif instance:extraconf(script_name, "batch") then
+                wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.", instance:fullname(), script_name)
+            else
+                -- call custom script directly
+                -- e.g.
+                --
+                -- target("test")
+                --     on_build(function (target, opt)
+                --     end)
+                local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
+                jobgraph:add(jobname, function (index, total, opt)
+                    script(target, {progress = opt.progress})
+                end)
+            end
+            has_script = true
         end
-        has_script = true
-    else
-        -- call command script
-        -- e.g.
-        --
-        -- target("test")
-        --     on_buildcmd(function (target, batchcmds, opt)
-        --     end)
+    end
+
+    -- call command script
+    -- e.g.
+    --
+    -- target("test")
+    --     on_buildcmd(function (target, batchcmds, opt)
+    --     end)
+    if not has_script then
         local scriptcmd_name = opt.scriptcmd_name
         local scriptcmd = instance:script(scriptcmd_name)
         if scriptcmd then
@@ -304,49 +310,118 @@ end
 function _add_filejobs_for_script(jobgraph, instance, sourcebatch, opt)
     opt = opt or {}
     local has_script = false
-    local script_file_name = opt.script_file_name
-    local script_files_name = opt.script_files_name
-    local script = instance:script(script_files_name)
-    if script then
-        -- call custom script with jobgraph
-        -- e.g.
-        --
-        -- target("test")
-        --     on_build_files(function (target, jobgraph, sourcebatch, opt)
-        --     end, {jobgraph = true})
-        if instance:extraconf(script_files_name, "jobgraph") then
-            script(target, jobgraph, sourcebatch)
-        elseif instance:extraconf(script_files_name, "batch") then
-            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.",
-                instance:fullname(), script_files_name)
-        else
-            -- call custom script directly
+
+    -- call script files
+    if not has_script then
+        local script_files_name = opt.script_files_name
+        local script_files = instance:script(script_files_name)
+        if script_files then
+            -- call custom script with jobgraph
             -- e.g.
             --
             -- target("test")
-            --     on_build_files(function (target, sourcebatch, opt)
-            --     end)
-            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_files_name)
-            jobgraph:add(jobname, function (index, total, opt)
-                script(target, sourcebatch, {progress = opt.progress})
-            end)
+            --     on_build_files(function (target, jobgraph, sourcebatch, opt)
+            --     end, {jobgraph = true})
+            local distcc = instance:extraconf(script_files_name, "distcc")
+            if instance:extraconf(script_files_name, "jobgraph") then
+                script_files(target, jobgraph, sourcebatch, {distcc = distcc})
+            elseif instance:extraconf(script_files_name, "batch") then
+                wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.",
+                    instance:fullname(), script_files_name)
+            else
+                -- call custom script directly
+                -- e.g.
+                --
+                -- target("test")
+                --     on_build_files(function (target, sourcebatch, opt)
+                --     end)
+                local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_files_name)
+                jobgraph:add(jobname, function (index, total, opt)
+                    script_files(target, sourcebatch, {progress = opt.progress, distcc = distcc})
+                end)
+            end
+            has_script = true
         end
-        has_script = true
-    else
-        -- call command script
-        -- e.g.
-        --
-        -- target("test")
-        --     on_buildcmd(function (target, batchcmds, sourcebatch, opt)
-        --     end)
-        local scriptcmd_file_name = opt.scriptcmd_file_name
+    end
+
+    -- call script file
+    if not has_script then
+        local script_file_name = opt.script_file_name
+        local script_file = instance:script(script_file_name)
+        if script_file then
+            -- call custom script with jobgraph
+            -- e.g.
+            --
+            -- target("test")
+            --     on_build_file(function (target, jobgraph, sourcefile, opt)
+            --     end, {jobgraph = true})
+            local distcc = instance:extraconf(script_file_name, "distcc")
+            if instance:extraconf(script_file_name, "jobgraph") then
+                local sourcekind = sourcebatch.sourcekind
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    script_file(target, jobgraph, sourcefile, {sourcekind = sourcekind, distcc = distcc})
+                end
+            elseif instance:extraconf(script_file_name, "batch") then
+                wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.",
+                    instance:fullname(), script_file_name)
+            else
+                -- call custom script directly
+                -- e.g.
+                --
+                -- target("test")
+                --     on_build_file(function (target, sourcefile, opt)
+                --     end)
+                local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_file_name)
+                jobgraph:add(jobname, function (index, total, opt)
+                    local sourcekind = sourcebatch.sourcekind
+                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        script_file(target, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
+                    end
+                end)
+            end
+            has_script = true
+        end
+    end
+
+    -- call command script files
+    -- e.g.
+    --
+    -- target("test")
+    --     on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
+    --     end)
+    if not has_script then
         local scriptcmd_files_name = opt.scriptcmd_files_name
-        local scriptcmd = instance:script(scriptcmd_files_name)
-        if scriptcmd then
+        local scriptcmd_files = instance:script(scriptcmd_files_name)
+        if scriptcmd_files then
+            local distcc = instance:extraconf(scriptcmd_files_name, "distcc")
             local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_files_name)
             jobgraph:add(jobname, function (index, total, opt)
                 local batchcmds_ = batchcmds.new({target = target})
-                scriptcmd(target, batchcmds_, sourcebatch, {progress = opt.progress})
+                scriptcmd_files(target, batchcmds_, sourcebatch, {progress = opt.progress, distcc = distcc})
+                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+            end)
+            has_script = true
+        end
+    end
+
+    -- call command script file
+    -- e.g.
+    --
+    -- target("test")
+    --     on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
+    --     end)
+    if not has_script then
+        local scriptcmd_file_name = opt.scriptcmd_file_name
+        local scriptcmd_file = instance:script(scriptcmd_file_name)
+        if scriptcmd_file then
+            local distcc = instance:extraconf(scriptcmd_file_name, "distcc")
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_file_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                local batchcmds_ = batchcmds.new({target = target})
+                local sourcekind = sourcebatch.sourcekind
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    scriptcmd_file(target, batchcmds_, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
+                end
                 batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
             end)
             has_script = true
