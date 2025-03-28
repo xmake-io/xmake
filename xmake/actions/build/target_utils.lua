@@ -408,7 +408,7 @@ function _add_filejobs_for_script(jobgraph, instance, sourcebatch, opt)
     -- e.g.
     --
     -- target("test")
-    --     on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
+    --     on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
     --     end)
     if not has_script then
         local scriptcmd_file_name = opt.scriptcmd_file_name
