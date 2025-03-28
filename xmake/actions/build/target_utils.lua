@@ -284,7 +284,7 @@ function runjobs(targets_root, opt)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, comax = option.get("jobs") or 1, curdir = curdir})
+        end, comax = option.get("jobs") or 1, curdir = curdir, distcc = opt.distcc})
         os.cd(curdir)
     end
 end

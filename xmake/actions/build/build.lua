@@ -31,12 +31,13 @@ function _prepare(targets_root, opt)
     target_utils.runjobs(targets_root, opt)
 end
 
--- TODO distcc
 function _build(targets_root, opt)
-    --[[
     opt = opt or {}
     opt.job_kind = "build"
-    target_utils.runjobs(targets_root, opt)]]
+    if distcc_build_client.is_connected() then
+        opt.distcc = distcc_build_client.singleton()
+    end
+    target_utils.runjobs(targets_root, opt)
 end
 
 function main(targetnames, opt)
