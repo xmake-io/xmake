@@ -225,6 +225,37 @@ function _get_targetjobs(targets_root, opt)
     return jobgraph
 end
 
+-- add file jobs for the given target
+function _add_filejobs(jobgraph, target, opt)
+    opt = opt or {}
+    if not target:is_enabled() then
+        return
+    end
+end
+
+-- add file jobs for the given target and deps
+function _add_filejobs_and_deps(jobgraph, target, targetrefs, opt)
+    local targetname = target:fullname()
+    if not targetrefs[targetname] then
+        targetrefs[targetname] = target
+        _add_filejobs(jobgraph, target, opt)
+        for _, depname in ipairs(target:get("deps")) do
+            local dep = project.target(depname, {namespace = target:namespace()})
+            _add_filejobs_and_deps(jobgraph, dep, targetrefs, opt)
+        end
+    end
+end
+
+-- get files jobs
+function _get_filejobs(targets_root, opt)
+    local jobgraph = async_jobgraph.new()
+    local targetrefs = {}
+    for _, target in ipairs(targets_root) do
+        _add_filejobs_and_deps(jobgraph, target, targetrefs, opt)
+    end
+    return jobgraph
+end
+
 -- get all root targets
 function get_root_targets(targetnames, opt)
     opt = opt or {}
@@ -287,5 +318,24 @@ function run_targetjobs(targets_root, opt)
             end
         end, comax = option.get("jobs") or 1, curdir = curdir, distcc = opt.distcc})
         os.cd(curdir)
+        return true
+    end
+end
+
+-- run files-level jobs, e.g. on_prepare_files, on_build_files, ...
+function run_filejobs(targets_root, opt)
+    opt = opt or {}
+    local job_kind = opt.job_kind
+    local jobgraph = _get_filejobs(targets_root, opt)
+    if jobgraph and not jobgraph:empty() then
+        local curdir = os.curdir()
+        async_runjobs(job_kind, jobgraph, {on_exit = function (errors)
+            import("utils.progress")
+            if errors and progress.showing_without_scroll() then
+                print("")
+            end
+        end, comax = option.get("jobs") or 1, curdir = curdir, distcc = opt.distcc})
+        os.cd(curdir)
+        return true
     end
 end
