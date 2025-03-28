@@ -95,7 +95,7 @@ function policy.policies()
             -- Enable cuda device link
             ["build.cuda.devlink"]                = {description = "Enable Cuda devlink.", type = "boolean"},
             -- Enable build jobgraph
-            ["build.jobgraph"]                    = {description = "Enable build jobgraph.", default = false, type = "boolean"},
+            ["build.jobgraph"]                    = {description = "Enable build jobgraph.", default = true, type = "boolean"},
             -- Enable windows UAC and set level, e.g. invoker, admin, highest
             ["windows.manifest.uac"]              = {description = "Enable windows manifest UAC.", type = "string"},
             -- Enable ui access for windows UAC
