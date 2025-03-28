@@ -302,10 +302,6 @@ function _match_sourcebatches(target, filepatterns)
     end
 end
 
--- add file jobs for the builtin script
-function _add_filejobs_for_builtin_script(jobgraph, target, sourcebatch, job_kind)
-end
-
 -- add file jobs for the given script, TODO on single file
 function _add_filejobs_for_script(jobgraph, instance, sourcebatch, opt)
     opt = opt or {}
@@ -467,7 +463,6 @@ function _add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     -- call target and rules script
     local jobsize = jobgraph:size()
     jobgraph:group(group_name, function ()
-        local has_script = false
         local script_opt = {
             script_file_name = script_file_name,
             script_files_name = script_files_name,
@@ -477,22 +472,13 @@ function _add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
         for _, instance in ipairs(instances) do
             if instance == target then
                 for _, sourcebatch in ipairs(sourcebatches) do
-                    if _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt) then
-                        has_script = true
-                    end
+                    _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt)
                 end
             else -- rule
                 local sourcebatch = sourcebatches_map[instance]
-                if sourcebatch and _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt) then
-                    has_script = true
+                if sourcebatch then
+                    _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt)
                 end
-            end
-        end
-
-        -- call builtin script, e.g. on_prepare_files, on_build_files, ...
-        if not has_script and stage == "" then
-            for _, sourcebatch in ipairs(sourcebatches) do
-                _add_filejobs_for_builtin_script(jobgraph, target, sourcebatch, job_kind)
             end
         end
     end)
