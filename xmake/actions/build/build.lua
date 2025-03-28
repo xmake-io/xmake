@@ -28,7 +28,7 @@ import("deprecated.build", {alias = "deprecated_build"})
 function _prepare(targets_root, opt)
     opt = opt or {}
     opt.job_kind = "prepare"
-    target_utils.runjobs(targets_root, opt)
+    target_utils.run_targetjobs(targets_root, opt)
 end
 
 function _build(targets_root, opt)
@@ -37,7 +37,7 @@ function _build(targets_root, opt)
     if distcc_build_client.is_connected() then
         opt.distcc = distcc_build_client.singleton()
     end
-    target_utils.runjobs(targets_root, opt)
+    target_utils.run_targetjobs(targets_root, opt)
 end
 
 function main(targetnames, opt)
