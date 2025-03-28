@@ -111,7 +111,7 @@ function add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
 end
 
 -- add target jobs for the given script
-function add_targetjobs_for_script(jobgraph, instance, opt)
+function add_targetjobs_for_script(jobgraph, target, instance, opt)
     opt = opt or {}
     local has_script = false
 
@@ -198,7 +198,7 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
             scriptcmd_name = scriptcmd_name
         }
         for _, instance in ipairs(instances) do
-            if add_targetjobs_for_script(jobgraph, instance, script_opt) then
+            if add_targetjobs_for_script(jobgraph, target, instance, script_opt) then
                 has_script = true
             end
         end
@@ -299,7 +299,7 @@ function get_targetjobs(targets_root, opt)
 end
 
 -- add file jobs for the given script, TODO on single file
-function add_filejobs_for_script(jobgraph, instance, sourcebatch, opt)
+function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
     opt = opt or {}
     local has_script = false
 
@@ -468,12 +468,12 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
         for _, instance in ipairs(instances) do
             if instance == target then
                 for _, sourcebatch in ipairs(sourcebatches) do
-                    add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt)
+                    add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
                 end
             else -- rule
                 local sourcebatch = sourcebatches_map[instance]
                 if sourcebatch then
-                    add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt)
+                    add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
                 end
             end
         end
