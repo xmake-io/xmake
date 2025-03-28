@@ -20,6 +20,8 @@
 
 -- imports
 import("core.base.option")
+import(".target_utils")
 
 function main(jobgraph, target)
+    target_utils.add_filejobs(jobgraph, target, {job_kind = "build"})
 end
