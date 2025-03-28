@@ -24,12 +24,72 @@ import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("target_utils")
+import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 import("deprecated.build_files", {alias = "deprecated_build_files"})
 
-function _prepare_files(targets_root, opt)
+-- convert all sourcefiles to lua pattern
+function _get_file_patterns(sourcefiles)
+    local patterns = {}
+    for _, sourcefile in ipairs(path.splitenv(sourcefiles)) do
+
+        -- get the excludes
+        local pattern  = sourcefile:trim()
+        local excludes = pattern:match("|.*$")
+        if excludes then excludes = excludes:split("|", {plain = true}) end
+
+        -- translate excludes
+        if excludes then
+            local _excludes = {}
+            for _, exclude in ipairs(excludes) do
+                exclude = path.translate(exclude)
+                exclude = path.pattern(exclude)
+                table.insert(_excludes, exclude)
+            end
+            excludes = _excludes
+        end
+
+        -- translate path and remove some repeat separators
+        pattern = path.translate(pattern:gsub("|.*$", ""))
+
+        -- remove "./" or '.\\' prefix
+        if pattern:sub(1, 2):find('%.[/\\]') then
+            pattern = pattern:sub(3)
+        end
+
+        -- get the root directory
+        local rootdir = pattern
+        local startpos = pattern:find("*", 1, true)
+        if startpos then
+            rootdir = rootdir:sub(1, startpos - 1)
+        end
+        rootdir = path.directory(rootdir)
+
+        -- convert to lua path pattern
+        pattern = path.pattern(pattern)
+        table.insert(patterns, {pattern = pattern, excludes = excludes, rootdir = rootdir})
+    end
+    return patterns
 end
 
+-- run prepare files jobs
+function _prepare_files(targets_root, opt)
+    opt = opt or {}
+    opt.job_kind = "prepare"
+    opt.filepatterns = _get_file_patterns(opt.sourcefiles)
+    target_utils.run_filejobs(targets_root, opt)
+end
+
+-- run build files jobs
 function _build_files(targets_root, opt)
+    opt = opt or {}
+    opt.job_kind = "build"
+    opt.filepatterns = _get_file_patterns(opt.sourcefiles)
+    if distcc_build_client.is_connected() then
+        opt.distcc = distcc_build_client.singleton()
+    end
+    if not target_utils.run_filejobs(targets_root, opt) then
+        wprint("%s not found!", opt.sourcefiles)
+    end
 end
 
 function main(targetnames, opt)

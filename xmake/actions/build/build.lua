@@ -23,14 +23,17 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("target_utils")
+import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 import("deprecated.build", {alias = "deprecated_build"})
 
+-- run prepare jobs
 function _prepare(targets_root, opt)
     opt = opt or {}
     opt.job_kind = "prepare"
     target_utils.run_targetjobs(targets_root, opt)
 end
 
+-- run build jobs
 function _build(targets_root, opt)
     opt = opt or {}
     opt.job_kind = "build"
