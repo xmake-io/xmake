@@ -36,8 +36,8 @@ function _clean_target(target)
     end
 end
 
--- add jobs for the builtin script
-function _add_jobs_for_builtin_script(jobgraph, target, job_kind)
+-- add target jobs for the builtin script
+function _add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
         if job_kind == "prepare" then
             prepare_files(jobgraph, target)
@@ -50,9 +50,58 @@ function _add_jobs_for_builtin_script(jobgraph, target, job_kind)
     end
 end
 
--- add jobs for the given target stage
+-- add target jobs for the given script
+function _add_targetjobs_for_script(jobgraph, instance, script_name, scriptcmd_name)
+    local has_script = false
+    local script = instance:script(script_name)
+    if script then
+        -- call custom script with jobgraph
+        -- e.g.
+        --
+        -- target("test")
+        --     on_build(function (target, jobgraph, opt)
+        --     end, {jobgraph = true})
+        if instance:extraconf(script_name, "jobgraph") then
+            script(target, jobgraph)
+        elseif instance:extraconf(script_name, "batch") then
+            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.", instance:fullname(), script_name)
+        else
+            -- call custom script directly
+            -- e.g.
+            --
+            -- target("test")
+            --     on_build(function (target, opt)
+            --     end)
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                script(target, {progress = opt.progress})
+            end)
+        end
+        has_script = true
+    else
+        -- call command script
+        -- e.g.
+        --
+        -- target("test")
+        --     on_buildcmd(function (target, batchcmds, opt)
+        --     end)
+        local scriptcmd = instance:script(scriptcmd_name)
+        if scriptcmd then
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
+            jobgraph:add(jobname, function (index, total, opt)
+                local batchcmds_ = batchcmds.new({target = target})
+                scriptcmd(target, batchcmds_, {progress = opt.progress})
+                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+            end)
+            has_script = true
+        end
+    end
+    return has_script
+end
+
+-- add target jobs with the given stage
 -- stage: before, after or ""
-function _add_jobs_for_target_stage(jobgraph, target, stage, opt)
+function _add_targetjobs_with_stage(jobgraph, target, stage, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
 
@@ -76,14 +125,14 @@ function _add_jobs_for_target_stage(jobgraph, target, stage, opt)
     jobgraph:group(group_name, function ()
         local has_script = false
         for _, instance in ipairs(instances) do
-            if add_jobs_for_script(jobgraph, instance, script_name, scriptcmd_name) then
+            if _add_targetjobs_for_script(jobgraph, instance, script_name, scriptcmd_name) then
                 has_script = true
             end
         end
 
         -- call builtin script, e.g. on_prepare, on_build, ...
         if not has_script and stage == "" then
-            _add_jobs_for_builtin_script(jobgraph, target, job_kind)
+            _add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
         end
     end)
 
@@ -92,8 +141,8 @@ function _add_jobs_for_target_stage(jobgraph, target, stage, opt)
     end
 end
 
--- add jobs for the given target
-function _add_jobs_for_target(jobgraph, target, opt)
+-- add target jobs for the given target
+function _add_targetjobs(jobgraph, target, opt)
     opt = opt or {}
     if not target:is_enabled() then
         return
@@ -146,83 +195,34 @@ function _add_jobs_for_target(jobgraph, target, opt)
         end
     end)
 
-    -- add jobs for target stage, e.g. after_xxx -> (depend on) on_xxx -> before_xxx
-    local group        = _add_jobs_for_target_stage(jobgraph, target, "", opt)
-    local group_before = _add_jobs_for_target_stage(jobgraph, target, "before", opt)
-    local group_after  = _add_jobs_for_target_stage(jobgraph, target, "after", opt)
+    -- add jobs with target stage, e.g. after_xxx -> (depend on) on_xxx -> before_xxx
+    local group        = _add_targetjobs_with_stage(jobgraph, target, "", opt)
+    local group_before = _add_targetjobs_with_stage(jobgraph, target, "before", opt)
+    local group_after  = _add_targetjobs_with_stage(jobgraph, target, "after", opt)
     jobgraph:add_orders(job_begin, group_before, group, group_after, job_end)
 end
 
--- add jobs for the given target and deps
-function _add_jobs_for_target_and_deps(jobgraph, target, targetrefs, opt)
+-- add target jobs for the given target and deps
+function _add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
     local targetname = target:fullname()
     if not targetrefs[targetname] then
         targetrefs[targetname] = target
-        _add_jobs_for_target(jobgraph, target, opt)
+        _add_targetjobs(jobgraph, target, opt)
         for _, depname in ipairs(target:get("deps")) do
             local dep = project.target(depname, {namespace = target:namespace()})
-            _add_jobs_for_target_and_deps(jobgraph, dep, targetrefs, opt)
+            _add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
         end
     end
 end
 
--- get jobs
-function _get_jobs(targets_root, opt)
+-- get target jobs
+function _get_targetjobs(targets_root, opt)
     local jobgraph = async_jobgraph.new()
     local targetrefs = {}
     for _, target in ipairs(targets_root) do
-        _add_jobs_for_target_and_deps(jobgraph, target, targetrefs, opt)
+        _add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
     end
     return jobgraph
-end
-
--- add jobs for the given script
-function add_jobs_for_script(jobgraph, instance, script_name, scriptcmd_name)
-    local has_script = false
-    local script = instance:script(script_name)
-    if script then
-        -- call custom script with jobgraph
-        -- e.g.
-        --
-        -- target("test")
-        --     on_build(function (target, jobgraph, opt)
-        --     end, {jobgraph = true})
-        if instance:extraconf(script_name, "jobgraph") then
-            script(target, jobgraph)
-        elseif instance:extraconf(script_name, "batch") then
-            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.", instance:fullname(), script_name)
-        else
-            -- call custom script directly
-            -- e.g.
-            --
-            -- target("test")
-            --     on_build(function (target, opt)
-            --     end)
-            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
-            jobgraph:add(jobname, function (index, total, opt)
-                script(target, {progress = opt.progress})
-            end)
-        end
-        has_script = true
-    else
-        -- call command script
-        -- e.g.
-        --
-        -- target("test")
-        --     on_buildcmd(function (target, batchcmds, opt)
-        --     end)
-        local scriptcmd = instance:script(scriptcmd_name)
-        if scriptcmd then
-            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
-            jobgraph:add(jobname, function (index, total, opt)
-                local batchcmds_ = batchcmds.new({target = target})
-                scriptcmd(target, batchcmds_, {progress = opt.progress})
-                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
-            end)
-            has_script = true
-        end
-    end
-    return has_script
 end
 
 -- get all root targets
@@ -273,10 +273,11 @@ function get_root_targets(targetnames, opt)
     return targets_root
 end
 
-function runjobs(targets_root, opt)
+-- run target-level jobs, e.g. on_prepare, on_build, ...
+function run_targetjobs(targets_root, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
-    local jobgraph = _get_jobs(targets_root, opt)
+    local jobgraph = _get_targetjobs(targets_root, opt)
     if jobgraph and not jobgraph:empty() then
         local curdir = os.curdir()
         async_runjobs(job_kind, jobgraph, {on_exit = function (errors)
