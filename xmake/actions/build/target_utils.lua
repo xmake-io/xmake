@@ -60,8 +60,10 @@ function _add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
 end
 
 -- add target jobs for the given script
-function _add_targetjobs_for_script(jobgraph, instance, script_name, scriptcmd_name)
+function _add_targetjobs_for_script(jobgraph, instance, opt)
+    opt = opt or {}
     local has_script = false
+    local script_name = opt.script_name
     local script = instance:script(script_name)
     if script then
         -- call custom script with jobgraph
@@ -94,6 +96,7 @@ function _add_targetjobs_for_script(jobgraph, instance, script_name, scriptcmd_n
         -- target("test")
         --     on_buildcmd(function (target, batchcmds, opt)
         --     end)
+        local scriptcmd_name = opt.scriptcmd_name
         local scriptcmd = instance:script(scriptcmd_name)
         if scriptcmd then
             local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
@@ -133,8 +136,12 @@ function _add_targetjobs_with_stage(jobgraph, target, stage, opt)
     local jobsize = jobgraph:size()
     jobgraph:group(group_name, function ()
         local has_script = false
+        local script_opt = {
+            script_name = script_name,
+            scriptcmd_name = scriptcmd_name
+        }
         for _, instance in ipairs(instances) do
-            if _add_targetjobs_for_script(jobgraph, instance, script_name, scriptcmd_name) then
+            if _add_targetjobs_for_script(jobgraph, instance, script_opt) then
                 has_script = true
             end
         end
@@ -294,9 +301,12 @@ function _add_filejobs_for_builtin_script(jobgraph, target, sourcebatch, job_kin
 end
 
 -- add file jobs for the given script, TODO on single file
-function _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_name, scriptcmd_name)
+function _add_filejobs_for_script(jobgraph, instance, sourcebatch, opt)
+    opt = opt or {}
     local has_script = false
-    local script = instance:script(script_name)
+    local script_file_name = opt.script_file_name
+    local script_files_name = opt.script_files_name
+    local script = instance:script(script_files_name)
     if script then
         -- call custom script with jobgraph
         -- e.g.
@@ -304,10 +314,11 @@ function _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_name, 
         -- target("test")
         --     on_build_files(function (target, jobgraph, sourcebatch, opt)
         --     end, {jobgraph = true})
-        if instance:extraconf(script_name, "jobgraph") then
+        if instance:extraconf(script_files_name, "jobgraph") then
             script(target, jobgraph, sourcebatch)
-        elseif instance:extraconf(script_name, "batch") then
-            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.", instance:fullname(), script_name)
+        elseif instance:extraconf(script_files_name, "batch") then
+            wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.",
+                instance:fullname(), script_files_name)
         else
             -- call custom script directly
             -- e.g.
@@ -315,7 +326,7 @@ function _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_name, 
             -- target("test")
             --     on_build_files(function (target, sourcebatch, opt)
             --     end)
-            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_name)
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), script_files_name)
             jobgraph:add(jobname, function (index, total, opt)
                 script(target, sourcebatch, {progress = opt.progress})
             end)
@@ -328,9 +339,11 @@ function _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_name, 
         -- target("test")
         --     on_buildcmd(function (target, batchcmds, sourcebatch, opt)
         --     end)
-        local scriptcmd = instance:script(scriptcmd_name)
+        local scriptcmd_file_name = opt.scriptcmd_file_name
+        local scriptcmd_files_name = opt.scriptcmd_files_name
+        local scriptcmd = instance:script(scriptcmd_files_name)
         if scriptcmd then
-            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_name)
+            local jobname = string.format("%s/%s/%s", instance == target and "target" or "rule", instance:fullname(), scriptcmd_files_name)
             jobgraph:add(jobname, function (index, total, opt)
                 local batchcmds_ = batchcmds.new({target = target})
                 scriptcmd(target, batchcmds_, sourcebatch, {progress = opt.progress})
@@ -348,16 +361,19 @@ end
 function _add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
+    local job_kind_file = job_kind .. "_file"
     local job_kind_files = job_kind .. "_files"
 
     -- the group name, e.g. foo/after_prepare_files, bar/before_build_files
     local group_name = string.format("%s/%s_%s_files", target:fullname(), stage, job_kind)
 
     -- the script name, e.g. before/after_prepare_files, before/after_build_files
-    local script_name = stage ~= "" and (job_kind_files .. "_" .. stage) or job_kind_files
+    local script_file_name = stage ~= "" and (job_kind_file .. "_" .. stage) or job_kind_file
+    local script_files_name = stage ~= "" and (job_kind_files .. "_" .. stage) or job_kind_files
 
     -- the command script name, e.g. before/after_preparecmd_files, before/after_buildcmd_files
-    local scriptcmd_name = stage ~= "" and (job_kind_files .. "cmd_" .. stage) or (job_kind_files .. "cmd")
+    local scriptcmd_file_name = stage ~= "" and (job_kind_file .. "cmd_" .. stage) or (job_kind_file .. "cmd")
+    local scriptcmd_files_name = stage ~= "" and (job_kind_files .. "cmd_" .. stage) or (job_kind_files .. "cmd")
 
     -- build sourcebatches map
     local sourcebatches_map = {}
@@ -377,16 +393,22 @@ function _add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     local jobsize = jobgraph:size()
     jobgraph:group(group_name, function ()
         local has_script = false
+        local script_opt = {
+            script_file_name = script_file_name,
+            script_files_name = script_files_name,
+            scriptcmd_file_name = scriptcmd_file_name,
+            scriptcmd_files_name = scriptcmd_files_name
+        }
         for _, instance in ipairs(instances) do
             if instance == target then
                 for _, sourcebatch in ipairs(sourcebatches) do
-                    if _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_name, scriptcmd_name) then
+                    if _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt) then
                         has_script = true
                     end
                 end
             else -- rule
                 local sourcebatch = sourcebatches_map[instance]
-                if sourcebatch and _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_name, scriptcmd_name) then
+                if sourcebatch and _add_filejobs_for_script(jobgraph, instance, sourcebatch, script_opt) then
                     has_script = true
                 end
             end
