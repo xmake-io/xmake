@@ -173,10 +173,10 @@ function _add_jobgraph(target, jobgraph, sourcebatch, opt)
     end
 end
 
-function main(target, jobs, sourcebatch, opt)
-    if jobs.add_orders then
-        _add_jobgraph(target, jobs, sourcebatch, opt)
+function main(target, jobgraph, sourcebatch, opt)
+    if jobgraph.add_orders then
+        _add_jobgraph(target, jobgraph, sourcebatch, opt)
     else
-        _add_batchjobs(target, jobs, sourcebatch, opt)
+        _add_batchjobs(target, jobgraph, sourcebatch, opt)
     end
 end

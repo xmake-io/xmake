@@ -21,7 +21,7 @@
 -- define rule: win.sdk.resource
 rule("win.sdk.resource")
     set_sourcekinds("mrc")
-    on_build_files("private.action.build.object", {batch = true})
+    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
 
 -- define rule: application
 rule("win.sdk.application")
