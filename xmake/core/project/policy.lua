@@ -94,6 +94,8 @@ function policy.policies()
             ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc.", type = "boolean"},
             -- Enable cuda device link
             ["build.cuda.devlink"]                = {description = "Enable Cuda devlink.", type = "boolean"},
+            -- Enable build jobgraph
+            ["build.jobgraph"]                    = {description = "Enable build jobgraph.", default = true, type = "boolean"},
             -- Enable windows UAC and set level, e.g. invoker, admin, highest
             ["windows.manifest.uac"]              = {description = "Enable windows manifest UAC.", type = "string"},
             -- Enable ui access for windows UAC

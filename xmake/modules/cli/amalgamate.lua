@@ -96,7 +96,7 @@ function _generate_file(target, inputpaths, outputpath, uniqueid)
     _generate_include_graph(target, inputpaths, gh, {})
 
     -- sort file paths and remove root path
-    local filepaths = gh:topological_sort()
+    local filepaths = gh:topo_sort()
     table.remove(filepaths, 1)
 
     -- generate amalgamate file

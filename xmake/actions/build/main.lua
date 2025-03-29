@@ -101,20 +101,18 @@ function _do_project_rules(scriptname, opt)
 end
 
 -- do build
-function _do_build(targetname, group_pattern)
+function _do_build(targetname, opt)
     local sourcefiles = option.get("files")
     if sourcefiles then
-        build_files(targetname, group_pattern, sourcefiles)
+        build_files(targetname, {group_pattern = opt.group_pattern, sourcefiles = sourcefiles})
     else
-        build(targetname, group_pattern)
+        build(targetname, {group_pattern = opt.group_pattern})
     end
 end
 
 -- build targets
 function build_targets(targetnames, opt)
     opt = opt or {}
-
-    local group_pattern = opt.group_pattern
     try
     {
         function ()
@@ -123,7 +121,7 @@ function build_targets(targetnames, opt)
             _do_project_rules("build_before")
 
             -- do build
-            _do_build(targetnames, group_pattern)
+            _do_build(targetnames, opt)
 
             -- do check
             check_targets(targetnames, {build = true})
@@ -146,8 +144,8 @@ function build_targets(targetnames, opt)
                 -- raise
                 if errors then
                     raise(errors)
-                elseif group_pattern then
-                    raise("build targets with group(%s) failed!", group_pattern)
+                elseif opt.group_pattern then
+                    raise("build targets with group(%s) failed!", opt.group_pattern)
                 elseif targetnames then
                     targetnames = table.wrap(targetnames)
                     raise("build target: %s failed!", table.concat(targetnames, ", "))

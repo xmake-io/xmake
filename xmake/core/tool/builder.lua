@@ -668,11 +668,14 @@ function builder:_sort_links_of_items(items, opt)
             gh:add_edge(k, v)
         end
         if not gh:empty() then
-            local cycle = gh:find_cycle()
-            if cycle then
-                utils.warning("cycle links found in add_linkorders(): %s", table.concat(cycle, " -> "))
+            local has_cycle
+            links, has_cycle = gh:topo_sort()
+            if has_cycle then
+                local cycle = gh:find_cycle()
+                if cycle then
+                    utils.warning("cycle links found in add_linkorders(): %s", table.concat(cycle, " -> "))
+                end
             end
-            links = gh:topological_sort()
         end
     end
 

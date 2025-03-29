@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        binary.lua
+-- @file        static.lua
 --
 
 -- imports
@@ -27,7 +27,7 @@ import("core.project.depend")
 import("utils.progress")
 import("private.utils.batchcmds")
 import("object", {alias = "object_target"})
-import("linkdepfiles", {alias = "get_linkdepfiles"})
+import("..target_utils")
 
 -- do link target
 function _do_link_target(target, opt)
@@ -35,7 +35,7 @@ function _do_link_target(target, opt)
     local linkflags = linkinst:linkflags({target = target})
 
     -- need build this target?
-    local depfiles = get_linkdepfiles(target)
+    local depfiles = target_utils.get_linkdepfiles(target)
     local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
@@ -43,7 +43,7 @@ function _do_link_target(target, opt)
         if target:namespace() then
             filename = target:namespace() .. "::" .. filename
         end
-        progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", filename)
+        progress.show(opt.progress, "${color.build.target}archiving.$(mode) %s", filename)
 
         local targetfile = target:targetfile()
         local objectfiles = target:objectfiles()
@@ -56,6 +56,7 @@ function _do_link_target(target, opt)
         if not dryrun then
             assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
         end
+
     end, {dependfile = target:dependfile(),
           lastmtime = os.mtime(target:targetfile()),
           changed = target:is_rebuilt() or option.get("linkonly"),
@@ -134,7 +135,7 @@ function _link_target(target, opt)
     end
 end
 
--- add batch jobs for building binary target
+-- add batch jobs for building static target
 function main(batchjobs, rootjob, target)
 
     -- add link job

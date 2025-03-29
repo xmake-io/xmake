@@ -15,25 +15,13 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        linkdepfiles.lua
+-- @file        prepare_files.lua
 --
 
--- get link depfiles
-function main(target)
-    local extrafiles = {}
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:kind() == "static" then
-            table.insert(extrafiles, dep:targetfile())
-        end
-    end
-    local linkdepfiles = target:data("linkdepfiles")
-    if linkdepfiles then
-        table.join2(extrafiles, linkdepfiles)
-    end
-    local objectfiles = target:objectfiles()
-    local depfiles = objectfiles
-    if #extrafiles > 0 then
-        depfiles = table.join(objectfiles, extrafiles)
-    end
-    return depfiles
+-- imports
+import("core.base.option")
+import(".target_utils")
+
+function main(jobgraph, target)
+    target_utils.add_filejobs(jobgraph, target, {job_kind = "prepare"})
 end
