@@ -22,7 +22,7 @@
 rule("cuda.build")
     set_sourcekinds("cu")
     add_deps("cuda.build.devlink")
-    on_build_files("private.action.build.object", {batch = true})
+    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
     on_config(function (target)
         -- https://github.com/xmake-io/xmake/issues/4755
         local cu_ccbin = target:tool("cu-ccbin")
