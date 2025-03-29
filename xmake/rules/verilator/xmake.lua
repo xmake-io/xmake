@@ -34,9 +34,9 @@ rule("verilator.binary")
         -- Just to avoid before_buildcmd_files being executed at build time
     end)
 
-    on_build_files(function (target, batchjobs, sourcebatch, opt)
-        import("verilator").build_cppfiles(target, batchjobs, sourcebatch, opt)
-    end, {batch = true, distcc = true})
+    on_build_files(function (target, jobgraph, sourcebatch, opt)
+        import("verilator").build_cppfiles(target, jobgraph, sourcebatch, opt)
+    end, {jobgraph = true, batch = true, distcc = true})
 
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
@@ -61,9 +61,9 @@ rule("verilator.static")
         -- Just to avoid before_buildcmd_files being executed at build time
     end)
 
-    on_build_files(function (target, batchjobs, sourcebatch, opt)
-        import("verilator").build_cppfiles(target, batchjobs, sourcebatch, opt)
-    end, {batch = true, distcc = true})
+    on_build_files(function (target, jobgraph, sourcebatch, opt)
+        import("verilator").build_cppfiles(target, jobgraph, sourcebatch, opt)
+    end, {jobgraph = true, batch = true, distcc = true})
 
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
