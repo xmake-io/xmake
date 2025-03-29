@@ -548,6 +548,26 @@ function get_filejobs(targets_root, opt)
     return jobgraph
 end
 
+-- get link depfiles
+function get_linkdepfiles(target)
+    local extrafiles = {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:kind() == "static" then
+            table.insert(extrafiles, dep:targetfile())
+        end
+    end
+    local linkdepfiles = target:data("linkdepfiles")
+    if linkdepfiles then
+        table.join2(extrafiles, linkdepfiles)
+    end
+    local objectfiles = target:objectfiles()
+    local depfiles = objectfiles
+    if #extrafiles > 0 then
+        depfiles = table.join(objectfiles, extrafiles)
+    end
+    return depfiles
+end
+
 -- get all root targets
 function get_root_targets(targetnames, opt)
     opt = opt or {}
