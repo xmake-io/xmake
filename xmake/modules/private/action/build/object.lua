@@ -143,8 +143,8 @@ function build(target, sourcebatch, opt)
     end
 end
 
--- add batch jobs to build the source files
-function main(target, batchjobs, sourcebatch, opt)
+-- add build jobs to batchjobs
+function _add_batchjobs(target, batchjobs, sourcebatch, opt)
     local rootjob = opt.rootjob
     for i = 1, #sourcebatch.sourcefiles do
         local sourcefile = sourcebatch.sourcefiles[i]
@@ -155,5 +155,28 @@ function main(target, batchjobs, sourcebatch, opt)
             local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = jobopt.progress}, opt)
             build_object(target, sourcefile, build_opt)
         end, {rootjob = rootjob, distcc = opt.distcc})
+    end
+end
+
+-- add build jobs to jobgraph
+function _add_jobgraph(target, jobgraph, sourcebatch, opt)
+    for i = 1, #sourcebatch.sourcefiles do
+        local sourcefile = sourcebatch.sourcefiles[i]
+        local objectfile = sourcebatch.objectfiles[i]
+        local dependfile = sourcebatch.dependfiles[i]
+        local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+        local jobname = target:fullname() .. "/" .. sourcefile
+        jobgraph:add(jobname, function (index, total, jobopt)
+            local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = jobopt.progress}, opt)
+            build_object(target, sourcefile, build_opt)
+        end, {distcc = opt.distcc})
+    end
+end
+
+function main(target, jobs, sourcebatch, opt)
+    if jobs.add_orders then
+        _add_jobgraph(target, jobs, sourcebatch, opt)
+    else
+        _add_batchjobs(target, jobs, sourcebatch, opt)
     end
 end
