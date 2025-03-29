@@ -104,6 +104,8 @@ function add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
         if job_kind == "prepare" then
             import("builtin.prepare_files", {anonymous = true})(jobgraph, target)
+        elseif job_kind == "link" then
+            import("builtin.link_objects", {anonymous = true})(jobgraph, target)
         else
             import("builtin.build_" .. target:kind(), {anonymous = true})(jobgraph, target)
         end
@@ -546,6 +548,16 @@ function get_filejobs(targets_root, opt)
         add_filejobs_and_deps(jobgraph, target, targetrefs, opt)
     end
     return jobgraph
+end
+
+-- add link jobs for the given target
+function add_linkjobs(jobgraph, target, opt)
+    opt = opt or {}
+    opt.job_kind = "link"
+    local group        = add_targetjobs_with_stage(jobgraph, target, "", opt)
+    local group_before = add_targetjobs_with_stage(jobgraph, target, "before", opt)
+    local group_after  = add_targetjobs_with_stage(jobgraph, target, "after", opt)
+    jobgraph:add_orders(group_before, group, group_after)
 end
 
 -- get link depfiles
