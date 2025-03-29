@@ -494,8 +494,13 @@ function add_filejobs(jobgraph, target, opt)
     end
 
     -- get sourcebatches
+    local sourcebatches
     local filepatterns = opt.filepatterns
-    local sourcebatches = filepatterns and _match_sourcebatches(target, filepatterns) or target:sourcebatches()
+    if filepatterns then
+        sourcebatches = _match_sourcebatches(target, filepatterns)
+    else
+        sourcebatches = target:sourcebatches()
+    end
 
     -- we just build sourcebatch with on_build_files scripts
     --
