@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("core.base.option")
 import(".target_utils")
 
 function main(jobgraph, target)

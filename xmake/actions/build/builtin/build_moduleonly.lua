@@ -19,7 +19,8 @@
 --
 
 -- imports
-import("core.base.option")
+import("build_object")
 
 function main(jobgraph, target)
+    build_object(jobgraph, target)
 end

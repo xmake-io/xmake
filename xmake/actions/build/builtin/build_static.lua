@@ -19,7 +19,8 @@
 --
 
 -- imports
-import("core.base.option")
+import("build_binary")
 
 function main(jobgraph, target)
+    build_binary(jobgraph, target)
 end
