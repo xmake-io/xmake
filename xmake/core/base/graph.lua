@@ -318,6 +318,11 @@ function graph:topo_sort()
     return order_vertices, has_cycle
 end
 
+-- deprecated
+function graph:topological_sort()
+    return self:topo_sort()
+end
+
 -- find cycle
 function graph:find_cycle()
     local visited = {}
