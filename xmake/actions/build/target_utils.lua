@@ -432,6 +432,8 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     local job_kind = opt.job_kind
     local job_kind_file = job_kind .. "_file"
     local job_kind_files = job_kind .. "_files"
+    local job_kindcmd_file = job_kind .. "cmd_file"
+    local job_kindcmd_files = job_kind .. "cmd_files"
 
     -- the group name, e.g. foo/after_prepare_files, bar/before_build_files
     local group_name = string.format("%s/%s_%s_files", target:fullname(), stage, job_kind)
@@ -441,8 +443,8 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     local script_files_name = stage ~= "" and (job_kind_files .. "_" .. stage) or job_kind_files
 
     -- the command script name, e.g. before/after_preparecmd_files, before/after_buildcmd_files
-    local scriptcmd_file_name = stage ~= "" and (job_kind_file .. "cmd_" .. stage) or (job_kind_file .. "cmd")
-    local scriptcmd_files_name = stage ~= "" and (job_kind_files .. "cmd_" .. stage) or (job_kind_files .. "cmd")
+    local scriptcmd_file_name = stage ~= "" and (job_kindcmd_file .. "_" .. stage) or job_kindcmd_file
+    local scriptcmd_files_name = stage ~= "" and (job_kindcmd_files .. "_" .. stage) or job_kindcmd_files
 
     -- build sourcebatches map
     local sourcebatches_map = {}
@@ -514,6 +516,7 @@ function add_filejobs(jobgraph, target, opt)
         local rulename = sourcebatch.rulename
         if rulename then
             local ruleinst = _get_rule(target, rulename)
+            -- FIXME
             if ruleinst:script("build_file") or ruleinst:script("build_files") then
                 table.insert(sourcebatches_result, sourcebatch)
             end
