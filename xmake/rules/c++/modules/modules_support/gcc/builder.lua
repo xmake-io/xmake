@@ -182,9 +182,9 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
     return {
         name = job_name,
-        deps = table.join(target:fullname() .. "/populate_module_map", deps),
+        deps = table.join(target:fullname() .. "/module/populate_module_map", deps),
         sourcefile = opt.cppfile,
-        job = batchjobs:newjob(target:fullname() .. "/" .. (name or opt.cppfile), function(index, total, jobopt)
+        job = batchjobs:newjob(target:fullname() .. "/module/" .. (name or opt.cppfile), function(index, total, jobopt)
             local mapped_bmi
             if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
                 mapped_bmi = get_from_target_mapper(target, name).bmi
@@ -247,7 +247,8 @@ function make_module_jobgraph(target, jobgraph, opt)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
     local module_mapperflag = compiler_support.get_modulemapperflag(target)
 
-    jobgraph:add(target:fullname() .. "/" .. (name or opt.cppfile), function(index, total, jobopt)
+    local jobname = target:fullname() .. "/module/" .. (name or opt.cppfile)
+    jobgraph:add(jobname, function(index, total, jobopt)
         local mapped_bmi
         if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
             mapped_bmi = get_from_target_mapper(target, name).bmi
