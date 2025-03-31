@@ -59,6 +59,9 @@ function check_macros(definition, macros, opt)
         if opt.languages then
             set_languages(opt.languages)
         end
+        if opt.defines then
+            add_defines(opt.defines)
+        end
         if opt.cflags then
             add_cflags(opt.cflags)
         end
@@ -114,6 +117,9 @@ function configvar_check_macros(definition, macros, opt)
         end
         if opt.languages then
             set_languages(opt.languages)
+        end
+        if opt.defines then
+            add_defines(opt.defines)
         end
         if opt.cflags then
             add_cflags(opt.cflags)
