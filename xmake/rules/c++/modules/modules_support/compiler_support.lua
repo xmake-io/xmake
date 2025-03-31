@@ -224,7 +224,7 @@ function modules_cachedir(target, opt)
 end
 
 function get_modulehash(target, modulepath)
-    local key = path.directory(modulepath) .. target:name()
+    local key = path.directory(modulepath) .. target:fullname()
     return hash.uuid(key):split("-", {plain = true})[1]:lower()
 end
 
