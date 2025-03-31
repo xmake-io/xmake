@@ -71,6 +71,9 @@ function check_macros(definition, macros, opt)
         if opt.cxxflags then
             add_cxxflags(opt.cxxflags)
         end
+        if opt.includes then
+            add_cincludes(opt.includes)
+        end
     option_end()
     interp_restore_scope()
     add_options(optname)
@@ -129,6 +132,9 @@ function configvar_check_macros(definition, macros, opt)
         end
         if opt.cxxflags then
             add_cxxflags(opt.cxxflags)
+        end
+        if opt.includes then
+            add_cincludes(opt.includes)
         end
     option_end()
     interp_restore_scope()
