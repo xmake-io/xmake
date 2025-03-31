@@ -448,10 +448,26 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
 
     -- build sourcebatches map
     local sourcebatches_map = {}
-    for _, sourcebatch in ipairs(sourcebatches) do
-        local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-        local ruleinst = _get_rule(target, rulename)
-        sourcebatches_map[ruleinst] = sourcebatch
+    local sourcebatches_for_target = {}
+    for _, sourcebatch in pairs(sourcebatches) do
+        local rulename = sourcebatch.rulename
+        if rulename then
+            local ruleinst = _get_rule(target, rulename)
+            sourcebatches_map[ruleinst] = sourcebatch
+            -- avoid duplicate scripts being called twice in the target,
+            -- we just build sourcebatch with on_build_files scripts
+            --
+            -- for example, c++.build and c++.build.modules.builder rules have same sourcefiles,
+            -- but we just build it for c++.build
+            --
+            -- @see https://github.com/xmake-io/xmake/issues/3171
+            --
+            if ruleinst:script("build_file") or ruleinst:script("build_files") then
+                table.insert(sourcebatches_for_target, sourcebatch)
+            end
+        else
+            table.insert(sourcebatches_for_target, sourcebatch)
+        end
     end
 
     -- TODO sort rules and jobs
@@ -471,7 +487,7 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
         }
         for _, instance in ipairs(instances) do
             if instance == target then
-                for _, sourcebatch in ipairs(sourcebatches) do
+                for _, sourcebatch in ipairs(sourcebatches_for_target) do
                     add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
                 end
             else -- rule
@@ -504,34 +520,10 @@ function add_filejobs(jobgraph, target, opt)
         sourcebatches = target:sourcebatches()
     end
 
-    -- we just build sourcebatch with on_build_files scripts
-    --
-    -- for example, c++.build and c++.build.modules.builder rules have same sourcefiles,
-    -- but we just build it for c++.build
-    --
-    -- @see https://github.com/xmake-io/xmake/issues/3171
-    --
-    local sourcebatches_result = {}
-    for _, sourcebatch in pairs(sourcebatches) do
-        local rulename = sourcebatch.rulename
-        if rulename then
-            local ruleinst = _get_rule(target, rulename)
-            -- FIXME
-            if ruleinst:script("build_file") or ruleinst:script("build_files") then
-                table.insert(sourcebatches_result, sourcebatch)
-            end
-        else
-            table.insert(sourcebatches_result, sourcebatch)
-        end
-    end
-    if #sourcebatches_result == 0 then
-        return
-    end
-
     -- add file jobs with target stage, e.g. before_xxx_files -> on_xxx_files -> after_xxx_files
-    local group        = add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "", opt)
-    local group_before = add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "before", opt)
-    local group_after  = add_filejobs_with_stage(jobgraph, target, sourcebatches_result, "after", opt)
+    local group        = add_filejobs_with_stage(jobgraph, target, sourcebatches, "", opt)
+    local group_before = add_filejobs_with_stage(jobgraph, target, sourcebatches, "before", opt)
+    local group_after  = add_filejobs_with_stage(jobgraph, target, sourcebatches, "after", opt)
     jobgraph:add_orders(group_before, group, group_after)
 end
 
