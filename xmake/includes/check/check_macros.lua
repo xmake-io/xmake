@@ -55,7 +55,6 @@ function check_macros(definition, macros, opt)
         else
             add_csnippets(definition, table.concat(snippets, "\n"))
         end
-        add_defines(definition)
         if opt.languages then
             set_languages(opt.languages)
         end
