@@ -40,7 +40,7 @@ function generate_dependency_for(target, sourcefile, opt)
     local changed = false
 
     depend.on_changed(function ()
-        progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:name(), sourcefile)
+        progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:fullname(), sourcefile)
         local outputdir = compiler_support.get_outputdir(target, sourcefile)
 
         local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".module.json")

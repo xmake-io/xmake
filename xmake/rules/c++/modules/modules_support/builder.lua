@@ -130,7 +130,7 @@ function _try_reuse_modules(target, modules)
             end
             local mapped = get_from_target_mapper(dep, name)
             if mapped then
-                compiler_support.memcache():set2(target:name() .. name, "reuse", true)
+                compiler_support.memcache():set2(target:fullname() .. name, "reuse", true)
                 add_module_to_target_mapper(target, mapped.name, mapped.sourcefile, mapped.bmi, table.join(mapped.opt or {}, {target = dep}))
                 break
             end
@@ -158,8 +158,8 @@ function should_build(target, sourcefile, bmifile, opt)
         for required, _ in table.orderpairs(requires) do
             local m = get_from_target_mapper(target, required)
             if m then
-                local rebuild = (m.opt and m.opt.target) and compiler_support.memcache():get2("should_build_in_" .. m.opt.target:name(), m.key)
-                                                         or compiler_support.memcache():get2("should_build_in_" .. target:name(), m.key)
+                local rebuild = (m.opt and m.opt.target) and compiler_support.memcache():get2("should_build_in_" .. m.opt.target:fullname(), m.key)
+                                                         or compiler_support.memcache():get2("should_build_in_" .. target:fullname(), m.key)
                 if rebuild then
                     dependinfo.files = {}
                     table.insert(dependinfo.files, sourcefile)
@@ -174,7 +174,7 @@ function should_build(target, sourcefile, bmifile, opt)
     if opt.name then
         local m = get_from_target_mapper(target, opt.name)
         if m and m.opt and m.opt.target then
-            local rebuild = compiler_support.memcache():get2("should_build_in_" .. m.opt.target:name(), m.key)
+            local rebuild = compiler_support.memcache():get2("should_build_in_" .. m.opt.target:fullname(), m.key)
             if rebuild then
                 dependinfo.files = {}
                 table.insert(dependinfo.files, sourcefile)
@@ -224,7 +224,7 @@ end
 
 function _target_module_map_cachekey(target)
     local mode = config.mode()
-    return target:name() .. "module_mapper" .. (mode or "")
+    return target:fullname() .. "module_mapper" .. (mode or "")
 end
 
 function _is_duplicated_headerunit(target, key)
@@ -252,7 +252,7 @@ function _builder(target)
 end
 
 function mark_build(target, name)
-    compiler_support.memcache():set2("should_build_in_" .. target:name(), name, true)
+    compiler_support.memcache():set2("should_build_in_" .. target:fullname(), name, true)
 end
 
 -- build batchjobs for modules
@@ -263,11 +263,11 @@ end
 -- build modules for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
     opt.rootjob = batchjobs:group_leave() or opt.rootjob
-    batchjobs:group_enter(target:name() .. "/build_modules", {rootjob = opt.rootjob})
+    batchjobs:group_enter(target:fullname() .. "/build_modules", {rootjob = opt.rootjob})
 
     -- add populate module job
     local modulesjobs = {}
-    local populate_jobname = target:name() .. "/populate_module_map"
+    local populate_jobname = target:fullname() .. "/populate_module_map"
     modulesjobs[populate_jobname] = {
         name = populate_jobname,
         job = batchjobs:newjob(populate_jobname, function(_, _)
@@ -349,13 +349,13 @@ function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules
     -- we need new group(headerunits)
     -- e.g. group(build_modules) -> group(headerunits)
     opt.rootjob = batchjobs:group_leave() or opt.rootjob
-    batchjobs:group_enter(target:name() .. "/build_headerunits", {rootjob = opt.rootjob})
+    batchjobs:group_enter(target:fullname() .. "/build_headerunits", {rootjob = opt.rootjob})
 
     local build_headerunits = function(headerunits)
         local modulesjobs = {}
         _build_headerunits(target, headerunits, table.join(opt, {
             build_headerunit = function(headerunit, key, bmifile, outputdir, build)
-                local job_name = target:name() .. key
+                local job_name = target:fullname() .. "/" .. key
                 local job = _builder(target).make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmifile, outputdir, table.join(opt, {build = build}))
                 if job then
                   modulesjobs[job_name] = job
@@ -462,7 +462,7 @@ function generate_metadata(target, modules)
         local module = public_modules[index]
         local name, _, cppfile = compiler_support.get_provided_module(module)
         local metafilepath = compiler_support.get_metafile(target, cppfile)
-        progress.show(jobopt.progress, "${color.build.target}<%s> generating.module.metadata %s", target:name(), name)
+        progress.show(jobopt.progress, "${color.build.target}<%s> generating.module.metadata %s", target:fullname(), name)
         local metadata = _generate_meta_module_info(target, name, cppfile, module.requires)
         json.savefile(metafilepath, metadata)
     end, {comax = jobs, total = #public_modules})
@@ -471,20 +471,20 @@ end
 -- flush target module mapper keys
 function flush_target_module_mapper_keys(target)
     local memcache = compiler_support.memcache()
-    memcache:set2(target:name(), "module_mapper_keys", nil)
+    memcache:set2(target:fullname(), "module_mapper_keys", nil)
 end
 
 -- get or create a target module mapper
 function get_target_module_mapper(target)
     local memcache = compiler_support.memcache()
-    local mapper = memcache:get2(target:name(), "module_mapper")
+    local mapper = memcache:get2(target:fullname(), "module_mapper")
     if not mapper then
         mapper = {}
-        memcache:set2(target:name(), "module_mapper", mapper)
+        memcache:set2(target:fullname(), "module_mapper", mapper)
     end
 
     -- we generate the keys map to optimise the efficiency of _is_duplicated_headerunit
-    local mapper_keys = memcache:get2(target:name(), "module_mapper_keys")
+    local mapper_keys = memcache:get2(target:fullname(), "module_mapper_keys")
     if not mapper_keys then
         mapper_keys = {}
         for _, item in pairs(mapper) do
@@ -492,7 +492,7 @@ function get_target_module_mapper(target)
                 mapper_keys[item.key] = item
             end
         end
-        memcache:set2(target:name(), "module_mapper_keys", mapper_keys)
+        memcache:set2(target:fullname(), "module_mapper_keys", mapper_keys)
     end
     return mapper, mapper_keys
 end
@@ -530,7 +530,7 @@ end
 
 -- check if dependencies changed
 function is_dependencies_changed(target, module)
-    local cachekey = target:name() .. module.name
+    local cachekey = target:fullname() .. module.name
     local requires = hashset.from(table.keys(module.requires or {}))
     local oldrequires = compiler_support.memcache():get2(cachekey, "oldrequires")
     local changed = false

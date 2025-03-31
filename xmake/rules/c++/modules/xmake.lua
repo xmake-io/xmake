@@ -129,7 +129,7 @@ rule("c++.build.modules.builder")
                 sourcebatch.objectfiles = {}
             end
 
-            compiler_support.localcache():set2(target:name(), "c++.modules", modules)
+            compiler_support.localcache():set2(target:fullname(), "c++.modules", modules)
             compiler_support.localcache():save()
         else
             -- avoid duplicate linking of object files of non-module programs
@@ -191,7 +191,7 @@ rule("c++.build.modules.builder")
                 sourcebatch.objectfiles = {}
             end
 
-            compiler_support.localcache():set2(target:name(), "c++.modules", modules)
+            compiler_support.localcache():set2(target:fullname(), "c++.modules", modules)
             compiler_support.localcache():save()
         else
             sourcebatch.sourcefiles = {}
@@ -228,7 +228,7 @@ rule("c++.build.modules.install")
         -- we cannot use target:data("cxx.has_modules"),
         -- because on_config will be not called when installing targets
         if compiler_support.contains_modules(target) then
-            local modules = compiler_support.localcache():get2(target:name(), "c++.modules")
+            local modules = compiler_support.localcache():get2(target:fullname(), "c++.modules")
             builder.generate_metadata(target, modules)
 
             compiler_support.add_installfiles_for_modules(target)
