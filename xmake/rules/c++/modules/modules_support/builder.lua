@@ -46,7 +46,7 @@ function _build_modules(target, sourcebatch, modules, opt)
 
         local deps = {}
         for _, dep in ipairs(table.keys(module.requires or {})) do
-            local depname = jobgraph and (target:fullname() .. "/" .. dep) or dep
+            local depname = jobgraph and (target:fullname() .. "/module/" .. dep) or dep
             table.insert(deps, depname)
         end
 
@@ -263,11 +263,11 @@ end
 -- build modules for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
     opt.rootjob = batchjobs:group_leave() or opt.rootjob
-    batchjobs:group_enter(target:fullname() .. "/build_modules", {rootjob = opt.rootjob})
+    batchjobs:group_enter(target:fullname() .. "/module/build_modules", {rootjob = opt.rootjob})
 
     -- add populate module job
     local modulesjobs = {}
-    local populate_jobname = target:fullname() .. "/populate_module_map"
+    local populate_jobname = target:fullname() .. "/module/populate_module_map"
     modulesjobs[populate_jobname] = {
         name = populate_jobname,
         job = batchjobs:newjob(populate_jobname, function(_, _)
@@ -279,7 +279,7 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
     -- add module jobs
     _build_modules(target, sourcebatch, modules, table.join(opt, {
        build_module = function(deps, module, name, objectfile, cppfile)
-        local job_name = target:fullname() .. "/" .. (name or cppfile)
+        local job_name = target:fullname() .. "/module/" .. (name or cppfile)
         modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps,
             {module = module, objectfile = objectfile, cppfile = cppfile})
       end
@@ -292,11 +292,11 @@ end
 -- build modules for jobgraph
 function build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
     local jobdeps = {}
-    local build_modules_group = target:fullname() .. "/build_modules"
+    local build_modules_group = target:fullname() .. "/module/build_modules"
     jobgraph:group(build_modules_group, function ()
 
         -- add populate module job
-        local populate_jobname = target:fullname() .. "/populate_module_map"
+        local populate_jobname = target:fullname() .. "/module/populate_module_map"
         jobgraph:add(populate_jobname, function(index, total, opt)
             _try_reuse_modules(target, modules)
             _builder(target).populate_module_map(target, modules)
@@ -305,7 +305,7 @@ function build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
         -- add module jobs
         _build_modules(target, sourcebatch, modules, table.join(opt, {
             build_module = function(deps, module, name, objectfile, cppfile)
-                local jobname = target:fullname() .. "/" .. (name or cppfile)
+                local jobname = target:fullname() .. "/module/" .. (name or cppfile)
                 _builder(target).make_module_jobgraph(target, jobgraph, {
                     module = module, objectfile = objectfile, cppfile = cppfile
                 })
@@ -349,13 +349,13 @@ function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules
     -- we need new group(headerunits)
     -- e.g. group(build_modules) -> group(headerunits)
     opt.rootjob = batchjobs:group_leave() or opt.rootjob
-    batchjobs:group_enter(target:fullname() .. "/build_headerunits", {rootjob = opt.rootjob})
+    batchjobs:group_enter(target:fullname() .. "/module/build_headerunits", {rootjob = opt.rootjob})
 
     local build_headerunits = function(headerunits)
         local modulesjobs = {}
         _build_headerunits(target, headerunits, table.join(opt, {
             build_headerunit = function(headerunit, key, bmifile, outputdir, build)
-                local job_name = target:fullname() .. "/" .. key
+                local job_name = target:fullname() .. "/module/" .. key
                 local job = _builder(target).make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmifile, outputdir, table.join(opt, {build = build}))
                 if job then
                   modulesjobs[job_name] = job
@@ -385,14 +385,14 @@ function build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, 
 
     -- we need new group(headerunits)
     -- e.g. group(build_modules) -> group(headerunits)
-    local build_modules_group = target:fullname() .. "/build_modules"
-    local build_headerunits_group = target:fullname() .. "/build_headerunits"
+    local build_modules_group = target:fullname() .. "/module/build_modules"
+    local build_headerunits_group = target:fullname() .. "/module/build_headerunits"
     jobgraph:group(build_headerunits_group, function ()
         local build_headerunits = function(headerunits)
             local modulesjobs = {}
             _build_headerunits(target, headerunits, table.join(opt, {
                 build_headerunit = function(headerunit, key, bmifile, outputdir, build)
-                    local job_name = target:fullname() .. "/" .. key
+                    local job_name = target:fullname() .. "/module/" .. key
                     _builder(target).make_headerunit_buildjobs(target,
                         job_name, jobgraph, headerunit, bmifile, outputdir, table.join(opt, {build = build}))
                 end
@@ -458,7 +458,7 @@ function generate_metadata(target, modules)
     end
 
     local jobs = option.get("jobs") or os.default_njob()
-    runjobs(target:fullname() .. "/install_modules", function(index, total, jobopt)
+    runjobs(target:fullname() .. "/module/install_modules", function(index, total, jobopt)
         local module = public_modules[index]
         local name, _, cppfile = compiler_support.get_provided_module(module)
         local metafilepath = compiler_support.get_metafile(target, cppfile)
