@@ -203,6 +203,10 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
             if add_targetjobs_for_script(jobgraph, target, instance, script_opt) then
                 has_script = true
             end
+            -- if custom target.on_build/prepare exists, we need to ignore all scripts in rules
+            if has_script and instance == target and stage == "" then
+                break
+            end
         end
 
         -- call builtin script, e.g. on_prepare, on_build, ...
@@ -300,7 +304,7 @@ function get_targetjobs(targets_root, opt)
     return jobgraph
 end
 
--- add file jobs for the given script, TODO on single file
+-- add file jobs for the given script
 function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
     opt = opt or {}
     local has_script = false
@@ -485,12 +489,17 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
             scriptcmd_file_name = scriptcmd_file_name,
             scriptcmd_files_name = scriptcmd_files_name
         }
+        local has_target_script = false
         for _, instance in ipairs(instances) do
             if instance == target then
                 for _, sourcebatch in ipairs(sourcebatches_for_target) do
-                    add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
+                    local has_script = add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
+                    -- if custom target.on_build_file[s] exists, we need to ignore all scripts in rules
+                    if has_script and stage == "" then
+                        has_target_script = true
+                    end
                 end
-            else -- rule
+            elseif not has_target_script then -- rule
                 local sourcebatch = sourcebatches_map[instance]
                 if sourcebatch then
                     add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
