@@ -167,7 +167,7 @@ function _get_requiresflags(target, module, opt)
     local headerunitflag = compiler_support.get_headerunitflag(target)
 
     local name = module.name
-    local cachekey = target:name() .. name
+    local cachekey = target:fullname() .. name
 
     local requires, requires_changed = is_dependencies_changed(target, module)
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
@@ -175,7 +175,7 @@ function _get_requiresflags(target, module, opt)
         local deps_flags = {}
         for required in requires:orderitems() do
             local dep_module = get_from_target_mapper(target, required)
-            assert(dep_module, "module dependency %s required for %s not found <%s>", required, name, target:name())
+            assert(dep_module, "module dependency %s required for %s not found <%s>", required, name, target:fullname())
 
             local mapflag
             local bmifile = dep_module.bmi
@@ -268,7 +268,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         job = batchjobs:newjob(target:fullname() .. "/" .. (name or opt.cppfile), function(index, total, jobopt)
 
             local mapped_bmi
-            if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+            if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
                 mapped_bmi = get_from_target_mapper(target, name).bmi
             end
 
@@ -310,11 +310,11 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local bmifile = mapped_bmi or bmifile
                     if external and not from_moduleonly then
                         if not mapped_bmi then
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:fullname(), name or opt.cppfile)
                             _compile_bmi_step(target, bmifile, opt.cppfile, opt.objectfile, provide)
                         end
                     else
-                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name or opt.cppfile)
                         _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide)
                     end
                 else
@@ -333,7 +333,7 @@ function make_module_jobgraph(target, jobgraph, opt)
 
     jobgraph:add(target:fullname() .. "/" .. (name or opt.cppfile), function(index, total, jobopt)
         local mapped_bmi
-        if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+        if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
             mapped_bmi = get_from_target_mapper(target, name).bmi
         end
 
@@ -375,11 +375,11 @@ function make_module_jobgraph(target, jobgraph, opt)
                 local bmifile = mapped_bmi or bmifile
                 if external and not from_moduleonly then
                     if not mapped_bmi then
-                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:fullname(), name or opt.cppfile)
                         _compile_bmi_step(target, bmifile, opt.cppfile, opt.objectfile, provide)
                     end
                 else
-                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name or opt.cppfile)
                     _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide)
                 end
             else
@@ -397,7 +397,7 @@ function make_module_buildcmds(target, batchcmds, opt)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
 
     local mapped_bmi
-    if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+    if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
         mapped_bmi = get_from_target_mapper(target, name).bmi
     end
 
@@ -417,11 +417,11 @@ function make_module_buildcmds(target, batchcmds, opt)
         local bmifile = mapped_bmi or bmifile
         if external and not from_moduleonly then
             if not mapped_bmi then
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:fullname(), name or opt.cppfile)
                 _compile_bmi_step(target, bmifile, opt.cppfile, provide, {batchcmds = batchcmds})
             end
         else
-            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name or opt.cppfile)
             _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide, {batchcmds = batchcmds})
         end
     else
@@ -454,7 +454,7 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
                 local name = headerunit.unique and headerunit.name or headerunit.path
 
                 if opt.build then
-                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
+                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), headerunit.name)
                     _compile(target, _make_headerunitflags(target, headerunit, bmifile), name, target:objectfile(headerunit.path), true)
                 end
 
@@ -485,7 +485,7 @@ function make_headerunit_jobgraph(target, job_name, jobgraph, headerunit, bmifil
             local name = headerunit.unique and headerunit.name or headerunit.path
 
             if opt.build then
-                progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
+                progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), headerunit.name)
                 _compile(target, _make_headerunitflags(target, headerunit, bmifile), name, target:objectfile(headerunit.path), true)
             end
 
@@ -503,7 +503,7 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outpu
 
     if opt.build then
         local name = headerunit.unique and headerunit.name or headerunit.path
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), name)
+        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
         _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, bmifile), target:objectfile(headerunit.path))
     end
     batchcmds:add_depfiles(headerunit.path)

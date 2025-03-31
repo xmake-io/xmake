@@ -36,7 +36,7 @@ function generate_dependency_for(target, sourcefile, opt)
 
     depend.on_changed(function()
         if opt.progress then
-            progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:name(), sourcefile)
+            progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:fullname(), sourcefile)
         end
 
         local outputdir = compiler_support.get_outputdir(target, sourcefile)

@@ -134,7 +134,7 @@ function _get_requiresflags(target, module, opt)
 
     local modulefileflag = compiler_support.get_modulefileflag(target)
     local name = module.name
-    local cachekey = target:name() .. name
+    local cachekey = target:fullname() .. name
 
     local requires, requires_changed = is_dependencies_changed(target, module)
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
@@ -216,11 +216,11 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
     return {
         name = job_name,
-        deps = table.join(target:name() .. "/populate_module_map", deps),
+        deps = table.join(target:fullname() .. "/populate_module_map", deps),
         sourcefile = opt.cppfile,
         job = batchjobs:newjob(target:fullname() .. "/" .. (name or opt.cppfile), function(index, total, jobopt)
             local mapped_bmi
-            if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+            if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
                 mapped_bmi = get_from_target_mapper(target, name).bmi
             end
 
@@ -263,11 +263,11 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local is_mapped_bmi = mapped_bmi ~= nil
                     if external and not from_moduleonly then
                         if not mapped_bmi then
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:fullname(), name or opt.cppfile)
                             _compile_bmi_step(target, bmifile, opt.cppfile, {std = (name == "std" or name == "std.compat")})
                         end
                     else
-                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name or opt.cppfile)
                         _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat"), is_mapped_bmi = is_mapped_bmi})
                     end
                 else
@@ -288,7 +288,7 @@ function make_module_jobgraph(target, jobgraph, opt)
     local jobname = target:fullname() .. "/" .. (name or opt.cppfile)
     jobgraph:add(jobname, function(index, total, jobopt)
         local mapped_bmi
-        if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+        if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
             mapped_bmi = get_from_target_mapper(target, name).bmi
         end
 
@@ -331,11 +331,11 @@ function make_module_jobgraph(target, jobgraph, opt)
                 local is_mapped_bmi = mapped_bmi ~= nil
                 if external and not from_moduleonly then
                     if not mapped_bmi then
-                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:fullname(), name or opt.cppfile)
                         _compile_bmi_step(target, bmifile, opt.cppfile, {std = (name == "std" or name == "std.compat")})
                     end
                 else
-                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name or opt.cppfile)
                     _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat"), is_mapped_bmi = is_mapped_bmi})
                 end
             else
@@ -354,7 +354,7 @@ function make_module_buildcmds(target, batchcmds, opt)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
 
     local mapped_bmi
-    if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+    if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
         mapped_bmi = get_from_target_mapper(target, name).bmi
     end
 
@@ -374,11 +374,11 @@ function make_module_buildcmds(target, batchcmds, opt)
         local is_mapped_bmi = mapped_bmi ~= nil
         if external and not from_moduleonly then
             if not mapped_bmi then
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:fullname(), name or opt.cppfile)
                 _compile_bmi_step(target, bmifile, opt.cppfile, {std = (name == "std" or name == "std.compat"), batchcmds = batchcmds})
             end
         else
-            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name or opt.cppfile)
             _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat"), batchcmds = batchcmds, is_mapped_bmi = is_mapped_bmi})
         end
     else
@@ -409,7 +409,7 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
                 local depvalues = {compinst:program(), compflags}
 
                 if opt.build then
-                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
+                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), headerunit.name)
                     _compile(target, _make_headerunitflags(target, headerunit, bmifile), headerunit.path, bmifile)
                 end
 
@@ -440,7 +440,7 @@ function make_headerunit_jobgraph(target, job_name, jobgraph, headerunit, bmifil
             if opt.build then
                 progress.show(jobopt.progress,
                     "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s",
-                    target:name(), headerunit.name)
+                    target:fullname(), headerunit.name)
                 _compile(target, _make_headerunitflags(target, headerunit, bmifile), headerunit.path, bmifile)
             end
 
@@ -458,7 +458,7 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outpu
 
     if opt.build then
         local name = headerunit.unique and headerunit.name or headerunit.path
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), name)
+        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
         _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, bmifile), bmifile)
     end
     batchcmds:add_depfiles(headerunit.path)

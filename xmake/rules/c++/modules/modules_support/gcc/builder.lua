@@ -76,7 +76,7 @@ end
 
 function _module_map_cachekey(target)
     local mode = config.mode()
-    return target:name() .. "module_mapper" .. (mode or "")
+    return target:fullname() .. "module_mapper" .. (mode or "")
 end
 
 -- generate a module mapper file for build a headerunit
@@ -135,7 +135,7 @@ end
 --
 function _generate_modulemapper_file(target, module, cppfile)
     local maplines = _get_maplines(target, module)
-    local mapper_path = path.join(os.tmpdir(), target:name():replace(" ", "_"), name or cppfile:replace(" ", "_"))
+    local mapper_path = path.join(os.tmpdir(), target:fullname():replace(" ", "_"), name or cppfile:replace(" ", "_"))
     local mapper_content = {}
     table.insert(mapper_content, "root " .. path.unix(os.projectdir()))
     for _, mapline in ipairs(maplines) do
@@ -186,7 +186,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         sourcefile = opt.cppfile,
         job = batchjobs:newjob(target:fullname() .. "/" .. (name or opt.cppfile), function(index, total, jobopt)
             local mapped_bmi
-            if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+            if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
                 mapped_bmi = get_from_target_mapper(target, name).bmi
             end
 
@@ -217,13 +217,13 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local sourcefile
                     if external and not from_moduleonly then
                         if not mapped_bmi then
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:fullname(), name or opt.cppfile)
                             local module_onlyflag = compiler_support.get_moduleonlyflag(target)
                             table.insert(flags, module_onlyflag)
                             sourcefile = opt.cppfile
                         end
                     else
-                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name or opt.cppfile)
                         sourcefile = opt.cppfile
                     end
                     if option.get("diagnosis") then
@@ -249,7 +249,7 @@ function make_module_jobgraph(target, jobgraph, opt)
 
     jobgraph:add(target:fullname() .. "/" .. (name or opt.cppfile), function(index, total, jobopt)
         local mapped_bmi
-        if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+        if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
             mapped_bmi = get_from_target_mapper(target, name).bmi
         end
 
@@ -280,13 +280,13 @@ function make_module_jobgraph(target, jobgraph, opt)
                 local sourcefile
                 if external and not from_moduleonly then
                     if not mapped_bmi then
-                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:fullname(), name or opt.cppfile)
                         local module_onlyflag = compiler_support.get_moduleonlyflag(target)
                         table.insert(flags, module_onlyflag)
                         sourcefile = opt.cppfile
                     end
                 else
-                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name or opt.cppfile)
                     sourcefile = opt.cppfile
                 end
                 if option.get("diagnosis") then
@@ -312,7 +312,7 @@ function make_module_buildcmds(target, batchcmds, opt)
     local module_mapperflag = compiler_support.get_modulemapperflag(target)
 
     local mapped_bmi
-    if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+    if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
         mapped_bmi = get_from_target_mapper(target, name).bmi
     end
 
@@ -335,13 +335,13 @@ function make_module_buildcmds(target, batchcmds, opt)
         local sourcefile
         if external and not from_moduleonly then
             if not mapped_bmi then
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:fullname(), name or opt.cppfile)
                 local module_onlyflag = compiler_support.get_moduleonlyflag(target)
                 table.insert(flags, module_onlyflag)
                 sourcefile = opt.cppfile
             end
         else
-            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name or opt.cppfile)
             sourcefile = opt.cppfile
         end
         if option.get("diagnosis") then
@@ -383,7 +383,7 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
 
                 if opt.build then
                     local headerunit_mapper = _generate_headerunit_modulemapper_file({name = path.normalize(headerunit.path), bmifile = bmifile})
-                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
+                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), headerunit.name)
                     if option.get("diagnosis") then
                         print("mapper file:\n%s", io.readfile(headerunit_mapper))
                     end
@@ -421,7 +421,7 @@ function make_headerunit_jobgraph(target, job_name, jobgraph, headerunit, bmifil
 
             if opt.build then
                 local headerunit_mapper = _generate_headerunit_modulemapper_file({name = path.normalize(headerunit.path), bmifile = bmifile})
-                progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
+                progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), headerunit.name)
                 if option.get("diagnosis") then
                     print("mapper file:\n%s", io.readfile(headerunit_mapper))
                 end
@@ -452,7 +452,7 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outpu
 
     if opt.build then
         local name = headerunit.unique and headerunit.name or headerunit.path
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), name)
+        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
         if option.get("diagnosis") then
             batchcmds:print("mapper file:\n%s", io.readfile(headerunit_mapper))
         end
