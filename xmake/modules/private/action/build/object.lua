@@ -165,7 +165,7 @@ function _add_jobgraph(target, jobgraph, sourcebatch, opt)
         local objectfile = sourcebatch.objectfiles[i]
         local dependfile = sourcebatch.dependfiles[i]
         local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
-        local jobname = target:fullname() .. "/" .. sourcefile
+        local jobname = target:fullname() .. "/obj/" .. sourcefile
         jobgraph:add(jobname, function (index, total, jobopt)
             local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = jobopt.progress}, opt)
             build_object(target, sourcefile, build_opt)
