@@ -292,7 +292,7 @@ end
 
 -- get target jobs
 function get_targetjobs(targets_root, opt)
-    local jobgraph = async_jobgraph.new()
+    local jobgraph = async_jobgraph.new(opt.job_kind)
     local targetrefs = {}
     for _, target in ipairs(targets_root) do
         add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
@@ -542,7 +542,7 @@ end
 
 -- get files jobs
 function get_filejobs(targets_root, opt)
-    local jobgraph = async_jobgraph.new()
+    local jobgraph = async_jobgraph.new(opt.job_kind)
     local targetrefs = {}
     for _, target in ipairs(targets_root) do
         add_filejobs_and_deps(jobgraph, target, targetrefs, opt)

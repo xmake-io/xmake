@@ -71,7 +71,7 @@ rule("c++.build.modules.builder")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     -- parallel build support to accelerate `xmake build` to build modules
-    before_build_files(function(target, batchjobs, sourcebatch, opt)
+    before_build_files(function(target, jobgraph, sourcebatch, opt)
         if target:data("cxx.has_modules") then
             import("modules_support.compiler_support")
             import("modules_support.dependency_scanner")
@@ -102,7 +102,7 @@ rule("c++.build.modules.builder")
             end
 
             opt = opt or {}
-            opt.batchjobs = true
+            opt.jobgraph = true
 
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
@@ -112,11 +112,17 @@ rule("c++.build.modules.builder")
                 local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
                 sourcebatch.objectfiles = build_objectfiles
 
-                -- build modules
-                builder.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
-
-                -- build headerunits and we need to do it before building modules
-                builder.build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+                if jobgraph.add_orders then
+                    -- build modules
+                    builder.build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+                    -- build headerunits and we need to do it before building modules
+                    builder.build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+                else
+                    -- build modules, deprecated
+                    builder.build_modules_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
+                    -- build headerunits and we need to do it before building modules
+                    builder.build_headerunits_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
+                end
 
                 sourcebatch.objectfiles = link_objectfiles
             else
@@ -129,7 +135,7 @@ rule("c++.build.modules.builder")
             -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
         end
-    end, {batch = true})
+    end, {jobgraph = true, batch = true})
 
     -- serial compilation only, usually used to support project generator
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
@@ -163,7 +169,7 @@ rule("c++.build.modules.builder")
             end
 
             opt = opt or {}
-            opt.batchjobs = false
+            opt.jobgraph = false
 
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)

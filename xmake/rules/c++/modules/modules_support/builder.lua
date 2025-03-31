@@ -34,6 +34,7 @@ import("dependency_scanner")
 -- build target modules
 function _build_modules(target, sourcebatch, modules, opt)
     local objectfiles = sourcebatch.objectfiles
+    local jobgraph = opt.jobgraph
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
         if not module then
@@ -45,7 +46,8 @@ function _build_modules(target, sourcebatch, modules, opt)
 
         local deps = {}
         for _, dep in ipairs(table.keys(module.requires or {})) do
-            table.insert(deps, opt.batchjobs and target:name() .. dep or dep)
+            local depname = jobgraph and (target:fullname() .. "/" .. dep) or dep
+            table.insert(deps, depname)
         end
 
         opt.build_module(deps, module, name, objectfile, cppfile)
@@ -204,7 +206,6 @@ end
 --      "file": "foo.cppm"
 -- }
 function _generate_meta_module_info(target, name, sourcefile, requires)
-
     local modulehash = compiler_support.get_modulehash(target, sourcefile)
     local module_metadata = {name = name, file = path.join(modulehash, path.filename(sourcefile))}
 
@@ -266,7 +267,7 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
 
     -- add populate module job
     local modulesjobs = {}
-    local populate_jobname = target:name() .. "_populate_module_map"
+    local populate_jobname = target:name() .. "/populate_module_map"
     modulesjobs[populate_jobname] = {
         name = populate_jobname,
         job = batchjobs:newjob(populate_jobname, function(_, _)
@@ -278,7 +279,7 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
     -- add module jobs
     _build_modules(target, sourcebatch, modules, table.join(opt, {
        build_module = function(deps, module, name, objectfile, cppfile)
-        local job_name = name and target:name() .. name or cppfile
+        local job_name = target:fullname() .. "/" .. (name or cppfile)
         modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps,
             {module = module, objectfile = objectfile, cppfile = cppfile})
       end
@@ -288,9 +289,39 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
     build_batchjobs_for_modules(modulesjobs, batchjobs, opt.rootjob)
 end
 
+-- build modules for jobgraph
+function build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+    local jobdeps = {}
+    local build_modules_group = target:fullname() .. "/build_modules"
+    jobgraph:group(build_modules_group, function ()
+
+        -- add populate module job
+        local populate_jobname = target:fullname() .. "/populate_module_map"
+        jobgraph:add(populate_jobname, function(index, total, opt)
+            _try_reuse_modules(target, modules)
+            _builder(target).populate_module_map(target, modules)
+        end)
+
+        -- add module jobs
+        _build_modules(target, sourcebatch, modules, table.join(opt, {
+            build_module = function(deps, module, name, objectfile, cppfile)
+                local jobname = target:fullname() .. "/" .. (name or cppfile)
+                _builder(target).make_module_jobgraph(target, jobgraph, {
+                    module = module, objectfile = objectfile, cppfile = cppfile
+                })
+                jobdeps[jobname] = table.join(populate_jobname, deps)
+            end})
+        )
+    end)
+    for jobname, deps in pairs(jobdeps) do
+        for _, depname in ipairs(deps) do
+            jobgraph:add_orders(depname, jobname)
+        end
+    end
+end
+
 -- build modules for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
-
     local depmtime = 0
     opt.progress = opt.progress or 0
 
@@ -307,7 +338,7 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
     batchcmds:set_depmtime(depmtime)
 end
 
--- generate headerunits for batchjobs
+-- build headerunits for batchjobs
 function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
     local user_headerunits, stl_headerunits = dependency_scanner.get_headerunits(target, sourcebatch, modules)
@@ -345,7 +376,43 @@ function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules
     end
 end
 
--- generate headerunits for batchcmds
+-- build headerunits for jobgraph
+function build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+    local user_headerunits, stl_headerunits = dependency_scanner.get_headerunits(target, sourcebatch, modules)
+    if not user_headerunits and not stl_headerunits then
+       return
+    end
+
+    -- we need new group(headerunits)
+    -- e.g. group(build_modules) -> group(headerunits)
+    local build_modules_group = target:fullname() .. "/build_modules"
+    local build_headerunits_group = target:fullname() .. "/build_headerunits"
+    jobgraph:group(build_headerunits_group, function ()
+        local build_headerunits = function(headerunits)
+            local modulesjobs = {}
+            _build_headerunits(target, headerunits, table.join(opt, {
+                build_headerunit = function(headerunit, key, bmifile, outputdir, build)
+                    local job_name = target:fullname() .. "/" .. key
+                    _builder(target).make_headerunit_buildjobs(target,
+                        job_name, jobgraph, headerunit, bmifile, outputdir, table.join(opt, {build = build}))
+                end
+            }))
+        end
+
+        -- build stl header units first as other headerunits may need them
+        if stl_headerunits then
+            opt.stl_headerunit = true
+            build_headerunits(stl_headerunits)
+        end
+        if user_headerunits then
+            opt.stl_headerunit = false
+            build_headerunits(user_headerunits)
+        end
+    end)
+    jobgraph:add_orders(build_headerunits_group, build_modules_group)
+end
+
+-- build headerunits for batchcmds
 function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
     local user_headerunits, stl_headerunits = dependency_scanner.get_headerunits(target, sourcebatch, modules)
@@ -391,7 +458,7 @@ function generate_metadata(target, modules)
     end
 
     local jobs = option.get("jobs") or os.default_njob()
-    runjobs(target:name() .. "_install_modules", function(index, total, jobopt)
+    runjobs(target:fullname() .. "/install_modules", function(index, total, jobopt)
         local module = public_modules[index]
         local name, _, cppfile = compiler_support.get_provided_module(module)
         local metafilepath = compiler_support.get_metafile(target, cppfile)

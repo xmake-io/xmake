@@ -220,7 +220,7 @@ end
 -- generate dependency files
 function _generate_dependencies(target, sourcebatch, opt)
     local changed = false
-    if opt.batchjobs then
+    if opt.jobgraph then
         local jobs = option.get("jobs") or os.default_njob()
         runjobs(target:name() .. "_module_dependency_scanner", function(index)
             local sourcefile = sourcebatch.sourcefiles[index]
