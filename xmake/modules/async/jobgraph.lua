@@ -89,6 +89,8 @@ function jobgraph:add(name, run, opt)
                 table.insert(groups, job)
             end
         end
+    else
+        raise("job(%s): has already been added!", name)
     end
 end
 
