@@ -18,13 +18,8 @@
 -- @file        xmake.lua
 --
 
--- define rule
 rule("xcode.info_plist")
-
-    -- support add_files("Info.plist")
     set_extensions(".plist")
-
-    -- build Info.plist
     on_build_file(function (target, sourcefile, opt)
 
         -- imports
@@ -34,8 +29,8 @@ rule("xcode.info_plist")
         import("core.tool.toolchain")
         import("utils.progress")
 
-        -- check
-        assert(path.filename(sourcefile) == "Info.plist", "we only support Info.plist file!")
+        -- check, e.g. Info.plist, xxx-Info.plist
+        assert(path.filename(sourcefile):endswith("Info.plist"), "we only support Info.plist file!")
 
         -- get contents and resources directory
         local contentsdir = assert(target:data("xcode.bundle.contentsdir"), "contents directory not found!")
