@@ -71,7 +71,9 @@ function check_macros(definition, macros, opt)
         if opt.cxxflags then
             add_cxxflags(opt.cxxflags)
         end
-        if opt.includes then
+        if opt.languages and opt.languages:startswith("c++") then
+            add_cxxincludes(opt.includes)
+        else
             add_cincludes(opt.includes)
         end
     option_end()
@@ -134,7 +136,11 @@ function configvar_check_macros(definition, macros, opt)
             add_cxxflags(opt.cxxflags)
         end
         if opt.includes then
-            add_cincludes(opt.includes)
+            if opt.languages and opt.languages:startswith("c++") then
+                add_cxxincludes(opt.includes)
+            else
+                add_cincludes(opt.includes)
+            end
         end
     option_end()
     interp_restore_scope()
