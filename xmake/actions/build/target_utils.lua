@@ -308,6 +308,13 @@ end
 function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
     opt = opt or {}
     local has_script = false
+    local job_prefix = target:fullname()
+    local file_group = sourcebatch.rulename
+    if target == instance then
+        job_prefix = job_prefix .. "/target/" .. file_group
+    else
+        job_prefix = job_prefix .. "/rule/" .. file_group
+    end
 
     -- call script files
     if not has_script then
@@ -333,7 +340,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 -- target("test")
                 --     on_build_files(function (target, sourcebatch, opt)
                 --     end)
-                local jobname = string.format("%s/%s/%s", target:fullname(), instance:fullname(), script_files_name)
+                local jobname = string.format("%s/%s", job_prefix, script_files_name)
                 jobgraph:add(jobname, function (index, total, opt)
                     script_files(target, sourcebatch, {progress = opt.progress, distcc = distcc})
                 end)
@@ -369,7 +376,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 -- target("test")
                 --     on_build_file(function (target, sourcefile, opt)
                 --     end)
-                local jobname = string.format("%s/%s/%s", target:fullname(), instance:fullname(), script_file_name)
+                local jobname = string.format("%s/%s", job_prefix, script_file_name)
                 jobgraph:add(jobname, function (index, total, opt)
                     local sourcekind = sourcebatch.sourcekind
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -392,7 +399,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
         local scriptcmd_files = instance:script(scriptcmd_files_name)
         if scriptcmd_files then
             local distcc = instance:extraconf(scriptcmd_files_name, "distcc")
-            local jobname = string.format("%s/%s/%s", target:fullname(), instance:fullname(), scriptcmd_files_name)
+            local jobname = string.format("%s/%s", job_prefix, scriptcmd_files_name)
             jobgraph:add(jobname, function (index, total, opt)
                 local batchcmds_ = batchcmds.new({target = target})
                 scriptcmd_files(target, batchcmds_, sourcebatch, {progress = opt.progress, distcc = distcc})
@@ -413,7 +420,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
         local scriptcmd_file = instance:script(scriptcmd_file_name)
         if scriptcmd_file then
             local distcc = instance:extraconf(scriptcmd_file_name, "distcc")
-            local jobname = string.format("%s/%s/%s", target:fullname(), instance:fullname(), scriptcmd_file_name)
+            local jobname = string.format("%s/%s", job_prefix, scriptcmd_file_name)
             jobgraph:add(jobname, function (index, total, opt)
                 local batchcmds_ = batchcmds.new({target = target})
                 local sourcekind = sourcebatch.sourcekind
