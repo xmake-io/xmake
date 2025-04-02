@@ -42,11 +42,10 @@ rule("platform.windows.idl")
         local flags = {"/nologo"}
         table.join2(flags, table.wrap(target:values("idl.flags")))
         table.join2(flags, {
-            "/env",    target:is_arch("x86") and "win32" or target:arch(),
             "/out",    autogendir,
             "/header", name .. ".h",
             "/iid",    name .. "_i.c",
-            "/proxy",  name .. ".p.c",
+            "/proxy",  name .. "_p.c",
             "/tlb",    name .. ".tlb",
             sourcefile
         })
