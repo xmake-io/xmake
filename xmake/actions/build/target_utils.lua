@@ -283,19 +283,26 @@ end
 
 -- add target jobs for the given target and deps
 function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
+    local job_kind = opt.job_kind
     local targetname = target:fullname()
     if not targetrefs[targetname] then
         targetrefs[targetname] = target
         add_targetjobs(jobgraph, target, opt)
 
-        local linkjob = target:fullname() .. "/link_objects"
+        local jobname, jobname_dep
         for _, depname in ipairs(target:get("deps")) do
             local dep = project.target(depname, {namespace = target:namespace()})
             add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
 
-            local linkjob_dep = dep:fullname() .. "/link_objects"
-            if jobgraph:has(linkjob) and jobgraph:has(linkjob_dep) then
-                jobgraph:add_orders(linkjob_dep, linkjob)
+            if dep:policy("build.fence") then
+                jobname = string.format("target/%s/begin_%s", target:fullname(), job_kind)
+                jobname_dep = string.format("target/%s/end_%s", dep:fullname(), job_kind)
+            elseif job_kind == "build" then
+                jobname = target:fullname() .. "/link_objects"
+                jobname_dep = dep:fullname() .. "/link_objects"
+            end
+            if jobname and jobname_dep and jobgraph:has(jobname) and jobgraph:has(jobname_dep) then
+                jobgraph:add_orders(jobname_dep, jobname)
             end
         end
     end
