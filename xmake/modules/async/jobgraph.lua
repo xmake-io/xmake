@@ -107,6 +107,11 @@ function jobgraph:remove(name)
     end
 end
 
+-- has the given job or group?
+function jobgraph:has(name)
+    return self._jobs[name] or self._groups[name]
+end
+
 -- enter group to add jobs
 --
 -- e.g.
