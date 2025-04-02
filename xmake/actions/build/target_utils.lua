@@ -287,9 +287,16 @@ function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
     if not targetrefs[targetname] then
         targetrefs[targetname] = target
         add_targetjobs(jobgraph, target, opt)
+
+        local linkjob = target:fullname() .. "/link_objects"
         for _, depname in ipairs(target:get("deps")) do
             local dep = project.target(depname, {namespace = target:namespace()})
             add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
+
+            local linkjob_dep = dep:fullname() .. "/link_objects"
+            if jobgraph:has(linkjob) and jobgraph:has(linkjob_dep) then
+                jobgraph:add_orders(linkjob_dep, linkjob)
+            end
         end
     end
 end
