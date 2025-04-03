@@ -238,8 +238,8 @@ function add_targetjobs(jobgraph, target, opt)
     end
 
     local job_kind = opt.job_kind
-    local job_begin = string.format("target/%s/begin_%s", target:fullname(), job_kind)
-    local job_end = string.format("target/%s/end_%s", target:fullname(), job_kind)
+    local job_begin = string.format("%s/begin_%s", target:fullname(), job_kind)
+    local job_end = string.format("%s/end_%s", target:fullname(), job_kind)
     jobgraph:add(job_begin, function (index, total, opt)
         -- enter package environments
         -- https://github.com/xmake-io/xmake/issues/4033
