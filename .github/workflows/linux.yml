@@ -34,6 +34,7 @@ jobs:
           sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev
           clang --version
           xrepo install -y zig
+          cmake --version
 
       - name: Tests
         run: |

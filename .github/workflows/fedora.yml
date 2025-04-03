@@ -24,6 +24,7 @@ jobs:
           dnf -y install copr-cli make gcc-c++
           dnf -y install perl
           dnf -y upgrade git
+          cmake --version
       - uses: actions/checkout@v2
         with:
           submodules: true
