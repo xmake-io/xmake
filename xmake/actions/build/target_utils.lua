@@ -116,6 +116,12 @@ end
 function add_targetjobs_for_script(jobgraph, target, instance, opt)
     opt = opt or {}
     local has_script = false
+    local job_prefix = target:fullname()
+    if target == instance then
+        job_prefix = job_prefix .. "/target"
+    else
+        job_prefix = job_prefix .. "/rule/" .. instance:fullname()
+    end
 
     -- call script
     if not has_script then
@@ -139,7 +145,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
                 -- target("test")
                 --     on_build(function (target, opt)
                 --     end)
-                local jobname = string.format("%s/%s/%s", target:fullname(), instance:fullname(), script_name)
+                local jobname = string.format("%s/%s", job_prefix, script_name)
                 jobgraph:add(jobname, function (index, total, opt)
                     script(target, {progress = opt.progress})
                 end)
@@ -158,7 +164,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
         local scriptcmd_name = opt.scriptcmd_name
         local scriptcmd = instance:script(scriptcmd_name)
         if scriptcmd then
-            local jobname = string.format("%s/%s/%s", target:fullname(), instance:fullname(), scriptcmd_name)
+            local jobname = string.format("%s/%s", job_prefix, scriptcmd_name)
             jobgraph:add(jobname, function (index, total, opt)
                 local batchcmds_ = batchcmds.new({target = target})
                 scriptcmd(target, batchcmds_, {progress = opt.progress})
@@ -294,7 +300,7 @@ function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
             local dep = project.target(depname, {namespace = target:namespace()})
             add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
 
-            if dep:policy("build.fence") then
+            if dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false then
                 jobname = string.format("target/%s/begin_%s", target:fullname(), job_kind)
                 jobname_dep = string.format("target/%s/end_%s", dep:fullname(), job_kind)
             elseif job_kind == "build" then
