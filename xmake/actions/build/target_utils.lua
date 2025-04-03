@@ -117,9 +117,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
     opt = opt or {}
     local has_script = false
     local job_prefix = target:fullname()
-    if target == instance then
-        job_prefix = job_prefix .. "/target"
-    else
+    if target ~= instance then
         job_prefix = job_prefix .. "/rule/" .. instance:fullname()
     end
 
@@ -301,11 +299,11 @@ function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
             add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
 
             if dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false then
-                jobname = string.format("target/%s/begin_%s", target:fullname(), job_kind)
-                jobname_dep = string.format("target/%s/end_%s", dep:fullname(), job_kind)
+                jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
+                jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
             elseif job_kind == "build" then
-                jobname = target:fullname() .. "/link_objects"
-                jobname_dep = dep:fullname() .. "/link_objects"
+                jobname = target:fullname() .. "/link"
+                jobname_dep = dep:fullname() .. "/link"
             end
             if jobname and jobname_dep and jobgraph:has(jobname) and jobgraph:has(jobname_dep) then
                 jobgraph:add_orders(jobname_dep, jobname)
@@ -331,7 +329,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
     local job_prefix = target:fullname()
     local file_group = sourcebatch.rulename
     if target == instance then
-        job_prefix = job_prefix .. "/target/" .. file_group
+        job_prefix = job_prefix .. "/" .. file_group
     else
         job_prefix = job_prefix .. "/rule/" .. file_group
     end
