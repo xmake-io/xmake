@@ -478,6 +478,7 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     local scriptcmd_files_name = stage ~= "" and (job_kindcmd_files .. "_" .. stage) or job_kindcmd_files
 
     -- build sourcebatches map
+    local instances = {target}
     local sourcebatches_map = {}
     local sourcebatches_for_target = {}
     for _, sourcebatch in pairs(sourcebatches) do
@@ -496,16 +497,13 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
             if ruleinst:script("build_file") or ruleinst:script("build_files") then
                 table.insert(sourcebatches_for_target, sourcebatch)
             end
+            table.insert(instances, ruleinst)
         else
             table.insert(sourcebatches_for_target, sourcebatch)
         end
     end
 
     -- TODO sort rules and jobs
-    local instances = {target}
-    for _, r in ipairs(target:orderules()) do
-        table.insert(instances, r)
-    end
 
     -- call target and rules script
     local jobsize = jobgraph:size()
