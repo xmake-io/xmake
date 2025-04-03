@@ -1541,7 +1541,7 @@ function get_possible_package(packagename)
     local distance_min
     for name, info in pairs(packages_possible) do
         local distance = packagename:levenshtein(info.name)
-        if distance_min == nil or distance < distance_min and distance < 5 then
+        if (distance_min == nil or distance < distance_min) and distance < 5 then
             distance_min = distance
             result = info
         end
