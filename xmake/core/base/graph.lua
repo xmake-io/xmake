@@ -23,6 +23,7 @@ local table   = require("base/table")
 local queue   = require("base/queue")
 local object  = require("base/object")
 local hashset = require("base/hashset")
+local utils   = require("base/utils")
 
 -- define module
 local graph = graph or object { _init = {"_directed"} } {true}
@@ -454,15 +455,15 @@ end
 function graph:dump()
     local vertices = self:vertices()
     local edges = self:edges()
-    print(string.format("graph: %s, vertices: %d, edges: %d", self:is_directed() and "directed" or "not-directed", #vertices, #edges))
-    print("vertices: ")
+    utils.cprint("graph: %s, vertices: %d, edges: %d", self:is_directed() and "directed" or "not-directed", #vertices, #edges)
+    utils.cprint("vertices: ")
     for _, v in ipairs(vertices) do
-        print(string.format("  %s", v))
+        utils.cprint("  %s", v)
     end
-    print("")
-    print("edges: ")
+    utils.cprint("")
+    utils.cprint("edges: ")
     for _, e in ipairs(edges) do
-        print(string.format("  %s -> %s", e:from(), e:to()))
+        utils.cprint("  %s ${color.dump.reference}->${clear} %s", e:from(), e:to())
     end
 end
 

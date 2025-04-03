@@ -142,6 +142,7 @@ end
 function jobgraph:add_orders(...)
     local prev
     local prev_is_group
+    local prev_name
     local dag = self._dag
     local jobs = self._jobs
     local groups = self._groups
@@ -163,16 +164,16 @@ function jobgraph:add_orders(...)
             assert(curr, "job(%s) not found in jobgraph(%s)", name, self)
             if prev then
                 if prev_is_group and curr_is_group then
-                    -- we use a fake job as a node to bridge the two groups.
-                    local fakejob = {}
+                    -- we use a bridge job as a node to bridge the two groups.
+                    local bridge = {from_group = prev_name, to_group = name}
                     for _, job in ipairs(prev) do
-                        if not dag:has_edge(job, fakejob) then
-                            dag:add_edge(job, fakejob)
+                        if not dag:has_edge(job, bridge) then
+                            dag:add_edge(job, bridge)
                         end
                     end
                     for _, job in ipairs(curr) do
-                        if not dag:has_edge(fakejob, job) then
-                            dag:add_edge(fakejob, job)
+                        if not dag:has_edge(bridge, job) then
+                            dag:add_edge(bridge, job)
                         end
                     end
                 elseif curr_is_group then
@@ -195,6 +196,7 @@ function jobgraph:add_orders(...)
             end
             prev = curr
             prev_is_group = curr_is_group
+            prev_name = name
         end
     end
 end
@@ -224,6 +226,30 @@ end
 -- is empty?
 function jobgraph:empty()
     return self:size() == 0
+end
+
+-- dump jobgraph
+function jobgraph:dump()
+    print("================================ %s ================================", self)
+    for _, node in ipairs(self._dag:vertices()) do
+        debug.setmetatable(node, {__tostring = function (v)
+            if v.from_group and v.to_group then
+                return string.format("${dim}bridge<%s, %s>${clear}", v.from_group, v.to_group)
+            end
+            return string.format("${color.dump.string_quote}%s${clear}", v.name)
+        end})
+    end
+    self._dag:dump()
+
+    print("")
+    print("groups:")
+    for name, jobs in pairs(self._groups) do
+        print("  group(%s):", name)
+        for _, job in ipairs(jobs) do
+            cprint("    %s", job)
+        end
+    end
+    print("")
 end
 
 -- tostring
