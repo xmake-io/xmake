@@ -427,11 +427,6 @@ function _get_configs_for_generic(package, configs, opt)
     if not package:use_external_includes() then
         table.insert(configs, "-DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON")
     end
-    -- fix error for cmake 4.x
-    -- e.g. Compatibility with CMake < 3.5 has been removed from CMake.
-    if _get_cmake_version() and _get_cmake_version():ge("4.0") then
-        table.insert(configs, "-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
-    end
 end
 
 -- get configs for windows
@@ -950,6 +945,13 @@ function _get_configs(package, configs, opt)
     else
         _get_configs_for_generic(package, configs, opt)
     end
+
+    -- fix error for cmake 4.x
+    -- e.g. Compatibility with CMake < 3.5 has been removed from CMake.
+    if _get_cmake_version() and _get_cmake_version():ge("4.0") then
+        table.insert(configs, "-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
+    end
+
     local envs = _get_envs_for_default_flags(package, configs, opt)
     local runtime_envs = _get_envs_for_runtime_flags(package, configs, opt)
     if runtime_envs then
