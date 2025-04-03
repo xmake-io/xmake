@@ -181,7 +181,7 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
     local job_kind = opt.job_kind
 
     -- the group name, e.g. foo/after_prepare, bar/before_build
-    local group_name = string.format("%s/%s_%s", target:fullname(), stage, job_kind)
+    local group_name = string.format("%s/%s_%s", target:fullname(), stage ~= "" and stage or "on", job_kind)
 
     -- the script name, e.g. before/after_prepare, before/after_build
     local script_name = stage ~= "" and (job_kind .. "_" .. stage) or job_kind
@@ -465,7 +465,7 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     local job_kindcmd_files = job_kind .. "cmd_files"
 
     -- the group name, e.g. foo/after_prepare_files, bar/before_build_files
-    local group_name = string.format("%s/%s_%s_files", target:fullname(), stage, job_kind)
+    local group_name = string.format("%s/%s_%s_files", target:fullname(), stage ~= "" and stage or "on", job_kind)
 
     -- the script name, e.g. before/after_prepare_files, before/after_build_files
     local script_file_name = stage ~= "" and (job_kind_file .. "_" .. stage) or job_kind_file
