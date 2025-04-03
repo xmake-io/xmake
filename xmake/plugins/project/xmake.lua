@@ -44,6 +44,7 @@ task("project")
                                                         ,   "    - cmake"
                                                         ,   "    - ninja"
                                                         ,   "    - xcode (need cmake)"
+                                                        ,   "    - xcode2"
                                                         ,   "    - compile_flags"
                                                         ,   "    - compile_commands (clang compilation database with json format)"
                                                         ,   "    - vs (auto detect), vs2002 - vs2022"
