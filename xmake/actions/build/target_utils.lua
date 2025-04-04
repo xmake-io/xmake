@@ -117,7 +117,9 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
     opt = opt or {}
     local has_script = false
     local job_prefix = target:fullname()
-    if target ~= instance then
+    if target == instance then
+        job_prefix = job_prefix .. "/target"
+    else
         job_prefix = job_prefix .. "/rule/" .. instance:fullname()
     end
 
@@ -189,13 +191,11 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
     -- the command script name, e.g. before/after_preparecmd, before/after_buildcmd
     local scriptcmd_name = stage ~= "" and (job_kind .. "cmd_" .. stage) or (job_kind .. "cmd")
 
-    -- TODO sort rules and jobs
+    -- call target and rules script
     local instances = {target}
     for _, r in ipairs(target:orderules()) do
         table.insert(instances, r)
     end
-
-    -- call target and rules script
     local jobsize = jobgraph:size()
     jobgraph:group(group_name, function ()
         local has_script = false
@@ -204,9 +204,12 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
             scriptcmd_name = scriptcmd_name
         }
         for _, instance in ipairs(instances) do
-            if add_targetjobs_for_script(jobgraph, target, instance, script_opt) then
-                has_script = true
-            end
+            local script_group = group_name .. "/" .. instance:fullname()
+            jobgraph:group(script_group, function ()
+                if add_targetjobs_for_script(jobgraph, target, instance, script_opt) then
+                    has_script = true
+                end
+            end)
             -- if custom target.on_build/prepare exists, we need to ignore all scripts in rules
             if has_script and instance == target and stage == "" then
                 break
@@ -218,6 +221,23 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
             add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
         end
     end)
+
+    -- sort build rules
+    for _, instance in ipairs(instances) do
+        local buildorders = table.wrap(instance:get("buildorders"))
+        for _, buildorder in ipairs(buildorders) do
+            local joborders = {}
+            for _, name in ipairs(buildorder) do
+                local script_group = group_name .. "/" .. name
+                if jobgraph:has(script_group) then
+                    table.insert(joborders, script_group)
+                end
+            end
+            if #joborders > 0 then
+                jobgraph:add_orders(joborders)
+            end
+        end
+    end
 
     if jobgraph:size() > jobsize then
         return group_name
@@ -298,6 +318,7 @@ function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
             local dep = project.target(depname, {namespace = target:namespace()})
             add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
 
+            -- build.across_targets_in_parallel is deprecated
             if dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false then
                 jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
                 jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
@@ -329,7 +350,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
     local job_prefix = target:fullname()
     local file_group = sourcebatch.rulename
     if target == instance then
-        job_prefix = job_prefix .. "/" .. file_group
+        job_prefix = job_prefix .. "/target/" .. file_group
     else
         job_prefix = job_prefix .. "/rule/" .. file_group
     end

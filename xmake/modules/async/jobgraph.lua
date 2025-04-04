@@ -109,7 +109,7 @@ end
 
 -- has the given job or group?
 function jobgraph:has(name)
-    return self._jobs[name] or self._groups[name]
+    return (self._jobs[name] or self._groups[name]) ~= nil
 end
 
 -- enter group to add jobs
