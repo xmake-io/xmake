@@ -280,6 +280,11 @@ function rule.apis()
         ,   "rule.add_deps"
         ,   "rule.add_imports"
         }
+    ,   groups =
+        {
+            -- rule.add_xxx
+           "rule.add_buildorders"
+        }
     ,   script =
         {
             -- rule.on_xxx
