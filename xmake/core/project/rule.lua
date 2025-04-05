@@ -283,7 +283,7 @@ function rule.apis()
     ,   groups =
         {
             -- rule.add_xxx
-           "rule.add_buildorders"
+           "rule.add_orders"
         }
     ,   script =
         {
