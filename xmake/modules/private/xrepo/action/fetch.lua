@@ -31,20 +31,23 @@ function menu_options()
     local options =
     {
         {'k', "kind",           "kv", nil, "Enable static/shared library.",
-                                       values = {"static", "shared"}},
+                                       values = {"static", "shared"                                                                                     }},
         {'p', "plat",           "kv", nil, "Set the given platform."                                                                                    },
         {'a', "arch",           "kv", nil, "Set the given architecture."                                                                                },
         {'m', "mode",           "kv", nil, "Set the given mode.",
-                                       values = {"release", "debug"}},
+                                       values = {"release", "debug"                                                                                     }},
         {'f', "configs",        "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo fetch --configs=\"runtimes='MD'\" zlib",
                                        "    - xrepo fetch --configs=\"regex=true,thread=true\" boost"                                                   },
         {nil, "system",         "k", "false", "Only fetch package on current system."                                                                   },
-        {                                                                                                                                               },
+        {category = "Android NDK Configuration"                                                                                                         },
+        {nil, "ndk",            "kv", nil, "The NDK directory"                                                                                          },
+        {category = "Cross Compilation Configuration"                                                                                                   },
         {nil, "sdk",            "kv", nil, "Set the SDK directory of cross toolchain."                                                                  },
         {nil, "toolchain",      "kv", nil, "Set the toolchain name."                                                                                    },
         {nil, "toolchain_host", "kv", nil, "Set the host toolchain name."                                                                               },
+        {category = "Other Configuration"                                                                                                               },
         {nil, "includes",       "kv", nil, "Includes extra lua configuration files.",
                                        "e.g.",
                                        "    - xrepo fetch -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'" },
@@ -138,6 +141,10 @@ function _fetch_packages(packages)
     if option.get("arch") then
         table.insert(config_argv, "-a")
         table.insert(config_argv, option.get("arch"))
+    end
+    -- for android
+    if option.get("ndk") then
+        table.insert(config_argv, "--ndk=" .. option.get("ndk"))
     end
     -- for cross toolchain
     if option.get("sdk") then
