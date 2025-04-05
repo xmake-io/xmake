@@ -220,9 +220,9 @@ end
 -- generate dependency files
 function _generate_dependencies(target, sourcebatch, opt)
     local changed = false
-    if opt.batchjobs then
+    if opt.jobgraph then
         local jobs = option.get("jobs") or os.default_njob()
-        runjobs(target:name() .. "_module_dependency_scanner", function(index) 
+        runjobs(target:fullname() .. "/module_dependency_scanner", function(index)
             local sourcefile = sourcebatch.sourcefiles[index]
             changed = _dependency_scanner(target).generate_dependency_for(target, sourcefile, opt) or changed
         end, {comax = jobs, total = #sourcebatch.sourcefiles})
@@ -235,7 +235,7 @@ function _generate_dependencies(target, sourcebatch, opt)
 end
 -- get module dependencies
 function get_module_dependencies(target, sourcebatch, opt)
-    local cachekey = target:name() .. "/" .. sourcebatch.rulename
+    local cachekey = target:fullname() .. "/" .. sourcebatch.rulename
     local modules = compiler_support.memcache():get2("modules", cachekey)
     if modules == nil then
         modules = compiler_support.localcache():get2("modules", cachekey)
@@ -415,19 +415,21 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
     for _, e in ipairs(edges) do
         dag:add_edge(e[1], e[2])
     end
-    local cycle = dag:find_cycle()
-    if cycle then
-        local names = {}
-        for _, objectfile in ipairs(cycle) do
-            local name, _, cppfile = compiler_support.get_provided_module(modules[objectfile])
+    local objectfiles_sorted, has_cycle = dag:topo_sort()
+    if has_cycle then
+        local cycle = dag:find_cycle()
+        if cycle then
+            local names = {}
+            for _, objectfile in ipairs(cycle) do
+                local name, _, cppfile = compiler_support.get_provided_module(modules[objectfile])
+                table.insert(names, name or cppfile)
+            end
+            local name, _, cppfile = compiler_support.get_provided_module(modules[cycle[1]])
             table.insert(names, name or cppfile)
+            raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
         end
-        local name, _, cppfile = compiler_support.get_provided_module(modules[cycle[1]])
-        table.insert(names, name or cppfile)
-        raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
     end
-
-    local objectfiles_sorted = table.reverse(dag:topological_sort())
+    objectfiles_sorted = table.reverse(objectfiles_sorted)
     local objectfiles_sorted_set = hashset.from(objectfiles_sorted)
     for _, objectfile in ipairs(objectfiles) do
         if not objectfiles_sorted_set:has(objectfile) then
@@ -465,7 +467,7 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
                 end
             end
         end
-        if insert then 
+        if insert then
             table.insert(build_objectfiles, objectfile)
             table.insert(link_objectfiles, objectfile)
         elseif external and not external.from_moduleonly then
@@ -474,8 +476,8 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
             objectfiles_sorted_set:remove(objectfile)
             if name ~= "std" and name ~= "std.compat" then
                 culleds = culleds or {}
-                culleds[target:name()] = culleds[target:name()] or {}
-                table.insert(culleds[target:name()], format("%s -> %s", name, cppfile))
+                culleds[target:fullname()] = culleds[target:fullname()] or {}
+                table.insert(culleds[target:fullname()], format("%s -> %s", name, cppfile))
             end
         end
     end

@@ -71,7 +71,7 @@ rule("c++.build.modules.builder")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     -- parallel build support to accelerate `xmake build` to build modules
-    before_build_files(function(target, batchjobs, sourcebatch, opt)
+    before_build_files(function(target, jobgraph, sourcebatch, opt)
         if target:data("cxx.has_modules") then
             import("modules_support.compiler_support")
             import("modules_support.dependency_scanner")
@@ -102,7 +102,7 @@ rule("c++.build.modules.builder")
             end
 
             opt = opt or {}
-            opt.batchjobs = true
+            opt.jobgraph = true
 
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
@@ -112,24 +112,20 @@ rule("c++.build.modules.builder")
                 local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
                 sourcebatch.objectfiles = build_objectfiles
 
-                -- build modules
-                builder.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
-
-                -- build headerunits and we need to do it before building modules
-                builder.build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
-
+                -- build modules and headerunits
+                builder.build_modules_and_headerunits(target, jobgraph, sourcebatch, modules, opt)
                 sourcebatch.objectfiles = link_objectfiles
             else
                 sourcebatch.objectfiles = {}
             end
 
-            compiler_support.localcache():set2(target:name(), "c++.modules", modules)
+            compiler_support.localcache():set2(target:fullname(), "c++.modules", modules)
             compiler_support.localcache():save()
         else
             -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
         end
-    end, {batch = true})
+    end, {jobgraph = true, batch = true})
 
     -- serial compilation only, usually used to support project generator
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
@@ -163,7 +159,7 @@ rule("c++.build.modules.builder")
             end
 
             opt = opt or {}
-            opt.batchjobs = false
+            opt.jobgraph = false
 
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
@@ -173,10 +169,8 @@ rule("c++.build.modules.builder")
                 local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
                 sourcebatch.objectfiles = build_objectfiles
 
-                -- build headerunits
+                -- build headerunits and modules
                 builder.build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
-
-                -- build modules
                 builder.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
                 sourcebatch.objectfiles = link_objectfiles
@@ -185,7 +179,7 @@ rule("c++.build.modules.builder")
                 sourcebatch.objectfiles = {}
             end
 
-            compiler_support.localcache():set2(target:name(), "c++.modules", modules)
+            compiler_support.localcache():set2(target:fullname(), "c++.modules", modules)
             compiler_support.localcache():save()
         else
             sourcebatch.sourcefiles = {}
@@ -222,7 +216,7 @@ rule("c++.build.modules.install")
         -- we cannot use target:data("cxx.has_modules"),
         -- because on_config will be not called when installing targets
         if compiler_support.contains_modules(target) then
-            local modules = compiler_support.localcache():get2(target:name(), "c++.modules")
+            local modules = compiler_support.localcache():get2(target:fullname(), "c++.modules")
             builder.generate_metadata(target, modules)
 
             compiler_support.add_installfiles_for_modules(target)

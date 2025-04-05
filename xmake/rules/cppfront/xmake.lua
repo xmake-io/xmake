@@ -22,7 +22,6 @@ rule("cppfront.build.h2")
     set_extensions(".h2")
 
     on_buildcmd_file(function (target, batchcmds, sourcefile_h2, opt)
-        -- get cppfront
         import("lib.detect.find_tool")
         local cppfront = assert(find_tool("cppfront", {check = "-h"}), "cppfront not found!")
 
@@ -42,12 +41,11 @@ rule("cppfront.build.h2")
         batchcmds:set_depcache(target:dependfile(sourcefile_h))
     end)
 
--- define rule: cppfront.build
 rule("cppfront.build.cpp2")
     set_extensions(".cpp2")
 
     -- .h2 must compile before .cpp2
-    add_deps("cppfront.build.h2", {order = true})
+    add_orders("cppfront.build.h2", "cppfront.build.cpp2")
 
     on_load(function (target)
         -- only cppfront source files? we need to patch cxx source kind for linker
@@ -64,7 +62,6 @@ rule("cppfront.build.cpp2")
         end
     end)
     on_buildcmd_file(function (target, batchcmds, sourcefile_cpp2, opt)
-        -- get cppfront
         import("lib.detect.find_tool")
         local cppfront = assert(find_tool("cppfront", {check = "-h"}), "cppfront not found!")
 
@@ -84,6 +81,7 @@ rule("cppfront.build.cpp2")
                 batchcmds:add_depfiles(path.join(root_dir, match_h2))
             end
         end
+
         -- add commands
         local argv = {"-o", path(sourcefile_cpp), path(sourcefile_cpp2)}
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cpp2 %s", sourcefile_cpp2)
@@ -97,14 +95,9 @@ rule("cppfront.build.cpp2")
         batchcmds:set_depcache(target:dependfile(objectfile))
     end)
 
-
 -- define rule: cppfront
 rule("cppfront")
-
-    -- add_build.h2 rules
     add_deps("cppfront.build.h2")
-
-    -- add build rules
     add_deps("cppfront.build.cpp2")
 
     -- set compiler runtime, e.g. vs runtime

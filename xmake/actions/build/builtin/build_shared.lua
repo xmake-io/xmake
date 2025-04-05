@@ -15,16 +15,12 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        dump_buildjobs.lua
+-- @file        build_shared.lua
 --
 
 -- imports
-import("core.project.config")
-import("actions.build.build", {rootdir = os.programdir()})
+import("build_binary")
 
--- dump the build jobs, e.g. xmake l private.diagnosis.dump_buildjobs [targetname]
-function main(targetname)
-    config.load()
-    print(build.get_batchjobs(targetname))
+function main(jobgraph, target)
+    build_binary(jobgraph, target)
 end
-
