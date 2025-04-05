@@ -1,6 +1,6 @@
 rule("cppfront")
     set_extensions(".cpp2")
-    add_buildorders("cppfront", "c++.build")
+    add_orders("cppfront", "c++.build")
     on_build_file(function (target, sourcefile, opt)
         print("build cppfront file")
         local objectfile = target:objectfile(sourcefile:gsub("cpp2", "cpp"))

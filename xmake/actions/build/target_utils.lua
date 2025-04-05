@@ -27,14 +27,7 @@ import("core.project.project")
 import("async.runjobs", {alias = "async_runjobs"})
 import("async.jobgraph", {alias = "async_jobgraph"})
 import("private.utils.batchcmds")
-
--- get rule
--- @note we need to get rule from target first, because we maybe will inject and replace builtin rule in target
-function _get_rule(target, rulename)
-    local ruleinst = assert(target:rule(rulename) or project.rule(rulename, {namespace = target:namespace()}) or
-        rule.rule(rulename), "unknown rule: %s", rulename)
-    return ruleinst
-end
+import("private.utils.rule", {alias = "rule_utils"})
 
 -- clean target for rebuilding
 function _clean_target(target)
@@ -222,19 +215,21 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
         end
     end)
 
-    -- sort build rules
+    -- sort build rules, TODO deps
     for _, instance in ipairs(instances) do
-        local buildorders = table.wrap(instance:get("buildorders"))
-        for _, buildorder in ipairs(buildorders) do
-            local joborders = {}
-            for _, name in ipairs(buildorder) do
-                local script_group = group_name .. "/" .. name
-                if jobgraph:has(script_group) then
-                    table.insert(joborders, script_group)
+        local orders = table.wrap(instance:get("orders"))
+        if #orders > 0 then
+            for _, order in ipairs(orders) do
+                local joborders = {}
+                for _, rulename in ipairs(order) do
+                    local script_group = group_name .. "/" .. rulename
+                    if jobgraph:has(script_group) then
+                        table.insert(joborders, script_group)
+                    end
                 end
-            end
-            if #joborders > 0 then
-                jobgraph:add_orders(joborders)
+                if #joborders > 0 then
+                    jobgraph:add_orders(joborders)
+                end
             end
         end
     end
@@ -503,7 +498,7 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     for _, sourcebatch in pairs(sourcebatches) do
         local rulename = sourcebatch.rulename
         if rulename then
-            local ruleinst = _get_rule(target, rulename)
+            local ruleinst = rule_utils.get_rule(target, rulename)
             sourcebatches_map[ruleinst] = sourcebatch
             -- avoid duplicate scripts being called twice in the target,
             -- we just build sourcebatch with on_build_files scripts

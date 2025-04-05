@@ -1,7 +1,7 @@
 
 rule("markdown")
     set_extensions(".md", ".markdown")
-    add_buildorders("man", "markdown")
+    add_orders("man", "markdown")
 
     before_build(function (target)
         print("before_build: markdown")
