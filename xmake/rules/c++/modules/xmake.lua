@@ -112,15 +112,8 @@ rule("c++.build.modules.builder")
                 local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
                 sourcebatch.objectfiles = build_objectfiles
 
-                -- build modules and headerunits, and we need to build headerunits first
-                if jobgraph.add_orders then
-                    builder.build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
-                    builder.build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
-                else -- deprecated
-                    builder.build_modules_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
-                    builder.build_headerunits_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
-                end
-
+                -- build modules and headerunits
+                builder.build_modules_and_headerunits(target, jobgraph, sourcebatch, modules, opt)
                 sourcebatch.objectfiles = link_objectfiles
             else
                 sourcebatch.objectfiles = {}

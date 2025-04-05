@@ -45,11 +45,15 @@ function _build_modules(target, sourcebatch, modules, opt)
         cppfile = cppfile or module.cppfile
 
         local deps = {}
-        for _, dep in ipairs(table.keys(module.requires or {})) do
+        for name, req in pairs(module.requires or {}) do
+            -- we need to use the full path as dep name if requre item is headerunit
+            local dep = name
+            if req.method:startswith("include-") and req.path then
+                dep = path.normalize(req.path)
+            end
             local depname = jobgraph and (target:fullname() .. "/module/" .. dep) or dep
             table.insert(deps, depname)
         end
-
         opt.build_module(deps, module, name, objectfile, cppfile)
 
         ::continue::
@@ -58,7 +62,6 @@ end
 
 -- build target headerunits
 function _build_headerunits(target, headerunits, opt)
-
     local outputdir = compiler_support.headerunits_cachedir(target, {mkdir = true})
     if opt.stl_headerunit then
         outputdir = path.join(outputdir, "stl")
@@ -72,11 +75,9 @@ function _build_headerunits(target, headerunits, opt)
         local bmifile = path.join(outputdir, path.filename(headerunit.name) .. compiler_support.get_bmi_extension(target))
         local key = path.normalize(headerunit.path)
         local build = should_build(target, headerunit.path, bmifile, {key = key, headerunit = true})
-
         if build then
             mark_build(target, key)
         end
-
         opt.build_headerunit(headerunit, key, bmifile, outputdir, build)
     end
 end
@@ -292,6 +293,7 @@ end
 -- build modules for jobgraph
 function build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
     local jobdeps = {}
+    local jobsize = jobgraph:size()
     local build_modules_group = target:fullname() .. "/module/build_modules"
     jobgraph:group(build_modules_group, function ()
 
@@ -313,10 +315,8 @@ function build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
             end})
         )
     end)
-    for jobname, deps in pairs(jobdeps) do
-        for _, depname in ipairs(deps) do
-            jobgraph:add_orders(depname, jobname)
-        end
+    if jobgraph:size() > jobsize then
+        return build_modules_group, jobdeps
     end
 end
 
@@ -385,7 +385,7 @@ function build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, 
 
     -- we need new group(headerunits)
     -- e.g. group(build_modules) -> group(headerunits)
-    local build_modules_group = target:fullname() .. "/module/build_modules"
+    local jobsize = jobgraph:size()
     local build_headerunits_group = target:fullname() .. "/module/build_headerunits"
     jobgraph:group(build_headerunits_group, function ()
         local build_headerunits = function(headerunits)
@@ -393,7 +393,7 @@ function build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, 
             _build_headerunits(target, headerunits, table.join(opt, {
                 build_headerunit = function(headerunit, key, bmifile, outputdir, build)
                     local job_name = target:fullname() .. "/module/" .. key
-                    _builder(target).make_headerunit_buildjobs(target,
+                    _builder(target).make_headerunit_jobgraph(target,
                         job_name, jobgraph, headerunit, bmifile, outputdir, table.join(opt, {build = build}))
                 end
             }))
@@ -409,12 +409,13 @@ function build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, 
             build_headerunits(user_headerunits)
         end
     end)
-    jobgraph:add_orders(build_headerunits_group, build_modules_group)
+    if jobgraph:size() > jobsize then
+        return build_headerunits_group
+    end
 end
 
 -- build headerunits for batchcmds
 function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
-
     local user_headerunits, stl_headerunits = dependency_scanner.get_headerunits(target, sourcebatch, modules)
     if not user_headerunits and not stl_headerunits then
        return
@@ -441,6 +442,28 @@ function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules
     end
 end
 
+-- build modules and headerunits, and we need to build headerunits first
+function build_modules_and_headerunits(target, jobgraph, sourcebatch, modules, opt)
+    if jobgraph.add_orders then
+        local build_modules_group, jobdeps = build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+        local build_headerunits_group = build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+        if build_modules_group then
+            for jobname, deps in pairs(jobdeps) do
+                for _, depname in ipairs(deps) do
+                    jobgraph:add_orders(depname, jobname)
+                end
+            end
+            if build_headerunits_group then
+                jobgraph:add_orders(build_headerunits_group, build_modules_group)
+            end
+        end
+    else -- deprecated
+        build_modules_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
+        build_headerunits_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
+    end
+end
+
+-- generate metadata
 function generate_metadata(target, modules)
     local public_modules
     for _, module in table.orderpairs(modules) do
