@@ -32,3 +32,39 @@ function get_rule(target, rulename)
     return ruleinst
 end
 
+-- build rules orders in jobgraph, we need to add rule job with groups
+--
+-- like this:
+-- @code
+--   local root_group = ""
+--   for _, ruleinst in ipairs(rules) do
+--        local script_group = root_group .. "/" .. ruleinst:fullname()
+--        jobgraph:group(script_group, function ()
+--            jobgraph:add("xxx", function (index, total, opt)
+--                -- call rule script
+--            end)
+--        end)
+--    end
+--
+function build_orders_in_jobgraph(jobgraph, rules, opt)
+    opt = opt or {}
+    local root_group = assert(opt.root_group)
+    for _, ruleinst in ipairs(rules) do
+        local orders = table.wrap(ruleinst:get("orders"))
+        if #orders > 0 then
+            for _, order in ipairs(orders) do
+                local joborders = {}
+                for _, rulename in ipairs(order) do
+                    local script_group = root_group .. "/" .. rulename
+                    if jobgraph:has(script_group) then
+                        table.insert(joborders, script_group)
+                    end
+                end
+                if #joborders > 0 then
+                    jobgraph:add_orders(joborders)
+                end
+            end
+        end
+    end
+end
+

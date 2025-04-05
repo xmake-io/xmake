@@ -215,28 +215,14 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
         end
     end)
 
-    -- sort build rules, TODO deps
-    for _, instance in ipairs(instances) do
-        local orders = table.wrap(instance:get("orders"))
-        if #orders > 0 then
-            for _, order in ipairs(orders) do
-                local joborders = {}
-                for _, rulename in ipairs(order) do
-                    local script_group = group_name .. "/" .. rulename
-                    if jobgraph:has(script_group) then
-                        table.insert(joborders, script_group)
-                    end
-                end
-                if #joborders > 0 then
-                    jobgraph:add_orders(joborders)
-                end
-            end
-        end
+    -- no any new jobs
+    if jobgraph:size() == jobsize then
+        return
     end
 
-    if jobgraph:size() > jobsize then
-        return group_name
-    end
+    -- sort build rules
+    rule_utils.build_orders_in_jobgraph(jobgraph, instances, {root_group = group_name})
+    return group_name
 end
 
 -- add target jobs for the given target
@@ -517,8 +503,6 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
         end
     end
 
-    -- TODO sort rules and jobs
-
     -- call target and rules script
     local jobsize = jobgraph:size()
     jobgraph:group(group_name, function ()
@@ -530,26 +514,34 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
         }
         local has_target_script = false
         for _, instance in ipairs(instances) do
-            if instance == target then
-                for _, sourcebatch in ipairs(sourcebatches_for_target) do
-                    local has_script = add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
-                    -- if custom target.on_build_file[s] exists, we need to ignore all scripts in rules
-                    if has_script and stage == "" then
-                        has_target_script = true
+            local script_group = group_name .. "/" .. instance:fullname()
+            jobgraph:group(script_group, function ()
+                if instance == target then
+                    for _, sourcebatch in ipairs(sourcebatches_for_target) do
+                        local has_script = add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
+                        -- if custom target.on_build_file[s] exists, we need to ignore all scripts in rules
+                        if has_script and stage == "" then
+                            has_target_script = true
+                        end
+                    end
+                elseif not has_target_script then -- rule
+                    local sourcebatch = sourcebatches_map[instance]
+                    if sourcebatch then
+                        add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
                     end
                 end
-            elseif not has_target_script then -- rule
-                local sourcebatch = sourcebatches_map[instance]
-                if sourcebatch then
-                    add_filejobs_for_script(jobgraph, target, instance, sourcebatch, script_opt)
-                end
-            end
+            end)
         end
     end)
 
-    if jobgraph:size() > jobsize then
-        return group_name
+    -- no any new jobs
+    if jobgraph:size() == jobsize then
+        return
     end
+
+    -- sort build rules
+    rule_utils.build_orders_in_jobgraph(jobgraph, instances, {root_group = group_name})
+    return group_name
 end
 
 -- add file jobs for the given target
