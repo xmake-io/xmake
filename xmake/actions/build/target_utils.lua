@@ -306,6 +306,12 @@ function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
             elseif job_kind == "build" then
                 jobname = target:fullname() .. "/link"
                 jobname_dep = dep:fullname() .. "/link"
+                if not jobgraph:has(jobname) then
+                    jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
+                end
+                if not jobgraph:has(jobname_dep) then
+                    jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
+                end
             end
             if jobname and jobname_dep and jobgraph:has(jobname) and jobgraph:has(jobname_dep) then
                 jobgraph:add_orders(jobname_dep, jobname)
