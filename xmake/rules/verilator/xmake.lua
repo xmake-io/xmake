@@ -73,3 +73,29 @@ rule("verilator.static")
         import("verilator").buildcmd_cppfiles(target, batchcmds, sourcebatch, opt)
     end)
 
+rule("verilator.shared")
+    add_deps("c++")
+    set_extensions(".v", ".sv")
+    on_load(function (target)
+        target:set("kind", "shared")
+    end)
+
+    on_config(function (target)
+        import("verilator").config(target)
+    end)
+
+    before_build_files(function (target, sourcebatch)
+        -- Just to avoid before_buildcmd_files being executed at build time
+    end)
+
+    on_build_files(function (target, batchjobs, sourcebatch, opt)
+        import("verilator").build_cppfiles(target, batchjobs, sourcebatch, opt)
+    end, {batch = true, distcc = true})
+
+    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+        import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
+    end)
+
+    on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
+        import("verilator").buildcmd_cppfiles(target, batchcmds, sourcebatch, opt)
+    end)
