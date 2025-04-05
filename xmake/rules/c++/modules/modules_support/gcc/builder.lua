@@ -361,7 +361,6 @@ end
 
 -- build headerunit file for batchjobs
 function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmifile, outputdir, opt)
-
     local _headerunit = headerunit
     _headerunit.path = headerunit.type == ":quote" and "./" .. path.relative(headerunit.path) or headerunit.path
     local already_exists = add_headerunit_to_target_mapper(target, _headerunit, bmifile)
@@ -443,7 +442,6 @@ end
 
 -- build headerunit file for batchcmds
 function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outputdir, opt)
-
     local headerunit_mapper = _generate_headerunit_modulemapper_file({name = path.normalize(headerunit.path), bmifile = bmifile})
     batchcmds:mkdir(outputdir)
 
