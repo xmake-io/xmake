@@ -174,6 +174,7 @@ function _add_jobgraph(target, jobgraph, sourcebatch, opt)
 end
 
 function main(target, jobgraph, sourcebatch, opt)
+    opt = opt or {}
     if jobgraph.add_orders then
         _add_jobgraph(target, jobgraph, sourcebatch, opt)
     else

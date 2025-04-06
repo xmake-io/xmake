@@ -20,7 +20,7 @@
 
 -- imports
 import("core.language.language")
-import("object")
+import("object", {alias = "build_objects"})
 
 function config(target, langkind, opt)
     local pcheaderfile = target:pcheaderfile(langkind)
@@ -55,7 +55,7 @@ function config(target, langkind, opt)
 end
 
 -- add batch jobs to build the precompiled header file
-function build(target, langkind, opt)
+function build(target, jobgraph, langkind, opt)
     local pcheaderfile = target:pcheaderfile(langkind)
     if pcheaderfile then
         local sourcefile = pcheaderfile
@@ -63,6 +63,6 @@ function build(target, langkind, opt)
         local dependfile = target:dependfile(objectfile)
         local sourcekind = language.langkinds()[langkind]
         local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-        object.build(target, sourcebatch, opt)
+        build_objects(target, jobgraph, sourcebatch, opt)
     end
 end
