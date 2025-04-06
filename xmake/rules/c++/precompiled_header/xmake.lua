@@ -19,18 +19,20 @@
 --
 
 rule("c.build.pcheader")
+    add_orders("c.build.pcheader", "c++.build.modules.builder")
     on_config(function (target, opt)
         import("private.action.build.pcheader").config(target, "c", opt)
     end)
-    before_build(function (target, opt)
+    on_prepare(function (target, opt)
         import("private.action.build.pcheader").build(target, "c", opt)
     end)
 
 rule("c++.build.pcheader")
+    add_orders("c++.build.pcheader", "c++.build.modules.builder")
     on_config(function (target, opt)
         import("private.action.build.pcheader").config(target, "cxx", opt)
     end)
-    before_build(function (target, opt)
+    on_prepare(function (target, opt)
         import("private.action.build.pcheader").build(target, "cxx", opt)
     end)
 
