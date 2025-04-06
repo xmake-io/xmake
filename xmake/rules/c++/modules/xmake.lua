@@ -70,6 +70,20 @@ rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
+    -- generate module dependencies
+    on_prepare_files(function (target, jobgraph, sourcebatch, opt)
+        if target:data("cxx.has_modules") then
+            import("modules_support.builder")
+            import("modules_support.dependency_scanner")
+
+            -- patch sourcebatch
+            builder.patch_sourcebatch(target, sourcebatch)
+
+            -- generate module dependencies
+            dependency_scanner.generate_module_dependencies(target, jobgraph, sourcebatch, opt)
+        end
+    end, {jobgraph = true})
+
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, jobgraph, sourcebatch, opt)
         if target:data("cxx.has_modules") then
@@ -77,36 +91,11 @@ rule("c++.build.modules.builder")
             import("modules_support.dependency_scanner")
             import("modules_support.builder")
 
-            -- add target deps modules
-            if target:orderdeps() then
-                local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
-                if deps_sourcefiles then
-                    table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
-                end
-            end
+            -- patch sourcebatch
+            builder.patch_sourcebatch(target, sourcebatch)
 
-            -- append std module
-            local std_modules = compiler_support.get_stdmodules(target)
-            if std_modules then
-                table.join2(sourcebatch.sourcefiles, std_modules)
-            end
-
-            -- extract packages modules dependencies
-            local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
-            if package_modules_data then
-                -- append to sourcebatch
-                for _, package_module_data in table.orderpairs(package_modules_data) do
-                    table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    target:fileconfig_set(package_module_data.file, {external = package_module_data.external, defines = package_module_data.metadata.defines})
-                end
-            end
-
-            opt = opt or {}
-            opt.jobgraph = true
-
-            compiler_support.patch_sourcebatch(target, sourcebatch, opt)
-            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
-
+            -- get module dependencies
+            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch)
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules
                 local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
@@ -134,45 +123,18 @@ rule("c++.build.modules.builder")
             import("modules_support.dependency_scanner")
             import("modules_support.builder")
 
-            -- add target deps modules
-            if target:orderdeps() then
-                local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
-                if deps_sourcefiles then
-                    table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
-                end
-            end
+            -- patch sourcebatch
+            builder.patch_sourcebatch(target, sourcebatch)
 
-            -- append std module
-            local std_modules = compiler_support.get_stdmodules(target)
-            if std_modules then
-                table.join2(sourcebatch.sourcefiles, std_modules)
-            end
-
-            -- extract packages modules dependencies
-            local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
-            if package_modules_data then
-                -- append to sourcebatch
-                for _, package_module_data in table.orderpairs(package_modules_data) do
-                    table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    target:fileconfig_set(package_module_data.file, {external = package_module_data.external, defines = package_module_data.metadata.defines})
-                end
-            end
-
-            opt = opt or {}
-            opt.jobgraph = false
-
-            compiler_support.patch_sourcebatch(target, sourcebatch, opt)
-            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
-
+            -- get module dependencies
+            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch)
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules
                 local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
                 sourcebatch.objectfiles = build_objectfiles
 
                 -- build headerunits and modules
-                builder.build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
-                builder.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
-
+                builder.build_modules_and_headerunits(target, batchcmds, sourcebatch, modules, opt)
                 sourcebatch.objectfiles = link_objectfiles
             else
                 -- avoid duplicate linking of object files of non-module programs

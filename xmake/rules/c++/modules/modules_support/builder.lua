@@ -457,7 +457,10 @@ function build_modules_and_headerunits(target, jobgraph, sourcebatch, modules, o
                 jobgraph:add_orders(build_headerunits_group, build_modules_group)
             end
         end
-    else -- deprecated
+    elseif jobgraph.runcmds then
+        build_headerunits_for_batchcmds(target, jobgraph, sourcebatch, modules, opt)
+        build_modules_for_batchcmds(target, jobgraph, sourcebatch, modules, opt)
+    elseif jobgraph.newjob then -- deprecated
         build_modules_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
         build_headerunits_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
     end
@@ -571,3 +574,44 @@ function is_dependencies_changed(target, module)
     end
     return requires, changed
 end
+
+-- patch sourcebatch
+function patch_sourcebatch(target, sourcebatch, opt)
+
+    -- add target deps modules
+    if target:orderdeps() then
+        local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
+        if deps_sourcefiles then
+            table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
+        end
+    end
+
+    -- append std module
+    local std_modules = compiler_support.get_stdmodules(target)
+    if std_modules then
+        table.join2(sourcebatch.sourcefiles, std_modules)
+    end
+
+    -- extract packages modules dependencies
+    local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
+    if package_modules_data then
+        -- append to sourcebatch
+        for _, package_module_data in table.orderpairs(package_modules_data) do
+            table.insert(sourcebatch.sourcefiles, package_module_data.file)
+            target:fileconfig_set(package_module_data.file, {external = package_module_data.external, defines = package_module_data.metadata.defines})
+        end
+    end
+
+    -- patch objectfiles and dependencies
+    sourcebatch.sourcekind = "cxx"
+    sourcebatch.objectfiles = {}
+    sourcebatch.dependfiles = {}
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        local objectfile = target:objectfile(sourcefile)
+        table.insert(sourcebatch.objectfiles, objectfile)
+
+        local dependfile = target:dependfile(sourcefile or objectfile)
+        table.insert(sourcebatch.dependfiles, dependfile)
+    end
+end
+
