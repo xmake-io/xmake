@@ -19,7 +19,6 @@
 --
 
 rule("c.build.pcheader")
-    add_orders("c.build.pcheader", "c++.build.modules.builder")
     on_config(function (target, opt)
         import("private.action.build.pcheader").config(target, "c", opt)
     end)
