@@ -25,15 +25,13 @@ rule("platform.windows.idl")
     on_config(function (target)
         local autogendir = path.join(target:autogendir(), "platform/windows/idl")
         os.mkdir(autogendir)
-        -- compile rc file maybe require .tlb dir
         target:add("includedirs", autogendir, {public = true})
     end)
 
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
         import("lib.detect.find_tool")
-        import("core.tool.toolchain")
 
-        local msvc = toolchain.load("msvc", {plat = os.host(), arch = os.arch()})
+        local msvc = target:toolchain("msvc") or target:toolchain("clang-cl") or target:toolchain("clang")
         local midl = assert(find_tool("midl", {envs = msvc:runenvs(), toolchain = msvc}), "midl not found!")
 
         local name = path.basename(sourcefile)
@@ -42,12 +40,12 @@ rule("platform.windows.idl")
         local flags = {"/nologo"}
         table.join2(flags, table.wrap(target:values("idl.flags")))
         table.join2(flags, {
-            "/out",    autogendir,
+            "/out",    path(autogendir),
             "/header", name .. ".h",
             "/iid",    name .. "_i.c",
             "/proxy",  name .. "_p.c",
             "/tlb",    name .. ".tlb",
-            sourcefile
+            path(sourcefile)
         })
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.idl %s", sourcefile)

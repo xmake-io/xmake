@@ -30,9 +30,7 @@ import("lib.detect.find_programver")
 -- @return      program, version
 --
 -- @code
---
 -- local midl = find_midl()
---
 -- @endcode
 --
 function main(opt)
