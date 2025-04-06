@@ -34,7 +34,6 @@ import("dependency_scanner")
 -- build target modules
 function _build_modules(target, sourcebatch, modules, opt)
     local objectfiles = sourcebatch.objectfiles
-    local jobgraph = opt.jobgraph
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
         if not module then
@@ -51,7 +50,7 @@ function _build_modules(target, sourcebatch, modules, opt)
             if req.method:startswith("include-") and req.path then
                 dep = path.normalize(req.path)
             end
-            local depname = jobgraph and (target:fullname() .. "/module/" .. dep) or dep
+            local depname = target:fullname() .. "/module/" .. dep
             table.insert(deps, depname)
         end
         opt.build_module(deps, module, name, objectfile, cppfile)
@@ -279,11 +278,11 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
 
     -- add module jobs
     _build_modules(target, sourcebatch, modules, table.join(opt, {
-       build_module = function(deps, module, name, objectfile, cppfile)
-        local job_name = target:fullname() .. "/module/" .. (name or cppfile)
-        modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps,
-            {module = module, objectfile = objectfile, cppfile = cppfile})
-      end
+        build_module = function(deps, module, name, objectfile, cppfile)
+            local job_name = target:fullname() .. "/module/" .. (name or cppfile)
+            modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps,
+                {module = module, objectfile = objectfile, cppfile = cppfile})
+        end
     }))
 
     -- build batchjobs for modules
@@ -330,9 +329,10 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
 
     -- build modules
     _build_modules(target, sourcebatch, modules, table.join(opt, {
-       build_module = function(_, module, _, objectfile, cppfile)
-          depmtime = math.max(depmtime, _builder(target).make_module_buildcmds(target, batchcmds, {module = module, cppfile = cppfile, objectfile = objectfile, progress = opt.progress}))
-      end
+        build_module = function(_, module, _, objectfile, cppfile)
+            depmtime = math.max(depmtime, _builder(target).make_module_buildcmds(target, batchcmds, {
+                module = module, cppfile = cppfile, objectfile = objectfile, progress = opt.progress}))
+        end
     }))
 
     batchcmds:set_depmtime(depmtime)

@@ -91,9 +91,6 @@ rule("c++.build.modules.builder")
             import("modules_support.dependency_scanner")
             import("modules_support.builder")
 
-            -- patch sourcebatch
-            builder.patch_sourcebatch(target, sourcebatch)
-
             -- get module dependencies
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch)
             if not target:is_moduleonly() then
@@ -122,9 +119,6 @@ rule("c++.build.modules.builder")
             import("modules_support.compiler_support")
             import("modules_support.dependency_scanner")
             import("modules_support.builder")
-
-            -- patch sourcebatch
-            builder.patch_sourcebatch(target, sourcebatch)
 
             -- get module dependencies
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch)
