@@ -103,7 +103,7 @@ function main(url, opt)
 
     -- treeless?
     -- @see https://github.com/xmake-io/xmake/issues/5507
-    if opt.treeless then
+    if opt.treeless and can_treeless() then
         table.insert(argv, "--filter=tree:0")
     end
 
