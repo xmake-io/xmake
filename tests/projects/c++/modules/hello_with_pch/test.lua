@@ -1,1 +1,1 @@
-inherit(".test_base")
+inherit(".test_pch")
