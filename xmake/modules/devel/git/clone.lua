@@ -52,6 +52,20 @@ function can_shallow_submodules()
     return can or false
 end
 
+-- can clone with --filter=tree:0?
+-- @see https://github.com/xmake-io/xmake/issues/6246
+function can_treeless()
+    local can = _g.can_treeless
+    if can == nil then
+        local git = assert(find_tool("git", {version = true}), "git not found!")
+        if git.version and semver.compare(git.version, "2.16.0") >= 0 then
+            can = true
+        end
+        _g.can_treeless = can or false
+    end
+    return can or false
+end
+
 -- clone url
 --
 -- @param url   the git url
@@ -89,7 +103,7 @@ function main(url, opt)
 
     -- treeless?
     -- @see https://github.com/xmake-io/xmake/issues/5507
-    if opt.treeless then
+    if opt.treeless and can_treeless() then
         table.insert(argv, "--filter=tree:0")
     end
 
