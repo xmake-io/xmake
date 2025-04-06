@@ -122,7 +122,7 @@ function _checkout(package, url, sourcedir, opt)
 
             -- clone whole history and tags
             -- @see https://github.com/xmake-io/xmake/issues/5507
-            git.clone(url, {treeless = git.clone.can_treeless(), checkout = not git.clone.can_treeless(), longpaths = longpaths, outputdir = packagedir})
+            git.clone(url, {treeless = true, checkout = false, longpaths = longpaths, outputdir = packagedir})
 
             -- attempt to checkout the given version
             git.checkout(revision, {repodir = packagedir, includes = opt.url_includes})
