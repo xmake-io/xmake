@@ -163,6 +163,7 @@ function main(name, jobs, opt)
     local abort_errors
     local progress_wrapper = {}
     local job_pending
+    local progress_factor = opt.progress_factor or 1.0
     progress_wrapper.current = function ()
         return count
     end
@@ -171,7 +172,7 @@ function main(name, jobs, opt)
     end
     progress_wrapper.percent = function ()
         if total and total > 0 then
-            return math.floor((count * 100) / total)
+            return math.floor((count * progress_factor * 100) / total)
         else
             return 0
         end

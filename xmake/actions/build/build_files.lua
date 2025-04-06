@@ -75,6 +75,7 @@ end
 function _prepare_files(targets_root, opt)
     opt = opt or {}
     opt.job_kind = "prepare"
+    opt.progress_factor = 0.05
     opt.filepatterns = _get_file_patterns(opt.sourcefiles)
     target_utils.run_filejobs(targets_root, opt)
 end
@@ -83,6 +84,7 @@ end
 function _build_files(targets_root, opt)
     opt = opt or {}
     opt.job_kind = "build"
+    opt.progress_factor = 0.95
     opt.filepatterns = _get_file_patterns(opt.sourcefiles)
     if distcc_build_client.is_connected() then
         opt.distcc = distcc_build_client.singleton()
