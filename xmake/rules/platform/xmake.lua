@@ -24,6 +24,7 @@ rule("platform.wasm")
 
 rule("platform.windows")
     add_deps("platform.windows.def")
+    add_deps("platform.windows.idl")
     if is_host("windows") then
         add_deps("platform.windows.manifest")
     end
