@@ -25,6 +25,7 @@ import("core.base.hashset")
 import("core.project.rule")
 import("private.utils.batchcmds")
 import("private.utils.rule_groups")
+import("private.action.build.target", {alias = "target_buildutils"})
 
 -- this sourcebatch is built?
 function _sourcebatch_is_built(sourcebatch)
@@ -113,5 +114,11 @@ function get_target_buildcmd_sourcegroups(target, cmds, sourcegroups, opt)
             end
         end
     end
+end
+
+-- prepare targets
+function prepare_targets()
+    local targets_root = target_buildutils.get_root_targets()
+    target_buildutils.run_targetjobs(targets_root, {job_kind = "prepare"})
 end
 

@@ -687,9 +687,10 @@ function _add_clean(makefile, outputdir)
 end
 
 function make(outputdir)
-
-    -- enter project directory
     local oldir = os.cd(os.projectdir())
+
+    -- prepare targets
+    target_cmds.prepare_targets()
 
     -- open the makefile
     local makefile = io.open(path.join(outputdir, "makefile"), "w")
@@ -715,7 +716,5 @@ function make(outputdir)
 
     -- close the makefile
     makefile:close()
-
-    -- leave project directory
     os.cd(oldir)
 end

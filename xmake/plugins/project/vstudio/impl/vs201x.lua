@@ -386,17 +386,14 @@ end
 
 -- make vstudio project
 function make(outputdir, vsinfo)
-
-    -- enter project directory
     local oldir = os.cd(project.directory())
 
-    -- init solution directory
+    -- prepare targets
+    target_cmds.prepare_targets()
+
+    -- init vsinfo
     vsinfo.solution_dir = path.join(outputdir, "vs" .. vsinfo.vstudio_version)
-
-    -- init modes
     vsinfo.modes = _make_vsinfo_modes()
-
-    -- init archs
     vsinfo.archs = _make_vsinfo_archs()
 
     -- load targets
@@ -519,7 +516,5 @@ function make(outputdir, vsinfo)
 
     -- clear local cache
     _clear_cache()
-
-    -- leave project directory
     os.cd(oldir)
 end

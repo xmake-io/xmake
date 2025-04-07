@@ -317,6 +317,7 @@ end
 function make(outputdir)
     local oldir = os.cd(os.projectdir())
     local jsonfile = io.open(path.join(outputdir, "compile_commands.json"), "w")
+    target_cmds.prepare_targets()
     _add_targets(jsonfile)
     jsonfile:close()
     os.cd(oldir)

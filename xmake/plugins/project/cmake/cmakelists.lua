@@ -31,7 +31,6 @@ import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("private.utils.rule_groups")
 import("private.utils.target", {alias = "target_utils"})
-import("private.action.build.target", {alias = "target_buildutils"})
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 import("rules.c++.modules.modules_support.compiler_support", {alias = "module_compiler_support", rootdir = os.programdir()})
 
@@ -297,12 +296,6 @@ function _get_flags_from_target(target, flagkind)
         end
     end
     return results
-end
-
--- prepare targets
-function _prepare_targets()
-    local targets_root = target_buildutils.get_root_targets()
-    target_buildutils.run_targetjobs(targets_root, {job_kind = "prepare"})
 end
 
 -- set compiler
@@ -1341,7 +1334,7 @@ end
 function make(outputdir)
     local oldir = os.cd(os.projectdir())
     local cmakelists = io.open(path.join(outputdir, "CMakeLists.txt"), "w")
-    _prepare_targets()
+    target_cmds.prepare_targets()
     _generate_cmakelists(cmakelists, outputdir)
     cmakelists:close()
     os.cd(oldir)
