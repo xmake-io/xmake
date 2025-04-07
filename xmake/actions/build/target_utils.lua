@@ -303,6 +303,9 @@ function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
             if dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false then
                 jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
                 jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
+                if dep:policy("build.across_targets_in_parallel") == false then
+                    wprint("policy(\"build.across_targets_in_parallel\") has been deprecated, please use policy(\"build.fence\") instead of it.")
+                end
             elseif job_kind == "build" then
                 jobname = target:fullname() .. "/link"
                 jobname_dep = dep:fullname() .. "/link"
