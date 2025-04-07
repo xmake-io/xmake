@@ -23,7 +23,7 @@ rule("go.build")
     add_deps("go.env")
     on_load(function (target)
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
-        target:set("policy", "build.across_targets_in_parallel", false)
+        target:set("policy", "build.fence", true)
         -- xxx.a
         if target:is_static() then
             target:set("prefixname", "")

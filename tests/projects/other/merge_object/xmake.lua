@@ -1,9 +1,9 @@
 add_rules("mode.debug", "mode.release")
-set_policy("build.across_targets_in_parallel", false)
 
 target("merge_object")
     set_kind("static")
     add_files("src/interface.c")
+    set_policy("build.fence", true)
     after_build_file(function (target, sourcefile)
         os.cp(target:objectfile(sourcefile), "$(buildir)/merge_object/")
     end)
