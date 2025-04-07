@@ -20,8 +20,8 @@
 
 -- imports
 import("core.base.option")
-import("private.action.build.target", {alias = "target_utils"})
+import("private.action.build.target", {alias = "target_buildutils"})
 
 function main(jobgraph, target)
-    target_utils.add_filejobs(jobgraph, target, {job_kind = "prepare"})
+    target_buildutils.add_filejobs(jobgraph, target, {job_kind = "prepare"})
 end

@@ -24,7 +24,7 @@ import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
-import("private.action.build.target", {alias = "target_utils"})
+import("private.action.build.target", {alias = "target_buildutils"})
 import("deprecated.build_files", {alias = "deprecated_build_files"})
 
 -- convert all sourcefiles to lua pattern
@@ -77,7 +77,7 @@ function _prepare_files(targets_root, opt)
     opt.job_kind = "prepare"
     opt.progress_factor = 0.05
     opt.filepatterns = _get_file_patterns(opt.sourcefiles)
-    target_utils.run_filejobs(targets_root, opt)
+    target_buildutils.run_filejobs(targets_root, opt)
 end
 
 -- run build files jobs
@@ -89,7 +89,7 @@ function _build_files(targets_root, opt)
     if distcc_build_client.is_connected() then
         opt.distcc = distcc_build_client.singleton()
     end
-    if not target_utils.run_filejobs(targets_root, opt) then
+    if not target_buildutils.run_filejobs(targets_root, opt) then
         wprint("%s not found!", opt.sourcefiles)
     end
 end
@@ -97,7 +97,7 @@ end
 function main(targetnames, opt)
 
     -- get root targets
-    local targets_root = target_utils.get_root_targets(targetnames, opt)
+    local targets_root = target_buildutils.get_root_targets(targetnames, opt)
 
     -- prepare to build files
     _prepare_files(targets_root, opt)

@@ -25,7 +25,7 @@ import("core.tool.compiler")
 import("core.project.depend")
 import("utils.progress")
 import("build_object")
-import("private.action.build.target", {alias = "target_utils"})
+import("private.action.build.target", {alias = "target_buildutils"})
 
 -- do link target
 function _do_link_target(target, opt)
@@ -33,7 +33,7 @@ function _do_link_target(target, opt)
     local linkflags = linkinst:linkflags({target = target})
 
     -- need build this target?
-    local depfiles = target_utils.get_linkdepfiles(target)
+    local depfiles = target_buildutils.get_linkdepfiles(target)
     local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
