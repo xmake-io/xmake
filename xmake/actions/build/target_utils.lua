@@ -92,6 +92,32 @@ function _match_sourcebatches(target, filepatterns)
     end
 end
 
+-- add targetjobs and deps orders
+function _add_targetjobs_orders(jobgraph, target, dep, opt)
+    local jobname, jobname_dep
+    local job_kind = opt.job_kind
+    if dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false then
+        jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
+        jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
+        -- build.across_targets_in_parallel is deprecated
+        if dep:policy("build.across_targets_in_parallel") == false then
+            wprint("policy(\"build.across_targets_in_parallel\") has been deprecated, please use policy(\"build.fence\") instead of it.")
+        end
+    elseif job_kind == "build" then
+        jobname = target:fullname() .. "/link"
+        jobname_dep = dep:fullname() .. "/link"
+        if not jobgraph:has(jobname) then
+            jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
+        end
+        if not jobgraph:has(jobname_dep) then
+            jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
+        end
+    end
+    if jobname and jobname_dep and jobgraph:has(jobname) and jobgraph:has(jobname_dep) then
+        jobgraph:add_orders(jobname_dep, jobname)
+    end
+end
+
 -- add target jobs for the builtin script
 function add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
@@ -288,37 +314,14 @@ end
 
 -- add target jobs for the given target and deps
 function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
-    local job_kind = opt.job_kind
     local targetname = target:fullname()
     if not targetrefs[targetname] then
         targetrefs[targetname] = target
         add_targetjobs(jobgraph, target, opt)
-
-        local jobname, jobname_dep
         for _, depname in ipairs(target:get("deps")) do
             local dep = project.target(depname, {namespace = target:namespace()})
             add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
-
-            -- build.across_targets_in_parallel is deprecated
-            if dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false then
-                jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
-                jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
-                if dep:policy("build.across_targets_in_parallel") == false then
-                    wprint("policy(\"build.across_targets_in_parallel\") has been deprecated, please use policy(\"build.fence\") instead of it.")
-                end
-            elseif job_kind == "build" then
-                jobname = target:fullname() .. "/link"
-                jobname_dep = dep:fullname() .. "/link"
-                if not jobgraph:has(jobname) then
-                    jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
-                end
-                if not jobgraph:has(jobname_dep) then
-                    jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
-                end
-            end
-            if jobname and jobname_dep and jobgraph:has(jobname) and jobgraph:has(jobname_dep) then
-                jobgraph:add_orders(jobname_dep, jobname)
-            end
+            _add_targetjobs_orders(jobgraph, target, dep, opt)
         end
     end
 end
