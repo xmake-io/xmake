@@ -15,6 +15,7 @@
 * [#6281](https://github.com/xmake-io/xmake/pull/6281): Support Verilator target build to shared library
 * [#6270](https://github.com/xmake-io/xmake/pull/6270): Improve conan generator
 * [#6243](https://github.com/xmake-io/xmake/pull/6243): Improve llvm toolchain to support for cross platform
+* Support for CMake 4.0
 
 ## v2.9.8
 
@@ -1974,6 +1975,7 @@
 * [#6281](https://github.com/xmake-io/xmake/pull/6281): 支持 Verilator 动态库
 * [#6270](https://github.com/xmake-io/xmake/pull/6270): 改进 conan 生成器
 * [#6243](https://github.com/xmake-io/xmake/pull/6243): 改进 llvm 工具链对交叉编译的支持
+* 三方包安装支持 CMake 4.0
 
 ## v2.9.8
 
