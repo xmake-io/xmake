@@ -22,8 +22,8 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
-import("target_utils")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
+import("private.action.build.target", {alias = "target_utils"})
 import("deprecated.build", {alias = "deprecated_build"})
 
 -- run prepare jobs

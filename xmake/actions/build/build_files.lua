@@ -23,8 +23,8 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
-import("target_utils")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
+import("private.action.build.target", {alias = "target_utils"})
 import("deprecated.build_files", {alias = "deprecated_build_files"})
 
 -- convert all sourcefiles to lua pattern
