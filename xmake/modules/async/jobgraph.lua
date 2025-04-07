@@ -73,7 +73,7 @@ function jobgraph:add(name, run, opt)
     local dag = self._dag
     local jobs = self._jobs
     if not jobs[name] then
-        local job = {name = name, run = run, opt = opt}
+        local job = {name = name, run = run, distcc = opt.distcc}
         jobs[name] = job
         dag:add_vertex(job)
         self._size = self._size + 1
