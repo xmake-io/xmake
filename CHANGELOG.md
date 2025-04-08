@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.9.9
+
 ### New features
 
 * [#6137](https://github.com/xmake-io/xmake/issues/6137): IDE integration
@@ -1965,6 +1967,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.9.9
 
 ### 新特性
 
