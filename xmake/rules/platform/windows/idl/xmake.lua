@@ -30,6 +30,34 @@ rule("platform.windows.idl")
 
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
         import("lib.detect.find_tool")
+        import("core.project.depend")
+        import("utils.progress") -- it only for v2.5.9, we need use print to show prog
+
+        local fileconfig = target:fileconfig(sourcefile)
+        local enable_server = true
+        local enable_client = true
+
+        local defs = table.wrap(target:get("defines") or {})
+        local incs = table.wrap(target:get("includedirs") or {})
+        local undefs = table.wrap(target:get("undefines") or {})
+
+        if fileconfig then
+            if fileconfig.server ~= nil then
+                enable_server = fileconfig.server
+            end
+            if fileconfig.client ~= nil then
+                enable_client = fileconfig.client
+            end
+            if fileconfig.includedirs ~= nil then
+                table.join2(incs, fileconfig.includedirs)
+            end
+            if fileconfig.defines ~= nil then
+                table.join2(defs, fileconfig.defines)
+            end
+            if fileconfig.undefines ~= nil then
+                table.join2(undefs, fileconfig.undefines)
+            end
+        end
 
         local msvc = target:toolchain("msvc") or target:toolchain("clang-cl") or target:toolchain("clang")
         local midl = assert(find_tool("midl", {envs = msvc:runenvs(), toolchain = msvc}), "midl not found!")
@@ -39,26 +67,130 @@ rule("platform.windows.idl")
 
         local flags = {"/nologo"}
         table.join2(flags, table.wrap(target:values("idl.flags")))
+
+        -- specify warn levels
+        local warns = target:get("warnings")
+        if warns == "none" then
+            table.insert(flags, "/W0")
+            table.insert(flags, "/no_warn")
+        elseif warns == "less" then
+            table.insert(flags, "/W1")
+        elseif warns == "more" then
+            table.insert(flags, "/W2")
+        elseif warns == "extra" then
+            table.insert(flags, "/W3")
+        elseif warns == "error" then
+            table.insert(flags, "/WX")
+            table.insert(flags, "/W4")
+        end
+
+        -- add include dirs, defines and undefines from compiler flags
+        for _, inc in ipairs(incs) do
+            table.insert(flags, "/I")
+            table.insert(flags, path.absolute(inc))
+        end
+
+        for _, def in ipairs(defs) do
+            table.insert(flags, "/D")
+            table.insert(flags, def)
+        end
+
+        for _, undef in ipairs(undefs) do
+            table.insert(flags, "/U")
+            table.insert(flags, undef)
+        end
+
         table.join2(flags, {
             "/out",    path(autogendir),
             "/header", name .. ".h",
             "/iid",    name .. "_i.c",
             "/proxy",  name .. "_p.c",
             "/tlb",    name .. ".tlb",
+            "/cstub",  name .. "_c.c",
+            "/sstub",  name .. "_s.c",
+            "/server", (enable_server and "stub" or "none"),
+            "/client", (enable_client and "stub" or "none"),
             path(sourcefile)
         })
 
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.idl %s", sourcefile)
-        batchcmds:vrunv(midl.program, flags, {envs = msvc:runenvs()})
+        -- use this way to set depend to avoid generating files multiple times
+        depend.on_changed(function() 
+            progress.show(opt.progress, "${color.build.object}generating.idl %s", sourcefile)
+            os.vrunv(midl.program, flags, { envs = msvc:runenvs() })
+        end, { files = sourcefile, dependfile = path.join(autogendir, path.basename(sourcefile) .. ".idl.d") })
         
-        local iid_file = path.join(autogendir, name .. "_i.c")
-        local objectfile = target:objectfile(iid_file)
-        table.insert(target:objectfiles(), objectfile)
+        --batchcmds:show_progress(opt.progress, "${color.build.object}compiling.idl %s", sourcefile)
+        --batchcmds:vrunv(midl.program, flags, {envs = msvc:runenvs()})
 
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", iid_file)
-        batchcmds:compile(iid_file, objectfile)
+    end)
+    --[[
+        we don't have a way to detect which files midl.exe has generated and os.exists
+        does not work in before_buildcmd_file because in the invokation of xmake
+        the files might not have been generated yet from batchcmds, therefore
+        the files are compiled and checked during the buildcmd as _i, _p, _c, _s
+        might not exists depending on the idl file
+    ]]
+    on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+        import("core.project.depend")
 
-        batchcmds:add_depfiles(sourcefile, iid_file)
-        batchcmds:set_depmtime(os.mtime(objectfile))
-        batchcmds:set_depcache(target:dependfile(objectfile))
+        local name = path.basename(sourcefile)
+        local autogendir = path.join(target:autogendir(), "platform/windows/idl")
+
+        -- we don't have a way to detect which midl files are generated
+
+        local icfile = path.join(autogendir, name .. "_i.c")
+        local icobj = target:objectfile(icfile)
+
+        local scfile = path.join(autogendir, name .. "_s.c")
+        local scobj = target:objectfile(scfile)
+
+        local ccfile = path.join(autogendir, name .. "_c.c")
+        local ccobj = target:objectfile(ccfile)
+
+        local pcfile = path.join(autogendir, name .. "_p.c")
+        local pcobj = target:objectfile(pcfile)
+
+        local fileconfig = target:fileconfig(sourcefile)
+        local enable_proxy = true
+        if fileconfig then
+            if fileconfig.proxy ~= nil then
+                enable_proxy = fileconfig.proxy
+            end
+        end
+
+        -- compile c files
+        local configs = {includedirs = autogendir, languages = "c89"}
+        
+        if os.exists(icfile) then
+            table.insert(target:objectfiles(), icobj)
+            depend.on_changed(function()
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", icfile)
+                batchcmds:compile(icfile, icobj, {sourcekind = "cxx", configs = configs})                 
+            end, { files = {icobj}, changed = target:is_rebuilt() })
+        end
+
+        if os.exists(scfile) then
+            table.insert(target:objectfiles(), scobj)
+            depend.on_changed(function()
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", scfile)
+                batchcmds:compile(scfile, scobj, {sourcekind = "cxx", configs = configs})
+            end, { files = {scobj}, changed = target:is_rebuilt() })
+        end
+
+
+        if os.exists(pcfile) and enable_proxy then
+            table.insert(target:objectfiles(), pcobj)
+            depend.on_changed(function()
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", pcfile)
+                batchcmds:compile(pcfile, pcobj, {sourcekind = "cxx", configs = configs})
+            end, { files = {pcobj}, changed = target:is_rebuilt() })
+        end
+
+        if os.exists(ccfile) then
+            table.insert(target:objectfiles(), ccobj)
+            depend.on_changed(function()
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", ccfile)
+                batchcmds:compile(ccfile, ccobj, {sourcekind = "cxx", configs = configs})
+            end, { files = {ccobj}, changed = target:is_rebuilt() })
+        end
     end)
