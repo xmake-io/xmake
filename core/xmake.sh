@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set_project "xmake"
-set_version "2.9.9" "%Y%m%d"
+set_version "3.0.0" "%Y%m%d"
 
 # set warning all
 set_warnings "all"
