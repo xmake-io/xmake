@@ -8,21 +8,21 @@ import "oaidl.idl";
 import "ocidl.idl";
 
 [
-	object,
-	local,
-	uuid(9b7e4a00-342c-4106-a19f-4f2704f689f0)
+    object,
+    local,
+    uuid(9b7e4a00-342c-4106-a19f-4f2704f689f0)
 ]
 interface ILockOwner : IUnknown
 {
-	void LOEnter(
-		void
-	);
+    void LOEnter(
+        void
+    );
 
-	void LOLeave(
-		void
-	);
+    void LOLeave(
+        void
+    );
 
-	BOOL LOTryEnter(
-		void
-	);
+    BOOL LOTryEnter(
+        void
+    );
 };

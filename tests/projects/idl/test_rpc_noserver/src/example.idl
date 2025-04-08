@@ -1,13 +1,13 @@
 [
-  uuid(ba209999-0c6c-11d2-97cf-00c04f8eea45),
-  version(1.0)
+    uuid(ba209999-0c6c-11d2-97cf-00c04f8eea45),
+    version(1.0)
 ]
 interface MyInterface
 {
-  const unsigned short INT_ARRAY_LEN = 100;
+    const unsigned short INT_ARRAY_LEN = 100;
 
-  void MyRemoteProc( 
-      [in] int param1,
-      [out] int outArray[INT_ARRAY_LEN]
-  );
+    void MyRemoteProc( 
+        [in] int param1,
+        [out] int outArray[INT_ARRAY_LEN]
+    );
 }

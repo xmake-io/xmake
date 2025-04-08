@@ -42,19 +42,19 @@ rule("platform.windows.idl")
         local undefs = table.wrap(target:get("undefines") or {})
 
         if fileconfig then
-            if fileconfig.server ~= nil then
+            if fileconfig.server then
                 enable_server = fileconfig.server
             end
-            if fileconfig.client ~= nil then
+            if fileconfig.client then
                 enable_client = fileconfig.client
             end
-            if fileconfig.includedirs ~= nil then
+            if fileconfig.includedirs then
                 table.join2(incs, fileconfig.includedirs)
             end
-            if fileconfig.defines ~= nil then
+            if fileconfig.defines then
                 table.join2(defs, fileconfig.defines)
             end
-            if fileconfig.undefines ~= nil then
+            if fileconfig.undefines then
                 table.join2(undefs, fileconfig.undefines)
             end
         end
@@ -118,11 +118,8 @@ rule("platform.windows.idl")
             progress.show(opt.progress, "${color.build.object}generating.idl %s", sourcefile)
             os.vrunv(midl.program, flags, { envs = msvc:runenvs() })
         end, { files = sourcefile, dependfile = path.join(autogendir, path.basename(sourcefile) .. ".idl.d") })
-        
-        --batchcmds:show_progress(opt.progress, "${color.build.object}compiling.idl %s", sourcefile)
-        --batchcmds:vrunv(midl.program, flags, {envs = msvc:runenvs()})
-
     end)
+    
     --[[
         we don't have a way to detect which files midl.exe has generated and os.exists
         does not work in before_buildcmd_file because in the invokation of xmake
@@ -160,37 +157,40 @@ rule("platform.windows.idl")
 
         -- compile c files
         local configs = {includedirs = autogendir, languages = "c89"}
-        
+
         if os.exists(icfile) then
             table.insert(target:objectfiles(), icobj)
-            depend.on_changed(function()
-                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", icfile)
-                batchcmds:compile(icfile, icobj, {sourcekind = "cxx", configs = configs})                 
-            end, { files = {icobj}, changed = target:is_rebuilt() })
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", icfile)
+            batchcmds:compile(icfile, icobj, {sourcekind = "cxx", configs = configs})                 
+            batchcmds:add_depfiles(icfile)
+            batchcmds:set_depmtime(os.mtime(icobj))
+            batchcmds:set_depcache(target:dependfile(icobj))
         end
 
         if os.exists(scfile) then
             table.insert(target:objectfiles(), scobj)
-            depend.on_changed(function()
-                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", scfile)
-                batchcmds:compile(scfile, scobj, {sourcekind = "cxx", configs = configs})
-            end, { files = {scobj}, changed = target:is_rebuilt() })
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", scfile)
+            batchcmds:compile(scfile, scobj, {sourcekind = "cxx", configs = configs})
+            batchcmds:add_depfiles(scfile)
+            batchcmds:set_depmtime(os.mtime(scobj))
+            batchcmds:set_depcache(target:dependfile(scobj))
         end
-
 
         if os.exists(pcfile) and enable_proxy then
             table.insert(target:objectfiles(), pcobj)
-            depend.on_changed(function()
-                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", pcfile)
-                batchcmds:compile(pcfile, pcobj, {sourcekind = "cxx", configs = configs})
-            end, { files = {pcobj}, changed = target:is_rebuilt() })
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", pcfile)
+            batchcmds:compile(pcfile, pcobj, {sourcekind = "cxx", configs = configs})
+            batchcmds:add_depfiles(pcfile)
+            batchcmds:set_depmtime(os.mtime(pcobj))
+            batchcmds:set_depcache(target:dependfile(pcobj))
         end
 
         if os.exists(ccfile) then
             table.insert(target:objectfiles(), ccobj)
-            depend.on_changed(function()
-                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", ccfile)
-                batchcmds:compile(ccfile, ccobj, {sourcekind = "cxx", configs = configs})
-            end, { files = {ccobj}, changed = target:is_rebuilt() })
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", ccfile)
+            batchcmds:compile(ccfile, ccobj, {sourcekind = "cxx", configs = configs})
+            batchcmds:add_depfiles(ccfile)
+            batchcmds:set_depmtime(os.mtime(ccobj))
+            batchcmds:set_depcache(target:dependfile(ccobj))
         end
     end)
