@@ -164,7 +164,7 @@ function policy.policies()
             --   private: it will disable fetch remote package repositories
             ["network.mode"]                      = {description = "Set the network mode", type = "string"},
             -- Set the compatibility version, e.g. 2.0, 3.0
-            ["compatibility.version"]             = {description = "Set the compatibility version", type = "string", values = {"2.0", "3.0"}}
+            ["compatibility.version"]             = {description = "Set the compatibility version", type = "string", default = "3.0", values = {"2.0", "3.0"}}
         }
         policy._POLICIES = policies
     end
