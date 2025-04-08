@@ -50,7 +50,7 @@ rule("platform.windows.idl")
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.idl %s", sourcefile)
         batchcmds:vrunv(midl.program, flags, {envs = msvc:runenvs()})
-        
+
         local iid_file = path.join(autogendir, name .. "_i.c")
         local objectfile = target:objectfile(iid_file)
         table.insert(target:objectfiles(), objectfile)
