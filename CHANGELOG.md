@@ -17,6 +17,10 @@
 * [#6243](https://github.com/xmake-io/xmake/pull/6243): Improve llvm toolchain to support for cross platform
 * Support for CMake 4.0
 
+### Bugs fixed
+
+* [#6292](https://github.com/xmake-io/xmake/issues/6292): Fix namespace issue
+
 ## v2.9.8
 
 ### New features
@@ -1976,6 +1980,10 @@
 * [#6270](https://github.com/xmake-io/xmake/pull/6270): 改进 conan 生成器
 * [#6243](https://github.com/xmake-io/xmake/pull/6243): 改进 llvm 工具链对交叉编译的支持
 * 三方包安装支持 CMake 4.0
+
+### Bugs 修复
+
+* [#6292](https://github.com/xmake-io/xmake/issues/6292): 修复 namespace 问题
 
 ## v2.9.8
 
