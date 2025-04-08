@@ -61,6 +61,18 @@ function _instance:_build_deps()
     self._DEPS      = self._DEPS or {}
     self._ORDERDEPS = self._ORDERDEPS or {}
     instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:fullname()})
+
+    -- compatible with `add_deps("foo", {order = true})`
+    local plaindeps = self:get("deps")
+    if plaindeps then
+        for _, depname in ipairs(table.wrap(plaindeps)) do
+            if self:extraconf("deps", depname, "order") then
+                self:add("orders", depname, self:name())
+                utils.warning("add_deps(%s, {order = true}) has been deprecated, please use `add_orders(%s, %s) instead of it`",
+                    depname, depname, self:name())
+            end
+        end
+    end
 end
 
 -- clone rule

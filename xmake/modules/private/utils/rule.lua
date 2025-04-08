@@ -46,7 +46,7 @@ end
 --        end)
 --    end
 --
-function build_orders_in_jobgraph(jobgraph, rules, opt)
+function build_orders_in_jobgraph(jobgraph, target, rules, opt)
     opt = opt or {}
     local root_group = assert(opt.root_group)
     for _, ruleinst in ipairs(rules) do
@@ -55,7 +55,9 @@ function build_orders_in_jobgraph(jobgraph, rules, opt)
             for _, order in ipairs(orders) do
                 local joborders = {}
                 for _, rulename in ipairs(order) do
-                    local script_group = root_group .. "/" .. rulename
+                    -- we need to use fullname to support namespace
+                    local ruleinst = get_rule(target, rulename)
+                    local script_group = root_group .. "/" .. ruleinst:fullname()
                     if jobgraph:has(script_group) then
                         table.insert(joborders, script_group)
                     end

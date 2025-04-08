@@ -223,6 +223,7 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
             scriptcmd_name = scriptcmd_name
         }
         for _, instance in ipairs(instances) do
+            -- we need to use this group to sort rule scripts with add_orders
             local script_group = group_name .. "/" .. instance:fullname()
             jobgraph:group(script_group, function ()
                 if add_targetjobs_for_script(jobgraph, target, instance, script_opt) then
@@ -247,7 +248,7 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
     end
 
     -- sort build rules
-    rule_utils.build_orders_in_jobgraph(jobgraph, instances, {root_group = group_name})
+    rule_utils.build_orders_in_jobgraph(jobgraph, target, instances, {root_group = group_name})
     return group_name
 end
 
@@ -526,6 +527,7 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
         }
         local has_target_script = false
         for _, instance in ipairs(instances) do
+            -- we need to use this group to sort rule scripts with add_orders
             local script_group = group_name .. "/" .. instance:fullname()
             jobgraph:group(script_group, function ()
                 if instance == target then
@@ -552,7 +554,7 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     end
 
     -- sort build rules
-    rule_utils.build_orders_in_jobgraph(jobgraph, instances, {root_group = group_name})
+    rule_utils.build_orders_in_jobgraph(jobgraph, target, instances, {root_group = group_name})
     return group_name
 end
 
