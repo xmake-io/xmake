@@ -21,6 +21,6 @@
 -- imports
 import("build_object")
 
-function main(jobgraph, target)
-    build_object(jobgraph, target)
+function main(jobgraph, target, opt)
+    build_object(jobgraph, target, opt)
 end

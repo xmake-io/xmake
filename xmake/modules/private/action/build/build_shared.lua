@@ -21,6 +21,6 @@
 -- imports
 import("build_binary")
 
-function main(jobgraph, target)
-    build_binary(jobgraph, target)
+function main(jobgraph, target, opt)
+    build_binary(jobgraph, target, opt)
 end

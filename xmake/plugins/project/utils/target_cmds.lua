@@ -122,3 +122,50 @@ function prepare_targets()
     target_buildutils.run_targetjobs(targets_root, {job_kind = "prepare"})
 end
 
+-- get target buildcmds
+function get_target_buildcmds(target, opt)
+    opt = opt or {}
+    local progress_wrapper = {}
+    progress_wrapper.current = function ()
+        return count
+    end
+    progress_wrapper.total = function ()
+        return total
+    end
+    progress_wrapper.percent = function ()
+        if total and total > 0 then
+            return math.floor((count * 100) / total)
+        else
+            return 0
+        end
+    end
+    debug.setmetatable(progress_wrapper, {
+        __tostring = function ()
+            -- we do not output any progress info for the project generators
+            return ""
+        end
+    })
+    local buildcmds = batchcmds.new({target = target})
+    local jobgraph = target_buildutils.get_targetjobs({target}, {
+        job_kind = "build",
+        buildcmds = buildcmds,
+        with_stages = hashset.from(opt.stages or {}),
+        ignored_rules = hashset.from(opt.ignored_rules or {}),
+        progress = progress_wrapper})
+    if jobgraph and not jobgraph:empty() then
+        local jobqueue = jobgraph:build()
+        while true do
+            local job = jobqueue:getfree()
+            if job then
+                if job.run then
+                    job.run()
+                end
+                jobqueue:remove(job)
+            else
+                break
+            end
+        end
+    end
+    return buildcmds:cmds()
+end
+

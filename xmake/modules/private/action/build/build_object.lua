@@ -21,6 +21,6 @@
 -- imports
 import("private.action.build.target", {alias = "target_buildutils"})
 
-function main(jobgraph, target)
-    target_buildutils.add_filejobs(jobgraph, target, {job_kind = "build"})
+function main(jobgraph, target, opt)
+    target_buildutils.add_filejobs(jobgraph, target, opt)
 end

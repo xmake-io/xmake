@@ -119,14 +119,16 @@ function _add_targetjobs_orders(jobgraph, target, dep, opt)
 end
 
 -- add target jobs for the builtin script
-function add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
+function add_targetjobs_for_builtin_script(jobgraph, target, opt)
+    opt = opt or {}
+    local job_kind = opt.job_kind
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
         if job_kind == "prepare" then
-            import("private.action.build.prepare_files", {anonymous = true})(jobgraph, target)
+            import("private.action.build.prepare_files", {anonymous = true})(jobgraph, target, opt)
         elseif job_kind == "link" then
-            import("private.action.build.link_objects", {anonymous = true})(jobgraph, target)
+            import("private.action.build.link_objects", {anonymous = true})(jobgraph, target, opt)
         else
-            import("private.action.build.build_" .. target:kind(), {anonymous = true})(jobgraph, target)
+            import("private.action.build.build_" .. target:kind(), {anonymous = true})(jobgraph, target, opt)
         end
     end
 end
@@ -135,6 +137,7 @@ end
 function add_targetjobs_for_script(jobgraph, target, instance, opt)
     opt = opt or {}
     local has_script = false
+    local buildcmds = opt.buildcmds
     local job_prefix = target:fullname()
     if target == instance then
         job_prefix = job_prefix .. "/target"
@@ -143,7 +146,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
     end
 
     -- call script
-    if not has_script then
+    if not has_script and not buildcmds then
         local script_name = opt.script_name
         local script = instance:script(script_name)
         if script then
@@ -185,9 +188,14 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
         if scriptcmd then
             local jobname = string.format("%s/%s", job_prefix, scriptcmd_name)
             jobgraph:add(jobname, function (index, total, opt)
-                local batchcmds_ = batchcmds.new({target = target})
-                scriptcmd(target, batchcmds_, {progress = opt.progress})
-                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+                if buildcmds then
+                    -- only generate cmds and do not run them, use cases: e.g. project generator
+                    scriptcmd(target, buildcmds, {progress = opt.progress})
+                else
+                    local batchcmds_ = batchcmds.new({target = target})
+                    scriptcmd(target, batchcmds_, {progress = opt.progress})
+                    batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+                end
             end)
             has_script = true
         end
@@ -220,7 +228,8 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
         local has_script = false
         local script_opt = {
             script_name = script_name,
-            scriptcmd_name = scriptcmd_name
+            scriptcmd_name = scriptcmd_name,
+            buildcmds = opt.buildcmds
         }
         for _, instance in ipairs(instances) do
             -- we need to use this group to sort rule scripts with add_orders
@@ -238,7 +247,7 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
 
         -- call builtin script, e.g. on_prepare, on_build, ...
         if not has_script and stage == "" then
-            add_targetjobs_for_builtin_script(jobgraph, target, job_kind)
+            add_targetjobs_for_builtin_script(jobgraph, target, opt)
         end
     end)
 
@@ -265,10 +274,15 @@ function add_targetjobs(jobgraph, target, opt)
         _g.pkgenvs = pkgenvs
     end
 
+    local buildcmds = opt.buildcmds
     local job_kind = opt.job_kind
     local job_begin = string.format("%s/begin_%s", target:fullname(), job_kind)
     local job_end = string.format("%s/end_%s", target:fullname(), job_kind)
     jobgraph:add(job_begin, function (index, total, opt)
+        if buildcmds then
+            return
+        end
+
         -- enter package environments
         -- https://github.com/xmake-io/xmake/issues/4033
         --
@@ -293,6 +307,10 @@ function add_targetjobs(jobgraph, target, opt)
     end)
 
     jobgraph:add(job_end, function (index, total, opt)
+        if buildcmds then
+            return
+        end
+
         -- restore environments
         if target:pkgenvs() then
             pkgenvs.oldenvs = pkgenvs.oldenvs or os.getenvs()
@@ -307,9 +325,17 @@ function add_targetjobs(jobgraph, target, opt)
     end)
 
     -- add jobs with target stage, e.g. begin -> before_xxx -> on_xxx -> after_xxx
-    local group        = add_targetjobs_with_stage(jobgraph, target, "", opt)
-    local group_before = add_targetjobs_with_stage(jobgraph, target, "before", opt)
-    local group_after  = add_targetjobs_with_stage(jobgraph, target, "after", opt)
+    local with_stages = opt.with_stages
+    local group, group_before, group_after
+    if not with_stages or with_stages:has("on") then
+        group = add_targetjobs_with_stage(jobgraph, target, "", opt)
+    end
+    if not with_stages or with_stages:has("before") then
+        group_before = add_targetjobs_with_stage(jobgraph, target, "before", opt)
+    end
+    if not with_stages or with_stages:has("after") then
+        group_after = add_targetjobs_with_stage(jobgraph, target, "after", opt)
+    end
     jobgraph:add_orders(job_begin, group_before, group, group_after, job_end)
 end
 
@@ -341,6 +367,7 @@ end
 function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
     opt = opt or {}
     local has_script = false
+    local buildcmds = opt.buildcmds
     local job_prefix = target:fullname()
     local file_group = sourcebatch.rulename
     if target == instance then
@@ -350,7 +377,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
     end
 
     -- call script files
-    if not has_script then
+    if not has_script and not buildcmds then
         local script_files_name = opt.script_files_name
         local script_files = instance:script(script_files_name)
         if script_files then
@@ -383,7 +410,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
     end
 
     -- call script file
-    if not has_script then
+    if not has_script and not buildcmds then
         local script_file_name = opt.script_file_name
         local script_file = instance:script(script_file_name)
         if script_file then
@@ -434,9 +461,14 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
             local distcc = instance:extraconf(scriptcmd_files_name, "distcc")
             local jobname = string.format("%s/%s", job_prefix, scriptcmd_files_name)
             jobgraph:add(jobname, function (index, total, opt)
-                local batchcmds_ = batchcmds.new({target = target})
-                scriptcmd_files(target, batchcmds_, sourcebatch, {progress = opt.progress, distcc = distcc})
-                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+                -- only generate cmds and do not run them, use cases: e.g. project generator
+                if buildcmds then
+                    scriptcmd_files(target, buildcmds, sourcebatch, {progress = opt.progress})
+                else
+                    local batchcmds_ = batchcmds.new({target = target})
+                    scriptcmd_files(target, batchcmds_, sourcebatch, {progress = opt.progress, distcc = distcc})
+                    batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+                end
             end)
             has_script = true
         end
@@ -455,12 +487,20 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
             local distcc = instance:extraconf(scriptcmd_file_name, "distcc")
             local jobname = string.format("%s/%s", job_prefix, scriptcmd_file_name)
             jobgraph:add(jobname, function (index, total, opt)
-                local batchcmds_ = batchcmds.new({target = target})
-                local sourcekind = sourcebatch.sourcekind
-                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                    scriptcmd_file(target, batchcmds_, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
+                -- only generate cmds and do not run them, use cases: e.g. project generator
+                if buildcmds then
+                    local sourcekind = sourcebatch.sourcekind
+                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        scriptcmd_file(target, buildcmds, sourcefile, {sourcekind = sourcekind})
+                    end
+                else
+                    local batchcmds_ = batchcmds.new({target = target})
+                    local sourcekind = sourcebatch.sourcekind
+                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        scriptcmd_file(target, batchcmds_, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
+                    end
+                    batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
                 end
-                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
             end)
             has_script = true
         end
@@ -473,6 +513,7 @@ end
 --
 function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     opt = opt or {}
+    local buildcmds = opt.buildcmds
     local job_kind = opt.job_kind
     local job_kind_file = job_kind .. "_file"
     local job_kind_files = job_kind .. "_files"
@@ -523,7 +564,8 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
             script_file_name = script_file_name,
             script_files_name = script_files_name,
             scriptcmd_file_name = scriptcmd_file_name,
-            scriptcmd_files_name = scriptcmd_files_name
+            scriptcmd_files_name = scriptcmd_files_name,
+            buildcmds = buildcmds
         }
         local has_target_script = false
         for _, instance in ipairs(instances) do
@@ -575,9 +617,17 @@ function add_filejobs(jobgraph, target, opt)
     end
 
     -- add file jobs with target stage, e.g. before_xxx_files -> on_xxx_files -> after_xxx_files
-    local group        = add_filejobs_with_stage(jobgraph, target, sourcebatches, "", opt)
-    local group_before = add_filejobs_with_stage(jobgraph, target, sourcebatches, "before", opt)
-    local group_after  = add_filejobs_with_stage(jobgraph, target, sourcebatches, "after", opt)
+    local with_stages = opt.with_stages
+    local group, group_before, group_after
+    if not with_stages or with_stages:has("on") then
+        group = add_filejobs_with_stage(jobgraph, target, sourcebatches, "", opt)
+    end
+    if not with_stages or with_stages:has("before") then
+        group_before = add_filejobs_with_stage(jobgraph, target, sourcebatches, "before", opt)
+    end
+    if not with_stages or with_stages:has("after") then
+        group_after = add_filejobs_with_stage(jobgraph, target, sourcebatches, "after", opt)
+    end
     jobgraph:add_orders(group_before, group, group_after)
 end
 
@@ -608,9 +658,17 @@ end
 function add_linkjobs(jobgraph, target, opt)
     opt = opt or {}
     opt.job_kind = "link"
-    local group        = add_targetjobs_with_stage(jobgraph, target, "", opt)
-    local group_before = add_targetjobs_with_stage(jobgraph, target, "before", opt)
-    local group_after  = add_targetjobs_with_stage(jobgraph, target, "after", opt)
+    local with_stages = opt.with_stages
+    local group, group_before, group_after
+    if not with_stages or with_stages:has("on") then
+        group = add_targetjobs_with_stage(jobgraph, target, "", opt)
+    end
+    if not with_stages or with_stages:has("before") then
+        group_before = add_targetjobs_with_stage(jobgraph, target, "before", opt)
+    end
+    if not with_stages or with_stages:has("after") then
+        group_after = add_targetjobs_with_stage(jobgraph, target, "after", opt)
+    end
     jobgraph:add_orders(group_before, group, group_after)
 end
 

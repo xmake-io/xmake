@@ -29,7 +29,6 @@ import("core.project.rule")
 import("core.platform.platform")
 import("lib.detect.find_tool")
 import("private.utils.batchcmds")
-import("private.utils.rule_groups")
 import("private.utils.target", {alias = "target_utils"})
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 import("rules.c++.modules.modules_support.compiler_support", {alias = "module_compiler_support", rootdir = os.programdir()})
@@ -1201,9 +1200,6 @@ end
 -- add target custom commands
 function _add_target_custom_commands(cmakelists, target, outputdir)
 
-    -- build sourcebatch groups first
-    local sourcegroups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
-
     -- ignore c++ modules rules
     local ignored_rules
     if _can_native_support_for_cxxmodules() then
@@ -1212,17 +1208,12 @@ function _add_target_custom_commands(cmakelists, target, outputdir)
 
     -- add before commands
     -- we use irpairs(groups), because the last group that should be given the highest priority.
-    local cmds_before = {}
-    target_cmds.get_target_buildcmd(target, cmds_before, {suffix = "before", ignored_rules = ignored_rules})
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, {suffix = "before", ignored_rules = ignored_rules})
     -- rule.on_buildcmd_files should also be executed before building the target, as cmake PRE_BUILD does not work.
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, {ignored_rules = ignored_rules})
+    local cmds_before = target_cmds.get_target_buildcmds(target, {ignored_rules = ignored_rules, stages = {"before", "on"}})
     _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, "before", cmds_before)
 
     -- add after commands
-    local cmds_after = {}
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_after, sourcegroups, {suffix = "after", ignored_rules = ignored_rules})
-    target_cmds.get_target_buildcmd(target, cmds_after, {suffix = "after", ignored_rules = ignored_rules})
+    local cmds_after = target_cmds.get_target_buildcmds(target, {ignored_rules = ignored_rules, stages = {"after"}})
     _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, "after", cmds_after)
 end
 

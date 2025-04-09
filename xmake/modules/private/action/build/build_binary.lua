@@ -22,16 +22,16 @@
 import("build_object")
 import("private.action.build.target", {alias = "target_buildutils"})
 
-function main(jobgraph, target)
+function main(jobgraph, target, opt)
     local objects_group = target:fullname() .. "/objects"
     local jobsize = jobgraph:size()
     jobgraph:group(objects_group, function ()
-        build_object(jobgraph, target)
+        build_object(jobgraph, target, opt)
     end)
     if jobgraph:size() > jobsize then
         local link_group = target:fullname() .. "/link"
         jobgraph:group(link_group, function ()
-            target_buildutils.add_linkjobs(jobgraph, target)
+            target_buildutils.add_linkjobs(jobgraph, target, opt)
         end)
         jobgraph:add_orders(objects_group, link_group)
     end

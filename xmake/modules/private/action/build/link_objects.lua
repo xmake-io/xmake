@@ -60,9 +60,13 @@ function _do_link_target(target, opt)
           values = depvalues, files = depfiles, dryrun = dryrun})
 end
 
-function main(jobgraph, target)
+function main(jobgraph, target, opt)
+    opt = opt or {}
+    local buildcmds = opt.buildcmds
     local linkjob = target:fullname() .. "/link_objects"
     jobgraph:add(linkjob, function (index, total, opt)
-        _do_link_target(target, opt)
+        if not buildcmds then
+            _do_link_target(target, opt)
+        end
     end)
 end
