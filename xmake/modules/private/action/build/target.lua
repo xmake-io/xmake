@@ -208,6 +208,7 @@ end
 function add_targetjobs_with_stage(jobgraph, target, stage, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
+    local ignored_rules = opt.ignored_rules
 
     -- the group name, e.g. foo/after_prepare, bar/before_build
     local group_name = string.format("%s/%s_%s", target:fullname(), stage ~= "" and stage or "on", job_kind)
@@ -220,8 +221,11 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
 
     -- call target and rules script
     local instances = {target}
-    for _, r in ipairs(target:orderules()) do
-        table.insert(instances, r)
+    for _, ruleinst in ipairs(target:orderules()) do
+        -- we only ignore some builtin rules, so we need not to use fullname.
+        if not ignored_rules or not ignored_rules:has(ruleinst:name()) then
+            table.insert(instances, ruleinst)
+        end
     end
     local jobsize = jobgraph:size()
     jobgraph:group(group_name, function ()
@@ -491,7 +495,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 if buildcmds then
                     local sourcekind = sourcebatch.sourcekind
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        scriptcmd_file(target, buildcmds, sourcefile, {sourcekind = sourcekind})
+                        scriptcmd_file(target, buildcmds, sourcefile, {progress = opt.progress, sourcekind = sourcekind})
                     end
                 else
                     local batchcmds_ = batchcmds.new({target = target})
@@ -514,6 +518,7 @@ end
 function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     opt = opt or {}
     local buildcmds = opt.buildcmds
+    local ignored_rules = opt.ignored_rules
     local job_kind = opt.job_kind
     local job_kind_file = job_kind .. "_file"
     local job_kind_files = job_kind .. "_files"
@@ -538,20 +543,23 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
     for _, sourcebatch in pairs(sourcebatches) do
         local rulename = sourcebatch.rulename
         if rulename then
+            -- we only ignore some builtin rules, so we need not to use fullname.
             local ruleinst = rule_utils.get_rule(target, rulename)
-            sourcebatches_map[ruleinst] = sourcebatch
-            -- avoid duplicate scripts being called twice in the target,
-            -- we just build sourcebatch with on_build_files scripts
-            --
-            -- for example, c++.build and c++.build.modules.builder rules have same sourcefiles,
-            -- but we just build it for c++.build
-            --
-            -- @see https://github.com/xmake-io/xmake/issues/3171
-            --
-            if ruleinst:script("build_file") or ruleinst:script("build_files") then
-                table.insert(sourcebatches_for_target, sourcebatch)
+            if not ignored_rules or not ignored_rules:has(ruleinst:name()) then
+                sourcebatches_map[ruleinst] = sourcebatch
+                -- avoid duplicate scripts being called twice in the target,
+                -- we just build sourcebatch with on_build_files scripts
+                --
+                -- for example, c++.build and c++.build.modules.builder rules have same sourcefiles,
+                -- but we just build it for c++.build
+                --
+                -- @see https://github.com/xmake-io/xmake/issues/3171
+                --
+                if ruleinst:script("build_file") or ruleinst:script("build_files") then
+                    table.insert(sourcebatches_for_target, sourcebatch)
+                end
+                table.insert(instances, ruleinst)
             end
-            table.insert(instances, ruleinst)
         else
             table.insert(sourcebatches_for_target, sourcebatch)
         end

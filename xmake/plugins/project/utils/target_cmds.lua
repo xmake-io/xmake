@@ -150,17 +150,19 @@ function get_target_buildcmds(target, opt)
         job_kind = "build",
         buildcmds = buildcmds,
         with_stages = hashset.from(opt.stages or {}),
-        ignored_rules = hashset.from(opt.ignored_rules or {}),
-        progress = progress_wrapper})
+        ignored_rules = hashset.from(opt.ignored_rules or {})})
     if jobgraph and not jobgraph:empty() then
+        local total = jobgraph:size()
+        local index = 0
         local jobqueue = jobgraph:build()
         while true do
             local job = jobqueue:getfree()
             if job then
                 if job.run then
-                    job.run()
+                    job.run(index, total, {progress = progress_wrapper})
                 end
                 jobqueue:remove(job)
+                index = index + 1
             else
                 break
             end
