@@ -27,7 +27,6 @@ import("core.project.project")
 import("core.language.language")
 import("private.utils.batchcmds")
 import("private.utils.executable_path")
-import("private.utils.rule_groups")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 import("actions.test.main", {rootdir = os.programdir(), alias = "test_action"})
 
@@ -242,25 +241,16 @@ end
 -- add target commands
 function _add_target_commands(jsonfile, target)
 
-    -- build sourcebatch groups first
-    local sourcegroups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
-
     -- add before commands
     -- we use irpairs(groups), because the last group that should be given the highest priority.
-    local cmds_before = {}
-    target_cmds.get_target_buildcmd(target, cmds_before, {suffix = "before"})
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, {suffix = "before"})
-    -- rule.on_buildcmd_files should also be executed before building the target, as cmake PRE_BUILD does not work.
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups)
+    local cmds_before = target_cmds.get_target_buildcmds(target, {stages = {"before", "on"}})
     _add_target_custom_commands(jsonfile, target, "before", cmds_before)
 
     -- add target source commands
     _add_target_source_commands(jsonfile, target)
 
     -- add after commands
-    local cmds_after = {}
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_after, sourcegroups, {suffix = "after"})
-    target_cmds.get_target_buildcmd(target, cmds_after, {suffix = "after"})
+    local cmds_after = target_cmds.get_target_buildcmds(target, {stages = {"after"}})
     _add_target_custom_commands(jsonfile, target, "after", cmds_after)
 end
 
