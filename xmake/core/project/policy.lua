@@ -97,7 +97,7 @@ function policy.policies()
             -- Enable windows UAC and set level, e.g. invoker, admin, highest
             ["windows.manifest.uac"]              = {description = "Enable windows manifest UAC.", type = "string"},
             -- Enable ui access for windows UAC
-            ["windows.manifest.uac.ui"]           = {description = "Enable windows manifest UAC.", type = "boolean"},
+            ["windows.manifest.uac.ui"]           = {description = "Enable ui access for windows UAC.", type = "boolean"},
             -- Automatically build before running
             ["run.autobuild"]                     = {description = "Automatically build before running.", type = "boolean"},
             -- Enable install rpath
