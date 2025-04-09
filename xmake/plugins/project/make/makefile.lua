@@ -27,7 +27,6 @@ import("core.language.language")
 import("core.platform.platform")
 import("lib.detect.find_tool")
 import("private.utils.batchcmds")
-import("private.utils.rule_groups")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 
 -- tranlate path
@@ -469,14 +468,11 @@ function _add_build_phony(makefile, target)
 end
 
 -- add custom commands before building target
-function _add_build_custom_commands_before(makefile, target, sourcegroups, outputdir)
+function _add_build_custom_commands_before(makefile, target, outputdir)
 
     -- add before commands
     -- we use irpairs(groups), because the last group that should be given the highest priority.
-    local cmds_before = {}
-    target_cmds.get_target_buildcmd(target, cmds_before, {suffix = "before"})
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, {suffix = "before"})
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups)
+    local cmds_before = target_cmds.get_target_buildcmds(target, {stages = {"before", "on"}})
 
     local targetname = target:name()
     local label = "precmds_" .. targetname
@@ -494,10 +490,8 @@ function _add_build_custom_commands_before(makefile, target, sourcegroups, outpu
 end
 
 -- add custom commands after building target
-function _add_build_custom_commands_after(makefile, target, sourcegroups, outputdir)
-    local cmds_after = {}
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_after, sourcegroups, {suffix = "after"})
-    target_cmds.get_target_buildcmd(target, cmds_after, {suffix = "after"})
+function _add_build_custom_commands_after(makefile, target, outputdir)
+    local cmds_after = target_cmds.get_target_buildcmds(target, {stages = {"after"}})
     if #cmds_after > 0 then
         for _, cmd in ipairs(cmds_after) do
             local command = _get_command_string(cmd, outputdir)
@@ -514,11 +508,8 @@ function _add_build_target(makefile, target, targetflags, outputdir)
     -- https://github.com/xmake-io/xmake/issues/2337
     target:data_set("plugin.project.kind", "makefile")
 
-    -- build sourcebatch groups first
-    local sourcegroups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
-
     -- add custom commands before building target
-    local precmds_label = _add_build_custom_commands_before(makefile, target, sourcegroups, outputdir)
+    local precmds_label = _add_build_custom_commands_before(makefile, target, outputdir)
 
     -- is phony target?
     if target:is_phony() then
@@ -602,7 +593,7 @@ function _add_build_target(makefile, target, targetflags, outputdir)
     makefile:writef("\t$(VV)%s\n", command)
 
     -- add custom commands after building target
-    _add_build_custom_commands_after(makefile, target, sourcegroups, outputdir)
+    _add_build_custom_commands_after(makefile, target, outputdir)
 
     -- end
     makefile:print("")
