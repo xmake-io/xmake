@@ -61,6 +61,18 @@ function _instance:_build_deps()
     self._DEPS      = self._DEPS or {}
     self._ORDERDEPS = self._ORDERDEPS or {}
     instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:fullname()})
+
+    -- compatible with `add_deps("foo", {order = true})`
+    local plaindeps = self:get("deps")
+    if plaindeps then
+        for _, depname in ipairs(table.wrap(plaindeps)) do
+            if self:extraconf("deps", depname, "order") then
+                self:add("orders", depname, self:name())
+                utils.warning("add_deps(%s, {order = true}) has been deprecated, please use `add_orders(%s, %s) instead of it`",
+                    depname, depname, self:name())
+            end
+        end
+    end
 end
 
 -- clone rule
@@ -280,6 +292,11 @@ function rule.apis()
         ,   "rule.add_deps"
         ,   "rule.add_imports"
         }
+    ,   groups =
+        {
+            -- rule.add_xxx
+           "rule.add_orders"
+        }
     ,   script =
         {
             -- rule.on_xxx
@@ -287,6 +304,9 @@ function rule.apis()
         ,   "rule.on_test"
         ,   "rule.on_load"
         ,   "rule.on_config"
+        ,   "rule.on_prepare"
+        ,   "rule.on_prepare_file"
+        ,   "rule.on_prepare_files"
         ,   "rule.on_link"
         ,   "rule.on_build"
         ,   "rule.on_build_file"
@@ -294,18 +314,24 @@ function rule.apis()
         ,   "rule.on_clean"
         ,   "rule.on_package"
         ,   "rule.on_install"
-        ,   "rule.on_installcmd"
         ,   "rule.on_uninstall"
-        ,   "rule.on_uninstallcmd"
+        ,   "rule.on_preparecmd"
+        ,   "rule.on_preparecmd_file"
+        ,   "rule.on_preparecmd_files"
         ,   "rule.on_linkcmd"
         ,   "rule.on_buildcmd"
         ,   "rule.on_buildcmd_file"
         ,   "rule.on_buildcmd_files"
+        ,   "rule.on_installcmd"
+        ,   "rule.on_uninstallcmd"
             -- rule.before_xxx
         ,   "rule.before_run"
         ,   "rule.before_test"
         ,   "rule.before_load"
         ,   "rule.before_config"
+        ,   "rule.before_prepare"
+        ,   "rule.before_prepare_file"
+        ,   "rule.before_prepare_files"
         ,   "rule.before_link"
         ,   "rule.before_build"
         ,   "rule.before_build_file"
@@ -313,18 +339,24 @@ function rule.apis()
         ,   "rule.before_clean"
         ,   "rule.before_package"
         ,   "rule.before_install"
-        ,   "rule.before_installcmd"
         ,   "rule.before_uninstall"
-        ,   "rule.before_uninstallcmd"
+        ,   "rule.before_preparecmd"
+        ,   "rule.before_preparecmd_file"
+        ,   "rule.before_preparecmd_files"
         ,   "rule.before_linkcmd"
         ,   "rule.before_buildcmd"
         ,   "rule.before_buildcmd_file"
         ,   "rule.before_buildcmd_files"
+        ,   "rule.before_installcmd"
+        ,   "rule.before_uninstallcmd"
             -- rule.after_xxx
         ,   "rule.after_run"
         ,   "rule.after_test"
         ,   "rule.after_load"
         ,   "rule.after_config"
+        ,   "rule.after_prepare"
+        ,   "rule.after_prepare_file"
+        ,   "rule.after_prepare_files"
         ,   "rule.after_link"
         ,   "rule.after_build"
         ,   "rule.after_build_file"
@@ -332,13 +364,16 @@ function rule.apis()
         ,   "rule.after_clean"
         ,   "rule.after_package"
         ,   "rule.after_install"
-        ,   "rule.after_installcmd"
         ,   "rule.after_uninstall"
-        ,   "rule.after_uninstallcmd"
+        ,   "rule.after_preparecmd"
+        ,   "rule.after_preparecmd_file"
+        ,   "rule.after_preparecmd_files"
         ,   "rule.after_linkcmd"
         ,   "rule.after_buildcmd"
         ,   "rule.after_buildcmd_file"
         ,   "rule.after_buildcmd_files"
+        ,   "rule.after_installcmd"
+        ,   "rule.after_uninstallcmd"
         }
     }
 end

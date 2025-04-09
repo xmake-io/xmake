@@ -25,7 +25,7 @@ import("core.project.config")
 import("core.project.project")
 import("async.runjobs")
 import("private.utils.batchcmds")
-import("private.utils.rule_groups")
+import("rule_groups")
 
 -- has scripts for the custom rule
 function _has_scripts_for_rule(ruleinst, suffix)

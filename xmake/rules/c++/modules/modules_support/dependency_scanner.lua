@@ -202,9 +202,8 @@ function _get_edges(nodes, modules)
   return edges
 end
 
-function _get_package_modules(target, package, opt)
+function _get_package_modules(target, package)
     local package_modules
-
     local modulesdir = path.join(package:installdir(), "modules")
     local metafiles = os.files(path.join(modulesdir, "*", "*.meta-info"))
     for _, metafile in ipairs(metafiles) do
@@ -213,42 +212,39 @@ function _get_package_modules(target, package, opt)
         local moduleonly = not package:libraryfiles()
         package_modules[name] = {file = path.join(modulesdir, modulefile), metadata = metadata, external = {moduleonly = moduleonly}}
     end
-
     return package_modules
 end
 
--- generate dependency files
-function _generate_dependencies(target, sourcebatch, opt)
-    local changed = false
-    if opt.batchjobs then
-        local jobs = option.get("jobs") or os.default_njob()
-        runjobs(target:name() .. "_module_dependency_scanner", function(index) 
-            local sourcefile = sourcebatch.sourcefiles[index]
-            changed = _dependency_scanner(target).generate_dependency_for(target, sourcefile, opt) or changed
-        end, {comax = jobs, total = #sourcebatch.sourcefiles})
-    else
-        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            changed = _dependency_scanner(target).generate_dependency_for(target, sourcefile, opt) or changed
-        end
-    end
-    return changed
-end
--- get module dependencies
-function get_module_dependencies(target, sourcebatch, opt)
-    local cachekey = target:name() .. "/" .. sourcebatch.rulename
-    local modules = compiler_support.memcache():get2("modules", cachekey)
-    if modules == nil then
-        modules = compiler_support.localcache():get2("modules", cachekey)
-        opt.progress = opt.progress or 0
-        local changed = _generate_dependencies(target, sourcebatch, opt)
-        if changed or modules == nil then
+-- generate module dependencies
+function generate_module_dependencies(target, jobgraph, sourcebatch, opt)
+    local parsejob = target:fullname() .. "/parse_module_dependencies"
+    jobgraph:add(parsejob, function (index, total, opt)
+        local changed = compiler_support.memcache():get2("modules", "dependencies_changed")
+        if changed then
+            local cachekey = target:fullname() .. "/" .. sourcebatch.rulename
             local moduleinfos = compiler_support.load_moduleinfos(target, sourcebatch)
-            modules = _parse_dependencies_data(target, moduleinfos)
+            local modules = _parse_dependencies_data(target, moduleinfos)
             compiler_support.localcache():set2("modules", cachekey, modules)
             compiler_support.localcache():save()
         end
-        compiler_support.memcache():set2("modules", cachekey, modules)
+    end)
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        local jobname = target:fullname() .. "/generate_module_dependencies/" .. sourcefile
+        jobgraph:add(jobname, function (index, total, opt)
+            local changed = _dependency_scanner(target).generate_dependency_for(target, sourcefile, opt)
+            if changed then
+                compiler_support.memcache():set2("modules", "dependencies_changed", true)
+            end
+        end)
+        jobgraph:add_orders(jobname, parsejob)
     end
+end
+
+-- get module dependencies
+function get_module_dependencies(target, sourcebatch)
+    local cachekey = target:fullname() .. "/" .. sourcebatch.rulename
+    local modules = compiler_support.localcache():get2("modules", cachekey)
+    assert(modules, "no module dependencies!")
     return modules
 end
 
@@ -387,7 +383,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
 end
 
 -- extract packages modules dependencies
-function get_all_packages_modules(target, opt)
+function get_all_packages_modules(target)
 
     -- parse all meta-info and append their informations to the package store
     local packages = target:pkgs() or {}
@@ -397,7 +393,7 @@ function get_all_packages_modules(target, opt)
 
     local packages_modules
     for _, package in table.orderpairs(packages) do
-        local package_modules = _get_package_modules(target, package, opt)
+        local package_modules = _get_package_modules(target, package)
         if package_modules then
            packages_modules = packages_modules or {}
            table.join2(packages_modules, package_modules)
@@ -415,19 +411,21 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
     for _, e in ipairs(edges) do
         dag:add_edge(e[1], e[2])
     end
-    local cycle = dag:find_cycle()
-    if cycle then
-        local names = {}
-        for _, objectfile in ipairs(cycle) do
-            local name, _, cppfile = compiler_support.get_provided_module(modules[objectfile])
+    local objectfiles_sorted, has_cycle = dag:topo_sort()
+    if has_cycle then
+        local cycle = dag:find_cycle()
+        if cycle then
+            local names = {}
+            for _, objectfile in ipairs(cycle) do
+                local name, _, cppfile = compiler_support.get_provided_module(modules[objectfile])
+                table.insert(names, name or cppfile)
+            end
+            local name, _, cppfile = compiler_support.get_provided_module(modules[cycle[1]])
             table.insert(names, name or cppfile)
+            raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
         end
-        local name, _, cppfile = compiler_support.get_provided_module(modules[cycle[1]])
-        table.insert(names, name or cppfile)
-        raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
     end
-
-    local objectfiles_sorted = table.reverse(dag:topological_sort())
+    objectfiles_sorted = table.reverse(objectfiles_sorted)
     local objectfiles_sorted_set = hashset.from(objectfiles_sorted)
     for _, objectfile in ipairs(objectfiles) do
         if not objectfiles_sorted_set:has(objectfile) then
@@ -465,7 +463,7 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
                 end
             end
         end
-        if insert then 
+        if insert then
             table.insert(build_objectfiles, objectfile)
             table.insert(link_objectfiles, objectfile)
         elseif external and not external.from_moduleonly then
@@ -474,8 +472,8 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
             objectfiles_sorted_set:remove(objectfile)
             if name ~= "std" and name ~= "std.compat" then
                 culleds = culleds or {}
-                culleds[target:name()] = culleds[target:name()] or {}
-                table.insert(culleds[target:name()], format("%s -> %s", name, cppfile))
+                culleds[target:fullname()] = culleds[target:fullname()] or {}
+                table.insert(culleds[target:fullname()], format("%s -> %s", name, cppfile))
             end
         end
     end

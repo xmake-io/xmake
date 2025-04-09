@@ -20,7 +20,7 @@
 
 rule("qt.moc")
     add_deps("qt.env")
-    add_deps("qt.ui", {order = true})
+    add_orders("qt.ui", "qt.moc")
     set_extensions(".h", ".hpp")
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
         import("core.tool.compiler")

@@ -21,7 +21,7 @@
 -- define rule: lex
 rule("lex")
     add_deps("c++")
-    add_deps("yacc", {order = true})
+    add_orders("yacc", "lex")
     set_extensions(".l", ".ll")
     before_buildcmd_file(function (target, batchcmds, sourcefile_lex, opt)
 

@@ -20,6 +20,7 @@
 
 rule("utils.bin2c")
     set_extensions(".bin")
+    add_orders("utils.bin2c", "c++.build.modules.builder")
     on_load(function (target)
         local headerdir = path.join(target:autogendir(), "rules", "utils", "bin2c")
         if not os.isdir(headerdir) then
@@ -27,7 +28,7 @@ rule("utils.bin2c")
         end
         target:add("includedirs", headerdir)
     end)
-    before_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
+    on_preparecmd_file(function (target, batchcmds, sourcefile_bin, opt)
 
         -- get header file
         local headerdir = path.join(target:autogendir(), "rules", "utils", "bin2c")

@@ -28,6 +28,7 @@ import("core.tool.compiler")
 import("lib.detect.find_tool")
 import("lib.detect.find_toolname")
 import("core.tools.cl.parse_include")
+import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 
 -- this sourcebatch is built?
 function _sourcebatch_is_built(sourcebatch)
@@ -449,9 +450,10 @@ function _add_build_for_targets(ninjafile, outputdir)
 end
 
 function make(outputdir)
-
-    -- enter project directory
     local oldir = os.cd(os.projectdir())
+
+    -- prepare targets
+    target_cmds.prepare_targets()
 
     -- open the build.ninja file
     --
@@ -474,8 +476,6 @@ function make(outputdir)
 
     -- close the ninjafile
     ninjafile:close()
-
-    -- leave project directory
     os.cd(oldir)
 end
 

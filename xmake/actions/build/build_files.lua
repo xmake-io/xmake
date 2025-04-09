@@ -23,131 +23,9 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
-import("private.async.jobpool")
-import("async.runjobs")
-import("kinds.object")
-
--- match source files
-function _match_sourcefiles(sourcefile, filepatterns)
-    for _, filepattern in ipairs(filepatterns) do
-        if sourcefile:match(filepattern.pattern) == sourcefile then
-            if filepattern.excludes then
-                if filepattern.rootdir and sourcefile:startswith(filepattern.rootdir) then
-                    sourcefile = sourcefile:sub(#filepattern.rootdir + 2)
-                end
-                for _, exclude in ipairs(filepattern.excludes) do
-                    if sourcefile:match(exclude) == sourcefile then
-                        return false
-                    end
-                end
-            end
-            return true
-        end
-    end
-end
-
--- add batch jobs
-function _add_batchjobs(batchjobs, rootjob, target, filepatterns)
-
-    local newbatches = {}
-    local sourcecount = 0
-    for rulename, sourcebatch in pairs(target:sourcebatches()) do
-        local objectfiles = sourcebatch.objectfiles
-        local dependfiles = sourcebatch.dependfiles
-        local sourcekind  = sourcebatch.sourcekind
-        for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            if _match_sourcefiles(sourcefile, filepatterns) then
-                local newbatch = newbatches[rulename]
-                if not newbatch then
-                    newbatch             = {}
-                    newbatch.sourcekind  = sourcekind
-                    newbatch.rulename    = rulename
-                    newbatch.sourcefiles = {}
-                end
-                table.insert(newbatch.sourcefiles, sourcefile)
-                if objectfiles then
-                    newbatch.objectfiles = newbatch.objectfiles or {}
-                    table.insert(newbatch.objectfiles, objectfiles[idx])
-                end
-                if dependfiles then
-                    newbatch.dependfiles = newbatch.dependfiles or {}
-                    table.insert(newbatch.dependfiles, dependfiles[idx])
-                end
-                newbatches[rulename] = newbatch
-                sourcecount = sourcecount + 1
-            end
-        end
-    end
-    if sourcecount > 0 then
-        return object.add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, newbatches)
-    end
-end
-
--- add batch jobs for the given target
-function _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
-
-    -- has been disabled?
-    if not target:is_enabled() then
-        return
-    end
-
-    -- add batch jobs for target
-    return _add_batchjobs(batchjobs, rootjob, target, filepatterns)
-end
-
--- add batch jobs for the given target and deps
-function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target, filepatterns)
-    local targetjob_ref = jobrefs[target:name()]
-    if targetjob_ref then
-        batchjobs:add(targetjob_ref, rootjob)
-    else
-        local targetjob, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
-        if targetjob and targetjob_root then
-            jobrefs[target:name()] = targetjob_root
-            if not option.get("shallow") then
-                for _, depname in ipairs(target:get("deps")) do
-                    _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs,
-                        project.target(depname, {namespace = target:namespace()}), filepatterns)
-                end
-            end
-        end
-    end
-end
-
--- get batch jobs
-function _get_batchjobs(targetname, group_pattern, filepatterns)
-
-    -- get root targets
-    local targets_root = {}
-    if targetname then
-        table.insert(targets_root, project.target(targetname))
-    else
-        local depset = hashset.new()
-        local targets = {}
-        for _, target in pairs(project.targets()) do
-            local group = target:get("group")
-            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                for _, depname in ipairs(target:get("deps")) do
-                    depset:insert(depname)
-                end
-                table.insert(targets, target)
-            end
-        end
-        for _, target in pairs(targets) do
-            if not depset:has(target:name()) then
-                table.insert(targets_root, target)
-            end
-        end
-    end
-
-    -- generate batch jobs for default or all targets
-    local jobrefs = {}
-    local batchjobs = jobpool.new()
-    for _, target in pairs(targets_root) do
-        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), jobrefs, target, filepatterns)
-    end
-    return batchjobs
-end
+import("private.service.distcc_build.client", {alias = "distcc_build_client"})
+import("private.action.build.target", {alias = "target_buildutils"})
+import("deprecated.build_files", {alias = "deprecated_build_files"})
 
 -- convert all sourcefiles to lua pattern
 function _get_file_patterns(sourcefiles)
@@ -193,20 +71,42 @@ function _get_file_patterns(sourcefiles)
     return patterns
 end
 
--- the main entry
-function main(targetname, group_pattern, sourcefiles)
+-- run prepare files jobs
+function _prepare_files(targets_root, opt)
+    opt = opt or {}
+    opt.job_kind = "prepare"
+    opt.progress_factor = 0.05
+    opt.filepatterns = _get_file_patterns(opt.sourcefiles)
+    target_buildutils.run_filejobs(targets_root, opt)
+end
 
-    -- convert all sourcefiles to lua pattern
-    local filepatterns = _get_file_patterns(sourcefiles)
+-- run build files jobs
+function _build_files(targets_root, opt)
+    opt = opt or {}
+    opt.job_kind = "build"
+    opt.progress_factor = 0.95
+    opt.filepatterns = _get_file_patterns(opt.sourcefiles)
+    if distcc_build_client.is_connected() then
+        opt.distcc = distcc_build_client.singleton()
+    end
+    if not target_buildutils.run_filejobs(targets_root, opt) then
+        wprint("%s not found!", opt.sourcefiles)
+    end
+end
 
-    -- build all jobs
-    local batchjobs = _get_batchjobs(targetname, group_pattern, filepatterns)
-    if batchjobs and batchjobs:size() > 0 then
-        local curdir = os.curdir()
-        runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1, curdir = curdir})
-        os.cd(curdir)
+function main(targetnames, opt)
+
+    -- get root targets
+    local targets_root = target_buildutils.get_root_targets(targetnames, opt)
+
+    -- prepare to build files
+    _prepare_files(targets_root, opt)
+
+    -- do build files
+    if project.policy("build.jobgraph") then
+        _build_files(targets_root, opt)
     else
-        wprint("%s not found!", sourcefiles)
+        deprecated_build_files(targets_root, opt)
     end
 end
 

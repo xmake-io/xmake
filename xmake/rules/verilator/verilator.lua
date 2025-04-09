@@ -207,7 +207,7 @@ endmodule]])
     os.rm(tmpdir)
 end
 
-function build_cppfiles(target, batchjobs, sourcebatch, opt)
+function build_cppfiles(target, jobgraph, sourcebatch, opt)
     local toolchain = assert(target:toolchain("verilator"), 'we need to set_toolchains("verilator") in target("%s")', target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
     local autogendir = path.join(target:autogendir(), "rules", "verilator")
@@ -261,7 +261,7 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
         table.insert(sourcebatch_cpp.objectfiles, objectfile)
         table.insert(sourcebatch_cpp.dependfiles, dependfile)
     end
-    build_objectfiles(target, batchjobs, sourcebatch_cpp, opt)
+    build_objectfiles(target, jobgraph, sourcebatch_cpp, opt)
 end
 
 function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
