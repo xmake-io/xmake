@@ -885,6 +885,7 @@ function project._init_default_policies()
         if semver.compare(compatibility_version, "3.0") >= 0 then
             policy.set_default("package.cmake_generator.ninja", true)
             policy.set_default("build.c++.msvc.runtime", "MD")
+            policy.set_default("run.autobuild", true)
         else
             policy.set_default("package.cmake_generator.ninja", false)
             policy.set_default("build.c++.msvc.runtime", "MT")
