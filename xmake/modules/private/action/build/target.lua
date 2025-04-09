@@ -664,7 +664,7 @@ end
 
 -- add link jobs for the given target
 function add_linkjobs(jobgraph, target, opt)
-    opt = opt or {}
+    opt = table.clone(opt or {})
     opt.job_kind = "link"
     local with_stages = opt.with_stages
     local group, group_before, group_after
