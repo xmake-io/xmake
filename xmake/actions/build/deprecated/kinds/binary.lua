@@ -27,7 +27,7 @@ import("core.project.depend")
 import("utils.progress")
 import("private.utils.batchcmds")
 import("object", {alias = "object_target"})
-import("..target_utils")
+import("private.utils.target", {alias = "target_utils"})
 
 -- do link target
 function _do_link_target(target, opt)
