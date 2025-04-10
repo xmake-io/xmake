@@ -160,7 +160,8 @@ function build_targets(targetnames, opt)
     _do_project_rules("build_after")
 end
 
-function main()
+function main(opt)
+    opt = opt or {}
 
     -- try building it using third-party buildsystem if xmake.lua not exists
     if not os.isfile(project.rootfile()) and _try_build() then
@@ -206,9 +207,11 @@ function main()
     project.unlock()
 
     -- trace
-    local str = ""
-    if build_time then
-        str = string.format(", spent %ss", build_time / 1000)
+    if not opt.disable_dump then
+        local str = ""
+        if build_time then
+            str = string.format(", spent %ss", build_time / 1000)
+        end
+        progress.show(100, "${color.success}build ok%s", str)
     end
-    progress.show(100, "${color.success}build ok%s", str)
 end

@@ -18,33 +18,23 @@
 -- @file        option.lua
 --
 
--- define module
-local sandbox_core_base_option = sandbox_core_base_option or {}
-
 -- load modules
 local table  = require("base/table")
 local option = require("base/option")
 local raise  = require("sandbox/modules/raise")
 
--- get the option value
-function sandbox_core_base_option.get(name)
-    return option.get(name)
-end
+-- define module
+local sandbox_core_base_option = sandbox_core_base_option or {}
 
--- set the option value
-function sandbox_core_base_option.set(name, value)
-    option.set(name, value)
-end
-
--- get the default option value
-function sandbox_core_base_option.default(name)
-    return option.default(name)
-end
-
--- get the given task menu
-function sandbox_core_base_option.taskmenu(taskname)
-    return option.taskmenu(taskname)
-end
+-- inherit some builtin interfaces
+sandbox_core_base_option.get      = option.get
+sandbox_core_base_option.set      = option.set
+sandbox_core_base_option.default  = option.default
+sandbox_core_base_option.save     = option.save
+sandbox_core_base_option.restore  = option.restore
+sandbox_core_base_option.boolean  = option.boolean
+sandbox_core_base_option.taskname = option.taskname
+sandbox_core_base_option.taskmenu = option.taskmenu
 
 -- get the options
 function sandbox_core_base_option.options()
@@ -68,8 +58,6 @@ end
 
 -- parse arguments with the given options
 function sandbox_core_base_option.raw_parse(argv, options, opt)
-
-    -- check
     assert(argv and options)
 
     -- parse it
@@ -82,8 +70,6 @@ end
 
 -- parse arguments with the given options
 function sandbox_core_base_option.parse(argv, options, ...)
-
-    -- check
     assert(argv and options)
 
     -- add common options
@@ -115,21 +101,6 @@ function sandbox_core_base_option.parse(argv, options, ...)
         results.help = show_help
     end
     return results
-end
-
--- save context
-function sandbox_core_base_option.save(taskname)
-    return option.save(taskname)
-end
-
--- restore context
-function sandbox_core_base_option.restore()
-    option.restore()
-end
-
--- get the boolean value
-function sandbox_core_base_option.boolean(value)
-    return option.boolean(value)
 end
 
 -- return module

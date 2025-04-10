@@ -51,8 +51,6 @@ function option._translate(menu)
 
     -- save menu
     option._MENU = menu
-
-    -- ok
     return true
 end
 
