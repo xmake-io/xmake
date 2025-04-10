@@ -81,6 +81,8 @@ function _find_package(cmake, name, opt)
     if moduledirs then
         for _, moduledir in ipairs(moduledirs) do
             cmakefile:print("list(APPEND CMAKE_MODULE_PATH \"%s\")", (moduledir:gsub("\\", "/")))
+            -- https://github.com/xmake-io/xmake/issues/6296
+            cmakefile:print("list(APPEND CMAKE_PREFIX_PATH \"%s\")", (moduledir:gsub("\\", "/")))
         end
     end
     -- e.g. set(Boost_USE_STATIC_LIB ON)
