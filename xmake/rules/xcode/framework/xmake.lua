@@ -78,7 +78,7 @@ rule("xcode.framework")
         end
     end)
 
-    after_build(function (target, opt)
+    after_link(function (target, opt)
 
         -- imports
         import("core.base.option")

@@ -85,9 +85,10 @@ end
 --  - https://clang.llvm.org/docs/JSONCompilationDatabase.html
 --
 function make(outputdir)
-
-    -- enter project directory
     local oldir = os.cd(os.projectdir())
+
+    -- prepare targets
+    target_cmds.prepare_targets()
 
     -- make all
     local flags = {}
@@ -100,6 +101,5 @@ function make(outputdir)
     end
     flagfile:close()
 
-    -- leave project directory
     os.cd(oldir)
 end

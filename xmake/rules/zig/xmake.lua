@@ -26,7 +26,7 @@ rule("zig.build")
         os.mkdir(cachedir)
         target:add("zcflags", "--cache-dir " .. cachedir)
     end)
-    on_build_files("private.action.build.object", {batch = true})
+    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
 
 -- define rule: zig
 rule("zig")

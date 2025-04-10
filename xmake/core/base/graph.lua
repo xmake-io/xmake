@@ -19,16 +19,19 @@
 --
 
 -- load modules
-local table = require("base/table")
-local object = require("base/object")
+local table   = require("base/table")
+local queue   = require("base/queue")
+local object  = require("base/object")
+local hashset = require("base/hashset")
+local utils   = require("base/utils")
 
 -- define module
 local graph = graph or object { _init = {"_directed"} } {true}
-local edge = edge or object { _init = {"_from", "_to", "_weight"} }
+local edge = edge or object { _init = {"_from", "_to"} }
 
 -- new edge, from -> to
-function edge.new(from, to, weight)
-    return edge {from, to, weight or 1.0}
+function edge.new(from, to)
+    return edge {from, to}
 end
 
 function edge:from()
@@ -47,8 +50,8 @@ function edge:other(v)
     end
 end
 
-function edge:weight()
-    return self._weight
+function edge:__tostring()
+    return string.format("<edge:%s-%s>", self:from(), self:to())
 end
 
 -- clear graph
@@ -56,6 +59,10 @@ function graph:clear()
     self._vertices = {}
     self._edges = {}
     self._adjacent_edges = {}
+    self._edges_map = {}
+
+    -- clear partial topological sort state
+    self:partial_topo_sort_reset()
 end
 
 -- is empty?
@@ -88,6 +95,17 @@ function graph:has_vertex(v)
     return table.contains(self:vertices(), v)
 end
 
+-- add an isolated without edges
+function graph:add_vertex(v)
+    if not self:has_vertex(v) then
+        table.insert(self._vertices, v)
+        self._adjacent_edges[v] = {}
+    end
+
+    -- reset partial topological sort state since graph structure changed
+    self._partial_topo_dirty = true
+end
+
 -- remove the given vertex?
 function graph:remove_vertex(v)
     local contains = false
@@ -98,45 +116,212 @@ function graph:remove_vertex(v)
         end
     end)
     if contains then
+        self._edges_map[v] = nil
         self._adjacent_edges[v] = nil
         -- remove the adjacent edge with this vertex in the other vertices
-        if not self:is_directed() then
-            for _, w in ipairs(self:vertices()) do
-                local edges = self:adjacent_edges(w)
-                if edges then
-                    table.remove_if(edges, function (_, e) return e:other(w) == v end)
-                end
+        for _, w in ipairs(self:vertices()) do
+            local edges = self:adjacent_edges(w)
+            if edges then
+                table.remove_if(edges, function (_, e)
+                    if e:other(w) == v then
+                        self._edges_map[w] = nil
+                        return true
+                    end
+                end)
             end
         end
+
+        -- reset partial topological sort state since graph structure changed
+        self._partial_topo_dirty = true
     end
 end
 
--- topological sort
-function graph:topological_sort()
-    local visited = {}
-    for _, v in ipairs(self:vertices()) do
-        visited[v] = false
+-- reset partial topological sort state
+function graph:partial_topo_sort_reset()
+    self._partial_topo_in_progress = false
+    self._partial_topo_in_degree = nil
+    self._partial_topo_queue = nil
+    self._partial_topo_processed = nil
+    self._partial_topo_finished = 0
+    self._partial_topo_has_cycle = nil
+    self._partial_topo_dirty = false
+end
+
+-- get next node in topological order
+--
+-- @param limit     the maximum number of nodes to return
+-- @return          array of nodes with zero in-degree, empty when complete
+-- @return          has_cycle indicates if a cycle was detected
+--
+-- @code
+--      dag:partial_topo_sort_reset()
+--
+--      local node, has_cycle
+--      local order_vertices = {}
+--      while true do
+--          node, has_cycle = dag:partial_topo_sort_next()
+--          if node then
+--              table.insert(order_vertices, node)
+--              dag:partial_topo_sort_remove(node)
+--          else
+--              if has_cycle then
+--                  -- find cycle
+--              end
+--              break
+--          end
+--      end
+-- @endcode
+--
+-- e.g.
+--
+-- edges: a (indegree: 0) -> b -> c
+--
+-- add_edge(a, b)
+-- add_edge(b, c)
+--
+-- local node1, has_cycle = g:partial_topo_sort_next() -- return a
+-- local node2, has_cycle = g:partial_topo_sort_next() -- return b
+-- local node3, has_cycle = g:partial_topo_sort_next() -- return c
+-- local node4, has_cycle = g:partial_topo_sort_next() -- return nil (empty, all done)
+--
+function graph:partial_topo_sort_next()
+
+    -- recompute all nodes if has dirty nodes
+    if self._partial_topo_dirty then
+        self:_partial_topo_sort_recompute_dirty()
     end
-    local order_vertices = {}
-    local function dfs(v)
-        visited[v] = true
-        local edges = self:adjacent_edges(v)
-        if edges then
-            for _, e in ipairs(edges) do
-                local w = e:other(v)
-                if not visited[w] then
-                    dfs(w)
+
+    -- check if we already detected a cycle
+    if self._partial_topo_has_cycle then
+        return nil, true
+    end
+
+    -- initialize topological sort state if not already in progress
+    if not self._partial_topo_in_progress then
+        if not self:_partial_topo_sort_init() then
+            return nil, false
+        end
+        self._partial_topo_in_progress = true
+    end
+
+    -- get one node with zero in-degree
+    local node
+    local partial_topo_queue = self._partial_topo_queue
+    local partial_topo_processed = self._partial_topo_processed
+    while not partial_topo_queue:empty() do
+        local v = partial_topo_queue:pop()
+        if partial_topo_processed:has(v) then
+            self:partial_topo_sort_remove(v)
+        else
+            node = v
+            partial_topo_processed:insert(node)
+            break
+        end
+    end
+
+    return node, self._partial_topo_has_cycle
+end
+
+-- remove node and update in-degrees based on the nodes in this node
+function graph:partial_topo_sort_remove(node)
+    if node == nil then
+        return
+    end
+    self._partial_topo_finished = self._partial_topo_finished + 1
+    local edges = self:adjacent_edges(node)
+    if edges then
+        local partial_topo_in_degree = self._partial_topo_in_degree
+        local partial_topo_queue = self._partial_topo_queue
+        for _, e in ipairs(edges) do
+            if e:from() == node then
+                local w = e:to()
+                local in_degree = partial_topo_in_degree[w] - 1
+                partial_topo_in_degree[w] = in_degree
+                if in_degree == 0 then
+                    partial_topo_queue:push(w)
                 end
             end
         end
-        table.insert(order_vertices, v)
     end
+
+    if self._partial_topo_queue:empty() and self._partial_topo_processed:size() == self._partial_topo_finished then
+        self._partial_topo_has_cycle = self._partial_topo_finished ~= #self:vertices()
+    end
+end
+
+-- topological sort, use kahn's algorithm
+--
+-- e.g.
+--
+-- edges: a (indegree: 0) -> b -> c
+--
+-- add_edge(a, b)
+-- add_edge(b, c)
+--
+-- it will return {a, b, c}
+function graph:topo_sort()
+    if not self:is_directed() then
+        return
+    end
+
+    -- calculate in-degree for each vertex
+    local in_degree = {}
     for _, v in ipairs(self:vertices()) do
-        if not visited[v] then
-            dfs(v)
+        in_degree[v] = 0
+    end
+
+    -- count incoming edges for each vertex
+    for _, v in ipairs(self:vertices()) do
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                if e:from() == v then
+                    local w = e:to()
+                    in_degree[w] = (in_degree[w] or 0) + 1
+                end
+            end
         end
     end
-    return table.reverse(order_vertices)
+
+    -- queue of vertices with no incoming edges (no dependencies)
+    local queue = queue.new()
+    for _, v in ipairs(self:vertices()) do
+        if in_degree[v] == 0 then
+            queue:push(v)
+        end
+    end
+
+    -- process queue
+    local order_vertices = {}
+    while not queue:empty() do
+        -- remove a vertex with no incoming edges
+        local v = queue:pop()
+        table.insert(order_vertices, v)
+
+        -- for each outgoing edge, remove it and update in-degrees
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                if e:from() == v then
+                    local w = e:to()
+                    local d = in_degree[w] - 1
+                    in_degree[w] = d
+                    if d == 0 then
+                        queue:push(w)
+                    end
+                end
+            end
+        end
+    end
+
+    -- if we couldn't process all vertices, there must be a cycle
+    local has_cycle = #order_vertices ~= #self:vertices()
+    return order_vertices, has_cycle
+end
+
+-- deprecated
+function graph:topological_sort()
+    return self:topo_sort()
 end
 
 -- find cycle
@@ -189,8 +374,8 @@ function graph:edges()
 end
 
 -- add edge
-function graph:add_edge(from, to, weight)
-    local e = edge.new(from, to, weight)
+function graph:add_edge(from, to)
+    local e = edge.new(from, to)
     if not self:has_vertex(from) then
         table.insert(self._vertices, from)
         self._adjacent_edges[from] = {}
@@ -199,22 +384,36 @@ function graph:add_edge(from, to, weight)
         table.insert(self._vertices, to)
         self._adjacent_edges[to] = {}
     end
+    local edges_map = self._edges_map
+    edges_map[from] = edges_map[from] or {}
+    edges_map[from][to] = true
     if self:is_directed() then
-        table.insert(self._adjacent_edges[e:from()], e)
+        table.insert(self._adjacent_edges[from], e)
     else
-        table.insert(self._adjacent_edges[e:from()], e)
-        table.insert(self._adjacent_edges[e:to()], e)
+        table.insert(self._adjacent_edges[from], e)
+        table.insert(self._adjacent_edges[to], e)
+        edges_map[to] = edges_map[to] or {}
+        edges_map[to][from] = true
     end
     table.insert(self._edges, e)
+
+    -- reset partial topological sort state since graph structure changed
+    self._partial_topo_dirty = true
 end
 
 -- has the given edge?
 function graph:has_edge(from, to)
     local edges = self:adjacent_edges(from)
     if edges then
-        for _, e in ipairs(edges) do
-            if e:to() == to then
-                return true
+        local edges_map = self._edges_map
+        local from_map = edges_map[from]
+        if from_map and from_map[to] then
+            return true
+        else
+            for _, e in ipairs(edges) do
+                if e:to() == to then
+                    return true
+                end
             end
         end
     end
@@ -228,7 +427,7 @@ function graph:clone()
         local edges = self:adjacent_edges(v)
         if edges then
             for _, e in ipairs(edges) do
-                gh:add_edge(e:from(), e:to(), e:weight())
+                gh:add_edge(e:from(), e:to())
             end
         end
     end
@@ -245,7 +444,7 @@ function graph:reverse()
         local edges = self:adjacent_edges(v)
         if edges then
             for _, e in ipairs(edges) do
-                gh:add_edge(e:to(), e:from(), e:weight())
+                gh:add_edge(e:to(), e:from())
             end
         end
     end
@@ -256,16 +455,67 @@ end
 function graph:dump()
     local vertices = self:vertices()
     local edges = self:edges()
-    print(string.format("graph: %s, vertices: %d, edges: %d", self:is_directed() and "directed" or "not-directed", #vertices, #edges))
-    print("vertices: ")
+    utils.cprint("graph: %s, vertices: %d, edges: %d", self:is_directed() and "directed" or "not-directed", #vertices, #edges)
+    utils.cprint("vertices: ")
     for _, v in ipairs(vertices) do
-        print(string.format("  %s", v))
+        utils.cprint("  %s", v)
     end
-    print("")
-    print("edges: ")
+    utils.cprint("")
+    utils.cprint("edges: ")
     for _, e in ipairs(edges) do
-        print(string.format("  %s -> %s", e:from(), e:to()))
+        utils.cprint("  %s ${color.dump.reference}->${clear} %s", e:from(), e:to())
     end
+end
+
+-- initialize topological sort state if not already in progress
+function graph:_partial_topo_sort_init()
+    if not self:is_directed() then
+        return false
+    end
+
+    -- calculate in-degree for each vertex
+    self._partial_topo_in_degree = {}
+    for _, v in ipairs(self:vertices()) do
+        self._partial_topo_in_degree[v] = 0
+    end
+
+    -- count incoming edges for each vertex
+    local partial_topo_in_degree = self._partial_topo_in_degree
+    for _, v in ipairs(self:vertices()) do
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                if e:from() == v then
+                    local w = e:to()
+                    partial_topo_in_degree[w] = (partial_topo_in_degree[w] or 0) + 1
+                end
+            end
+        end
+    end
+
+    -- initialize queue with vertices that have no incoming edges
+    self._partial_topo_queue = queue.new()
+    local partial_topo_queue = self._partial_topo_queue
+    for _, v in ipairs(self:vertices()) do
+        if partial_topo_in_degree[v] == 0 then
+            partial_topo_queue:push(v)
+        end
+    end
+
+    self._partial_topo_processed = self._partial_topo_processed or hashset.new()
+    return true
+end
+
+-- recompute all dirty nodes
+--
+-- TODO we recompute all nodes now, but we should optimize to recompute only dirty nodes
+function graph:_partial_topo_sort_recompute_dirty()
+    self._partial_topo_in_progress = false
+    self._partial_topo_in_degree = nil
+    self._partial_topo_queue = nil
+    self._partial_topo_finished = 0
+    self._partial_topo_has_cycle = nil
+    self._partial_topo_dirty = false
 end
 
 -- new graph
@@ -277,4 +527,3 @@ end
 
 -- return module: graph
 return graph
-

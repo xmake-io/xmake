@@ -69,20 +69,6 @@ function strip_flags(target, flags)
     return _compiler_support(target).strip_flags(target, flags)
 end
 
--- patch sourcebatch
-function patch_sourcebatch(target, sourcebatch)
-    sourcebatch.sourcekind = "cxx"
-    sourcebatch.objectfiles = {}
-    sourcebatch.dependfiles = {}
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local objectfile = target:objectfile(sourcefile)
-        table.insert(sourcebatch.objectfiles, objectfile)
-
-        local dependfile = target:dependfile(sourcefile or objectfile)
-        table.insert(sourcebatch.dependfiles, dependfile)
-    end
-end
-
 -- get bmi extension
 function get_bmi_extension(target)
     return _compiler_support(target).get_bmi_extension()
@@ -224,7 +210,7 @@ function modules_cachedir(target, opt)
 end
 
 function get_modulehash(target, modulepath)
-    local key = path.directory(modulepath) .. target:name()
+    local key = path.directory(modulepath) .. target:fullname()
     return hash.uuid(key):split("-", {plain = true})[1]:lower()
 end
 

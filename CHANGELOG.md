@@ -2,6 +2,13 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#6202](https://github.com/xmake-io/xmake/issues/6202): Improve rule API and build dependency order
+* [#5624](https://github.com/xmake-io/xmake/discussions/5624): Enable auto build when calling xmake run by default
+* [#5526](https://github.com/xmake-io/xmake/discussions/5526): Use MD/MDd runtimes for msvc by default
+* [#5545](https://github.com/xmake-io/xmake/discussions/5545): Use ninja generator for cmake package by default
+
 ## v2.9.9
 
 ### New features
@@ -1967,6 +1974,13 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#6202](https://github.com/xmake-io/xmake/issues/6202): 改进 rule API 和构建顺序支持，提供统一 jobgraph 调度
+* [#5624](https://github.com/xmake-io/xmake/discussions/5624): `xmake run` 运行默认自动构建
+* [#5526](https://github.com/xmake-io/xmake/discussions/5526): msvc 默认切换到 MD/MDd 运行时
+* [#5545](https://github.com/xmake-io/xmake/discussions/5545): 构建 cmake 包，默认使用 Ninja 生成器
 
 ## v2.9.9
 

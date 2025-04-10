@@ -33,9 +33,16 @@ function _find_emsdkdir(sdkdir)
         table.insert(paths, sdkdir)
     end
     table.insert(paths, "$(env EMSDK)")
+    if is_host("linux") then
+        table.join2(paths, {"/usr/share/emscripten/", "/usr/lib/emscripten/"})
+    end
     local emsdk = find_file("emsdk.py", paths, {suffixes = subdirs})
     if emsdk then
         return path.directory(emsdk)
+    end
+    local emcc_py = find_file("emcc.py", paths, {suffixes = subdirs})
+    if emcc_py then
+        return path.directory(emcc_py)
     end
 end
 
@@ -53,6 +60,7 @@ function _find_emsdk(sdkdir)
     local subdirs = {}
     table.insert(subdirs, path.join("*", "emscripten"))
     local emcc = find_file("emcc", sdkdir, {suffixes = subdirs})
+    emcc = emcc or find_file("emcc.py", sdkdir)
     if emcc then
         emscripten = path.directory(emcc)
     end

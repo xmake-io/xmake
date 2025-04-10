@@ -434,6 +434,7 @@ function buildenvs(package, opt)
 
     if is_host("windows") then
         envs.CC       = _translate_windows_bin_path(envs.CC)
+        envs.CXX      = _translate_windows_bin_path(envs.CXX)
         envs.AS       = _translate_windows_bin_path(envs.AS)
         envs.AR       = _translate_windows_bin_path(envs.AR)
         envs.LD       = _translate_windows_bin_path(envs.LD)

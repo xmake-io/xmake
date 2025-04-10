@@ -1,7 +1,15 @@
 
 rule("markdown")
-    add_deps("man", {order = true})
     set_extensions(".md", ".markdown")
+    add_orders("man", "markdown")
+
+    before_build(function (target)
+        print("before_build: markdown")
+    end)
+    after_build(function (target)
+        print("after_build: markdown")
+    end)
+
     before_build_file(function (target, sourcefile)
         print("before_build_file: %s", sourcefile)
     end)
@@ -14,6 +22,14 @@ rule("markdown")
 
 rule("man")
     set_extensions(".man")
+
+    before_build(function (target)
+        print("before_build: man")
+    end)
+    after_build(function (target)
+        print("after_build: man")
+    end)
+
     before_build_file(function (target, sourcefile)
         print("before_build_file: %s", sourcefile)
     end)
@@ -26,7 +42,7 @@ rule("man")
 
 target("test")
     set_kind("binary")
-    add_rules("markdown")
+    add_rules("markdown", "man")
     add_files("src/*.c")
     add_files("src/*.md")
     add_files("src/*.man")

@@ -21,7 +21,7 @@
 -- define rule: swift.build
 rule("swift.build")
     set_sourcekinds("sc")
-    on_build_files("private.action.build.object", {batch = true})
+    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
     on_config(function (target)
         -- we use swift-frontend to support multiple modules
         -- @see https://github.com/xmake-io/xmake/issues/3916
