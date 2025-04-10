@@ -95,6 +95,7 @@ function _need_check(changed)
     if not changed then
         if os.mtime(path.join(os.programdir(), "core", "main.lua")) > os.mtime(config.filepath()) then
             changed = true
+            os.touch(config.filepath(), {mtime = os.time()})
         end
     end
     return changed
