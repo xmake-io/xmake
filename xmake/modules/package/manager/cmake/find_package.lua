@@ -81,10 +81,16 @@ function _find_package(cmake, name, opt)
     if moduledirs then
         for _, moduledir in ipairs(moduledirs) do
             cmakefile:print("list(APPEND CMAKE_MODULE_PATH \"%s\")", (moduledir:gsub("\\", "/")))
-            -- https://github.com/xmake-io/xmake/issues/6296
-            cmakefile:print("list(APPEND CMAKE_PREFIX_PATH \"%s\")", (moduledir:gsub("\\", "/")))
         end
     end
+    -- https://github.com/xmake-io/xmake/issues/6296
+    local prefixdirs = configs.prefixdirs or opt.prefixdirs
+    if prefixdirs then
+        for _, prefixdir in ipairs(prefixdirs) do
+            cmakefile:print("list(APPEND CMAKE_PREFIX_PATH \"%s\")", (prefixdir:gsub("\\", "/")))
+        end
+    end
+
     -- e.g. set(Boost_USE_STATIC_LIB ON)
     local presets = configs.presets or opt.presets
     if presets then
