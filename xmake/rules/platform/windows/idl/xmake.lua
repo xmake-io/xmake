@@ -90,7 +90,7 @@ rule("platform.windows.idl")
         -- add include dirs, defines and undefines from compiler flags
         for _, inc in ipairs(incs) do
             table.insert(flags, "/I")
-            table.insert(flags, path.absolute(inc))
+            table.insert(flags, path(inc))
         end
 
         for _, def in ipairs(defs) do

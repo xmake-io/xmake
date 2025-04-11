@@ -2,20 +2,17 @@
 #include <example.h>
 #include <stdio.h>
 
-int main()
-{
+int main() {
     MyInterface_v1_0_c_ifspec = (void*)1;
     MyInterface_v1_0_s_ifspec = (void*)1;
     printf("set ok\n");
     return 0;
 }
 
-void __RPC_FAR * __RPC_API midl_user_allocate(size_t cBytes) 
-{ 
+void __RPC_FAR * __RPC_API midl_user_allocate(size_t cBytes) { 
     return(malloc(cBytes)); 
 }
 
-void __RPC_API midl_user_free(void __RPC_FAR * p) 
-{ 
+void __RPC_API midl_user_free(void __RPC_FAR * p) { 
     free(p); 
 }
