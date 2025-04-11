@@ -30,6 +30,7 @@ import("detect.sdks.find_cuda")
 import("vsfile")
 import("vsutils")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
+import("rules.c++.modules.modules_support.compiler_support", {rootdir = os.programdir()})
 
 function _make_dirs(dir, vcxprojdir)
     dir = dir:trim()
@@ -130,12 +131,6 @@ end
 function _split_gpucodes(flag)
     flag = flag:gsub("[%[\"]?(.-)[%]\"]?", "%1")
     return flag:split(",")
-end
-
--- is module file?
-function _is_modulefile(sourcefile)
-    local extension = path.extension(sourcefile)
-    return extension == ".mpp" or extension == ".mxx" or extension == ".cppm" or extension == ".ixx"
 end
 
 -- make compiling command
@@ -1179,7 +1174,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
         else
 
             -- compile as c++ modules
-            if _is_modulefile(sourcefile) then
+            if compiler_support.has_module_extension(sourcefile) then
                 vcxprojfile:print("<CompileAs>CompileAsCppModule</CompileAs>")
             end
 
@@ -1316,7 +1311,7 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
         -- for *.c/cpp/cu files
         else
             -- compile as c++ modules
-            if _is_modulefile(sourcefile) then
+            if compiler_support.has_module_extension(sourcefile) then
                 vcxprojfile:print("<CompileAs>CompileAsCppModule</CompileAs>")
             end
 
