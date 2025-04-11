@@ -866,17 +866,26 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
 end
 
 -- remove "-include xxx.h" and "-include-pch xxx.pch"
-function _remove_include_flags_for_pch(self, flags)
+function _remove_flags_for_pch(self, flags, opt)
+    opt = opt or {}
     local result = {}
     local include = false
+    local pchfile = opt.pchfile
     for _, flag in ipairs(flags) do
+        local inserted = false
         if not flag:startswith("-include") then
             if not include then
-                table.insert(result, flag)
+                inserted = true
             end
             include = false
         else
             include = true
+        end
+        if pchfile and flag:startswith("-fmodules") then
+            inserted = false
+        end
+        if inserted then
+            table.insert(result, flag)
         end
     end
     return result
@@ -884,7 +893,7 @@ end
 
 -- make the compile arguments list for the precompiled header
 function _translate_flags_for_pch(self, flags)
-    local pchflags = _remove_include_flags_for_pch(self, flags)
+    local pchflags = _remove_flags_for_pch(self, flags, {pchfile = true})
     if self:kind() == "cxx" then
         table.insert(pchflags, "-x")
         table.insert(pchflags, "c++-header")
@@ -904,7 +913,7 @@ end
 -- remove the force includes for c++modules
 -- @see https://github.com/xmake-io/xmake/issues/4051#issuecomment-2795707800
 function _translate_flags_for_mpp(self, flags)
-    return _remove_include_flags_for_pch(self, flags)
+    return _remove_flags_for_pch(self, flags)
 end
 
 -- make the compile arguments list
@@ -913,9 +922,9 @@ function compargv(self, sourcefile, objectfile, flags, opt)
     -- is precompiled header or module files? remove the force includes.
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
-        flags = _translate_flags_for_pch(self, flags, opt)
+        flags = _translate_flags_for_pch(self, flags)
     elseif compiler_support.has_module_extension(sourcefile, {extension = extension}) then
-        flags = _translate_flags_for_mpp(self, flags, opt)
+        flags = _translate_flags_for_mpp(self, flags)
     end
 
     local argv = table.join("-c", flags, "-o", objectfile, sourcefile)
