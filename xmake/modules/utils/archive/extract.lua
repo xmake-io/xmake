@@ -428,6 +428,7 @@ function _extract_uncompressed_tar(outputdir_old, outputdir, opt)
             -- remove the temporary tar file
             -- @see https://github.com/xmake-io/xmake/issues/6311
             os.rm(tarfile)
+            os.rm(outputdir, {emptydirs = true})
             return ok
         end
     end
