@@ -31,6 +31,7 @@ import("core.language.language")
 import("utils.progress")
 import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
+import("rules.c++.modules.modules_support.compiler_support", {rootdir = os.programdir()})
 
 function init(self)
 
@@ -864,24 +865,26 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
     end
 end
 
--- make the compile arguments list for the precompiled header
-function _compargv_pch(self, pcheaderfile, pcoutputfile, flags, opt)
-
-    -- remove "-include xxx.h" and "-include-pch xxx.pch"
-    local pchflags = {}
+-- remove "-include xxx.h" and "-include-pch xxx.pch"
+function _remove_include_flags_for_pch(self, flags)
+    local result = {}
     local include = false
     for _, flag in ipairs(flags) do
         if not flag:startswith("-include") then
             if not include then
-                table.insert(pchflags, flag)
+                table.insert(result, flag)
             end
             include = false
         else
             include = true
         end
     end
+    return result
+end
 
-    -- set the language of precompiled header?
+-- make the compile arguments list for the precompiled header
+function _translate_flags_for_pch(self, flags)
+    local pchflags = _remove_include_flags_for_pch(self, flags)
     if self:kind() == "cxx" then
         table.insert(pchflags, "-x")
         table.insert(pchflags, "c++-header")
@@ -895,19 +898,24 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags, opt)
         table.insert(pchflags, "-x")
         table.insert(pchflags, "objective-c-header")
     end
+    return pchflags
+end
 
-    -- make the compile arguments list
-    local argv = table.join("-c", pchflags, "-o", pcoutputfile, pcheaderfile)
-    return self:program(), argv
+-- remove the force includes for c++modules
+-- @see https://github.com/xmake-io/xmake/issues/4051#issuecomment-2795707800
+function _translate_flags_for_mpp(self, flags)
+    return _remove_include_flags_for_pch(self, flags)
 end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags, opt)
 
-    -- precompiled header?
+    -- is precompiled header or module files? remove the force includes.
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
-        return _compargv_pch(self, sourcefile, objectfile, flags, opt)
+        flags = _translate_flags_for_pch(self, flags, opt)
+    elseif compiler_support.has_module_extension(sourcefile, {extension = extension}) then
+        flags = _translate_flags_for_mpp(self, flags, opt)
     end
 
     local argv = table.join("-c", flags, "-o", objectfile, sourcefile)
