@@ -166,9 +166,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
         -- https://github.com/xmake-io/xmake-repo/pull/2673
         os.tryrm(path.join(outputdir, "*.paxheader"))
     end
-
-    _extract_uncompressed_tar(outputdir_old, outputdir, opt)
-    return true
+    return _extract_uncompressed_tar(outputdir_old, outputdir, opt)
 end
 
 -- extract archivefile using gzip
@@ -210,9 +208,7 @@ function _extract_using_gzip(archivefile, outputdir, extension, opt)
 
     -- extract it
     os.vrunv(program, argv, {curdir = outputdir})
-
-    _extract_uncompressed_tar(outputdir_old, outputdir, opt)
-    return true
+    return _extract_uncompressed_tar(outputdir_old, outputdir, opt)
 end
 
 -- extract archivefile using xz
@@ -254,9 +250,7 @@ function _extract_using_xz(archivefile, outputdir, extension, opt)
 
     -- extract it
     os.vrunv(program, argv, {curdir = outputdir})
-
-    _extract_uncompressed_tar(outputdir_old, outputdir, opt)
-    return true
+    return _extract_uncompressed_tar(outputdir_old, outputdir, opt)
 end
 
 -- extract archivefile using zstd
@@ -298,9 +292,7 @@ function _extract_using_zstd(archivefile, outputdir, extension, opt)
 
     -- extract it
     os.vrunv(program, argv, {curdir = outputdir})
-
-    _extract_uncompressed_tar(outputdir_old, outputdir, opt)
-    return true
+    return _extract_uncompressed_tar(outputdir_old, outputdir, opt)
 end
 
 -- extract archivefile using unzip
@@ -346,9 +338,7 @@ function _extract_using_unzip(archivefile, outputdir, extension, opt)
 
     -- extract it
     os.vrunv(program, argv)
-
-    _extract_uncompressed_tar(outputdir_old, outputdir, opt)
-    return true
+    return _extract_uncompressed_tar(outputdir_old, outputdir, opt)
 end
 
 -- extract archivefile using powershell
@@ -379,11 +369,8 @@ function _extract_using_powershell(archivefile, outputdir, extension, opt)
     -- extract it
     local argv = {"-ExecutionPolicy", "Bypass", "-File", scriptfile, archivefile, outputdir}
     os.vrunv(powershell.program, argv)
-
-    _extract_uncompressed_tar(outputdir_old, outputdir, opt)
-    return true
+    return _extract_uncompressed_tar(outputdir_old, outputdir, opt)
 end
-
 
 -- extract archivefile using bzip2
 function _extract_using_bzip2(archivefile, outputdir, extension, opt)
@@ -429,9 +416,7 @@ function _extract_using_bzip2(archivefile, outputdir, extension, opt)
 
     -- extract it
     os.vrunv(program, argv, {curdir = outputdir})
-
-    _extract_uncompressed_tar(outputdir_old, outputdir, opt)
-    return true
+    return _extract_uncompressed_tar(outputdir_old, outputdir, opt)
 end
 
 -- extract *.tar after decompress
@@ -439,9 +424,15 @@ function _extract_uncompressed_tar(outputdir_old, outputdir, opt)
     if outputdir_old then
         local tarfile = find_file("**.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
-            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_7z, _extract_using_tar}, opt)
+            local ok = _extract(tarfile, outputdir_old, ".tar", {_extract_using_7z, _extract_using_tar}, opt)
+            -- remove the temporary tar file
+            -- @see https://github.com/xmake-io/xmake/issues/6311
+            os.rm(tarfile)
+            os.rm(outputdir, {emptydirs = true})
+            return ok
         end
     end
+    return true
 end
 
 -- extract archive file using extractors
