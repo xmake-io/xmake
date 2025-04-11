@@ -1,0 +1,28 @@
+/*
+ * PROJECT:     SupernovaX SDK
+ * LICENSE:     MIT (https://spdx.org/licenses/MIT)
+ * PURPOSE:     Lock owner COM interfaces
+ * COPYRIGHT:   Copyright 2023 Christian Rendina <pizzaiolo100@proton.me>
+ */
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+    object,
+    local,
+    uuid(9b7e4a00-342c-4106-a19f-4f2704f689f0)
+]
+interface ILockOwner : IUnknown
+{
+    void LOEnter(
+        void
+    );
+
+    void LOLeave(
+        void
+    );
+
+    BOOL LOTryEnter(
+        void
+    );
+};
