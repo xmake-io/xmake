@@ -48,8 +48,9 @@ function _build_modules(target, sourcebatch, modules, opt)
             -- we need to use the full path as dep name if requre item is headerunit
             local dep = name
             if req.method:startswith("include-") and req.path then
-                dep = path.normalize(req.path)
+                dep = req.path
             end
+            dep = path.normalize(dep)
             local depname = target:fullname() .. "/module/" .. dep
             table.insert(deps, depname)
         end
@@ -279,7 +280,7 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
     -- add module jobs
     _build_modules(target, sourcebatch, modules, table.join(opt, {
         build_module = function(deps, module, name, objectfile, cppfile)
-            local job_name = target:fullname() .. "/module/" .. (name or cppfile)
+            local job_name = target:fullname() .. "/module/" .. path.normalize(name or cppfile)
             modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps,
                 {module = module, objectfile = objectfile, cppfile = cppfile})
         end
@@ -306,7 +307,7 @@ function build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
         -- add module jobs
         _build_modules(target, sourcebatch, modules, table.join(opt, {
             build_module = function(deps, module, name, objectfile, cppfile)
-                local jobname = target:fullname() .. "/module/" .. (name or cppfile)
+                local jobname = target:fullname() .. "/module/" .. path.normalize(name or cppfile)
                 _builder(target).make_module_jobgraph(target, jobgraph, {
                     module = module, objectfile = objectfile, cppfile = cppfile
                 })
@@ -355,7 +356,7 @@ function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules
         local modulesjobs = {}
         _build_headerunits(target, headerunits, table.join(opt, {
             build_headerunit = function(headerunit, key, bmifile, outputdir, build)
-                local job_name = target:fullname() .. "/module/" .. key
+                local job_name = target:fullname() .. "/module/" .. path.normalize(key)
                 local job = _builder(target).make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmifile, outputdir, table.join(opt, {build = build}))
                 if job then
                   modulesjobs[job_name] = job
@@ -392,7 +393,7 @@ function build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, 
             local modulesjobs = {}
             _build_headerunits(target, headerunits, table.join(opt, {
                 build_headerunit = function(headerunit, key, bmifile, outputdir, build)
-                    local job_name = target:fullname() .. "/module/" .. key
+                    local job_name = target:fullname() .. "/module/" .. path.normalize(key)
                     _builder(target).make_headerunit_jobgraph(target,
                         job_name, jobgraph, headerunit, bmifile, outputdir, table.join(opt, {build = build}))
                 end
