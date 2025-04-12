@@ -40,14 +40,12 @@ local import        = require("sandbox/modules/import")
 function _instance.new(kind, name, program, plat, arch, toolchain_inst)
 
     -- import "core.tools.xxx"
-    local toolclass = nil
-    if os.isfile(path.join(os.programdir(), "modules", "core", "tools", name .. ".lua")) then
-        toolclass = import("core.tools." .. name, {nocache = true}) -- @note we need to create a tool instance with unique toolclass context (_g)
-    end
+    -- @note we need to create a tool instance with unique toolclass context (_g)
+    local toolclass = import("core.tools." .. name, {try = true, nocache = true})
 
     -- not found?
     if not toolclass then
-        return nil, string.format("cannot import \"core.tool.%s\" module!", name)
+        return nil, string.format("cannot import \"core.tools.%s\" module!", name)
     end
 
     -- new an instance
