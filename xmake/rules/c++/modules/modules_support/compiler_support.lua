@@ -134,7 +134,7 @@ end
 
 function find_quote_header_file(target, sourcefile, file)
     local p = path.join(path.directory(path.absolute(sourcefile, project.directory())), file)
-    assert(os.isfile(p))
+    assert(os.isfile(p), "\"%s\" not found", p)
     return p
 end
 
@@ -150,7 +150,7 @@ function find_angle_header_file(target, file)
     end
     table.join2(headerpaths, target:get("includedirs"))
     local p = find_file(file, headerpaths)
-    assert(p, "find <%s> not found!", file)
+    assert(p, "<%s> not found!", file)
     return p
 end
 

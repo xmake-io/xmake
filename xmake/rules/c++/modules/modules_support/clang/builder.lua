@@ -409,7 +409,8 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
                 local depvalues = {compinst:program(), compflags}
 
                 if opt.build then
-                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), headerunit.name)
+                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s",
+                        target:fullname(), headerunit.name)
                     _compile(target, _make_headerunitflags(target, headerunit, bmifile), headerunit.path, bmifile)
                 end
 
@@ -457,8 +458,9 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outpu
     add_headerunit_to_target_mapper(target, headerunit, bmifile)
 
     if opt.build then
-        local name = headerunit.unique and headerunit.name or headerunit.path
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
+        local headerfile = headerunit.unique and headerunit.name or headerunit.path
+        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s"
+            , target:fullname(), headerfile)
         _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, bmifile), bmifile)
     end
     batchcmds:add_depfiles(headerunit.path)
