@@ -85,7 +85,10 @@ end
 function _run_windbg(program, argv, opt)
     local windbg = find_tool("windbg", {program = config.get("debugger")})
     if not windbg then
-        return false
+        windbg = find_tool("windbgx", {program = config.get("debugger")})
+        if not windbg then
+            return false
+        end
     end
 
     -- patch arguments
