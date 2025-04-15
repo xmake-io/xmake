@@ -10,6 +10,7 @@ end
 
 function main()
     for i = 1, 10 do
+        -- TODO use thread.start and group
         thread.new(callback, {argv = {i}, name = "session_" .. i}):start()
     end
     --thread.wait()
