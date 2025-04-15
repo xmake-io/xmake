@@ -36,11 +36,14 @@ thread.STATUS_SUSPENDED = 3
 thread.STATUS_DEAD      = 4
 
 -- new a thread
-function _instance.new(name, callback, handle, opt)
-    local instance   = table.inherit(_instance)
-    instance._NAME   = name or "anonymous"
-    instance._HANLDE = handler
-    instance._STATUS = thread.STATUS_READY
+function _instance.new(callback, opt)
+    opt = opt or {}
+    local instance = table.inherit(_instance)
+    instance._NAME      = opt.name or "anonymous"
+    instance._ARGV      = opt.argv
+    instance._CALLBACK  = opt.callback
+    instance._STACKSIZE = opt.stacksize or 0
+    instance._STATUS    = thread.STATUS_READY
     setmetatable(instance, _instance)
     return instance
 end
@@ -82,6 +85,14 @@ end
 
 -- start thread
 function _instance:start(instance)
+    if not self:is_ready() then
+    end
+
+    -- TODO
+    local handle, errors = thread.thread_create(name, callback, argv, stacksize)
+    if not handle then
+        return nil, errors or string.format("failed to create thread(%s)!", name)
+    end
 end
 
 -- suspend thread
@@ -126,16 +137,10 @@ end
 -- @return the thread instance
 --
 function thread.new(callback, opt)
-    opt = opt or {}
-    local name = opt.name
-    local argv = opt.argv
-    local stacksize = opt.stacksize
-    local handle, errors = thread.thread_create(name, callback, argv, stacksize)
-    if handle then
-        return _instance.new(name, callback, handle, opt)
-    else
-        return nil, errors or string.format("failed to create thread(%s)!", name)
+    if callback == nil then
+        return nil, "invalid thread, callback is nil"
     end
+    return _instance.new(callback, opt)
 end
 
 -- get the running thread

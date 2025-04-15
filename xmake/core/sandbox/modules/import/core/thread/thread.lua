@@ -70,6 +70,7 @@ function sandbox_core_thread_instance.start(instance)
     if not ok then
         raise(errors)
     end
+    return instance
 end
 
 -- suspend thread
@@ -103,6 +104,21 @@ function sandbox_core_thread.new(callback, opt)
         raise(errors)
     end
     return _thread_wrap(instance)
+end
+
+-- start a thread
+function sandbox_core_thread.start(callback, ...)
+    return sandbox_core_thread.start_withopt(callback, {argv = table.pack(...)})
+end
+
+-- start a named thread
+function sandbox_core_thread.start_named(name, callback, ...)
+    return sandbox_core_thread.start_withopt(callback, {name = name, argv = table.pack(...)})
+end
+
+-- start a thread with options
+function sandbox_core_thread.start_withopt(callback, opt)
+    return sandbox_core_thread.new(callback, opt):start()
 end
 
 -- get the running thread
