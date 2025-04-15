@@ -34,8 +34,6 @@ sandbox_coroutine.running   = coroutine.running
 
 -- resume coroutine
 function sandbox_coroutine.resume(co, ...)
-
-    -- resume it
     local ok, results = coroutine.resume(co, ...)
     if not ok then
 
@@ -54,8 +52,6 @@ function sandbox_coroutine.resume(co, ...)
         -- raise it
         raise(errors)
     end
-
-    -- ok
     return results
 end
 
