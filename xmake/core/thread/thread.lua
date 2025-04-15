@@ -80,6 +80,22 @@ function _instance:is_dead()
     return self:status() == thread.STATUS_DEAD
 end
 
+-- start thread
+function _instance:start(instance)
+end
+
+-- suspend thread
+function _instance:suspend(instance)
+end
+
+-- resume thread
+function _instance:resume(instance)
+end
+
+-- wait thread
+function _instance:wait(instance, timeout)
+end
+
 -- tostring(thread)
 function _instance:__tostring()
     local status_strs = self._STATUS_STRS
@@ -120,6 +136,10 @@ function thread.new(callback, opt)
     else
         return nil, errors or string.format("failed to create thread(%s)!", name)
     end
+end
+
+-- get the running thread
+function thread.running()
 end
 
 -- return module
