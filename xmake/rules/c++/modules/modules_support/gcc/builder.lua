@@ -387,9 +387,10 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
                     if option.get("diagnosis") then
                         print("mapper file:\n%s", io.readfile(headerunit_mapper))
                     end
+                    local headerfile = headerunit.unique and headerunit.name or headerunit.path
                     _compile(target,
                         _make_headerunitflags(target, headerunit, headerunit_mapper, opt),
-                        path.translate(path.filename(headerunit.name)), bmifile)
+                        path.translate(headerfile), bmifile)
                     os.tryrm(headerunit_mapper)
                 end
 
@@ -421,13 +422,15 @@ function make_headerunit_jobgraph(target, job_name, jobgraph, headerunit, bmifil
 
             if opt.build then
                 local headerunit_mapper = _generate_headerunit_modulemapper_file({name = path.normalize(headerunit.path), bmifile = bmifile})
-                progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), headerunit.name)
+                progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s",
+                    target:fullname(), headerunit.name)
                 if option.get("diagnosis") then
                     print("mapper file:\n%s", io.readfile(headerunit_mapper))
                 end
+                local headerfile = headerunit.unique and headerunit.name or headerunit.path
                 _compile(target,
                     _make_headerunitflags(target, headerunit, headerunit_mapper, opt),
-                    path.translate(path.filename(headerunit.name)), bmifile)
+                    path.translate(headerfile), bmifile)
                 os.tryrm(headerunit_mapper)
             end
 
@@ -450,8 +453,9 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outpu
     add_headerunit_to_target_mapper(target, _headerunit, bmifile)
 
     if opt.build then
-        local name = headerunit.unique and headerunit.name or headerunit.path
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
+        local headerfile = headerunit.unique and headerunit.name or headerunit.path
+        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s",
+            target:fullname(), headerfile)
         if option.get("diagnosis") then
             batchcmds:print("mapper file:\n%s", io.readfile(headerunit_mapper))
         end
