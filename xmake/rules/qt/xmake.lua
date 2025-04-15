@@ -62,6 +62,9 @@ rule("qt.shared")
         import("load")(target, {frameworks = {"QtCore"}})
     end)
 
+    after_install("windows", "install.windows")
+    after_install("mingw", "install.mingw")
+
 -- define rule: qt console
 rule("qt.console")
     add_deps("qt.qrc", "qt.ui", "qt.moc", "qt.ts")
