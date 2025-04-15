@@ -2,7 +2,7 @@
 #include <example.h>
 #include <stdio.h>
 
-int main() {
+int main(int argc, char** argv) {
     MyInterface_v1_0_c_ifspec = (void*)1;
     printf("call ok\n");
     return 0;

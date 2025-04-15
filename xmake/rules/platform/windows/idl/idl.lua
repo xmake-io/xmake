@@ -36,7 +36,6 @@ function generate_single(target, sourcefile, opt)
     local incs = table.wrap(target:get("includedirs") or {})
     local undefs = table.wrap(target:get("undefines") or {})
 
-
     if fileconfig then
         if fileconfig.server ~= nil then
             enable_server = fileconfig.server
@@ -54,7 +53,6 @@ function generate_single(target, sourcefile, opt)
             table.join2(undefs, fileconfig.undefines)
         end
     end
-
 
     local flags = {"/nologo"}
     table.join2(flags, table.wrap(target:values("idl.flags")))
@@ -112,8 +110,6 @@ function generate_single(target, sourcefile, opt)
     )
 end
 
--- add *.idl for rc file
-
 function configure(target)
     local sourcebatch = target:sourcebatches()["platform.windows.idl"]
     if sourcebatch then
@@ -147,6 +143,8 @@ function build_idlfiles(target, jobgraph, sourcebatch, opt)
 
         local name = path.basename(sourcefile)
 
+        -- we don't have a way to detect which midl files are generated
+
         addsrc(name, "_i.c")
 
         if enable_proxy then
@@ -156,8 +154,6 @@ function build_idlfiles(target, jobgraph, sourcebatch, opt)
         addsrc(name, "_c.c")
         addsrc(name, "_s.c")
     end
-
-    -- we don't have a way to detect which midl files are generated
 
     local batchcxx = {
         rulename = "c.build",
