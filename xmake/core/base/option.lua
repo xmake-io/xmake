@@ -478,7 +478,7 @@ function option.show_logo(logo, opt)
     /_/\_\_|_|  |_|\__ \|_|\_\____|
 
                          by ruki, xmake.io
-    ]]
+]]
 
     -- make rainbow for logo
     opt = opt or {}
@@ -505,7 +505,7 @@ function option.show_logo(logo, opt)
     local footer = [[
     ${point_right}  ${bright}Manual${clear}: ${underline}https://xmake.io/#/getting_started${clear}
     ${pray}  ${bright}Donate${clear}: ${underline}https://xmake.io/#/sponsor${clear}
-    ]]
+]]
 
     -- show footer
     io.print(colors.translate(footer))
