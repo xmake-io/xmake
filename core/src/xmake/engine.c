@@ -332,6 +332,7 @@ tb_int_t xm_lua_curses_register(lua_State* lua, tb_char_t const* module);
 // the thread functions
 tb_int_t xm_thread_init(lua_State* lua);
 tb_int_t xm_thread_exit(lua_State* lua);
+tb_int_t xm_thread_wait(lua_State* lua);
 tb_int_t xm_thread_suspend(lua_State* lua);
 tb_int_t xm_thread_resume(lua_State* lua);
 
@@ -626,6 +627,7 @@ static luaL_Reg const g_thread_functions[] =
 {
     { "thread_init",    xm_thread_init      }
 ,   { "thread_exit",    xm_thread_exit      }
+,   { "thread_wait",    xm_thread_wait      }
 ,   { "thread_resume",  xm_thread_resume    }
 ,   { "thread_suspend", xm_thread_suspend   }
 ,   { tb_null,          tb_null             }
