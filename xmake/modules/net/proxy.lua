@@ -109,7 +109,7 @@ function _system_proxy()
         return proxy
     end
 
-    if os.host() == "windows" then
+    if is_host("windows") then
         -- Check whether system proxy is enabled
         local proxy_enable = winos.registry_query('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings;ProxyEnable')
         --  Verify that the proxy is enabled (0x1 means enabled)
@@ -136,7 +136,7 @@ end
 -- translate global proxy
 function _global_proxy()
     local proxy = global.get("proxy")
-    if proxy and string.lower(proxy) == "system" then
+    if proxy and proxy:lower() == "system" then
         return _system_proxy()
     end
     return proxy
