@@ -90,7 +90,7 @@ function _instance:start()
     end
     assert(not self:cdata())
 
-    local handle, errors = thread.thread_create(self:name(), self._CALLBACK, self._ARGV, self._STACKSIZE)
+    local handle, errors = thread.thread_init(self:name(), self._CALLBACK, self._ARGV, self._STACKSIZE)
     if not handle then
         return nil, errors or string.format("%s: failed to create thread!", self)
     end
@@ -169,7 +169,7 @@ end
 
 -- gc(thread)
 function _instance:__gc()
-    if self:cdata() and self:is_dead() and io.thread_close(self:cdata()) then
+    if self:cdata() and self:is_dead() and io.thread_exit(self:cdata()) then
         self._HANLDE = nil
     end
 end
