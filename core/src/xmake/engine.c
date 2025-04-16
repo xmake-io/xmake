@@ -1657,7 +1657,7 @@ tb_poller_ref_t xm_engine_poller(xm_engine_ref_t self)
     if (!engine->poller)
     {
         // init poller
-        tb_poller_ref_t poller = tb_poller_init(tb_null);
+        tb_poller_ref_t poller = tb_poller_init(engine->lua);
         tb_assert_and_check_return_val(poller, tb_null);
 
         // attach poller to the current thread
