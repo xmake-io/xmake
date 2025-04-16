@@ -50,8 +50,6 @@ tb_int_t xm_io_socket_close(lua_State* lua)
 
     // exit socket
     lua_pushboolean(lua, tb_socket_exit(sock));
-
-    // ok
     return 1;
 }
 

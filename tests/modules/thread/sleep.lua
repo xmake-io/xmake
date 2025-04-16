@@ -14,7 +14,7 @@ end
 function main()
     local t0 = thread.start_named("thread_0", callback, 0)
     local t1 = thread.start_named("thread_1", callback, 1)
-    thread.wait(t0, -1)
-    thread.wait(t1, -1)
+    t0:wait(-1)
+    t1:wait(-1)
 end
 

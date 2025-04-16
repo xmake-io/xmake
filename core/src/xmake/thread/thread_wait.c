@@ -15,7 +15,7 @@
  * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        thread_exit.c
+ * @file        thread_wait.c
  *
  */
 
@@ -33,7 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_exit(lua_State* lua)
+tb_int_t xm_thread_wait(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -46,9 +46,12 @@ tb_int_t xm_thread_exit(lua_State* lua)
     tb_thread_ref_t thread = (tb_thread_ref_t)xm_lua_topointer(lua, 1);
     tb_check_return_val(thread, 0);
 
-    // exit thread
-    tb_thread_exit(thread);
-    lua_pushboolean(lua, tb_true);
+    // get timeout
+    tb_size_t timeout = (tb_size_t)luaL_checkinteger(lua, 2);
+
+    // wait thread
+    tb_int_t retval;
+    lua_pushinteger(lua, (tb_int_t)tb_thread_wait(thread, timeout, &retval));
     return 1;
 }
 
