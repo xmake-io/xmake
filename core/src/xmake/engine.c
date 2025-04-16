@@ -29,6 +29,7 @@
  * includes
  */
 #include "xmake.h"
+#include "io/poller.h"
 #if defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
 #   include <io.h>
@@ -102,6 +103,7 @@ typedef struct __xm_engine_t
 
     // the io poller
     tb_poller_ref_t         poller;
+    xm_poller_state_t       poller_state;
 
 #ifdef XM_EMBED_ENABLE
     // the temporary directory
@@ -1657,7 +1659,8 @@ tb_poller_ref_t xm_engine_poller(xm_engine_ref_t self)
     if (!engine->poller)
     {
         // init poller
-        tb_poller_ref_t poller = tb_poller_init(engine->lua);
+        engine->poller_state.lua = engine->lua;
+        tb_poller_ref_t poller = tb_poller_init(&engine->poller_state);
         tb_assert_and_check_return_val(poller, tb_null);
 
         // attach poller to the current thread
