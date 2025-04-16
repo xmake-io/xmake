@@ -26,6 +26,17 @@
  */
 #include "../prefix.h"
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * types
+ */
+
+// the thread type
+typedef struct __xm_thread_t
+{
+    tb_thread_ref_t handle;
+
+}xm_thread_t;
+
 
 #endif
 
