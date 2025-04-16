@@ -32,22 +32,16 @@
 #include "poller.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * globals
- */
-
-// we need only one global lua state/poller in main thread, so it is thread-safe.
-static tb_int_t   g_events_count = 0;
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
 static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_poller_object_ref_t object, tb_long_t events, tb_cpointer_t priv)
 {
     // check
-    lua_State* lua = (lua_State*)tb_poller_priv(poller);
-    tb_assert_and_check_return(lua);
+    xm_poller_state_t* state = (xm_poller_state_t*)tb_poller_priv(poller);
+    tb_assert_and_check_return(state && state->lua);
 
     // save object and events
+    lua_State* lua = state->lua;
     lua_newtable(lua);
     lua_pushinteger(lua, (tb_int_t)object->type);
     lua_rawseti(lua, -2, 1);
@@ -71,7 +65,7 @@ static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_poller_object_ref
     }
     else lua_pushinteger(lua, (tb_int_t)events);
     lua_rawseti(lua, -2, 3);
-    lua_rawseti(lua, -2, ++g_events_count);
+    lua_rawseti(lua, -2, ++state->events_count);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -82,17 +76,19 @@ static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_poller_object_ref
 tb_int_t xm_io_poller_wait(lua_State* lua)
 {
     // check
-    tb_assert_and_check_return_val(lua, 0);
+    tb_poller_ref_t poller = xm_io_poller(lua);
+    tb_assert_and_check_return_val(poller && lua, 0);
 
     // get timeout
     tb_long_t timeout = (tb_long_t)luaL_checknumber(lua, 1);
 
-    // pass lua and count to the events callback
-    g_events_count = 0;
+    // reset events count
+    xm_poller_state_t* state = (xm_poller_state_t*)tb_poller_priv(poller);
+    state->events_count = 0;
 
     // wait it
     lua_newtable(lua);
-    tb_long_t count = tb_poller_wait(xm_io_poller(lua), xm_io_poller_event, timeout);
+    tb_long_t count = tb_poller_wait(poller, xm_io_poller_event, timeout);
     if (count > 0)
     {
         lua_pushinteger(lua, (tb_int_t)count);
