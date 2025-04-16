@@ -41,7 +41,7 @@ function _instance.new(callback, opt)
     local instance = table.inherit(_instance)
     instance._NAME      = opt.name or "anonymous"
     instance._ARGV      = opt.argv
-    instance._CALLBACK  = opt.callback
+    instance._CALLBACK  = callback
     instance._STACKSIZE = opt.stacksize or 0
     instance._STATUS    = thread.STATUS_READY
     setmetatable(instance, _instance)
@@ -90,7 +90,12 @@ function _instance:start()
     end
     assert(not self:cdata())
 
-    local handle, errors = thread.thread_init(self:name(), self._CALLBACK, self._ARGV, self._STACKSIZE)
+    -- serialize and pass callback and arguments to this thread
+    local callback = string.serialize(self._CALLBACK, {strip = true, indent = false})
+    local argv = string.serialize(self._ARGV, {strip = true, indent = false})
+
+    -- init and start thread
+    local handle, errors = thread.thread_init(self:name(), callback, argv, self._STACKSIZE)
     if not handle then
         return nil, errors or string.format("%s: failed to create thread!", self)
     end
