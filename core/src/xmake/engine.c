@@ -329,6 +329,12 @@ tb_int_t xm_utils_bin2c(lua_State* lua);
 tb_int_t xm_lua_curses_register(lua_State* lua, tb_char_t const* module);
 #endif
 
+// the thread functions
+tb_int_t xm_thread_init(lua_State* lua);
+tb_int_t xm_thread_exit(lua_State* lua);
+tb_int_t xm_thread_suspend(lua_State* lua);
+tb_int_t xm_thread_resume(lua_State* lua);
+
 // open cjson
 __tb_extern_c_enter__
 tb_int_t luaopen_cjson(lua_State *l);
@@ -612,6 +618,16 @@ static luaL_Reg const g_package_functions[] =
 static luaL_Reg const g_utils_functions[] =
 {
     { "bin2c",          xm_utils_bin2c      }
+,   { tb_null,          tb_null             }
+};
+
+// the thread functions
+static luaL_Reg const g_thread_functions[] =
+{
+    { "thread_init",    xm_thread_init      }
+,   { "thread_exit",    xm_thread_exit      }
+,   { "thread_resume",  xm_thread_resume    }
+,   { "thread_suspend", xm_thread_suspend   }
 ,   { tb_null,          tb_null             }
 };
 
@@ -1404,6 +1420,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // bind utils functions
         xm_lua_register(engine->lua, "utils", g_utils_functions);
+
+        // bind thread functions
+        xm_lua_register(engine->lua, "thread", g_thread_functions);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
         // bind curses
