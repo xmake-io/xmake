@@ -20,11 +20,12 @@
 -- add *.idl for rc file
 rule("platform.windows.idl")
     set_extensions(".idl")
-
     on_config("windows", "mingw", function (target)
         import("idl").configure(target)
     end)
-
+    before_build_files(function (target, jobgraph, sourcebatch, opt)
+        import("idl").gen_idl(target, jobgraph, sourcebatch, opt)
+    end, {jobgraph = true, batch = true})
     on_build_files(function (target, jobgraph, sourcebatch, opt)
         import("idl").build_idlfiles(target, jobgraph, sourcebatch, opt)
-    end, { jobgraph = true, batch = true, distcc = true })
+    end, {jobgraph = true, batch = true, distcc = true})

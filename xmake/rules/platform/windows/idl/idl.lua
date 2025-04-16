@@ -119,11 +119,19 @@ function configure(target)
     end
 end
 
+function gen_idl(target, jobgraph, sourcebatch, opt)
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        local midljob = target:fullname() .. "/midl/generate/" .. sourcefile
+        jobgraph:add(midljob, function (index, total, opt)
+            generate_single(target, sourcefile, opt)
+        end)
+    end
+end
+
 function build_idlfiles(target, jobgraph, sourcebatch, opt)
-    local mysources = {}
     local autogendir = path.join(target:autogendir(), "platform/windows/idl")
 
-    local addsrc = function (sourcename, suffix)
+    local addsrc = function (sourcename, suffix, mysources)
         local fullfile = path.join(autogendir, sourcename .. suffix)
         if os.exists(fullfile) then
             table.insert(mysources, fullfile)
@@ -131,43 +139,41 @@ function build_idlfiles(target, jobgraph, sourcebatch, opt)
     end
 
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local fileconfig = target:fileconfig(sourcefile)
-        local enable_proxy = true
-        if fileconfig then
-            if fileconfig.proxy ~= nil then
-                enable_proxy = fileconfig.proxy
+        local ccjob = target:fullname() .. "/midl/compile/" .. sourcefile
+        jobgraph:add(ccjob, function (index, total, opt)
+            local fileconfig = target:fileconfig(sourcefile)
+            local enable_proxy = true
+            if fileconfig then
+                if fileconfig.proxy ~= nil then
+                    enable_proxy = fileconfig.proxy
+                end
             end
-        end
+            local name = path.basename(sourcefile)
+            local mysources = {}
 
-        generate_single(target, sourcefile, opt)
+            -- we don't have a way to detect which midl files are generated
+            addsrc(name, "_i.c", mysources)
+            if enable_proxy then
+                addsrc(name, "_p.c", mysources)
+            end
+            addsrc(name, "_c.c", mysources)
+            addsrc(name, "_s.c", mysources)
 
-        local name = path.basename(sourcefile)
-
-        -- we don't have a way to detect which midl files are generated
-
-        addsrc(name, "_i.c")
-
-        if enable_proxy then
-            addsrc(name, "_p.c")
-        end
-
-        addsrc(name, "_c.c")
-        addsrc(name, "_s.c")
+            local batchcxx = {
+                rulename = "c.build",
+                sourcekind = "cc",
+                sourcefiles = mysources,
+                objectfiles = {},
+                dependfiles = {}
+            }
+            for _, sourcefile in ipairs(batchcxx.sourcefiles) do
+                local objfile = target:objectfile(sourcefile)
+                local depfile = target:objectfile(objfile)
+                table.insert(target:objectfiles(), objfile)
+                table.insert(batchcxx.objectfiles, objfile)
+                table.insert(batchcxx.dependfiles, depfile)
+            end
+            build_objectfiles(target, jobgraph, batchcxx, opt)
+        end)
     end
-
-    local batchcxx = {
-        rulename = "c.build",
-        sourcekind = "cc",
-        sourcefiles = mysources,
-        objectfiles = {},
-        dependfiles = {}
-    }
-    for _, sourcefile in ipairs(batchcxx.sourcefiles) do
-        local objfile = target:objectfile(sourcefile)
-        local depfile = target:objectfile(objfile)
-        table.insert(target:objectfiles(), objfile)
-        table.insert(batchcxx.objectfiles, objfile)
-        table.insert(batchcxx.dependfiles, depfile)
-    end
-    build_objectfiles(target, jobgraph, batchcxx, opt)
 end
