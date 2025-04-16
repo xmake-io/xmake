@@ -40,16 +40,10 @@
  * private implementation
  */
 
-static tb_void_t xm_thread_lni_initalizer(xm_engine_ref_t engine, lua_State* lua)
-{
-    tb_trace_i("thread: initializer");
-    tb_trace_i("thread: engine: %p %p", engine, xm_engine_get(lua));
-}
-
 static tb_int_t xm_thread_func(tb_cpointer_t priv)
 {
     tb_trace_i("thread: start ..");
-    xm_engine_ref_t engine = xm_engine_init(XM_THREAD_ENGINE_NAME, xm_thread_lni_initalizer);
+    xm_engine_ref_t engine = xm_engine_init(XM_THREAD_ENGINE_NAME, tb_null);
     if (engine)
     {
         tb_char_t* argv[] = {XM_THREAD_ENGINE_NAME, tb_null};
