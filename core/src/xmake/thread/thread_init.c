@@ -31,6 +31,15 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * private implementation
+ */
+static tb_int_t xm_thread_func(tb_cpointer_t priv)
+{
+    tb_trace_i("thread ..");
+    return 0;
+}
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 tb_int_t xm_thread_init(lua_State* lua)
@@ -38,5 +47,15 @@ tb_int_t xm_thread_init(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    return 0;
+    // get thread name
+    tb_char_t const* name = luaL_checkstring(lua, 1);
+
+    // get stack size
+    tb_size_t stacksize = (tb_size_t)luaL_checkinteger(lua, 4);
+
+    // init thread
+    tb_thread_ref_t thread = tb_thread_init(name, xm_thread_func, tb_null, stacksize);
+    if (thread) xm_lua_pushpointer(lua, (tb_pointer_t)thread);
+    else lua_pushnil(lua);
+    return 1;
 }

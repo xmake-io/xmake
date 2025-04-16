@@ -38,6 +38,16 @@ tb_int_t xm_thread_resume(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    return 0;
+    // is pointer?
+    if (!xm_lua_ispointer(lua, 1))
+        return 0;
+
+    // get thread
+    tb_thread_ref_t thread = (tb_thread_ref_t)xm_lua_topointer(lua, 1);
+    tb_check_return_val(thread, 0);
+
+    // resume thread
+    lua_pushboolean(lua, tb_thread_resume(thread));
+    return 1;
 }
 
