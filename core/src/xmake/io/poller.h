@@ -34,7 +34,7 @@
  *
  * @return          the io poller
  */
-tb_poller_ref_t     xm_io_poller(tb_noarg_t);
+tb_poller_ref_t     xm_io_poller(lua_State* lua);
 
 #endif
 

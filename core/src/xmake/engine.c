@@ -64,6 +64,11 @@
 #   include "lz4/prefix.h"
 #endif
 
+// for lua
+#ifndef USE_LUAJIT
+#   include "../../lua/lua/lstate.h"
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
@@ -94,6 +99,9 @@ typedef struct __xm_engine_t
 
     // the engine name
     tb_char_t               name[64];
+
+    // the io poller
+    tb_poller_ref_t         poller;
 
 #ifdef XM_EMBED_ENABLE
     // the temporary directory
@@ -1207,6 +1215,7 @@ static tb_void_t xm_engine_init_signal(xm_engine_t* engine)
 }
 
 #if XM_HOOK_LUA_MEMALLOC
+// udata is unused, it has been used by engine. see xm_engine_bind_to_lua()
 static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data, size_t osize, size_t nsize)
 {
     tb_pointer_t ptr = tb_null;
@@ -1337,6 +1346,17 @@ static tb_bool_t xm_engine_extract_programfiles(xm_engine_t* engine, tb_char_t c
 }
 #endif
 
+static tb_void_t xm_engine_bind_to_lua(lua_State* lua, xm_engine_t* engine)
+{
+#ifdef USE_LUAJIT
+    lua_pushlightuserdata(lua, engine);
+    lua_setglobal(lua, "__global_engine");
+#else
+    global_State* g = G(lua);
+    g->ud = engine;
+#endif
+}
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
@@ -1358,8 +1378,8 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         tb_assert_and_check_break(engine->lua);
 
 #if XM_HOOK_LUA_MEMALLOC
-        // hook lua memmory
-        lua_setallocf(engine->lua, xm_engine_lua_realloc, engine->lua);
+        // hook lua memmory, @note we cannot set udata argument, xm_engine_bind_to_lua() has used it.
+        lua_setallocf(engine->lua, xm_engine_lua_realloc, tb_null);
 #endif
 
         // open lua libraries
@@ -1436,6 +1456,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         luaopen_cjson(engine->lua);
         lua_setglobal(engine->lua, "cjson");
 #endif
+
+        // bind engine to lua
+        xm_engine_bind_to_lua(engine->lua, engine);
 
         // init host
         xm_engine_init_host(engine);
@@ -1531,6 +1554,10 @@ tb_void_t xm_engine_exit(xm_engine_ref_t self)
     if (engine->lua) lua_close(engine->lua);
     engine->lua = tb_null;
 
+    // exit poller
+    if (engine->poller) tb_poller_exit(engine->poller);
+    engine->poller = tb_null;
+
     // exit it
     tb_free(engine);
 }
@@ -1621,6 +1648,24 @@ tb_void_t xm_engine_add_embedfiles(xm_engine_ref_t self, tb_byte_t const* data, 
     engine->embedcount++;
 }
 #endif
+tb_poller_ref_t xm_engine_poller(xm_engine_ref_t self)
+{
+    // check
+    xm_engine_t* engine = (xm_engine_t*)self;
+    tb_assert_and_check_return_val(engine, tb_null);
+
+    if (!engine->poller)
+    {
+        // init poller
+        tb_poller_ref_t poller = tb_poller_init(tb_null);
+        tb_assert_and_check_return_val(poller, tb_null);
+
+        // attach poller to the current thread
+        tb_poller_attach(poller);
+        engine->poller = poller;
+    }
+    return engine->poller;
+}
 tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv, xm_engine_lni_initalizer_cb_t lni_initalizer)
 {
     tb_int_t ok = -1;
@@ -1635,5 +1680,18 @@ tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, t
         xm_exit();
     }
     return ok;
+}
+
+xm_engine_ref_t xm_engine_get(lua_State* lua)
+{
+    tb_assert_and_check_return_val(lua, tb_null);
+
+#ifdef USE_LUAJIT
+    lua_getglobal(lua, "__global_engine");
+    return (xm_engine_ref_t)lua_touserdata(lua, -1);
+#else
+    global_State* g = G(lua);
+    return (xm_engine_ref_t)g->ud;
+#endif
 }
 

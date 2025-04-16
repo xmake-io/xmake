@@ -45,7 +45,7 @@ tb_int_t xm_io_poller_support(lua_State* lua)
     tb_size_t events = (tb_size_t)luaL_checknumber(lua, 1);
 
     // support events for poller
-    lua_pushboolean(lua, tb_poller_support(xm_io_poller(), events));
+    lua_pushboolean(lua, tb_poller_support(xm_io_poller(lua), events));
     return 1;
 }
 

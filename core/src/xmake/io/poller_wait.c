@@ -93,7 +93,7 @@ tb_int_t xm_io_poller_wait(lua_State* lua)
 
     // wait it
     lua_newtable(lua);
-    tb_long_t count = tb_poller_wait(xm_io_poller(), xm_io_poller_event, timeout);
+    tb_long_t count = tb_poller_wait(xm_io_poller(lua), xm_io_poller_event, timeout);
     if (count > 0)
     {
         lua_pushinteger(lua, (tb_int_t)count);

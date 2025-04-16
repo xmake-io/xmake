@@ -43,6 +43,7 @@
 static tb_void_t xm_thread_lni_initalizer(xm_engine_ref_t engine, lua_State* lua)
 {
     tb_trace_i("thread: initializer");
+    tb_trace_i("thread: engine: %p %p", engine, xm_engine_get(lua));
 }
 
 static tb_int_t xm_thread_func(tb_cpointer_t priv)
