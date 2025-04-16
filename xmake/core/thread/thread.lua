@@ -84,27 +84,72 @@ function _instance:is_dead()
 end
 
 -- start thread
-function _instance:start(instance)
+function _instance:start()
     if not self:is_ready() then
+        return nil, string.format("%s: cannot start non-ready thread!", self)
+    end
+    assert(not self:cdata())
+
+    local handle, errors = thread.thread_create(self:name(), self._CALLBACK, self._ARGV, self._STACKSIZE)
+    if not handle then
+        return nil, errors or string.format("%s: failed to create thread!", self)
     end
 
-    -- TODO
-    local handle, errors = thread.thread_create(name, callback, argv, stacksize)
-    if not handle then
-        return nil, errors or string.format("failed to create thread(%s)!", name)
-    end
+    self._HANLDE = handle
+    self._STATUS = thread.STATUS_RUNNING
+    return true
 end
 
 -- suspend thread
-function _instance:suspend(instance)
+function _instance:suspend()
+    if not self:is_running() then
+        return nil, string.format("%s: cannot suspend non-running thread!", self)
+    end
+    assert(self:cdata())
+
+    local ok, errors = thread.thread_suspend(self:cdata())
+    if not ok then
+        return nil, errors or string.format("%s: failed to suspend thread!", self)
+    end
+
+    self._STATUS = thread.STATUS_SUSPENDED
+    return true
 end
 
 -- resume thread
-function _instance:resume(instance)
+function _instance:resume()
+    if not self:is_suspended() then
+        return nil, string.format("%s: cannot suspend non-suspended thread!", self)
+    end
+    assert(self:cdata())
+
+    local ok, errors = thread.thread_resume(self:cdata())
+    if not ok then
+        return nil, errors or string.format("%s: failed to resume thread!", self)
+    end
+
+    self._STATUS = thread.STATUS_RUNNING
+    return true
 end
 
 -- wait thread
-function _instance:wait(instance, timeout)
+function _instance:wait(timeout)
+    if self:is_dead() then
+        return 1
+    elseif self:is_ready() then
+        return -1, string.format("%s: cannot wait ready thread!", self)
+    end
+    assert(self:cdata())
+
+    local ok, errors = thread.thread_wait(self:cdata(), timeout)
+    if ok < 0 then
+        return -1, errors or string.format("%s: failed to resume thread!", self)
+    end
+
+    if ok > 0 then
+        self._STATUS = thread.STATUS_DEAD
+    end
+    return ok
 end
 
 -- tostring(thread)
@@ -145,6 +190,7 @@ end
 
 -- get the running thread
 function thread.running()
+    -- TODO
 end
 
 -- return module

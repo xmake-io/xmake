@@ -28,24 +28,11 @@ local raise     = require("sandbox/modules/raise")
 local sandbox_core_thread            = sandbox_core_thread or {}
 local sandbox_core_thread_instance   = sandbox_core_thread_instance or {}
 
--- export the thread types
-sandbox_core_thread.TCP     = thread.TCP
-sandbox_core_thread.UDP     = thread.UDP
-sandbox_core_thread.ICMP    = thread.ICMP
-
--- export the thread families
-sandbox_core_thread.IPV4    = thread.IPV4
-sandbox_core_thread.IPV6    = thread.IPV6
-
--- export the thread events
-sandbox_core_thread.EV_RECV = thread.EV_RECV
-sandbox_core_thread.EV_SEND = thread.EV_SEND
-sandbox_core_thread.EV_CONN = thread.EV_CONN
-sandbox_core_thread.EV_ACPT = thread.EV_ACPT
-
--- export the thread control code
-sandbox_core_thread.CTRL_SET_RECVBUFF = thread.CTRL_SET_RECVBUFF
-sandbox_core_thread.CTRL_SET_SENDBUFF = thread.CTRL_SET_SENDBUFF
+-- export the thread status
+sandbox_core_thread.STATUS_READY     = thread.STATUS_READY
+sandbox_core_thread.STATUS_RUNNING   = thread.STATUS_RUNNING
+sandbox_core_thread.STATUS_SUSPENDED = thread.STATUS_SUSPENDED
+sandbox_core_thread.STATUS_DEAD      = thread.STATUS_DEAD
 
 -- wrap thread
 function _thread_wrap(instance)
