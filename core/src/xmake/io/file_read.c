@@ -58,6 +58,7 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     while (size < 0 || (offset = tb_stream_offset(stream)) < size)
     {
         tb_long_t real = tb_stream_peek(stream, &data, TB_STREAM_BLOCK_MAXN);
+        tb_trace_i("tb_stream_peek: %ld, offset: %lld < %lld", real, tb_stream_offset(stream), size);
         if (real > 0)
         {
             tb_char_t const* e = tb_strnchr((tb_char_t const*)data, real, '\n');
@@ -100,6 +101,7 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* fi
     // check
     tb_assert(buf && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
 
+    tb_trace_i("xm_io_file_buffer_pushline 111");
     // is binary?
     tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
     if (is_binary)
@@ -113,6 +115,7 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* fi
 
     // read line data
     tb_long_t size = xm_io_file_buffer_readline(file->u.file_ref, &file->rcache);
+    tb_trace_i("xm_io_file_buffer_readline %ld", size);
 
     // translate line data
     tb_int_t    result = PL_FAIL;
@@ -171,6 +174,7 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* fi
     if (data && size > 0 && (result == PL_FIN || result == PL_CONL))
         tb_buffer_memncat(buf, (tb_byte_t const*)data, size);
 
+    tb_trace_i("result: %d", result);
     // return result
     return result;
 }
@@ -210,12 +214,14 @@ static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file_t* file, tb_char_
 {
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
+    tb_trace_i("xm_io_file_read_all 111");
 
     // is binary? read all directly
     tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
     if (is_binary)
         return xm_io_file_read_all_directly(lua, file);
 
+    tb_trace_i("xm_io_file_read_all 222");
     // init buffer
     tb_buffer_t buf;
     if (!tb_buffer_init(&buf))
