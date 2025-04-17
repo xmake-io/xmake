@@ -87,6 +87,14 @@ tb_void_t                   xm_engine_register(xm_engine_ref_t engine, tb_char_t
  */
 tb_void_t                   xm_engine_add_embedfiles(xm_engine_ref_t engine, tb_byte_t const* data, tb_size_t size);
 
+/* get lua state from engine
+ *
+ * @param engine            the engine
+ *
+ * @return                  the lua state
+ */
+lua_State*                  xm_engine_lua(xm_engine_ref_t engine);
+
 /* get poller from engine
  *
  * @param engine            the engine
