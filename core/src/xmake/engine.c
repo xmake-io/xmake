@@ -1565,6 +1565,7 @@ tb_void_t xm_engine_exit(xm_engine_ref_t self)
 }
 tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv)
 {
+    tb_trace_i("xm_engine_main 111");
     // check
     xm_engine_t* engine = (xm_engine_t*)self;
     tb_assert_and_check_return_val(engine && engine->lua, -1);
@@ -1574,19 +1575,24 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     if (_isatty(_fileno(stdin))) _setmode(_fileno(stdin), _O_U16TEXT);
 #endif
 
+    tb_trace_i("xm_engine_main 111111");
     // save main arguments to the global variable: _ARGV
     if (!xm_engine_save_arguments(engine, argc, argv, taskargv)) return -1;
 
+    tb_trace_i("xm_engine_main 111111");
     // get the project directory
     tb_char_t path[TB_PATH_MAXN] = {0};
     if (!xm_engine_get_project_directory(engine, path, sizeof(path))) return -1;
 
+    tb_trace_i("xm_engine_main 111111");
     // get the program file
     if (!xm_engine_get_program_file(engine, argv, path, sizeof(path))) return -1;
 
+    tb_trace_i("xm_engine_main 111111");
     // get the program directory
     if (!xm_engine_get_program_directory(engine, path, sizeof(path), path)) return -1;
 
+    tb_trace_i("xm_engine_main 111111");
 #ifdef XM_EMBED_ENABLE
     if (!xm_engine_extract_programfiles(engine, path)) return -1;
 #endif
@@ -1594,6 +1600,7 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     // append the main script path
     tb_strcat(path, "/core/_xmake_main.lua");
 
+    tb_trace_i("xm_engine_main 111");
     // exists this script?
     if (!tb_file_info(path, tb_null))
     {
@@ -1601,8 +1608,9 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
         return -1;
     }
 
+    tb_trace_i("xm_engine_main 111");
     // trace
-    tb_trace_d("main: %s", path);
+    tb_trace_i("main: %s", path);
 
     // load and execute the main script
     if (luaL_dofile(engine->lua, path))
@@ -1611,10 +1619,12 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
         return -1;
     }
 
+    tb_trace_i("xm_engine_main 222");
     // set the error function
     lua_getglobal(engine->lua, "debug");
     lua_getfield(engine->lua, -1, "traceback");
 
+    tb_trace_i("xm_engine_main 444");
     // call the main function
     lua_getglobal(engine->lua, "_xmake_main");
     if (lua_pcall(engine->lua, 0, 1, -2))
@@ -1623,6 +1633,7 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
         return -1;
     }
 
+    tb_trace_i("xm_engine_main end");
     // get the error code
     return (tb_int_t)lua_tonumber(engine->lua, -1);
 }
