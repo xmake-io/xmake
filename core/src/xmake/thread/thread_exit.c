@@ -43,11 +43,21 @@ tb_int_t xm_thread_exit(lua_State* lua)
         return 0;
 
     // get thread
-    tb_thread_ref_t thread = (tb_thread_ref_t)xm_lua_topointer(lua, 1);
+    xm_thread_t* thread = (xm_thread_t*)xm_lua_topointer(lua, 1);
     tb_check_return_val(thread, 0);
 
     // exit thread
-    tb_thread_exit(thread);
+    if (thread)
+    {
+        tb_string_exit(&thread->callback);
+        tb_string_exit(&thread->argv);
+        if (thread->handle)
+        {
+            tb_thread_exit(thread->handle);
+            thread->handle = tb_null;
+        }
+        tb_free(thread);
+    }
     lua_pushboolean(lua, tb_true);
     return 1;
 }
