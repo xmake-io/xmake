@@ -142,6 +142,7 @@ table.insert(package.loaders or package.searchers, 2, function(v)
     local filepath = xmake._PROGRAM_DIR .. "/core/" .. v .. ".lua"
 print("_xmake_main load", filepath)
     local script, serr = _loadfile_impl(filepath)
+    print("_xmake_main load end", script, serr)
     if not script then
         return "\n\tfailed to load " .. filepath .. " : " .. serr
     end
