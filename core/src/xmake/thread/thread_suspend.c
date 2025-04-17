@@ -43,11 +43,11 @@ tb_int_t xm_thread_suspend(lua_State* lua)
         return 0;
 
     // get thread
-    tb_thread_ref_t thread = (tb_thread_ref_t)xm_lua_topointer(lua, 1);
-    tb_check_return_val(thread, 0);
+    xm_thread_t* thread = (xm_thread_t*)xm_lua_topointer(lua, 1);
+    tb_check_return_val(thread && thread->handle, 0);
 
     // suspend thread
-    lua_pushboolean(lua, tb_thread_suspend(thread));
+    lua_pushboolean(lua, tb_thread_suspend(thread->handle));
     return 1;
 }
 

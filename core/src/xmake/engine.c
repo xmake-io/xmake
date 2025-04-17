@@ -1650,6 +1650,14 @@ tb_void_t xm_engine_add_embedfiles(xm_engine_ref_t self, tb_byte_t const* data, 
     engine->embedcount++;
 }
 #endif
+lua_State* xm_engine_lua(xm_engine_ref_t self)
+{
+    // check
+    xm_engine_t* engine = (xm_engine_t*)self;
+    tb_assert_and_check_return_val(engine, tb_null);
+
+    return engine->lua;
+}
 tb_poller_ref_t xm_engine_poller(xm_engine_ref_t self)
 {
     // check
@@ -1684,7 +1692,6 @@ tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, t
     }
     return ok;
 }
-
 xm_engine_ref_t xm_engine_get(lua_State* lua)
 {
     tb_assert_and_check_return_val(lua, tb_null);

@@ -43,15 +43,15 @@ tb_int_t xm_thread_wait(lua_State* lua)
         return 0;
 
     // get thread
-    tb_thread_ref_t thread = (tb_thread_ref_t)xm_lua_topointer(lua, 1);
-    tb_check_return_val(thread, 0);
+    xm_thread_t* thread = (xm_thread_t*)xm_lua_topointer(lua, 1);
+    tb_check_return_val(thread->handle, 0);
 
     // get timeout
     tb_size_t timeout = (tb_size_t)luaL_checkinteger(lua, 2);
 
     // wait thread
     tb_int_t retval;
-    lua_pushinteger(lua, (tb_int_t)tb_thread_wait(thread, timeout, &retval));
+    lua_pushinteger(lua, (tb_int_t)tb_thread_wait(thread->handle, timeout, &retval));
     return 1;
 }
 
