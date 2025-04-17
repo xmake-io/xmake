@@ -1613,8 +1613,15 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     tb_trace_i("main: %s", path);
 
     tb_trace_i("luaL_loadfile 111");
-    luaL_loadfile(engine->lua, path);
-    tb_trace_i("luaL_loadfile eee");
+    int ret = luaL_loadfile(engine->lua, path);
+    tb_trace_i("luaL_loadfile eee: %d", ret);
+
+    if (ret == 0)
+    {
+    tb_trace_i("lua_pcall 111");
+        lua_pcall(engine->lua, 0, LUA_MULTRET, 0);
+    tb_trace_i("lua_pcall eee");
+    }
 
     // load and execute the main script
     if (luaL_dofile(engine->lua, path))

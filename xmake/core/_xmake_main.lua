@@ -18,6 +18,7 @@
 -- @file        _xmake_main.lua
 --
 
+print("_xmake_main aaaa")
 -- init namespace: xmake
 xmake                   = xmake or {}
 xmake._NAME             = _NAME or "xmake"
@@ -135,6 +136,7 @@ function loadfile(filepath, mode, opt)
     return script, errors
 end
 
+print("_xmake_main bbbb")
 -- init package path, package.searchers for lua5.4
 table.insert(package.loaders or package.searchers, 2, function(v)
     local filepath = xmake._PROGRAM_DIR .. "/core/" .. v .. ".lua"
@@ -145,9 +147,11 @@ table.insert(package.loaders or package.searchers, 2, function(v)
     return script
 end)
 
+print("_xmake_main cccc")
 -- load modules
 local main = require("main")
 
+print("_xmake_main eeee")
 -- the main function
 function _xmake_main()
     return main.entry()
