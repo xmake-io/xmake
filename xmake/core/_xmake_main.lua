@@ -80,24 +80,30 @@ function _loadfile_impl(filepath, mode, opt)
         displaypath = filepath
     end
 
+    print("file_open", filepath)
     -- load script data from file
     local file, ferrors = io.file_open(filepath, binary and "rb" or "r")
+    print("file_open done", file, ferrors)
     if not file then
         ferrors = string.format("file(%s): %s", filepath, ferrors or "open failed!")
         return nil, ferrors
     end
 
+    print("file_read ..")
     local data, rerrors = io.file_read(file, "a")
+    print("file_read done")
     if not data then
         rerrors = string.format("file(%s): %s", filepath, rerrors or "read failed!")
         return nil, rerrors
     end
+    print("file_close ...")
     io.file_close(file)
 
     -- do on_load()
     if opt.on_load then
         data = opt.on_load(data) or data
     end
+    print("load ..")
 
     -- load script from string
     return load(data, "@" .. displaypath, mode)
