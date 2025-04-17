@@ -206,6 +206,7 @@ static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
         }
         else break;
     }
+    tb_trace_i("xm_io_file_read_all_directly end");
 
     if (tb_buffer_size(&buf))
         lua_pushlstring(lua, (tb_char_t const*)tb_buffer_data(&buf), tb_buffer_size(&buf));
