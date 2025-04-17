@@ -188,12 +188,15 @@ static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
     if (!tb_buffer_init(&buf))
         xm_io_return_error(lua, "init buffer failed!");
 
+    tb_trace_i("xm_io_file_read_all_directly ...");
     // read all
     tb_byte_t           data[TB_STREAM_BLOCK_MAXN];
     tb_stream_ref_t     stream = file->u.file_ref;
     while (!tb_stream_beof(stream))
     {
+    tb_trace_i("tb_stream_read ..., offset %lld < %lld", tb_stream_offset(stream), tb_stream_size(stream));
         tb_long_t real = tb_stream_read(stream, data, sizeof(data));
+    tb_trace_i("tb_stream_read %ld", real);
         if (real > 0)
             tb_buffer_memncat(&buf, data, real);
         else if (!real)
