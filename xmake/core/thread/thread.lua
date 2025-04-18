@@ -91,11 +91,14 @@ function _instance:start()
     assert(not self:cdata())
 
     -- serialize and pass callback and arguments to this thread
-    local callback = string.serialize(self._CALLBACK, {strip = true, indent = false})
-    local argv = string.serialize(self._ARGV, {strip = true, indent = false})
+    local callinfo = {
+        callback = self._CALLBACK,
+        argv = self._ARGV
+    }
+    callinfo = string.serialize(callinfo, {strip = true, indent = false})
 
     -- init and start thread
-    local handle, errors = thread.thread_init(self:name(), callback, argv, self._STACKSIZE)
+    local handle, errors = thread.thread_init(self:name(), callinfo, self._STACKSIZE)
     if not handle then
         return nil, errors or string.format("%s: failed to create thread!", self)
     end
