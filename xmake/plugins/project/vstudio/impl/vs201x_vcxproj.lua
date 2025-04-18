@@ -30,7 +30,7 @@ import("detect.sdks.find_cuda")
 import("vsfile")
 import("vsutils")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
-import("rules.c++.modules.modules_support.compiler_support", {rootdir = os.programdir()})
+import("rules.c++.modules.compiler_support", {rootdir = os.programdir()})
 
 function _make_dirs(dir, vcxprojdir)
     dir = dir:trim()

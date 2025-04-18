@@ -31,7 +31,7 @@ import("core.language.language")
 import("utils.progress")
 import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
-import("rules.c++.modules.modules_support.compiler_support", {rootdir = os.programdir()})
+import("rules.c++.modules.compiler_support", {rootdir = os.programdir()})
 
 function init(self)
 

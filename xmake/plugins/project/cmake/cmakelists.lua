@@ -31,7 +31,7 @@ import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("private.utils.target", {alias = "target_utils"})
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
-import("rules.c++.modules.modules_support.compiler_support", {alias = "module_compiler_support", rootdir = os.programdir()})
+import("rules.c++.modules.compiler_support", {alias = "module_compiler_support", rootdir = os.programdir()})
 
 -- get cmake version
 function _get_cmake_version()

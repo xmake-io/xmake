@@ -28,7 +28,7 @@ rule("c++.build.modules")
     add_deps("c++.build.modules.install")
 
     on_config(function (target)
-        import("modules_support.compiler_support")
+        import("compiler_support")
 
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         -- @see https://github.com/xmake-io/xmake/issues/1858
@@ -73,8 +73,8 @@ rule("c++.build.modules.builder")
     -- generate module dependencies
     on_prepare_files(function (target, jobgraph, sourcebatch, opt)
         if target:data("cxx.has_modules") then
-            import("modules_support.builder")
-            import("modules_support.dependency_scanner")
+            import("builder")
+            import("dependency_scanner")
 
             -- patch sourcebatch
             builder.patch_sourcebatch(target, sourcebatch)
@@ -87,9 +87,9 @@ rule("c++.build.modules.builder")
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, jobgraph, sourcebatch, opt)
         if target:data("cxx.has_modules") then
-            import("modules_support.compiler_support")
-            import("modules_support.dependency_scanner")
-            import("modules_support.builder")
+            import("compiler_support")
+            import("dependency_scanner")
+            import("builder")
 
             -- get module dependencies
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch)
@@ -116,9 +116,9 @@ rule("c++.build.modules.builder")
     -- serial compilation only, usually used to support project generator
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if target:data("cxx.has_modules") then
-            import("modules_support.compiler_support")
-            import("modules_support.dependency_scanner")
-            import("modules_support.builder")
+            import("compiler_support")
+            import("dependency_scanner")
+            import("builder")
 
             -- get module dependencies
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch)
@@ -146,7 +146,7 @@ rule("c++.build.modules.builder")
 
     after_clean(function (target)
         import("core.base.option")
-        import("modules_support.compiler_support")
+        import("compiler_support")
         import("private.action.clean.remove_files")
 
         -- we cannot use target:data("cxx.has_modules"),
@@ -166,8 +166,8 @@ rule("c++.build.modules.install")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     before_install(function (target)
-        import("modules_support.compiler_support")
-        import("modules_support.builder")
+        import("compiler_support")
+        import("builder")
 
         -- we cannot use target:data("cxx.has_modules"),
         -- because on_config will be not called when installing targets
@@ -180,7 +180,7 @@ rule("c++.build.modules.install")
     end)
 
     before_uninstall(function (target)
-        import("modules_support.compiler_support")
+        import("compiler_support")
         if compiler_support.contains_modules(target) then
             compiler_support.add_installfiles_for_modules(target)
         end
