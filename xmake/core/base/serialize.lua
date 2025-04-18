@@ -167,7 +167,6 @@ function serialize._makefunction(func, opt)
 end
 
 function serialize._resolvefunction(root, fenv, bytecode)
-    -- check
     if type(bytecode) ~= "string" then
         return nil, string.format("invalid bytecode (string expected, got %s)", type(bytecode))
     end
@@ -191,7 +190,10 @@ function serialize._resolvefunction(root, fenv, bytecode)
             if upname == nil or upname == "" then
                 break
             end
-            debug.setupvalue(func, i, fenv[upname])
+            local upvalue = fenv[upname]
+            if upvalue ~= nil then
+                debug.setupvalue(func, i, upvalue)
+            end
         end
     end
     return func
@@ -477,8 +479,6 @@ end
 -- @return              obj, errors
 --
 function serialize.load(str)
-
-    -- check
     assert(str)
 
     -- load string
