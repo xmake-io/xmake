@@ -49,10 +49,21 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv)
     xm_engine_ref_t engine = xm_engine_init(XM_THREAD_ENGINE_NAME, tb_null);
     if (engine)
     {
-        tb_char_t* taskargv[] = {"lua", (tb_char_t*)tb_string_cstr(&thread->callback), tb_null};
+        // pass callinfo
+        lua_State* lua = xm_engine_lua(engine);
+        tb_assert(lua);
 
+        tb_char_t const* callinfo_data = tb_string_cstr(&thread->callinfo);
+        tb_size_t        callinfo_size = tb_string_size(&thread->callinfo);
+        if (callinfo_data && callinfo_size)
+        {
+            lua_pushlstring(lua, callinfo_data, callinfo_size);
+            lua_setglobal(lua, "_THREAD_CALLINFO");
+        }
+
+        // start engine
         tb_char_t* argv[] = {XM_THREAD_ENGINE_NAME, tb_null};
-        xm_engine_main(engine, 1, argv, taskargv);
+        xm_engine_main(engine, 1, argv, tb_null);
         xm_engine_exit(engine);
     }
     tb_trace_i("thread: end");
@@ -74,28 +85,20 @@ tb_int_t xm_thread_init(lua_State* lua)
         // get thread name
         tb_char_t const* name = luaL_checkstring(lua, 1);
 
-        // get callback
-        size_t              callback_size = 0;
-        tb_char_t const*    callback_data = luaL_checklstring(lua, 2, &callback_size);
-        tb_assert_and_check_break(callback_data && callback_size);
-
-        // get argv
-        size_t              argv_size = 0;
-        tb_char_t const*    argv_data = luaL_checklstring(lua, 3, &argv_size);
-        tb_assert_and_check_break(argv_data && argv_size);
+        // get callinfo
+        size_t              callinfo_size = 0;
+        tb_char_t const*    callinfo_data = luaL_checklstring(lua, 2, &callinfo_size);
+        tb_assert_and_check_break(callinfo_data && callinfo_size);
 
         // get stack size
-        tb_size_t stacksize = (tb_size_t)luaL_checkinteger(lua, 4);
+        tb_size_t stacksize = (tb_size_t)luaL_checkinteger(lua, 3);
 
         // init thread
         thread = tb_malloc0_type(xm_thread_t);
         tb_assert_and_check_break(thread);
 
-        tb_string_init(&thread->callback);
-        tb_string_cstrncpy(&thread->callback, callback_data, callback_size);
-
-        tb_string_init(&thread->argv);
-        tb_string_cstrncpy(&thread->argv, argv_data, argv_size);
+        tb_string_init(&thread->callinfo);
+        tb_string_cstrncpy(&thread->callinfo, callinfo_data, callinfo_size);
 
         // create and start thread
         thread->handle = tb_thread_init(name, xm_thread_func, thread, stacksize);
@@ -110,8 +113,7 @@ tb_int_t xm_thread_init(lua_State* lua)
     {
         if (thread)
         {
-            tb_string_exit(&thread->callback);
-            tb_string_exit(&thread->argv);
+            tb_string_exit(&thread->callinfo);
             if (thread->handle)
             {
                 tb_thread_exit(thread->handle);
