@@ -575,10 +575,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
     if targetkind == "shared" and self:is_plat("mingw") then
-        local implibdir = path.directory(targetfile)
-        if opt.target then
-            implibdir = opt.target:implibdir()
-        end
+        local implibdir = opt.implibdir or path.directory(targetfile)
         table.insert(flags_extra, "-Wl,--out-implib," .. path.join(implibdir, path.basename(targetfile) .. ".dll.a"))
     end
 
@@ -601,8 +598,8 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     os.mkdir(path.directory(targetfile))
 
     -- ensure the implib directory
-    if opt and opt.target and opt.target:implibdir() then
-        os.mkdir(opt.target:implibdir())
+    if opt.implibdir then
+        os.mkdir(opt.implibdir)
     end
 
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
