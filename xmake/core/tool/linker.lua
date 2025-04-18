@@ -229,8 +229,11 @@ function linker:link(objectfiles, targetfile, opt)
     opt = table.copy(opt)
     opt.target = self:target()
 
-    if self:_targetkind() == "shared" and self:target():implibdir() then
-        opt.implibdir = self:target():implibdir()
+    if self:target():type() == "target" then
+        local implibdir = self:target():implibdir()
+        if implibdir then
+            opt.implibdir = implibdir
+        end
     end
 
     profiler:enter(self:name(), "link", targetfile)
