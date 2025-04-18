@@ -27,11 +27,11 @@ import("private.action.build.object", {alias = "objectbuilder"})
 import("core.tool.compiler")
 import("core.project.config")
 import("core.project.depend")
-import("compiler_support")
+import("support")
 import(".builder", {inherit = true})
 
 function _compile_one_step(target, bmifile, sourcefile, objectfile, opt)
-    local module_outputflag = compiler_support.get_moduleoutputflag(target)
+    local module_outputflag = support.get_moduleoutputflag(target)
     if opt.is_mapped_bmi then
         -- get flags
         if module_outputflag then
@@ -81,7 +81,7 @@ end
 -- get flags for building a headerunit
 function _make_headerunitflags(target, headerunit, bmifile)
 
-    local module_headerflag = compiler_support.get_moduleheaderflag(target)
+    local module_headerflag = support.get_moduleheaderflag(target)
     assert(module_headerflag, "compiler(clang): does not support c++ header units!")
 
     local local_directory = (headerunit.type == ":quote") and {"-I" .. path.directory(headerunit.path)} or {}
@@ -132,12 +132,12 @@ end
 --
 function _get_requiresflags(target, module, opt)
 
-    local modulefileflag = compiler_support.get_modulefileflag(target)
+    local modulefileflag = support.get_modulefileflag(target)
     local name = module.name
     local cachekey = target:fullname() .. name
 
     local requires, requires_changed = is_dependencies_changed(target, module)
-    local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
+    local requiresflags = support.memcache():get2(cachekey, "requiresflags")
     if not requiresflags or requires_changed then
         requiresflags = {}
         for required in requires:orderitems() do
@@ -160,8 +160,8 @@ function _get_requiresflags(target, module, opt)
             end
         end
         requiresflags = table.unique(requiresflags)
-        compiler_support.memcache():set2(cachekey, "requiresflags", requiresflags)
-        compiler_support.memcache():set2(cachekey, "oldrequires", requires)
+        support.memcache():set2(cachekey, "requiresflags", requiresflags)
+        support.memcache():set2(cachekey, "oldrequires", requires)
     end
     return requiresflags
 end
@@ -182,12 +182,12 @@ end
 
 -- populate module map
 function populate_module_map(target, modules)
-    local clang_version = compiler_support.get_clang_version(target)
+    local clang_version = support.get_clang_version(target)
     local support_namedmodule = semver.compare(clang_version, "16.0") >= 0
     for _, module in pairs(modules) do
-        local name, provide, cppfile = compiler_support.get_provided_module(module)
+        local name, provide, cppfile = support.get_provided_module(module)
         if provide then
-            local bmifile = compiler_support.get_bmi_path(provide.bmi)
+            local bmifile = support.get_bmi_path(provide.bmi)
             add_module_to_target_mapper(target, name, cppfile, bmifile, {deps = module.requires, namedmodule = support_namedmodule})
         end
     end
@@ -210,8 +210,8 @@ end
 -- build module file for batchjobs
 function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
-    local name, provide, _ = compiler_support.get_provided_module(opt.module)
-    local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
+    local name, provide, _ = support.get_provided_module(opt.module)
+    local bmifile = provide and support.get_bmi_path(provide.bmi)
     local dryrun = option.get("dry-run")
 
     return {
@@ -220,13 +220,13 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         sourcefile = opt.cppfile,
         job = batchjobs:newjob(target:fullname() .. "/module/" .. (name or opt.cppfile), function(index, total, jobopt)
             local mapped_bmi
-            if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
+            if provide and support.memcache():get2(target:fullname() .. name, "reuse") then
                 mapped_bmi = get_from_target_mapper(target, name).bmi
             end
 
             local build, dependinfo
             local dependfile = target:dependfile(bmifile or opt.objectfile)
-            if provide or compiler_support.has_module_extension(opt.cppfile) then
+            if provide or support.has_module_extension(opt.cppfile) then
                 build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
                 -- needed to detect rebuild of dependencies
@@ -247,7 +247,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
             if build then
                 -- compile if it's a named module
-                if provide or compiler_support.has_module_extension(opt.cppfile) then
+                if provide or support.has_module_extension(opt.cppfile) then
                     if not dryrun then
                         local objectdir = path.directory(opt.objectfile)
                         if not os.isdir(objectdir) then
@@ -281,20 +281,20 @@ end
 -- build module file for jobgraph
 function make_module_jobgraph(target, jobgraph, opt)
 
-    local name, provide, _ = compiler_support.get_provided_module(opt.module)
-    local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
+    local name, provide, _ = support.get_provided_module(opt.module)
+    local bmifile = provide and support.get_bmi_path(provide.bmi)
     local dryrun = option.get("dry-run")
 
     local jobname = target:fullname() .. "/module/" .. (name or opt.cppfile)
     jobgraph:add(jobname, function(index, total, jobopt)
         local mapped_bmi
-        if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
+        if provide and support.memcache():get2(target:fullname() .. name, "reuse") then
             mapped_bmi = get_from_target_mapper(target, name).bmi
         end
 
         local build, dependinfo
         local dependfile = target:dependfile(bmifile or opt.objectfile)
-        if provide or compiler_support.has_module_extension(opt.cppfile) then
+        if provide or support.has_module_extension(opt.cppfile) then
             build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
             -- needed to detect rebuild of dependencies
@@ -315,7 +315,7 @@ function make_module_jobgraph(target, jobgraph, opt)
 
         if build then
             -- compile if it's a named module
-            if provide or compiler_support.has_module_extension(opt.cppfile) then
+            if provide or support.has_module_extension(opt.cppfile) then
                 if not dryrun then
                     local objectdir = path.directory(opt.objectfile)
                     if not os.isdir(objectdir) then
@@ -350,11 +350,11 @@ end
 -- build module file for batchcmds
 function make_module_buildcmds(target, batchcmds, opt)
 
-    local name, provide, _ = compiler_support.get_provided_module(opt.module)
-    local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
+    local name, provide, _ = support.get_provided_module(opt.module)
+    local bmifile = provide and support.get_bmi_path(provide.bmi)
 
     local mapped_bmi
-    if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
+    if provide and support.memcache():get2(target:fullname() .. name, "reuse") then
         mapped_bmi = get_from_target_mapper(target, name).bmi
     end
 
@@ -364,7 +364,7 @@ function make_module_buildcmds(target, batchcmds, opt)
     end
 
     -- compile if it's a named module
-    if provide or compiler_support.has_module_extension(opt.cppfile) then
+    if provide or support.has_module_extension(opt.cppfile) then
         batchcmds:mkdir(path.directory(opt.objectfile))
 
         local fileconfig = target:fileconfig(opt.cppfile)

@@ -28,15 +28,15 @@ import("core.tool.compiler")
 import("core.project.config")
 import("core.project.depend")
 import("private.tools.vstool")
-import("compiler_support")
+import("support")
 import(".builder", {inherit = true})
 
 -- get flags for building a module
 function _make_modulebuildflags(target, provide, bmifile, opt)
-    local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
-    local ifconlyflag = compiler_support.get_ifconlyflag(target)
-    local interfaceflag = compiler_support.get_interfaceflag(target)
-    local internalpartitionflag = compiler_support.get_internalpartitionflag(target)
+    local ifcoutputflag = support.get_ifcoutputflag(target)
+    local ifconlyflag = support.get_ifconlyflag(target)
+    local interfaceflag = support.get_interfaceflag(target)
+    local internalpartitionflag = support.get_internalpartitionflag(target)
     local ifconly = (not opt.build_objectfile and ifconlyflag)
 
     local flags
@@ -48,9 +48,9 @@ function _make_modulebuildflags(target, provide, bmifile, opt)
     return flags
 end
 function _compile_one_step(target, bmifile, sourcefile, objectfile, provide, opt)
-    local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
-    local interfaceflag = compiler_support.get_interfaceflag(target)
-    local internalpartitionflag = compiler_support.get_internalpartitionflag(target)
+    local ifcoutputflag = support.get_ifcoutputflag(target)
+    local interfaceflag = support.get_interfaceflag(target)
+    local internalpartitionflag = support.get_internalpartitionflag(target)
     -- get flags
     local flags = {"-TP"}
     if provide then
@@ -64,9 +64,9 @@ function _compile_one_step(target, bmifile, sourcefile, objectfile, provide, opt
 end
 
 function _compile_bmi_step(target, bmifile, sourcefile, objectfile, provide, opt)
-    local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
-    local interfaceflag = compiler_support.get_interfaceflag(target)
-    local ifconlyflag = compiler_support.get_ifconlyflag(target)
+    local ifcoutputflag = support.get_ifcoutputflag(target)
+    local interfaceflag = support.get_interfaceflag(target)
+    local ifconlyflag = support.get_ifconlyflag(target)
 
     if not ifconlyflag then
         _compile_one_step(target, bmifile, sourcefile, objectfile, provide, opt)
@@ -81,9 +81,9 @@ function _compile_bmi_step(target, bmifile, sourcefile, objectfile, provide, opt
 end
 
 function _compile_objectfile_step(target, bmifile, sourcefile, objectfile, provide, opt)
-    local ifconlyflag = compiler_support.get_ifconlyflag(target)
-    local interfaceflag = compiler_support.get_interfaceflag(target)
-    local internalpartitionflag = compiler_support.get_internalpartitionflag(target)
+    local ifconlyflag = support.get_ifconlyflag(target)
+    local interfaceflag = support.get_interfaceflag(target)
+    local internalpartitionflag = support.get_internalpartitionflag(target)
 
     local flags = {"-TP", (provide and provide.interface) and interfaceflag or internalpartitionflag}
     if not ifconlyflag then
@@ -102,10 +102,10 @@ end
 function _make_headerunitflags(target, headerunit, bmifile)
 
     -- get flags
-    local exportheaderflag = compiler_support.get_exportheaderflag(target)
-    local headernameflag = compiler_support.get_headernameflag(target)
-    local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
-    local ifconlyflag = compiler_support.get_ifconlyflag(target)
+    local exportheaderflag = support.get_exportheaderflag(target)
+    local headernameflag = support.get_headernameflag(target)
+    local ifcoutputflag = support.get_ifcoutputflag(target)
+    local ifconlyflag = support.get_ifconlyflag(target)
     assert(headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
     local local_directory = (headerunit.type == ":quote") and {"-I" .. path.directory(headerunit.path)} or {}
@@ -163,14 +163,14 @@ end
 --
 function _get_requiresflags(target, module, opt)
 
-    local referenceflag = compiler_support.get_referenceflag(target)
-    local headerunitflag = compiler_support.get_headerunitflag(target)
+    local referenceflag = support.get_referenceflag(target)
+    local headerunitflag = support.get_headerunitflag(target)
 
     local name = module.name
     local cachekey = target:fullname() .. name
 
     local requires, requires_changed = is_dependencies_changed(target, module)
-    local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
+    local requiresflags = support.memcache():get2(cachekey, "requiresflags")
     if not requiresflags or requires_changed then
         local deps_flags = {}
         for required in requires:orderitems() do
@@ -210,8 +210,8 @@ function _get_requiresflags(target, module, opt)
                 contains[name] = true
             end
         end
-        compiler_support.memcache():set2(cachekey, "requiresflags", requiresflags)
-        compiler_support.memcache():set2(cachekey, "oldrequires", requires)
+        support.memcache():set2(cachekey, "requiresflags", requiresflags)
+        support.memcache():set2(cachekey, "oldrequires", requires)
     end
     return requiresflags
 end
@@ -233,9 +233,9 @@ end
 -- populate module map
 function populate_module_map(target, modules)
     for _, module in pairs(modules) do
-        local name, provide, cppfile = compiler_support.get_provided_module(module)
+        local name, provide, cppfile = support.get_provided_module(module)
         if provide then
-            local bmifile = compiler_support.get_bmi_path(provide.bmi)
+            local bmifile = support.get_bmi_path(provide.bmi)
             add_module_to_target_mapper(target, name, cppfile, bmifile, {deps = module.requires})
         end
     end
@@ -257,8 +257,8 @@ end
 
 -- build module file for batchjobs
 function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
-    local name, provide, _ = compiler_support.get_provided_module(opt.module)
-    local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
+    local name, provide, _ = support.get_provided_module(opt.module)
+    local bmifile = provide and support.get_bmi_path(provide.bmi)
     local dryrun = option.get("dry-run")
 
     return {
@@ -268,13 +268,13 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         job = batchjobs:newjob(target:fullname() .. "/module/" .. (name or opt.cppfile), function(index, total, jobopt)
 
             local mapped_bmi
-            if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
+            if provide and support.memcache():get2(target:fullname() .. name, "reuse") then
                 mapped_bmi = get_from_target_mapper(target, name).bmi
             end
 
             local build, dependinfo
             local dependfile = target:dependfile(bmifile or opt.objectfile)
-            if provide or compiler_support.has_module_extension(opt.cppfile) then
+            if provide or support.has_module_extension(opt.cppfile) then
                 build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
                 -- needed to detect rebuild of dependencies
@@ -295,7 +295,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
             if build then
                 -- compile if it's a named module
-                if provide or compiler_support.has_module_extension(opt.cppfile) then
+                if provide or support.has_module_extension(opt.cppfile) then
                     if not dryrun then
                         local objectdir = path.directory(opt.objectfile)
                         if not os.isdir(objectdir) then
@@ -327,20 +327,20 @@ end
 
 -- build module file for jobgraph
 function make_module_jobgraph(target, jobgraph, opt)
-    local name, provide, _ = compiler_support.get_provided_module(opt.module)
-    local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
+    local name, provide, _ = support.get_provided_module(opt.module)
+    local bmifile = provide and support.get_bmi_path(provide.bmi)
     local dryrun = option.get("dry-run")
 
     local jobname = target:fullname() .. "/module/" .. (name or opt.cppfile)
     jobgraph:add(jobname, function(index, total, jobopt)
         local mapped_bmi
-        if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
+        if provide and support.memcache():get2(target:fullname() .. name, "reuse") then
             mapped_bmi = get_from_target_mapper(target, name).bmi
         end
 
         local build, dependinfo
         local dependfile = target:dependfile(bmifile or opt.objectfile)
-        if provide or compiler_support.has_module_extension(opt.cppfile) then
+        if provide or support.has_module_extension(opt.cppfile) then
             build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
             -- needed to detect rebuild of dependencies
@@ -361,7 +361,7 @@ function make_module_jobgraph(target, jobgraph, opt)
 
         if build then
             -- compile if it's a named module
-            if provide or compiler_support.has_module_extension(opt.cppfile) then
+            if provide or support.has_module_extension(opt.cppfile) then
                 if not dryrun then
                     local objectdir = path.directory(opt.objectfile)
                     if not os.isdir(objectdir) then
@@ -394,11 +394,11 @@ end
 -- build module file for batchcmds
 function make_module_buildcmds(target, batchcmds, opt)
 
-    local name, provide, _ = compiler_support.get_provided_module(opt.module)
-    local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
+    local name, provide, _ = support.get_provided_module(opt.module)
+    local bmifile = provide and support.get_bmi_path(provide.bmi)
 
     local mapped_bmi
-    if provide and compiler_support.memcache():get2(target:fullname() .. name, "reuse") then
+    if provide and support.memcache():get2(target:fullname() .. name, "reuse") then
         mapped_bmi = get_from_target_mapper(target, name).bmi
     end
 
@@ -408,7 +408,7 @@ function make_module_buildcmds(target, batchcmds, opt)
     end
 
     -- compile if it's a named module
-    if provide or compiler_support.has_module_extension(opt.cppfile) then
+    if provide or support.has_module_extension(opt.cppfile) then
         batchcmds:mkdir(path.directory(opt.objectfile))
 
         local fileconfig = target:fileconfig(opt.cppfile)

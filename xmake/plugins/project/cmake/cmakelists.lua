@@ -31,7 +31,7 @@ import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("private.utils.target", {alias = "target_utils"})
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
-import("rules.c++.modules.compiler_support", {alias = "module_compiler_support", rootdir = os.programdir()})
+import("rules.c++.modules.support", {alias = "module_support", rootdir = os.programdir()})
 
 -- get cmake version
 function _get_cmake_version()
@@ -49,7 +49,7 @@ end
 -- has c++ modules sources
 function _has_cxxmodules_sources()
     for _, target in ipairs(project.ordertargets()) do
-        if module_compiler_support.contains_modules(target) then
+        if module_support.contains_modules(target) then
             return true
         end
     end

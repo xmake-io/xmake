@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki, Arthapz
--- @file        msvc/compiler_support.lua
+-- @file        msvc/support.lua
 --
 
 -- imports
 import("core.base.semver")
 import("core.project.config")
 import("lib.detect.find_tool")
-import(".compiler_support", {inherit = true})
+import(".support", {inherit = true})
 
 -- load module support for the current target
 function load(target)
