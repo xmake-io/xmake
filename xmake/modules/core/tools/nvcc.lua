@@ -274,7 +274,7 @@ function nf_pcxxheader(self, pcheaderfile)
 end
 
 -- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
+function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
@@ -287,8 +287,12 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
     if targetkind == "shared" and self:is_plat("mingw") then
+        local implibdir = path.directory(targetfile)
+        if opt.target then
+            implibdir = opt.target:implibdir()
+        end
         table.insert(flags_extra, "-Xlinker")
-        table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".dll.a"))
+        table.insert(flags_extra, "-Wl,--out-implib," .. path.join(implibdir, path.basename(targetfile) .. ".dll.a"))
     end
 
     -- make link args
@@ -296,9 +300,15 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
 end
 
 -- link the target file
-function link(self, objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags, opt)
     os.mkdir(path.directory(targetfile))
-    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+
+    -- ensure the implib directory
+    if opt and opt.target and opt.target:implibdir() then
+        os.mkdir(opt.target:implibdir())
+    end
+
+    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     os.runv(program, argv, {envs = self:runenvs()})
 end
 

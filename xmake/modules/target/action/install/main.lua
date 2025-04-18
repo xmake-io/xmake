@@ -232,12 +232,12 @@ function _install_shared(target, opt)
     os.mkdir(bindir)
     local targetfile = target:targetfile()
 
-    if target:is_plat("windows", "mingw") then
+    if target:is_plat("windows", "mingw") and target:is_shared() then
         -- install *.lib for shared/windows (*.dll) target
         -- @see https://github.com/xmake-io/xmake/issues/714
         os.vcp(target:targetfile(), bindir)
         local libdir = _get_target_libdir(target, opt)
-        local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
+        local targetfile_lib = path.join(target:implibdir(), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
         if os.isfile(targetfile_lib) then
             os.mkdir(libdir)
             os.vcp(targetfile_lib, libdir)
