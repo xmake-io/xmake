@@ -67,6 +67,21 @@ function linker:_add_flags_from_linker(flags)
     end
 end
 
+-- add implib-dir to the options
+function linker:_add_implibdir_to_options(opt)
+    opt = opt or {}
+    if not opt.implibdir then
+        local target = self:target()
+        if target:type() == "target" then
+            local implibdir = target:implibdir()
+            if implibdir then
+                opt.implibdir = implibdir
+            end
+        end
+    end
+    return opt
+end
+
 -- load tool
 function linker._load_tool(targetkind, sourcekinds, target)
 
@@ -229,12 +244,7 @@ function linker:link(objectfiles, targetfile, opt)
     opt = table.copy(opt)
     opt.target = self:target()
 
-    if self:target():type() == "target" then
-        local implibdir = self:target():implibdir()
-        if implibdir then
-            opt.implibdir = implibdir
-        end
-    end
+    opt = self:_add_implibdir_to_options(opt)
 
     profiler:enter(self:name(), "link", targetfile)
     local ok, errors = sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, linkflags, opt)
@@ -244,11 +254,13 @@ end
 
 -- get the link arguments list
 function linker:linkargv(objectfiles, targetfile, opt)
+    opt = self:_add_implibdir_to_options(opt)
     return self:_tool():linkargv(table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt), opt)
 end
 
 -- get the link command
 function linker:linkcmd(objectfiles, targetfile, opt)
+    opt = self:_add_implibdir_to_options(opt)
     return os.args(table.join(self:linkargv(objectfiles, targetfile, opt)))
 end
 
