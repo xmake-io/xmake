@@ -80,7 +80,13 @@ function main(target)
             end
         end
 
-        _add_export_value(target, "linkdirs", path.directory(targetfile))
+        local implibdir = target:implibdir()
+        if implibdir then
+            _add_export_value(target, "linkdirs", implibdir)
+        else
+            _add_export_value(target, "linkdirs", path.directory(targetfile))
+        end
+
         if target:rule("go") then
             -- we need to add includedirs to support import modules for golang
             _add_export_value(target, "includedirs", path.directory(targetfile))

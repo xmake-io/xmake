@@ -1611,18 +1611,20 @@ function _instance:implibdir()
         return nil
     end
 
-    local targetdir = self:extraconf("targetdir") or {}
-    local implibdir = nil
-    for _, v in pairs(targetdir) do
-        if type(v) == "table" then
-            implibdir = v["implibdir"]
-        end
-        break
-    end
+    local implibdir = self:get("implibdir")
     if not implibdir then
-        return self:targetdir()
+        implibdir = self:targetdir()
     end
     return implibdir
+end
+
+-- get the imp-lib file (only on windows)
+function _instance:implibfile()
+    local implibdir = self:implibdir()
+    if not implibdir then
+        return nil
+    end
+    return path.join(implibdir, path.basename(self:targetfile()) .. (self:is_plat("mingw") and ".dll.a" or ".lib"))
 end
 
 -- get the target file name
@@ -2916,6 +2918,7 @@ function target.apis()
             -- target.set_xxx
             "target.set_targetdir"
         ,   "target.set_objectdir"
+        ,   "target.set_implibdir"
         ,   "target.set_dependir"
         ,   "target.set_autogendir"
         ,   "target.set_configdir"

@@ -40,16 +40,14 @@ function main(target)
     if target:is_shared() then
         if target:is_plat("windows") then
             local expfile = path.join(target:implibdir(), path.basename(targetfile) .. ".exp")
-            local libfile = path.join(target:implibdir(), path.basename(targetfile) .. ".lib")
             if os.isfile(expfile) then
-                remove_files(libfile)
                 remove_files(expfile)
             end
-        elseif target:is_plat("mingw") then
-            local libfile = path.join(target:implibdir(), path.basename(targetfile) .. ".dll.a")
-            if os.isfile(libfile) then
-                remove_files(libfile)
-            end
+        end
+
+        local implibfile = target:implibfile()
+        if implibfile and os.isfile(implibfile) then
+            remove_files(implibfile)
         end
     end
 
