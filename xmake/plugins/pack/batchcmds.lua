@@ -303,11 +303,13 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
 
     -- install *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
-    local targetfile = target:targetfile()
-    local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
-    if os.isfile(targetfile_lib) then
-        batchcmds_:mkdir(libdir)
-        batchcmds_:cp(targetfile_lib, path.join(libdir, path.filename(targetfile_lib)))
+    if target:is_plat("windows", "mingw") and target:is_shared() then
+        local targetfile = target:targetfile()
+        local targetfile_lib = path.join(target:implibdir(), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
+        if os.isfile(targetfile_lib) then
+            batchcmds_:mkdir(libdir)
+            batchcmds_:cp(targetfile_lib, path.join(libdir, path.filename(targetfile_lib)))
+        end
     end
 
     _install_target_headers(target, batchcmds_, opt)

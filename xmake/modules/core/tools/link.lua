@@ -137,6 +137,9 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
         table.insert(argv, 1, "-lib")
     elseif targetkind == "shared" then
         table.insert(argv, 1, "-dll")
+        if opt.implibdir then
+            table.insert(argv, "/IMPLIB:" .. path.join(opt.implibdir, path.basename(targetfile) .. ".lib"))
+        end
     end
     return self:program(), argv
 end
@@ -146,6 +149,11 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
+
+    -- ensure the implib directory
+    if opt and opt.implibdir then
+        os.mkdir(opt.implibdir)
+    end
 
     try
     {

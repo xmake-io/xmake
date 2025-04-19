@@ -1605,6 +1605,26 @@ function _instance:targetdir()
     return targetdir
 end
 
+-- get the imp-lib directory (only on windows)
+function _instance:implibdir()
+    if not ((self:is_plat("windows", "mingw")) and self:is_shared()) then
+        return nil
+    end
+
+    local targetdir = self:extraconf("targetdir") or {}
+    local implibdir = nil
+    for _, v in pairs(targetdir) do
+        if type(v) == "table" then
+            implibdir = v["implibdir"]
+        end
+        break
+    end
+    if not implibdir then
+        return self:targetdir()
+    end
+    return implibdir
+end
+
 -- get the target file name
 function _instance:filename()
 
