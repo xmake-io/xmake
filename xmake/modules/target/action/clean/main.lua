@@ -39,14 +39,18 @@ function main(target)
     -- @see https://github.com/xmake-io/xmake/issues/3052
     if target:is_shared() then
         if target:is_plat("windows") then
-            local expfile = path.join(target:artifactdir("lib"), path.basename(targetfile) .. ".exp")
+            local libfile = target:byproduct("implib")
+            local expfile = path.join(path.directory(libfile), path.basename(targetfile) .. ".exp")
+            if os.isfile(libfile) then
+                remove_files(libfile)
+            end
             if os.isfile(expfile) then
                 remove_files(expfile)
             end
         end
 
-        if target:has_implib() then
-            local libfile = target:artifactfile("lib")
+        if target:is_plat("mingw") then
+            local libfile = target:byproduct("implib")
             if os.isfile(libfile) then
                 remove_files(libfile)
             end

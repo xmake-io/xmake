@@ -1602,14 +1602,16 @@ end
 
 -- get the target directory
 function _instance:targetdir()
+
+    -- the target directory
     local targetdir = self:get("targetdir")
     if not targetdir then
         return self:_default_targetdir()
     end
 
     -- executable, windows shared library
-    if self:is_binary() or self:has_implib() then
-        local subdir = self:extraconf("targetdir", targetdir, "bin")
+    if self:is_binary() or (self:is_shared() and self:is_plat("windows", "mingw")) then
+        local subdir = self:extraconf("targetdir", targetdir, "bindir")
         if subdir then
             targetdir = path.join(targetdir, subdir)
         end
@@ -1618,7 +1620,7 @@ function _instance:targetdir()
 
     -- static library, non-windows shared library
     if self:is_static() or self:is_shared() then
-        local subdir = self:extraconf("targetdir", targetdir, "lib")
+        local subdir = self:extraconf("targetdir", targetdir, "libdir")
         if subdir then
             targetdir = path.join(targetdir, subdir)
         end
@@ -1629,56 +1631,31 @@ function _instance:targetdir()
 end
 
 -- get the build artifact output directory
-function _instance:artifactdir(type)
+function _instance:_targetdir_extra(kind)
     local targetdir = self:get("targetdir")
     if not targetdir then
         return self:_default_targetdir()
     end
 
-    local subdir = self:extraconf("targetdir", targetdir, type)
+    local subdir = self:extraconf("targetdir", targetdir, kind)
     if subdir then
         return path.join(targetdir, subdir)
     end
     return targetdir
 end
 
--- get the build artifact output file
+-- get the build byproduct file
 --
--- supported artifact types:
---    1. bin: executable(.exe, Unix Executables), windows shared library(.dll)
---    2. lib: static library(.lib, .a), windows DLL implib(.lib, .dll.a), non-windows shared library(.so, .dylib)
+-- supported byproduct kinds:
+--    1. implib: windows DLL implib(.lib, .dll.a)
 --
 -- otherwise returns nil
 --
-function _instance:artifactfile(type)
-    if type == "bin" then
-        -- executable, windows shared library
-        if self:is_binary() or self:has_implib() then
-            return self:targetfile()
+function _instance:byproduct(kind)
+    if kind == "implib" then
+        if self:is_shared() and self:is_plat("windows", "mingw") then
+            return path.join(self:_targetdir_extra("libdir"), path.basename(self:filename()) .. (self:is_plat("mingw") and ".dll.a" or ".lib"))
         end
-
-        return nil
-    end
-
-    if type == "lib" then
-        if self:is_static() then
-            -- static library
-            return self:targetfile()
-        end
-        if self:is_shared() then
-            if self:is_plat("windows") then
-                -- msvc shared library implib
-                return path.join(self:artifactdir("lib"), path.basename(self:filename()) .. ".lib")
-
-            elseif self:is_plat("mingw")then
-                -- mingw shared library implib
-                return path.join(self:artifactdir("lib"), path.basename(self:filename()) .. ".dll.a")
-            else
-                -- unix shared library
-                return self:targetfile()
-            end
-        end
-
         return nil
     end
 
@@ -2561,14 +2538,6 @@ function _instance:has_runtime(...)
             return true
         end
     end
-end
-
--- has implib artifact file?
---
--- returns true if the target is a windows shared library
---
-function _instance:has_implib()
-    return self:is_shared() and self:is_plat("windows", "mingw")
 end
 
 -- get the given toolchain
