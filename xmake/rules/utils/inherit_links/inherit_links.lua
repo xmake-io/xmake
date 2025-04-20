@@ -80,8 +80,9 @@ function main(target)
             end
         end
 
-        if target:has_implib() then
-            _add_export_value(target, "linkdirs", target:artifactdir("lib"))
+        local target_implib = target:byproduct("implib")
+        if target_implib then
+            _add_export_value(target, "linkdirs", path.directory(target_implib))
         else
             _add_export_value(target, "linkdirs", path.directory(targetfile))
         end

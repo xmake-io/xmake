@@ -228,7 +228,6 @@ function linker:link(objectfiles, targetfile, opt)
     local linkflags = opt.linkflags or self:linkflags(opt)
     opt = table.copy(opt)
     opt.target = self:target()
-
     profiler:enter(self:name(), "link", targetfile)
     local ok, errors = sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, linkflags, opt)
     profiler:leave(self:name(), "link", targetfile)
