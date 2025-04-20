@@ -1643,6 +1643,13 @@ function _instance:artifactdir(type)
 end
 
 -- get the build artifact output file
+--
+-- supported artifact types:
+--    1. bin: executable(.exe, Unix Executables), windows shared library(.dll)
+--    2. lib: static library(.lib, .a), windows DLL implib(.lib, .dll.a), non-windows shared library(.so, .dylib)
+--
+-- otherwise returns nil
+--
 function _instance:artifactfile(type)
     if type == "bin" then
         -- executable, windows shared library
@@ -1676,14 +1683,7 @@ function _instance:artifactfile(type)
     end
 
     -- to be added...
-    return nil
-end
 
--- get the implib file (windows shared library only)
-function _instance:implibfile()
-    if self:has_implib() then
-        return self:artifactfile("lib")
-    end
     return nil
 end
 
@@ -2565,7 +2565,8 @@ end
 
 -- has implib artifact file?
 --
--- equivalent to "is_windows_shared_library"
+-- returns true if the target is a windows shared library
+--
 function _instance:has_implib()
     return self:is_shared() and self:is_plat("windows", "mingw")
 end

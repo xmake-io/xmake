@@ -45,9 +45,11 @@ function main(target)
             end
         end
 
-        local implibfile = target:implibfile()
-        if implibfile and os.isfile(implibfile) then
-            remove_files(implibfile)
+        if target:has_implib() then
+            local libfile = target:artifactfile("lib")
+            if os.isfile(libfile) then
+                remove_files(libfile)
+            end
         end
     end
 
