@@ -128,7 +128,7 @@ function _check_vc_build_tools(toolchain, sdkdir)
     end
 end
 
-function main(toolchain)
+function main(toolchain, opt)
 
     -- only for windows or linux (msvc-wine)
     if not is_host("windows", "linux") then
@@ -141,7 +141,7 @@ function main(toolchain)
     local mrc = path.basename(config.get("mrc") or "rc"):lower()
     if cc == "cl" or cxx == "cl" or mrc == "rc" then
         local sdkdir = toolchain:sdkdir()
-        if sdkdir then
+        if not opt.ignore_sdk and sdkdir then
             return _check_vc_build_tools(toolchain, sdkdir)
         else
             -- find it from packages

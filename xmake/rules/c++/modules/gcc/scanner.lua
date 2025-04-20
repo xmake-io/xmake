@@ -27,29 +27,33 @@ import("support")
 import("builder")
 import(".scanner", {inherit = true})
 
--- generate dependency files
-function generate_dependency_for(target, sourcefile, opt)
+-- scan module dependencies
+function scan_dependency_for(target, sourcefile, opt)
+
     local compinst = target:compiler("cxx")
     local baselineflags = {"-E", "-x", "c++"}
     local depsformatflag = support.get_depsflag(target, "p1689r5")
     local depsfileflag = support.get_depsfileflag(target)
     local depstargetflag = support.get_depstargetflag(target)
     local dependfile = target:dependfile(sourcefile)
-    local flags = compinst:compflags({sourcefile = sourcefile, target = target}) or {}
     local changed = false
+    local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
+    local fallbackscanner = target:policy("build.c++.modules.fallbackscanner") or
+                            target:policy("build.c++.modules.gcc.fallbackscanner") or
+                            target:policy("build.c++.gcc.fallbackscanner")
 
     depend.on_changed(function()
-        if opt.progress then
-            progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:fullname(), sourcefile)
+        if opt.progress and not target:data("in_project_generator") then
+            progress.show(opt.progress, "${color.build.target}<%s> scanning.module.deps %s", target:fullname(), sourcefile)
         end
 
-        local outputdir = support.get_outputdir(target, sourcefile)
+        local outputdir = support.get_outputdir(target, sourcefile, {scan = true})
         local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
         local has_depsflags = depsformatflag and depsfileflag and depstargetflag
-        if has_depsflags and not target:policy("build.c++.gcc.fallbackscanner") then
+        if has_depsflags and not fallbackscanner then
             local ifile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".i"))
             local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
-            local compflags = table.join(flags or {}, baselineflags, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})
+            compflags = table.join(baselineflags, compflags or {}, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})
             os.vrunv(compinst:program(), compflags)
             os.rm(ifile)
             os.rm(dfile)
@@ -58,8 +62,8 @@ function generate_dependency_for(target, sourcefile, opt)
                 wprint("GCC doesn't support module scanning ! using fallback scanner")
             end
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
-                local compflags = table.clone(flags)
                 -- exclude -fmodule* flags because, when they are set gcc try to find bmi of imported modules but they don't exists a this point of compilation
+                local compflags = table.clone(compflags)
                 table.remove_if(compflags, function(_, flag) return flag:startswith("-fmodule") end)
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
                 compflags = table.join(baselineflags, compflags or {}, {file,  "-o", ifile})
@@ -73,7 +77,7 @@ function generate_dependency_for(target, sourcefile, opt)
 
         local dependinfo = io.readfile(jsonfile)
         return { moduleinfo = dependinfo }
-    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt(), values = flags})
+    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt(), values = compflags})
     return changed
 end
 

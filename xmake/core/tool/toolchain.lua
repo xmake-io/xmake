@@ -288,12 +288,18 @@ function _instance:configs_save()
 end
 
 -- do check, we only check it once for all architectures
-function _instance:check()
-    local checked = self:config("__checked")
+function _instance:check(opt)
+
+    opt = opt or {}
+    local checked_config = "__checked"
+    if opt.ignore_sdk then
+        checked_config = checked_config .. "_sdk_ignored"
+    end
+    local checked = self:config(checked_config)
     if checked == nil then
         local on_check = self:_on_check()
         if on_check then
-            local ok, results_or_errors = sandbox.load(on_check, self)
+            local ok, results_or_errors = sandbox.load(on_check, self, opt)
             if ok then
                 checked = results_or_errors
             else
@@ -304,7 +310,7 @@ function _instance:check()
         end
         -- we need to persist this state
         checked = checked or false
-        self:config_set("__checked", checked)
+        self:config_set(checked_config, checked)
         self:configs_save()
     end
     return checked

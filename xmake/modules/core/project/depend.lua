@@ -70,8 +70,6 @@ end
 
 -- show diagnosis info?
 function _is_show_diagnosis_info()
-    return true
-    --[[
     local show = _g.is_show_diagnosis_info
     if show == nil then
         if project.policy("diagnosis.check_build_deps") then
@@ -81,7 +79,7 @@ function _is_show_diagnosis_info()
         end
         _g.is_show_diagnosis_info = show
     end
-    return show]]
+    return show
 end
 
 -- save dependent info to file

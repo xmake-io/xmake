@@ -17,6 +17,8 @@
 --
 
 -- imports
+import("core.base.bytes")
+import("core.base.option")
 import("core.base.json")
 import("core.base.hashset")
 import("core.cache.memcache", {alias = "_memcache"})
@@ -26,22 +28,27 @@ import("core.project.project")
 import("core.project.config")
 
 function _support(target)
+    return import_implementation_of(target, "support")
+end
+
+function import_implementation_of(target, name)
+
     local cachekey = tostring(target)
-    local support = memcache():get2("support", cachekey)
-    if support == nil then
+    local implementation = memcache():get2(name, cachekey)
+    if implementation == nil then
         if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
-            support = import("clang.support", {anonymous = true})
+            implementation = import("clang." .. name, {anonymous = true})
         elseif target:has_tool("cxx", "gcc", "gxx") then
-            support = import("gcc.support", {anonymous = true})
+            implementation = import("gcc." .. name, {anonymous = true})
         elseif target:has_tool("cxx", "cl") then
-            support = import("msvc.support", {anonymous = true})
+            implementation = import("msvc." .. name, {anonymous = true})
         else
             local _, toolname = target:tool("cxx")
-            raise("compiler(%s): does not support c++ module!", toolname)
+            raise("compiler(%s): does not implementation c++ module!", toolname)
         end
-        memcache():set2("support", cachekey, support)
+        memcache():set2(name, cachekey, implementation)
     end
-    return support
+    return implementation
 end
 
 -- load module support for the current target
@@ -59,14 +66,91 @@ function load(target)
     if not cxxlang then
         target:add("languages", "c++20")
     end
-
     -- load module support for the specific compiler
     _support(target).load(target)
 end
 
+function has_two_phase_compilation_support(target)
+    return _support(target).has_two_phase_compilation_support(target)
+end
+
+-- strip module mapper flag
+function strip_mapper_flags(target, flags)
+    if _support(target).strip_mapper_flags then
+        return _support(target).strip_mapper_flag(flags)
+    else
+        return flags
+    end
+end
+
 -- strip flags not relevent for module reuse
-function strip_flags(target, flags)
-    return _support(target).strip_flags(target, flags)
+function strip_flags(target, flags, opt)
+
+    local strippeable_flags, splitted_strippeable_flags =  _support(target).strippeable_flags()
+
+    if opt and opt.strip_defines then
+        table.join2(splitted_strippeable_flags, {"D", "U"})
+    end
+
+    local splitted_strippeable_flags_set = hashset.new()
+    for _, flag in ipairs(splitted_strippeable_flags) do
+        table.insert(strippeable_flags, flag)
+        splitted_strippeable_flags_set:insert("/" .. flag)
+        splitted_strippeable_flags_set:insert("-" .. flag)
+    end
+
+    local output = {}
+    local strip_next_flag = false
+    for _, flag in ipairs(flags) do
+        local strip = false
+
+        if strip_next_flag then
+            strip = true
+            strip_next_flag = false
+        else
+            for _, _flag in ipairs(strippeable_flags) do
+                if (flag == "/" .. _flag) or (flag == "-" .. _flag) then
+                    strip = true
+                    strip_next_flag = splitted_strippeable_flags_set:has(flag)
+                    break
+                elseif flag:startswith("/" .. _flag) or flag:startswith("-" .. _flag) then
+                    strip = true
+                    break
+                end
+            end
+        end
+
+        if not strip then
+            table.insert(output, flag)
+        end
+    end
+    return output
+end
+
+-- extract defines from flags
+function get_headerunit_key(target, sourcefile)
+
+    local defines = target:get("defines") or {}
+    local undefines = target:get("undefines") or {}
+    local fileconfig = target:fileconfig(sourcefile)
+    if fileconfig then
+        table.join(defines, fileconfig.defines or {})
+        table.join(undefines, fileconfig.undefines or {})
+    end
+
+    if #defines > 0 then
+        defines = table.concat(defines, "-D")
+    else
+        defines = "<NO_DEFINES>"
+    end
+    if #undefines > 0 then
+        undefines = table.concat(undefines, "-D")
+    else
+        undefines = "<NO_UNDEFINES>"
+    end
+
+    local key = hash.md5(bytes(defines .. undefines))
+    return key
 end
 
 -- get bmi extension
@@ -83,6 +167,7 @@ end
 
 -- has module extension? e.g. *.mpp, ...
 function has_module_extension(sourcefile, opt)
+
     opt = opt or {}
     local modulexts = _g.modulexts
     if modulexts == nil then
@@ -95,7 +180,8 @@ end
 
 -- this target contains module files?
 function contains_modules(target)
-    -- we can not use `"c++.build.builder"`, because it contains sourcekind/cxx.
+
+    -- we can not use `"c++.build.modules.builder"`, because it contains sourcekind/cxx.
     local target_with_modules = target:sourcebatches()["c++.build.modules"] and true or false
     if not target_with_modules then
         target_with_modules = target:policy("build.c++.modules")
@@ -112,11 +198,63 @@ function contains_modules(target)
     return target_with_modules
 end
 
+-- mark that a module scan artifacts and bmifile are reused from an other target
+function set_reused(target, from, sourcefile)
+    memcache():set2(target:fullname() .. "/modules/" .. sourcefile, "reuse", from)
+    if option.get("diagnosis") then
+        print("<" .. target:fullname() .. ">", "reuse", sourcefile, "from", "<" .. from:fullname() .. ">")
+    end
+end
+
+-- query if a module scan artifacts and bmifile are reused from an other target
+function is_reused(target, sourcefile)
+    local from = memcache():get2(target:fullname() .. "/modules/" .. sourcefile, "reuse")
+    return from and true or false, from
+end
+
+-- query if a module is public
+function is_public(target, sourcefile)
+    local fileconfig = target:fileconfig(sourcefile)
+    return fileconfig and fileconfig.public or false
+end
+
+-- query if a module is external
+function is_external(target, sourcefile)
+    local fileconfig = target:fileconfig(sourcefile)
+    local external = fileconfig and fileconfig.external
+    return external or false
+end
+
+-- query if a module is external
+function is_bmionly(target, sourcefile)
+    local fileconfig = target:fileconfig(sourcefile)
+    return fileconfig and fileconfig.bmionly or false
+end
+
+-- query if a module can be culled
+function can_be_culled(target, sourcefile)
+
+    local can_cull = target:policy("build.c++.modules.culling")
+    local fileconfig = target:fileconfig(sourcefile)
+    local _, stdmodules_set = get_stdmodules(target)
+    local is_stdmodule = stdmodules_set and stdmodules_set:has(sourcefile) or false
+    local public = target:kind() == "moduleonly" and not is_stdmodule
+    if fileconfig then
+        public = fileconfig.public
+        if fileconfig.cull ~= nil then
+            can_cull = can_cull and fileconfig.cull
+        end
+    end
+    return can_cull and not public
+end
+
 -- load module infos
 function load_moduleinfos(target, sourcebatch)
+
     local moduleinfos
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local dependfile = target:dependfile(sourcefile)
+        local reused, from = is_reused(target, sourcefile)
+        local dependfile = reused and from:dependfile(sourcefile) or target:dependfile(sourcefile)
         if os.isfile(dependfile) then
             local data = io.load(dependfile)
             if data then
@@ -132,13 +270,14 @@ function load_moduleinfos(target, sourcebatch)
     return moduleinfos
 end
 
-function find_quote_header_file(target, sourcefile, file)
+function find_quote_header_file(sourcefile, file)
     local p = path.join(path.directory(path.absolute(sourcefile, project.directory())), file)
     assert(os.isfile(p), "\"%s\" not found", p)
     return p
 end
 
 function find_angle_header_file(target, file)
+
     local headerpaths = _support(target).toolchain_includedirs(target)
     for _, dep in ipairs(target:orderdeps()) do
         local includedirs = table.join(dep:get("sysincludedirs") or {}, dep:get("includedirs") or {})
@@ -156,7 +295,16 @@ end
 
 -- get stdmodules
 function get_stdmodules(target)
-  return _support(target).get_stdmodules(target)
+
+    local stdmodules = memcache():get("c++.modules.stdmodules")
+    local stdmodules_set = memcache():get("c++.modules.stdmodules_set")
+    if not stdmodules or not stdmodules_set then
+        stdmodules =  _support(target).get_stdmodules(target)
+        stdmodules_set = hashset.from(stdmodules or {})
+        memcache():set("c++.modules.stdmodules", stdmodules)
+        memcache():set("c++.modules.stdmodules_set", stdmodules_set)
+    end
+    return stdmodules, stdmodules_set
 end
 
 -- get memcache
@@ -169,60 +317,41 @@ function localcache()
     return _localcache.cache("cxxmodules")
 end
 
-
--- get stl headerunits cache directory
-function stlheaderunits_cachedir(target, opt)
-    opt = opt or {}
-    local stlcachedir = path.join(target:autogendir(), "rules", "bmi", "cache", "stl-headerunits")
-    if opt.mkdir and not os.isdir(stlcachedir) then
-        os.mkdir(stlcachedir)
-        os.mkdir(path.join(stlcachedir, "experimental"))
-    end
-    return stlcachedir
-end
--- get stl modules cache directory
-function stlmodules_cachedir(target, opt)
-    opt = opt or {}
-    local stlcachedir = path.join(target:autogendir(), "rules", "bmi", "cache", "stl-modules")
-    if opt.mkdir and not os.isdir(stlcachedir) then
-        os.mkdir(stlcachedir)
-    end
-    return stlcachedir
-end
-
--- get headerunits cache directory
-function headerunits_cachedir(target, opt)
-    opt = opt or {}
-    local cachedir = path.join(target:autogendir(), "rules", "bmi", "cache", "headerunits")
-    if opt.mkdir and not os.isdir(cachedir) then
-        os.mkdir(cachedir)
-    end
-    return cachedir
-end
-
 -- get modules cache directory
 function modules_cachedir(target, opt)
-    opt = opt or {}
-    local cachedir = path.join(target:autogendir(), "rules", "bmi", "cache", "modules")
+
+    assert(opt and (opt.interface ~= nil or opt.headerunit or opt.scan))
+    local type
+    if opt.headerunit then
+        type = "headerunits"
+    elseif opt.interface then
+        type = "interfaces"
+    elseif opt.scan then
+        type = "scans"
+    else 
+        type = "implementation"
+    end
+    local cachedir = path.join(target:autogendir(), "rules", "bmi", "cache", type)
     if opt.mkdir and not os.isdir(cachedir) then
         os.mkdir(cachedir)
     end
     return cachedir
 end
 
-function get_modulehash(target, modulepath)
-    local key = path.directory(modulepath) .. target:fullname()
-    return hash.uuid(key):split("-", {plain = true})[1]:lower()
+function get_modulehash(sourcefile)
+    return hash.uuid(sourcefile):split("-", {plain = true})[1]:lower()
 end
 
-function get_metafile(target, modulefile)
-    local outputdir = get_outputdir(target, modulefile)
-    return path.join(outputdir, path.filename(modulefile) .. ".meta-info")
+function get_metafile(target, module)
+    -- metafile are only for named modules
+    local outputdir = get_outputdir(target, module.sourcefile, {interface = module.interface or false})
+    return path.join(outputdir, path.filename(module.sourcefile) .. ".meta-info")
 end
 
-function get_outputdir(target, module)
-    local cachedir = module and modules_cachedir(target) or headerunits_cachedir(target)
-    local modulehash = get_modulehash(target, module.path or module)
+function get_outputdir(target, sourcefile, opt)
+
+    local cachedir = modules_cachedir(target, opt)
+    local modulehash = opt.key or get_modulehash(sourcefile)
     local outputdir = path.join(cachedir, modulehash)
     if not os.exists(outputdir) then
         os.mkdir(outputdir)
@@ -230,40 +359,18 @@ function get_outputdir(target, module)
     return outputdir
 end
 
--- get name provide info and cpp sourcefile of a module
-function get_provided_module(module)
+function add_installfiles_for_modules(target, modules)
 
-    local name, provide, cppfile
-    if module.provides then
-        -- assume there that provides is only one, until we encounter the cases
-        -- "Some compiler may choose to implement the :private module partition as a separate module for lookup purposes, and if so, it should be indicated as a separate provides entry."
-        local length = 0
-        for k, v in pairs(module.provides) do
-            length = length + 1
-            name = k
-            provide = v
-            cppfile = provide.sourcefile
-            if length > 1 then
-                raise("multiple provides are not supported now!")
-            end
-            break
-        end
-    end
-
-    return name, provide, cppfile
-end
-
-function add_installfiles_for_modules(target)
     local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
     if sourcebatch and sourcebatch.sourcefiles then
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
             local fileconfig = target:fileconfig(sourcefile)
             local install = fileconfig and fileconfig.public or false
             if install then
-                local modulehash = get_modulehash(target, sourcefile)
+                local modulehash = get_modulehash(sourcefile)
                 local prefixdir = path.join("modules", modulehash)
                 target:add("installfiles", sourcefile, {prefixdir = prefixdir})
-                local metafile = get_metafile(target, sourcefile)
+                local metafile = get_metafile(target, modules[sourcefile])
                 if os.exists(metafile) then
                     target:add("installfiles", metafile, {prefixdir = prefixdir})
                 end

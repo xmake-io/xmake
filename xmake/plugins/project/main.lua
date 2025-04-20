@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.task")
 import("core.project.config")
+import("core.project.project")
 import("make.makefile")
 import("make.xmakefile")
 import("cmake.cmakelists")
@@ -87,6 +88,11 @@ function main()
 
     -- config it first
     task.run("config")
+
+    -- make targets aware that project generator is running
+    for _, target in pairs(project.targets()) do
+        target:data_set("in_project_generator", true)
+    end
 
     -- post statistics
     statistics.post()

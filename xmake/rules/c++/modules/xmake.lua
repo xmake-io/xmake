@@ -21,48 +21,31 @@
 -- define rule: c++.build.modules
 rule("c++.build.modules")
 
-    -- @note common.contains_modules() need it
+    -- @note support.contains_modules() need it
     set_extensions(".cppm", ".ccm", ".cxxm", ".c++m", ".mpp", ".mxx", ".ixx")
 
-    add_deps("c++.build.modules.builder")
-    add_deps("c++.build.modules.install")
-
+    add_deps("c++.build.modules.scanner",
+             "c++.build.modules.builder",
+             "c++.build.modules.install")
+    
     on_config(function (target)
-        import("support")
+        import("config")(target)
+    end)
 
-        -- we disable to build across targets in parallel, because the source files may depend on other target modules
-        -- @see https://github.com/xmake-io/xmake/issues/1858
-        if support.contains_modules(target) then
-            -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
-            -- even if some sub-targets do not contain C++ modules.
-            --
-            -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
-            target:set("policy", "build.fence", true)
+    after_config(function(target)
+        import("config").insert_stdmodules(target)
+    end)
 
-            -- disable ccache for this target
-            --
-            -- Caching can affect incremental compilation, for example
-            -- by interfering with the results of depfile generation for msvc.
-            --
-            -- @see https://github.com/xmake-io/xmake/issues/3000
-            target:set("policy", "build.ccache", false)
+rule("c++.build.modules.scanner")
+    set_sourcekinds("cxx")
+    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
-            -- load compiler support
-            support.load(target)
+    on_prepare_files(function(target, jobgraph, sourcebatch, opt)
+        import("scanner")(target, jobgraph, sourcebatch, opt)
+    end, {jobgraph = true})
 
-            -- mark this target with modules
-            target:data_set("cxx.has_modules", true)
-
-            -- moduleonly modules are implicitly public
-            if target:is_moduleonly() then
-                local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
-                if sourcebatch then
-                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        target:fileconfig_add(sourcefile, {public = true})
-                    end
-                end
-            end
-        end
+    after_prepare_files(function(target)
+        import("scanner").after_scan(target)
     end)
 
 -- build modules
@@ -70,95 +53,28 @@ rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
-    -- generate module dependencies
-    on_prepare_files(function (target, jobgraph, sourcebatch, opt)
-        if target:data("cxx.has_modules") then
-            import("builder")
-            import("scanner")
-
-            -- patch sourcebatch
-            builder.patch_sourcebatch(target, sourcebatch)
-
-            -- generate module dependencies
-            scanner.generate_module_dependencies(target, jobgraph, sourcebatch, opt)
-        end
-    end, {jobgraph = true})
-
+    add_orders("c++.build.modules.scanner", "c++.build.modules.builder")
+        
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, jobgraph, sourcebatch, opt)
-        if target:data("cxx.has_modules") then
-            import("support")
-            import("scanner")
-            import("builder")
-
-            -- get module dependencies
-            local modules = scanner.get_module_dependencies(target, sourcebatch)
-            if not target:is_moduleonly() then
-                -- avoid building non referenced modules
-                local build_objectfiles, link_objectfiles = scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
-                sourcebatch.objectfiles = build_objectfiles
-
-                -- build modules and headerunits
-                builder.build_modules_and_headerunits(target, jobgraph, sourcebatch, modules, opt)
-                sourcebatch.objectfiles = link_objectfiles
-            else
-                sourcebatch.objectfiles = {}
-            end
-
-            support.localcache():set2(target:fullname(), "c++.modules", modules)
-            support.localcache():save()
-        else
-            -- avoid duplicate linking of object files of non-module programs
-            sourcebatch.objectfiles = {}
-        end
+        import("builder").build_bmis(target, jobgraph, sourcebatch, opt)
     end, {jobgraph = true, batch = true})
 
+    on_build_files(function(target, jobgraph, sourcebatch, opt)
+        import("builder").build_objectfiles(target, jobgraph, sourcebatch, opt)
+    end, {jobgraph = true, batch = true})
+    
     -- serial compilation only, usually used to support project generator
-    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        if target:data("cxx.has_modules") then
-            import("support")
-            import("scanner")
-            import("builder")
-
-            -- get module dependencies
-            local modules = scanner.get_module_dependencies(target, sourcebatch)
-            if not target:is_moduleonly() then
-                -- avoid building non referenced modules
-                local build_objectfiles, link_objectfiles = scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
-                sourcebatch.objectfiles = build_objectfiles
-
-                -- build headerunits and modules
-                builder.build_modules_and_headerunits(target, batchcmds, sourcebatch, modules, opt)
-                sourcebatch.objectfiles = link_objectfiles
-            else
-                -- avoid duplicate linking of object files of non-module programs
-                sourcebatch.objectfiles = {}
-            end
-
-            support.localcache():set2(target:fullname(), "c++.modules", modules)
-            support.localcache():save()
-        else
-            sourcebatch.sourcefiles = {}
-            sourcebatch.objectfiles = {}
-            sourcebatch.dependfiles = {}
-        end
+    before_buildcmd_files(function(target, batchcmds, sourcebatch)
+        import("builder").build_bmis(target, batchcmds, sourcebatch, opt)
+    end)
+    
+    on_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+        import("builder").build_objectfiles(target, batchcmds, sourcebatch, opt)
     end)
 
     after_clean(function (target)
-        import("core.base.option")
-        import("support")
-        import("private.action.clean.remove_files")
-
-        -- we cannot use target:data("cxx.has_modules"),
-        -- because on_config will be not called when cleaning targets
-        if support.contains_modules(target) then
-            remove_files(support.modules_cachedir(target))
-            if option.get("all") then
-                remove_files(support.stlmodules_cachedir(target))
-                support.localcache():clear()
-                support.localcache():save()
-            end
-        end
+        import("builder").clean(target)
     end)
 
 -- install modules
@@ -166,22 +82,9 @@ rule("c++.build.modules.install")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     before_install(function (target)
-        import("support")
-        import("builder")
-
-        -- we cannot use target:data("cxx.has_modules"),
-        -- because on_config will be not called when installing targets
-        if support.contains_modules(target) then
-            local modules = support.localcache():get2(target:fullname(), "c++.modules")
-            builder.generate_metadata(target, modules)
-
-            support.add_installfiles_for_modules(target)
-        end
+        import("install").install(target)
     end)
 
     before_uninstall(function (target)
-        import("support")
-        if support.contains_modules(target) then
-            support.add_installfiles_for_modules(target)
-        end
+        import("install").uninstall(target)
     end)

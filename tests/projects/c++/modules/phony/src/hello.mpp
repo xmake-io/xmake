@@ -1,0 +1,27 @@
+module;
+
+#include <iostream>
+
+export module hello;
+
+export namespace hello {
+    class say {
+    public:
+        say(int data);
+        void hello();
+    private:
+        int data_;
+    };
+}
+
+module :private;
+
+using namespace std;
+namespace hello {
+    say::say(int data) : data_(data) {
+
+    }
+    void say::hello() {
+        cout << "hello, say class: " << data_ << endl;
+    }
+}

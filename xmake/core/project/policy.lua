@@ -72,26 +72,38 @@ function policy.policies()
             ["build.rpath"]                       = {description = "Enable build rpath.", default = true, type = "boolean"},
             -- Enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
+            -- Enable two phase compilation for C++ modules if supported by the compiler
+            ["build.c++.modules.two_phases"]      = {description = "Enable two phase compilation if supported.", default = true, type = "boolean"},
             -- Enable std module
             ["build.c++.modules.std"]             = {description = "Enable std modules.", default = true, type = "boolean"},
             -- Enable unreferenced and non-public named module culling
             ["build.c++.modules.culling"]         = {description = "Enable unrefereced and non-public named module culling.", default = true, type = "boolean"},
-            -- Try to reuse compiled module bmi file if targets flags permit it
-            ["build.c++.modules.tryreuse"]        = {description = "Try to reuse compiled module if possible.", default = true, type = "boolean"},
-            -- Enable module taking defines acbount for bmi reuse discrimination
+            -- Always reuse compiled module bmi file
+            ["build.c++.modules.reuse"]           = {description = "Reuse compiled module artifacts if possible.", default = true, type = "boolean"},
+            ["build.c++.modules.tryreuse"]        = {description = "Try to reuse compiled module if possible. (deprecated)", default = false, type = "boolean"},
+            -- Disabled flag check when reusing modules
+            ["build.c++.modules.reuse.nocheck"]   = {description = "Disable flag compatibility check when reusing modules.", default = false, type = "boolean"},
+            -- If target will not reuse modules from target deps if defines are different
+            ["build.c++.modules.reuse.strict"]          = {description = "Enable strict defines comparison when trying to reuse module.", default = false, type = "boolean"},
             ["build.c++.modules.tryreuse.discriminate_on_defines"] = {description = "Enable defines module reuse discrimination.", default = false, type = "boolean"},
+            -- Force C++ modules fallback dependency scanner for all compilers
+            ["build.c++.modules.fallbackscanner"]       = {description = "Force fallback module dependency scanner.", default = false, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for clang
-            ["build.c++.clang.fallbackscanner"]   = {description = "Force clang fallback module dependency scanner.", default = false, type = "boolean"},
+            ["build.c++.modules.clang.fallbackscanner"] = {description = "Force clang fallback module dependency scanner.", default = false, type = "boolean"},
+            ["build.c++.clang.fallbackscanner"]         = {description = "Force clang fallback module dependency scanner. (deprecated)", default = false, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for msvc
-            ["build.c++.msvc.fallbackscanner"]    = {description = "Force msvc fallback module dependency scanner.", default = false, type = "boolean"},
-            -- Set the default vs runtime, e.g. MT, MD
-            ["build.c++.msvc.runtime"]            = {description = "Set the default vs runtime.", type = "string", values = {"MT", "MD"}},
+            ["build.c++.modules.msvc.fallbackscanner"]  = {description = "Force msvc fallback module dependency scanner.", default = false, type = "boolean"},
+            ["build.c++.msvc.fallbackscanner"]          = {description = "Force msvc fallback module dependency scanner. (deprecated)", default = false, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for gcc
-            ["build.c++.gcc.fallbackscanner"]     = {description = "Force gcc fallback module dependency scanner.", default = false, type = "boolean"},
+            ["build.c++.modules.gcc.fallbackscanner"]   = {description = "Force gcc fallback module dependency scanner.", default = false, type = "boolean"},
+            ["build.c++.gcc.fallbackscanner"]           = {description = "Force gcc fallback module dependency scanner. (deprecated)", default = false, type = "boolean"},
             -- Force to enable new cxx11 abi in C++ modules for gcc
             -- If in the future, gcc can support it well, we'll turn it on by default
             -- https://github.com/xmake-io/xmake/issues/3855
-            ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc.", type = "boolean"},
+            ["build.c++.modules.gcc.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc.", type = "boolean"},
+            ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc. (deprecated)", type = "boolean", default = false},
+            -- Set the default vs runtime, e.g. MT, MD
+            ["build.c++.msvc.runtime"]            = {description = "Set the default vs runtime.", type = "string", values = {"MT", "MD"}},
             -- Enable cuda device link
             ["build.cuda.devlink"]                = {description = "Enable Cuda devlink.", type = "boolean"},
             -- Enable build jobgraph

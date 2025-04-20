@@ -34,6 +34,7 @@ import(".support", {inherit = true})
 -- # 59 "/usr/include/c++/11/vector" 3
 --
 function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
+
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
     local argv = {"-E", "-x", "c++", tmpfile}
@@ -62,6 +63,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
 end
 
 function _get_cpplibrary_name(target)
+
     -- libc++ come first because on windows, if we use libc++ clang will still use msvc crt so MD / MT / MDd / MTd can be set
     if target:has_runtime("c++_shared", "c++_static") then
         return "c++"
@@ -80,6 +82,7 @@ function _get_cpplibrary_name(target)
 end
 
 function _get_std_module_manifest_path(target)
+
     local print_module_manifest_flag = get_print_library_module_manifest_path_flag(target)
     local clang_path = path.directory(get_clang_path(target))
     if print_module_manifest_flag then
@@ -89,7 +92,6 @@ function _get_std_module_manifest_path(target)
             return outdata:trim()
         end
     end
-
     -- fallback on custom detection
     -- manifest can be found in <llvm_path>/lib subdirectory (i.e on debian it should be <llvm_path>/lib/x86_64-unknown-linux-gnu/)
     local clang_lib_path = path.join(clang_path, "..", "lib")
@@ -102,13 +104,12 @@ end
 
 -- load module support for the current target
 function load(target)
-    local clangmodulesflag, modulestsflag, withoutflag = get_modulesflag(target)
 
+    local _, modulestsflag, withoutflag = get_modulesflag(target)
     -- add module flags
     if not withoutflag then
         target:add("cxxflags", modulestsflag)
     end
-
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
     -- module.pcm cannot be loaded due to a configuration mismatch with the current compilation.
     --
@@ -127,7 +128,6 @@ function load(target)
     if has_library_deps then
         target:set("symbols", dep_symbols and dep_symbols or "none")
     end
-
     -- on Windows before llvm18 we need to disable delayed-template-parsing because it's incompatible with modules, from llvm >= 18, it's disabled by default
     local clang_version = get_clang_version(target)
     if semver.compare(clang_version, "18") < 0 then
@@ -135,43 +135,35 @@ function load(target)
     end
 end
 
--- strip flags that doesn't affect bmi generation
-function strip_flags(target, flags)
+function has_two_phase_compilation_support(target)
+    return target:policy("build.c++.modules.two_phases")
+end
+
+-- flags that doesn't affect bmi generation
+function strippeable_flags()
+
     -- speculative list as there is no resource that list flags that prevent reusability, this list will likely be improve over time
     -- @see https://clang.llvm.org/docs/StandardCPlusPlusModules.html#consistency-requirement
     local strippable_flags = {
-        "-I",
-        "-isystem",
-        "-g",
-        "-O",
-        "-W",
-        "-w",
-        "-cxx-isystem",
-        "-Q",
+        "g",
+        "O",
+        "W",
+        "w",
+        "Q",
+        "fmodule-file",
+        "fPIC",
     }
-    if not target:policy("build.c++.modules.tryreuse.discriminate_on_defines") then
-        table.join2(strippable_flags, {"-D", "-U"})
-    end
-    local output = {}
-    local last_flag_I = false
-    for _, flag in ipairs(flags) do
-        local strip = false
-        for _, _flag in ipairs(strippable_flags) do
-            if flag:startswith(_flag) or last_flag_I then
-                last_flag_I = _flag == "-I"
-                strip = true
-                break
-            end
-        end
-        if not strip then
-            table.insert(output, flag)
-        end
-    end
-    return output
+    local splitted_strippeable_flags = {
+        "I",
+        "isystem",
+        "cxx-isystem"
+    }
+    return strippable_flags, splitted_strippeable_flags
 end
 
 -- provide toolchain include directories for stl headerunit when p1689 is not supported
 function toolchain_includedirs(target)
+
     local includedirs = _g.includedirs
     if includedirs == nil then
         includedirs = {}
@@ -187,7 +179,7 @@ function toolchain_includedirs(target)
                 runtime_flag = "-stdlib=libstdc++"
             end
         end
-        local _, result = try {function () return os.iorunv(clang, table.join({"-E", "-Wp,-v", "-xc", os.nuldev()}, runtime_flag or {})) end}
+        local _, result = try {function () return os.iorunv(clang, table.join({"-E", "-Wp,-v", "-xc++", os.nuldev()}, runtime_flag or {})) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
@@ -205,6 +197,7 @@ end
 
 -- get clang path
 function get_clang_path(target)
+
     local clang_path = _g.clang_path
     if not clang_path then
         local program, toolname = target:tool("cxx")
@@ -223,6 +216,7 @@ end
 
 -- get clang version
 function get_clang_version(target)
+
     local clang_version = _g.clang_version
     if not clang_version then
         local program, toolname = target:tool("cxx")
@@ -241,6 +235,7 @@ end
 
 -- get clang-scan-deps
 function get_clang_scan_deps(target)
+
     local clang_scan_deps = _g.clang_scan_deps
     if not clang_scan_deps then
         local program, toolname = target:tool("cxx")
@@ -267,6 +262,7 @@ function get_clang_scan_deps(target)
 end
 
 function get_stdmodules(target)
+
     if target:policy("build.c++.modules.std") then
         local cpplib = _get_cpplibrary_name(target)
         if cpplib then
@@ -281,7 +277,7 @@ function get_stdmodules(target)
                             std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
                         end
                         if os.isdir(std_module_directory) then
-                            return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
+                            return {path.normalize(path.join(std_module_directory, "std.cppm")), path.normalize(path.join(std_module_directory, "std.compat.cppm"))}
                         end
                     end
                 end
@@ -291,14 +287,14 @@ function get_stdmodules(target)
                 -- msstl std module file is not compatible with llvm < 19
                 local clang_version = get_clang_version(target)
                 if clang_version and semver.compare(clang_version, "19.0") >= 0 then
-                    local toolchain = target:toolchain("clang") or target:toolchain("clang-cl")
+                    local toolchain = target:toolchain("llvm") or target:toolchain("clang") or target:toolchain("clang-cl")
                     local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
-                    if msvc and msvc:check() then
+                    if msvc and msvc:check({ignore_sdk = true}) then
                         local vcvars = msvc:config("vcvars")
                         if vcvars.VCInstallDir and vcvars.VCToolsVersion then
                             local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
                             if os.isdir(stdmodulesdir) then
-                                return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
+                                return {path.normalize(path.join(stdmodulesdir, "std.ixx")), path.normalize(path.join(stdmodulesdir, "std.compat.ixx"))}
                             end
                         end
                     end
@@ -317,6 +313,7 @@ function get_bmi_extension()
 end
 
 function get_modulesflag(target)
+
     local clangmodulesflag = _g.clangmodulesflag
     local modulestsflag = _g.modulestsflag
     local withoutflag = _g.withoutflag
@@ -338,89 +335,8 @@ function get_modulesflag(target)
     return clangmodulesflag or nil, modulestsflag or nil, withoutflag or nil
 end
 
-function get_builtinmodulemapflag(target)
-    local builtinmodulemapflag = _g.builtinmodulemapflag
-    if builtinmodulemapflag == nil then
-        -- this flag seems clang on mingw doesn't distribute it
-        -- @see https://github.com/xmake-io/xmake/pull/2833
-        if not target:is_plat("mingw") then
-            local compinst = target:compiler("cxx")
-            if compinst:has_flags("-fbuiltin-module-map", "cxxflags", {flagskey = "clang_builtin_module_map"}) then
-                builtinmodulemapflag = "-fbuiltin-module-map"
-            end
-            assert(builtinmodulemapflag, "compiler(clang): does not support c++ module!")
-        end
-        _g.builtinmodulemapflag = builtinmodulemapflag or false
-    end
-    return builtinmodulemapflag or nil
-end
-
-function get_implicitmodulesflag(target)
-    local implicitmodulesflag = _g.implicitmodulesflag
-    if implicitmodulesflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fimplicit-modules", "cxxflags", {flagskey = "clang_implicit_modules"}) then
-            implicitmodulesflag = "-fimplicit-modules"
-        end
-        assert(implicitmodulesflag, "compiler(clang): does not support c++ module!")
-        _g.implicitmodulesflag = implicitmodulesflag or false
-    end
-    return implicitmodulesflag or nil
-end
-
-function get_implicitmodulemapsflag(target)
-    local implicitmodulemapsflag = _g.implicitmodulemapsflag
-    if implicitmodulemapsflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fimplicit-module-maps", "cxxflags", {flagskey = "clang_implicit_module_map"}) then
-            implicitmodulemapsflag = "-fimplicit-module-maps"
-        end
-        assert(implicitmodulemapsflag, "compiler(clang): does not support c++ module!")
-        _g.implicitmodulemapsflag = implicitmodulemapsflag or false
-    end
-    return implicitmodulemapsflag or nil
-end
-
-function get_noimplicitmodulemapsflag(target)
-    local noimplicitmodulemapsflag = _g.noimplicitmodulemapsflag
-    if noimplicitmodulemapsflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fno-implicit-module-maps", "cxxflags", {flagskey = "clang_no_implicit_module_maps"}) then
-            noimplicitmodulemapsflag = "-fno-implicit-module-maps"
-        end
-        assert(noimplicitmodulemapsflag, "compiler(clang): does not support c++ module!")
-        _g.noimplicitmodulemapsflag = noimplicitmodulemapsflag or false
-    end
-    return noimplicitmodulemapsflag or nil
-end
-
-function get_prebuiltmodulepathflag(target)
-    local prebuiltmodulepathflag = _g.prebuiltmodulepathflag
-    if prebuiltmodulepathflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fprebuilt-module-path=" .. os.tmpdir(), "cxxflags", {flagskey = "clang_prebuild_module_path"}) then
-            prebuiltmodulepathflag = "-fprebuilt-module-path="
-        end
-        assert(prebuiltmodulepathflag, "compiler(clang): does not support c++ module!")
-        _g.prebuiltmodulepathflag = prebuiltmodulepathflag or false
-    end
-    return prebuiltmodulepathflag or nil
-end
-
-function get_modulecachepathflag(target)
-    local modulecachepathflag = _g.modulecachepathflag
-    if modulecachepathflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fmodules-cache-path=" .. os.tmpdir(), "cxxflags", {flagskey = "clang_modules_cache_path"}) then
-            modulecachepathflag = "-fmodules-cache-path="
-        end
-        assert(modulecachepathflag, "compiler(clang): does not support c++ module!")
-        _g.modulecachepathflag = modulecachepathflag or false
-    end
-    return modulecachepathflag or nil
-end
-
 function get_modulefileflag(target)
+
     local modulefileflag = _g.modulefileflag
     if modulefileflag == nil then
         local compinst = target:compiler("cxx")
@@ -434,6 +350,7 @@ function get_modulefileflag(target)
 end
 
 function get_moduleheaderflag(target)
+
     local moduleheaderflag = _g.moduleheaderflag
     if moduleheaderflag == nil then
         local compinst = target:compiler("cxx")
@@ -446,6 +363,7 @@ function get_moduleheaderflag(target)
 end
 
 function has_clangscandepssupport(target)
+
     local support_clangscandeps = _g.support_clangscandeps
     if support_clangscandeps == nil then
         local clangscandeps = get_clang_scan_deps(target)
@@ -459,6 +377,7 @@ function has_clangscandepssupport(target)
 end
 
 function get_keepsystemincludesflag(target)
+
     local keepsystemincludesflag = _g.keepsystemincludesflag
     if keepsystemincludesflag == nil then
         local compinst = target:compiler("cxx")
@@ -473,6 +392,7 @@ function get_keepsystemincludesflag(target)
 end
 
 function get_moduleoutputflag(target)
+
     local moduleoutputflag = _g.moduleoutputflag
     if moduleoutputflag == nil then
         local compinst = target:compiler("cxx")
@@ -487,6 +407,7 @@ function get_moduleoutputflag(target)
 end
 
 function get_print_library_module_manifest_path_flag(target)
+
     local print_library_module_manifest_path_flag = _g.print_library_module_manifest_path_flag
     if print_library_module_manifest_path_flag == nil then
         local compinst = target:compiler("cxx")

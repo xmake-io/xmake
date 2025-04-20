@@ -23,6 +23,7 @@ import("core.base.hashset")
 
 -- the stl headers list
 function _stlheaders()
+
     return {
     "algorithm",
     "forward_list",
@@ -146,7 +147,7 @@ function get_stlheaders()
 end
 
 -- is stl header?
-function is_stl_header(header)
+function is_stlheader(header)
     if header:startswith("experimental/") then
         header = header:sub(14, -1)
     end
