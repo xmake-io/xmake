@@ -48,9 +48,11 @@ function _package_library(target)
 
     -- copy *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/787
-    local target_implib = target:implibfile()
-    if target_implib and os.isfile(target_implib) then
-        os.vcp(target_implib, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/", outputdir, targetname))
+    if target:has_implib() then
+        local target_implib = target:artifactfile("lib")
+        if os.isfile(target_implib) then
+            os.vcp(target_implib, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/", outputdir, targetname))
+        end
     end
 
     -- copy headers
