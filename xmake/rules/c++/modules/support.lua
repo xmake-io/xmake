@@ -13,7 +13,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki, Arthapz
--- @file        compiler_support.lua
+-- @file        support.lua
 --
 
 -- imports
@@ -25,23 +25,23 @@ import("lib.detect.find_file")
 import("core.project.project")
 import("core.project.config")
 
-function _compiler_support(target)
+function _support(target)
     local cachekey = tostring(target)
-    local compiler_support = memcache():get2("compiler_support", cachekey)
-    if compiler_support == nil then
+    local support = memcache():get2("support", cachekey)
+    if support == nil then
         if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
-            compiler_support = import("clang.compiler_support", {anonymous = true})
+            support = import("clang.support", {anonymous = true})
         elseif target:has_tool("cxx", "gcc", "gxx") then
-            compiler_support = import("gcc.compiler_support", {anonymous = true})
+            support = import("gcc.support", {anonymous = true})
         elseif target:has_tool("cxx", "cl") then
-            compiler_support = import("msvc.compiler_support", {anonymous = true})
+            support = import("msvc.support", {anonymous = true})
         else
             local _, toolname = target:tool("cxx")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
-        memcache():set2("compiler_support", cachekey, compiler_support)
+        memcache():set2("support", cachekey, support)
     end
-    return compiler_support
+    return support
 end
 
 -- load module support for the current target
@@ -61,17 +61,17 @@ function load(target)
     end
 
     -- load module support for the specific compiler
-    _compiler_support(target).load(target)
+    _support(target).load(target)
 end
 
 -- strip flags not relevent for module reuse
 function strip_flags(target, flags)
-    return _compiler_support(target).strip_flags(target, flags)
+    return _support(target).strip_flags(target, flags)
 end
 
 -- get bmi extension
 function get_bmi_extension(target)
-    return _compiler_support(target).get_bmi_extension()
+    return _support(target).get_bmi_extension()
 end
 
 -- get bmi path
@@ -139,7 +139,7 @@ function find_quote_header_file(target, sourcefile, file)
 end
 
 function find_angle_header_file(target, file)
-    local headerpaths = _compiler_support(target).toolchain_includedirs(target)
+    local headerpaths = _support(target).toolchain_includedirs(target)
     for _, dep in ipairs(target:orderdeps()) do
         local includedirs = table.join(dep:get("sysincludedirs") or {}, dep:get("includedirs") or {})
         table.join2(headerpaths, includedirs)
@@ -156,7 +156,7 @@ end
 
 -- get stdmodules
 function get_stdmodules(target)
-  return _compiler_support(target).get_stdmodules(target)
+  return _support(target).get_stdmodules(target)
 end
 
 -- get memcache

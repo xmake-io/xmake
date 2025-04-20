@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki, Arthapz
--- @file        stl_headers.lua
+-- @file        stlheaders.lua
 --
 
 -- imports
 import("core.base.hashset")
 
 -- the stl headers list
-function _stl_headers()
+function _stlheaders()
     return {
     "algorithm",
     "forward_list",
@@ -136,20 +136,20 @@ function _stl_headers()
 end
 
 -- get all stl headers
-function get_stl_headers()
-    local stl_headers = _g.stl_headers
-    if stl_headers == nil then
-        stl_headers = hashset.from(_stl_headers())
-        _g.stl_headers = stl_headers or false
+function get_stlheaders()
+    local stlheaders = _g.stlheaders
+    if stlheaders == nil then
+        stlheaders = hashset.from(_stlheaders())
+        _g.stlheaders = stlheaders or false
     end
-    return stl_headers or nil
+    return stlheaders or nil
 end
 
 -- is stl header?
-function is_stl_header(header)
+function is_stlheader(header)
     if header:startswith("experimental/") then
         header = header:sub(14, -1)
     end
-    return get_stl_headers():has(header)
+    return get_stlheaders():has(header)
 end
 

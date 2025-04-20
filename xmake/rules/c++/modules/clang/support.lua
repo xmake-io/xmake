@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki, Arthapz
--- @file        clang/compiler_support.lua
+-- @file        clang/support.lua
 --
 
 -- imports
@@ -24,7 +24,7 @@ import("core.base.option")
 import("core.base.json")
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
-import(".compiler_support", {inherit = true})
+import(".support", {inherit = true})
 
 -- get includedirs for stl headers
 --

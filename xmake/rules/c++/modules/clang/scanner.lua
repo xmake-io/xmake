@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki, Arthapz
--- @file        clang/dependency_scanner.lua
+-- @file        clang/scanner.lua
 --
 
 -- imports
@@ -24,8 +24,8 @@ import("core.base.semver")
 import("core.base.option")
 import("core.project.depend")
 import("utils.progress")
-import("compiler_support")
-import(".dependency_scanner", {inherit = true})
+import("support")
+import(".scanner", {inherit = true})
 
 function generate_dependency_for(target, sourcefile, opt)
     local compinst = target:compiler("cxx")
@@ -39,17 +39,17 @@ function generate_dependency_for(target, sourcefile, opt)
             progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:fullname(), sourcefile)
         end
 
-        local outputdir = compiler_support.get_outputdir(target, sourcefile)
+        local outputdir = support.get_outputdir(target, sourcefile)
         local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-        local has_clangscandepssupport = compiler_support.has_clangscandepssupport(target)
+        local has_clangscandepssupport = support.has_clangscandepssupport(target)
         if has_clangscandepssupport and not target:policy("build.c++.clang.fallbackscanner") then
             -- We need absolute path of clang to use clang-scan-deps
             -- See https://clang.llvm.org/docs/StandardCPlusPlusModules.html#possible-issues-failed-to-find-system-headers
             local clang_path = compinst:program()
             if not path.is_absolute(clang_path) then
-                clang_path = compiler_support.get_clang_path(target) or compinst:program()
+                clang_path = support.get_clang_path(target) or compinst:program()
             end
-            local clangscandeps = compiler_support.get_clang_scan_deps(target)
+            local clangscandeps = support.get_clang_scan_deps(target)
             local dependency_flags = table.join({"--format=p1689", "--",
                                                  clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, flags)
             if option.get("verbose") then
@@ -64,7 +64,7 @@ function generate_dependency_for(target, sourcefile, opt)
                 wprint("No clang-scan-deps found ! using fallback scanner")
             end
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
-                local keepsystemincludesflag = compiler_support.get_keepsystemincludesflag(target)
+                local keepsystemincludesflag = support.get_keepsystemincludesflag(target)
                 local compflags = table.clone(flags)
                 -- exclude -fmodule* and -std=c++/gnu++* flags because
                 -- when they are set clang try to find bmi of imported modules but they don't exists in this point of compilation
