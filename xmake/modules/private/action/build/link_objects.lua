@@ -51,8 +51,6 @@ function _do_link_target(target, opt)
             print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, implib = target:implibfile(), rawargs = true}))
         end
 
-        print("TO LINK: ", target:name(), target:implibfile(), targetfile)
-
         if not dryrun then
             assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags, implib = target:implibfile()}))
         end
