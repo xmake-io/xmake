@@ -48,11 +48,13 @@ function _do_link_target(target, opt)
         local verbose = option.get("verbose")
         if verbose then
             -- show the full link command with raw arguments, it will expand @xxx.args for msvc/link on windows
-            print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, rawargs = true}))
+            print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, implib = target:implibfile(), rawargs = true}))
         end
 
+        print("TO LINK: ", target:name(), target:implibfile(), targetfile)
+
         if not dryrun then
-            assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
+            assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags, implib = target:implibfile()}))
         end
     end, {dependfile = target:dependfile(),
           lastmtime = os.mtime(target:targetfile()),
