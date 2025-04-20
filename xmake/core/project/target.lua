@@ -1570,61 +1570,121 @@ function _instance:autogenfile(sourcefile, opt)
     return path.join(rootdir, (opt and opt.filename) and opt.filename or path.filename(sourcefile))
 end
 
--- get the target directory
-function _instance:targetdir()
+-- get the default target directory
+function _instance:_default_targetdir()
+    local targetdir = config.buildir()
 
-    -- the target directory
-    local targetdir = self:get("targetdir")
-    if not targetdir then
-        targetdir = config.buildir()
+    -- get root directory of target
+    local intermediate_directory = self:policy("build.intermediate_directory")
+    if intermediate_directory == false then
+        return targetdir
+    end
 
-        -- get root directory of target
-        local intermediate_directory = self:policy("build.intermediate_directory")
-        if intermediate_directory == false then
-            return targetdir
-        end
-
-        -- generate intermediate directory
-        local plat = self:plat()
-        if plat then
-            targetdir = path.join(targetdir, plat)
-        end
-        local arch = self:arch()
-        if arch then
-            targetdir = path.join(targetdir, arch)
-        end
-        local mode = config.mode()
-        if mode then
-            targetdir = path.join(targetdir, mode)
-        end
-        local namespace = self:namespace()
-        if namespace then
-            targetdir = path.join(targetdir, (namespace:replace("::", path.sep())))
-        end
+    -- generate intermediate directory
+    local plat = self:plat()
+    if plat then
+        targetdir = path.join(targetdir, plat)
+    end
+    local arch = self:arch()
+    if arch then
+        targetdir = path.join(targetdir, arch)
+    end
+    local mode = config.mode()
+    if mode then
+        targetdir = path.join(targetdir, mode)
+    end
+    local namespace = self:namespace()
+    if namespace then
+        targetdir = path.join(targetdir, (namespace:replace("::", path.sep())))
     end
     return targetdir
 end
 
--- get the imp-lib directory (only on windows)
-function _instance:implibdir()
-    if not ((self:is_plat("windows", "mingw")) and self:is_shared()) then
-        return nil
+-- get the target directory
+function _instance:targetdir()
+    local targetdir = self:get("targetdir")
+    if not targetdir then
+        return self:_default_targetdir()
     end
 
-    local implibdir = self:get("implibdir")
-    if not implibdir then
-        implibdir = self:targetdir()
+    -- executable, windows shared library
+    if self:is_binary() or self:has_implib() then
+        local subdir = self:extraconf("targetdir", targetdir, "bin")
+        if subdir then
+            targetdir = path.join(targetdir, subdir)
+        end
+        return targetdir
     end
-    return implibdir
+
+    -- static library, non-windows shared library
+    if self:is_static() or self:is_shared() then
+        local subdir = self:extraconf("targetdir", targetdir, "lib")
+        if subdir then
+            targetdir = path.join(targetdir, subdir)
+        end
+        return targetdir
+    end
+
+    return targetdir
 end
 
--- get the imp-lib file (only on windows)
-function _instance:implibfile()
-    local implibdir = self:implibdir()
-    if not implibdir then
+-- get the build artifact output directory
+function _instance:artifactdir(type)
+    local targetdir = self:get("targetdir")
+    if not targetdir then
+        return self:_default_targetdir()
+    end
+
+    local subdir = self:extraconf("targetdir", targetdir, type)
+    if subdir then
+        return path.join(targetdir, subdir)
+    end
+    return targetdir
+end
+
+-- get the build artifact output file
+function _instance:artifactfile(type)
+    if type == "bin" then
+        -- executable, windows shared library
+        if self:is_binary() or self:has_implib() then
+            return self:targetfile()
+        end
+
         return nil
     end
-    return path.join(implibdir, path.basename(self:targetfile()) .. (self:is_plat("mingw") and ".dll.a" or ".lib"))
+
+    if type == "lib" then
+        if self:is_static() then
+            -- static library
+            return self:targetfile()
+        end
+        if self:is_shared() then
+            if self:is_plat("windows") then
+                -- msvc shared library implib
+                return path.join(self:artifactdir("lib"), path.basename(self:filename()) .. ".lib")
+
+            elseif self:is_plat("mingw")then
+                -- mingw shared library implib
+                return path.join(self:artifactdir("lib"), path.basename(self:filename()) .. ".dll.a")
+            else
+                -- unix shared library
+                return self:targetfile()
+            end
+        end
+
+        return nil
+    end
+
+    -- to be added...
+    return nil
+end
+
+-- get the implib file (windows shared library only)
+function _instance:implibfile()
+    if self:has_implib() then
+        return self:artifactfile("lib")
+    end
+    return nil
 end
 
 -- get the target file name
@@ -2503,6 +2563,13 @@ function _instance:has_runtime(...)
     end
 end
 
+-- has implib artifact file?
+--
+-- equivalent to "is_windows_shared_library"
+function _instance:has_implib()
+    return self:is_shared() and self:is_plat("windows", "mingw")
+end
+
 -- get the given toolchain
 function _instance:toolchain(name)
     local toolchains_map = self:_memcache():get("toolchains_map")
@@ -2918,7 +2985,6 @@ function target.apis()
             -- target.set_xxx
             "target.set_targetdir"
         ,   "target.set_objectdir"
-        ,   "target.set_implibdir"
         ,   "target.set_dependir"
         ,   "target.set_autogendir"
         ,   "target.set_configdir"

@@ -39,7 +39,7 @@ function main(target)
     -- @see https://github.com/xmake-io/xmake/issues/3052
     if target:is_shared() then
         if target:is_plat("windows") then
-            local expfile = path.join(target:implibdir(), path.basename(targetfile) .. ".exp")
+            local expfile = path.join(target:artifactdir("lib"), path.basename(targetfile) .. ".exp")
             if os.isfile(expfile) then
                 remove_files(expfile)
             end
