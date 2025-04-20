@@ -53,7 +53,8 @@ language("objc++")
     {
         object =
         {
-            "config.includedirs"
+            "target.runtimes"
+        ,   "config.includedirs"
         ,   "config.frameworkdirs"
         ,   "config.frameworks"
         ,   "target.symbols"
@@ -81,7 +82,8 @@ language("objc++")
         }
     ,   binary =
         {
-            "config.linkdirs"
+            "target.runtimes"
+        ,   "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
@@ -104,7 +106,8 @@ language("objc++")
         }
     ,   shared =
         {
-            "config.linkdirs"
+            "target.runtimes"
+        ,   "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
         ,   "target.frameworkdirs"

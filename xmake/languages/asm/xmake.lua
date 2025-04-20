@@ -31,7 +31,8 @@ language("asm")
 
     set_nameflags {
         object = {
-            "config.includedirs"
+            "target.runtimes"
+        ,   "config.includedirs"
         ,   "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
@@ -40,7 +41,6 @@ language("asm")
         ,   "target.includedirs"
         ,   "target.defines"
         ,   "target.undefines"
-        ,   "target.runtimes"
         ,   "toolchain.includedirs"
         ,   "toolchain.defines"
         ,   "toolchain.undefines"
@@ -48,12 +48,12 @@ language("asm")
         ,   "toolchain.sysincludedirs"
         }
     ,   binary = {
-            "config.linkdirs"
+            "target.runtimes"
+        ,   "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
-        ,   "target.runtimes"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
         ,   "config.links"

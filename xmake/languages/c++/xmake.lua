@@ -32,7 +32,8 @@ language("c++")
 
     set_nameflags {
         object = {
-            "config.includedirs"
+            "target.runtimes"
+        ,   "config.includedirs"
         ,   "config.frameworkdirs"
         ,   "config.frameworks"
         ,   "target.symbols"
@@ -41,7 +42,6 @@ language("c++")
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
         ,   "target.languages"
-        ,   "target.runtimes"
         ,   "target.pcxxheader"
         ,   "target.includedirs"
         ,   "target.defines"
@@ -60,7 +60,8 @@ language("c++")
         ,   "toolchain.sysincludedirs"
         }
     ,   binary = {
-            "config.linkdirs"
+            "target.runtimes"
+        ,   "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
         ,   "target.frameworkdirs"
@@ -68,7 +69,6 @@ language("c++")
         ,   "target.strip"
         ,   "target.symbols"
         ,   "target.optimize:check"
-        ,   "target.runtimes"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
         ,   "toolchain.frameworkdirs"
@@ -84,7 +84,8 @@ language("c++")
         ,   "toolchain.syslinks"
         }
     ,   shared = {
-            "config.linkdirs"
+            "target.runtimes"
+        ,   "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
         ,   "target.frameworkdirs"
@@ -92,7 +93,6 @@ language("c++")
         ,   "target.strip"
         ,   "target.symbols"
         ,   "target.optimize:check"
-        ,   "target.runtimes"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
         ,   "toolchain.frameworkdirs"

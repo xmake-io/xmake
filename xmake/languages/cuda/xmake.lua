@@ -32,14 +32,14 @@ language("cuda")
 
     set_nameflags {
         object = {
-            "config.includedirs"
+            "target.runtimes"
+        ,   "config.includedirs"
         ,   "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
         ,   "target.includedirs"
         ,   "target.languages"
-        ,   "target.runtimes"
         ,   "target.defines"
         ,   "target.undefines"
         ,   "toolchain.includedirs"
@@ -49,7 +49,8 @@ language("cuda")
         ,   "toolchain.sysincludedirs"
         }
     ,   binary = {
-            "config.linkdirs"
+            "target.runtimes"
+        ,   "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
         ,   "target.strip"
@@ -65,7 +66,8 @@ language("cuda")
         }
     ,   shared =
         {
-            "config.linkdirs"
+            "target.runtimes"
+        ,   "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.strip"
         ,   "target.symbols"
