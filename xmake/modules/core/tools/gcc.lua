@@ -31,7 +31,7 @@ import("core.language.language")
 import("utils.progress")
 import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
-import("rules.c++.modules.modules_support.compiler_support", {rootdir = os.programdir()})
+import("rules.c++.modules.support", {rootdir = os.programdir()})
 
 function init(self)
 
@@ -923,7 +923,7 @@ function compargv(self, sourcefile, objectfile, flags, opt)
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
         flags = _translate_flags_for_pch(self, flags)
-    elseif compiler_support.has_module_extension(sourcefile, {extension = extension}) then
+    elseif support.has_module_extension(sourcefile, {extension = extension}) then
         flags = _translate_flags_for_mpp(self, flags)
     end
 

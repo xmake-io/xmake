@@ -28,11 +28,11 @@ rule("c++.build.modules")
     add_deps("c++.build.modules.install")
 
     on_config(function (target)
-        import("modules_support.compiler_support")
+        import("support")
 
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         -- @see https://github.com/xmake-io/xmake/issues/1858
-        if compiler_support.contains_modules(target) then
+        if support.contains_modules(target) then
             -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
             -- even if some sub-targets do not contain C++ modules.
             --
@@ -48,7 +48,7 @@ rule("c++.build.modules")
             target:set("policy", "build.ccache", false)
 
             -- load compiler support
-            compiler_support.load(target)
+            support.load(target)
 
             -- mark this target with modules
             target:data_set("cxx.has_modules", true)
@@ -73,29 +73,29 @@ rule("c++.build.modules.builder")
     -- generate module dependencies
     on_prepare_files(function (target, jobgraph, sourcebatch, opt)
         if target:data("cxx.has_modules") then
-            import("modules_support.builder")
-            import("modules_support.dependency_scanner")
+            import("builder")
+            import("scanner")
 
             -- patch sourcebatch
             builder.patch_sourcebatch(target, sourcebatch)
 
             -- generate module dependencies
-            dependency_scanner.generate_module_dependencies(target, jobgraph, sourcebatch, opt)
+            scanner.generate_module_dependencies(target, jobgraph, sourcebatch, opt)
         end
     end, {jobgraph = true})
 
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, jobgraph, sourcebatch, opt)
         if target:data("cxx.has_modules") then
-            import("modules_support.compiler_support")
-            import("modules_support.dependency_scanner")
-            import("modules_support.builder")
+            import("support")
+            import("scanner")
+            import("builder")
 
             -- get module dependencies
-            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch)
+            local modules = scanner.get_module_dependencies(target, sourcebatch)
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules
-                local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                local build_objectfiles, link_objectfiles = scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
                 sourcebatch.objectfiles = build_objectfiles
 
                 -- build modules and headerunits
@@ -105,8 +105,8 @@ rule("c++.build.modules.builder")
                 sourcebatch.objectfiles = {}
             end
 
-            compiler_support.localcache():set2(target:fullname(), "c++.modules", modules)
-            compiler_support.localcache():save()
+            support.localcache():set2(target:fullname(), "c++.modules", modules)
+            support.localcache():save()
         else
             -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
@@ -116,15 +116,15 @@ rule("c++.build.modules.builder")
     -- serial compilation only, usually used to support project generator
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if target:data("cxx.has_modules") then
-            import("modules_support.compiler_support")
-            import("modules_support.dependency_scanner")
-            import("modules_support.builder")
+            import("support")
+            import("scanner")
+            import("builder")
 
             -- get module dependencies
-            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch)
+            local modules = scanner.get_module_dependencies(target, sourcebatch)
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules
-                local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                local build_objectfiles, link_objectfiles = scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
                 sourcebatch.objectfiles = build_objectfiles
 
                 -- build headerunits and modules
@@ -135,8 +135,8 @@ rule("c++.build.modules.builder")
                 sourcebatch.objectfiles = {}
             end
 
-            compiler_support.localcache():set2(target:fullname(), "c++.modules", modules)
-            compiler_support.localcache():save()
+            support.localcache():set2(target:fullname(), "c++.modules", modules)
+            support.localcache():save()
         else
             sourcebatch.sourcefiles = {}
             sourcebatch.objectfiles = {}
@@ -146,17 +146,17 @@ rule("c++.build.modules.builder")
 
     after_clean(function (target)
         import("core.base.option")
-        import("modules_support.compiler_support")
+        import("support")
         import("private.action.clean.remove_files")
 
         -- we cannot use target:data("cxx.has_modules"),
         -- because on_config will be not called when cleaning targets
-        if compiler_support.contains_modules(target) then
-            remove_files(compiler_support.modules_cachedir(target))
+        if support.contains_modules(target) then
+            remove_files(support.modules_cachedir(target))
             if option.get("all") then
-                remove_files(compiler_support.stlmodules_cachedir(target))
-                compiler_support.localcache():clear()
-                compiler_support.localcache():save()
+                remove_files(support.stlmodules_cachedir(target))
+                support.localcache():clear()
+                support.localcache():save()
             end
         end
     end)
@@ -166,22 +166,22 @@ rule("c++.build.modules.install")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     before_install(function (target)
-        import("modules_support.compiler_support")
-        import("modules_support.builder")
+        import("support")
+        import("builder")
 
         -- we cannot use target:data("cxx.has_modules"),
         -- because on_config will be not called when installing targets
-        if compiler_support.contains_modules(target) then
-            local modules = compiler_support.localcache():get2(target:fullname(), "c++.modules")
+        if support.contains_modules(target) then
+            local modules = support.localcache():get2(target:fullname(), "c++.modules")
             builder.generate_metadata(target, modules)
 
-            compiler_support.add_installfiles_for_modules(target)
+            support.add_installfiles_for_modules(target)
         end
     end)
 
     before_uninstall(function (target)
-        import("modules_support.compiler_support")
-        if compiler_support.contains_modules(target) then
-            compiler_support.add_installfiles_for_modules(target)
+        import("support")
+        if support.contains_modules(target) then
+            support.add_installfiles_for_modules(target)
         end
     end)
