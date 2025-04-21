@@ -32,10 +32,10 @@ language("c++")
 
     set_nameflags {
         object = {
-            "target.runtimes"
-        ,   "config.includedirs"
+            "config.includedirs"
         ,   "config.frameworkdirs"
         ,   "config.frameworks"
+        ,   "target.runtimes"
         ,   "target.symbols"
         ,   "target.warnings"
         ,   "target.fpmodels"
