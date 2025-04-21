@@ -49,14 +49,12 @@ language("objc++")
     on_check_main("check_main")
 
     -- set name flags
-    set_nameflags
-    {
-        object =
-        {
-            "target.runtimes"
-        ,   "config.includedirs"
+    set_nameflags {
+        object = {
+            "config.includedirs"
         ,   "config.frameworkdirs"
         ,   "config.frameworks"
+        ,   "target.runtimes"
         ,   "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
@@ -80,8 +78,7 @@ language("objc++")
         ,   "target.sysincludedirs"
         ,   "toolchain.sysincludedirs"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "target.runtimes"
         ,   "config.linkdirs"
         ,   "config.frameworkdirs"
@@ -104,8 +101,7 @@ language("objc++")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "target.runtimes"
         ,   "config.linkdirs"
         ,   "config.frameworkdirs"
@@ -126,8 +122,7 @@ language("objc++")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static =
-        {
+    ,   static = {
             "target.strip"
         ,   "target.symbols"
         }
