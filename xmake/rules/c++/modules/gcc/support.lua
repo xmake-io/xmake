@@ -208,8 +208,11 @@ end
 function get_moduleheaderflag(target)
     local moduleheaderflag = _g.moduleheaderflag
     if moduleheaderflag == nil then
+        -- we need to suppress warnings/errors:
+        -- external linkage definition of 'int main(int, char**)' in header module must be declared 'inline'
+        local snippet = ""
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fmodule-header", "cxxflags", {flagskey = "gcc_module_header"}) then
+        if compinst:has_flags("-fmodule-header", "cxxflags", {snippet = snippet, flagskey = "gcc_module_header"}) then
             moduleheaderflag = "-fmodule-header="
         end
         _g.moduleheaderflag = moduleheaderflag or false
