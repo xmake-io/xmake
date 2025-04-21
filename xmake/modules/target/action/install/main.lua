@@ -237,7 +237,7 @@ function _install_shared(target, opt)
         -- @see https://github.com/xmake-io/xmake/issues/714
         os.vcp(target:targetfile(), bindir)
         local libdir = _get_target_libdir(target, opt)
-        local target_implib = target:byproduct("implib")
+        local target_implib = target:artifactfile("implib")
         if os.isfile(target_implib) then
             os.mkdir(libdir)
             os.vcp(target_implib, libdir)
