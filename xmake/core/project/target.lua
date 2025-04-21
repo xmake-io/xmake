@@ -1644,14 +1644,14 @@ function _instance:_targetdir_extra(kind)
     return targetdir
 end
 
--- get the build byproduct file
+-- get the extra build artifact file
 --
--- supported byproduct kinds:
+-- supported artifact kinds:
 --    1. implib: windows DLL implib(.lib, .dll.a)
 --
 -- otherwise returns nil
 --
-function _instance:byproduct(kind)
+function _instance:artifactfile(kind)
     if kind == "implib" then
         if self:is_shared() and self:is_plat("windows", "mingw") then
             return path.join(self:_targetdir_extra("libdir"), path.basename(self:filename()) .. (self:is_plat("mingw") and ".dll.a" or ".lib"))
