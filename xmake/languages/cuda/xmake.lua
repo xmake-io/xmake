@@ -32,8 +32,8 @@ language("cuda")
 
     set_nameflags {
         object = {
-            "target.runtimes"
-        ,   "config.includedirs"
+            "config.includedirs"
+        ,   "target.runtimes"
         ,   "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
@@ -64,8 +64,7 @@ language("cuda")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "target.runtimes"
         ,   "config.linkdirs"
         ,   "target.linkdirs"
