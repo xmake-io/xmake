@@ -31,8 +31,8 @@ language("asm")
 
     set_nameflags {
         object = {
-            "target.runtimes"
-        ,   "config.includedirs"
+            "config.includedirs"
+        ,   "target.runtimes"
         ,   "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
@@ -64,11 +64,11 @@ language("asm")
         ,   "toolchain.syslinks"
         }
     ,   shared = {
-            "config.linkdirs"
+            "target.runtimes"
+        ,   "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.strip"
         ,   "target.symbols"
-        ,   "target.runtimes"
         ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
