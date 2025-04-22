@@ -16,52 +16,18 @@
 --
 -- @author      ruki
 -- @file        xmake.lua
---
 
 -- add *.idl for rc file
 rule("platform.windows.idl")
     set_extensions(".idl")
-
     on_config("windows", "mingw", function (target)
-        local sourcebatch = target:sourcebatches()["platform.windows.idl"]
-        if sourcebatch then
-            local autogendir = path.join(target:autogendir(), "platform/windows/idl")
-            os.mkdir(autogendir)
-            target:add("includedirs", autogendir, {public = true})
-        end
+        import("idl").configure(target)
     end)
 
-    before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
-        import("lib.detect.find_tool")
+    before_build_files(function (target, jobgraph, sourcebatch, opt)
+        import("idl").generate_idl(target, jobgraph, sourcebatch, opt)
+    end, {jobgraph = true, batch = true})
 
-        local msvc = target:toolchain("msvc") or target:toolchain("clang-cl") or target:toolchain("clang")
-        local midl = assert(find_tool("midl", {envs = msvc:runenvs(), toolchain = msvc}), "midl not found!")
-
-        local name = path.basename(sourcefile)
-        local autogendir = path.join(target:autogendir(), "platform/windows/idl")
-
-        local flags = {"/nologo"}
-        table.join2(flags, table.wrap(target:values("idl.flags")))
-        table.join2(flags, {
-            "/out",    path(autogendir),
-            "/header", name .. ".h",
-            "/iid",    name .. "_i.c",
-            "/proxy",  name .. "_p.c",
-            "/tlb",    name .. ".tlb",
-            path(sourcefile)
-        })
-
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.idl %s", sourcefile)
-        batchcmds:vrunv(midl.program, flags, {envs = msvc:runenvs()})
-
-        local iid_file = path.join(autogendir, name .. "_i.c")
-        local objectfile = target:objectfile(iid_file)
-        table.insert(target:objectfiles(), objectfile)
-
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", iid_file)
-        batchcmds:compile(iid_file, objectfile)
-
-        batchcmds:add_depfiles(sourcefile, iid_file)
-        batchcmds:set_depmtime(os.mtime(objectfile))
-        batchcmds:set_depcache(target:dependfile(objectfile))
-    end)
+    on_build_files(function (target, jobgraph, sourcebatch, opt)
+        import("idl").build_idlfiles(target, jobgraph, sourcebatch, opt)
+    end, {jobgraph = true, batch = true, distcc = true})
