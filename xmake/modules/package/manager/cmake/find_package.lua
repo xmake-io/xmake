@@ -229,7 +229,7 @@ function _find_package(cmake, name, opt)
     cmakefile:print("set(INFO_COMPILE_OPTIONS $<TARGET_PROPERTY:${PROJECT_NAME},COMPILE_OPTIONS>)")
     cmakefile:print("set(INFO_LINK_OPTIONS $<TARGET_PROPERTY:${PROJECT_NAME},LINK_OPTIONS>)")
     cmakefile:print("set(INFO_LINK_LIBRARIES $<TARGET_PROPERTY:${PROJECT_NAME},LINK_LIBRARIES>)")
-    cmakefile:print("configure_file(\"main-info.cmake.in\" \"${CMAKE_BINARY_DIR}/main-info.cmake.tmp\")")
+    cmakefile:print("configure_file(\"main-info.cmake.in\" \"${CMAKE_BINARY_DIR}/main-info.cmake.tmp\" @ONLY)")
     cmakefile:print("file(GENERATE OUTPUT \"${CMAKE_BINARY_DIR}/main-info.cmake\" INPUT \"${CMAKE_BINARY_DIR}/main-info.cmake.tmp\")")
 
     cmakefile:close()
@@ -341,7 +341,118 @@ function _find_package(cmake, name, opt)
     local libfiles    = info.LINK_LIBRARIES
 
     -- get build.ninja
-    -- TODO
+    local ninjafile = path.join(builddir, "build.ninja")
+    local ninjabuilds = nil
+    if os.isfile(ninjafile) then
+        local ninjadata = io.readfile(ninjafile)
+        if ninjadata then
+            if option.get("diagnosis") then
+                cprint("finding links from %s\n${dim}%s", ninjafile, ninjadata)
+            end
+
+            local results = {}
+            local current_build = nil
+            local current_vars = nil
+            for _, line in ipairs(ninjadata:split("\n")) do
+                -- https://ninja-build.org/manual.html#_build_statements
+                -- match build statement
+                -- e.g.
+                --      build CMakeFiles/main.dir/main.cpp.obj: ...
+                --      build main.exe: ...
+                local buildfile = line:match("^build%s+([^:]+):")
+                if buildfile then
+                    -- save previous statement if exists
+                    if current_build and current_vars then
+                        table.insert(results, { build = current_build, vars = current_vars })
+                    end
+
+                    if path.basename(buildfile):startswith("main") then
+                        -- save current statement
+                        current_build = buildfile
+                        current_vars = {}
+                    else
+                        -- ignore unrelated build statements
+                        current_build = nil
+                        current_vars = nil
+                    end
+                elseif current_build then
+                    -- match variable assignments
+                    -- e.g.
+                    --      ^  CONFIG = Debug
+                    --      ^  DEFINES = -DXXX=YYY
+                    --      ^  INCLUDES = -isystem /path/to/include
+                    local var = line:match("^%s+([%w_]+)%s*=")
+                    if var then
+                        -- save current variable
+                        current_vars[var] = line:sub(line:find("=") + 1):gsub("^%s+", "")
+                    elseif line == "" then
+                        -- encounter empty line, save current statement and start a new one
+                        table.insert(results, { build = current_build, vars = current_vars })
+                        current_build = nil
+                        current_vars = nil
+                    end
+                end
+            end
+
+            -- save the last statement if exists
+            if current_build and current_vars then
+                table.insert(results, { build = current_build, vars = current_vars })
+            end
+            
+            ninjabuilds = results
+        end
+    end
+
+    if ninjabuilds then
+        local ninja_defines = {}
+        local ninja_includes = {}
+        local ninja_flags = {}
+        local ninja_links = {}
+        local ninja_linkdirs = {}
+        local ninja_linkflags = {}
+        for _, builditem in pairs(ninjabuilds) do
+            for key, value in pairs(builditem.vars) do
+                if key == "DEFINES" then
+                    ninja_defines = table.join(ninja_defines, os.argv(value))
+                elseif key == "INCLUDES" then
+                    ninja_includes = table.join(ninja_includes, os.argv(value))
+                elseif key == "FLAGS" then
+                    ninja_flags = table.join(ninja_flags, os.argv(value))
+                elseif key == "LINK_LIBRARIES" then
+                    ninja_links = table.join(ninja_links, os.argv(value))
+                elseif key == "LINK_FLAGS" then
+                    ninja_linkflags = table.join(ninja_linkflags, os.argv(value))
+                elseif key == "LINK_PATH" then
+                    ninja_linkdirs = table.join(ninja_linkdirs, os.argv(value))
+                end
+            end
+        end
+
+        -- TODO: strip command line prefix for `ninja_xxx` variables
+        -- e.g. -isystem ->
+        --      -DXXX=YYY -> XXX=YYY
+        --      -I/path/to/include -> /path/to/include
+        --      -L/path/to/lib -> /path/to/lib
+        --      -lxxx -> xxx
+        --      -framework xxx -> ?
+
+        links = ninja_links
+        if not ldflags then
+            ldflags = ninja_linkflags
+        end
+        if not linkdirs then
+            linkdirs = ninja_linkdirs
+        end
+        if not defines then
+            defines = ninja_defines
+        end
+        if not flags then
+            flags = ninja_flags
+        end
+        if not includedirs then
+            includedirs = ninja_includes
+        end
+    end
     
     -- remove work directory
     os.tryrm(workdir)
