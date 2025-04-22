@@ -472,7 +472,7 @@ function main()
     -- build targets with the given tests first
     local targetnames = {}
     for _, testinfo in table.orderpairs(tests) do
-        local targetname = testinfo.target:name()
+        local targetname = testinfo.target:fullname()
         if testinfo.build_should_pass then
             local passed, errors = _try_build_target(targetname)
             testinfo.passed = passed
