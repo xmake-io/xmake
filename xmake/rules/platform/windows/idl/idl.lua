@@ -17,10 +17,12 @@
 -- @author      ruki
 -- @file        idl.lua
 --
-import("private.action.build.object", {alias = "build_objectfiles"})
+
+-- imports
 import("lib.detect.find_tool")
 import("core.project.depend")
-import("utils.progress") -- it only for v2.5.9, we need use print to show prog
+import("utils.progress")
+import("private.action.build.object", {alias = "build_objectfiles"})
 
 function generate_single(target, sourcefile, opt)
     local msvc = target:toolchain("msvc") or target:toolchain("clang-cl") or target:toolchain("clang")
@@ -37,10 +39,10 @@ function generate_single(target, sourcefile, opt)
     local undefs = table.wrap(target:get("undefines") or {})
 
     if fileconfig then
-        if fileconfig.server ~= nil then
+        if fileconfig.server then
             enable_server = fileconfig.server
         end
-        if fileconfig.client ~= nil then
+        if fileconfig.client then
             enable_client = fileconfig.client
         end
         if fileconfig.includedirs then
@@ -102,12 +104,14 @@ function generate_single(target, sourcefile, opt)
         path(sourcefile)
     })
 
-    depend.on_changed(function() 
+    local dependfile = path.join(autogendir, path.basename(sourcefile) .. ".idl.d")
+    depend.on_changed(function()
         progress.show(opt.progress or 0, "${color.build.object}generating.idl %s", sourcefile)
         os.vrunv(midl.program, flags, { envs = msvc:runenvs() })
-    end, {files = sourcefile, 
-         dependfile = path.join(autogendir, path.basename(sourcefile) .. ".idl.d") }
-    )
+    end, {
+        files = sourcefile,
+        dependfile = dependfile
+    })
 end
 
 function configure(target)
@@ -119,7 +123,7 @@ function configure(target)
     end
 end
 
-function gen_idl(target, jobgraph, sourcebatch, opt)
+function generate_idl(target, jobgraph, sourcebatch, opt)
     local idljob = target:fullname() .. "/generate/midl"
     jobgraph:group(idljob, function()
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -134,22 +138,22 @@ end
 function build_idlfiles(target, jobgraph, sourcebatch, opt)
     local autogendir = path.join(target:autogendir(), "platform/windows/idl")
 
-    local addsrc = function (sourcename, suffix, mysources)
+    local function addsrc(sourcename, suffix, mysources)
         local fullfile = path.join(autogendir, sourcename .. suffix)
         if os.exists(fullfile) then
             table.insert(mysources, fullfile)
         end
     end
 
-    local jobgrp = target:fullname() .. "/obj/midl"
-    jobgraph:group(jobgrp, function()
+    local build_midl = target:fullname() .. "/obj/midl"
+    jobgraph:group(build_midl, function()
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
             local ccjob = target:fullname() .. "/obj/" .. sourcefile
             jobgraph:add(ccjob, function (index, total, opt)
                 local fileconfig = target:fileconfig(sourcefile)
                 local enable_proxy = true
                 if fileconfig then
-                    if fileconfig.proxy ~= nil then
+                    if fileconfig.proxy then
                         enable_proxy = fileconfig.proxy
                     end
                 end
@@ -177,7 +181,7 @@ function build_idlfiles(target, jobgraph, sourcebatch, opt)
                     table.insert(target:objectfiles(), objfile)
                     table.insert(batchcxx.objectfiles, objfile)
                     table.insert(batchcxx.dependfiles, depfile)
-                                table.insert(target:objectfiles(), objfile)
+                    table.insert(target:objectfiles(), objfile)
                 end
                 build_objectfiles.build(target, batchcxx, opt)
             end)
