@@ -216,7 +216,7 @@ function _get_package_modules(target, package)
 end
 
 -- generate module dependencies
-function generate_module_dependencies(target, jobgraph, sourcebatch, opt)
+function _generate_module_dependencies(target, jobgraph, sourcebatch, opt)
     local parsejob = target:fullname() .. "/parse_module_dependencies"
     jobgraph:add(parsejob, function (index, total, opt)
         local changed = support.memcache():get2("modules", "dependencies_changed")
@@ -237,6 +237,86 @@ function generate_module_dependencies(target, jobgraph, sourcebatch, opt)
             end
         end)
         jobgraph:add_orders(jobname, parsejob)
+    end
+end
+
+-- get source modulefile for external target deps
+function _get_targetdeps_modules(target)
+    local sourcefiles
+    for _, dep in ipairs(target:orderdeps()) do
+        local sourcebatch = dep:sourcebatches()["c++.build.modules.builder"]
+        if sourcebatch and sourcebatch.sourcefiles then
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local fileconfig = dep:fileconfig(sourcefile)
+                local public = (fileconfig and fileconfig.public and not fileconfig.external) or false
+                if public then
+                    sourcefiles = sourcefiles or {}
+                    table.insert(sourcefiles, sourcefile)
+                    target:fileconfig_add(sourcefile, {external = {moduleonly = dep:is_moduleonly()}})
+                end
+            end
+        end
+    end
+    return sourcefiles
+end
+
+-- extract packages modules dependencies
+function _get_all_packages_modules(target)
+
+    -- parse all meta-info and append their informations to the package store
+    local packages = target:pkgs() or {}
+    for _, deps in ipairs(target:orderdeps()) do
+        table.join2(packages, deps:pkgs())
+    end
+
+    local packages_modules
+    for _, package in table.orderpairs(packages) do
+        local package_modules = _get_package_modules(target, package)
+        if package_modules then
+           packages_modules = packages_modules or {}
+           table.join2(packages_modules, package_modules)
+        end
+    end
+    return packages_modules
+end
+
+-- patch sourcebatch
+function _patch_sourcebatch(target, sourcebatch, opt)
+
+    -- add target deps modules
+    if target:orderdeps() then
+        local deps_sourcefiles = _get_targetdeps_modules(target)
+        if deps_sourcefiles then
+            table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
+        end
+    end
+
+    -- append std module
+    local std_modules = support.get_stdmodules(target)
+    if std_modules then
+        table.join2(sourcebatch.sourcefiles, std_modules)
+    end
+
+    -- extract packages modules dependencies
+    local package_modules_data = _get_all_packages_modules(target, opt)
+    if package_modules_data then
+        -- append to sourcebatch
+        for _, package_module_data in table.orderpairs(package_modules_data) do
+            table.insert(sourcebatch.sourcefiles, package_module_data.file)
+            target:fileconfig_set(package_module_data.file, {external = package_module_data.external, defines = package_module_data.metadata.defines})
+        end
+    end
+
+    -- patch objectfiles and dependencies
+    sourcebatch.sourcekind = "cxx"
+    sourcebatch.objectfiles = {}
+    sourcebatch.dependfiles = {}
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        local objectfile = target:objectfile(sourcefile)
+        table.insert(sourcebatch.objectfiles, objectfile)
+
+        local dependfile = target:dependfile(sourcefile or objectfile)
+        table.insert(sourcebatch.dependfiles, dependfile)
     end
 end
 
@@ -382,26 +462,6 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
     io.writefile(jsonfile, jsondata)
 end
 
--- extract packages modules dependencies
-function get_all_packages_modules(target)
-
-    -- parse all meta-info and append their informations to the package store
-    local packages = target:pkgs() or {}
-    for _, deps in ipairs(target:orderdeps()) do
-        table.join2(packages, deps:pkgs())
-    end
-
-    local packages_modules
-    for _, package in table.orderpairs(packages) do
-        local package_modules = _get_package_modules(target, package)
-        if package_modules then
-           packages_modules = packages_modules or {}
-           table.join2(packages_modules, package_modules)
-        end
-    end
-    return packages_modules
-end
-
 -- topological sort
 function sort_modules_by_dependencies(target, objectfiles, modules, opt)
     local build_objectfiles = {}
@@ -494,23 +554,12 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
     return build_objectfiles, link_objectfiles
 end
 
--- get source modulefile for external target deps
-function get_targetdeps_modules(target)
-    local sourcefiles
-    for _, dep in ipairs(target:orderdeps()) do
-        local sourcebatch = dep:sourcebatches()["c++.build.modules.builder"]
-        if sourcebatch and sourcebatch.sourcefiles then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local fileconfig = dep:fileconfig(sourcefile)
-                local public = (fileconfig and fileconfig.public and not fileconfig.external) or false
-                if public then
-                    sourcefiles = sourcefiles or {}
-                    table.insert(sourcefiles, sourcefile)
-                    target:fileconfig_add(sourcefile, {external = {moduleonly = dep:is_moduleonly()}})
-                end
-            end
-        end
-    end
-    return sourcefiles
-end
+function main(target, jobgraph, sourcebatch, opt)
 
+    if target:data("cxx.has_modules") then
+        -- patch sourcebatch
+        _patch_sourcebatch(target, sourcebatch)
+        -- generate module dependencies
+        _generate_module_dependencies(target, jobgraph, sourcebatch, opt)
+    end
+end
