@@ -99,11 +99,11 @@ function _find_package(cmake, name, opt)
     local ninja_version = "1.10.2"
     local ninjascript
     if os.host() == "windows" then
-        ninjascript = path.join(workdir, "ninja.bat")
+        ninjascript = path.join(workdir, "ninja1.bat")
         io.writefile(ninjascript, "@echo off\necho " .. ninja_version)
     else
-        ninjascript = path.join(workdir, "ninja.sh")
-        io.writefile(ninjascript, "#!/bin/sh\necho " .. ninja_version)
+        ninjascript = path.join(workdir, "ninja1.sh")
+        io.writefile(ninjascript, "#!/bin/bash\necho " .. ninja_version)
         os.vrunv("chmod", {"+x", ninjascript}, {curdir = workdir, envs = envs})
     end
 
@@ -246,8 +246,7 @@ function _find_package(cmake, name, opt)
     try {
         function() 
             return os.vrunv(cmake.program,
-                { 
-                    workdir,
+                {
                     "-S",
                     workdir,
                     "-B",
