@@ -23,6 +23,7 @@ import("core.base.json")
 import("core.base.option")
 import("core.base.hashset")
 import("async.runjobs")
+import("private.action.clean.remove_files")
 import("private.async.buildjobs")
 import("core.tool.compiler")
 import("core.project.config")
@@ -257,12 +258,12 @@ function mark_build(target, name)
 end
 
 -- build batchjobs for modules
-function build_batchjobs_for_modules(modules, batchjobs, rootjob)
+function _build_batchjobs_for_modules(modules, batchjobs, rootjob)
     return buildjobs(modules, batchjobs, rootjob)
 end
 
 -- build modules for batchjobs
-function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+function _build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
     opt.rootjob = batchjobs:group_leave() or opt.rootjob
     batchjobs:group_enter(target:fullname() .. "/module/build_modules", {rootjob = opt.rootjob})
 
@@ -287,11 +288,11 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
     }))
 
     -- build batchjobs for modules
-    build_batchjobs_for_modules(modulesjobs, batchjobs, opt.rootjob)
+    _build_batchjobs_for_modules(modulesjobs, batchjobs, opt.rootjob)
 end
 
 -- build modules for jobgraph
-function build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+function _build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
     local jobdeps = {}
     local jobsize = jobgraph:size()
     local build_modules_group = target:fullname() .. "/module/build_modules"
@@ -321,7 +322,7 @@ function build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
 end
 
 -- build modules for batchcmds
-function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
+function _build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
     local depmtime = 0
     opt.progress = opt.progress or 0
 
@@ -340,7 +341,7 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
 end
 
 -- build headerunits for batchjobs
-function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+function _build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
     local user_headerunits, stl_headerunits = scanner.get_headerunits(target, sourcebatch, modules)
     if not user_headerunits and not stl_headerunits then
@@ -363,7 +364,7 @@ function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules
                 end
             end
         }))
-        build_batchjobs_for_modules(modulesjobs, batchjobs, opt.rootjob)
+        _build_batchjobs_for_modules(modulesjobs, batchjobs, opt.rootjob)
     end
 
     -- build stl header units first as other headerunits may need them
@@ -378,7 +379,7 @@ function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules
 end
 
 -- build headerunits for jobgraph
-function build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+function _build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
     local user_headerunits, stl_headerunits = scanner.get_headerunits(target, sourcebatch, modules)
     if not user_headerunits and not stl_headerunits then
        return
@@ -416,7 +417,7 @@ function build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, 
 end
 
 -- build headerunits for batchcmds
-function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
+function _build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
     local user_headerunits, stl_headerunits = scanner.get_headerunits(target, sourcebatch, modules)
     if not user_headerunits and not stl_headerunits then
        return
@@ -444,10 +445,10 @@ function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules
 end
 
 -- build modules and headerunits, and we need to build headerunits first
-function build_modules_and_headerunits(target, jobgraph, sourcebatch, modules, opt)
+function _build_modules_and_headerunits(target, jobgraph, sourcebatch, modules, opt)
     if jobgraph.add_orders then
-        local build_modules_group, jobdeps = build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
-        local build_headerunits_group = build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+        local build_modules_group, jobdeps = _build_modules_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
+        local build_headerunits_group = _build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
         if build_modules_group then
             for jobname, deps in pairs(jobdeps) do
                 for _, depname in ipairs(deps) do
@@ -459,11 +460,11 @@ function build_modules_and_headerunits(target, jobgraph, sourcebatch, modules, o
             end
         end
     elseif jobgraph.runcmds then
-        build_headerunits_for_batchcmds(target, jobgraph, sourcebatch, modules, opt)
-        build_modules_for_batchcmds(target, jobgraph, sourcebatch, modules, opt)
+        _build_headerunits_for_batchcmds(target, jobgraph, sourcebatch, modules, opt)
+        _build_modules_for_batchcmds(target, jobgraph, sourcebatch, modules, opt)
     elseif jobgraph.newjob then -- deprecated
-        build_modules_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
-        build_headerunits_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
+        _build_modules_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
+        _build_headerunits_for_batchjobs(target, jobgraph, sourcebatch, modules, opt)
     end
 end
 
@@ -576,43 +577,59 @@ function is_dependencies_changed(target, module)
     return requires, changed
 end
 
--- patch sourcebatch
-function patch_sourcebatch(target, sourcebatch, opt)
+function clean(target)
 
-    -- add target deps modules
-    if target:orderdeps() then
-        local deps_sourcefiles = scanner.get_targetdeps_modules(target)
-        if deps_sourcefiles then
-            table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
+    -- we cannot use target:data("cxx.has_modules"),
+    -- because on_config will be not called when cleaning targets
+    if support.contains_modules(target) then
+        remove_files(support.modules_cachedir(target))
+        if option.get("all") then
+            remove_files(support.stlmodules_cachedir(target))
+            support.localcache():clear()
+            support.localcache():save()
         end
-    end
-
-    -- append std module
-    local std_modules = support.get_stdmodules(target)
-    if std_modules then
-        table.join2(sourcebatch.sourcefiles, std_modules)
-    end
-
-    -- extract packages modules dependencies
-    local package_modules_data = scanner.get_all_packages_modules(target, opt)
-    if package_modules_data then
-        -- append to sourcebatch
-        for _, package_module_data in table.orderpairs(package_modules_data) do
-            table.insert(sourcebatch.sourcefiles, package_module_data.file)
-            target:fileconfig_set(package_module_data.file, {external = package_module_data.external, defines = package_module_data.metadata.defines})
-        end
-    end
-
-    -- patch objectfiles and dependencies
-    sourcebatch.sourcekind = "cxx"
-    sourcebatch.objectfiles = {}
-    sourcebatch.dependfiles = {}
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local objectfile = target:objectfile(sourcefile)
-        table.insert(sourcebatch.objectfiles, objectfile)
-
-        local dependfile = target:dependfile(sourcefile or objectfile)
-        table.insert(sourcebatch.dependfiles, dependfile)
     end
 end
 
+function install(target)
+
+    -- we cannot use target:data("cxx.has_modules"),
+    -- because on_config will be not called when installing targets
+    if support.contains_modules(target) then
+        local modules = support.localcache():get2(target:fullname(), "c++.modules")
+        generate_metadata(target, modules)
+
+        support.add_installfiles_for_modules(target)
+    end
+end
+
+function uninstall(target)
+    if support.contains_modules(target) then
+        support.add_installfiles_for_modules(target)
+    end
+end
+
+function main(target, jobgraph, sourcebatch, opt)
+
+    if target:data("cxx.has_modules") then
+        -- get module dependencies
+        local modules = scanner.get_module_dependencies(target, sourcebatch)
+        if not target:is_moduleonly() then
+            -- avoid building non referenced modules
+            local build_objectfiles, link_objectfiles = scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+            sourcebatch.objectfiles = build_objectfiles
+
+            -- build modules and headerunits
+            _build_modules_and_headerunits(target, jobgraph, sourcebatch, modules, opt)
+            sourcebatch.objectfiles = link_objectfiles
+        else
+            sourcebatch.objectfiles = {}
+        end
+
+        support.localcache():set2(target:fullname(), "c++.modules", modules)
+        support.localcache():save()
+    else
+        -- avoid duplicate linking of object files of non-module programs
+        sourcebatch.objectfiles = {}
+    end
+end
