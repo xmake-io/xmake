@@ -336,8 +336,20 @@ function _find_package(cmake, name, opt)
     local defines     = info.COMPILE_DEFINITIONS
     local flags       = info.COMPILE_OPTIONS
     local ldflags     = info.LINK_OPTIONS
-    local links       = info.LINK_LIBRARIES
-    local libfiles    = info.LINK_LIBRARIES
+    local links       = nil
+    local libfiles    = nil
+
+    -- get CMakeCache.txt
+    local isMSVC = false
+    for line in io.lines(path.join(builddir, "CMakeCache.txt")) do
+        if line:startswith("CMAKE_CXX_COMPILER") then
+            local compiler = line:sub(line:find("=") + 1):trim()
+            if path.basename(compiler):lower() == "cl" then
+                isMSVC = true
+            end
+            break
+        end
+    end
 
     -- get build.ninja
     local ninjafile = path.join(builddir, "build.ninja")
@@ -383,7 +395,7 @@ function _find_package(cmake, name, opt)
                     local var = line:match("^%s+([%w_]+)%s*=")
                     if var then
                         -- save current variable
-                        current_vars[var] = line:sub(line:find("=") + 1):gsub("^%s+", "")
+                        current_vars[var] = line:sub(line:find("=") + 1):trim()
                     elseif line == "" then
                         -- encounter empty line, save current statement and start a new one
                         table.insert(results, { build = current_build, vars = current_vars })
@@ -409,33 +421,80 @@ function _find_package(cmake, name, opt)
         local ninja_links = {}
         local ninja_linkdirs = {}
         local ninja_linkflags = {}
+
+        -- strip command line prefix
         for _, builditem in pairs(ninjabuilds) do
             for key, value in pairs(builditem.vars) do
                 if key == "DEFINES" then
-                    ninja_defines = table.join(ninja_defines, os.argv(value))
+                    -- strip -D, /D
+                    for _, flag in ipairs(os.argv(value)) do
+                        local define = flag:match("^-D(.+)$") or (isMSVC and flag:match("^/D(.+)$"))
+                        if define and not _should_exclude(define) then
+                            table.insert(ninja_defines, define)
+                        end
+                    end
                 elseif key == "INCLUDES" then
-                    ninja_includes = table.join(ninja_includes, os.argv(value))
+                    local has_include = false
+                    for _, flag in ipairs(os.argv(value)) do
+                        if has_include then
+                            local includedir = flag
+                            table.insert(ninja_includes, includedir)
+                            has_include = false
+                        elseif flag == "-isystem" or flag == "-idirafter" or flag == "-I" or (isMSVC and flag == "/I") then
+                            has_include = true
+                        else
+                            -- strip -I, /I, -external:I, /external:I
+                            local includedir = flag:match("^-I(.+)$") or (
+                                isMSVC and (
+                                    flag:match("^/I(.+)$") or
+                                    flag:match("^-external:I(.+)$") or
+                                    flag:match("^/external:I(.+)$")
+                                )
+                            )
+                            if includedir then
+                                table.insert(ninja_includes, includedir)
+                            end
+                        end
+                    end
                 elseif key == "FLAGS" then
                     ninja_flags = table.join(ninja_flags, os.argv(value))
                 elseif key == "LINK_LIBRARIES" then
-                    ninja_links = table.join(ninja_links, os.argv(value))
+                    for _, flag in ipairs(os.argv(value)) do
+                        -- strip -l
+                        if flag:startswith("-l") then
+                            if #flag > 2 then
+                                local link = flag:sub(3):trim()
+                                table.insert(ninja_links, link)
+                            end
+                        else
+                            table.insert(ninja_links, flag)
+                        end
+                    end
+               
+                elseif key == "LINK_PATH" then
+                    for _, flag in ipairs(os.argv(value)) do
+                        -- strip -L, /LIBPATH, /libpath, -LIBPATH, -libpath
+                        local linkdir
+                        if isMSVC then
+                            linkdir = flag:match("^/LIBPATH:(.+)$") or
+                                flag:match("^/libpath:(.+)$") or
+                                flag:match("^-LIBPATH:(.+)$") or
+                                flag:match("^-libpath:(.+)$")
+                        else
+                            linkdir = flag:match("^-L(.+)$")
+                        end
+                        if linkdir then
+                            table.insert(ninja_linkdirs, linkdir)
+                        end
+                    end
                 elseif key == "LINK_FLAGS" then
                     ninja_linkflags = table.join(ninja_linkflags, os.argv(value))
-                elseif key == "LINK_PATH" then
-                    ninja_linkdirs = table.join(ninja_linkdirs, os.argv(value))
                 end
             end
         end
 
-        -- TODO: strip command line prefix for `ninja_xxx` variables
-        -- e.g. -isystem ->
-        --      -DXXX=YYY -> XXX=YYY
-        --      -I/path/to/include -> /path/to/include
-        --      -L/path/to/lib -> /path/to/lib
-        --      -lxxx -> xxx
-        --      -framework xxx -> ?
-
         links = ninja_links
+        libfiles = ninja_links
         if not ldflags then
             ldflags = ninja_linkflags
         end
