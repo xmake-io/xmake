@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#5926](https://github.com/xmake-io/xmake/issues/5926): Add MIDL support
+
 ### Changes
 
 * [#6202](https://github.com/xmake-io/xmake/issues/6202): Improve rule API and build dependency order
@@ -1974,6 +1978,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#5926](https://github.com/xmake-io/xmake/issues/5926): 添加 MIDL 支持
 
 ### 改进
 
