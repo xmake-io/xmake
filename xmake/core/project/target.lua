@@ -1602,44 +1602,36 @@ end
 
 -- get the target directory
 function _instance:targetdir()
-
-    -- the target directory
     local targetdir = self:get("targetdir")
     if not targetdir then
         return self:_default_targetdir()
     end
 
-    -- executable, windows shared library
+    -- we can use `set_targetdir("xxx", {bindir = "", libdir = ""})` to set sub-directory
+    local subdir_kind
     if self:is_binary() or (self:is_shared() and self:is_plat("windows", "mingw")) then
-        local subdir = self:extraconf("targetdir", targetdir, "bindir")
-        if subdir then
-            targetdir = path.join(targetdir, subdir)
-        end
-        return targetdir
+        subdir_kind = "bindir"
+    elseif self:is_static() or self:is_shared() then
+        subdir_kind = "libdir"
     end
-
-    -- static library, non-windows shared library
-    if self:is_static() or self:is_shared() then
-        local subdir = self:extraconf("targetdir", targetdir, "libdir")
-        if subdir then
-            targetdir = path.join(targetdir, subdir)
-        end
-        return targetdir
-    end
-
-    return targetdir
+    return self:_artifactdir(subdir_kind)
 end
 
--- get the build artifact output directory
-function _instance:_targetdir_extra(kind)
+-- get the build artifact output directory,
+--
+-- @param subdir_kind  the sub-directory kind, e.g. libdir, bindir, includedir
+--
+function _instance:_artifactdir(subdir_kind)
     local targetdir = self:get("targetdir")
     if not targetdir then
         return self:_default_targetdir()
     end
 
-    local subdir = self:extraconf("targetdir", targetdir, kind)
-    if subdir then
-        return path.join(targetdir, subdir)
+    if subdir_kind then
+        local subdir = self:extraconf("targetdir", targetdir, subdir_kind)
+        if subdir then
+            return path.join(targetdir, subdir)
+        end
     end
     return targetdir
 end
@@ -1654,14 +1646,9 @@ end
 function _instance:artifactfile(kind)
     if kind == "implib" then
         if self:is_shared() and self:is_plat("windows", "mingw") then
-            return path.join(self:_targetdir_extra("libdir"), path.basename(self:filename()) .. (self:is_plat("mingw") and ".dll.a" or ".lib"))
+            return path.join(self:_artifactdir("libdir"), path.basename(self:filename()) .. (self:is_plat("mingw") and ".dll.a" or ".lib"))
         end
-        return nil
     end
-
-    -- to be added...
-
-    return nil
 end
 
 -- get the target file name
@@ -3128,4 +3115,3 @@ end
 
 -- return module
 return target
-
