@@ -28,8 +28,8 @@ import("core.tool.compiler")
 import("core.project.config")
 import("core.project.depend")
 import("utils.progress")
-import("compiler_support")
-import("dependency_scanner")
+import("support")
+import("scanner")
 
 -- build target modules
 function _build_modules(target, sourcebatch, modules, opt)
@@ -40,7 +40,7 @@ function _build_modules(target, sourcebatch, modules, opt)
             goto continue
         end
 
-        local name, _, cppfile = compiler_support.get_provided_module(module)
+        local name, _, cppfile = support.get_provided_module(module)
         cppfile = cppfile or module.cppfile
 
         local deps = {}
@@ -62,7 +62,7 @@ end
 
 -- build target headerunits
 function _build_headerunits(target, headerunits, opt)
-    local outputdir = compiler_support.headerunits_cachedir(target, {mkdir = true})
+    local outputdir = support.headerunits_cachedir(target, {mkdir = true})
     if opt.stl_headerunit then
         outputdir = path.join(outputdir, "stl")
     end
@@ -72,7 +72,7 @@ function _build_headerunits(target, headerunits, opt)
         if opt.stl_headerunit and headerunit.name:startswith("experimental/") then
             outputdir = path.join(outputdir, "experimental")
         end
-        local bmifile = path.join(outputdir, path.filename(headerunit.name) .. compiler_support.get_bmi_extension(target))
+        local bmifile = path.join(outputdir, path.filename(headerunit.name) .. support.get_bmi_extension(target))
         local key = path.normalize(headerunit.path)
         local build = should_build(target, headerunit.path, bmifile, {key = key, headerunit = true})
         if build then
@@ -91,8 +91,8 @@ function _are_flags_compatible(target, other, cppfile)
     local flags2 = compinst2:compflags({sourcefile = cppfile, target = other})
 
     -- strip unrelevent flags
-    flags1 = compiler_support.strip_flags(target, flags1)
-    flags2 = compiler_support.strip_flags(target, flags2)
+    flags1 = support.strip_flags(target, flags1)
+    flags2 = support.strip_flags(target, flags2)
 
     if #flags1 ~= #flags2 then
         return false
@@ -112,7 +112,7 @@ end
 -- try to reuse modules from other target
 function _try_reuse_modules(target, modules)
     for _, module in pairs(modules) do
-        local name, provide, cppfile = compiler_support.get_provided_module(module)
+        local name, provide, cppfile = support.get_provided_module(module)
         if not provide then
             goto continue
         end
@@ -131,7 +131,7 @@ function _try_reuse_modules(target, modules)
             end
             local mapped = get_from_target_mapper(dep, name)
             if mapped then
-                compiler_support.memcache():set2(target:fullname() .. name, "reuse", true)
+                support.memcache():set2(target:fullname() .. name, "reuse", true)
                 add_module_to_target_mapper(target, mapped.name, mapped.sourcefile, mapped.bmi, table.join(mapped.opt or {}, {target = dep}))
                 break
             end
@@ -159,8 +159,8 @@ function should_build(target, sourcefile, bmifile, opt)
         for required, _ in table.orderpairs(requires) do
             local m = get_from_target_mapper(target, required)
             if m then
-                local rebuild = (m.opt and m.opt.target) and compiler_support.memcache():get2("should_build_in_" .. m.opt.target:fullname(), m.key)
-                                                         or compiler_support.memcache():get2("should_build_in_" .. target:fullname(), m.key)
+                local rebuild = (m.opt and m.opt.target) and support.memcache():get2("should_build_in_" .. m.opt.target:fullname(), m.key)
+                                                         or support.memcache():get2("should_build_in_" .. target:fullname(), m.key)
                 if rebuild then
                     dependinfo.files = {}
                     table.insert(dependinfo.files, sourcefile)
@@ -175,7 +175,7 @@ function should_build(target, sourcefile, bmifile, opt)
     if opt.name then
         local m = get_from_target_mapper(target, opt.name)
         if m and m.opt and m.opt.target then
-            local rebuild = compiler_support.memcache():get2("should_build_in_" .. m.opt.target:fullname(), m.key)
+            local rebuild = support.memcache():get2("should_build_in_" .. m.opt.target:fullname(), m.key)
             if rebuild then
                 dependinfo.files = {}
                 table.insert(dependinfo.files, sourcefile)
@@ -207,7 +207,7 @@ end
 --      "file": "foo.cppm"
 -- }
 function _generate_meta_module_info(target, name, sourcefile, requires)
-    local modulehash = compiler_support.get_modulehash(target, sourcefile)
+    local modulehash = support.get_modulehash(target, sourcefile)
     local module_metadata = {name = name, file = path.join(modulehash, path.filename(sourcefile))}
 
     -- add definitions
@@ -235,7 +235,7 @@ end
 
 function _builder(target)
     local cachekey = tostring(target)
-    local builder = compiler_support.memcache():get2("builder", cachekey)
+    local builder = support.memcache():get2("builder", cachekey)
     if builder == nil then
         if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
             builder = import("clang.builder", {anonymous = true})
@@ -247,13 +247,13 @@ function _builder(target)
             local _, toolname = target:tool("cxx")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
-        compiler_support.memcache():set2("builder", cachekey, builder)
+        support.memcache():set2("builder", cachekey, builder)
     end
     return builder
 end
 
 function mark_build(target, name)
-    compiler_support.memcache():set2("should_build_in_" .. target:fullname(), name, true)
+    support.memcache():set2("should_build_in_" .. target:fullname(), name, true)
 end
 
 -- build batchjobs for modules
@@ -342,7 +342,7 @@ end
 -- build headerunits for batchjobs
 function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
-    local user_headerunits, stl_headerunits = dependency_scanner.get_headerunits(target, sourcebatch, modules)
+    local user_headerunits, stl_headerunits = scanner.get_headerunits(target, sourcebatch, modules)
     if not user_headerunits and not stl_headerunits then
        return
     end
@@ -379,7 +379,7 @@ end
 
 -- build headerunits for jobgraph
 function build_headerunits_for_jobgraph(target, jobgraph, sourcebatch, modules, opt)
-    local user_headerunits, stl_headerunits = dependency_scanner.get_headerunits(target, sourcebatch, modules)
+    local user_headerunits, stl_headerunits = scanner.get_headerunits(target, sourcebatch, modules)
     if not user_headerunits and not stl_headerunits then
        return
     end
@@ -417,7 +417,7 @@ end
 
 -- build headerunits for batchcmds
 function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
-    local user_headerunits, stl_headerunits = dependency_scanner.get_headerunits(target, sourcebatch, modules)
+    local user_headerunits, stl_headerunits = scanner.get_headerunits(target, sourcebatch, modules)
     if not user_headerunits and not stl_headerunits then
        return
     end
@@ -471,7 +471,7 @@ end
 function generate_metadata(target, modules)
     local public_modules
     for _, module in table.orderpairs(modules) do
-        local _, _, cppfile = compiler_support.get_provided_module(module)
+        local _, _, cppfile = support.get_provided_module(module)
         local fileconfig = target:fileconfig(cppfile)
         local public = fileconfig and fileconfig.public
         if public then
@@ -487,8 +487,8 @@ function generate_metadata(target, modules)
     local jobs = option.get("jobs") or os.default_njob()
     runjobs(target:fullname() .. "/module/install_modules", function(index, total, jobopt)
         local module = public_modules[index]
-        local name, _, cppfile = compiler_support.get_provided_module(module)
-        local metafilepath = compiler_support.get_metafile(target, cppfile)
+        local name, _, cppfile = support.get_provided_module(module)
+        local metafilepath = support.get_metafile(target, cppfile)
         progress.show(jobopt.progress, "${color.build.target}<%s> generating.module.metadata %s", target:fullname(), name)
         local metadata = _generate_meta_module_info(target, name, cppfile, module.requires)
         json.savefile(metafilepath, metadata)
@@ -497,13 +497,13 @@ end
 
 -- flush target module mapper keys
 function flush_target_module_mapper_keys(target)
-    local memcache = compiler_support.memcache()
+    local memcache = support.memcache()
     memcache:set2(target:fullname(), "module_mapper_keys", nil)
 end
 
 -- get or create a target module mapper
 function get_target_module_mapper(target)
-    local memcache = compiler_support.memcache()
+    local memcache = support.memcache()
     local mapper = memcache:get2(target:fullname(), "module_mapper")
     if not mapper then
         mapper = {}
@@ -559,7 +559,7 @@ end
 function is_dependencies_changed(target, module)
     local cachekey = target:fullname() .. module.name
     local requires = hashset.from(table.keys(module.requires or {}))
-    local oldrequires = compiler_support.memcache():get2(cachekey, "oldrequires")
+    local oldrequires = support.memcache():get2(cachekey, "oldrequires")
     local changed = false
     if oldrequires then
         if oldrequires ~= requires then
@@ -581,20 +581,20 @@ function patch_sourcebatch(target, sourcebatch, opt)
 
     -- add target deps modules
     if target:orderdeps() then
-        local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
+        local deps_sourcefiles = scanner.get_targetdeps_modules(target)
         if deps_sourcefiles then
             table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
         end
     end
 
     -- append std module
-    local std_modules = compiler_support.get_stdmodules(target)
+    local std_modules = support.get_stdmodules(target)
     if std_modules then
         table.join2(sourcebatch.sourcefiles, std_modules)
     end
 
     -- extract packages modules dependencies
-    local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
+    local package_modules_data = scanner.get_all_packages_modules(target, opt)
     if package_modules_data then
         -- append to sourcebatch
         for _, package_module_data in table.orderpairs(package_modules_data) do

@@ -1184,12 +1184,15 @@ function _install_for_cmakebuild(package, configs, opt)
     opt = opt or {}
     local cmake = assert(find_tool("cmake"), "cmake not found!")
     local argv = {"--build", os.curdir()}
+    local install_argv = {"--install", os.curdir()}
     if opt.config then
         table.insert(argv, "--config")
         table.insert(argv, opt.config)
+        table.insert(install_argv, "--config")
+        table.insert(install_argv, opt.config)
     end
     os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package)})
-    os.vrunv(cmake.program, {"--install", os.curdir()})
+    os.vrunv(cmake.program, install_argv)
 end
 
 -- get cmake generator

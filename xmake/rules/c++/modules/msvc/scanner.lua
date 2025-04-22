@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki, Arthapz
--- @file        msvc/dependency_scanner.lua
+-- @file        msvc/scanner.lua
 --
 
 -- imports
@@ -24,15 +24,15 @@ import("core.base.semver")
 import("core.project.depend")
 import("private.tools.vstool")
 import("utils.progress")
-import("compiler_support")
+import("support")
 import("builder")
-import(".dependency_scanner", {inherit = true})
+import(".scanner", {inherit = true})
 
 -- generate dependency files
 function generate_dependency_for(target, sourcefile, opt)
     local msvc = target:toolchain("msvc")
-    local scandependenciesflag = compiler_support.get_scandependenciesflag(target)
-    local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
+    local scandependenciesflag = support.get_scandependenciesflag(target)
+    local ifcoutputflag = support.get_ifcoutputflag(target)
     local common_flags = {"-TP", scandependenciesflag}
     local dependfile = target:dependfile(sourcefile)
     local compinst = target:compiler("cxx")
@@ -41,7 +41,7 @@ function generate_dependency_for(target, sourcefile, opt)
 
     depend.on_changed(function ()
         progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:fullname(), sourcefile)
-        local outputdir = compiler_support.get_outputdir(target, sourcefile)
+        local outputdir = support.get_outputdir(target, sourcefile)
 
         local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".module.json")
         if scandependenciesflag and not target:policy("build.c++.msvc.fallbackscanner") then

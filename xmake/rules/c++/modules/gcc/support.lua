@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki, Arthapz
--- @file        gcc/compiler_support.lua
+-- @file        gcc/support.lua
 --
 
 -- imports
@@ -23,7 +23,7 @@ import("core.base.json")
 import("core.base.semver")
 import("core.project.config")
 import("lib.detect.find_tool")
-import(".compiler_support", {inherit = true})
+import(".support", {inherit = true})
 
 -- get includedirs for stl headers
 --
@@ -208,8 +208,11 @@ end
 function get_moduleheaderflag(target)
     local moduleheaderflag = _g.moduleheaderflag
     if moduleheaderflag == nil then
+        -- we need to suppress warnings/errors:
+        -- external linkage definition of 'int main(int, char**)' in header module must be declared 'inline'
+        local snippet = ""
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fmodule-header", "cxxflags", {flagskey = "gcc_module_header"}) then
+        if compinst:has_flags("-fmodule-header", "cxxflags", {snippet = snippet, flagskey = "gcc_module_header"}) then
             moduleheaderflag = "-fmodule-header="
         end
         _g.moduleheaderflag = moduleheaderflag or false

@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki, Arthapz
--- @file        dependency_scanner.lua
+-- @file        scanner.lua
 --
 
 -- imports
@@ -24,26 +24,26 @@ import("core.base.hashset")
 import("core.base.graph")
 import("core.base.option")
 import("async.runjobs")
-import("compiler_support")
-import("stl_headers")
+import("support")
+import("stlheaders")
 
-function _dependency_scanner(target)
+function _scanner(target)
     local cachekey = tostring(target)
-    local dependency_scanner = compiler_support.memcache():get2("dependency_scanner", cachekey)
-    if dependency_scanner == nil then
+    local scanner = support.memcache():get2("scanner", cachekey)
+    if scanner == nil then
         if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
-            dependency_scanner = import("clang.dependency_scanner", {anonymous = true})
+            scanner = import("clang.scanner", {anonymous = true})
         elseif target:has_tool("cxx", "gcc", "gxx") then
-            dependency_scanner = import("gcc.dependency_scanner", {anonymous = true})
+            scanner = import("gcc.scanner", {anonymous = true})
         elseif target:has_tool("cxx", "cl") then
-            dependency_scanner = import("msvc.dependency_scanner", {anonymous = true})
+            scanner = import("msvc.scanner", {anonymous = true})
         else
             local _, toolname = target:tool("cxx")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
-        compiler_support.memcache():set2("dependency_scanner", cachekey, dependency_scanner)
+        support.memcache():set2("scanner", cachekey, scanner)
     end
-    return dependency_scanner
+    return scanner
 end
 
 function _parse_meta_info(target, metafile)
@@ -118,7 +118,7 @@ function _parse_dependencies_data(target, moduleinfos)
                     -- try to find the compiled module path in outputs filed (MSVC doesn't generate compiled-module-path)
                     if not bmifile then
                         for _, output in ipairs(rule.outputs) do
-                            if output:endswith(compiler_support.get_bmi_extension(target)) then
+                            if output:endswith(support.get_bmi_extension(target)) then
                                 bmifile = output
                                 break
                             end
@@ -126,11 +126,11 @@ function _parse_dependencies_data(target, moduleinfos)
 
                         -- we didn't found the compiled module path, so we assume it
                         if not bmifile then
-                            local name = provide["logical-name"] .. compiler_support.get_bmi_extension(target)
+                            local name = provide["logical-name"] .. support.get_bmi_extension(target)
                             -- partition ":" character is invalid path character on windows
                             -- @see https://github.com/xmake-io/xmake/issues/2954
                             name = name:replace(":", "-")
-                            bmifile = path.join(compiler_support.get_outputdir(target,  name), name)
+                            bmifile = path.join(support.get_outputdir(target,  name), name)
                         end
                     end
                     m.provides[provide["logical-name"]] = {
@@ -180,7 +180,7 @@ function _get_edges(nodes, modules)
   local named_module_names = hashset.new()
   for _, node in ipairs(table.unique(nodes)) do
       local module = modules[node]
-      local module_name, _, cppfile = compiler_support.get_provided_module(module)
+      local module_name, _, cppfile = support.get_provided_module(module)
       if module_name then
           if named_module_names:has(module_name) then
               raise("duplicate module name detected \"" .. module_name .. "\"\n    -> " .. cppfile .. "\n    -> " .. name_filemap[module_name])
@@ -191,7 +191,7 @@ function _get_edges(nodes, modules)
       if module.requires then
           for required_name, _ in table.orderpairs(module.requires) do
               for _, required_node in ipairs(nodes) do
-                  local name, _, _ = compiler_support.get_provided_module(modules[required_node])
+                  local name, _, _ = support.get_provided_module(modules[required_node])
                   if name and name == required_name then
                       table.insert(edges, {required_node, node})
                   end
@@ -219,21 +219,21 @@ end
 function generate_module_dependencies(target, jobgraph, sourcebatch, opt)
     local parsejob = target:fullname() .. "/parse_module_dependencies"
     jobgraph:add(parsejob, function (index, total, opt)
-        local changed = compiler_support.memcache():get2("modules", "dependencies_changed")
+        local changed = support.memcache():get2("modules", "dependencies_changed")
         if changed then
             local cachekey = target:fullname() .. "/" .. sourcebatch.rulename
-            local moduleinfos = compiler_support.load_moduleinfos(target, sourcebatch)
+            local moduleinfos = support.load_moduleinfos(target, sourcebatch)
             local modules = _parse_dependencies_data(target, moduleinfos)
-            compiler_support.localcache():set2("modules", cachekey, modules)
-            compiler_support.localcache():save()
+            support.localcache():set2("modules", cachekey, modules)
+            support.localcache():save()
         end
     end)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local jobname = target:fullname() .. "/generate_module_dependencies/" .. sourcefile
         jobgraph:add(jobname, function (index, total, opt)
-            local changed = _dependency_scanner(target).generate_dependency_for(target, sourcefile, opt)
+            local changed = _scanner(target).generate_dependency_for(target, sourcefile, opt)
             if changed then
-                compiler_support.memcache():set2("modules", "dependencies_changed", true)
+                support.memcache():set2("modules", "dependencies_changed", true)
             end
         end)
         jobgraph:add_orders(jobname, parsejob)
@@ -243,7 +243,7 @@ end
 -- get module dependencies
 function get_module_dependencies(target, sourcebatch)
     local cachekey = target:fullname() .. "/" .. sourcebatch.rulename
-    local modules = compiler_support.localcache():get2("modules", cachekey)
+    local modules = support.localcache():get2("modules", cachekey)
     assert(modules, "no module dependencies!")
     return modules
 end
@@ -258,7 +258,7 @@ function get_headerunits(target, sourcebatch, modules)
             for name, r in pairs(m.requires) do
                 if r.method ~= "by-name" then
                     local unittype = r.method == "include-angle" and ":angle" or ":quote"
-                    if stl_headers.is_stl_header(name) then
+                    if stlheaders.is_stlheader(name) then
                         stl_headerunits = stl_headerunits or {}
                         if not table.find_if(stl_headerunits, function(i, v) return v.name == name end) then
                             table.insert(stl_headerunits, {name = name, path = r.path, type = unittype, unique = r.unique})
@@ -334,7 +334,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
         local module_depname = line:match("import%s+(.+)%s*;")
         -- we need to parse module interface dep in cxx/impl_unit.cpp, e.g. hello.mpp and hello_impl.cpp
         -- @see https://github.com/xmake-io/xmake/pull/2664#issuecomment-1213167314
-        if not module_depname and not compiler_support.has_module_extension(sourcefile) then
+        if not module_depname and not support.has_module_extension(sourcefile) then
             module_depname = module_name_private
         end
         if module_depname and not module_deps_set:has(module_depname) then
@@ -349,12 +349,12 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
                 module_depname = module_depname:sub(2, -2)
                 module_dep["lookup-method"] = "include-quote"
                 module_dep["unique-on-source-path"] = true
-                module_dep["source-path"] = compiler_support.find_quote_header_file(target, sourcefile, module_depname)
+                module_dep["source-path"] = support.find_quote_header_file(target, sourcefile, module_depname)
             elseif module_depname:startswith("<") then
                 module_depname = module_depname:sub(2, -2)
                 module_dep["lookup-method"] = "include-angle"
                 module_dep["unique-on-source-path"] = true
-                module_dep["source-path"] = compiler_support.find_angle_header_file(target, module_depname)
+                module_dep["source-path"] = support.find_angle_header_file(target, module_depname)
             end
             module_dep["logical-name"] = module_depname
             table.insert(module_deps, module_dep)
@@ -364,13 +364,13 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
     end
 
     if module_name_export or internal then
-        local outputdir = compiler_support.get_outputdir(target, sourcefile)
+        local outputdir = support.get_outputdir(target, sourcefile)
 
         local provide = {}
         provide["logical-name"] = module_name_export or module_name_private
         provide["source-path"] = sourcefile
         provide["is-interface"] = not internal
-        provide["compiled-module-path"] = path.join(outputdir, (module_name_export or module_name_private) .. compiler_support.get_bmi_extension(target))
+        provide["compiled-module-path"] = path.join(outputdir, (module_name_export or module_name_private) .. support.get_bmi_extension(target))
 
         rule.provides = {}
         table.insert(rule.provides, provide)
@@ -417,10 +417,10 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
         if cycle then
             local names = {}
             for _, objectfile in ipairs(cycle) do
-                local name, _, cppfile = compiler_support.get_provided_module(modules[objectfile])
+                local name, _, cppfile = support.get_provided_module(modules[objectfile])
                 table.insert(names, name or cppfile)
             end
-            local name, _, cppfile = compiler_support.get_provided_module(modules[cycle[1]])
+            local name, _, cppfile = support.get_provided_module(modules[cycle[1]])
             table.insert(names, name or cppfile)
             raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
         end
@@ -435,7 +435,7 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
     end
     local culleds
     for _, objectfile in ipairs(objectfiles_sorted) do
-        local name, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
+        local name, provide, cppfile = support.get_provided_module(modules[objectfile])
         local fileconfig = target:fileconfig(cppfile)
         local public
         local external

@@ -30,7 +30,7 @@ import("detect.sdks.find_cuda")
 import("vsfile")
 import("vsutils")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
-import("rules.c++.modules.modules_support.compiler_support", {rootdir = os.programdir()})
+import("rules.c++.modules.support", {rootdir = os.programdir()})
 
 function _make_dirs(dir, vcxprojdir)
     dir = dir:trim()
@@ -1174,7 +1174,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
         else
 
             -- compile as c++ modules
-            if compiler_support.has_module_extension(sourcefile) then
+            if support.has_module_extension(sourcefile) then
                 vcxprojfile:print("<CompileAs>CompileAsCppModule</CompileAs>")
             end
 
@@ -1311,7 +1311,7 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
         -- for *.c/cpp/cu files
         else
             -- compile as c++ modules
-            if compiler_support.has_module_extension(sourcefile) then
+            if support.has_module_extension(sourcefile) then
                 vcxprojfile:print("<CompileAs>CompileAsCppModule</CompileAs>")
             end
 

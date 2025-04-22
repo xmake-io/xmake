@@ -102,6 +102,46 @@ function mirror(url)
     return url
 end
 
+-- get system proxy
+function _system_proxy()
+    local proxy = os.getenv("ALL_PROXY") or os.getenv("HTTP_PROXY") or os.getenv("HTTPS_PROXY")
+    if proxy then
+        return proxy
+    end
+
+    if is_host("windows") then
+        -- Check whether system proxy is enabled
+        local proxy_enable = winos.registry_query('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings;ProxyEnable')
+        --  Verify that the proxy is enabled (0x1 means enabled)
+        if not proxy_enable or proxy_enable ~= "1" then
+            return nil
+        end
+
+        -- Extract the proxy server address
+        local proxy_server = winos.registry_query("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings;ProxyServer")
+        if not proxy_server then
+            return nil
+        end
+
+        -- Prepend the protocol if not present
+        if not proxy_server:match("://(.-)") then
+            proxy_server = "http://" .. proxy_server
+        end
+        return proxy_server
+    end
+
+    return nil
+end
+
+-- translate global proxy
+function _global_proxy()
+    local proxy = global.get("proxy")
+    if proxy and proxy:lower() == "system" then
+        return _system_proxy()
+    end
+    return proxy
+end
+
 -- get proxy configuration from the given url, [protocol://]host[:port]
 --
 -- @see https://github.com/xmake-io/xmake/issues/854
@@ -119,7 +159,7 @@ function config(url)
             for _, proxy_host in ipairs(proxy_hosts) do
                 proxy_host = proxy_host:lower()
                 if host == proxy_hosts or host:match(_host_pattern(proxy_host)) then
-                    return global.get("proxy")
+                    return _global_proxy()
                 end
             end
         end
@@ -127,16 +167,16 @@ function config(url)
         -- filter proxy host from the pac file
         local proxy_pac = _proxy_pac()
         if proxy_pac and host and _is_callable(proxy_pac) and proxy_pac(url, host) then
-            return global.get("proxy")
+            return _global_proxy()
         end
 
         -- use global proxy
         if not proxy_pac and not proxy_hosts then
-            return global.get("proxy")
+            return _global_proxy()
         end
         return
     end
 
     -- enable global proxy
-    return global.get("proxy")
+    return _global_proxy()
 end
