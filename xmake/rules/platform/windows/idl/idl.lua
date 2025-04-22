@@ -120,12 +120,15 @@ function configure(target)
 end
 
 function gen_idl(target, jobgraph, sourcebatch, opt)
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local midljob = target:fullname() .. "/midl/generate/" .. sourcefile
-        jobgraph:add(midljob, function (index, total, opt)
-            generate_single(target, sourcefile, opt)
-        end)
-    end
+    local idljob = target:fullname() .. "/generate/midl"
+    jobgraph:group(idljob, function()
+        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            local midljob = target:fullname() .. "/generate/" .. sourcefile
+            jobgraph:add(midljob, function (index, total, opt)
+                generate_single(target, sourcefile, opt)
+            end)
+        end
+    end)
 end
 
 function build_idlfiles(target, jobgraph, sourcebatch, opt)
@@ -138,42 +141,46 @@ function build_idlfiles(target, jobgraph, sourcebatch, opt)
         end
     end
 
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local ccjob = target:fullname() .. "/midl/compile/" .. sourcefile
-        jobgraph:add(ccjob, function (index, total, opt)
-            local fileconfig = target:fileconfig(sourcefile)
-            local enable_proxy = true
-            if fileconfig then
-                if fileconfig.proxy ~= nil then
-                    enable_proxy = fileconfig.proxy
+    local jobgrp = target:fullname() .. "/obj/midl"
+    jobgraph:group(jobgrp, function()
+        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            local ccjob = target:fullname() .. "/obj/" .. sourcefile
+            jobgraph:add(ccjob, function (index, total, opt)
+                local fileconfig = target:fileconfig(sourcefile)
+                local enable_proxy = true
+                if fileconfig then
+                    if fileconfig.proxy ~= nil then
+                        enable_proxy = fileconfig.proxy
+                    end
                 end
-            end
-            local name = path.basename(sourcefile)
-            local mysources = {}
+                local name = path.basename(sourcefile)
+                local mysources = {}
 
-            -- we don't have a way to detect which midl files are generated
-            addsrc(name, "_i.c", mysources)
-            if enable_proxy then
-                addsrc(name, "_p.c", mysources)
-            end
-            addsrc(name, "_c.c", mysources)
-            addsrc(name, "_s.c", mysources)
+                -- we don't have a way to detect which midl files are generated
+                addsrc(name, "_i.c", mysources)
+                if enable_proxy then
+                    addsrc(name, "_p.c", mysources)
+                end
+                addsrc(name, "_c.c", mysources)
+                addsrc(name, "_s.c", mysources)
 
-            local batchcxx = {
-                rulename = "c.build",
-                sourcekind = "cc",
-                sourcefiles = mysources,
-                objectfiles = {},
-                dependfiles = {}
-            }
-            for _, sourcefile in ipairs(batchcxx.sourcefiles) do
-                local objfile = target:objectfile(sourcefile)
-                local depfile = target:objectfile(objfile)
-                table.insert(target:objectfiles(), objfile)
-                table.insert(batchcxx.objectfiles, objfile)
-                table.insert(batchcxx.dependfiles, depfile)
-            end
-            build_objectfiles(target, jobgraph, batchcxx, opt)
-        end)
-    end
+                local batchcxx = {
+                    rulename = "c.build",
+                    sourcekind = "cc",
+                    sourcefiles = mysources,
+                    objectfiles = {},
+                    dependfiles = {}
+                }
+                for _, sourcefile in ipairs(batchcxx.sourcefiles) do
+                    local objfile = target:objectfile(sourcefile)
+                    local depfile = target:objectfile(objfile)
+                    table.insert(target:objectfiles(), objfile)
+                    table.insert(batchcxx.objectfiles, objfile)
+                    table.insert(batchcxx.dependfiles, depfile)
+                                table.insert(target:objectfiles(), objfile)
+                end
+                build_objectfiles.build(target, batchcxx, opt)
+            end)
+        end
+    end)
 end
