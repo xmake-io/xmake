@@ -947,7 +947,7 @@ function _get_configs(package, configs, opt)
     end
 
     if not opt._configs_str:find("CMAKE_INTERPROCEDURAL_OPTIMIZATION", 1, true) then
-        table.insert(configs, "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=" .. (package:config("lto") and "ON" or "OFF"))
+        table.insert(configs, "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF")
     end
 
     -- fix error for cmake 4.x
