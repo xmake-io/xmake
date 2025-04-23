@@ -237,10 +237,10 @@ function _install_shared(target, opt)
         -- @see https://github.com/xmake-io/xmake/issues/714
         os.vcp(target:targetfile(), bindir)
         local libdir = _get_target_libdir(target, opt)
-        local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
-        if os.isfile(targetfile_lib) then
+        local implibfile = target:artifactfile("implib")
+        if os.isfile(implibfile) then
             os.mkdir(libdir)
-            os.vcp(targetfile_lib, libdir)
+            os.vcp(implibfile, libdir)
         end
     else
         -- install target with soname and symlink

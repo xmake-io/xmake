@@ -37,12 +37,23 @@ function main(target)
 
     -- remove import library of the target file
     -- @see https://github.com/xmake-io/xmake/issues/3052
-    if target:is_plat("windows") and target:is_shared() then
-        local expfile = path.join(path.directory(targetfile), path.basename(targetfile) .. ".exp")
-        local libfile = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
-        if os.isfile(expfile) then
-            remove_files(libfile)
-            remove_files(expfile)
+    if target:is_shared() then
+        if target:is_plat("windows") then
+            local implibfile = target:artifactfile("implib")
+            local expfile = path.join(path.directory(implibfile), path.basename(targetfile) .. ".exp")
+            if os.isfile(implibfile) then
+                remove_files(implibfile)
+            end
+            if os.isfile(expfile) then
+                remove_files(expfile)
+            end
+        end
+
+        if target:is_plat("mingw") then
+            local implibfile = target:artifactfile("implib")
+            if os.isfile(implibfile) then
+                remove_files(implibfile)
+            end
         end
     end
 

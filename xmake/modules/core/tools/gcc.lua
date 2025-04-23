@@ -33,6 +33,348 @@ import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 import("rules.c++.modules.support", {rootdir = os.programdir()})
 
+-- has -static-libstdc++?
+function _has_static_libstdcxx(self)
+    local has_static_libstdcxx = _g._HAS_STATIC_LIBSTDCXX
+    if has_static_libstdcxx == nil then
+        if self:has_flags("-static-libstdc++ -Werror", "ldflags", {flagskey = "gcc_static_libstdcxx"}) then
+            has_static_libstdcxx = true
+        end
+        has_static_libstdcxx = has_static_libstdcxx or false
+        _g._HAS_STATIC_LIBSTDCXX = has_static_libstdcxx
+    end
+    return has_static_libstdcxx
+end
+
+-- get implib file
+function _get_implibfile(self, targetkind, targetfile, opt)
+    if targetkind == "shared" and self:is_plat("mingw") then
+        local target = opt and opt.target
+        local implibfile
+        if target and target:type() == "target" then
+            implibfile = target:artifactfile("implib")
+        end
+        if not implibfile then
+            implibfile = path.join(path.directory(targetfile), path.basename(targetfile) .. ".a")
+        end
+        return implibfile
+    end
+end
+
+-- get `-MMD -MF depfile.d` flags, some old gcc does not support it at same time
+function _get_depfile_flags(self)
+    local depfile_flags = _g._DEPFILE_FLAGS
+    if depfile_flags == nil then
+        local nuldev = os.nuldev()
+        if self:name():startswith("cosmoc") then
+            nuldev = os.tmpfile()
+        end
+        if self:has_flags({"-MMD", "-MF", nuldev}, "cxflags", { flagskey = "-MMD -MF" }) then
+            depfile_flags = {"-MMD", "-MF"}
+        end
+        _g._DEPFILE_FLAGS = depfile_flags or false
+    end
+    return depfile_flags
+end
+
+-- get color diagnostics flag
+function _get_color_diagnostics_flag(self)
+    local colors_diagnostics = _g._COLOR_DIAGNOSTICS
+    if colors_diagnostics == nil then
+        if io.isatty() and (tty.has_color8() or tty.has_color256()) then
+            local theme = colors.theme()
+            if theme and theme:name() ~= "plain" then
+                -- for gcc
+                if self:has_flags("-fdiagnostics-color=always", "cxflags") then
+                    colors_diagnostics = "-fdiagnostics-color=always"
+                -- for clang
+                elseif self:has_flags("-fcolor-diagnostics", "cxflags") then
+                    colors_diagnostics = "-fcolor-diagnostics"
+                end
+
+                -- enable color output for windows, @see https://github.com/xmake-io/xmake-vscode/discussions/260
+                if colors_diagnostics and self:name() == "clang" and is_host("windows") and
+                    self:has_flags("-fansi-escape-codes", "cxflags") then
+                    colors_diagnostics = table.join(colors_diagnostics, "-fansi-escape-codes")
+                end
+            end
+        end
+        colors_diagnostics = colors_diagnostics or false
+        _g._COLOR_DIAGNOSTICS = colors_diagnostics
+    end
+    return colors_diagnostics
+end
+
+-- has gnu-line-marker flag?
+function _has_gnu_line_marker_flag(self)
+    local gnu_line_marker = _g._HAS_GNU_LINE_MARKER
+    if gnu_line_marker == nil then
+        if self:has_flags({"-Wno-gnu-line-marker", "-Werror"}, "cxflags") then
+            gnu_line_marker = true
+        end
+        gnu_line_marker = gnu_line_marker or false
+        _g._HAS_GNU_LINE_MARKER = gnu_line_marker
+    end
+    return gnu_line_marker
+end
+
+-- get preprocess file path
+function _get_cppfile(sourcefile, objectfile)
+    return path.join(path.directory(objectfile), "__cpp_" .. path.basename(objectfile) .. path.extension(sourcefile))
+end
+
+-- do preprocess
+function _preprocess(program, argv, opt)
+
+    -- is gcc or clang?
+    local tool = opt.tool
+    local is_gcc = false
+    local is_clang = false
+    if tool then
+        if tool:name() == "gcc" or tool:name() == "gxx" then
+            is_gcc = true
+        elseif tool:name():startswith("clang") then
+            is_clang = true
+        elseif tool:name() == "circle" then
+            return
+        end
+    end
+
+    -- enable "-fdirectives-only"? we need to enable it manually
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/2603
+    -- https://github.com/xmake-io/xmake/issues/2425
+    local directives_only
+    if is_gcc then
+        local cachekey = "core.tools." .. tool:name()
+        directives_only = memcache.get(cachekey, "directives_only")
+        if directives_only == nil then
+            if os.isfile(os.projectfile()) and project.policy("preprocessor.gcc.directives_only") then
+                directives_only = true
+            end
+            memcache.set(cachekey, "directives_only", directives_only)
+        end
+    end
+
+    -- get flags and source file
+    local flags = {}
+    local cppflags = {}
+    local skipped = program:endswith("cache") and 1 or 0
+    for _, flag in ipairs(argv) do
+        if flag == "-o" then
+            break
+        end
+
+        -- get preprocessor flags
+        table.insert(cppflags, flag)
+
+        -- for c++ modules, we cannot support it for clang now
+        if is_clang and flag:startswith("-fmodules") then
+            return
+        end
+
+        -- we cannot enable "-fdirectives-only"
+        if directives_only and (flag:startswith("-D__TIME__=") or
+                flag:startswith("-D__DATE__=") or flag:startswith("-D__TIMESTAMP__=")) then
+            directives_only = false
+        end
+
+        -- get compiler flags
+        if flag == "-MMD" or (flag:startswith("-I") and #flag > 2) or flag:startswith("--sysroot=") then
+            skipped = 1
+        elseif flag == "-MF" or
+            flag == "-I" or flag == "-isystem" or flag == "-include" or flag == "-include-pch" or
+            flag == "-isysroot" or flag == "-gcc-toolchain" then
+            skipped = 2
+        elseif flag:endswith("xcrun") then
+            skipped = 4
+        end
+        if skipped > 0 then
+            skipped = skipped - 1
+        else
+            table.insert(flags, flag)
+        end
+    end
+    local objectfile = argv[#argv - 1]
+    local sourcefile = argv[#argv]
+    assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
+
+    -- is precompiled header?
+    if objectfile:endswith(".gch") or objectfile:endswith(".pch") then
+        return
+    end
+
+    -- disable linemarkers?
+    local linemarkers = _g.linemarkers
+    if linemarkers == nil then
+        if os.isfile(os.projectfile()) and project.policy("preprocessor.linemarkers") == false then
+            linemarkers = false
+        else
+            linemarkers = true
+        end
+        _g.linemarkers = linemarkers
+    end
+
+    -- do preprocess
+    local cppfile = _get_cppfile(sourcefile, objectfile)
+    local cppfiledir = path.directory(cppfile)
+    if not os.isdir(cppfiledir) then
+        os.mkdir(cppfiledir)
+    end
+    table.insert(cppflags, "-E")
+    -- it will be faster for preprocessing
+    -- when preprocessing, handle directives, but do not expand macros.
+    if directives_only then
+        table.insert(cppflags, "-fdirectives-only")
+    end
+    if linemarkers == false then
+        table.insert(cppflags, "-P")
+    end
+    -- if we want to support pch for gcc, we need to enable this flag
+    -- and clang need not this flag, it will use '-include-pch' to include and preprocess header files
+    -- but it will be slower than non-ccache mode.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/5858
+    -- https://musescore.org/en/node/182331
+    if is_gcc then
+        table.insert(cppflags, "-fpch-preprocess")
+    end
+    table.insert(cppflags, "-o")
+    table.insert(cppflags, cppfile)
+    table.insert(cppflags, sourcefile)
+
+    -- we need to mark as it when compiling the preprocessed source file
+    -- it will indicate to the preprocessor that the input file has already been preprocessed.
+    if is_gcc then
+        table.insert(flags, "-fpreprocessed")
+    end
+    -- with -fpreprocessed, predefinition of command line and most builtin macros is disabled.
+    if directives_only then
+        table.insert(flags, "-fdirectives-only")
+    end
+
+    -- suppress -Wgnu-line-marker warnings
+    -- @see https://github.com/xmake-io/xmake/issues/5737
+    if (is_gcc or is_clang) and _has_gnu_line_marker_flag(tool) then
+        table.insert(flags, "-Wno-gnu-line-marker")
+    end
+
+    -- do preprocess
+    local cppinfo = try {function ()
+        if is_host("windows") then
+            cppflags = winos.cmdargv(cppflags, {escape = true})
+        end
+        local outdata, errdata = os.iorunv(program, cppflags, opt)
+        return {outdata = outdata, errdata = errdata,
+                sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
+    end}
+    if not cppinfo then
+        if is_gcc then
+            local cachekey = "core.tools." .. tool:name()
+            memcache.set(cachekey, "directives_only", false)
+        end
+    end
+    return cppinfo
+end
+
+-- compile preprocessed file
+function _compile_preprocessed_file(program, cppinfo, opt)
+    local argv = table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile)
+    if is_host("windows") then
+        argv = winos.cmdargv(argv, {escape = true})
+    end
+    local outdata, errdata = os.iorunv(program, argv, opt)
+    -- we need to get warning information from output
+    -- and we need to reserve warnings output from preprocessing
+    -- @see https://github.com/xmake-io/xmake/issues/5858
+    if outdata then
+        cppinfo.outdata = (cppinfo.outdata or "") .. outdata
+    end
+    if errdata then
+        cppinfo.errdata = (cppinfo.errdata or "") .. errdata
+    end
+end
+
+-- do compile
+function _compile(self, sourcefile, objectfile, compflags, opt)
+    opt = opt or {}
+    local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
+    local function _compile_fallback()
+        local runargv = argv
+        if is_host("windows") then
+            runargv = winos.cmdargv(argv, {escape = true})
+        end
+        return os.iorunv(program, runargv, {envs = self:runenvs(), shell = opt.shell})
+    end
+    local cppinfo
+    if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
+        cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
+            preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
+            tool = self, remote = true, shell = opt.shell})
+    elseif build_cache.is_enabled(opt.target) and build_cache.is_supported(self:kind()) then
+        cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
+            preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
+            tool = self, shell = opt.shell})
+    end
+    if cppinfo then
+        return cppinfo.outdata, cppinfo.errdata
+    else
+        return _compile_fallback()
+    end
+end
+
+-- remove "-include xxx.h" and "-include-pch xxx.pch"
+function _remove_flags_for_pch(self, flags, opt)
+    opt = opt or {}
+    local result = {}
+    local include = false
+    local pchfile = opt.pchfile
+    for _, flag in ipairs(flags) do
+        local inserted = false
+        if not flag:startswith("-include") then
+            if not include then
+                inserted = true
+            end
+            include = false
+        else
+            include = true
+        end
+        if pchfile and flag:startswith("-fmodules") then
+            inserted = false
+        end
+        if inserted then
+            table.insert(result, flag)
+        end
+    end
+    return result
+end
+
+-- make the compile arguments list for the precompiled header
+function _translate_flags_for_pch(self, flags)
+    local pchflags = _remove_flags_for_pch(self, flags, {pchfile = true})
+    if self:kind() == "cxx" then
+        table.insert(pchflags, "-x")
+        table.insert(pchflags, "c++-header")
+    elseif self:kind() == "cc" then
+        table.insert(pchflags, "-x")
+        table.insert(pchflags, "c-header")
+    elseif self:kind() == "mxx" then
+        table.insert(pchflags, "-x")
+        table.insert(pchflags, "objective-c++-header")
+    elseif self:kind() == "mm" then
+        table.insert(pchflags, "-x")
+        table.insert(pchflags, "objective-c-header")
+    end
+    return pchflags
+end
+
+-- remove the force includes for c++modules
+-- @see https://github.com/xmake-io/xmake/issues/4051#issuecomment-2795707800
+function _translate_flags_for_mpp(self, flags)
+    return _remove_flags_for_pch(self, flags)
+end
+
+-- init it
 function init(self)
 
     -- init mxflags
@@ -188,19 +530,6 @@ function nf_vectorext(self, extension)
         maps[extension] = nil
     end
     return maps[extension]
-end
-
--- has -static-libstdc++?
-function _has_static_libstdcxx(self)
-    local has_static_libstdcxx = _g._HAS_STATIC_LIBSTDCXX
-    if has_static_libstdcxx == nil then
-        if self:has_flags("-static-libstdc++ -Werror", "ldflags", {flagskey = "gcc_static_libstdcxx"}) then
-            has_static_libstdcxx = true
-        end
-        has_static_libstdcxx = has_static_libstdcxx or false
-        _g._HAS_STATIC_LIBSTDCXX = has_static_libstdcxx
-    end
-    return has_static_libstdcxx
 end
 
 -- make the runtime flag
@@ -574,8 +903,9 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     end
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
-    if targetkind == "shared" and self:is_plat("mingw") then
-        table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".dll.a"))
+    local implibfile = _get_implibfile(self, targetkind, targetfile, opt)
+    if implibfile then
+        table.insert(flags_extra, "-Wl,--out-implib," .. implibfile)
     end
 
     -- init arguments
@@ -594,326 +924,19 @@ end
 --
 function link(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
+
     os.mkdir(path.directory(targetfile))
-    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+    local implibfile = _get_implibfile(self, targetkind, targetfile, opt)
+    if implibfile then
+        os.mkdir(path.directory(implibfile))
+    end
+
+    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     if option.get("verbose") then
         os.execv(program, argv, {envs = self:runenvs(), shell = opt.shell})
     else
         os.vrunv(program, argv, {envs = self:runenvs(), shell = opt.shell})
     end
-end
-
--- get `-MMD -MF depfile.d` flags, some old gcc does not support it at same time
-function _get_depfile_flags(self)
-    local depfile_flags = _g._DEPFILE_FLAGS
-    if depfile_flags == nil then
-        local nuldev = os.nuldev()
-        if self:name():startswith("cosmoc") then
-            nuldev = os.tmpfile()
-        end
-        if self:has_flags({"-MMD", "-MF", nuldev}, "cxflags", { flagskey = "-MMD -MF" }) then
-            depfile_flags = {"-MMD", "-MF"}
-        end
-        _g._DEPFILE_FLAGS = depfile_flags or false
-    end
-    return depfile_flags
-end
-
--- get color diagnostics flag
-function _get_color_diagnostics_flag(self)
-    local colors_diagnostics = _g._COLOR_DIAGNOSTICS
-    if colors_diagnostics == nil then
-        if io.isatty() and (tty.has_color8() or tty.has_color256()) then
-            local theme = colors.theme()
-            if theme and theme:name() ~= "plain" then
-                -- for gcc
-                if self:has_flags("-fdiagnostics-color=always", "cxflags") then
-                    colors_diagnostics = "-fdiagnostics-color=always"
-                -- for clang
-                elseif self:has_flags("-fcolor-diagnostics", "cxflags") then
-                    colors_diagnostics = "-fcolor-diagnostics"
-                end
-
-                -- enable color output for windows, @see https://github.com/xmake-io/xmake-vscode/discussions/260
-                if colors_diagnostics and self:name() == "clang" and is_host("windows") and
-                    self:has_flags("-fansi-escape-codes", "cxflags") then
-                    colors_diagnostics = table.join(colors_diagnostics, "-fansi-escape-codes")
-                end
-            end
-        end
-        colors_diagnostics = colors_diagnostics or false
-        _g._COLOR_DIAGNOSTICS = colors_diagnostics
-    end
-    return colors_diagnostics
-end
-
--- has gnu-line-marker flag?
-function _has_gnu_line_marker_flag(self)
-    local gnu_line_marker = _g._HAS_GNU_LINE_MARKER
-    if gnu_line_marker == nil then
-        if self:has_flags({"-Wno-gnu-line-marker", "-Werror"}, "cxflags") then
-            gnu_line_marker = true
-        end
-        gnu_line_marker = gnu_line_marker or false
-        _g._HAS_GNU_LINE_MARKER = gnu_line_marker
-    end
-    return gnu_line_marker
-end
-
--- get preprocess file path
-function _get_cppfile(sourcefile, objectfile)
-    return path.join(path.directory(objectfile), "__cpp_" .. path.basename(objectfile) .. path.extension(sourcefile))
-end
-
--- do preprocess
-function _preprocess(program, argv, opt)
-
-    -- is gcc or clang?
-    local tool = opt.tool
-    local is_gcc = false
-    local is_clang = false
-    if tool then
-        if tool:name() == "gcc" or tool:name() == "gxx" then
-            is_gcc = true
-        elseif tool:name():startswith("clang") then
-            is_clang = true
-        elseif tool:name() == "circle" then
-            return
-        end
-    end
-
-    -- enable "-fdirectives-only"? we need to enable it manually
-    --
-    -- @see https://github.com/xmake-io/xmake/issues/2603
-    -- https://github.com/xmake-io/xmake/issues/2425
-    local directives_only
-    if is_gcc then
-        local cachekey = "core.tools." .. tool:name()
-        directives_only = memcache.get(cachekey, "directives_only")
-        if directives_only == nil then
-            if os.isfile(os.projectfile()) and project.policy("preprocessor.gcc.directives_only") then
-                directives_only = true
-            end
-            memcache.set(cachekey, "directives_only", directives_only)
-        end
-    end
-
-    -- get flags and source file
-    local flags = {}
-    local cppflags = {}
-    local skipped = program:endswith("cache") and 1 or 0
-    for _, flag in ipairs(argv) do
-        if flag == "-o" then
-            break
-        end
-
-        -- get preprocessor flags
-        table.insert(cppflags, flag)
-
-        -- for c++ modules, we cannot support it for clang now
-        if is_clang and flag:startswith("-fmodules") then
-            return
-        end
-
-        -- we cannot enable "-fdirectives-only"
-        if directives_only and (flag:startswith("-D__TIME__=") or
-                flag:startswith("-D__DATE__=") or flag:startswith("-D__TIMESTAMP__=")) then
-            directives_only = false
-        end
-
-        -- get compiler flags
-        if flag == "-MMD" or (flag:startswith("-I") and #flag > 2) or flag:startswith("--sysroot=") then
-            skipped = 1
-        elseif flag == "-MF" or
-            flag == "-I" or flag == "-isystem" or flag == "-include" or flag == "-include-pch" or
-            flag == "-isysroot" or flag == "-gcc-toolchain" then
-            skipped = 2
-        elseif flag:endswith("xcrun") then
-            skipped = 4
-        end
-        if skipped > 0 then
-            skipped = skipped - 1
-        else
-            table.insert(flags, flag)
-        end
-    end
-    local objectfile = argv[#argv - 1]
-    local sourcefile = argv[#argv]
-    assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
-
-    -- is precompiled header?
-    if objectfile:endswith(".gch") or objectfile:endswith(".pch") then
-        return
-    end
-
-    -- disable linemarkers?
-    local linemarkers = _g.linemarkers
-    if linemarkers == nil then
-        if os.isfile(os.projectfile()) and project.policy("preprocessor.linemarkers") == false then
-            linemarkers = false
-        else
-            linemarkers = true
-        end
-        _g.linemarkers = linemarkers
-    end
-
-    -- do preprocess
-    local cppfile = _get_cppfile(sourcefile, objectfile)
-    local cppfiledir = path.directory(cppfile)
-    if not os.isdir(cppfiledir) then
-        os.mkdir(cppfiledir)
-    end
-    table.insert(cppflags, "-E")
-    -- it will be faster for preprocessing
-    -- when preprocessing, handle directives, but do not expand macros.
-    if directives_only then
-        table.insert(cppflags, "-fdirectives-only")
-    end
-    if linemarkers == false then
-        table.insert(cppflags, "-P")
-    end
-    -- if we want to support pch for gcc, we need to enable this flag
-    -- and clang need not this flag, it will use '-include-pch' to include and preprocess header files
-    -- but it will be slower than non-ccache mode.
-    --
-    -- @see https://github.com/xmake-io/xmake/issues/5858
-    -- https://musescore.org/en/node/182331
-    if is_gcc then
-        table.insert(cppflags, "-fpch-preprocess")
-    end
-    table.insert(cppflags, "-o")
-    table.insert(cppflags, cppfile)
-    table.insert(cppflags, sourcefile)
-
-    -- we need to mark as it when compiling the preprocessed source file
-    -- it will indicate to the preprocessor that the input file has already been preprocessed.
-    if is_gcc then
-        table.insert(flags, "-fpreprocessed")
-    end
-    -- with -fpreprocessed, predefinition of command line and most builtin macros is disabled.
-    if directives_only then
-        table.insert(flags, "-fdirectives-only")
-    end
-
-    -- suppress -Wgnu-line-marker warnings
-    -- @see https://github.com/xmake-io/xmake/issues/5737
-    if (is_gcc or is_clang) and _has_gnu_line_marker_flag(tool) then
-        table.insert(flags, "-Wno-gnu-line-marker")
-    end
-
-    -- do preprocess
-    local cppinfo = try {function ()
-        if is_host("windows") then
-            cppflags = winos.cmdargv(cppflags, {escape = true})
-        end
-        local outdata, errdata = os.iorunv(program, cppflags, opt)
-        return {outdata = outdata, errdata = errdata,
-                sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
-    end}
-    if not cppinfo then
-        if is_gcc then
-            local cachekey = "core.tools." .. tool:name()
-            memcache.set(cachekey, "directives_only", false)
-        end
-    end
-    return cppinfo
-end
-
--- compile preprocessed file
-function _compile_preprocessed_file(program, cppinfo, opt)
-    local argv = table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile)
-    if is_host("windows") then
-        argv = winos.cmdargv(argv, {escape = true})
-    end
-    local outdata, errdata = os.iorunv(program, argv, opt)
-    -- we need to get warning information from output
-    -- and we need to reserve warnings output from preprocessing
-    -- @see https://github.com/xmake-io/xmake/issues/5858
-    if outdata then
-        cppinfo.outdata = (cppinfo.outdata or "") .. outdata
-    end
-    if errdata then
-        cppinfo.errdata = (cppinfo.errdata or "") .. errdata
-    end
-end
-
--- do compile
-function _compile(self, sourcefile, objectfile, compflags, opt)
-    opt = opt or {}
-    local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
-    local function _compile_fallback()
-        local runargv = argv
-        if is_host("windows") then
-            runargv = winos.cmdargv(argv, {escape = true})
-        end
-        return os.iorunv(program, runargv, {envs = self:runenvs(), shell = opt.shell})
-    end
-    local cppinfo
-    if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-        cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
-            preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
-            tool = self, remote = true, shell = opt.shell})
-    elseif build_cache.is_enabled(opt.target) and build_cache.is_supported(self:kind()) then
-        cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
-            preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
-            tool = self, shell = opt.shell})
-    end
-    if cppinfo then
-        return cppinfo.outdata, cppinfo.errdata
-    else
-        return _compile_fallback()
-    end
-end
-
--- remove "-include xxx.h" and "-include-pch xxx.pch"
-function _remove_flags_for_pch(self, flags, opt)
-    opt = opt or {}
-    local result = {}
-    local include = false
-    local pchfile = opt.pchfile
-    for _, flag in ipairs(flags) do
-        local inserted = false
-        if not flag:startswith("-include") then
-            if not include then
-                inserted = true
-            end
-            include = false
-        else
-            include = true
-        end
-        if pchfile and flag:startswith("-fmodules") then
-            inserted = false
-        end
-        if inserted then
-            table.insert(result, flag)
-        end
-    end
-    return result
-end
-
--- make the compile arguments list for the precompiled header
-function _translate_flags_for_pch(self, flags)
-    local pchflags = _remove_flags_for_pch(self, flags, {pchfile = true})
-    if self:kind() == "cxx" then
-        table.insert(pchflags, "-x")
-        table.insert(pchflags, "c++-header")
-    elseif self:kind() == "cc" then
-        table.insert(pchflags, "-x")
-        table.insert(pchflags, "c-header")
-    elseif self:kind() == "mxx" then
-        table.insert(pchflags, "-x")
-        table.insert(pchflags, "objective-c++-header")
-    elseif self:kind() == "mm" then
-        table.insert(pchflags, "-x")
-        table.insert(pchflags, "objective-c-header")
-    end
-    return pchflags
-end
-
--- remove the force includes for c++modules
--- @see https://github.com/xmake-io/xmake/issues/4051#issuecomment-2795707800
-function _translate_flags_for_mpp(self, flags)
-    return _remove_flags_for_pch(self, flags)
 end
 
 -- make the compile arguments list
