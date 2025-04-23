@@ -135,7 +135,8 @@ end
 --
 function _generate_modulemapper_file(target, module, cppfile)
     local maplines = _get_maplines(target, module)
-    local mapper_path = path.join(os.tmpdir(), target:fullname():replace(" ", "_"), name or cppfile:replace(" ", "_"))
+    local mapper_path = path.join(os.tmpdir(), (target:fullname():replace(" ", "_")),
+        name or (cppfile:replace("[%s:]", "_"))) -- @see https://github.com/xmake-io/xmake/issues/6350
     local mapper_content = {}
     table.insert(mapper_content, "root " .. path.unix(os.projectdir()))
     for _, mapline in ipairs(maplines) do
