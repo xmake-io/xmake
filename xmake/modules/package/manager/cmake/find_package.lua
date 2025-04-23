@@ -61,6 +61,26 @@ local _cmake_internal_flags_variables = {
     "CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT",
     "CMAKE_EXE_LINKER_FLAGS_MINSIZEREL_INIT",
     "CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT",
+    "CMAKE_SHARED_LINKER_FLAGS",
+    "CMAKE_SHARED_LINKER_FLAGS_DEBUG",
+    "CMAKE_SHARED_LINKER_FLAGS_RELEASE",
+    "CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL",
+    "CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO",
+    "CMAKE_SHARED_LINKER_FLAGS_INIT",
+    "CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT",
+    "CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT",
+    "CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL_INIT",
+    "CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT",
+    "CMAKE_STATIC_LINKER_FLAGS",
+    "CMAKE_STATIC_LINKER_FLAGS_DEBUG",
+    "CMAKE_STATIC_LINKER_FLAGS_RELEASE",
+    "CMAKE_STATIC_LINKER_FLAGS_MINSIZEREL",
+    "CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO",
+    "CMAKE_STATIC_LINKER_FLAGS_INIT",
+    "CMAKE_STATIC_LINKER_FLAGS_DEBUG_INIT",
+    "CMAKE_STATIC_LINKER_FLAGS_RELEASE_INIT",
+    "CMAKE_STATIC_LINKER_FLAGS_MINSIZEREL_INIT",
+    "CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO_INIT",
 
     -- msvc
     "CMAKE_MSVC_RUNTIME_LIBRARY",
@@ -89,6 +109,7 @@ end
 
 -- find package
 function _find_package(cmake, name, opt)
+    local is_windows = os.host() == "windows"
 
     -- get work directory
     local workdir = os.tmpfile() .. ".dir"
@@ -98,7 +119,7 @@ function _find_package(cmake, name, opt)
     -- generate fake ninja
     local ninja_version = "1.10.2"
     local ninjascript
-    if os.host() == "windows" then
+    if is_windows then
         ninjascript = path.join(workdir, "ninja1.bat")
         io.writefile(ninjascript, "@echo off\necho " .. ninja_version)
     else
@@ -190,8 +211,26 @@ function _find_package(cmake, name, opt)
         cmakefile:print("find_package(%s REQUIRED %s)", requirestr, componentstr)
     end
 
-    -- add executable target
-    cmakefile:print("add_executable(${PROJECT_NAME} main.cpp)")
+    -- add target
+    local target_type = configs.target_type or opt.target_type
+    local is_executable
+    if not target_type then
+        is_executable = true
+        cmakefile:print("add_executable(${PROJECT_NAME})")
+    elseif target_type == "shared" then
+        cmakefile:print("add_library(${PROJECT_NAME} SHARED)")
+    elseif target_type == "static" then
+        cmakefile:print("add_library(${PROJECT_NAME} STATIC)")
+    else
+        is_executable = true
+        cmakefile:print("add_executable(${PROJECT_NAME})")
+    end
+    cmakefile:print("target_sources(${PROJECT_NAME} PRIVATE main.cpp)")
+
+    -- set target properties
+    if is_executable and is_windows and (configs.win32 or opt.win32) then
+        cmakefile:print("set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)")
+    end
 
     -- setup include directories
     local includedirs = ""
@@ -340,12 +379,12 @@ function _find_package(cmake, name, opt)
     local libfiles    = nil
 
     -- get CMakeCache.txt
-    local isMSVC = false
+    local is_msvc = false
     for line in io.lines(path.join(builddir, "CMakeCache.txt")) do
         if line:startswith("CMAKE_CXX_COMPILER") then
             local compiler = line:sub(line:find("=") + 1):trim()
             if path.basename(compiler):lower() == "cl" then
-                isMSVC = true
+                is_msvc = true
             end
             break
         end
@@ -370,14 +409,16 @@ function _find_package(cmake, name, opt)
                 -- e.g.
                 --      build CMakeFiles/main.dir/main.cpp.obj: ...
                 --      build main.exe: ...
-                local buildfile = line:match("^build%s+([^:]+):")
-                if buildfile then
+                local buildfiles = line:match("^build%s+([^:]+):")
+                if buildfiles then
                     -- save previous statement if exists
                     if current_build and current_vars then
                         table.insert(results, { build = current_build, vars = current_vars })
                     end
 
-                    if path.basename(buildfile):startswith("main") then
+                    local buildfile = os.argv(buildfiles)[1]
+                    local basename = path.basename(buildfile)
+                    if basename == "main" or basename == "libmain" or basename == "main.cpp" then
                         -- save current statement
                         current_build = buildfile
                         current_vars = {}
@@ -428,7 +469,7 @@ function _find_package(cmake, name, opt)
                 if key == "DEFINES" then
                     -- strip -D, /D
                     for _, flag in ipairs(os.argv(value)) do
-                        local define = flag:match("^-D(.+)$") or (isMSVC and flag:match("^/D(.+)$"))
+                        local define = flag:match("^-D(.+)$") or (is_msvc and flag:match("^/D(.+)$"))
                         if define and not _should_exclude(define) then
                             table.insert(ninja_defines, define)
                         end
@@ -440,12 +481,12 @@ function _find_package(cmake, name, opt)
                             local includedir = flag
                             table.insert(ninja_includes, includedir)
                             has_include = false
-                        elseif flag == "-isystem" or flag == "-idirafter" or flag == "-I" or (isMSVC and flag == "/I") then
+                        elseif flag == "-isystem" or flag == "-idirafter" or flag == "-I" or (is_msvc and flag == "/I") then
                             has_include = true
                         else
                             -- strip -I, /I, -external:I, /external:I
                             local includedir = flag:match("^-I(.+)$") or (
-                                isMSVC and (
+                                is_msvc and (
                                     flag:match("^/I(.+)$") or
                                     flag:match("^-external:I(.+)$") or
                                     flag:match("^/external:I(.+)$")
@@ -475,7 +516,7 @@ function _find_package(cmake, name, opt)
                     for _, flag in ipairs(os.argv(value)) do
                         -- strip -L, /LIBPATH, /libpath, -LIBPATH, -libpath
                         local linkdir
-                        if isMSVC then
+                        if is_msvc then
                             linkdir = flag:match("^/LIBPATH:(.+)$") or
                                 flag:match("^/libpath:(.+)$") or
                                 flag:match("^-LIBPATH:(.+)$") or
@@ -552,8 +593,17 @@ end
 --                                 configs = {
 --                                      components = {"regex", "system"},
 --                                      moduledirs = "xxx",
---                                      presets = {Boost_USE_STATIC_LIB = true},
---                                      envs = {CMAKE_PREFIX_PATH = "xxx"}})
+--                                      presets = {
+--                                          Boost_USE_STATIC_LIB = true
+--                                      },
+--                                      envs = {
+--                                           CMAKE_PREFIX_PATH = "xxx",
+--                                      },
+--                                      find_script = "find_package(Foo CONFIG REQUIRED)",
+--                                      link_script = "target_link_libraries(${PROJECT_NAME} PRIVATE Foo::Foo)",
+--                                      target_type = "shared",
+--                                      win32 = true
+--                                 }}
 --
 function main(name, opt)
     opt = opt or {}
