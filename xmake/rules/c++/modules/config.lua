@@ -25,6 +25,10 @@ function main(target)
     -- we disable to build across targets in parallel, because the source files may depend on other target modules
     -- @see https://github.com/xmake-io/xmake/issues/1858
     if support.contains_modules(target) then
+
+        -- unity build can't work with modules
+        assert(not target:rule("c++.unity_build"), "C++ unity build is not compatible with C++ modules")
+
         -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
         -- even if some sub-targets do not contain C++ modules.
         --
