@@ -28,6 +28,21 @@ import("core.language.language")
 import("core.project.policy")
 import("utils.progress")
 
+-- get implib file
+function _get_implibfile(self, targetkind, targetfile, opt)
+    if targetkind == "shared" and self:is_plat("mingw") then
+        local target = opt and opt.target
+        local implibfile
+        if target and target:type() == "target" then
+            implibfile = target:artifactfile("implib")
+        end
+        if not implibfile then
+            implibfile = path.join(path.directory(targetfile), path.basename(targetfile) .. ".a")
+        end
+        return implibfile
+    end
+end
+
 -- init it
 function init(self)
 
@@ -287,10 +302,10 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     end
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
-    if targetkind == "shared" and self:is_plat("mingw") then
-        local implib = opt.implib or path.join(path.directory(targetfile), path.basename(targetfile) .. ".dll.a")
+    local implibfile = _get_implibfile(self, targetkind, targetfile, opt)
+    if implibfile then
         table.insert(flags_extra, "-Xlinker")
-        table.insert(flags_extra, "-Wl,--out-implib," .. implib)
+        table.insert(flags_extra, "-Wl,--out-implib," .. implibfile)
     end
 
     -- make link args
@@ -299,13 +314,12 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags, opt)
-    
-    -- ensure the target directory
-    os.mkdir(path.directory(targetfile))
+    opt = opt or {}
 
-    -- ensure the implib directory
-    if opt and opt.implib then
-        os.mkdir(path.directory(opt.implib))
+    os.mkdir(path.directory(targetfile))
+    local implibfile = _get_implibfile(self, targetkind, targetfile, opt)
+    if implibfile then
+        os.mkdir(path.directory(implibfile))
     end
 
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)

@@ -49,11 +49,11 @@ function _do_link_target(target, opt)
 
         if verbose then
             -- show the full link command with raw arguments, it will expand @xxx.args for msvc/link on windows
-            print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, implib = target:artifactfile("implib"), rawargs = true}))
+            print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, rawargs = true}))
         end
 
         if not dryrun then
-            assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags, implib = target:artifactfile("implib")}))
+            assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
         end
     end, {dependfile = target:dependfile(),
           lastmtime = os.mtime(target:targetfile()),

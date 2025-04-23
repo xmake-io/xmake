@@ -109,9 +109,9 @@ function _patch(package, patchinfo)
         os.tryrm(patchdir_tmp)
         local errors
         local ok = try {
-            function() 
+            function()
                 archive.extract(patch_file, patchdir_tmp)
-                return true 
+                return true
             end,
             catch {
                 function (errs)

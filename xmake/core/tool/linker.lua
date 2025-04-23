@@ -144,6 +144,9 @@ function linker.load(targetkind, sourcekinds, target)
     local arch = linkertool:arch() or config.arch() or os.arch()
     local cachekey = targetkind .. "_" .. linkerinfo.linkerkind .. (linkerinfo.program or "") .. plat .. arch
     cachekey = cachekey .. table.concat(sourcekinds, "") -- @see https://github.com/xmake-io/xmake/issues/5360
+    if target then
+        cachekey = cachekey .. tostring(target)
+    end
 
     -- get it directly from cache dirst
     builder._INSTANCES = builder._INSTANCES or {}
@@ -226,17 +229,20 @@ end
 function linker:link(objectfiles, targetfile, opt)
     opt = opt or {}
     local linkflags = opt.linkflags or self:linkflags(opt)
-    opt = table.copy(opt)
-    opt.target = self:target()
     profiler:enter(self:name(), "link", targetfile)
-    local ok, errors = sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, linkflags, opt)
+    local ok, errors = sandbox.load(self:_tool().link, self:_tool(),
+        table.wrap(objectfiles), self:_targetkind(), targetfile, linkflags,
+        table.join(opt, {target = self:target()}))
     profiler:leave(self:name(), "link", targetfile)
     return ok, errors
 end
 
 -- get the link arguments list
 function linker:linkargv(objectfiles, targetfile, opt)
-    return self:_tool():linkargv(table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt), opt)
+    opt = opt or {}
+    return self:_tool():linkargv(table.wrap(objectfiles),
+        self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt),
+        table.join(opt, {target = self:target()}))
 end
 
 -- get the link command
@@ -250,14 +256,10 @@ end
 --              e.g. {target = ..., targetkind = "static", configs = {ldflags = "", links = "", linkdirs = "", ...}}
 --
 function linker:linkflags(opt)
-
-    -- init options
     opt = opt or {}
 
     -- get target
-    local target = opt.target
-
-    -- get target kind
+    local target = opt.target or self:target()
     local targetkind = opt.targetkind
     if not targetkind and target and target:type() == "target" then
         targetkind = target:kind()
