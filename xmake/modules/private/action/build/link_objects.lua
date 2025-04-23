@@ -46,7 +46,6 @@ function _do_link_target(target, opt)
         local targetfile = target:targetfile()
         local objectfiles = target:objectfiles()
         local verbose = option.get("verbose")
-
         if verbose then
             -- show the full link command with raw arguments, it will expand @xxx.args for msvc/link on windows
             print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, rawargs = true}))
