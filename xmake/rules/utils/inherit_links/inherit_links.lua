@@ -80,9 +80,9 @@ function main(target)
             end
         end
 
-        local target_implib = target:artifactfile("implib")
-        if target_implib then
-            _add_export_value(target, "linkdirs", path.directory(target_implib))
+        local implibfile = target:artifactfile("implib")
+        if implibfile then
+            _add_export_value(target, "linkdirs", path.directory(implibfile))
         else
             _add_export_value(target, "linkdirs", path.directory(targetfile))
         end

@@ -303,10 +303,10 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
 
     -- install *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
-    local target_implib = target:artifactfile("implib")
-    if target_implib and os.isfile(target_implib) then
+    local implibfile = target:artifactfile("implib")
+    if implibfile and os.isfile(implibfile) then
         batchcmds_:mkdir(libdir)
-        batchcmds_:cp(target_implib, path.join(libdir, path.filename(target_implib)))
+        batchcmds_:cp(implibfile, path.join(libdir, path.filename(implibfile)))
     end
 
     _install_target_headers(target, batchcmds_, opt)
