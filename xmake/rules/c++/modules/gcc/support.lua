@@ -60,7 +60,9 @@ function load(target)
     -- @see https://github.com/xmake-io/xmake/issues/2716#issuecomment-1225057760
     -- https://github.com/xmake-io/xmake/issues/3855
 
-    if target:policy("build.c++.gcc.modules.cxx11abi") then
+    local cxx11abi = target:policy("build.c++.modules.gcc.cxx11abi") or
+                     target:policy("build.c++.gcc.modules.cxx11abi")
+    if cxx11abi then
         target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=1")
     else
         target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=0")
@@ -81,7 +83,9 @@ function strip_flags(target, flags)
         "-Q",
         "-fmodule-mapper",
     }
-    if not target:policy("build.c++.modules.tryreuse.discriminate_on_defines") then
+    local strict = target:policy("build.c++.modules.reuse.strict") or
+                   target:policy("build.c++.modules.tryreuse.discriminate_on_defines")
+    if not strict then
         table.join2(strippable_flags, {"-D", "-U"})
     end
     local output = {}

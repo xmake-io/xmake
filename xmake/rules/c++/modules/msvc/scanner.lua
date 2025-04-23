@@ -38,13 +38,16 @@ function generate_dependency_for(target, sourcefile, opt)
     local compinst = target:compiler("cxx")
     local flags = compinst:compflags({sourcefile = sourcefile, target = target}) or {}
     local changed = false
+    local fallbackscanner = target:policy("build.c++.modules.fallbackscanner") or
+                            target:policy("build.c++.modules.msvc.fallbackscanner") or
+                            target:policy("build.c++.msvc.fallbackscanner")
 
     depend.on_changed(function ()
         progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:fullname(), sourcefile)
         local outputdir = support.get_outputdir(target, sourcefile)
 
         local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".module.json")
-        if scandependenciesflag and not target:policy("build.c++.msvc.fallbackscanner") then
+        if scandependenciesflag and not fallbackscanner then
             local dependency_flags = {jsonfile, sourcefile, ifcoutputflag, outputdir, "-Fo" .. target:objectfile(sourcefile)}
             local compflags = table.join(flags, common_flags, dependency_flags)
             os.vrunv(compinst:program(), winos.cmdargv(compflags), {envs = msvc:runenvs()})

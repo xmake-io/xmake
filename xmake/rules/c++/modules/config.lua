@@ -49,6 +49,26 @@ function main(target)
         -- mark this target with modules
         target:data_set("cxx.has_modules", true)
 
+        -- warn about deprecated policies
+        if target:policy("build.c++.gcc.modules.cxx11abi") then
+            wprint("build.c++.gcc.modules.cxx11abi is deprecated, please use build.c++.modules.gcc.cxx11abi")
+        end
+        if target:policy("build.c++.clang.fallbackscanner") then
+            wprint("build.c++.clang.fallbackscanner is deprecated, please use build.c++.modules.clang.fallbackscanner")
+        end
+        if target:policy("build.c++.gcc.fallbackscanner") then
+            wprint("build.c++.gcc.fallbackscanner is deprecated, please use build.c++.modules.gcc.fallbackscanner")
+        end
+        if target:policy("build.c++.msvc.fallbackscanner") then
+            wprint("build.c++.msvc.fallbackscanner is deprecated, please use build.c++.modules.msvc.fallbackscanner")
+        end
+        if target:policy("build.c++.modules.tryreuse") then
+            wprint("build.c++.modules.tryreuse is deprecated, please use build.c++.modules.reuse")
+        end
+        if target:policy("build.c++.modules.tryreuse.discriminate_on_defines") then
+            wprint("build.c++.modules.tryreuse.discriminate_on_defines is deprecated, please use build.c++.modules.reuse.strict")
+        end
+
         -- moduleonly modules are implicitly public
         if target:is_moduleonly() then
             local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]

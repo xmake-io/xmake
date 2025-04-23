@@ -37,6 +37,9 @@ function generate_dependency_for(target, sourcefile, opt)
     local dependfile = target:dependfile(sourcefile)
     local flags = compinst:compflags({sourcefile = sourcefile, target = target}) or {}
     local changed = false
+    local fallbackscanner = target:policy("build.c++.modules.fallbackscanner") or
+                            target:policy("build.c++.modules.gcc.fallbackscanner") or
+                            target:policy("build.c++.gcc.fallbackscanner")
 
     depend.on_changed(function()
         if opt.progress then
@@ -46,7 +49,7 @@ function generate_dependency_for(target, sourcefile, opt)
         local outputdir = support.get_outputdir(target, sourcefile)
         local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
         local has_depsflags = depsformatflag and depsfileflag and depstargetflag
-        if has_depsflags and not target:policy("build.c++.gcc.fallbackscanner") then
+        if has_depsflags and not fallbackscanner then
             local ifile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".i"))
             local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
             local compflags = table.join(flags or {}, baselineflags, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})

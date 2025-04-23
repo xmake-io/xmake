@@ -149,7 +149,9 @@ function strip_flags(target, flags)
         "-cxx-isystem",
         "-Q",
     }
-    if not target:policy("build.c++.modules.tryreuse.discriminate_on_defines") then
+    local strict = target:policy("build.c++.modules.reuse.strict") or
+                   target:policy("build.c++.modules.tryreuse.discriminate_on_defines")
+    if not strict then
         table.join2(strippable_flags, {"-D", "-U"})
     end
     local output = {}
