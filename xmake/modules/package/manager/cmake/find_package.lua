@@ -392,10 +392,10 @@ function _find_package(cmake, name, opt)
                     --      ^  CONFIG = Debug
                     --      ^  DEFINES = -DXXX=YYY
                     --      ^  INCLUDES = -isystem /path/to/include
-                    local var = line:match("^%s+([%w_]+)%s*=")
-                    if var then
+                    local key, value = line:match("^%s+([%w_]+)%s*=%s*(.+)$")
+                    if key and value then
                         -- save current variable
-                        current_vars[var] = line:sub(line:find("=") + 1):trim()
+                        current_vars[key] = value
                     elseif line == "" then
                         -- encounter empty line, save current statement and start a new one
                         table.insert(results, { build = current_build, vars = current_vars })
@@ -493,25 +493,27 @@ function _find_package(cmake, name, opt)
             end
         end
 
-        links = ninja_links
-        libfiles = ninja_links
-        if not ldflags then
+        if #ninja_links > 0 then
+            links = ninja_links
+            libfiles = links
+        end
+        if #ninja_flags >0 and not ldflags then
             ldflags = ninja_linkflags
         end
-        if not linkdirs then
+        if #ninja_linkdirs >0 and not linkdirs then
             linkdirs = ninja_linkdirs
         end
-        if not defines then
+        if #ninja_defines >0 and not defines then
             defines = ninja_defines
         end
-        if not flags then
+        if #ninja_flags >0 and not flags then
             flags = ninja_flags
         end
-        if not includedirs then
+        if #ninja_includes >0 and not includedirs then
             includedirs = ninja_includes
         end
     end
-    
+
     -- remove work directory
     os.tryrm(workdir)
 
