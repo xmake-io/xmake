@@ -12,6 +12,7 @@
 * [#5624](https://github.com/xmake-io/xmake/discussions/5624): Enable auto build when calling xmake run by default
 * [#5526](https://github.com/xmake-io/xmake/discussions/5526): Use MD/MDd runtimes for msvc by default
 * [#5545](https://github.com/xmake-io/xmake/discussions/5545): Use ninja generator for cmake package by default
+* [#6355](https://github.com/xmake-io/xmake/pull/6355): Support customizing implib path of MinGW/MSVC
 
 ## v2.9.9
 
@@ -1989,6 +1990,7 @@
 * [#5624](https://github.com/xmake-io/xmake/discussions/5624): `xmake run` 运行默认自动构建
 * [#5526](https://github.com/xmake-io/xmake/discussions/5526): msvc 默认切换到 MD/MDd 运行时
 * [#5545](https://github.com/xmake-io/xmake/discussions/5545): 构建 cmake 包，默认使用 Ninja 生成器
+* [#6355](https://github.com/xmake-io/xmake/pull/6355): 支持自定义 implib 路径和访问
 
 ## v2.9.9
 
