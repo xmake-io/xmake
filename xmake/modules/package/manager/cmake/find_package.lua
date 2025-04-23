@@ -133,7 +133,7 @@ end
 
 -- find package
 function _find_package(cmake, name, opt)
-    local is_windows = os.host() == "windows"
+    local is_windows = is_host("windows")
 
     -- get work directory
     local workdir = os.tmpfile() .. ".dir"
