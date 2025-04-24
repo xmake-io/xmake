@@ -33,7 +33,7 @@ rule("go.env")
         local goos     = goenv.GOOS(target:plat())
         local goarch   = goenv.GOARCH(target:arch())
         if goroot and goos and goarch then
-            local goroot_local = path.join(config.buildir(), ".goenv", path.filename(goroot))
+            local goroot_local = path.join(config.builddir(), ".goenv", path.filename(goroot))
             local gopkgdir = path.join(os.isdir(goroot_local) and goroot_local or goroot, "pkg", goos .. "_" .. goarch)
             if not os.isdir(gopkgdir) or os.emptydir(gopkgdir) then
                 local gosrcdir = path.join(goroot, "src")

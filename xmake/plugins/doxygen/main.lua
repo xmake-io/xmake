@@ -52,7 +52,7 @@ function _generate_doxyfile(doxygen)
     --
     -- OUTPUT_DIRECTORY =
     --
-    local outputdir = option.get("outputdir") or config.buildir()
+    local outputdir = option.get("outputdir") or config.builddir()
     if outputdir then
         io.gsub(doxyfile, "OUTPUT_DIRECTORY%s-=.-\n", format("OUTPUT_DIRECTORY = %s\n", outputdir))
         os.mkdir(outputdir)
@@ -116,7 +116,7 @@ function main()
     os.vrunv(doxygen.program, {doxyfile}, {curdir = project.directory()})
 
     -- done
-    local outputdir = option.get("outputdir") or config.buildir()
+    local outputdir = option.get("outputdir") or config.builddir()
     cprint("${bright green}result: ${default green}%s/html/index.html", outputdir)
     cprint("${color.success}doxygen ok!")
     os.setenvs(oldenvs)

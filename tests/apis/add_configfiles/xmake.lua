@@ -23,7 +23,7 @@ target("test")
     add_files("main.c")
 
     set_configvar("module", "test")
-    set_configdir("$(buildir)/config")
+    set_configdir("$(builddir)/config")
     add_configfiles("test.c.in", {filename = "mytest.c"})
     add_configfiles("config.h.in", {variables = {hello = "xmake"}, prefixdir = "header",
         preprocessor = function (preprocessor_name, name, value, opt)
@@ -32,7 +32,7 @@ target("test")
             end
         end})
     add_configfiles("*.man", {onlycopy = true, prefixdir = "man"})
-    add_includedirs("$(buildir)/config/header")
+    add_includedirs("$(builddir)/config/header")
 
 
 target("test2")
@@ -40,10 +40,10 @@ target("test2")
     add_files("main2.c")
 
     set_configvar("module", "test2")
-    set_configdir("$(buildir)/config2")
+    set_configdir("$(builddir)/config2")
     add_configfiles("test.c.in", {filename = "mytest.c"})
     add_configfiles("config2.h.in", {variables = {hello = "xmake2"}, pattern = "@([^\n]-)@", prefixdir = "header"})
     add_configfiles("*.man", {onlycopy = true, prefixdir = "man"})
-    add_includedirs("$(buildir)/config2/header")
+    add_includedirs("$(builddir)/config2/header")
 
     add_options("foo2")

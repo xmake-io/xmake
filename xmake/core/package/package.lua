@@ -824,19 +824,25 @@ function _instance:sourcedir()
 end
 
 -- get the build directory
-function _instance:buildir()
-    local buildir = self._BUILDIR
-    if not buildir then
+function _instance:builddir()
+    local builddir = self._BUILDDIR
+    if not builddir then
         if self:is_local() then
             local name = self:name():lower():gsub("::", "_")
-            local rootdir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, self:version_str())
-            buildir = path.join(rootdir, "cache", "build_" .. self:buildhash():sub(1, 8))
+            local rootdir = path.join(config.builddir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, self:version_str())
+            builddir = path.join(rootdir, "cache", "build_" .. self:buildhash():sub(1, 8))
         else
-            buildir = "build_" .. self:buildhash():sub(1, 8)
+            builddir = "build_" .. self:buildhash():sub(1, 8)
         end
-        self._BUILDIR = buildir
+        self._BUILDDIR = builddir
     end
-    return buildir
+    return builddir
+end
+
+-- get the build directory (deprecated)
+function _instance:buildir()
+    utils.warning("package:buildir() has been deprecated, please use package:builddir()")
+    return self:builddir()
 end
 
 -- get the cached directory of this package
@@ -863,7 +869,7 @@ function _instance:cachedir()
                 version_str = version_str:gsub("[>=<|%*]", "")
             end
             if self:is_local() then
-                cachedir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, version_str, "cache")
+                cachedir = path.join(config.builddir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, version_str, "cache")
             else
                 cachedir = path.join(package.cachedir(), name:sub(1, 1):lower(), name, version_str)
             end
@@ -881,7 +887,7 @@ function _instance:installdir(...)
         if not installdir then
             local name = self:name():lower():gsub("::", "_")
             if self:is_local() then
-                installdir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name)
+                installdir = path.join(config.builddir({absolute = true}), ".packages", name:sub(1, 1):lower(), name)
             else
                 installdir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
             end

@@ -734,9 +734,12 @@ function project.interpreter()
         -- check
         assert(variable)
 
-        -- hack buildir first
-        if variable == "buildir" then
-            return config.buildir()
+        -- hack builddir first
+        if variable == "builddir" or variable == "buildir" then
+            if variable == "buildir" then
+                utils.warning("$(buildir) has been deprecated, please use $(builddir)")
+            end
+            return config.builddir()
         end
 
         -- attempt to get it directly from the configure

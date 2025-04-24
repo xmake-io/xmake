@@ -46,7 +46,7 @@ end
 
 -- get build directory
 function _conan_get_build_directory(name)
-    return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name))
+    return path.absolute(path.join(config.builddir() or os.tmpdir(), ".conan", name))
 end
 
 -- generate conanfile.txt
@@ -128,16 +128,16 @@ function main(conan, name, opt)
     local configs = opt.configs or {}
 
     -- get build directory
-    local buildir = _conan_get_build_directory(name)
+    local builddir = _conan_get_build_directory(name)
 
     -- clean the build directory
-    os.tryrm(buildir)
-    if not os.isdir(buildir) then
-        os.mkdir(buildir)
+    os.tryrm(builddir)
+    if not os.isdir(builddir) then
+        os.mkdir(builddir)
     end
 
     -- enter build directory
-    local oldir = os.cd(buildir)
+    local oldir = os.cd(builddir)
 
     -- install xmake generator
     _conan_install_xmake_generator(conan)

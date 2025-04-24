@@ -24,8 +24,11 @@ import("lib.detect.find_tool")
 
 function _default_argv(package, configs, opt)
     opt = opt or {}
-    local buildir = opt.buildir or os.curdir()
+    local builddir = opt.builddir or opt.buildir or os.curdir()
     local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
+    if opt.buildir then
+        wprint("{buildir = } has been deprecated, please use {builddir = } in ninja.install")
+    end
 
     local argv = {}
     local targets = table.wrap(opt.target)
@@ -33,7 +36,7 @@ function _default_argv(package, configs, opt)
         table.join2(argv, targets)
     end
     table.insert(argv, "-C")
-    table.insert(argv, buildir)
+    table.insert(argv, builddir)
     if option.get("diagnosis") then
         table.insert(argv, "-v")
     end

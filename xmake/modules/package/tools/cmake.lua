@@ -983,10 +983,13 @@ function _fix_pdbdir_for_ninja(package)
 end
 
 -- enter build directory
-function _enter_buildir(package, opt)
-    local buildir = opt.buildir or package:buildir()
-    os.mkdir(path.join(buildir, "install"))
-    return os.cd(buildir)
+function _enter_builddir(package, opt)
+    local builddir = opt.builddir or opt.buildir or package:builddir()
+    if opt.buildir then
+        wprint("{buildir = } has been deprecated, please use {builddir = } in cmake.install")
+    end
+    os.mkdir(path.join(builddir, "install"))
+    return os.cd(builddir)
 end
 
 -- get build environments
@@ -1305,7 +1308,7 @@ end
 
 function configure(package, configs, opt)
     opt = opt or {}
-    local oldir = _enter_buildir(package, opt)
+    local oldir = _enter_builddir(package, opt)
 
     -- pass configurations
     local argv = {}
@@ -1339,7 +1342,7 @@ function build(package, configs, opt)
     configure(package, configs, opt)
 
     -- do build
-    local oldir = _enter_buildir(package, opt)
+    local oldir = _enter_builddir(package, opt)
     if opt.cmake_build then
         _build_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then
@@ -1371,7 +1374,7 @@ function install(package, configs, opt)
     configure(package, configs, opt)
 
     -- do build and install
-    local oldir = _enter_buildir(package, opt)
+    local oldir = _enter_builddir(package, opt)
     if opt.cmake_build then
         _install_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then

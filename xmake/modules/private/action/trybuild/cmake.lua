@@ -28,13 +28,13 @@ import("lib.detect.find_tool")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- get build directory
-function _get_buildir()
-    return config.buildir() or "build"
+function _get_builddir()
+    return config.builddir() or "build"
 end
 
 -- get artifacts directory
 function _get_artifacts_dir()
-    return path.absolute(path.join(_get_buildir(), "artifacts"))
+    return path.absolute(path.join(_get_builddir(), "artifacts"))
 end
 
 -- get the build environment
@@ -515,11 +515,11 @@ end
 
 -- do clean
 function clean()
-    local buildir = _get_buildir()
-    if os.isdir(buildir) then
-        local configfile = find_file("[mM]akefile", buildir) or (is_plat("windows") and find_file("*.sln", buildir))
+    local builddir = _get_builddir()
+    if os.isdir(builddir) then
+        local configfile = find_file("[mM]akefile", builddir) or (is_plat("windows") and find_file("*.sln", builddir))
         if configfile then
-            local oldir = os.cd(buildir)
+            local oldir = os.cd(builddir)
             if is_plat("windows") then
                 local runenvs = _get_msvc_runenvs()
                 local msbuild = find_tool("msbuild", {envs = runenvs})
@@ -544,7 +544,7 @@ function build()
     if not os.isdir(artifacts_dir) then
         os.mkdir(artifacts_dir)
     end
-    os.cd(_get_buildir())
+    os.cd(_get_builddir())
     opt.artifacts_dir = artifacts_dir
 
     -- exists $CMAKE_GENERATOR? use it

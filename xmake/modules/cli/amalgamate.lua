@@ -158,7 +158,7 @@ function main(...)
     task.run("config")
 
     -- generate amalgamate code
-    args.outputdir = args.outputdir or config.buildir()
+    args.outputdir = args.outputdir or config.builddir()
     if args.target then
         local target = assert(check_targetname(args.target))
         _generate_amalgamate_code(target, args)

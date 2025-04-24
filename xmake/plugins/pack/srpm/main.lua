@@ -57,7 +57,7 @@ end
 
 -- get archive file
 function _get_archivefile(package)
-    return path.absolute(path.join(package:buildir(), package:basename() .. ".tar.gz"))
+    return path.absolute(path.join(package:builddir(), package:basename() .. ".tar.gz"))
 end
 
 -- translate the file path
@@ -202,7 +202,7 @@ function _pack_srpm(rpmbuild, package)
     end
 
     -- install the initial specfile
-    local specfile = path.join(package:buildir(), package:basename() .. ".spec")
+    local specfile = path.join(package:builddir(), package:basename() .. ".spec")
     if not os.isfile(specfile) then
         local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "srpm", "srpm.spec")
         os.cp(specfile_template, specfile, {writeable = true})
@@ -263,8 +263,8 @@ function _pack_srpm(rpmbuild, package)
 
     -- pack srpm package
     os.vrunv(rpmbuild, {"-bs", specfile,
-        "--define", "_topdir " .. package:buildir(),
-        "--define", "_sourcedir " .. package:buildir(),
+        "--define", "_topdir " .. package:builddir(),
+        "--define", "_sourcedir " .. package:builddir(),
         "--define", "_srcrpmdir " .. package:outputdir()})
 
     -- pack rpm package

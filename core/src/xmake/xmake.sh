@@ -43,12 +43,12 @@ target "xmake"
     fi
 
     # set the auto-generated config.h
-    set_configdir "${buildir}/${plat}/${arch}/${mode}"
+    set_configdir "${builddir}/${plat}/${arch}/${mode}"
     add_configfiles "xmake.config.h.in"
 
     # add includes directory
     add_includedirs ".." "{public}"
-    add_includedirs "${buildir}/${plat}/${arch}/${mode}" "{public}"
+    add_includedirs "${builddir}/${plat}/${arch}/${mode}" "{public}"
     add_includedirs "../xxhash"
     add_includedirs "${projectdir}/xmake/scripts/module"
 

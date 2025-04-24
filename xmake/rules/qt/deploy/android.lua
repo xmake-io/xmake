@@ -78,7 +78,7 @@ function main(target, opt)
     assert(os.isexec(androiddeployqt), "androiddeployqt not found!")
 
     -- get working directory
-    local workdir = path.join(config.buildir(), ".qt", "app", "android", target:name())
+    local workdir = path.join(config.builddir(), ".qt", "app", "android", target:name())
 
     -- get android-build directory
     local android_buildir = path.join(workdir, "android-build")

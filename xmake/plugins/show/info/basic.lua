@@ -60,8 +60,8 @@ function main()
         if config.mode() then
             cprint("    ${color.dump.string}mode${clear}: %s", config.mode())
         end
-        if config.buildir() then
-            cprint("    ${color.dump.string}buildir${clear}: %s", config.buildir())
+        if config.builddir() then
+            cprint("    ${color.dump.string}builddir${clear}: %s", config.builddir())
         end
         cprint("    ${color.dump.string}configdir${clear}: %s", config.directory())
         cprint("    ${color.dump.string}projectdir${clear}: %s", os.projectdir())

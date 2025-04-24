@@ -25,12 +25,15 @@ import("lib.detect.find_tool")
 import("package.tools.ninja")
 
 -- get build directory
-function _get_buildir(opt)
-    if opt and opt.buildir then
-        return opt.buildir
+function _get_builddir(opt)
+    if opt and (opt.builddir or opt.buildir) then
+        if opt.buildir then
+            wprint("{buildir = } has been deprecated, please use {builddir = } in gn.install")
+        end
+        return opt.builddir or opt.buildir
     else
-        _g.buildir = _g.buildir or ("build_" .. hash.uuid4():split('%-')[1])
-        return _g.buildir
+        _g.builddir = _g.builddir or ("build_" .. hash.uuid4():split('%-')[1])
+        return _g.builddir
     end
 end
 
@@ -98,7 +101,7 @@ function generate(package, configs, opt)
     local argv = {}
     local args = {}
     table.insert(argv, "gen")
-    table.insert(argv, _get_buildir(opt))
+    table.insert(argv, _get_builddir(opt))
     for name, value in pairs(_get_configs(package, configs, opt)) do
         if type(value) == "string" then
             table.insert(args, name .. "=\"" .. value .. "\"")
@@ -123,9 +126,9 @@ function build(package, configs, opt)
     generate(package, configs, opt)
 
     -- do build
-    local buildir = _get_buildir(opt)
+    local builddir = _get_builddir(opt)
     local targets = table.wrap(opt.target)
-    ninja.build(package, targets, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+    ninja.build(package, targets, {builddir = builddir, envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- install package
@@ -136,7 +139,7 @@ function install(package, configs, opt)
     generate(package, configs, opt)
 
     -- do build and install
-    local buildir = _get_buildir(opt)
+    local builddir = _get_builddir(opt)
     local targets = table.wrap(opt.target)
-    ninja.install(package, targets, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+    ninja.install(package, targets, {builddir = builddir, envs = opt.envs or buildenvs(package, opt)})
 end

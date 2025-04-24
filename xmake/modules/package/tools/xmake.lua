@@ -315,9 +315,12 @@ function _get_configs(package, configs, opt)
     if shflags and #shflags > 0 then
         table.insert(configs, "--shflags=" .. table.concat(shflags, ' '))
     end
-    local buildir = opt.buildir or package:buildir()
-    if buildir then
-        table.insert(configs, "--buildir=" .. buildir)
+    local builddir = opt.builddir or opt.buildir or package:builddir()
+    if builddir then
+        table.insert(configs, "--builddir=" .. builddir)
+    end
+    if opt.buildir then
+        wprint("{buildir = } has been deprecated, please use {builddir = } in xmake.install")
     end
     return configs
 end

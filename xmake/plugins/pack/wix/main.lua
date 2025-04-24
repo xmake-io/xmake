@@ -240,7 +240,7 @@ function _get_specvars(package)
             rtf_string =  _to_rtf_string(io.readfile(licensefile))
         end
 
-        local rtf_file = path.join(package:buildir(), "license.rtf")
+        local rtf_file = path.join(package:builddir(), "license.rtf")
         io.writefile(rtf_file, rtf_string)
         return rtf_file
     end
@@ -258,7 +258,7 @@ end
 function _pack_wix(wix, package)
 
     -- install the initial specfile
-    local specfile = path.join(package:buildir(), package:basename() .. ".wxs")
+    local specfile = path.join(package:builddir(), package:basename() .. ".wxs")
     if not os.isfile(specfile) then
         local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "wix", "msi.wxs")
         os.cp(specfile_template, specfile)

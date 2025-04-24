@@ -30,7 +30,7 @@ import("private.detect.check_targetname")
 function _package_library(target)
 
     -- the output directory
-    local outputdir = option.get("outputdir") or config.buildir()
+    local outputdir = option.get("outputdir") or config.builddir()
 
     -- the target name
     local targetname = target:name()

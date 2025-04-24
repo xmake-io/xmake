@@ -28,7 +28,7 @@ function _conan_get_buildinfo_file(name, dep_name)
     if dep_name then
         filename = "conanbuildinfo_" .. dep_name .. ".xmake.lua"
     end
-    return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name, filename))
+    return path.absolute(path.join(config.builddir() or os.tmpdir(), ".conan", name, filename))
 end
 
 -- get conan platform

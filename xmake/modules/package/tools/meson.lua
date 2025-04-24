@@ -27,12 +27,15 @@ import("private.utils.executable_path")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- get build directory
-function _get_buildir(package, opt)
-    if opt and opt.buildir then
-        return opt.buildir
+function _get_builddir(package, opt)
+    if opt and (opt.builddir or opt.buildir) then
+        if opt.buildir then
+            wprint("{buildir = } has been deprecated, please use {builddir = } in meson.install")
+        end
+        return opt.builddir or opt.buildir
     else
-        _g.buildir = _g.buildir or package:buildir()
-        return _g.buildir
+        _g.builddir = _g.builddir or package:builddir()
+        return _g.builddir
     end
 end
 
@@ -203,7 +206,7 @@ end
 -- get cross file
 function _get_configs_file(package, opt)
     opt = opt or {}
-    local configsfile = path.join(_get_buildir(package, opt), "configs_file.txt")
+    local configsfile = path.join(_get_builddir(package, opt), "configs_file.txt")
     if not os.isfile(configsfile) then
         local file = io.open(configsfile, "w")
         -- binaries
@@ -370,7 +373,7 @@ function _get_configs(package, configs, opt)
     end
 
     -- add build directory
-    table.insert(configs, _get_buildir(package, opt))
+    table.insert(configs, _get_builddir(package, opt))
     return configs
 end
 
@@ -567,9 +570,9 @@ function build(package, configs, opt)
     generate(package, configs, opt)
 
     -- configurate build
-    local buildir = _get_buildir(package, opt)
+    local builddir = _get_builddir(package, opt)
     local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
-    local argv = {"compile", "-C", buildir}
+    local argv = {"compile", "-C", builddir}
     if option.get("diagnosis") then
         table.insert(argv, "-v")
     end
@@ -589,8 +592,8 @@ function install(package, configs, opt)
     build(package, configs, opt)
 
     -- configure install
-    local buildir = _get_buildir(package, opt)
-    local argv = {"install", "-C", buildir}
+    local builddir = _get_builddir(package, opt)
+    local argv = {"install", "-C", builddir}
 
     -- do install
     local meson = assert(find_tool("meson"), "meson not found!")

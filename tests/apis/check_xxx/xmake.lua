@@ -3,7 +3,7 @@ includes("@builtin/check")
 target("foo")
     set_kind("static")
     add_files("foo.c")
-    add_includedirs("$(buildir)")
+    add_includedirs("$(builddir)")
     add_configfiles("config.h.in")
 
     check_bigendian("IS_BIG_ENDIAN")
