@@ -23,7 +23,7 @@
 # some constants
 #
 xmake_sh_projectdir=$(X= cd -- "$(dirname -- "$0")" && pwd -P)
-xmake_sh_buildir="build"
+xmake_sh_builddir="build"
 xmake_sh_version="1.0.5"
 xmake_sh_verbose=false
 xmake_sh_diagnosis=false
@@ -1499,7 +1499,7 @@ _get_targetdir() {
     local name="${1}"
     _get_target_item "${name}" "targetdir"; local targetdir="${_ret}"
     if test_z "${targetdir}"; then
-        targetdir="${xmake_sh_buildir}/${_target_plat}/${_target_arch}/${_target_mode}"
+        targetdir="${xmake_sh_builddir}/${_target_plat}/${_target_arch}/${_target_mode}"
     fi
     _ret="${targetdir}"
 }
@@ -1509,7 +1509,7 @@ _get_target_objectdir() {
     local name="${1}"
     _get_target_item "${name}" "objectdir"; local objectdir="${_ret}"
     if test_z "${objectdir}"; then
-        objectdir="${xmake_sh_buildir}/.objs/${name}/${_target_plat}/${_target_arch}/${_target_mode}"
+        objectdir="${xmake_sh_builddir}/.objs/${name}/${_target_plat}/${_target_arch}/${_target_mode}"
     fi
     _ret="${objectdir}"
 }
@@ -2786,7 +2786,7 @@ Common options:
                             - emcc
                             - tinycc
                             - cosmocc
-  --buildir=DIR           Set build directory. (default: '"${xmake_sh_buildir}"')
+  --builddir=DIR           Set build directory. (default: '"${xmake_sh_builddir}"')
 
 Autoconf options:
   --build=BUILD           Configure for building on BUILD [guessed]
@@ -2882,8 +2882,8 @@ _handle_option() {
     elif test_eq "${name}" "includedir"; then
         _install_includedir_default="${value}"
         return 0
-    elif test_eq "${name}" "buildir"; then
-        xmake_sh_buildir="${value}"
+    elif test_eq "${name}" "builddir" || test_eq "${name}" "buildir"; then
+        xmake_sh_builddir="${value}"
         return 0
     elif test_eq "${name}" "build"; then
         _autoconf_build_type="${value}"
@@ -3780,14 +3780,15 @@ _check_all() {
 _check_all
 
 #-----------------------------------------------------------------------------
-# init builtin variables, e.g. add_headerfiles "${buildir}/config.h"
+# init builtin variables, e.g. add_headerfiles "${builddir}/config.h"
 #
 projectdir="${xmake_sh_projectdir}"
-if path_is_absolute "${xmake_sh_buildir}"; then
-    buildir="${xmake_sh_buildir}"
+if path_is_absolute "${xmake_sh_builddir}"; then
+    builddir="${xmake_sh_builddir}"
 else
-    buildir="${xmake_sh_projectdir}/${xmake_sh_buildir}"
+    builddir="${xmake_sh_projectdir}/${xmake_sh_builddir}"
 fi
+buildir=${builddir} # deprecated
 plat="${_target_plat}"
 arch="${_target_arch}"
 mode="${_target_mode}"

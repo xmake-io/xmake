@@ -4,7 +4,7 @@ target "cli"
     add_deps "xmake"
     set_kind "binary"
     set_basename "xmake"
-    set_targetdir "${buildir}"
+    set_targetdir "${builddir}"
 
     # add definitions
     add_defines "__tb_prefix__=\"xmake\""
@@ -71,6 +71,6 @@ xmake_after_install() {
         print "\t@cp ${projectdir}/scripts/msys/xmake.sh ${installdir}/bin/xmake" >> "${xmake_sh_makefile}"
         print "\t@cp ${projectdir}/scripts/msys/xmake.cmd ${installdir}/bin/xmake.cmd" >> "${xmake_sh_makefile}"
         print "\t@cp ${projectdir}/scripts/msys/xmake.ps1 ${installdir}/bin/xmake.ps1" >> "${xmake_sh_makefile}"
-        print "\t@cp ${buildir}/xmake.exe ${installdir}/share/xmake" >> "${xmake_sh_makefile}"
+        print "\t@cp ${builddir}/xmake.exe ${installdir}/share/xmake" >> "${xmake_sh_makefile}"
     fi
 }
