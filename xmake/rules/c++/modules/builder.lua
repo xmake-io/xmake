@@ -235,22 +235,7 @@ function _is_duplicated_headerunit(target, key)
 end
 
 function _builder(target)
-    local cachekey = tostring(target)
-    local builder = support.memcache():get2("builder", cachekey)
-    if builder == nil then
-        if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
-            builder = import("clang.builder", {anonymous = true})
-        elseif target:has_tool("cxx", "gcc", "gxx") then
-            builder = import("gcc.builder", {anonymous = true})
-        elseif target:has_tool("cxx", "cl") then
-            builder = import("msvc.builder", {anonymous = true})
-        else
-            local _, toolname = target:tool("cxx")
-            raise("compiler(%s): does not support c++ module!", toolname)
-        end
-        support.memcache():set2("builder", cachekey, builder)
-    end
-    return builder
+    return support.import_implementation_of(target, "builder")
 end
 
 function mark_build(target, name)
