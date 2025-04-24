@@ -8,21 +8,21 @@
   </ImportGroup>
 
   <PropertyGroup Label="XmakePathsResolve">
-    <XmakeBuilDirResolved>$(XmakeBuilDir)</XmakeBuilDirResolved>
+    <XmakeBuilDDirResolved>$(XmakeBuilDDir)</XmakeBuilDDirResolved>
     <XmakeTargetDirResolved>$(XmakeTargetDir)</XmakeTargetDirResolved>
     <XmakeConfigDirResolved>$(XmakeConfigDir)</XmakeConfigDirResolved>
     <XmakeConfigFileDirResolved>$(XmakeConfigFileDir)</XmakeConfigFileDirResolved>
     <XmakeRunDirResolved>$(XmakeRunDir)</XmakeRunDirResolved>
 
     <!-- resolve if they are relative paths -->
-    <XmakeBuilDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeBuilDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeBuilDirResolved)'))</XmakeBuilDirResolved>
+    <XmakeBuilDDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeBuilDDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeBuilDDirResolved)'))</XmakeBuilDDirResolved>
     <XmakeTargetDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeTargetDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeTargetDirResolved)'))</XmakeTargetDirResolved>
     <XmakeConfigDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeConfigDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigDirResolved)'))</XmakeConfigDirResolved>
     <XmakeConfigFileDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeConfigFileDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigFileDirResolved)'))</XmakeConfigFileDirResolved>
     <XmakeRunDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeRunDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeRunDirResolved)'))</XmakeRunDirResolved>
 
     <!-- normalize paths -->
-    <XmakeBuilDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeBuilDirResolved)/'))</XmakeBuilDirResolved>
+    <XmakeBuilDDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeBuilDDirResolved)/'))</XmakeBuilDDirResolved>
     <XmakeTargetDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeTargetDirResolved)/'))</XmakeTargetDirResolved>
     <XmakeConfigDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeConfigDirResolved)/'))</XmakeConfigDirResolved>
     <XmakeConfigFileDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeConfigFileDirResolved)/'))</XmakeConfigFileDirResolved>
@@ -44,7 +44,7 @@
     <_XmakeCommonFlags Condition="$(XmakeDiagnosis)">-D $(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
     <_XmakeCommonFlags>-y $(_XmakeCommonFlags.Trim()) $(_XmakeProjectFlag)</_XmakeCommonFlags>
 
-    <_XmakeOutFlag>-o "$([MSBuild]::MakeRelative('$(XmakeProjectDirResolved)', '$(XmakeBuilDirResolved)').TrimEnd('\').TrimEnd('/'))"</_XmakeOutFlag>
+    <_XmakeOutFlag>-o "$([MSBuild]::MakeRelative('$(XmakeProjectDirResolved)', '$(XmakeBuilDDirResolved)').TrimEnd('\').TrimEnd('/'))"</_XmakeOutFlag>
 
     <_XmakeConfigFlags>$(XmakeConfigFlags.Trim())</_XmakeConfigFlags>
     <_XmakeConfigFlags>-p $(XmakePlat) -m $(XmakeMode) -a $(XmakeArch) $(_XmakeOutFlag) $(_XmakeConfigFlags.Trim())</_XmakeConfigFlags>
@@ -156,7 +156,7 @@ MSBuild Properties:
     XmakeProgramFile: $(XmakeProgramFile)
     XmakeProjectDir: $(XmakeProjectDir)
     XmakeScriptDir: $(XmakeScriptDir)
-    XmakeBuilDir: $(XmakeBuilDir)
+    XmakeBuilDDir: $(XmakeBuilDDir)
     XmakeTargetDir: $(XmakeTargetDir)
     XmakeConfigDir: $(XmakeConfigDir)
     XmakeConfigFileDir: $(XmakeConfigFileDir)
@@ -166,7 +166,7 @@ MSBuild Properties:
     XmakeProgramFile: $(XmakeProgramFileResolved)
     XmakeProjectDir: $(XmakeProjectDirResolved)
     XmakeScriptDir: $(XmakeScriptDirResolved)
-    XmakeBuilDir: $(XmakeBuilDirResolved)
+    XmakeBuilDDir: $(XmakeBuilDDirResolved)
     XmakeTargetDir: $(XmakeTargetDirResolved)
     XmakeConfigDir: $(XmakeConfigDirResolved)
     XmakeConfigFileDir: $(XmakeConfigFileDirResolved)

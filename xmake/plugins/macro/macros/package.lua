@@ -88,7 +88,7 @@ function main(argv)
         config.load()
         os.cd(project.directory())
 
-        local outputdir = args.outputdir or config.get("buildir")
+        local outputdir = args.outputdir or config.builddir()
         local targets = {}
         if option.get("target") then
             local target = project.target(option.get("target"))

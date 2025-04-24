@@ -100,10 +100,13 @@ end
 -- build package
 function build(package, configs, opt)
     opt = opt or {}
-    local buildir = opt.buildir or os.curdir()
+    local builddir = opt.builddir or opt.buildir or os.curdir()
+    if opt.buildir then
+        wprint("{buildir = } has been deprecated, please use {builddir = } in scons.install")
+    end
     local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
     local scons = assert(find_tool("scons"), "scons not found!")
-    local argv = {"-C", buildir, "-j", njob}
+    local argv = {"-C", builddir, "-j", njob}
     configs = _get_configs(package, configs)
     if configs then
         table.join2(argv, configs)

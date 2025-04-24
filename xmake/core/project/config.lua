@@ -78,6 +78,9 @@ function config.get(name)
             value = nil
         end
     end
+    if name == "buildir" then
+        utils.warning("`xmake f --buildir=` has been deprecated, please use `xmake f -o/--builddir=`")
+    end
     return value
 end
 
@@ -163,9 +166,6 @@ function config.builddir(opt)
     local builddir = config.get("builddir") or config.get("buildir") or "build"
     if not path.is_absolute(builddir) then
         builddir = path.absolute(builddir, rootdir)
-    end
-    if not config.get("builddir") and config.get("buildir") then
-        utils.warning("`xmake f --buildir=` has been deprecated, please use `xmake f -o/--builddir=`")
     end
 
     -- adjust path for the current directory

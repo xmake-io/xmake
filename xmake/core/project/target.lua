@@ -2229,9 +2229,9 @@ function _instance:dependfile(objectfile)
 
     -- get relative directory in the build directory
     if not relativedir then
-        local buildir = path.absolute(config.builddir())
-        if origindir:startswith(buildir) then
-            relativedir = path.join("build", path.relative(origindir, buildir))
+        local builddir = path.absolute(config.builddir())
+        if origindir:startswith(builddir) then
+            relativedir = path.join("build", path.relative(origindir, builddir))
         end
     end
 

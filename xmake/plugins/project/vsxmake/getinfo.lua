@@ -131,7 +131,7 @@ function _make_targetinfo(mode, arch, target)
 
     -- save dirs
     targetinfo.targetdir     = _make_dirs(target:get("targetdir"))
-    targetinfo.buildir       = _make_dirs(config.get("buildir"))
+    targetinfo.builddir      = _make_dirs(config.get("builddir") or config.get("buildir"))
     targetinfo.rundir        = _make_dirs(target:get("rundir"))
     targetinfo.configdir     = _make_dirs(os.getenv("XMAKE_CONFIGDIR"))
     targetinfo.configfiledir = _make_dirs(target:get("configdir"))
@@ -425,7 +425,7 @@ function main(outputdir, vsinfo)
     -- init config flags
     local flags = {}
     for k, v in table.orderpairs(localcache.get("config", "options")) do
-        if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "buildir" then
+        if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "builddir" and k ~= "buildir" then
             table.insert(flags, "--" .. k .. "=" .. tostring(v))
         end
     end

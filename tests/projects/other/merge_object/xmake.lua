@@ -5,7 +5,7 @@ target("merge_object")
     add_files("src/interface.c")
     set_policy("build.fence", true)
     after_build_file(function (target, sourcefile)
-        os.cp(target:objectfile(sourcefile), "$(buildir)/merge_object/")
+        os.cp(target:objectfile(sourcefile), "$(builddir)/merge_object/")
     end)
 
 target("test")
@@ -13,8 +13,8 @@ target("test")
     add_deps("merge_object")
     add_files("src/test.c")
     if is_plat("windows") then
-        add_files("$(buildir)/merge_object/interface.c.obj")
+        add_files("$(builddir)/merge_object/interface.c.obj")
     else
-        add_files("$(buildir)/merge_object/interface.c.o")
+        add_files("$(builddir)/merge_object/interface.c.o")
     end
 
