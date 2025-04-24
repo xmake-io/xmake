@@ -49,11 +49,11 @@ xpack("xmake")
                 else
                     url_curl = url_curl .. "-win32-mingw.zip"
                 end
-                local archive_7z = path.join(package:builddir(), "7z.zip")
-                local archive_curl = path.join(package:builddir(), "curl.zip")
-                local tmpdir_7z = path.join(package:builddir(), "7z")
-                local tmpdir_curl = path.join(package:builddir(), "curl")
-                local winenv_bindir = path.join(package:builddir(), "winenv", "bin")
+                local archive_7z = path.join(package:buildir(), "7z.zip")
+                local archive_curl = path.join(package:buildir(), "curl.zip")
+                local tmpdir_7z = path.join(package:buildir(), "7z")
+                local tmpdir_curl = path.join(package:buildir(), "curl")
+                local winenv_bindir = path.join(package:buildir(), "winenv", "bin")
                 os.mkdir(winenv_bindir)
                 http.download(url_7z, archive_7z, {insecure = global.get("insecure-ssl")})
                 archive.extract(archive_7z, tmpdir_7z)
