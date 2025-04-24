@@ -204,21 +204,21 @@ function core_sandbox_module._native_moduleinfo(module_fullpath, modulekind)
     local programdir = path.normalize(os.programdir())
     local modulename = path.basename(module_fullpath)
     local modulehash = hash.strhash32(projectdir)
-    local buildir
+    local builddir
     local is_global = false
     local modulepath
     if projectdir:startswith(programdir) then
         is_global = true
-        buildir = path.join(global.directory(), "cache", "modules", modulehash)
+        builddir = path.join(global.directory(), "cache", "modules", modulehash)
         modulepath = path.join("@programdir", path.relative(projectdir, programdir))
     elseif os.isfile(os.projectfile()) then
-        buildir = path.join(config.directory(), "cache", "modules", modulehash)
+        builddir = path.join(config.directory(), "cache", "modules", modulehash)
         modulepath = path.relative(projectdir, os.projectdir())
     else
-        buildir = path.join(projectdir, "cache", "modules", modulehash)
+        builddir = path.join(projectdir, "cache", "modules", modulehash)
         modulepath = projectdir
     end
-    return {buildir = buildir, projectdir = projectdir, is_global = is_global, modulename = modulename, modulekind = modulekind, modulepath = modulepath}
+    return {builddir = builddir, projectdir = projectdir, is_global = is_global, modulename = modulename, modulekind = modulekind, modulepath = modulepath}
 end
 
 -- build module
@@ -232,10 +232,10 @@ function core_sandbox_module._build_module(moduleinfo)
         return nil, "unknown module kind!"
     end
     utils.cprint("${color.build.target}building native %s module(%s) in %s ...", modulekind_str, moduleinfo.modulename, moduleinfo.modulepath)
-    local buildir = moduleinfo.buildir
+    local builddir = moduleinfo.builddir
     local projectdir = moduleinfo.projectdir
-    local envs = {XMAKE_CONFIGDIR = buildir}
-    local argv = {"config", "-o", buildir, "-a", xmake.arch()}
+    local envs = {XMAKE_CONFIGDIR = builddir}
+    local argv = {"config", "-o", builddir, "-a", xmake.arch()}
     core_sandbox_module._add_builtin_argv(argv, projectdir)
     local ok, errors = os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
     if ok ~= 0 then
@@ -254,7 +254,7 @@ end
 function core_sandbox_module._load_from_binary(module_fullpath, opt)
     opt = opt or {}
     local moduleinfo = core_sandbox_module._native_moduleinfo(module_fullpath, MODULE_KIND_BINARY)
-    local binaryfiles = os.files(path.join(moduleinfo.buildir, "module_*"))
+    local binaryfiles = os.files(path.join(moduleinfo.builddir, "module_*"))
     if #binaryfiles == 0 or (not moduleinfo.is_global and opt.always_build) then
         local ok, errors = core_sandbox_module._build_module(moduleinfo)
         if not ok then
@@ -264,7 +264,7 @@ function core_sandbox_module._load_from_binary(module_fullpath, opt)
     end
     local module
     if #binaryfiles == 0 then
-        binaryfiles = os.files(path.join(moduleinfo.buildir, "module_*"))
+        binaryfiles = os.files(path.join(moduleinfo.builddir, "module_*"))
     end
     if #binaryfiles > 0 then
         module = {}
@@ -297,7 +297,7 @@ end
 function core_sandbox_module._load_from_shared(module_fullpath, opt)
     opt = opt or {}
     local moduleinfo = core_sandbox_module._native_moduleinfo(module_fullpath, MODULE_KIND_SHARED)
-    local libraryfiles = os.files(path.join(moduleinfo.buildir, "*module_*"))
+    local libraryfiles = os.files(path.join(moduleinfo.builddir, "*module_*"))
     if #libraryfiles == 0 or (not moduleinfo.is_global and opt.always_build) then
         local ok, errors = core_sandbox_module._build_module(moduleinfo)
         if not ok then
@@ -307,7 +307,7 @@ function core_sandbox_module._load_from_shared(module_fullpath, opt)
     end
     local module
     if #libraryfiles == 0 then
-        libraryfiles = os.files(path.join(moduleinfo.buildir, "*module_*"))
+        libraryfiles = os.files(path.join(moduleinfo.builddir, "*module_*"))
     end
     if #libraryfiles > 0 then
         local script, errors1, errors2

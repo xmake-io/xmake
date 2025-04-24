@@ -31,7 +31,7 @@ function _get_buildir(package, opt)
     if opt and opt.buildir then
         return opt.buildir
     else
-        _g.buildir = _g.buildir or package:buildir()
+        _g.buildir = _g.buildir or package:builddir()
         return _g.buildir
     end
 end

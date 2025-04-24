@@ -315,7 +315,7 @@ function _get_configs(package, configs, opt)
     if shflags and #shflags > 0 then
         table.insert(configs, "--shflags=" .. table.concat(shflags, ' '))
     end
-    local buildir = opt.buildir or package:buildir()
+    local buildir = opt.buildir or package:builddir()
     if buildir then
         table.insert(configs, "--buildir=" .. buildir)
     end

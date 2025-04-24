@@ -52,7 +52,7 @@ end
 function _load_package(package)
 
     -- ensure build and output directories
-    os.tryrm(package:buildir())
+    os.tryrm(package:builddir())
     os.mkdir(package:outputdir())
 
     -- load it

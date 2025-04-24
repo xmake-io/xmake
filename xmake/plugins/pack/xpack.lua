@@ -256,8 +256,14 @@ function xpack:with_binary()
 end
 
 -- get the build directory
-function xpack:buildir()
+function xpack:builddir()
     return path.join(config.builddir(), ".xpack", self:name())
+end
+
+-- get the build directory (deprecated)
+function xpack:buildir()
+    wprint("xpack:buildir() has been deprecated, please use xpack:builddir()")
+    return self:builddir()
 end
 
 -- get the output directory
@@ -420,7 +426,7 @@ end
 -- get the installed root directory, this is just a temporary sandbox installation path,
 -- we may replace it with the actual installation path in the specfile
 function xpack:install_rootdir()
-    return path.join(self:buildir(), "installed", self:format())
+    return path.join(self:builddir(), "installed", self:format())
 end
 
 -- get the installed directory
@@ -440,7 +446,7 @@ end
 
 -- get the source root directory
 function xpack:source_rootdir()
-    return path.join(self:buildir(), "source", self:format())
+    return path.join(self:builddir(), "source", self:format())
 end
 
 -- get the source directory

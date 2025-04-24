@@ -984,7 +984,7 @@ end
 
 -- enter build directory
 function _enter_buildir(package, opt)
-    local buildir = opt.buildir or package:buildir()
+    local buildir = opt.buildir or package:builddir()
     os.mkdir(path.join(buildir, "install"))
     return os.cd(buildir)
 end

@@ -80,7 +80,7 @@ end
 -- do clean
 function server_session:clean()
     vprint("%s: clean files in %s ..", self, self:workdir())
-    os.tryrm(self:buildir())
+    os.tryrm(self:builddir())
     os.tryrm(self:cachedir())
     vprint("%s: clean files ok", self)
 end
@@ -93,7 +93,7 @@ function server_session:compile(respmsg)
     local stream = self:stream()
     local cachekey = body.cachekey
     local sourcename = body.sourcename
-    local sourcedir = path.join(self:buildir(), (hash.uuid4():gsub("-", "")))
+    local sourcedir = path.join(self:builddir(), (hash.uuid4():gsub("-", "")))
     local sourcefile = path.join(sourcedir, sourcename)
     local objectfile = (cachekey and path.join(self:cachedir(), cachekey:sub(1, 2), cachekey) or sourcefile) .. ".o"
     local objectfile_infofile = objectfile .. ".txt"
@@ -192,7 +192,7 @@ function server_session:workdir()
 end
 
 -- get build directory
-function server_session:buildir()
+function server_session:builddir()
     return path.join(self:workdir(), "build")
 end
 

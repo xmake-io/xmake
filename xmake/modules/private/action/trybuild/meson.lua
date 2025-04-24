@@ -26,13 +26,13 @@ import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
 -- get build directory
-function _get_buildir()
+function _get_builddir()
     return config.builddir() or "build"
 end
 
 -- get artifacts directory
 function _get_artifacts_dir()
-    return path.absolute(path.join(_get_buildir(), "artifacts"))
+    return path.absolute(path.join(_get_builddir(), "artifacts"))
 end
 
 -- is cross compilation?
@@ -73,8 +73,8 @@ function _get_buildenv(key)
 end
 
 -- get cross file
-function _get_cross_file(buildir)
-    local crossfile = path.join(buildir, "cross_file.txt")
+function _get_cross_file(builddir)
+    local crossfile = path.join(builddir, "cross_file.txt")
     if not os.isfile(crossfile) then
         local file = io.open(crossfile, "w")
         -- binaries
@@ -209,7 +209,7 @@ function _get_cross_file(buildir)
 end
 
 -- get configs
-function _get_configs(artifacts_dir, buildir)
+function _get_configs(artifacts_dir, builddir)
 
     -- add prefix
     local configs = {"--prefix=" .. artifacts_dir}
@@ -227,11 +227,11 @@ function _get_configs(artifacts_dir, buildir)
 
     -- add cross file
     if _is_cross_compilation() then
-        table.insert(configs, "--cross-file=" .. _get_cross_file(buildir))
+        table.insert(configs, "--cross-file=" .. _get_cross_file(builddir))
     end
 
     -- add build directory
-    table.insert(configs, buildir)
+    table.insert(configs, builddir)
     return configs
 end
 
@@ -242,12 +242,12 @@ end
 
 -- do clean
 function clean()
-    local buildir = _get_buildir()
-    if os.isdir(buildir) then
-        local configfile = find_file("build.ninja", buildir)
+    local builddir = _get_builddir()
+    if os.isdir(builddir) then
+        local configfile = find_file("build.ninja", builddir)
         if configfile then
             local ninja = assert(find_tool("ninja"), "ninja not found!")
-            local ninja_argv = {"-C", buildir}
+            local ninja_argv = {"-C", builddir}
             if option.get("verbose") or option.get("diagnosis") then
                 table.insert(ninja_argv, "-v")
             end
@@ -255,7 +255,7 @@ function clean()
             table.insert(ninja_argv, "clean")
             os.vexecv(ninja.program, ninja_argv)
             if option.get("all") then
-                os.tryrm(buildir)
+                os.tryrm(builddir)
             end
         end
     end
@@ -271,16 +271,16 @@ function build()
     end
 
     -- generate makefile
-    local buildir = _get_buildir()
+    local builddir = _get_builddir()
     local meson = assert(find_tool("meson"), "meson not found!")
-    local configfile = find_file("build.ninja", buildir)
+    local configfile = find_file("build.ninja", builddir)
     if not configfile or os.mtime(config.filepath()) > os.mtime(configfile) then
-        os.vexecv(meson.program, _get_configs(artifacts_dir, buildir))
+        os.vexecv(meson.program, _get_configs(artifacts_dir, builddir))
     end
 
     -- do build
     local ninja = assert(find_tool("ninja"), "ninja not found!")
-    local ninja_argv = {"-C", buildir}
+    local ninja_argv = {"-C", builddir}
     if option.get("verbose") then
         table.insert(ninja_argv, "-v")
     end
