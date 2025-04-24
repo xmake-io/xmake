@@ -30,7 +30,7 @@ rule("wdk.package.cab")
         import("lib.detect.find_program")
 
         -- the output directory
-        local outputdir = path.join(option.get("outputdir") or config.buildir(), "drivers", target:name())
+        local outputdir = path.join(option.get("outputdir") or config.builddir(), "drivers", target:name())
         local mode = config.mode()
         if mode then
             outputdir = path.join(outputdir, mode)

@@ -257,14 +257,14 @@ end
 
 -- get the build directory
 function xpack:buildir()
-    return path.join(config.buildir(), ".xpack", self:name())
+    return path.join(config.builddir(), ".xpack", self:name())
 end
 
 -- get the output directory
 function xpack:outputdir()
     local outputdir = option.get("outputdir")
     if outputdir == nil then
-        outputdir = path.join(config.buildir(), "xpack", self:name())
+        outputdir = path.join(config.builddir(), "xpack", self:name())
     end
     return outputdir
 end

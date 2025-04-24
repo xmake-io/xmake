@@ -43,7 +43,7 @@ rule("plugin.compile_commands.autoupdate")
         end
 
         -- run only once for all xmake process
-        local tmpfile = path.join(config.buildir(), ".gens", "rules", "plugin.compile_commands.autoupdate")
+        local tmpfile = path.join(config.builddir(), ".gens", "rules", "plugin.compile_commands.autoupdate")
         local dependfile = tmpfile .. ".d"
         local lockfile = io.openlock(tmpfile .. ".lock")
         if lockfile:trylock() then

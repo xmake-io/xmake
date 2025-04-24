@@ -277,7 +277,7 @@ function main(target, opt)
     end
     local plugins = target:values("qt.plugins")
     if plugins then
-        local importfile = path.join(config.buildir(), ".qt", "plugin", target:name(), "static_import.cpp")
+        local importfile = path.join(config.builddir(), ".qt", "plugin", target:name(), "static_import.cpp")
         local file = io.open(importfile, "w")
         if file then
             file:print("#include <QtPlugin>")

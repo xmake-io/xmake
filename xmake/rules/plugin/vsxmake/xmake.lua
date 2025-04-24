@@ -39,7 +39,7 @@ rule("plugin.vsxmake.autoupdate")
         import("core.base.task")
 
         -- run only once for all xmake process in vs
-        local tmpfile = path.join(config.buildir(), ".gens", "rules", "plugin.vsxmake.autoupdate")
+        local tmpfile = path.join(config.builddir(), ".gens", "rules", "plugin.vsxmake.autoupdate")
         local dependfile = tmpfile .. ".d"
         local lockfile = io.openlock(tmpfile .. ".lock")
         local kind = localcache.get("vsxmake", "kind")

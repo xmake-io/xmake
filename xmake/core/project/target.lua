@@ -1418,7 +1418,7 @@ function _instance:objectdir(opt)
     -- the object directory
     local objectdir = self:get("objectdir")
     if not objectdir then
-        objectdir = path.join(config.buildir(), ".objs")
+        objectdir = path.join(config.builddir(), ".objs")
     end
     local namespace = self:namespace()
     if namespace then
@@ -1455,7 +1455,7 @@ function _instance:dependir(opt)
     -- init the dependent directory
     local dependir = self:get("dependir")
     if not dependir then
-        dependir = path.join(config.buildir(), ".deps")
+        dependir = path.join(config.builddir(), ".deps")
     end
     local namespace = self:namespace()
     if namespace then
@@ -1492,7 +1492,7 @@ function _instance:autogendir(opt)
     -- init the autogen directory
     local autogendir = self:get("autogendir")
     if not autogendir then
-        autogendir = path.join(config.buildir(), ".gens")
+        autogendir = path.join(config.builddir(), ".gens")
     end
     local namespace = self:namespace()
     if namespace then
@@ -1572,7 +1572,7 @@ end
 
 -- get the default target directory
 function _instance:_default_targetdir()
-    local targetdir = config.buildir()
+    local targetdir = config.builddir()
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
@@ -1729,7 +1729,7 @@ end
 
 -- get configuration output directory
 function _instance:configdir()
-    return self:get("configdir") or config.buildir()
+    return self:get("configdir") or config.builddir()
 end
 
 -- get run directory
@@ -1792,7 +1792,7 @@ end
 -- get package directory
 function _instance:packagedir()
     -- get the output directory
-    local outputdir   = baseoption.get("outputdir") or config.buildir()
+    local outputdir   = baseoption.get("outputdir") or config.builddir()
     local packagename = self:name():lower()
     if #packagename > 1 and bit.band(packagename:byte(2), 0xc0) == 0x80 then
         utils.warning("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
@@ -2229,7 +2229,7 @@ function _instance:dependfile(objectfile)
 
     -- get relative directory in the build directory
     if not relativedir then
-        local buildir = path.absolute(config.buildir())
+        local buildir = path.absolute(config.builddir())
         if origindir:startswith(buildir) then
             relativedir = path.join("build", path.relative(origindir, buildir))
         end

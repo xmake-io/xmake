@@ -52,7 +52,7 @@ function _add_watchdirs()
     elseif os.isfile(os.projectfile()) then
         watchdirs = os.dirs(path.join(os.projectdir(), "*|.*"))
         for _, watchdir in ipairs(watchdirs) do
-            local buildir = path.absolute(config.buildir())
+            local buildir = path.absolute(config.builddir())
             if path.absolute(watchdir) ~= buildir then
                 _add_watchdir(watchdir, {recursion = true})
             end

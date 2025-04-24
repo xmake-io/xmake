@@ -140,9 +140,9 @@ function config.options()
     return configs
 end
 
--- get the buildir
+-- get the builddir
 -- we can use `{absolute = true}` to force to get absolute path
-function config.buildir(opt)
+function config.builddir(opt)
 
     -- get the absolute path first
     opt = opt or {}
@@ -160,16 +160,25 @@ function config.buildir(opt)
     if not rootdir then
         rootdir = os.projectdir()
     end
-    local buildir = config.get("buildir") or "build"
-    if not path.is_absolute(buildir) then
-        buildir = path.absolute(buildir, rootdir)
+    local builddir = config.get("builddir") or config.get("buildir") or "build"
+    if not path.is_absolute(builddir) then
+        builddir = path.absolute(builddir, rootdir)
+    end
+    if not config.get("builddir") and config.get("buildir") then
+        utils.warning("`xmake f --buildir=` has been deprecated, please use `xmake f -o/--builddir=`")
     end
 
     -- adjust path for the current directory
     if not opt.absolute then
-        buildir = path.relative(buildir, os.curdir())
+        builddir = path.relative(builddir, os.curdir())
     end
-    return buildir
+    return builddir
+end
+
+-- get build directory (deprecated)
+function config.buildir(opt)
+    utils.warning("config.buildir() has been deprecated, please use config.builddir()")
+    return config.builddir(opt)
 end
 
 -- get the configure file

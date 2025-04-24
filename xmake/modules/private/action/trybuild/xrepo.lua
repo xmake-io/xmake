@@ -28,7 +28,7 @@ import("private.action.require.impl.search_packages")
 
 -- get build directory
 function _get_buildir()
-    return config.buildir() or "build"
+    return config.builddir() or "build"
 end
 
 -- get artifacts directory

@@ -46,7 +46,7 @@ end
 
 -- get build directory
 function _conan_get_build_directory(name)
-    return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name))
+    return path.absolute(path.join(config.builddir() or os.tmpdir(), ".conan", name))
 end
 
 -- generate conanfile.txt

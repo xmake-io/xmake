@@ -51,7 +51,7 @@ end
 -- load module mapper
 function _load_module_mapper(target)
     local mapper = {}
-    local mapperfile = path.join(config.buildir(), target:name(), "mapper.txt")
+    local mapperfile = path.join(config.builddir(), target:name(), "mapper.txt")
     for line in io.lines(mapperfile) do
         local moduleinfo = line:split(" ", {plain = true})
         if #moduleinfo == 2 then

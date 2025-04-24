@@ -27,7 +27,7 @@ import("lib.detect.find_tool")
 
 -- get build directory
 function _get_buildir()
-    return config.buildir() or "build"
+    return config.builddir() or "build"
 end
 
 -- get artifacts directory

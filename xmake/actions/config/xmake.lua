@@ -244,7 +244,8 @@ task("config")
                     {nil, "tryconfigs", "kv", nil       ,   "Set the extra configurations of the third-party buildsystem for the try-build mode.",
                                                             "e.g.",
                                                             "    - xmake f --trybuild=autoconf --tryconfigs='--enable-shared=no'"},
-                    {'o', "buildir",    "kv", "build"   , "Set build directory."},
+                    {'o', "builddir",   "kv", "build"   , "Set build directory."},
+                    {nil, "buildir",    "kv", "build"   , "Set build directory. (deprecated)"},
                     {},
                     {category = "Project Configuration"},
                     _project_menu_options}}
