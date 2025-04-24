@@ -78,9 +78,6 @@ function config.get(name)
             value = nil
         end
     end
-    if name == "buildir" then
-        utils.warning("`xmake f --buildir=` has been deprecated, please use `xmake f -o/--builddir=`")
-    end
     return value
 end
 
