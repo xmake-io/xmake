@@ -25,6 +25,10 @@ function main(target)
     -- we disable to build across targets in parallel, because the source files may depend on other target modules
     -- @see https://github.com/xmake-io/xmake/issues/1858
     if support.contains_modules(target) then
+
+        -- unity build can't work with modules
+        assert(not target:rule("c++.unity_build"), "C++ unity build is not compatible with C++ modules")
+
         -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
         -- even if some sub-targets do not contain C++ modules.
         --
@@ -44,6 +48,26 @@ function main(target)
 
         -- mark this target with modules
         target:data_set("cxx.has_modules", true)
+
+        -- warn about deprecated policies
+        if target:policy("build.c++.gcc.modules.cxx11abi") then
+            wprint("build.c++.gcc.modules.cxx11abi is deprecated, please use build.c++.modules.gcc.cxx11abi")
+        end
+        if target:policy("build.c++.clang.fallbackscanner") then
+            wprint("build.c++.clang.fallbackscanner is deprecated, please use build.c++.modules.clang.fallbackscanner")
+        end
+        if target:policy("build.c++.gcc.fallbackscanner") then
+            wprint("build.c++.gcc.fallbackscanner is deprecated, please use build.c++.modules.gcc.fallbackscanner")
+        end
+        if target:policy("build.c++.msvc.fallbackscanner") then
+            wprint("build.c++.msvc.fallbackscanner is deprecated, please use build.c++.modules.msvc.fallbackscanner")
+        end
+        if target:policy("build.c++.modules.tryreuse") then
+            wprint("build.c++.modules.tryreuse is deprecated, please use build.c++.modules.reuse")
+        end
+        if target:policy("build.c++.modules.tryreuse.discriminate_on_defines") then
+            wprint("build.c++.modules.tryreuse.discriminate_on_defines is deprecated, please use build.c++.modules.reuse.strict")
+        end
 
         -- moduleonly modules are implicitly public
         if target:is_moduleonly() then

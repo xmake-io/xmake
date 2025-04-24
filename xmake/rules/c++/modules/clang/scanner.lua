@@ -32,7 +32,9 @@ function generate_dependency_for(target, sourcefile, opt)
     local changed = false
     local dependfile = target:dependfile(sourcefile)
     local flags = compinst:compflags({sourcefile = sourcefile, target = target}) or {}
-    local fileconfig = target:fileconfig(sourcefile)
+    local fallbackscanner = target:policy("build.c++.modules.fallbackscanner") or
+                            target:policy("build.c++.modules.clang.fallbackscanner") or
+                            target:policy("build.c++.clang.fallbackscanner")
 
     depend.on_changed(function()
         if opt.progress then
@@ -42,7 +44,7 @@ function generate_dependency_for(target, sourcefile, opt)
         local outputdir = support.get_outputdir(target, sourcefile)
         local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
         local has_clangscandepssupport = support.has_clangscandepssupport(target)
-        if has_clangscandepssupport and not target:policy("build.c++.clang.fallbackscanner") then
+        if has_clangscandepssupport and not fallbackscanner then
             -- We need absolute path of clang to use clang-scan-deps
             -- See https://clang.llvm.org/docs/StandardCPlusPlusModules.html#possible-issues-failed-to-find-system-headers
             local clang_path = compinst:program()
