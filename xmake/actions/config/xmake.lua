@@ -245,7 +245,7 @@ task("config")
                                                             "e.g.",
                                                             "    - xmake f --trybuild=autoconf --tryconfigs='--enable-shared=no'"},
                     {'o', "builddir",   "kv", "build"   , "Set build directory."},
-                    {nil, "buildir",    "kv", "build"   , "Set build directory. (deprecated)"},
+                    {nil, "buildir",    "kv", nil       , "Set build directory. (deprecated)"},
                     {},
                     {category = "Project Configuration"},
                     _project_menu_options}}
