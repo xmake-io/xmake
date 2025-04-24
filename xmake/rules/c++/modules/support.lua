@@ -26,22 +26,27 @@ import("core.project.project")
 import("core.project.config")
 
 function _support(target)
+    return import_implementation_of(target, "support")
+end
+
+function import_implementation_of(target, name)
+
     local cachekey = tostring(target)
-    local support = memcache():get2("support", cachekey)
-    if support == nil then
+    local implementation = memcache():get2(name, cachekey)
+    if implementation == nil then
         if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
-            support = import("clang.support", {anonymous = true})
+            implementation = import("clang." .. name, {anonymous = true})
         elseif target:has_tool("cxx", "gcc", "gxx") then
-            support = import("gcc.support", {anonymous = true})
+            implementation = import("gcc." .. name, {anonymous = true})
         elseif target:has_tool("cxx", "cl") then
-            support = import("msvc.support", {anonymous = true})
+            implementation = import("msvc." .. name, {anonymous = true})
         else
             local _, toolname = target:tool("cxx")
-            raise("compiler(%s): does not support c++ module!", toolname)
+            raise("compiler(%s): does not implementation c++ module!", toolname)
         end
-        memcache():set2("support", cachekey, support)
+        memcache():set2(name, cachekey, implementation)
     end
-    return support
+    return implementation
 end
 
 -- load module support for the current target

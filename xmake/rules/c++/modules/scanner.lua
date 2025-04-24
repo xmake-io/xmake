@@ -28,22 +28,7 @@ import("support")
 import("stlheaders")
 
 function _scanner(target)
-    local cachekey = tostring(target)
-    local scanner = support.memcache():get2("scanner", cachekey)
-    if scanner == nil then
-        if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
-            scanner = import("clang.scanner", {anonymous = true})
-        elseif target:has_tool("cxx", "gcc", "gxx") then
-            scanner = import("gcc.scanner", {anonymous = true})
-        elseif target:has_tool("cxx", "cl") then
-            scanner = import("msvc.scanner", {anonymous = true})
-        else
-            local _, toolname = target:tool("cxx")
-            raise("compiler(%s): does not support c++ module!", toolname)
-        end
-        support.memcache():set2("scanner", cachekey, scanner)
-    end
-    return scanner
+    return support.import_implementation_of(target, "scanner")
 end
 
 function _parse_meta_info(target, metafile)
