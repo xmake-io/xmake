@@ -1313,7 +1313,10 @@ function configure(package, configs, opt)
     -- pass configurations
     local argv = {}
     for name, value in pairs(_get_configs(package, configs, opt)) do
-        value = tostring(value):trim()
+        -- deal with string like -DCMAKE_C_FLAGS="-mcpu=cortex-a7 -mfloat-abi=softfp -mfpu=neon-vfpv4 -fPIC"
+        -- use -DCMAKE_C_FLAGS='-mcpu=cortex-a7 -mfloat-abi=softfp -mfpu=neon-vfpv4 -fPIC' instead
+        -- https://github.com/xmake-io/xmake/issues/6363
+        value = tostring(value):trim():replace("\"","\'")
         if type(name) == "number" then
             if value ~= "" then
                 table.insert(argv, value)
