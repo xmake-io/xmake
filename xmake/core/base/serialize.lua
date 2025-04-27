@@ -25,11 +25,25 @@ local stub       = serialize._stub or {}
 serialize._stub  = stub
 serialize._dump  = serialize._dump or string._dump or string.dump
 serialize._BCTAG = xmake._LUAJIT and "\27LJ" or "\27Lua"
+stub.isstub      = setmetatable({}, { __tostring = function() return "stub indentifier" end })
+stub.__index     = stub
 
 -- load modules
 local math      = require("base/math")
 local table     = require("base/table")
 local hashset   = require("base/hashset")
+
+function stub:__call(root, fenv)
+    return self.resolver(root, fenv, table.unpack(self.params, 1, self.params.n))
+end
+
+function stub:__tostring()
+    local fparams = {}
+    for i = 1, self.params.n do
+        fparams[i] = serialize._make(self.params[i], {})
+    end
+    return string.format("%s(%s)", self.name, table.concat(fparams, ", "))
+end
 
 -- reserved keywords in lua
 function serialize._keywords()
@@ -339,22 +353,6 @@ function serialize.save(obj, opt)
     return (#dump < #result) and dump or result
 end
 
--- init stub metatable
-stub.isstub      = setmetatable({}, { __tostring = function() return "stub indentifier" end })
-stub.__index     = stub
-
-function stub:__call(root, fenv)
-    return self.resolver(root, fenv, table.unpack(self.params, 1, self.params.n))
-end
-
-function stub:__tostring()
-    local fparams = {}
-    for i = 1, self.params.n do
-        fparams[i] = serialize._make(self.params[i], {})
-    end
-    return string.format("%s(%s)", self.name, table.concat(fparams, ", "))
-end
-
 -- called by functions in deserialize environment
 -- create a function (called stub) to finish deserialization
 function serialize._createstub(name, resolver, env, ...)
@@ -408,23 +406,13 @@ end
 
 -- create a env for deserialze load() call
 function serialize._createenv()
-
-    -- init env
     local env = { nan = math.nan, inf = math.huge }
-
-    -- resolve reference
     function env.ref(...)
-        -- load ref
         return serialize._createstub("ref", serialize._resolveref, env, ...)
     end
-
-    -- load function
     function env.func(...)
-        -- load func
         return serialize._createstub("func", serialize._resolvefunction, env, ...)
     end
-
-    -- return new env
     return env
 end
 
@@ -442,7 +430,6 @@ function serialize._load(str)
     local env = serialize._createenv()
     local script, errors = load(str, binary and "=(b)" or "=(t)", binary and "b" or "t", env)
     if script then
-        -- load obj
         local ok, obj = pcall(script)
         if ok then
             result = obj
@@ -451,7 +438,6 @@ function serialize._load(str)
                 result, errors = serialize._resolvestub(result, result, fenv, "<root>")
             end
         else
-            -- error
             errors = tostring(obj)
         end
     end
