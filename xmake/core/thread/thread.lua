@@ -93,7 +93,8 @@ function _instance:start()
 
     -- serialize and pass callback and arguments to this thread
     -- we do not use string.serialize to serialize callback, because it's slower (deserialize)
-    local callinfo = string._dump(self._CALLBACK, true)
+    -- and we cannot strip function debug info, we need to reserve _ENV, and other upvalue names
+    local callinfo = string._dump(self._CALLBACK)
     local argv = self._ARGV
     if argv ~= nil then
         callinfo = string.serialize(argv, {strip = true, indent = false}) .. "<Argv\27>" .. callinfo
@@ -217,10 +218,10 @@ function thread._run_thread(callinfo_str)
     end
 
     -- load callback
-    local fenv = debug.getfenv(debug.getinfo(2, "f").func)
     local callback
+    local fenvs = {}
     if callback_str then
-        local script, errors = load(callback_str, "=(thread)", "b", fenv)
+        local script, errors = load(callback_str, "=(thread)", "b", fenvs)
         if not script then
             return false, string.format("cannot load thread callback, %s!", errors or "unknown")
         end
