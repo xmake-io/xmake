@@ -41,7 +41,7 @@ local project       = require("project/project")
 local localcache    = require("cache/localcache")
 local profiler      = require("base/profiler")
 local debugger      = require("base/debugger")
-local sandbox       = require("sandbox/sandbox")
+local thread        = require("thread/thread")
 
 -- init the option menu
 local menu =
@@ -275,31 +275,6 @@ function main._run_task(taskname)
     return true
 end
 
--- run thread
-function main._run_thread(callinfo_str)
-
-    -- get callback info
-    local callinfo, errors = string.deserialize(callinfo_str)
-    if not callinfo then
-        return false, string.format("invalid thread callinfo, %s!", errors or "unknown")
-    end
-    local callback = callinfo.callback
-    if not callback then
-        return false, string.format("no callback")
-    end
-
-    -- bind sandbox
---    local sandbox_inst, errors = sandbox.new(callback, {
---        filter = interp:filter(), rootdir = interp:rootdir(), namespace = interp:namespace()})
-    local sandbox_inst, errors = sandbox.new(callback)
-    if not sandbox_inst then
-        return false, errors
-    end
-
-    -- do callback
-    return sandbox.load(sandbox_inst:script(), table.unpack(callinfo.argv or {}))
-end
-
 -- the main entry function
 function main.entry()
 
@@ -362,7 +337,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     -- run task or thread
     local thread_callinfo = xmake._THREAD_CALLINFO
     if thread_callinfo then
-        ok, errors = main._run_thread(thread_callinfo)
+        ok, errors = thread._run_thread(thread_callinfo)
     else
         ok, errors = main._run_task(option.taskname() or "build")
     end
