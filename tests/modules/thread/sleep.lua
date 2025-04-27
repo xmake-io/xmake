@@ -1,7 +1,7 @@
 import("core.thread.thread")
 
 function callback(id)
-    print(import)
+    print("import", import)
     --[[
     import("core.thread.thread")
     print("%s: %d starting ..", thread.running(), id)
