@@ -23,11 +23,12 @@ local thread      = thread or {}
 local _instance   = _instance or {}
 
 -- load modules
-local io        = require("base/io")
-local libc      = require("base/libc")
-local bytes     = require("base/bytes")
-local table     = require("base/table")
-local string    = require("base/string")
+local io      = require("base/io")
+local libc    = require("base/libc")
+local bytes   = require("base/bytes")
+local table   = require("base/table")
+local string  = require("base/string")
+local sandbox = require("sandbox/sandbox")
 
 -- the thread status
 thread.STATUS_READY     = 1
@@ -199,6 +200,31 @@ end
 -- get the running thread
 function thread.running()
     -- TODO
+end
+
+-- run thread
+function thread._run_thread(callinfo_str)
+
+    -- get callback info
+    local callinfo, errors = string.deserialize(callinfo_str)
+    if not callinfo then
+        return false, string.format("invalid thread callinfo, %s!", errors or "unknown")
+    end
+    local callback = callinfo.callback
+    if not callback then
+        return false, string.format("no callback")
+    end
+
+    -- bind sandbox
+--    local sandbox_inst, errors = sandbox.new(callback, {
+--        filter = interp:filter(), rootdir = interp:rootdir(), namespace = interp:namespace()})
+    local sandbox_inst, errors = sandbox.new(callback)
+    if not sandbox_inst then
+        return false, errors
+    end
+
+    -- do callback
+    return sandbox.load(sandbox_inst:script(), table.unpack(callinfo.argv or {}))
 end
 
 -- return module
