@@ -81,7 +81,7 @@ function _get_all_depends_by_objdump(binaryfile, opt)
                 else
                     if line:startswith("NEEDED") then
                         local filename = line:split("%s+")[2]
-                        if filename and filename:endswith(".so") or filename:find("%.so%.%d+$") then
+                        if filename and filename:endswith(".so") or filename:find("%.so[%.%d+]+$") then
                             depends = depends or {}
                             table.insert(depends, filename)
                         end
@@ -122,7 +122,7 @@ function _get_all_depends_by_ldd(binaryfile, opt)
                     line = splitinfo[1]
                 end
                 line = line:gsub("%(.+%)", ""):trim()
-                local filename = line:match(".-%.so$") or line:match(".-%.so%.%d+")
+                local filename = line:match(".-%.so$") or line:match(".-%.so[%.%d+]+$")
                 if filename then
                     depends = depends or {}
                     table.insert(depends, filename:trim())
