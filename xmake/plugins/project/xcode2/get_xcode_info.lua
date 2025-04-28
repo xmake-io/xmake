@@ -64,25 +64,38 @@ function _add_PBXGroup(xcinfo, name, sourceTree)
     return uuid
 end
 
-function _add_XCBuildConfiguration(xcinfo, mode)
+-- target may be nil.
+function _add_XCBuildConfiguration(xcinfo, mode, target)
     local obj = {}
     obj.name = mode
     obj.buildSettings = {}
     -- This allows scripts to read/write files that are not in the Input/Output list of
     -- the phase.
     obj.buildSettings.ENABLE_USER_SCRIPT_SANDBOXING = false
+    if target then
+        local rules = target:rules()
+        local is_app_bundle = false
+        if rules["xcode.application"] ~= nil then
+            is_app_bundle = true
+        end
+        if is_app_bundle then
+            obj.buildSettings.GENERATE_INFOPLIST_FILE = true
+            obj.buildSettings.PRODUCT_NAME = "$(TARGET_NAME)"
+        end
+    end
     local uuid = xcinfo:gen_uuid()
     xcinfo.sections.XCBuildConfiguration = xcinfo.sections.XCBuildConfiguration or {}
     xcinfo.sections.XCBuildConfiguration[uuid] = obj
     return uuid
 end
 
-function _add_XCConfigurationList(xcinfo)
+-- target may be nil.
+function _add_XCConfigurationList(xcinfo, target)
     local obj = {}
     local modes = _get_project_modes()
     obj.buildConfigurations = {}
     for _, mode in ipairs(modes) do
-        table.insert(obj.buildConfigurations, _add_XCBuildConfiguration(xcinfo, mode))
+        table.insert(obj.buildConfigurations, _add_XCBuildConfiguration(xcinfo, mode, target))
     end
     local uuid = xcinfo:gen_uuid()
     xcinfo.sections.XCConfigurationList = xcinfo.sections.XCConfigurationList or {}
@@ -98,19 +111,16 @@ XMAKE_BIN=\"]] .. os.programfile() .. [[\"
 # Running xmake scripts.
 ${XMAKE_BIN} f -y -m ${CONFIGURATION} -p ${PLATFORM_NAME} -a ${NATIVE_ARCH} -o ${BUILD_DIR}
 ${XMAKE_BIN} build ${TARGET_NAME}\n# Running xmake install scripts.
-${XMAKE_BIN} install -o ${CONFIGURATION_TEMP_DIR}/Install ${TARGET_NAME}
+XMAKE_BUILD_DIR=${BUILD_DIR}/${PLATFORM_NAME}/${NATIVE_ARCH}/${CONFIGURATION}
 # Copy files to build path.
-if test -e ${CONFIGURATION_TEMP_DIR}/Install/bin
+if test -e ${CONFIGURATION_BUILD_DIR}
 then
-    cp -r ${CONFIGURATION_TEMP_DIR}/Install/bin/* ${CONFIGURATION_BUILD_DIR}
+    rm -r ${CONFIGURATION_BUILD_DIR}/*
 fi
-if test -e ${CONFIGURATION_TEMP_DIR}/Install/lib
+if test -e ${XMAKE_BUILD_DIR}
 then
-    cp -r ${CONFIGURATION_TEMP_DIR}/Install/lib/* ${CONFIGURATION_BUILD_DIR}
+    cp -r ${XMAKE_BUILD_DIR}/* ${CONFIGURATION_BUILD_DIR}
 fi
-cp -r ${CONFIGURATION_TEMP_DIR}/Install/*.app ${CONFIGURATION_BUILD_DIR}
-# Remove install dir.
-rm -r ${CONFIGURATION_TEMP_DIR}/Install\n\n    
 ]]
     local uuid = xcinfo:gen_uuid()
     xcinfo.sections.PBXShellScriptBuildPhase = xcinfo.sections.PBXShellScriptBuildPhase or {}
@@ -137,6 +147,8 @@ function _add_target_files(xcinfo, group, files)
             file_info.lastKnownFileType = "sourcecode.cpp.cpp"
         elseif ext == ".mm" then
             file_info.lastKnownFileType = "sourcecode.cpp.objcpp"
+        elseif ext == ".plist" then
+            file_info.lastKnownFileType = "text.plist"
         end
         table.insert(group.children, _add_PBXFileReference(xcinfo, file_info))
     end
@@ -146,6 +158,11 @@ function _add_PBXNativeTarget(xcinfo, target_name, target)
     local obj = {}
     obj.name = target_name
     obj.productName = target_name
+    local rules = target:rules()
+    local is_app_bundle = false
+    if rules["xcode.application"] ~= nil then
+        is_app_bundle = true
+    end
     -- Add product file.
     local product_file = {}
     if target:kind() == "static" then
@@ -153,14 +170,27 @@ function _add_PBXNativeTarget(xcinfo, target_name, target)
     elseif target:kind() == "shared" then
         product_file.explicitFileType = "com.apple.product-type.library.dynamic"
     elseif target:kind() == "binary" then
-        product_file.explicitFileType = "com.apple.product-type.tool"
+        if is_app_bundle then
+            product_file.explicitFileType = "wrapper.application"
+        else
+            product_file.explicitFileType = "com.apple.product-type.tool"
+        end 
     end
-    product_file.path = target:filename()
+    if is_app_bundle then
+        product_file.name = target:filename() .. ".app"
+    else
+        product_file.name = target:filename()
+    end
+    product_file.path = product_file.name
     product_file.sourceTree = "BUILT_PRODUCTS_DIR"
     product_file.includeInIndex = 0
     obj.productReference = _add_PBXFileReference(xcinfo, product_file)
-    obj.productType = product_file.explicitFileType
-    -- Add product file to product group.
+    if is_app_bundle then
+        obj.productType = "com.apple.product-type.application"
+    else
+        obj.productType = product_file.explicitFileType
+    end
+        -- Add product file to product group.
     local project_obj = xcinfo.sections.PBXProject[xcinfo.root_object]
     local product_group = xcinfo.sections.PBXGroup[project_obj.productRefGroup]
     table.insert(product_group.children, obj.productReference)
@@ -179,7 +209,7 @@ function _add_PBXNativeTarget(xcinfo, target_name, target)
     table.insert(main_group.children, obj.headerFileGroup)
     table.insert(main_group.children, obj.sourceFileGroup)
     -- Add configuration list for target.
-    obj.buildConfigurationList = _add_XCConfigurationList(xcinfo)
+    obj.buildConfigurationList = _add_XCConfigurationList(xcinfo, target)
     -- Add build phases.
     obj.buildPhases = {}
     table.insert(obj.buildPhases, _add_PBXShellScriptBuildPhase(xcinfo, target))

@@ -70,7 +70,18 @@ function _write_section_PBXGroup(info, lines)
         end
         table.insert(lines, "\t\t\tchildren = (")
         for _, child in ipairs(obj.children) do
-            table.insert(lines, "\t\t\t\t" .. child .. ",")
+            local child_obj = info.sections.PBXFileReference[child]
+            if child_obj == nil then
+                child_obj = info.sections.PBXGroup[child]
+            end
+            local child_name
+            if child_obj then
+                child_name = child_obj.name
+            end
+            if child_name == nil then
+                child_name = ""
+            end
+            table.insert(lines, "\t\t\t\t" .. child .. " /* " .. child_name .. " */,")
         end
         table.insert(lines, "\t\t\t);")
         table.insert(lines, "\t\t\tsourceTree = \"" .. obj.sourceTree .. "\";")
@@ -98,7 +109,15 @@ function _write_section_PBXNativeTarget(info, lines)
         table.insert(lines, "\t\t\tpackageProductDependencies = (")
         table.insert(lines, "\t\t\t);")
         table.insert(lines, "\t\t\tproductName = " .. obj.productName .. ";")
-        table.insert(lines, "\t\t\tproductReference = " .. obj.productReference .. ";")
+        local product_reference_name
+        local product_reference_obj = info.sections.PBXFileReference[obj.productReference]
+        if product_reference_obj then
+            product_reference_name = product_reference_obj.name
+        end
+        if product_reference_name == nil then
+            product_reference_name = ""
+        end
+        table.insert(lines, "\t\t\tproductReference = " .. obj.productReference .. " /* " .. product_reference_name .. " */;")
         table.insert(lines, "\t\t\tproductType = " .. obj.productType .. ";")
         table.insert(lines, "\t\t};")
     end
@@ -173,9 +192,22 @@ function _write_section_XCBuildConfiguration(info, lines)
         table.insert(lines, "\t\t" .. uuid .. " /* " .. obj.name .. " */ = {")
         table.insert(lines, [[
 			isa = XCBuildConfiguration;
-			buildSettings = {
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-			};
+			buildSettings = {]])
+        for k, v in pairs(obj.buildSettings) do
+            local string_value = ""
+            if v == true then
+                string_value = "YES"
+            elseif v == false then
+                string_value = "NO"
+            elseif type(v) == "string" then
+                string_value = "\"" .. v .. "\""
+            elseif type(v) == "number" then
+                string_value = tostring(v)
+            end
+            table.insert(lines, "\t\t\t\t" .. k .. " = " .. string_value .. ";")
+        end
+		table.insert(lines, [[
+            };
 			name = ]] .. obj.name .. ";")
         table.insert(lines, "\t\t};")
     end
