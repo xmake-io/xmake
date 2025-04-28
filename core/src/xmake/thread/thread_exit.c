@@ -49,6 +49,7 @@ tb_int_t xm_thread_exit(lua_State* lua)
     // exit thread
     if (thread)
     {
+        tb_string_exit(&thread->callback);
         tb_string_exit(&thread->callinfo);
         if (thread->handle)
         {

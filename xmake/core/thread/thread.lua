@@ -94,14 +94,12 @@ function _instance:start()
     -- serialize and pass callback and arguments to this thread
     -- we do not use string.serialize to serialize callback, because it's slower (deserialize)
     -- and we cannot strip function debug info, we need to reserve _ENV, and other upvalue names
-    local callinfo = string._dump(self._CALLBACK)
-    local argv = self._ARGV
-    if argv ~= nil then
-        callinfo = string.serialize(argv, {strip = true, indent = false}) .. "<Argv\27>" .. callinfo
-    end
+    local callback = string._dump(self._CALLBACK)
+    local callinfo = {name = self:name(), argv = self._ARGV}
+    callinfo = string.serialize(callinfo, {strip = true, indent = false})
 
     -- init and start thread
-    local handle, errors = thread.thread_init(self:name(), callinfo, self._STACKSIZE)
+    local handle, errors = thread.thread_init(self:name(), callback, callinfo, self._STACKSIZE)
     if not handle then
         return nil, errors or string.format("%s: failed to create thread!", self)
     end
@@ -206,25 +204,31 @@ function thread.running()
 end
 
 -- run thread
-function thread._run_thread(callinfo_str)
+function thread._run_thread(callback_str, callinfo_str)
 
-    -- get callinfo
-    local parts = callinfo_str:split("<Argv\27>", {plain = true})
-    local callback_str, argv_str
-    if #parts > 1 then
-        callback_str = parts[2]
-        argv_str = parts[1]
-    else
-        callback_str = parts[1]
+    -- load callback info
+    local callinfo
+    local argv
+    local threadname
+    if callinfo_str then
+        local result, errors = string.deserialize(callinfo_str)
+        if not result then
+            return false, string.format("invalid thread callinfo, %s!", errors or "unknown")
+        end
+        callinfo = result
+        if callinfo then
+            argv = callinfo.argv
+            threadname = callinfo.name
+        end
     end
 
-    -- load callback, TODO print thread name
+    -- load callback
     local callback
     local fenvs = {}
     if callback_str then
         local script, errors = load(callback_str, "=(thread)", "b", fenvs)
         if not script then
-            return false, string.format("cannot load thread callback, %s!", errors or "unknown")
+            return false, string.format("cannot load thread(%s) callback, %s!", threadname or "unknown", errors or "unknown")
         end
         for i = 1, math.huge do
             local upname, upvalue = debug.getupvalue(script, i)
@@ -232,23 +236,13 @@ function thread._run_thread(callinfo_str)
                 break
             end
             if upvalue == nil then
-                return false, string.format("we cannot access upvalue(%s) in thread callback!", upname)
+                return false, string.format("we cannot access upvalue(%s) in thread(%s) callback!", upname, threadname or "unknown")
             end
         end
         callback = script
     end
     if not callback then
         return false, "no thread callback"
-    end
-
-    -- load argument list
-    local argv
-    if argv_str then
-        local result, errors = string.deserialize(argv_str)
-        if not result then
-            return false, string.format("invalid thread arguments, %s!", errors or "unknown")
-        end
-        argv = result
     end
 
     -- bind sandbox
