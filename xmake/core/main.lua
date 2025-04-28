@@ -335,9 +335,9 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     scheduler:enable(true)
 
     -- run task or thread
-    local thread_callinfo = xmake._THREAD_CALLINFO
-    if thread_callinfo then
-        ok, errors = thread._run_thread(thread_callinfo)
+    local thread_callback = xmake._THREAD_CALLBACK
+    if thread_callback then
+        ok, errors = thread._run_thread(thread_callback, xmake._THREAD_CALLINFO)
     else
         ok, errors = main._run_task(option.taskname() or "build")
     end

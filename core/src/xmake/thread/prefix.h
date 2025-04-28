@@ -34,6 +34,7 @@
 typedef struct __xm_thread_t
 {
     tb_thread_ref_t handle;
+    tb_string_t     callback;
     tb_string_t     callinfo;
 
 }xm_thread_t;
