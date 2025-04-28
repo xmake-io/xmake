@@ -1,8 +1,6 @@
 import("core.thread.thread")
 
 function callback(id)
-    print("import", import)
-    --[[
     import("core.thread.thread")
     print("%s: %d starting ..", thread.running(), id)
     local dt = os.mclock()
@@ -12,7 +10,6 @@ function callback(id)
     end
     dt = os.mclock() - dt
     print("%s: %d end, dt: %d ms", thread.running(), id, dt)
-    ]]
 end
 
 function main()
