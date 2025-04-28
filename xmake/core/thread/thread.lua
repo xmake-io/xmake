@@ -202,6 +202,7 @@ end
 -- get the running thread
 function thread.running()
     -- TODO
+    return "<unknown>"
 end
 
 -- run thread
@@ -217,7 +218,7 @@ function thread._run_thread(callinfo_str)
         callback_str = parts[1]
     end
 
-    -- load callback
+    -- load callback, TODO print thread name
     local callback
     local fenvs = {}
     if callback_str then
@@ -225,14 +226,15 @@ function thread._run_thread(callinfo_str)
         if not script then
             return false, string.format("cannot load thread callback, %s!", errors or "unknown")
         end
-        --[[
         for i = 1, math.huge do
             local upname, upvalue = debug.getupvalue(script, i)
             if upname == nil or upname == "" then
                 break
             end
-            print("upname", i, upname, upvalue)
-        end]]
+            if upvalue == nil then
+                return false, string.format("we cannot access upvalue(%s) in thread callback!", upname)
+            end
+        end
         callback = script
     end
     if not callback then
