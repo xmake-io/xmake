@@ -284,6 +284,12 @@ function nf_runtime(self, runtime, opt)
                     local libdir = path.absolute(path.join(llvm_rootdir, "lib"))
                     maps["c++_static"] = table.join(maps["c++_static"], "-L" .. libdir)
                     maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. libdir)
+                    -- sometimes llvm c++ runtimes are located in c++ subfolder (e.g homebrew llvm)
+                    local cxx_libdir = path.join(libdir, "c++")
+                    if os.isdir(cxx_libdir) then
+                        maps["c++_static"] = table.join(maps["c++_static"], "-L" .. cxx_libdir)
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. cxx_libdir)
+                    end
                     -- sometimes llvm runtimes are located in a target-triple subfolder
                     local target_triple = _get_llvm_target_triple(self)
                     local triple_libdir = (target_triple and os.isdir(path.join(libdir, target_triple))) and path.join(libdir, target_triple)
