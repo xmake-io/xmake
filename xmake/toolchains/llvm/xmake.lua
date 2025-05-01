@@ -58,16 +58,12 @@ toolchain("llvm")
             end
             toolchain:add("ldflags", "-fuse-ld=lld")
             toolchain:add("shflags", "-fuse-ld=lld")
-        elseif toolchain:is_arch("x86_64", "x64") then
-            march = "-m64"
-        elseif toolchain:is_arch("i386", "x86") then
-            march = "-m32"
         elseif toolchain:is_plat("cross") then
-            local sysroot
             local sdkdir = toolchain:sdkdir()
             local bindir = toolchain:bindir()
             local cross = toolchain:cross():gsub("(.*)%-$", "%1")
             march = "--target=" .. cross
+            local sysroot = sdkdir
             if bindir and os.isexec(path.join(bindir, cross .. "-gcc" .. (is_host("windows") and ".exe" or ""))) then
                 local gcc_toolchain = path.directory(bindir)
                 toolchain:add("cxflags", "--gcc-toolchain=" .. gcc_toolchain)
@@ -75,6 +71,9 @@ toolchain("llvm")
                 toolchain:add("asflags", "--gcc-toolchain=" .. gcc_toolchain)
                 toolchain:add("ldflags", "--gcc-toolchain=" .. gcc_toolchain)
                 toolchain:add("shflags", "--gcc-toolchain=" .. gcc_toolchain)
+            else
+                toolchain:add("ldflags", "-fuse-ld=lld")
+                toolchain:add("shflags", "-fuse-ld=lld")
             end
             if sdkdir and os.isdir(path.join(sdkdir, cross, "include")) then
                 sysroot = path.join(sdkdir, cross)
@@ -89,6 +88,10 @@ toolchain("llvm")
                 toolchain:add("ldflags", "--sysroot=" .. sysroot)
                 toolchain:add("shflags", "--sysroot=" .. sysroot)
             end
+        elseif toolchain:is_arch("x86_64", "x64") then
+            march = "-m64"
+        elseif toolchain:is_arch("i386", "x86") then
+            march = "-m32"
         end
         if march then
             toolchain:add("cxflags", march)
