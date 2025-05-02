@@ -1749,6 +1749,10 @@ function _instance:buildhash()
                 table.sort(toolchains)
                 str = str .. "_" .. table.concat(toolchains, "_")
             end
+            local sdk_path = config.get("sdk")
+            if sdk_path then
+                str = str .. "_" .. tostring(sdk_path)
+            end
             return hash.strhash128(str)
         end
         local function _get_installdir(...)
