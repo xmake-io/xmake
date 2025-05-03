@@ -1008,9 +1008,12 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
         end
     end
 
+
     local has_links = #target:objectfiles() > objectfiles_set:size()
+    local key = target:name() .. "_" .. hash.uuid():split("-", {plain = true})[1]
     if has_links then
-        cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+        cmakelists:print("add_library(target_objectfiles_%s OBJECT IMPORTED GLOBAL)", key)
+        cmakelists:print("set_property(TARGET target_objectfiles_%s PROPERTY IMPORTED_OBJECTS", key)
         for _, objectfile in ipairs(target:objectfiles()) do
             if not objectfiles_set:has(objectfile) then
                 cmakelists:print("    " .. _get_relative_unix_path_to_cmake(objectfile, outputdir))
@@ -1020,7 +1023,8 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
 
     if #object_deps ~= 0 then
         if not has_links then
-            cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+            cmakelists:print("add_library(target_objectfiles_%s OBJECT IMPORTED GLOBAL)", key)
+            cmakelists:print("set_property(TARGET target_objectfiles_%s PROPERTY IMPORTED_OBJECTS", key)
             has_links = true
         end
         for _, dep in ipairs(object_deps) do
@@ -1030,6 +1034,7 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
 
     if has_links then
         cmakelists:print(")")
+        cmakelists:print("target_link_libraries(%s PRIVATE target_objectfiles_%s)", target:name(), key)
     end
 end
 
