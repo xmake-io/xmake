@@ -350,8 +350,10 @@ function _add_project(cmakelists, outputdir)
     if not project_name then
         for _, target in table.orderpairs(project.targets()) do
             project_name = target:name()
-            break
         end
+    end
+    if _can_native_support_for_cxxmodules() then
+        cmakelists:print("set(CMAKE_CXX_SCAN_FOR_MODULES ON)")
     end
     if project_name then
         local project_info = ""
@@ -365,9 +367,6 @@ function _add_project(cmakelists, outputdir)
         else
             cmakelists:print("project(%s%s)", project_name, project_info)
         end
-    end
-    if _can_native_support_for_cxxmodules() then
-        cmakelists:print("set(CMAKE_CXX_SCAN_FOR_MODULES ON)")
     end
     cmakelists:print("")
 end
@@ -453,25 +452,81 @@ function _add_target_dependencies(cmakelists, target)
     end
 end
 
+function _print_target_sources(cmakelists, target, files, visibility, opt)
+    opt = opt or {}
+    local has_fileset_support = _get_cmake_version():ge("2.23")
+    local fileset = ""
+    if has_fileset_support and opt.set then
+        fileset = "FILE_SET " .. opt.set .. " FILES"
+    end
+
+    cmakelists:print("target_sources(%s %s %s", target:name(), visibility, fileset)
+    for _, file in ipairs(files) do
+        cmakelists:print("    " .. file)
+    end
+    cmakelists:print(")")
+end
+
 -- add target sources
 function _add_target_sources(cmakelists, target, outputdir)
     local has_cuda = false
-    cmakelists:print("target_sources(%s PRIVATE", target:name())
     local sourcebatches = target:sourcebatches()
     for name, sourcebatch in table.orderpairs(sourcebatches) do
+        local public_sources
+        local private_sources
         if _sourcebatch_is_built(sourcebatch) then
+            local module_sourcebatch = false
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                cmakelists:print("    " .. _get_relative_unix_path(sourcefile, outputdir))
+                if _has_cxxmodules_sources() and name == "c++.build.modules" then
+                    module_sourcebatch = true
+                    local fileconfig = target:fileconfig(sourcefile)
+                    if fileconfig and fileconfig.public then
+                        public_sources = public_sources or {}
+                        table.insert(public_sources, _get_relative_unix_path(sourcefile, outputdir))
+                    else
+                        private_sources = private_sources or {}
+                        table.insert(private_sources, _get_relative_unix_path(sourcefile, outputdir))
+                    end
+                else
+                    private_sources = private_sources or {}
+                    table.insert(private_sources, _get_relative_unix_path(sourcefile, outputdir))
+                end
+            end
+            if public_sources then
+                cmakelists:print(format("# public sourcefiles from sourcebatch %s for target %s", name, target:fullname()))
+                _print_target_sources(cmakelists, target, public_sources, "PUBLIC", {set = module_sourcebatch and "CXX_MODULES"})
+            end
+            if private_sources then
+                cmakelists:print(format("# private sourcefiles from sourcebatch %s for target %s", name, target:fullname()))
+                _print_target_sources(cmakelists, target, private_sources, "PRIVATE", {set = module_sourcebatch and "CXX_MODULES"})
             end
         end
         if sourcebatch.sourcekind == "cu" then
             has_cuda = true
         end
     end
-    for _, headerfile in ipairs(target:headerfiles()) do
-        cmakelists:print("    " .. _get_relative_unix_path(headerfile, outputdir))
+    if target:headerfiles() then
+        local public_headers
+        local private_headers
+        for _, headerfile in ipairs(target:headerfiles()) do
+            local fileconfig = target:fileconfig(headerfile)
+            if fileconfig and fileconfig.public then
+                public_headers = public_headers or {}
+                table.insert(public_headers, _get_relative_unix_path(headerfile, outputdir))
+            else
+                private_headers = private_headers or {}
+                table.insert(private_headers, _get_relative_unix_path(headerfile, outputdir))
+            end
+        end
+        if public_headers then
+            cmakelists:print(format("# public headers for target %s", target:fullname()))
+            _print_target_sources(cmakelists, target, public_headers, "PUBLIC", {set = "HEADERS"})
+        end
+        if private_headers then
+            cmakelists:print(format("# private headers for target %s", target:fullname()))
+            _print_target_sources(cmakelists, target, private_headers, "PRIVATE", {set = "HEADERS"})
+        end
     end
-    cmakelists:print(")")
     if has_cuda then
         cmakelists:print("set_target_properties(%s PROPERTIES CUDA_SEPARABLE_COMPILATION ON)", target:name())
         local devlink = target:policy("build.cuda.devlink") or target:values("cuda.build.devlink")

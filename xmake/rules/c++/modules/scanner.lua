@@ -766,21 +766,25 @@ function get_modules(target)
 end
 
 function after_scan(target)
-    local sourcebatch_scanner = target:sourcebatches()["c++.build.modules.scanner"]
-    local sourcebatch_builder = target:sourcebatches()["c++.build.modules.builder"]
-    if target:data("cxx.has_modules") and not target:is_moduleonly() then
-        local _, _, objectfiles = sort_modules_by_dependencies(target, get_modules(target), {jobgraph = target:policy("build.jobgraph")})
-        sourcebatch_scanner.objectfiles = objectfiles
-        sourcebatch_builder.objectfiles = objectfiles
-    elseif sourcebatch_scanner then
-        -- avoid duplicate linking of object files of non-module programs
-        sourcebatch_scanner.objectfiles = {}
-        sourcebatch_builder.objectfiles = {}
+    local compile_commands = os.getenv("XMAKE_IN_PROJECT_GENERATOR") and os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR")
+    if not os.getenv("XMAKE_IN_PROJECT_GENERATOR") or compile_commands then
+        local sourcebatch_scanner = target:sourcebatches()["c++.build.modules.scanner"]
+        local sourcebatch_builder = target:sourcebatches()["c++.build.modules.builder"]
+        if target:data("cxx.has_modules") and not target:is_moduleonly() then
+            local _, _, objectfiles = sort_modules_by_dependencies(target, get_modules(target), {jobgraph = target:policy("build.jobgraph")})
+            sourcebatch_scanner.objectfiles = objectfiles
+            sourcebatch_builder.objectfiles = objectfiles
+        elseif sourcebatch_scanner then
+            -- avoid duplicate linking of object files of non-module programs
+            sourcebatch_scanner.objectfiles = {}
+            sourcebatch_builder.objectfiles = {}
+        end
     end
 end
 
 function main(target, jobgraph, sourcebatch)
-    if target:data("cxx.has_modules") then
+    local compile_commands = os.getenv("XMAKE_IN_PROJECT_GENERATOR") and os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR")
+    if target:data("cxx.has_modules") and (not os.getenv("XMAKE_IN_PROJECT_GENERATOR") or compile_commands) then
         _patch_sourcebatch(target, sourcebatch)
         _schedule_module_dependencies_scan(target, jobgraph, sourcebatch)
     end

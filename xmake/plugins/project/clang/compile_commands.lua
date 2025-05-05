@@ -311,6 +311,6 @@ function make(outputdir)
     target_cmds.prepare_targets()
     _add_targets(jsonfile)
     jsonfile:close()
-    os.setenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR", "false")
+    os.setenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR", nil)
     os.cd(oldir)
 end
