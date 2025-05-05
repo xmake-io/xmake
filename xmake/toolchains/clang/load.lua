@@ -85,6 +85,8 @@ function main(toolchain, suffix)
         end
     elseif toolchain:is_plat("mingw") then
         target = target .. "-w64-windows-gnu"
+    elseif toolchain:is_plat("linux") then
+        target = target .. "-linux-gnu"
     end
 
     if target then
