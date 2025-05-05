@@ -19,7 +19,6 @@
 --
 
 toolchain("rust")
-
     set_homepage("https://www.rust-lang.org/")
     set_description("Rust Programming Language Compiler")
 
@@ -29,23 +28,59 @@ toolchain("rust")
     set_toolset("rcar", "$(env RC)", "rustc")
 
     on_load(function (toolchain)
-
-        -- e.g. x86_64-pc-windows-msvc, aarch64-unknown-none
-        local arch = toolchain:arch()
-        if toolchain:is_plat("android") then
-            local targets = {
-                ["armv5te"]     = "arm-linux-androideabi" -- deprecated
-            ,   ["armv7-a"]     = "arm-linux-androideabi" -- deprecated
-            ,   ["armeabi"]     = "arm-linux-androideabi" -- removed in ndk r17
-            ,   ["armeabi-v7a"] = "arm-linux-androideabi"
-            ,   ["arm64-v8a"]   = "aarch64-linux-android"
-            }
-            if targets[arch] then
-                arch = targets[arch]
-            end
+        local target
+        if toolchain:is_arch("x86_64", "x64") then
+            target = "x86_64"
+        elseif toolchain:is_arch("i386", "x86", "i686") then
+            target = "i686"
+        elseif toolchain:is_arch("arm64", "aarch64", "arm64-v8a") then
+            target = "aarch64"
+        elseif toolchain:is_arch("armeabi-v7a", "armv7-a") then
+            target = "armv7"
+        elseif toolchain:is_arch("armeabi", "armv5te") then
+            target = "arm"
+        elseif toolchain:is_arch("wasm32") then
+            target = "wasm32"
+        elseif toolchain:is_arch("wasm64") then
+            target = "wasm64"
         end
-        if arch and #arch:split("%-") > 1 then
-            toolchain:add("rcflags", "--target=" .. arch)
+
+        if target then
+            if toolchain:is_plat("windows") then
+                target = target .. "-pc-windows-msvc"
+            elseif toolchain:is_plat("mingw") then
+                target = target .. "-pc-windows-gnu"
+            elseif toolchain:is_plat("linux") then
+                target = target .. "-unknown-linux-gnu"
+            elseif toolchain:is_plat("macosx") then
+                target = target .. "-apple-darwin"
+            elseif toolchain:is_plat("android") then
+                target = target .. "-linux-"
+                if toolchain:is_arch("armeabi-v7a", "armeabi", "armv7-a", "armv5te") then
+                    target = target .. "androideabi"
+                else
+                    target = target .. "android"
+                end
+            elseif toolchain:is_plat("iphoneos", "appletvos", "watchos") then
+                if toolchain:is_plat("iphoneos") then
+                    target = target .. "-apple-ios"
+                elseif toolchain:is_plat("appletvos") then
+                    target = target .. "-apple-tvos"
+                elseif toolchain:is_plat("watchos") then
+                    target = target .. "-apple-watchos"
+                end
+                if toolchain:config("appledev") == "simulator" then
+                    target = target .. "-sim"
+                end
+            elseif toolchain:is_plat("bsd") then
+                target = target .. "-unknown-freebsd"
+            elseif toolchain:is_plat("wasm") then
+                target = target .. "-unknown-unknown"
+            end 
+        end
+
+        if target then
+            toolchain:add("rcflags", "--target=" .. target)
         else
             toolchain:set("rcshflags", "")
             toolchain:set("rcldflags", "")
