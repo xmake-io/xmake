@@ -27,7 +27,7 @@ rule("c.build.pcheader")
     end, {jobgraph = true})
 
 rule("c++.build.pcheader")
-    add_orders("c++.build.pcheader", "c++.build.modules.builder")
+    add_orders("c++.build.modules.scanner", "c++.build.pcheader", "c++.build.modules.builder")
     on_config(function (target, opt)
         import("private.action.build.pcheader").config(target, "cxx", opt)
     end)

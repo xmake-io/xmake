@@ -307,8 +307,10 @@ end
 function make(outputdir)
     local oldir = os.cd(os.projectdir())
     local jsonfile = io.open(path.join(outputdir, "compile_commands.json"), "w")
+    os.setenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR", "true")
     target_cmds.prepare_targets()
     _add_targets(jsonfile)
     jsonfile:close()
+    os.setenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR", "false")
     os.cd(oldir)
 end
