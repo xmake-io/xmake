@@ -36,7 +36,7 @@ __tb_extern_c_enter__
  */
 
 /// the xmake engine pool type
-typedef struct {tb_int_t dummy;} const* xm_engine_pool_ref_t;
+typedef tb_single_list_ref_t xm_engine_pool_ref_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -46,13 +46,28 @@ typedef struct {tb_int_t dummy;} const* xm_engine_pool_ref_t;
  *
  * @return                  the engine pool
  */
-xm_engine_pool_ref_t        xm_engine_pool_init(tb_noargs_t);
+xm_engine_pool_ref_t        xm_engine_pool_init(tb_void_t);
 
 /*! exit the engine_pool
  *
  * @param engine_pool       the engine_pool
  */
 tb_void_t                   xm_engine_pool_exit(xm_engine_pool_ref_t engine_pool);
+
+/*! alloc a engine from the engine_pool
+ *
+ * @param engine_pool       the engine_pool
+ *
+ * @return                  the engine
+ */
+xm_engine_ref_t             xm_engine_pool_alloc(xm_engine_pool_ref_t engine_pool);
+
+/*! free a engine to the engine_pool
+ *
+ * @param engine_pool       the engine_pool
+ * @param engine            the engine
+ */
+tb_void_t                   xm_engine_pool_free(xm_engine_pool_ref_t engine_pool, xm_engine_ref_t engine);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

@@ -33,16 +33,38 @@
 #include "engine_pool.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * types
+ * macros
  */
-
-// the engine pool type
-typedef struct __xm_engine_pool_t
-{
-
-}xm_engine_pool_t;
+#define XM_ENGINE_POOL_MAXN     (128)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+xm_engine_pool_ref_t xm_engine_pool_init()
+{
+    return tb_single_list_init(0, tb_element_ptr(tb_null, tb_null));
+}
+
+tb_void_t xm_engine_pool_exit(xm_engine_pool_ref_t engine_pool)
+{
+    tb_single_list_exit(engine_pool);
+}
+
+xm_engine_ref_t xm_engine_pool_alloc(xm_engine_pool_ref_t engine_pool)
+{
+    xm_engine_ref_t engine = tb_null;
+    if (tb_single_list_size(engine_pool) > 0)
+    {
+        engine = (xm_engine_ref_t)tb_single_list_head(engine_pool);
+        tb_single_list_remove_head(engine_pool);
+    }
+    return engine;
+}
+
+tb_void_t xm_engine_pool_free(xm_engine_pool_ref_t engine_pool, xm_engine_ref_t engine)
+{
+    if (tb_single_list_size(engine_pool) < XM_ENGINE_POOL_MAXN)
+        tb_single_list_insert_tail(engine_pool, engine);
+    else xm_engine_exit(engine);
+}
 
