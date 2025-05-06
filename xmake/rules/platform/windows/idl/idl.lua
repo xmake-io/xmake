@@ -100,7 +100,6 @@ function generate_single(target, sourcefile, opt)
         path(sourcefile)
     })
 
-    local dependfile = path.join(autogendir, path.basename(sourcefile) .. ".idl.d")
     depend.on_changed(function()
         progress.show(opt.progress or 0, "${color.build.object}generating.idl %s", sourcefile)
         os.vrunv(midl.program, flags, { envs = msvc:runenvs() })
