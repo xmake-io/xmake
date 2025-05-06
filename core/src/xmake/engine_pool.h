@@ -69,8 +69,10 @@ xm_engine_ref_t             xm_engine_pool_alloc(xm_engine_pool_ref_t engine_poo
  *
  * @param engine_pool       the engine_pool
  * @param engine            the engine
+ *
+ * @return                  tb_true or tb_false
  */
-tb_void_t                   xm_engine_pool_free(xm_engine_pool_ref_t engine_pool, xm_engine_ref_t engine);
+tb_bool_t                   xm_engine_pool_free(xm_engine_pool_ref_t engine_pool, xm_engine_ref_t engine);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
