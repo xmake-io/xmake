@@ -86,18 +86,40 @@ function _memcache()
     return memcache.cache("package.tools.autoconf")
 end
 
+-- has flag ?
+function _has_flag(package, flag)
+    local flag_name = flag:gsub("-", "")
+    local has_flag = _memcache():get2(tostring(package), flag_name)
+    if has_flag == nil then
+        local result = try {function() return os.iorunv("./configure", {"--help"}, {shell = true}) end}
+        if result and result:find(flag, 1, true) then
+            has_flag = true
+        end
+        has_flag = has_flag or false
+        _memcache():set2(tostring(package), flag_name, has_flag)
+    end
+    return has_flag
+end
+
+
 -- has `--with-pic`?
 function _has_with_pic(package)
-    local has_with_pic = _memcache():get2(tostring(package), "with_pic")
-    if has_with_pic == nil then
-        local result = try {function() return os.iorunv("./configure", {"--help"}, {shell = true}) end}
-        if result and result:find("--with-pic", 1, true) then
-            has_with_pic = true
-        end
-        has_with_pic = has_with_pic or false
-        _memcache():set2(tostring(package), "with_pic", has_with_pic)
-    end
-    return has_with_pic
+    return _has_flag(package, "--with-pic")
+end
+
+-- has `--enable-debug`?
+function _has_enable_debug(package)
+    return _has_flag(package, "--enable-debug")
+end
+
+-- has `--enable-static` and `--enable-shared`?
+function _has_enable_kind(package)
+    return _has_flag(package, "--enable-static") and _has_flag(package, "--enable-shared")
+end
+
+-- has `--disable-static` and `--disable-shared`?
+function _has_disable_kind(package)
+    return _has_flag(package, "--disable-static") and _has_flag(package, "--disable-shared")
 end
 
 -- get configs
@@ -169,6 +191,21 @@ function _get_configs(package, configs)
     if not package:is_plat("windows", "mingw") and
         package:config("pic") ~= false and _has_with_pic(package) then
         table.insert(configs, "--with-pic")
+    end
+    if package:is_debug() and _has_enable_debug(package) then
+        table.insert(configs, "--enable-debug")
+    end
+    if package:is_library() then
+        if _has_enable_kind(package) then
+            table.insert(configs, "--enable-shared=" .. (package:config("shared") and "yes" or "no"))
+            table.insert(configs, "--enable-static=" .. (package:config("shared") and "no" or "yes"))
+        elseif _has_disable_kind(package) then
+            if package:config("shared") then
+                table.insert(configs, "--disable-static")
+            else
+                table.insert(configs, "--disable-shared")
+            end
+        end
     end
     return configs
 end
