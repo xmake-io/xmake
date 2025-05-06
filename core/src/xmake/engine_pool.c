@@ -95,10 +95,13 @@ xm_engine_ref_t xm_engine_pool_alloc(xm_engine_pool_ref_t engine_pool)
     return engine;
 }
 
-tb_void_t xm_engine_pool_free(xm_engine_pool_ref_t engine_pool, xm_engine_ref_t engine)
+tb_bool_t xm_engine_pool_free(xm_engine_pool_ref_t engine_pool, xm_engine_ref_t engine)
 {
     if (tb_single_list_size(engine_pool) < XM_ENGINE_POOL_MAXN)
+    {
         tb_single_list_insert_tail(engine_pool, engine);
-    else xm_engine_exit(engine);
+        return tb_true;
+    }
+    return tb_false;
 }
 

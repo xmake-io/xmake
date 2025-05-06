@@ -30,6 +30,7 @@
  */
 #include "prefix.h"
 #include "../engine.h"
+#include "../engine_pool.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -46,7 +47,8 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv)
     tb_assert_and_check_return_val(thread, 0);
 
     tb_trace_i("thread: start ..");
-    xm_engine_ref_t engine = xm_engine_init(XM_THREAD_ENGINE_NAME, tb_null);
+    xm_engine_ref_t engine = xm_engine_pool_alloc(xm_engine_pool());
+    if (!engine) engine = xm_engine_init(XM_THREAD_ENGINE_NAME, tb_null);
     if (engine)
     {
         lua_State* lua = xm_engine_lua(engine);
@@ -73,7 +75,8 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv)
         // start engine
         tb_char_t* argv[] = {XM_THREAD_ENGINE_NAME, tb_null};
         xm_engine_main(engine, 1, argv, tb_null);
-        xm_engine_exit(engine);
+        if (!xm_engine_pool_free(xm_engine_pool(), engine))
+            xm_engine_exit(engine);
     }
     tb_trace_i("thread: end");
     return 0;
