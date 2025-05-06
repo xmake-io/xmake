@@ -256,7 +256,7 @@ function build_cppfiles(target, jobgraph, sourcebatch, opt)
         dependfiles = {}}
     for _, sourcefile in ipairs(sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
-        local dependfile = target:objectfile(objectfile)
+        local dependfile = target:dependfile(objectfile)
         table.insert(target:objectfiles(), objectfile)
         table.insert(sourcebatch_cpp.objectfiles, objectfile)
         table.insert(sourcebatch_cpp.dependfiles, dependfile)

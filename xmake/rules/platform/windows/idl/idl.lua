@@ -32,19 +32,15 @@ function generate_single(target, sourcefile, opt)
     local fileconfig = target:fileconfig(sourcefile)
     local autogendir = path.join(target:autogendir(), "platform/windows/idl")
 
-    local enable_server = true
-    local enable_client = true
+    local enable_server
+    local enable_client
     local defs = table.wrap(target:get("defines") or {})
     local incs = table.wrap(target:get("includedirs") or {})
     local undefs = table.wrap(target:get("undefines") or {})
 
     if fileconfig then
-        if fileconfig.server then
-            enable_server = fileconfig.server
-        end
-        if fileconfig.client then
-            enable_client = fileconfig.client
-        end
+        enable_server = fileconfig.server
+        enable_client = fileconfig.client
         if fileconfig.includedirs then
             table.join2(incs, fileconfig.includedirs)
         end
@@ -104,13 +100,13 @@ function generate_single(target, sourcefile, opt)
         path(sourcefile)
     })
 
-    local dependfile = path.join(autogendir, path.basename(sourcefile) .. ".idl.d")
     depend.on_changed(function()
         progress.show(opt.progress or 0, "${color.build.object}generating.idl %s", sourcefile)
         os.vrunv(midl.program, flags, { envs = msvc:runenvs() })
     end, {
         files = sourcefile,
-        dependfile = dependfile
+        dependfile = target:dependfile(sourcefile),
+        changed = target:is_rebuilt()
     })
 end
 
@@ -124,67 +120,37 @@ function configure(target)
 end
 
 function generate_idl(target, jobgraph, sourcebatch, opt)
-    local idljob = target:fullname() .. "/generate/midl"
-    jobgraph:group(idljob, function()
-        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            local midljob = target:fullname() .. "/generate/" .. sourcefile
-            jobgraph:add(midljob, function (index, total, opt)
-                generate_single(target, sourcefile, opt)
-            end)
-        end
-    end)
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        local midljob = target:fullname() .. "/generate/" .. sourcefile
+        jobgraph:add(midljob, function (index, total, opt)
+            generate_single(target, sourcefile, opt)
+        end)
+    end
 end
 
 function build_idlfiles(target, jobgraph, sourcebatch, opt)
     local autogendir = path.join(target:autogendir(), "platform/windows/idl")
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        local fileconfig = target:fileconfig(sourcefile)
+        local files = {"_i.c", "_c.c", "_s.c"}
+        if fileconfig and fileconfig.proxy then
+            table.insert(files, "_p.c")
+        end
 
-    local function addsrc(sourcename, suffix, mysources)
-        local fullfile = path.join(autogendir, sourcename .. suffix)
-        if os.exists(fullfile) then
-            table.insert(mysources, fullfile)
+        local name = path.basename(sourcefile)
+        for _, suffix in ipairs(files) do
+            local c_sourcefile = path.join(autogendir, name .. suffix)
+            local objectfile = target:objectfile(c_sourcefile)
+            local dependfile = target:dependfile(objectfile)
+            local cc_job_name = path.join(target:fullname(), "/obj/", c_sourcefile)
+            jobgraph:add(cc_job_name, function (index, total, jobopt)
+                -- we don't have a way to detect which midl files are generated
+                if os.exists(c_sourcefile) then
+                    table.insert(target:objectfiles(), objectfile)
+                    local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = "cc", progress = jobopt.progress}, opt)
+                    build_objectfiles.build_object(target, c_sourcefile, build_opt)
+                end
+            end, {distcc = opt.distcc})
         end
     end
-
-    local build_midl = target:fullname() .. "/obj/midl"
-    jobgraph:group(build_midl, function()
-        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            local ccjob = target:fullname() .. "/obj/" .. sourcefile
-            jobgraph:add(ccjob, function (index, total, opt)
-                local fileconfig = target:fileconfig(sourcefile)
-                local enable_proxy = true
-                if fileconfig then
-                    if fileconfig.proxy then
-                        enable_proxy = fileconfig.proxy
-                    end
-                end
-                local name = path.basename(sourcefile)
-                local mysources = {}
-
-                -- we don't have a way to detect which midl files are generated
-                addsrc(name, "_i.c", mysources)
-                if enable_proxy then
-                    addsrc(name, "_p.c", mysources)
-                end
-                addsrc(name, "_c.c", mysources)
-                addsrc(name, "_s.c", mysources)
-
-                local batchcxx = {
-                    rulename = "c.build",
-                    sourcekind = "cc",
-                    sourcefiles = mysources,
-                    objectfiles = {},
-                    dependfiles = {}
-                }
-                for _, sourcefile in ipairs(batchcxx.sourcefiles) do
-                    local objfile = target:objectfile(sourcefile)
-                    local depfile = target:objectfile(objfile)
-                    table.insert(target:objectfiles(), objfile)
-                    table.insert(batchcxx.objectfiles, objfile)
-                    table.insert(batchcxx.dependfiles, depfile)
-                    table.insert(target:objectfiles(), objfile)
-                end
-                build_objectfiles.build(target, batchcxx, opt)
-            end)
-        end
-    end)
 end
