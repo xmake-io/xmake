@@ -35,11 +35,37 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
+
+// the max engine pool count
 #define XM_ENGINE_POOL_MAXN     (128)
+
+// the singleton type of engine pool
+#define XM_ENGINE_POOL          (TB_SINGLETON_TYPE_USER + 4)
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * private implementation
+ */
+static tb_handle_t xm_engine_pool_instance_init(tb_cpointer_t* ppriv)
+{
+    xm_engine_pool_ref_t engine_pool = xm_engine_pool_init();
+    tb_assert_and_check_return_val(engine_pool, tb_null);
+
+    return (tb_handle_t)engine_pool;
+}
+
+static tb_void_t xm_engine_pool_instance_exit(tb_handle_t engine_pool, tb_cpointer_t priv)
+{
+    if (engine_pool) xm_engine_pool_exit((xm_engine_pool_ref_t)engine_pool);
+}
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+xm_engine_pool_ref_t xm_engine_pool()
+{
+    return (xm_engine_pool_ref_t)tb_singleton_instance(XM_ENGINE_POOL, xm_engine_pool_instance_init, xm_engine_pool_instance_exit, tb_null, tb_null);
+}
+
 xm_engine_pool_ref_t xm_engine_pool_init()
 {
     return tb_single_list_init(0, tb_element_ptr(tb_null, tb_null));
@@ -47,7 +73,15 @@ xm_engine_pool_ref_t xm_engine_pool_init()
 
 tb_void_t xm_engine_pool_exit(xm_engine_pool_ref_t engine_pool)
 {
-    tb_single_list_exit(engine_pool);
+    if (engine_pool)
+    {
+        tb_for_all (xm_engine_ref_t, engine, engine_pool)
+        {
+            if (engine)
+                xm_engine_exit(engine);
+        }
+        tb_single_list_exit(engine_pool);
+    }
 }
 
 xm_engine_ref_t xm_engine_pool_alloc(xm_engine_pool_ref_t engine_pool)

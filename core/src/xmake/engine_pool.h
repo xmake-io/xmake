@@ -42,6 +42,9 @@ typedef tb_single_list_ref_t xm_engine_pool_ref_t;
  * interfaces
  */
 
+// get the engine pool singleton
+xm_engine_pool_ref_t        xm_engine_pool(tb_void_t);
+
 /*! init the engine_pool
  *
  * @return                  the engine pool
