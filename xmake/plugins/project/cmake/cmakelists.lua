@@ -454,7 +454,7 @@ end
 
 function _print_target_sources(cmakelists, target, files, visibility, opt)
     opt = opt or {}
-    local has_fileset_support = _get_cmake_version():ge("2.23")
+    local has_fileset_support = _get_cmake_version():ge("3.23")
     local fileset = ""
     if has_fileset_support and opt.set then
         fileset = "FILE_SET " .. opt.set .. " FILES"
