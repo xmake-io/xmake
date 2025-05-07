@@ -581,11 +581,11 @@ function is_dependencies_changed(target, module)
     local changed = false
     if oldrequires then
         if oldrequires ~= requires then
-           requires_changed = true
+           changed = true
         else
            for required in requires:items() do
               if not oldrequires:has(required) then
-                  requires_changed = true
+                  changed = true
                   break
               end
            end
