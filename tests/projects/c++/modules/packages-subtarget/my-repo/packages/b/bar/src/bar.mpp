@@ -1,0 +1,12 @@
+module;
+
+#include <a.hpp>
+
+export module bar;
+
+export namespace bar {
+const char *hello() {
+     return ::hello();
+}
+}
+
