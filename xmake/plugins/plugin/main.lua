@@ -28,7 +28,13 @@ import("private.action.require.impl.environment")
 -- get plugin urls
 function _plugin_urls()
     local urls = option.get("plugins")
-    if not urls then
+    if urls then
+        local result = {}
+        for _, url in ipairs(urls) do
+            table.insert(result, git.asgiturl(url) or url)
+        end
+        urls = result
+    else
         urls = {
         "https://github.com/xmake-io/xmake-plugins.git",
         "https://gitlab.com/tboox/xmake-plugins.git",

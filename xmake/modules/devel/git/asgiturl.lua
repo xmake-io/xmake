@@ -40,7 +40,7 @@ function main(url)
 
     -- check
     url = url:trim()
-    assert(#url > 0)
+    assert(#url > 0, "provided URL is empty!")
 
     -- safe because all custom_protocol supports https
     local lower = url:lower()
