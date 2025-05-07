@@ -427,6 +427,11 @@ function _get_configs_for_generic(package, configs, opt)
     if not package:use_external_includes() then
         table.insert(configs, "-DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON")
     end
+    if package:is_debug() then
+        table.insert(configs, "-DCMAKE_BUILD_TYPE=Debug")
+    else
+        table.insert(configs, "-DCMAKE_BUILD_TYPE=Release")
+    end
 end
 
 -- get configs for windows
