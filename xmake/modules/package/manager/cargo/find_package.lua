@@ -136,6 +136,12 @@ function main(name, opt)
     local librarydir_host = path.join(opt.installdir, "lib", "host")
     local libfiles = os.files(path.join(librarydir, "*.rlib"))
 
+    local frameworkdirs = {}
+    table.insert(frameworkdirs, librarydir)
+    if os.exists(librarydir_host) then
+        table.insert(frameworkdirs, librarydir_host)
+    end
+
     -- @see https://github.com/xmake-io/xmake/issues/4228
     local libfiles_native
     local plat = opt.plat
@@ -165,7 +171,6 @@ function main(name, opt)
             libraryname = "lib" .. libraryname
         end
         if names:has(libraryname) and not libraries_set[libraryname] then
-            frameworkdirs = frameworkdirs or {}
             frameworks = frameworks or {}
             table.insert(frameworkdirs, path.directory(libraryfile))
             table.insert(frameworks, libraryfile)
