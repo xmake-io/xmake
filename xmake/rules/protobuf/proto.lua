@@ -117,7 +117,7 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
         -- @see https://github.com/xmake-io/xmake/issues/3678
         autogendir = fileconfig.proto_autogendir
         grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
-        -- custom args, pass through to protoc
+        -- custom flags, pass through to protoc
         proto_flags = fileconfig.proto_flags
     end
     local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
@@ -147,11 +147,7 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
     end
 
     if proto_flags then
-        if type(proto_flags) == "string" then
-            table.insert(protoc_args, proto_flags)
-        else
-            table.join2(protoc_args, proto_flags)
-        end
+        table.join2(protoc_args, proto_flags)
     end
 
     -- add commands
