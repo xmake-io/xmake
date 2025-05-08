@@ -138,7 +138,7 @@ function main(name, opt)
 
     local frameworkdirs = {}
     table.insert(frameworkdirs, librarydir)
-    if os.exists(librarydir_host) then
+    if os.isdir(librarydir_host) then
         table.insert(frameworkdirs, librarydir_host)
     end
 
