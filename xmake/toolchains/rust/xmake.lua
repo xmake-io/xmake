@@ -37,7 +37,6 @@ toolchain("rust")
  
         local target = target_triple(toolchain:plat(), toolchain:arch(), opt)
         if target then
-            toolchain:add("rcflags", "--verbose")
             toolchain:add("rcflags", "--target=" .. target)
         else
             toolchain:set("rcshflags", "")
