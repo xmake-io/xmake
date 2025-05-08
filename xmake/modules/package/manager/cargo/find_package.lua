@@ -172,7 +172,6 @@ function main(name, opt)
         end
         if names:has(libraryname) and not libraries_set[libraryname] then
             frameworks = frameworks or {}
-            table.insert(frameworkdirs, path.directory(libraryfile))
             table.insert(frameworks, libraryfile)
             libraries_set[libraryname] = true
         end
@@ -181,7 +180,7 @@ function main(name, opt)
     if frameworks and frameworkdirs then
         result = result or {}
         result.libfiles = libfiles
-        result.frameworkdirs = frameworkdirs and table.unique(frameworkdirs) or nil
+        result.frameworkdirs = frameworkdirs
         result.frameworks = frameworks
         result.version = opt.require_version
     end
