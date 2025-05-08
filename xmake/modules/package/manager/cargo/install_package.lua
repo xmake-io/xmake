@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
 import("private.tools.rust.check_target")
+import("private.tools.rust.target_triple")
 
 -- translate local path in dependencies
 -- @see https://github.com/xmake-io/xmake/issues/4222
@@ -78,7 +79,10 @@ function main(name, opt)
     -- get target
     -- e.g. x86_64-pc-windows-msvc, aarch64-unknown-none
     -- @see https://github.com/xmake-io/xmake/issues/4049
-    local target = check_target(opt.arch, true) and opt.arch or nil
+    local target = #opt.arch:split("%-") >= 2 and check_target(opt.arch, true) and opt.arch
+    if not target then
+        target = target_triple(opt.plat, opt.arch)
+    end
 
     -- generate Cargo.toml
     local sourcedir = path.join(opt.cachedir, "source")
