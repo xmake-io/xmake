@@ -28,12 +28,14 @@ toolchain("rust")
     set_toolset("rcar", "$(env RC)", "rustc")
 
     on_load(function (toolchain)
+        import("private.tools.rust.target_triple")
+
         local opt = {}
         if toolchain:config("appledev") == "simulator" then
             opt.apple_sim = true
         end
  
-        local target = import("private.tools.rust.target_triple")(toolchain:plat(), toolchain:arch(), opt)
+        local target = target_triple(toolchain:plat(), toolchain:arch(), opt)
         if target then
             toolchain:add("rcflags", "--verbose")
             toolchain:add("rcflags", "--target=" .. target)
