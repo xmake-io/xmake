@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.find_file")
 import("lib.detect.find_program")
+import("lib.detect.find_programver")
 import("core.project.config")
 import("detect.sdks.find_vcpkgdir")
 
