@@ -67,6 +67,7 @@ toolchain("mingw")
         toolchain:add("toolset", "ranlib", cross .. "ranlib")
         toolchain:add("toolset", "objcopy", cross .. "objcopy")
         toolchain:add("toolset", "mrc", cross .. "windres")
+        toolchain:add("toolset", "dlltool", cross .. "dlltool")
         if is_host("windows") and bindir then
             -- we use bin/gcc.exe if cross not found
             -- @see https://github.com/xmake-io/xmake/issues/977#issuecomment-704863677
@@ -77,6 +78,7 @@ toolchain("mingw")
             toolchain:add("toolset", "ld", path.join(bindir, "g++"), path.join(bindir, "gcc"))
             toolchain:add("toolset", "sh", path.join(bindir, "g++"), path.join(bindir, "gcc"))
             toolchain:add("toolset", "mrc", path.join(bindir, "windres"))
+            toolchain:add("toolset", "dlltool", path.join(bindir, "dlltool"))
         end
 
         -- init flags for architecture

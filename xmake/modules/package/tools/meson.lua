@@ -261,6 +261,10 @@ function _get_configs_file(package, opt)
             if mrc then
                 file:print("windres=['%s']", executable_path(mrc))
             end
+            local dlltool = package:build_getenv("dlltool")
+            if dlltool then
+                file:print("dlltool=['%s']", executable_path(dlltool))
+            end
         end
         local cmake = find_tool("cmake")
         if cmake then
