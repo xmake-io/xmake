@@ -52,9 +52,10 @@ end
 function main(toolchain)
 
     -- set toolset
-    toolchain:set("toolset", "cc",  "clang-cl")
-    toolchain:set("toolset", "cxx", "clang-cl")
-    toolchain:set("toolset", "mrc", "rc.exe")
+    toolchain:set("toolset", "cc",      "clang-cl")
+    toolchain:set("toolset", "cxx",     "clang-cl")
+    toolchain:set("toolset", "mrc",     "rc.exe")
+    toolchain:set("toolset", "dlltool", "llvm-dlltool")
     if toolchain:is_arch("x64") then
         toolchain:set("toolset", "as",  "ml64.exe")
     else

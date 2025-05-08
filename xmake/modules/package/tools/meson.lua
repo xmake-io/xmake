@@ -256,7 +256,7 @@ function _get_configs_file(package, opt)
         if ranlib then
             file:print("ranlib=['%s']", executable_path(ranlib))
         end
-        if package:is_plat("mingw") then
+        if package:is_plat("mingw", "msys", "windows") then
             local mrc = package:build_getenv("mrc")
             if mrc then
                 file:print("windres=['%s']", executable_path(mrc))
@@ -469,6 +469,12 @@ end
 -- get the build environments
 function buildenvs(package, opt)
     local envs = {}
+    if not is_host("windows") and package:is_plat("windows") then
+        local msvc = package:toolchain("msvc") or package:toolchain("clang") or package:toolchain("clang-cl")
+        assert(msvc:check(), "msvc envs not found!") -- we need to check vs envs if it has been not checked yet
+        envs = os.joinenvs(msvc:runenvs())
+    end
+
     opt = opt or {}
     if package:is_plat(os.host()) then
         local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
