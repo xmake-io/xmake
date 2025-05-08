@@ -108,7 +108,7 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
     local autogendir
     local public
     local grpc_cpp_plugin
-    local proto_args
+    local proto_flags
     local fileconfig = target:fileconfig(sourcefile_proto)
     if fileconfig then
         public = fileconfig.proto_public
@@ -118,7 +118,7 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
         autogendir = fileconfig.proto_autogendir
         grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
         -- custom args, pass through to protoc
-        proto_args = fileconfig.proto_args
+        proto_flags = fileconfig.proto_flags
     end
     local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
     local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
@@ -146,13 +146,11 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
         table.insert(protoc_args, path(sourcefile_dir, function (p) return ("--grpc_out=") .. p end))
     end
 
-    if proto_args then
-        if type(proto_args) == "string" then
-            table.insert(protoc_args, proto_args)
+    if proto_flags then
+        if type(proto_flags) == "string" then
+            table.insert(protoc_args, proto_flags)
         else
-            for _, v in ipairs(proto_args) do
-                table.insert(protoc_args, v)
-            end
+            table.join2(protoc_args, proto_flags)
         end
     end
 
