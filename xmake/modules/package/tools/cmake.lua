@@ -400,53 +400,44 @@ end
 
 -- get configs for generic
 function _get_configs_for_generic(package, configs, opt)
+    local envs = {}
     local cflags = _get_cflags(package, opt)
     if cflags then
-        table.insert(configs, "-DCMAKE_C_FLAGS=" .. cflags)
+        envs.CMAKE_C_FLAGS = cflags
     end
     local cxxflags = _get_cxxflags(package, opt)
     if cxxflags then
-        table.insert(configs, "-DCMAKE_CXX_FLAGS=" .. cxxflags)
+        envs.CMAKE_CXX_FLAGS = cxxflags
     end
     local asflags = _get_asflags(package, opt)
     if asflags then
-        table.insert(configs, "-DCMAKE_ASM_FLAGS=" .. asflags)
+        envs.CMAKE_ASM_FLAGS = asflags
     end
     local ldflags = _get_ldflags(package, opt)
     if ldflags then
-        table.insert(configs, "-DCMAKE_EXE_LINKER_FLAGS=" .. ldflags)
+        envs.CMAKE_EXE_LINKER_FLAGS = ldflags
     end
     local shflags = _get_shflags(package, opt)
     if shflags then
-        table.insert(configs, "-DCMAKE_SHARED_LINKER_FLAGS=" .. shflags)
-        table.insert(configs, "-DCMAKE_MODULE_LINKER_FLAGS=" .. shflags)
+        envs.CMAKE_SHARED_LINKER_FLAGS = shflags
+        envs.CMAKE_MODULE_LINKER_FLAGS = shflags
     end
     if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
-        table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+        envs.CMAKE_POSITION_INDEPENDENT_CODE = "ON"
     end
     if not package:use_external_includes() then
-        table.insert(configs, "-DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON")
+        envs.CMAKE_NO_SYSTEM_FROM_IMPORTED = "ON"
     end
-    local has_already_debugflag = opt._configs_str and opt._configs_str:find("CMAKE_BUILD_TYPE", 1, true)
-    if package:is_debug() then
-        if not has_already_debugflag then
-            table.insert(configs, "-DCMAKE_BUILD_TYPE=Debug")
-        end
-    else
-        if not has_already_debugflag then
-            table.insert(configs, "-DCMAKE_BUILD_TYPE=Release")
-        end
-    end
+    envs.CMAKE_BUILD_TYPE = package:is_debug() and "Debug" or "Release"
     if package:is_library() then
-        local has_already_libflag = opt._configs_str and opt._configs_str:find("BUILD_SHARED_LIBS", 1, true)
-        if not has_already_libflag then
-            table.insert(configs, "-DBUILD_SHARED_LIBS=".. (package:config("shared") and "ON" or "OFF"))
-        end
+        envs.BUILD_SHARED_LIBS = package:config("shared") and "ON" or "OFF"
     end
+    _insert_configs_from_envs(configs, envs, opt)
 end
 
 -- get configs for windows
 function _get_configs_for_windows(package, configs, opt)
+    local envs = {}
     local cmake_generator = opt.cmake_generator
     if not cmake_generator or cmake_generator:find("Visual Studio", 1, true) then
         table.insert(configs, "-A")
@@ -463,38 +454,35 @@ function _get_configs_for_windows(package, configs, opt)
         end
         local vs_toolset = toolchain_utils.get_vs_toolset_ver(_get_msvc(package):config("vs_toolset") or config.get("vs_toolset"))
         if vs_toolset then
-            table.insert(configs, "-DCMAKE_GENERATOR_TOOLSET=" .. vs_toolset)
+            envs.CMAKE_GENERATOR_TOOLSET = vs_toolset
         end
     end
 
     -- use clang-cl
     if package:has_tool("cc", "clang", "clang_cl") then
-        table.insert(configs, "-DCMAKE_C_COMPILER=" .. _translate_bin_path(package:build_getenv("cc")))
+        envs.CMAKE_C_COMPILER = _translate_bin_path(package:build_getenv("cc"))
     end
     if package:has_tool("cxx", "clang", "clang_cl") then
-        table.insert(configs, "-DCMAKE_CXX_COMPILER=" .. _translate_bin_path(package:build_getenv("cxx")))
+        envs.CMAKE_CXX_COMPILER = _translate_bin_path(package:build_getenv("cxx"))
     end
 
     -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
     -- @see https://cmake.org/cmake/help/latest/policy/CMP0091.html#policy:CMP0091
     -- https://github.com/xmake-io/xmake-repo/pull/303
     if package:has_runtime("MT") then
-        table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded")
+        envs.CMAKE_MSVC_RUNTIME_LIBRARY = "MultiThreaded"
     elseif package:has_runtime("MTd") then
-        table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug")
+        envs.CMAKE_MSVC_RUNTIME_LIBRARY = "MultiThreadedDebug"
     elseif package:has_runtime("MD") then
-        table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL")
+        envs.CMAKE_MSVC_RUNTIME_LIBRARY = "MultiThreadedDLL"
     elseif package:has_runtime("MDd") then
-        table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL")
+        envs.CMAKE_MSVC_RUNTIME_LIBRARY = "MultiThreadedDebugDLL"
     end
 
     local pdb_dir = path.unix(path.join(os.curdir(), "pdb"))
-    if not opt._configs_str:find("CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY", 1, true) then
-        table.insert(configs, "-DCMAKE_COMPILE_PDB_OUTPUT_DIRECTORY=" .. pdb_dir)
-    end
-    if not opt._configs_str:find("CMAKE_PDB_OUTPUT_DIRECTORY", 1, true) then
-        table.insert(configs, "-DCMAKE_PDB_OUTPUT_DIRECTORY=" .. pdb_dir)
-    end
+    envs.CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY = pdb_dir
+    envs.CMAKE_PDB_OUTPUT_DIRECTORY = pdb_dir
+    _insert_configs_from_envs(configs, envs, opt)
 
     if package:is_cross() then
         _get_configs_for_cross(package, configs, opt)
