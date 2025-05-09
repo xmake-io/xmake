@@ -427,10 +427,21 @@ function _get_configs_for_generic(package, configs, opt)
     if not package:use_external_includes() then
         table.insert(configs, "-DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON")
     end
+    local has_already_debugflag = opt._configs_str and opt._configs_str:find("CMAKE_BUILD_TYPE", 1, true)
     if package:is_debug() then
-        table.insert(configs, "-DCMAKE_BUILD_TYPE=Debug")
+        if not has_already_debugflag then
+            table.insert(configs, "-DCMAKE_BUILD_TYPE=Debug")
+        end
     else
-        table.insert(configs, "-DCMAKE_BUILD_TYPE=Release")
+        if not has_already_debugflag then
+            table.insert(configs, "-DCMAKE_BUILD_TYPE=Release")
+        end
+    end
+    if package:is_library() then
+        local has_already_libflag = opt._configs_str and opt._configs_str:find("BUILD_SHARED_LIBS", 1, true)
+        if not has_already_libflag then
+            table.insert(configs, "-DBUILD_SHARED_LIBS=".. (package:config("shared") and "ON" or "OFF"))
+        end
     end
 end
 
@@ -644,6 +655,8 @@ function _get_configs_for_cross(package, configs, opt)
     opt = opt or {}
     opt.cross                      = true
     local envs                     = {}
+    envs.CMAKE_BUILD_TYPE          = package:is_debug() and "Debug" or "Release"
+    envs.BUILD_SHARED_LIBS         = package:config("shared") and "ON" or "OFF"
     local sdkdir                   = _translate_paths(package:build_getenv("sdk"))
     envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
     envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))

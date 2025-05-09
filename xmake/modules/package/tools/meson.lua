@@ -330,6 +330,7 @@ function _get_configs(package, configs, opt)
 
     -- add prefix
     configs = configs or {}
+    opt._configs_str = string.serialize(configs, {indent = false, strip = true})
     table.insert(configs, "--prefix=" .. (opt.prefix or package:installdir()))
     table.insert(configs, "--libdir=lib")
 
@@ -349,6 +350,14 @@ function _get_configs(package, configs, opt)
     -- add asan
     if package:config("asan") then
         table.insert(configs, "-Db_sanitize=address")
+    end
+
+    -- add library kind
+    if package:is_library() then
+        local has_already_libflag = opt._configs_str and opt._configs_str:find("default_library", 1, true)
+        if not has_already_libflag then
+            table.insert(configs, "-Ddefault_library=".. (package:config("shared") and "shared" or "static"))
+        end
     end
 
     -- add vs runtimes flags
