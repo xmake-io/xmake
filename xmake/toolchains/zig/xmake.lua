@@ -30,7 +30,7 @@ toolchain("zig")
         -- @see https://github.com/xmake-io/xmake/issues/5610
         function _setup_zigcc_wrapper(zig)
             local script_suffix = is_host("windows") and ".cmd" or ""
-            for _, tool in ipairs({"cc", "c++", "ar", "ranlib", "objcopy"}) do
+            for _, tool in ipairs({"cc", "c++", "ar", "ranlib", "objcopy", "dlltool"}) do
                 local wrapper_path = path.join(os.tmpdir(), "zigcc", tool) .. script_suffix
                 if not os.isfile(wrapper_path) then
                     if is_host("windows") then
@@ -90,6 +90,7 @@ toolchain("zig")
             toolchain:set("toolset", "ranlib",  toolchain:config("toolset_ranlib"))
             toolchain:set("toolset", "objcopy", toolchain:config("toolset_objcopy"))
             toolchain:set("toolset", "as",      toolchain:config("toolset_cc"))
+            toolchain:set("toolset", "dlltool", toolchain:config("toolset_dlltool"))
         end
         toolchain:set("toolset", "zc",   zig)
         toolchain:set("toolset", "zcar", zig)
