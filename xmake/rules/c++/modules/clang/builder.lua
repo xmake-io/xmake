@@ -45,7 +45,7 @@ function _make_modulebuildflags(target, module, opt)
             table.join2(flags, {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier", "-Wno-deprecated-declarations"})
         end
         table.insert(flags, module_outputflag .. module.bmifile)
-    else
+    elseif not module.headerunit and not module.implementation and not module.interface then
         flags = {"-x", "c++"}
     end
     return flags
