@@ -1,27 +1,48 @@
 import("lib.detect.find_tool")
 import("core.base.semver")
 import("core.tool.toolchain")
-
-function _cleanup()
-    os.rm(".xmake", "build")
-end
+import("utils.ci.is_running", {alias = "ci_is_running"})
 
 function _gen_cmakelist()
     if not os.isfile("CMakeLists.txt") then
-        os.exec("xmake project -k cmake")
+        os.vrunv("xmake project -k cmake")
     end
 end
 
-function _build(t)
+function _build(name, opt)
+    opt = opt or {}
+    local build_args = {}
+    if ci_is_running() then
+        table.insert(build_args, "-vD")
+    end
+    os.rm(".xmake", "build")
     os.mv("xmake.lua", "xmake.lua_")
-    os.exec("xmake f --trybuild=cmake --toolchain=" .. t)
-    os.exec("xmake b")
+    os.vrunv("xmake", table.join({"f", "--trybuild=cmake", "--toolchain=" .. name}, build_args), {shell = true, envs = opt.envs})
+    os.vrunv("xmake", table.join({"b"}, build_args), {shell = true, envs = opt.envs})
     os.mv("xmake.lua_", "xmake.lua")
 end
 
-function main(t)
-    _cleanup()
+function _build_with(name, minver)
+    if name == "msvc" then
+        local _toolchain = toolchain.load(name, {plat = os.host(), arch = os.arch()})
+        if _toolchain and _toolchain:check() then
+            local vcvars = _toolchain:config("vcvars")
+            if vcvars and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, minver) >= 0 then
+                _build(name, {envs = vcvars})
+            end
+        end
+    else
+        local tool = find_tool(name, {version = true})
+        if tool and tool.version and semver.compare(tool.version, minver) >= 0 then
+            local _toolchain = toolchain.load(name, {plat = os.host(), arch = os.arch()})
+            if _toolchain and _toolchain:check() then
+                _build(name)
+            end
+        end
+    end
+end
 
+function main(t)
     os.setenv("CMAKE_GENERATOR", "Ninja")
 
     local cmake = find_tool("cmake", {version = true})
@@ -29,23 +50,11 @@ function main(t)
     if ninja and cmake and cmake.version and semver.compare(cmake.version, "3.28") >= 0 then
         _gen_cmakelist()
         if is_subhost("windows") then
-            local clang = find_tool("clang", {version = true})
-            if clang and clang.version and semver.compare(clang.version, "18.0") >= 0 then
-                _build("clang")
-                _cleanup()
-            end
-            _build("msvc")
-        elseif is_subhost("msys") or is_subhost("linux") then
-            local gcc = find_tool("gcc", {version = true})
-            if gcc and gcc.version and semver.compare(gcc.version, "14.0") >= 0 then
-                _build("gcc")
-                _cleanup()
-            end
-            local clang = find_tool("clang", {version = true})
-            if clang and clang.version and semver.compare(clang.version, "18.0") >= 0 then
-                _build("clang")
-                _cleanup()
-            end
+            _build_with("clang", "19")
+            _build_with("msvc", "14.35")
+        elseif is_subhost("linux") then
+            _build_with("gcc", "14")
+            _build_with("clang", "19")
         end
     end
 end
