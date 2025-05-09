@@ -23,6 +23,7 @@ function _translate_arch(arch, opt)
     local maps =
     {
         ["aarch64"]     = "aarch64"
+    ,   ["arm"]         = "arm"
     ,   ["armv5te"]     = "arm"
     ,   ["armeabi"]     = "arm"
     ,   ["armeabi-v7a"] = "armv7"
@@ -37,7 +38,7 @@ function _translate_arch(arch, opt)
     ,   ["wasm32"]      = "wasm32"
     ,   ["wasm64"]      = "wasm64"
     }
-    return maps[arch]
+    return maps[arch] or arch
 end
 
 -- get platform part
