@@ -32,7 +32,7 @@ import(".mapper")
 import(".builder", {inherit = true})
 
 function _make_modulebuildflags(target, module, opt)
-    local flags = {}
+    local flags
     if opt and opt.bmi then
         local module_outputflag = support.get_moduleoutputflag(target)
 
@@ -45,6 +45,8 @@ function _make_modulebuildflags(target, module, opt)
             table.join2(flags, {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier", "-Wno-deprecated-declarations"})
         end
         table.insert(flags, module_outputflag .. module.bmifile)
+    else
+        flags = {"-x", "c++"}
     end
     return flags
 end
@@ -227,7 +229,7 @@ function make_module_job(target, module, opt)
             progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.bmi.$(mode) %s", target:fullname(), module.name)
             _compile_bmi_step(target, module)
         else
-            if module.interface or module.implementation then
+            if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
                 progress.show(opt.progress, "compiling.$(mode) %s", module.sourcefile)
                 _compile_objectfile_step(target, module)
             else
@@ -261,7 +263,7 @@ function make_module_buildcmds(target, batchcmds, module, opt)
             batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.bmi.$(mode) %s", target:fullname(), module.name)
             _compile_bmi_step(target, module, {batchcmds = batchcmds})
         else
-            if module.interface or module.implementation then
+            if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
                 batchcmds:show_progress(opt.progress, "compiling.$(mode) %s", module.sourcefile)
                 _compile_objectfile_step(target, module, {batchcmds = batchcmds})
             else

@@ -186,7 +186,7 @@ function make_module_job(target, module, opt)
         end
 
         local flags = {"-x", "c++"}
-        if module.interface or module.implementation then
+        if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
             if bmi and objectfile then
                 progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), module.name)
                 table.insert(flags, module_flag)
@@ -237,7 +237,7 @@ function make_module_buildcmds(target, batchcmds, module, opt)
                 batchcmds:show("mapper file for %s --------\n%s--------", module.sourcefile, io.readfile(module_mapper))
             end
         end
-        if support.has_module_extension(module.sourcefile) then
+        if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
             batchcmds:mkdir(path.directory(module.objectfile))
             local flags = {"-x", "c++"}
             table.insert(flags, module_flag)
