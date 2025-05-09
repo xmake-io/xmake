@@ -29,26 +29,10 @@ rule("win.sdk.application")
         target:set("kind", "binary")
     end)
 
-    after_load(function (target)
+    -- set subsystem: windows
+    add_deps("win.subsystem.windows")
 
-        -- set subsystem: windows
-        if target:is_plat("mingw") then
-            target:add("ldflags", "-mwindows", {force = true})
-        else
-            local subsystem = false
-            for _, ldflag in ipairs(target:get("ldflags")) do
-                if type(ldflag) == "string" then
-                    ldflag = ldflag:lower()
-                    if ldflag:find("[/%-]subsystem:") then
-                        subsystem = true
-                        break
-                    end
-                end
-            end
-            if not subsystem then
-                target:add("ldflags", "-subsystem:windows", {force = true, tools = {"link"}})
-            end
-        end
+    after_load(function (target)
 
         -- add links
         target:add("syslinks", "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32")
