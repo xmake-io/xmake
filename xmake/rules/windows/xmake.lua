@@ -18,8 +18,10 @@ rule("win.subsystem")
 
         local subsystem = target:data("win.subsystem")
         local valid = false
+        local startswith = string.startswith
+        local upper = string.upper
         for _, s in ipairs(subsystems) do
-            if string.upper(subsystem):startswith(s) then
+            if startswith(upper(subsystem), s) then
                 valid = true
                 break
             end
@@ -28,13 +30,13 @@ rule("win.subsystem")
 
         local linker = target:tool("ld")
         linker = path.filename(linker)
-        if linker:startswith("clang") then
+        if startswith(linker, "clang") then
             target:add("ldflags", "-Wl,-subsystem:" .. subsystem, { force = true })
-        elseif linker:startswith("link") or linker:startswith("lld-link") then
-            target:add("ldflags", "/SUBSYSTEM:" .. string.upper(subsystem), { force = true })
-        elseif linker:startswith("gcc") or linker:startswith("g++") then
+        elseif startswith(linker, "link") or startswith(linker, "lld-link") then
+            target:add("ldflags", "/SUBSYSTEM:" .. upper(subsystem), { force = true })
+        elseif startswith(linker, "gcc") or startswith(linker, "g++") then
             target:add("ldflags", "-Wl,-m" .. subsystem, { force = true })
-        elseif linker:startswith("ld") then
+        elseif startswith(linker, "ld") then
             target:add("ldflags", "-m" .. subsystem, { force = true })
         end
     end)
