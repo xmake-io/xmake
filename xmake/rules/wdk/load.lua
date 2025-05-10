@@ -34,8 +34,9 @@ function driver_umdf(target)
 
     -- add subsystem
     local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
-    target:data_set("win.subsystem", "windows," .. os_winver.subsystem(winver))
-    target:add("rules", "win.subsystem")
+    if not target:values("windows.subsystem") then
+        target:values_set("windows.subsystem", "windows," .. os_winver.subsystem(winver))
+    end
 
     -- set default driver entry if does not exist
     local entry = false
@@ -75,8 +76,9 @@ function driver_kmdf(target)
     target:add("ldflags", "-nodefaultlib", {force = true})
 
     -- add subsystem
-    target:data_set("win.subsystem", "native," .. os_winver.subsystem(winver))
-    target:add("rules", "win.subsystem")
+    if not target:values("windows.subsystem") then
+        target:values_set("windows.subsystem", "native," .. os_winver.subsystem(winver))
+    end
 
     -- set default driver entry if does not exist
     local entry = false
@@ -119,8 +121,9 @@ function driver_wdm(target)
     target:add("ldflags", "-nodefaultlib", {force = true})
 
     -- add subsystem
-    target:data_set("win.subsystem", "native," .. os_winver.subsystem(winver))
-    target:add("rules", "win.subsystem")
+    if not target:values("windows.subsystem") then
+        target:values_set("windows.subsystem", "native," .. os_winver.subsystem(winver))
+    end
 
     -- set default driver entry if does not exist
     local entry = false

@@ -22,7 +22,7 @@
 rule("wdk.driver")
 
     -- add rules
-    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp", "wdk.sign", "wdk.package.cab")
+    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp", "wdk.sign", "wdk.package.cab", "platform.windows.subsystem")
 
     -- after load
     after_load(function (target)

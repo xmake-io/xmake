@@ -30,9 +30,13 @@ rule("win.sdk.application")
     end)
 
     -- set subsystem: windows
-    add_deps("win.subsystem.windows")
+    add_deps("platform.windows.subsystem")
 
     after_load(function (target)
+        -- set windows subsystem
+        if not target:values("windows.subsystem") then
+            target:values_set("windows.subsystem", "windows")
+        end
 
         -- add links
         target:add("syslinks", "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32")

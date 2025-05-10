@@ -518,30 +518,15 @@ function main(target, opt)
 
     -- is gui application?
     if opt.gui then
-        -- add windows subsystem for windows and mingw platforms
-        if target:is_plat("windows") then
-            target:add("defines", "_WINDOWS")
-            local subsystem = false
-            for _, ldflag in ipairs(target:get("ldflags")) do
-                if type(ldflag) == "string" then
-                    ldflag = ldflag:lower()
-                    if ldflag:find("[/%-]subsystem:") then
-                        subsystem = true
-                        break
-                    end
-                end
+        if not target:values("windows.subsystem") then
+            target:values_set("windows.subsystem", "windows")
+            if target:has_tool("ld", "link", "lld-link") then
+                target:add("ldflags", "-entry:mainCRTStartup", {force = true})
             end
-            -- maybe user will set subsystem to console
-            if not subsystem then
-                target:add("rules", "win.subsystem.windows")
-                local linker = target:tool("ld")
-                linker = path.filename(linker)
-                if linker:startswith("link") or linker:startswith("lld-link") then
-                    target:add("ldflags", "-entry:mainCRTStartup", {force = true})
-                end
-            end
-        elseif target:is_plat("mingw") then
-            target:add("ldflags", "-mwindows", {force = true})
+        end
+    else
+        if not target:values("windows.subsystem") then
+            target:values_set("windows.subsystem", "console")
         end
     end
 
