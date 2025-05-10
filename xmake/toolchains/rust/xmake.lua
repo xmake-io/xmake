@@ -28,7 +28,7 @@ toolchain("rust")
     set_toolset("rcar", "$(env RC)", "rustc")
 
     on_load(function (toolchain)
-        import("private.tools.rust.target_triple")
+        import("core.tools.rustc.target_triple")
 
         local opt = {}
         if toolchain:config("appledev") == "simulator" then
