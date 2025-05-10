@@ -45,9 +45,9 @@ end
 function _translate_plat(plat, arch, opt)
     if plat == "windows" then
         return "-pc-windows-msvc"
-    elseif plat == "mingw" then
+    elseif plat == "mingw" or plat == "msys" then
         return "-pc-windows-gnu"
-    elseif plat == "linux" then
+    elseif plat == "linux" or plat == "cross" then
         return "-unknown-linux-gnu"
     elseif plat == "macosx" then
         return "-apple-darwin"
