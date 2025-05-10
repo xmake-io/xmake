@@ -421,7 +421,7 @@ function _do_parse(target, sourcebatch)
         cxx_sourcebatch.dependfiles = {}
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
             local module = mapper.get(target, sourcefile)
-            if not module.interface and not module.implementation then
+            if module and not module.interface and not module.implementation then
                 table.insert(cxx_sourcebatch.sourcefiles, sourcefile)
                 local objectfile = target:objectfile(sourcefile)
                 table.insert(cxx_sourcebatch.dependfiles, target:dependfile(objectfile))
