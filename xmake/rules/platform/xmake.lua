@@ -19,12 +19,13 @@
 --
 
 rule("platform.wasm")
-    add_deps("platform.wasm.preloadfiles")
-    add_deps("platform.wasm.installfiles")
+    add_deps("platform.wasm.preloadfiles",
+             "platform.wasm.installfiles")
 
 rule("platform.windows")
-    add_deps("platform.windows.def")
-    add_deps("platform.windows.idl")
+    add_deps("platform.windows.def",
+             "platform.windows.idl",
+             "platform.windows.subsystem")
     if is_host("windows") then
         add_deps("platform.windows.manifest")
     end

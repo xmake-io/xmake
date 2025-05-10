@@ -43,8 +43,8 @@ rule("win.sdk.mfc.static")
 -- define rule: the application with shared mfc libraries
 rule("win.sdk.mfc.shared_app")
 
-    -- add mfc base rule
-    add_deps("win.sdk.mfc.env")
+    -- add mfc base and subsystem rule
+    add_deps("win.sdk.mfc.env", "platform.windows.subsystem")
 
     -- after load
     after_load(function (target)
@@ -54,8 +54,8 @@ rule("win.sdk.mfc.shared_app")
 -- define rule: the application with static mfc libraries
 rule("win.sdk.mfc.static_app")
 
-    -- add mfc base rule
-    add_deps("win.sdk.mfc.env")
+    -- add mfc base and subsystem rule
+    add_deps("win.sdk.mfc.env", "platform.windows.subsystem")
 
     -- after load
     after_load(function (target)
