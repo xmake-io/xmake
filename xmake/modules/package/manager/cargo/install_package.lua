@@ -21,9 +21,9 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.tools.rustc.target_triple")
 import("lib.detect.find_tool")
 import("private.tools.rust.check_target")
-import("private.tools.rust.target_triple")
 
 -- translate local path in dependencies
 -- @see https://github.com/xmake-io/xmake/issues/4222
