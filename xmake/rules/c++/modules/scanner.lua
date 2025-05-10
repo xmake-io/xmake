@@ -391,6 +391,8 @@ function _do_parse(target, sourcebatch)
         local moduleinfos = support.load_moduleinfos(target, sourcebatch)
         modules = _parse_dependencies_data(target, moduleinfos)
         local localcache = support.localcache()
+        localcache:set2(target:fullname(), "c++.modules", modules)
+        localcache:save()
 
         mapper.feed(target, modules, sourcebatch.sourcefiles)
 
@@ -408,13 +410,11 @@ function _do_parse(target, sourcebatch)
                 end
             end
         end
-        localcache:set2(target:fullname(), "c++.modules", modules)
-        localcache:save()
     else
         modules = get_modules(target)
     end
 
-    -- steal from c++.build sourcebatch named modules
+    -- steal from c++.build sourcebatch named modules with cpp extensions
     local cxx_sourcebatch = target:sourcebatches()["c++.build"]
     if cxx_sourcebatch then
         cxx_sourcebatch.sourcefiles = {}
@@ -771,7 +771,8 @@ function after_scan(target)
         local sourcebatch_scanner = target:sourcebatches()["c++.build.modules.scanner"]
         local sourcebatch_builder = target:sourcebatches()["c++.build.modules.builder"]
         if target:data("cxx.has_modules") and not target:is_moduleonly() then
-            local _, _, objectfiles = sort_modules_by_dependencies(target, get_modules(target), {jobgraph = target:policy("build.jobgraph")})
+            local modules = get_modules(target)
+            local _, _, objectfiles = sort_modules_by_dependencies(target, modules, {jobgraph = target:policy("build.jobgraph")})
             sourcebatch_scanner.objectfiles = objectfiles
             sourcebatch_builder.objectfiles = objectfiles
         elseif sourcebatch_scanner then
