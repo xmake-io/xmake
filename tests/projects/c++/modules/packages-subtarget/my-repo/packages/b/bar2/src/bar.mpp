@@ -1,0 +1,8 @@
+export module bar2;
+
+export namespace bar {
+    const char *hello2() {
+        return "Hello world";
+    }
+}
+

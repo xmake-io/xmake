@@ -1,0 +1,9 @@
+module;
+
+#include "foo.h"
+
+export module bar;
+
+export int bar() {
+  return foo();
+}

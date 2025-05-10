@@ -1,5 +1,3 @@
---!A cross-platform build utility based on Lua
---
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
@@ -18,22 +16,22 @@
 -- @file        config.lua
 --
 
+import("core.project.project")
+import("core.base.semver")
 import("support")
-    
+
 function main(target)
 
-    -- we disable to build across targets in parallel, because the source files may depend on other target modules
-    -- @see https://github.com/xmake-io/xmake/issues/1858
     if support.contains_modules(target) then
-
-        -- unity build can't work with modules
-        assert(not target:rule("c++.unity_build"), "C++ unity build is not compatible with C++ modules")
-
+        -- when jobgraph is policy is set to false, we disable to build across targets in parallel, because the source files may depend on other target modules
+        -- @see https://github.com/xmake-io/xmake/issues/1858
         -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
         -- even if some sub-targets do not contain C++ modules.
-        --
-        -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
-        target:set("policy", "build.fence", true)
+        if not target:policy("build.jobgraph") then
+            target:set("policy", "build.fence", true)
+        end
+
+        assert(not target:rule("c++.unity_build"), "C++ unity build is not compatible with C++ modules")
 
         -- disable ccache for this target
         --
@@ -77,6 +75,17 @@ function main(target)
                     target:fileconfig_add(sourcefile, {public = true})
                 end
             end
+        end
+    end
+end
+
+function insert_stdmodules(target)
+    if target:data("cxx.has_modules") then
+        -- add std modules to sourcebatch
+        local stdmodules = support.get_stdmodules(target)
+        for _, sourcefile in ipairs(stdmodules) do
+            table.insert(target:sourcebatches()["c++.build.modules.scanner"].sourcefiles, sourcefile)
+            table.insert(target:sourcebatches()["c++.build.modules.builder"].sourcefiles, sourcefile)
         end
     end
 end

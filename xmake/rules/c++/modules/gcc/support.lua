@@ -59,7 +59,6 @@ function load(target)
     -- fix cxxabi issue
     -- @see https://github.com/xmake-io/xmake/issues/2716#issuecomment-1225057760
     -- https://github.com/xmake-io/xmake/issues/3855
-
     local cxx11abi = target:policy("build.c++.modules.gcc.cxx11abi") or
                      target:policy("build.c++.gcc.modules.cxx11abi")
     if cxx11abi then
@@ -69,41 +68,30 @@ function load(target)
     end
 end
 
--- strip flags that doesn't affect bmi generation
-function strip_flags(target, flags)
+function has_two_phase_compilation_support(_)
+    return false
+end
+
+-- flags that doesn't affect bmi generation
+function strippeable_flags()
     -- speculative list as there is no resource that list flags that prevent reusability, this list will likely be improve over time
-    local strippable_flags = {
-        "-I",
-        "-isystem",
-        "-g",
-        "-O",
-        "-W",
-        "-w",
-        "-cxx-isystem",
-        "-Q",
-        "-fmodule-mapper",
+    local strippeable_flags = {
+        "O",
+        "W",
+        "w",
+        "Q",
+        "fmodule-mapper",
+        "fmodules-ts",
+        "fmodules",
+        "fPIC"
     }
-    local strict = target:policy("build.c++.modules.reuse.strict") or
-                   target:policy("build.c++.modules.tryreuse.discriminate_on_defines")
-    if not strict then
-        table.join2(strippable_flags, {"-D", "-U"})
-    end
-    local output = {}
-    local last_flag_I = false
-    for _, flag in ipairs(flags) do
-        local strip = false
-        for _, _flag in ipairs(strippable_flags) do
-            if flag:startswith(_flag) or last_flag_I then
-                last_flag_I = _flag == "-I"
-                strip = true
-                break
-            end
-        end
-        if not strip then
-            table.insert(output, flag)
-        end
-    end
-    return output
+    local splitted_strippeable_flags = {
+        "I",
+        "isystem",
+        "cxx-isystem",
+        "framework"
+    }
+    return strippeable_flags, splitted_strippeable_flags
 end
 
 -- provide toolchain include directories for stl headerunit when p1689 is not supported
@@ -145,14 +133,12 @@ function _get_std_module_manifest_path(target)
             return os.iorunv(compinst:program(), {"-print-file-name=libstdc++.modules.json"}, {envs = compinst:runenvs()})
         end
     }
-
     if modules_json_path then
         modules_json_path = modules_json_path:trim()
         if os.isfile(modules_json_path) then
             return modules_json_path
         end
     end
-
     -- fallback on custom detection
     -- manifest can be found alongside libstdc++.so
 
@@ -163,12 +149,10 @@ function get_stdmodules(target)
     if not target:policy("build.c++.modules.std") then
         return
     end
-
     local modules_json_path = _get_std_module_manifest_path(target)
     if not modules_json_path then
         return
     end
-
     local modules_json = json.loadfile(modules_json_path)
     if modules_json and modules_json.modules and #modules_json.modules > 0 then
         local std_module_files = {}

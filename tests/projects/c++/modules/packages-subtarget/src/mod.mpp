@@ -1,0 +1,4 @@
+export module foobar;
+
+export import foo;
+export import bar;

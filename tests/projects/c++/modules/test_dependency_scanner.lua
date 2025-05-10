@@ -3,7 +3,7 @@ import("core.base.semver")
 import("utils.ci.is_running", {alias = "ci_is_running"})
 
 function _build()
-    os.run("xmake f --foo=n")
+    os.run("xmake f --foo=n --policies=build.c++.modules.std:n")
     local outdata
     if ci_is_running() then
         outdata = os.iorun("xmake -rvD")
