@@ -243,9 +243,9 @@ _os_find() {
     local name="${2}"
     local depth="${3}"
     if test_nz "${depth}"; then
-        _ret=$(find "${dir}" -maxdepth "${depth}" -mindepth "${depth}" -type f -name "${name}")
+        _ret=$(find "${dir}" -maxdepth "${depth}" -mindepth "${depth}" -type f -name "${name}" | LC_ALL=C sort)
     else
-        _ret=$(find "${dir}" -type f -name "${name}")
+        _ret=$(find "${dir}" -type f -name "${name}" | LC_ALL=C sort)
     fi
 }
 
