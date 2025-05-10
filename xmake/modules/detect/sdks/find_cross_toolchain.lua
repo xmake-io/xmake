@@ -37,17 +37,15 @@ function _find_bindir(sdkdir, opt)
         if is_host("windows") then
             toolname = toolname .. ".exe"
         end
-        local toolpath = find_file((opt.cross or '*-') .. toolname, bindirs)
+        local toolpath = find_file((opt.cross or '*-') .. toolname, bindirs) or find_file(toolname, bindirs)
         if toolpath then
             return path.directory(toolpath), path.filename(toolpath):sub(1, -(#toolname + 1))
         end
 
         -- find tool path
-        if not opt.cross then
-            toolpath = find_file(toolname, bindirs)
-            if toolpath then
-                return path.directory(toolpath), ""
-            end
+        toolpath = find_file(toolname, bindirs)
+        if toolpath then
+            return path.directory(toolpath), ""
         end
     end
 
