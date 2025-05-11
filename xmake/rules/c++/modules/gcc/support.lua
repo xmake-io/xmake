@@ -166,8 +166,7 @@ function _get_std_module_manifest_path(target)
     end
 end
 
-function get_stdmodules(target, opt)
-    opt = opt or {}
+function get_stdmodules(target)
     if not target:policy("build.c++.modules.std") then
         return
     end
@@ -187,9 +186,7 @@ function get_stdmodules(target, opt)
             return std_module_files
         end
     end
-    if not opt.dont_warn then
-        wprint("std and std.compat modules not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
-    end
+    wprint("std and std.compat modules not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
 end
 
 function get_bmi_extension()

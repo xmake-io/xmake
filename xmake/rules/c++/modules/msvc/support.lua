@@ -136,9 +136,7 @@ function get_stdmodules(target, opt)
             end
         end
     end
-    if not opt.dont_warn then
-        wprint("std and std.compat modules not found! disabling them for the build")
-    end
+    wprint("std and std.compat modules not found! disabling them for the build")
 end
 
 function get_bmi_extension()

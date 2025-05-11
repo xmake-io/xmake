@@ -258,7 +258,7 @@ end
 
 function get_stdmodules(target)
 
-    if target:policy("build.c++.modules.std") then
+    if not target:policy("build.c++.modules.std") then
         return
     end
     local cpplib = _get_cpplibrary_name(target)
@@ -282,14 +282,14 @@ function get_stdmodules(target)
             -- dont be greedy and don't enable stdc++ std module support for llvm < 19
             local clang_version = get_clang_version(target)
             if clang_version and semver.compare(clang_version, "19.0") >= 0 then
-                return import(".gcc.support").get_stdmodules(target, {dont_warn = true})
+                return import(".gcc.support").get_stdmodules(target)
             end
         elseif cpplib == "msstl" then
             -- msstl std module file is not compatible with llvm < 19
             local clang_version = get_clang_version(target)
             if clang_version and semver.compare(clang_version, "19.0") >= 0 then
                 local toolchain = target:toolchain("llvm") or target:toolchain("clang") or target:toolchain("clang-cl")
-                return import(".msvc.support").get_stdmodules(target, {dont_warn = false, toolchain = toolchain})
+                return import(".msvc.support").get_stdmodules(target, {toolchain = toolchain})
             end
         end
     end
