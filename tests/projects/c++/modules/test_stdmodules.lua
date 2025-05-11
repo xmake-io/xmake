@@ -38,21 +38,25 @@ function main(t)
             end
         end
     elseif is_subhost("msys") then
-        -- os.exec("xmake f -c -p mingw --yes")
-        -- _build()
+        local gcc = find_tool("gcc", {version = true})
+        if is_host("linux") and gcc and gcc.version and semver.compare(gcc.version, "15.0") >= 0 then
+            os.exec("xmake f -c -p mingw --yes")
+            _build()
+        end
     elseif is_host("linux") then -- or is_host("macosx") then
-        -- gcc don't support std modules atm
-        -- local gcc = find_tool("gcc", {version = true})
-        -- if is_host("linux") and gcc and gcc.version and semver.compare(gcc.version, "11.0") >= 0 then
-            -- os.exec("xmake f -c --yes")
-            -- _build()
-        -- end
+        local gcc = find_tool("gcc", {version = true})
+        if is_host("linux") and gcc and gcc.version and semver.compare(gcc.version, "15.0") >= 0 then
+            os.exec("xmake f -c --yes")
+            _build()
+        end
         local clang = find_tool("clang", {version = true})
         if clang and clang.version and semver.compare(clang.version, "19.0") >= 0 then
-            -- clang don't support libstdc++ std modules atm
-            -- os.exec("xmake clean -a")
-            -- os.exec("xmake f --toolchain=clang -c --yes")
-            -- _build()
+            local gcc = find_tool("clang", {version = true})
+            if gcc and gcc.version and semver.compare(gcc.version, "15.0") >= 0 then
+                os.exec("xmake clean -a")
+                os.exec("xmake f --toolchain=clang -c --yes")
+                _build()
+            end
             os.exec("xmake clean -a")
             os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
             _build()
