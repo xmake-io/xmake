@@ -146,10 +146,24 @@ function _get_std_module_manifest_path(target)
             return modules_json_path
         end
     end
-    -- fallback on custom detection
-    -- manifest can be found alongside libstdc++.so
-
-    -- TODO
+    local ext = ".so"
+    if target:is_plat("windows") or target:is_plat("mingw") then
+        ext = ".dll"
+    elseif target:is_plat("macos") or target:is_plat("ios") or target:is_plat("tvos") then
+        ext = ".dylib"
+    end
+    local stdcpp_libfile, _ = try {
+        function()
+            return os.iorunv(compinst:program(), {"-print-file-name=libstdc++" .. ext}, {envs = compinst:runenvs()})
+        end
+    }
+    if stdcpp_libfile then
+        modules_json_path = path.join(path.directory(stdcpp_libfile), "libstdc++.modules.json")
+        modules_json_path = modules_json_path:trim()
+        if os.isfile(modules_json_path) then
+            return modules_json_path
+        end
+    end
 end
 
 function get_stdmodules(target)
