@@ -29,9 +29,6 @@ rule("win.sdk.application")
         target:set("kind", "binary")
     end)
 
-    -- set subsystem: windows
-    add_deps("platform.windows.subsystem")
-
     after_load(function (target)
         -- set windows subsystem
         if not target:values("windows.subsystem") then
