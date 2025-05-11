@@ -71,7 +71,7 @@ function _get_cpplibrary_name(target)
     elseif target:has_runtime("MD", "MT", "MDd", "MTd") then
         return "msstl"
     end
-    if target:is_plat("macosx") then
+    if target:is_plat("macosx") or target:is_plat("ios") or target:is_plat("tvos") then
         return "c++"
     elseif target:is_plat("linux") then
         return "stdc++"
