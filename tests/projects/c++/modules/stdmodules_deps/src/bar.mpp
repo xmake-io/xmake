@@ -4,8 +4,11 @@ import std;
 
 export auto my_sum2(std::size_t a, std::size_t b) -> std::size_t;
 
+#if defined(__GNUC__) && !defined(__clang__)
+inline
+#else
 module :private;
-
-auto my_sum2(std::size_t a, std::size_t b) -> std::size_t {
+#endif
+    auto my_sum2(std::size_t a, std::size_t b) -> std::size_t {
   return a + a + b + b;
 }

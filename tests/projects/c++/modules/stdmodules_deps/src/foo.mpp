@@ -3,9 +3,3 @@ export module foo;
 import std;
 
 export auto my_sum(std::size_t a, std::size_t b) -> std::size_t;
-
-module :private;
-
-auto my_sum(std::size_t a, std::size_t b) -> std::size_t {
-  return a + b;
-}

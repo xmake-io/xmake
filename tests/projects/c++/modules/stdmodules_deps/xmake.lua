@@ -3,6 +3,7 @@ set_languages("c++latest")
 
 target("foo")
     set_kind("static")
+    add_files("src/foo.cpp")
     add_files("src/foo.mpp", {public = true})
 
 target("bar")
