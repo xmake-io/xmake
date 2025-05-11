@@ -277,7 +277,11 @@ function get_stdmodules(target)
                     end
                 end
             elseif cpplib == "stdc++" then
-                -- libstdc++ doesn't have a std module file atm
+                -- dont be greedy and don't enable stdc++ std module support for llvm < 19
+                local clang_version = get_clang_version(target)
+                if clang_version and semver.compare(clang_version, "19.0") >= 0 then
+                    return import(".gcc.support").get_stdmodules(target, {warn = false})
+                end
             elseif cpplib == "msstl" then
                 -- msstl std module file is not compatible with llvm < 19
                 local clang_version = get_clang_version(target)

@@ -166,26 +166,29 @@ function _get_std_module_manifest_path(target)
     end
 end
 
-function get_stdmodules(target)
+function get_stdmodules(target, opt)
+    opt = opt or {}
     if not target:policy("build.c++.modules.std") then
         return
     end
     local modules_json_path = _get_std_module_manifest_path(target)
-    if not modules_json_path then
-        return
-    end
-    local modules_json = json.loadfile(modules_json_path)
-    if modules_json and modules_json.modules and #modules_json.modules > 0 then
-        local std_module_files = {}
-        local modules_json_dir = path.directory(modules_json_path)
-        for _, module_file in ipairs(modules_json.modules) do
-            local module_file_path = module_file["source-path"]
-            if not path.is_absolute(module_file_path) then
-                module_file_path = path.join(modules_json_dir, module_file_path)
+    if modules_json_path then
+        local modules_json = json.loadfile(modules_json_path)
+        if modules_json and modules_json.modules and #modules_json.modules > 0 then
+            local std_module_files = {}
+            local modules_json_dir = path.directory(modules_json_path)
+            for _, module_file in ipairs(modules_json.modules) do
+                local module_file_path = module_file["source-path"]
+                if not path.is_absolute(module_file_path) then
+                    module_file_path = path.join(modules_json_dir, module_file_path)
+                end
+                table.insert(std_module_files, path.normalize(module_file_path))
             end
-            table.insert(std_module_files, path.normalize(module_file_path))
+            return std_module_files
         end
-        return std_module_files
+    end
+    if not opt.dont_warn then
+        wprint("std and std.compat modules not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
     end
 end
 
