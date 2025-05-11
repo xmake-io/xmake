@@ -289,19 +289,7 @@ function get_stdmodules(target)
             local clang_version = get_clang_version(target)
             if clang_version and semver.compare(clang_version, "19.0") >= 0 then
                 local toolchain = target:toolchain("llvm") or target:toolchain("clang") or target:toolchain("clang-cl")
-                local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
-                if msvc and msvc:check({ignore_sdk = true}) then
-                    local vcvars = msvc:config("vcvars")
-                    if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                        local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-                        if os.isdir(stdmodulesdir) then
-                            return {path.normalize(path.join(stdmodulesdir, "std.ixx")), path.normalize(path.join(stdmodulesdir, "std.compat.ixx"))}
-                        end
-                    end
-                end
-            else
-                wprint("msstl std module file is not compatible with llvm < 19, please upgrade clang/clang-cl version!")
-                return
+                return import(".msvc.support").get_stdmodules(target, {dont_warn = false, toolchain = toolchain})
             end
         end
     end

@@ -99,7 +99,6 @@ end
 
 -- provide toolchain include dir for stl headerunit when p1689 is not supported
 function toolchain_includedirs(target)
-
     for _, toolchain_inst in ipairs(target:toolchains()) do
         if toolchain_inst:name() == "msvc" then
             local vcvars = toolchain_inst:config("vcvars")
@@ -117,22 +116,27 @@ function has_two_phase_compilation_support(_)
 end
 
 -- build c++23 standard modules if needed
-function get_stdmodules(target)
-
-    if target:policy("build.c++.modules.std") then
-        local msvc = target:toolchain("msvc")
-        if msvc then
-            local vcvars = msvc:config("vcvars")
-            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                modules = {}
-
-                local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-
-                if os.isdir(stdmodulesdir) then
-                    return {path.normalize(path.join(stdmodulesdir, "std.ixx")), path.normalize(path.join(stdmodulesdir, "std.compat.ixx"))}
-                end
+function get_stdmodules(target, opt)
+    opt = opt or {}
+    if not target:policy("build.c++.modules.std") then
+        return
+    end
+    local msvc
+    if opt.toolchain then
+        msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = opt.toolchain:plat(), arch = opt.toolchain:arch()})
+    else
+        msvc = target:toolchain("msvc")
+    end
+    if msvc and msvc:check() then
+        local vcvars = msvc:config("vcvars")
+        if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+            local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+            if os.isdir(stdmodulesdir) then
+                return {path.normalize(path.join(stdmodulesdir, "std.ixx")), path.normalize(path.join(stdmodulesdir, "std.compat.ixx"))}
             end
         end
+    end
+    if not opt.dont_warn then
         wprint("std and std.compat modules not found! disabling them for the build")
     end
 end
@@ -142,7 +146,6 @@ function get_bmi_extension()
 end
 
 function get_ifcoutputflag(target)
-
     local ifcoutputflag = _g.ifcoutputflag
     if ifcoutputflag == nil then
         local compinst = target:compiler("cxx")
@@ -156,7 +159,6 @@ function get_ifcoutputflag(target)
 end
 
 function get_ifconlyflag(target)
-
     local ifconlyflag = _g.ifconlyflag
     if ifconlyflag == nil then
         local compinst = target:compiler("cxx")
@@ -169,7 +171,6 @@ function get_ifconlyflag(target)
 end
 
 function get_interfaceflag(target)
-
     local interfaceflag = _g.interfaceflag
     if interfaceflag == nil then
         local compinst = target:compiler("cxx")
@@ -183,7 +184,6 @@ function get_interfaceflag(target)
 end
 
 function get_referenceflag(target)
-
     local referenceflag = _g.referenceflag
     if referenceflag == nil then
         local compinst = target:compiler("cxx")
@@ -197,7 +197,6 @@ function get_referenceflag(target)
 end
 
 function get_headernameflag(target)
-
     local headernameflag = _g.headernameflag
     if headernameflag == nil then
         local compinst = target:compiler("cxx")
@@ -211,7 +210,6 @@ function get_headernameflag(target)
 end
 
 function get_headerunitflag(target)
-
     local headerunitflag = _g.headerunitflag
     if headerunitflag == nil then
         local compinst = target:compiler("cxx")
@@ -226,7 +224,6 @@ function get_headerunitflag(target)
 end
 
 function get_exportheaderflag(target)
-
     local exportheaderflag = _g.exportheaderflag
     if exportheaderflag == nil then
         if get_headernameflag(target) then
@@ -238,7 +235,6 @@ function get_exportheaderflag(target)
 end
 
 function get_scandependenciesflag(target)
-
     local scandependenciesflag = _g.scandependenciesflag
     if scandependenciesflag == nil then
         local compinst = target:compiler("cxx")
@@ -261,7 +257,6 @@ function get_scandependenciesflag(target)
 end
 
 function get_cppversionflag(target)
-
     local cppversionflag = _g.cppversionflag
     if cppversionflag == nil then
         local compinst = target:compiler("cxx")
@@ -272,7 +267,6 @@ function get_cppversionflag(target)
 end
 
 function get_internalpartitionflag(target)
-
     local internalpartitionflag = _g.internalpartitionflag
     if internalpartitionflag == nil then
         local compinst = target:compiler("cxx")
