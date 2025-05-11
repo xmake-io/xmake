@@ -5,6 +5,7 @@
 ### New features
 
 * [#5926](https://github.com/xmake-io/xmake/issues/5926): Add MIDL support
+* [#6414](https://github.com/xmake-io/xmake/pull/6414): Add platform.windows.subsystem rule
 
 ### Changes
 
@@ -1984,6 +1985,7 @@
 ### 新特性
 
 * [#5926](https://github.com/xmake-io/xmake/issues/5926): 添加 MIDL 支持
+* [#6414](https://github.com/xmake-io/xmake/pull/6414): 添加 platform.windows.subsystem 规则
 
 ### 改进
 
