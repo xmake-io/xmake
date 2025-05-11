@@ -87,7 +87,9 @@ function application(target, mfc_kind)
     _remove_flags(target)
 
     -- set windows subsystem
-    target:add("ldflags", "-subsystem:windows", {force = true})
+    if not target:values("windows.subsystem") then
+        target:values_set("windows.subsystem", "windows")
+    end
 
     -- forces a link to complete even with unresolved symbols
     if mfc_kind == "static" then
