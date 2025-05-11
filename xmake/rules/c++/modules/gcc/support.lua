@@ -183,7 +183,7 @@ function get_stdmodules(target)
             if not path.is_absolute(module_file_path) then
                 module_file_path = path.join(modules_json_dir, module_file_path)
             end
-            table.insert(std_module_files, module_file_path)
+            table.insert(std_module_files, path.normalize(module_file_path))
         end
         return std_module_files
     end
