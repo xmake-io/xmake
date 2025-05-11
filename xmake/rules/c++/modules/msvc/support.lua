@@ -27,9 +27,6 @@ import(".support", {inherit = true})
 -- load module support for the current target
 function load(target)
 
-    local msvc = target:toolchain("msvc")
-    local vcvars = msvc:config("vcvars")
-
     -- enable std modules if c++23 by defaults
     if target:data("c++.msvc.enable_std_import") == nil and target:policy("build.c++.modules.std") then
         local languages = target:get("languages")
@@ -56,19 +53,18 @@ function load(target)
     end
 end
 
--- strip flags that doesn't affect bmi generation
-function strip_flags(target, flags)
+-- flags that doesn't affect bmi generation
+function strippeable_flags()
+
     -- speculative list as there is no resource that list flags that prevent reusability, this list will likely be improve over time
     -- @see https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically?view=msvc-170
-    local strippable_flags = {
-        "I",
+    local strippeable_flags = {
         "TP",
         "errorReport",
         "W",
         "w",
         "sourceDependencies",
         "scanDependencies",
-        "reference",
         "PD",
         "nologo",
         "MP",
@@ -76,10 +72,8 @@ function strip_flags(target, flags)
         "interface",
         "ifcOutput",
         "help",
-        "headerUnit",
         "headerName",
         "Fp",
-        "Fo",
         "Fm",
         "Fe",
         "Fd",
@@ -94,30 +88,18 @@ function strip_flags(target, flags)
         "analyze",
         "?",
     }
-    local strict = target:policy("build.c++.modules.reuse.strict") or
-                   target:policy("build.c++.modules.tryreuse.discriminate_on_defines")
-    if not strict then
-        table.join2(strippable_flags, {"D", "U"})
-    end
-    local output = {}
-    for _, flag in ipairs(flags) do
-        local strip = false
-        for _, _flag in ipairs(strippable_flags) do
-            if flag:startswith("cl::-" .. _flag) or flag:startswith("cl::/" .. _flag) or
-               flag:startswith("-" .. _flag) or flag:startswith("/" .. _flag) then
-                strip = true
-                break
-            end
-        end
-        if not strip then
-            table.insert(output, flag)
-        end
-    end
-    return output
+    local splitted_strippeable_flags = {
+        "Fo",
+        "I",
+        "reference",
+        "headerUnit",
+    }
+    return strippeable_flags, splitted_strippeable_flags
 end
 
 -- provide toolchain include dir for stl headerunit when p1689 is not supported
 function toolchain_includedirs(target)
+
     for _, toolchain_inst in ipairs(target:toolchains()) do
         if toolchain_inst:name() == "msvc" then
             local vcvars = toolchain_inst:config("vcvars")
@@ -130,20 +112,24 @@ function toolchain_includedirs(target)
     raise("msvc toolchain includedirs not found!")
 end
 
+function has_two_phase_compilation_support(_)
+    return false
+end
+
 -- build c++23 standard modules if needed
 function get_stdmodules(target)
+
     if target:policy("build.c++.modules.std") then
-        if target:data("c++.msvc.enable_std_import") then
-            local msvc = target:toolchain("msvc")
-            if msvc then
-                local vcvars = msvc:config("vcvars")
-                if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                    modules = {}
+        local msvc = target:toolchain("msvc")
+        if msvc then
+            local vcvars = msvc:config("vcvars")
+            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                modules = {}
 
-                    local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-                    assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
+                local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
 
-                    return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
+                if os.isdir(stdmodulesdir) then
+                    return {path.normalize(path.join(stdmodulesdir, "std.ixx")), path.normalize(path.join(stdmodulesdir, "std.compat.ixx"))}
                 end
             end
         end
@@ -156,6 +142,7 @@ function get_bmi_extension()
 end
 
 function get_ifcoutputflag(target)
+
     local ifcoutputflag = _g.ifcoutputflag
     if ifcoutputflag == nil then
         local compinst = target:compiler("cxx")
@@ -169,6 +156,7 @@ function get_ifcoutputflag(target)
 end
 
 function get_ifconlyflag(target)
+
     local ifconlyflag = _g.ifconlyflag
     if ifconlyflag == nil then
         local compinst = target:compiler("cxx")
@@ -180,20 +168,8 @@ function get_ifconlyflag(target)
     return ifconlyflag or nil
 end
 
-function get_ifcsearchdirflag(target)
-    local ifcsearchdirflag = _g.ifcsearchdirflag
-    if ifcsearchdirflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags({"-ifcSearchDir", os.tmpdir()}, "cxxflags", {flagskey = "cl_ifc_search_dir"})  then
-            ifcsearchdirflag = "-ifcSearchDir"
-        end
-        assert(ifcsearchdirflag, "compiler(msvc): does not support c++ module flag(/ifcSearchDir)!")
-        _g.ifcsearchdirflag = ifcsearchdirflag or false
-    end
-    return ifcsearchdirflag or nil
-end
-
 function get_interfaceflag(target)
+
     local interfaceflag = _g.interfaceflag
     if interfaceflag == nil then
         local compinst = target:compiler("cxx")
@@ -207,6 +183,7 @@ function get_interfaceflag(target)
 end
 
 function get_referenceflag(target)
+
     local referenceflag = _g.referenceflag
     if referenceflag == nil then
         local compinst = target:compiler("cxx")
@@ -220,6 +197,7 @@ function get_referenceflag(target)
 end
 
 function get_headernameflag(target)
+
     local headernameflag = _g.headernameflag
     if headernameflag == nil then
         local compinst = target:compiler("cxx")
@@ -233,6 +211,7 @@ function get_headernameflag(target)
 end
 
 function get_headerunitflag(target)
+
     local headerunitflag = _g.headerunitflag
     if headerunitflag == nil then
         local compinst = target:compiler("cxx")
@@ -247,6 +226,7 @@ function get_headerunitflag(target)
 end
 
 function get_exportheaderflag(target)
+
     local exportheaderflag = _g.exportheaderflag
     if exportheaderflag == nil then
         if get_headernameflag(target) then
@@ -258,6 +238,7 @@ function get_exportheaderflag(target)
 end
 
 function get_scandependenciesflag(target)
+
     local scandependenciesflag = _g.scandependenciesflag
     if scandependenciesflag == nil then
         local compinst = target:compiler("cxx")
@@ -280,6 +261,7 @@ function get_scandependenciesflag(target)
 end
 
 function get_cppversionflag(target)
+
     local cppversionflag = _g.cppversionflag
     if cppversionflag == nil then
         local compinst = target:compiler("cxx")
@@ -290,6 +272,7 @@ function get_cppversionflag(target)
 end
 
 function get_internalpartitionflag(target)
+
     local internalpartitionflag = _g.internalpartitionflag
     if internalpartitionflag == nil then
         local compinst = target:compiler("cxx")
