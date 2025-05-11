@@ -637,8 +637,11 @@ end
 -- topological sort
 function sort_modules_by_dependencies(target, modules)
 
-    local changed = support.memcache():get2(target:fullname(), "modules.changed")
-    if changed then
+    local memcache = support.memcache()
+    local localcache = support.localcache()
+    local changed = memcache:get2(target:fullname(), "modules.changed")
+    local built_artifacts = localcache:get2(target:fullname(), "c++.modules.built_artifacts")
+    if changed or not built_artifacts then
         local built_modules = {}
         local built_headerunits = {}
         local objectfiles = {}
@@ -751,11 +754,12 @@ function sort_modules_by_dependencies(target, modules)
         table.sort(objectfiles)
         built_headerunits = table.unique(built_headerunits)
 
-        support.localcache():set2(target:fullname(), "c++.modules.built_artifacts", {modules = built_modules, headerunits = built_headerunits, objectfiles = objectfiles})
-        support.localcache():save()
-        support.memcache():set2(target:fullname(), "modules.changed", false)
+        built_artifacts = {modules = built_modules, headerunits = built_headerunits, objectfiles = objectfiles}
+        localcache:set2(target:fullname(), "c++.modules.built_artifacts", built_artifacts)
+        localcache:save()
+        memcache:set2(target:fullname(), "modules.changed", false)
     end
-    local built_artifacts = support.localcache():get2(target:fullname(), "c++.modules.built_artifacts")
+    assert(built_artifacts, "shouldn't assert here, please open an issue")
     return built_artifacts.modules, built_artifacts.headerunits, built_artifacts.objectfiles
 end
 
