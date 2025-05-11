@@ -51,7 +51,7 @@ function _compile(target, flags, sourcefile, outputfile)
     local dryrun = option.get("dry-run")
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
-    flags = table.join(compflags or {}, flags)
+    flags = table.join(compflags or {}, flags or {})
 
     -- trace
     if option.get("verbose") then
@@ -69,7 +69,7 @@ end
 function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile)
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
-    flags = table.join("-c", compflags or {}, flags, {"-o", outputfile, sourcefile})
+    flags = table.join("-c", compflags or {}, flags or {}, {"-o", outputfile, sourcefile})
     batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
 end
 

@@ -53,6 +53,7 @@ end
 
 function _compile_one_step(target, module, opt)
     -- get flags
+    local module_outputflag = support.get_moduleoutputflag(target)
     if module_outputflag then
         local flags = _make_modulebuildflags(target, module, {bmi = true, objectfile = true})
         if opt and opt.batchcmds then
@@ -101,7 +102,7 @@ function _compile(target, flags, sourcefile, outputfile, opt)
     local dryrun = option.get("dry-run")
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
-    flags = table.join(flags or {}, compflags or {})
+    flags = table.join(compflags or {}, flags or {})
 
     local bmifile = opt and opt.bmifile
 
@@ -122,7 +123,7 @@ function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile, op
     opt = opt or {}
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
-    flags = table.join("-c", compflags or {}, flags, {"-o", outputfile, opt.bmifile or sourcefile})
+    flags = table.join("-c", compflags or {}, flags or {}, {"-o", outputfile, opt.bmifile or sourcefile})
     batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
 end
 

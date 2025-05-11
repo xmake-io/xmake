@@ -129,7 +129,7 @@ function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile)
     opt = opt or {}
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
-    flags = table.join("/c", compflags or {}, outputfile and "-Fo" .. outputfile or {}, flags or {}, sourcefile or {})
+    flags = table.join("/c", compflags or {}, flags or {}, outputfile and "-Fo" .. outputfile or {}, sourcefile or {})
     batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
 end
 
