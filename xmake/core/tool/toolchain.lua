@@ -521,6 +521,11 @@ function _instance:_checktool(toolkind, toolpath)
     if tool then
         program = tool.program
         toolname = toolname or tool.name
+    else
+        -- we need reset result if not found
+        -- https://github.com/xmake-io/xmake/discussions/6415#discussioncomment-13099816
+        program = nil
+        toolname = nil
     end
 
     -- get tool description from the tool kind
