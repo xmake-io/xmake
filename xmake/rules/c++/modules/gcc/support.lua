@@ -61,6 +61,13 @@ function load(target)
     -- https://github.com/xmake-io/xmake/issues/3855
     local cxx11abi = target:policy("build.c++.modules.gcc.cxx11abi") or
                      target:policy("build.c++.gcc.modules.cxx11abi")
+    if cxx11abi == nil then
+        -- enable cxx11abi on GCC >= 15 as it is required for C++23 module
+        local gcc_version = get_gcc_version(target)
+        if gcc_version and semver.compare(gcc_version, "15") > 0 then
+            cxx11abi = true
+        end
+    end
     if cxx11abi then
         target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=1")
     else
