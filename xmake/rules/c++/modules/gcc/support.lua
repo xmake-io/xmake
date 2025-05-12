@@ -149,7 +149,7 @@ function _get_std_module_manifest_path(target)
     local ext = ".so"
     if target:is_plat("windows", "mingw") then
         ext = ".dll"
-    elseif target:is_plat("macos", "iphoneos", "tvos") then
+    elseif target:is_plat("macosx", "iphoneos", "appletvos") then
         ext = ".dylib"
     end
     local stdcpp_libfile, _ = try {
