@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.semver")
+import("core.tool.toolchain")
 import("core.project.config")
 import("lib.detect.find_tool")
 import(".support", {inherit = true})
@@ -123,7 +124,7 @@ function get_stdmodules(target, opt)
     end
     local msvc
     if opt.toolchain then
-        msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = opt.toolchain:plat(), arch = opt.toolchain:arch()})
+        msvc = toolchain.load("msvc", {plat = opt.toolchain:plat(), arch = opt.toolchain:arch()})
     else
         msvc = target:toolchain("msvc")
     end
