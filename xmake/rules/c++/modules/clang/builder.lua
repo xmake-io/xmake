@@ -32,8 +32,9 @@ import(".mapper")
 import(".builder", {inherit = true})
 
 function _make_modulebuildflags(target, module, opt)
+    assert(not module.headerunit)
     local flags
-    if opt and opt.bmi then
+    if opt.bmi then
         local module_outputflag = support.get_moduleoutputflag(target)
 
         flags = {"-x", "c++-module"}
@@ -45,20 +46,25 @@ function _make_modulebuildflags(target, module, opt)
             table.join2(flags, {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier", "-Wno-deprecated-declarations"})
         end
         table.insert(flags, module_outputflag .. module.bmifile)
-    elseif not module.headerunit and not module.implementation and not module.interface then
+    else
         flags = {"-x", "c++"}
+        local std = (module.name == "std" or module.name == "std.compat")
+        if std then
+            table.join2(flags, {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier", "-Wno-deprecated-declarations"})
+        end
     end
     return flags
 end
 
 function _compile_one_step(target, module, opt)
     -- get flags
+    local module_outputflag = support.get_moduleoutputflag(target)
     if module_outputflag then
-        local flags = _make_modulebuildflags(target, module, {bmi = true, objectfile = true})
+        local flags = _make_modulebuildflags(target, module, opt)
         if opt and opt.batchcmds then
-            _batchcmds_compile(opt.batchcmds, target, flags, module.sourcefile, module.objectfile)
+            _batchcmds_compile(opt.batchcmds, target, flags, module, opt)
         else
-            _compile(target, flags, module.sourcefile, module.objectfile)
+            _compile(target, flags, module, opt)
         end
     else
         _compile_bmi_step(target, module, opt)
@@ -67,20 +73,20 @@ function _compile_one_step(target, module, opt)
 end
 
 function _compile_bmi_step(target, module, opt)
-    local flags = _make_modulebuildflags(target, module, {bmi = true, objectfile = false})
+    local flags = _make_modulebuildflags(target, module, opt)
     if opt and opt.batchcmds then
-        _batchcmds_compile(opt.batchcmds, target, flags, module.sourcefile, module.bmifile, opt)
+        _batchcmds_compile(opt.batchcmds, target, flags, module, opt)
     else
-        _compile(target, flags, module.sourcefile, module.bmifile)
+        _compile(target, flags, module, opt)
     end
 end
 
 function _compile_objectfile_step(target, module, opt)
-    local flags = _make_modulebuildflags(target, module, {bmi = false, objectfile = false})
+    local flags = _make_modulebuildflags(target, module, opt)
     if opt and opt.batchcmds then
-        _batchcmds_compile(opt.batchcmds, target, flags, module.sourcefile, module.objectfile, {bmifile = module.bmifile})
+        _batchcmds_compile(opt.batchcmds, target, flags, module, opt)
     else
-        _compile(target, flags, module.sourcefile, module.objectfile, {bmifile = module.bmifile})
+        _compile(target, flags, module, opt)
     end
 end
 
@@ -96,34 +102,47 @@ function _make_headerunitflags(target, headerunit)
 end
 
 -- do compile
-function _compile(target, flags, sourcefile, outputfile, opt)
+function _compile(target, flags, module, opt)
+
     opt = opt or {}
+    local sourcefile = module.sourcefile
+    local outputfile = ((opt.bmi and not opt.objectfile) or opt.headerunit) and module.bmifile or module.objectfile
     local dryrun = option.get("dry-run")
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
-    flags = table.join(flags or {}, compflags or {})
-
-    local bmifile = opt and opt.bmifile
-
+    flags = table.join(compflags or {}, flags or {})
     -- trace
+    local cmd
     if option.get("verbose") then
-        print(compinst:compcmd(bmifile or sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true}))
+        cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true})
     end
+    show_progress(target, module, table.join(opt, {cmd = cmd}))
 
     -- do compile
     if not dryrun then
-        assert(compinst:compile(bmifile or sourcefile, outputfile, {target = target, compflags = flags}))
+        assert(compinst:compile(sourcefile, outputfile, {target = target, compflags = flags}))
     end
 end
 
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
-function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile, opt)
+function _batchcmds_compile(batchcmds, target, flags, module, opt)
     opt = opt or {}
+    local sourcefile = module.sourcefile
+    local outputfile = (opt.bmi and not opt.objectfile) and module.bmifile or module.objectfile
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
-    flags = table.join("-c", compflags or {}, flags, {"-o", outputfile, opt.bmifile or sourcefile})
-    batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
+    flags = table.join("-c", compflags or {}, flags or {}, {"-o", outputfile, sourcefile})
+
+    -- trace
+    local cmd
+    if option.get("verbose") then
+        cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true})
+    end
+    show_progress(target, module, table.join(opt, {cmd = cmd, batchcmds = batchcmds}))
+
+    -- do compile
+    batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx", verbose = false})
 end
 
 -- get module requires flags
@@ -223,15 +242,12 @@ function make_module_job(target, module, opt)
         end
 
         if bmi and objectfile then
-            progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), module.name)
-            _compile_one_step(target, module)
+            _compile_one_step(target, module, opt)
         elseif bmi then
-            progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.bmi.$(mode) %s", target:fullname(), module.name)
-            _compile_bmi_step(target, module)
+            _compile_bmi_step(target, module, opt)
         else
             if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
-                progress.show(opt.progress, "compiling.$(mode) %s", module.sourcefile)
-                _compile_objectfile_step(target, module)
+                _compile_objectfile_step(target, module, opt)
             else
                 os.tryrm(module.objectfile) -- force rebuild for .cpp files
             end
@@ -257,15 +273,12 @@ function make_module_buildcmds(target, batchcmds, module, opt)
         end
 
         if bmi and objectfile then
-            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), module.name)
-            _compile_one_step(target, module, {batchcmds = batchcmds})
+            _compile_one_step(target, module, table.join(opt, {batchcmds = batchcmds}))
         elseif bmi then
-            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.bmi.$(mode) %s", target:fullname(), module.name)
-            _compile_bmi_step(target, module, {batchcmds = batchcmds})
+            _compile_bmi_step(target, module, table.join(opt, {batchcmds = batchcmds}))
         else
             if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
-                batchcmds:show_progress(opt.progress, "compiling.$(mode) %s", module.sourcefile)
-                _compile_objectfile_step(target, module, {batchcmds = batchcmds})
+                _compile_objectfile_step(target, module, table.join(opt, {batchcmds = batchcmds}))
             else
                 batchcmds:rm(module.objectfile) -- force rebuild for .cpp files
             end
@@ -279,9 +292,7 @@ end
 function make_headerunit_job(target, headerunit, opt)
     local build = should_build(target, headerunit)
     if build then
-        local name = headerunit.unique and path.filename(headerunit.name) or headerunit.name
-        progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
-        _compile(target, _make_headerunitflags(target, headerunit), headerunit.sourcefile, headerunit.bmifile)
+        _compile(target, _make_headerunitflags(target, headerunit), headerunit, table.join(opt, {headerunit = true}))
     end
 end
 
@@ -293,9 +304,7 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, opt)
 
     local build = should_build(target, headerunit)
     if build then
-        local name = headerunit.unique and path.filename(headerunit.name) or headerunit.name
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
-        _batchcmds_compile(batchcmds, target, table.join(_make_headerunitflags(target, headerunit)), headerunit.sourcefile, headerunit.bmifile)
+        _batchcmds_compile(batchcmds, target, table.join(_make_headerunitflags(target, headerunit)), headerunit, table.join(opt, {headerunit = true}))
         batchcmds:add_depfiles(headerunit.sourcefile)
     end
     batchcmds:add_depvalues(depvalues)

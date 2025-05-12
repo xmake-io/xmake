@@ -34,12 +34,13 @@ import(".builder", {inherit = true})
 
 -- get flags for building a module
 function _make_modulebuildflags(target, module, opt)
+    opt = opt or {}
     local ifcoutputflag = support.get_ifcoutputflag(target)
     local ifconlyflag = support.get_ifconlyflag(target)
     local interfaceflag = support.get_interfaceflag(target)
     local internalpartitionflag = support.get_internalpartitionflag(target)
 
-    local bmionly = opt and opt.bmionly
+    local bmionly = opt.bmi and not opt.objectfile
 
     local flags
     if module.interface or module.implementation then -- named module
@@ -54,9 +55,9 @@ function _compile_one_step(target, module, opt)
     -- get flags
     local flags = _make_modulebuildflags(target, module)
     if opt and opt.batchcmds then
-        _batchcmds_compile(opt.batchcmds, target, flags, module.sourcefile, module.objectfile)
+        _batchcmds_compile(opt.batchcmds, target, flags, module, opt)
     else
-        _compile(target, flags, module.sourcefile, module.objectfile)
+        _compile(target, flags, module, opt)
     end
 end
 
@@ -65,11 +66,11 @@ function _compile_bmi_step(target, module, opt)
     if not ifconlyflag then
         _compile_one_step(target, module, opt)
     else
-        local flags = _make_modulebuildflags(target, module, {bmionly = true})
+        local flags = _make_modulebuildflags(target, module, opt)
         if opt and opt.batchcmds then
-            _batchcmds_compile(opt.batchcmds, target, flags, module.sourcefile, module.objectfile)
+            _batchcmds_compile(opt.batchcmds, target, flags, module, opt)
         else
-            _compile(target, flags, module.sourcefile, module.objectfile)
+            _compile(target, flags, module, opt)
         end
     end
 end
@@ -77,9 +78,9 @@ end
 function _compile_objectfile_step(target, module, opt)
     local flags = _make_modulebuildflags(target, module)
     if opt and opt.batchcmds then
-        _batchcmds_compile(opt.batchcmds, target, flags, module.sourcefile, module.objectfile)
+        _batchcmds_compile(opt.batchcmds, target, flags, module, opt)
     else
-        _compile(target, flags, module.sourcefile, module.objectfile)
+        _compile(target, flags, module, opt)
     end
 end
 
@@ -102,20 +103,25 @@ function _make_headerunitflags(target, headerunit, headertype)
 end
 
 -- do compile
-function _compile(target, flags, sourcefile, outputfile)
+function _compile(target, flags, module, opt)
+    opt = opt or {}
+    local sourcefile = module.sourcefile
+    local outputfile = opt.headerunit and nil or module.objectfile
     local dryrun = option.get("dry-run")
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
     flags = table.join(compflags or {}, flags or {})
 
     -- trace
+    local cmd
     if option.get("verbose") then
         if not outputfile then
-            print(os.args(table.join(compinst:program(), flags, sourcefile)))
+            cmd = "\n" .. os.args(table.join(compinst:program(), flags, sourcefile))
         else
-            print(compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true}))
+            cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true})
         end
     end
+    show_progress(target, module, table.join(opt, {cmd = cmd}))
 
     -- do compile
     if not dryrun then
@@ -125,12 +131,27 @@ end
 
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
-function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile)
+function _batchcmds_compile(batchcmds, target, flags, module, opt)
     opt = opt or {}
+    local sourcefile = module.sourcefile
+    local outputfile = opt.headerunit and nil or module.objectfile
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
-    flags = table.join("/c", compflags or {}, outputfile and "-Fo" .. outputfile or {}, flags or {}, sourcefile or {})
-    batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
+    flags = table.join("/c", compflags or {}, flags or {}, outputfile and "-Fo" .. outputfile or {}, sourcefile or {})
+
+    -- trace
+    local cmd
+    if option.get("verbose") then
+        if not outputfile then
+            cmd = "\n" .. os.args(table.join(compinst:program(), flags, sourcefile))
+        else
+            cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true})
+        end
+    end
+    show_progress(target, module, table.join(opt, {cmd = cmd, batchcmds = batchcmds}))
+
+    -- do compile
+    batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx", verbose = false})
 end
 
 -- get module requires flags
@@ -233,15 +254,12 @@ function make_module_job(target, module, opt)
         end
 
         if bmi and objectfile then
-            progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), module.name)
-            _compile_one_step(target, module)
+            _compile_one_step(target, module, opt)
         elseif bmi then
-            progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.bmi.$(mode) %s", target:fullname(), module.name)
-            _compile_bmi_step(target, module)
+            _compile_bmi_step(target, module, opt)
         else
             if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
-                progress.show(opt.progress, "compiling.$(mode) %s", module.sourcefile)
-                _compile_objectfile_step(target, module)
+                _compile_objectfile_step(target, module, opt)
             else
                 os.tryrm(module.objectfile) -- force rebuild for .cpp files
             end
@@ -265,15 +283,12 @@ function make_module_buildcmds(target, batchcmds, module, opt)
             batchcmds:mkdir(bmidir)
         end
         if bmi and objectfile then
-            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), module.name)
-            _compile_one_step(target, module, {batchcmds = batchcmds})
+            _compile_one_step(target, module, table.join(opt, {batchcmds = batchcmds}))
         elseif bmi then
-            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.bmi.$(mode) %s", target:fullname(), module.name)
-            _compile_bmi_step(target, module, {batchcmds = batchcmds})
+            _compile_bmi_step(target, module, table.join(opt, {batchcmds = batchcmds}))
         else
             if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
-                batchcmds:show_progress(opt.progress, "compiling.$(mode) %s", module.sourcefile)
-                _compile_objectfile_step(target, module, {batchcmds = batchcmds})
+                _compile_objectfile_step(target, module, table.join(opt, {batchcmds = batchcmds}))
             else
                 batchcmds:rm(module.objectfile) -- force rebuild for .cpp files
             end
@@ -287,10 +302,8 @@ end
 function make_headerunit_job(target, headerunit, opt)
     local build = should_build(target, headerunit)
     if build then
-        local name = headerunit.unique and path.filename(headerunit.name) or headerunit.name
         local headertype = (headerunit.method == "include-angle") and ":angle" or ":quote"
-        progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
-        _compile(target, _make_headerunitflags(target, headerunit, headertype), (headertype == ":angle") and headerunit.name or headerunit.sourcefile)
+        _compile(target, _make_headerunitflags(target, headerunit, headertype), {sourcefile = (headertype == ":angle") and headerunit.name or headerunit.sourcefile}, table.join(opt, {headerunit = true}))
     end
 end
 
@@ -302,10 +315,8 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, opt)
 
     local build = should_build(target, headerunit)
     if build then
-        local name = headerunit.unique and path.filename(headerunit.name) or headerunit.name
         local headertype = (headerunit.method == "include-angle") and ":angle" or ":quote"
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
-        _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, headertype), (headertype == ":angle") and headerunit.name or headerunit.sourcefile)
+        _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, headertype), {(headertype == ":angle") and headerunit.name or headerunit.sourcefile}, table.join(opt, {headerunit = true}))
         batchcmds:add_depfiles(headerunit.sourcefile)
     end
     batchcmds:add_depvalues(depvalues)

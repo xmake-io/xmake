@@ -45,7 +45,7 @@ function scan_dependency_for(target, sourcefile, opt)
 
     depend.on_changed(function ()
         if opt.progress and not os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR") then
-            progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:fullname(), sourcefile)
+            progress.show(opt.progress, "${clear}${color.build.target}<%s> generating.module.deps %s", target:fullname(), sourcefile)
         end
         
         local outputdir = support.get_outputdir(target, sourcefile, {scan = true})
