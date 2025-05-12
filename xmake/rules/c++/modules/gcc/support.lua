@@ -61,6 +61,13 @@ function load(target)
     -- https://github.com/xmake-io/xmake/issues/3855
     local cxx11abi = target:policy("build.c++.modules.gcc.cxx11abi") or
                      target:policy("build.c++.gcc.modules.cxx11abi")
+    if cxx11abi == nil then
+        -- enable cxx11abi on GCC >= 15 as it is required for C++23 module
+        local gcc_version = get_gcc_version(target)
+        if gcc_version and semver.compare(gcc_version, "15") > 0 then
+            cxx11abi = true
+        end
+    end
     if cxx11abi then
         target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=1")
     else
@@ -139,10 +146,24 @@ function _get_std_module_manifest_path(target)
             return modules_json_path
         end
     end
-    -- fallback on custom detection
-    -- manifest can be found alongside libstdc++.so
-
-    -- TODO
+    local ext = ".so"
+    if target:is_plat("windows", "mingw") then
+        ext = ".dll"
+    elseif target:is_plat("macosx", "iphoneos", "appletvos") then
+        ext = ".dylib"
+    end
+    local stdcpp_libfile, _ = try {
+        function()
+            return os.iorunv(compinst:program(), {"-print-file-name=libstdc++" .. ext}, {envs = compinst:runenvs()})
+        end
+    }
+    if stdcpp_libfile then
+        modules_json_path = path.join(path.directory(stdcpp_libfile), "libstdc++.modules.json")
+        modules_json_path = modules_json_path:trim()
+        if os.isfile(modules_json_path) then
+            return modules_json_path
+        end
+    end
 end
 
 function get_stdmodules(target)
@@ -150,22 +171,22 @@ function get_stdmodules(target)
         return
     end
     local modules_json_path = _get_std_module_manifest_path(target)
-    if not modules_json_path then
-        return
-    end
-    local modules_json = json.loadfile(modules_json_path)
-    if modules_json and modules_json.modules and #modules_json.modules > 0 then
-        local std_module_files = {}
-        local modules_json_dir = path.directory(modules_json_path)
-        for _, module_file in ipairs(modules_json.modules) do
-            local module_file_path = module_file["source-path"]
-            if not path.is_absolute(module_file_path) then
-                module_file_path = path.join(modules_json_dir, module_file_path)
+    if modules_json_path then
+        local modules_json = json.loadfile(modules_json_path)
+        if modules_json and modules_json.modules and #modules_json.modules > 0 then
+            local std_module_files = {}
+            local modules_json_dir = path.directory(modules_json_path)
+            for _, module_file in ipairs(modules_json.modules) do
+                local module_file_path = module_file["source-path"]
+                if not path.is_absolute(module_file_path) then
+                    module_file_path = path.join(modules_json_dir, module_file_path)
+                end
+                table.insert(std_module_files, path.normalize(module_file_path))
             end
-            table.insert(std_module_files, module_file_path)
+            return std_module_files
         end
-        return std_module_files
     end
+    wprint("std and std.compat modules not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
 end
 
 function get_bmi_extension()

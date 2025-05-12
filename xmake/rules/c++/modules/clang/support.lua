@@ -71,7 +71,7 @@ function _get_cpplibrary_name(target)
     elseif target:has_runtime("MD", "MT", "MDd", "MTd") then
         return "msstl"
     end
-    if target:is_plat("macosx") then
+    if target:is_plat("macosx", "iphoneos", "appletvos") then
         return "c++"
     elseif target:is_plat("linux") then
         return "stdc++"
@@ -258,49 +258,42 @@ end
 
 function get_stdmodules(target)
 
-    if target:policy("build.c++.modules.std") then
-        local cpplib = _get_cpplibrary_name(target)
-        if cpplib then
-            if cpplib == "c++" then
-                -- libc++ module is found by parsing libc++.modules.json
-                local modules_json_path = _get_std_module_manifest_path(target)
-                if modules_json_path then
-                    local modules_json = json.decode(io.readfile(modules_json_path))
-                    if modules_json and modules_json.modules and #modules_json.modules > 0 then
-                        local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
-                        if not path.is_absolute(std_module_directory) then
-                            std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
-                        end
-                        if os.isdir(std_module_directory) then
-                            return {path.normalize(path.join(std_module_directory, "std.cppm")), path.normalize(path.join(std_module_directory, "std.compat.cppm"))}
-                        end
+    if not target:policy("build.c++.modules.std") then
+        return
+    end
+    local cpplib = _get_cpplibrary_name(target)
+    if cpplib then
+        if cpplib == "c++" then
+            -- libc++ module is found by parsing libc++.modules.json
+            local modules_json_path = _get_std_module_manifest_path(target)
+            if modules_json_path then
+                local modules_json = json.decode(io.readfile(modules_json_path))
+                if modules_json and modules_json.modules and #modules_json.modules > 0 then
+                    local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
+                    if not path.is_absolute(std_module_directory) then
+                        std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
                     end
-                end
-            elseif cpplib == "stdc++" then
-                -- libstdc++ doesn't have a std module file atm
-            elseif cpplib == "msstl" then
-                -- msstl std module file is not compatible with llvm < 19
-                local clang_version = get_clang_version(target)
-                if clang_version and semver.compare(clang_version, "19.0") >= 0 then
-                    local toolchain = target:toolchain("llvm") or target:toolchain("clang") or target:toolchain("clang-cl")
-                    local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
-                    if msvc and msvc:check({ignore_sdk = true}) then
-                        local vcvars = msvc:config("vcvars")
-                        if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                            local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-                            if os.isdir(stdmodulesdir) then
-                                return {path.normalize(path.join(stdmodulesdir, "std.ixx")), path.normalize(path.join(stdmodulesdir, "std.compat.ixx"))}
-                            end
-                        end
+                    if os.isdir(std_module_directory) then
+                        return {path.normalize(path.join(std_module_directory, "std.cppm")), path.normalize(path.join(std_module_directory, "std.compat.cppm"))}
                     end
-                else
-                    wprint("msstl std module file is not compatible with llvm < 19, please upgrade clang/clang-cl version!")
-                    return
                 end
             end
+        elseif cpplib == "stdc++" then
+            -- dont be greedy and don't enable stdc++ std module support for llvm < 19
+            local clang_version = get_clang_version(target)
+            if clang_version and semver.compare(clang_version, "19.0") >= 0 then
+                return import(".gcc.support").get_stdmodules(target)
+            end
+        elseif cpplib == "msstl" then
+            -- msstl std module file is not compatible with llvm < 19
+            local clang_version = get_clang_version(target)
+            if clang_version and semver.compare(clang_version, "19.0") >= 0 then
+                local toolchain = target:toolchain("llvm") or target:toolchain("clang") or target:toolchain("clang-cl")
+                return import(".msvc.support").get_stdmodules(target, {toolchain = toolchain})
+            end
         end
-        wprint("std and std.compat modules not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
     end
+    wprint("std and std.compat modules not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
 end
 
 function get_bmi_extension()

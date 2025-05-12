@@ -101,7 +101,7 @@ function policy.policies()
             -- If in the future, gcc can support it well, we'll turn it on by default
             -- https://github.com/xmake-io/xmake/issues/3855
             ["build.c++.modules.gcc.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc.", type = "boolean"},
-            ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc. (deprecated)", type = "boolean", default = false},
+            ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc. (deprecated)", type = "boolean"},
             -- Set the default vs runtime, e.g. MT, MD
             ["build.c++.msvc.runtime"]            = {description = "Set the default vs runtime.", type = "string", values = {"MT", "MD"}},
             -- Enable cuda device link
