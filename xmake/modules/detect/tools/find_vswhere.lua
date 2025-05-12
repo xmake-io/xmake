@@ -55,6 +55,7 @@ function main(opt)
         "$(env ProgramFiles%(x86%))\\Microsoft Visual Studio\\Installer",
         "$(env ProgramFiles)\\Microsoft Visual Studio\\Installer"
     }
+    opt.paths = table.wrap(opt.paths)
     local program = find_program(opt.program or "vswhere.exe", opt)
 
     -- find program version

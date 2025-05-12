@@ -41,7 +41,7 @@ function main(opt)
     if not program and is_host("macosx") then
         local llvm = try {function () return os.iorunv("brew", {"--prefix", "llvm"}) end}
         if llvm then
-            opt.paths = opt.paths or {}
+            opt.paths = table.wrap(opt.paths)
             opt.force = true
             table.insert(opt.paths, path.join(llvm:trim(), "bin"))
             program = find_program(opt.program or "clang-tidy", opt)
