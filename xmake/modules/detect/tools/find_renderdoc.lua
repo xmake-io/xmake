@@ -40,7 +40,7 @@ function main(opt)
     -- init options
     opt = opt or {}
     if is_host("windows") then
-        opt.paths = opt.paths or {}
+        opt.paths = table.wrap(opt.paths)
 
         -- add paths from registry
         local regs =
