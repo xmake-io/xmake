@@ -47,16 +47,32 @@ function _make_headerunitflags(target, headerunit_mapper, headerunit)
 end
 
 -- do compile
-function _compile(target, flags, sourcefile, outputfile)
+function _compile(target, flags, module, opt)
+
+    opt = opt or {}
+    local sourcefile = opt.headerunit and path.filename(module.sourcefile) or module.sourcefile
+    local outputfile = opt.headerunit and module.bmifile or module.objectfile
     local dryrun = option.get("dry-run")
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
     flags = table.join(compflags or {}, flags or {})
 
     -- trace
+    local cmd
     if option.get("verbose") then
-        print(compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, rawargs = true}))
+        cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, rawargs = true})
     end
+    local mapper_str
+    if option.get("diagnosis") then
+        if opt.headerunit then
+            mapper_str = format("\n${dim color.warning}mapper file for %s (%s) --------\n%s\n--------", sourcefile, module.name, io.readfile(opt.mapper_file):trim())
+        elseif module.name  then
+            mapper_str = format("\n${dim color.warning}mapper file for %s (%s) --------\n%s\n--------", module.name, sourcefile, io.readfile(opt.mapper_file):trim())
+        else
+            mapper_str = format("\n${dim color.warning}mapper file for %s --------\n%s\n--------", sourcefile, io.readfile(opt.mapper_file):trim())
+        end
+    end
+    show_progress(target, module, table.join(opt, {cmd = cmd, suffix = mapper_str}))
 
     -- do compile
     if not dryrun then
@@ -66,11 +82,32 @@ end
 
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
-function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile)
+function _batchcmds_compile(batchcmds, target, flags, module, opt)
+    local sourcefile = opt.headerunit and path.filename(module.sourcefile) or module.sourcefile
+    local outputfile = opt.headerunit and module.bmifile or module.objectfile
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
     flags = table.join("-c", compflags or {}, flags or {}, {"-o", outputfile, sourcefile})
-    batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
+
+    -- trace
+    local cmd
+    if option.get("verbose") then
+        cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, rawargs = true})
+    end
+    local mapper_str
+    if option.get("diagnosis") then
+        if opt.headerunit then
+            mapper_str = format("\n${dim color.warning}mapper file for %s (%s) --------\n%s\n--------", sourcefile, module.name, io.readfile(opt.mapper_file):trim())
+        elseif module.name  then
+            mapper_str = format("\n${dim color.warning}mapper file for %s (%s) --------\n%s\n--------", module.name, sourcefile, io.readfile(opt.mapper_file):trim())
+        else
+            mapper_str = format("\n${dim color.warning}mapper file for %s --------\n%s\n--------", sourcefile, io.readfile(opt.mapper_file):trim())
+        end
+    end
+    show_progress(target, module, table.join(opt, {cmd = cmd, suffix = mapper_str, batchcmds = batchcmds}))
+
+    -- do compile
+    batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx", verbose = false})
 end
 
 function _module_map_cachekey(target)
@@ -187,18 +224,15 @@ function make_module_job(target, module, opt)
 
         local flags = {"-x", "c++"}
         if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
-            if bmi and objectfile then
-                progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), module.name)
-                table.insert(flags, module_flag)
-            elseif bmi then
-                progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.bmi.$(mode) %s", target:fullname(), module.name)
-                table.insert(flags, module_flag)
-                table.insert(flags, module_onlyflag)
-            else
-                progress.show(opt.progress, "compiling.$(mode) %s", module.sourcefile)
+            if bmi then
+                if objectfile then
+                    table.insert(flags, module_flag)
+                else
+                    table.insert(flags, module_flag)
+                    table.insert(flags, module_onlyflag)
+                end
             end
-            _compile(target, flags, module.sourcefile, module.objectfile)
-            -- os.tryrm(module_mapper) -- force rebuild for .cpp files
+            _compile(target, flags, module, table.join(opt or {}, {mapper_file = module_mapper}))
         else
             os.tryrm(module.objectfile) -- force rebuild for .cpp files
         end
@@ -213,48 +247,42 @@ function make_module_buildcmds(target, batchcmds, module, opt)
     local module_flag = support.get_modulesflag(target)
 
     local module_mapper
-    if module.implementation or module.interface or module.deps then
+    if module.deps then
         module_mapper = _get_modulemapper_file(target, module)
         target:fileconfig_add(module.sourcefile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
     end
 
     -- generate and append module mapper file
     local build = should_build(target, module)
+    local bmi = opt and opt.bmi
+    local objectfile = opt and opt.objectfile
 
-    local fileconfig = target:fileconfig(module.sourcefile)
-    local external = fileconfig and fileconfig.external
-    local bmionly = external and external.bmionly
-    local reused = external and external.reused
-    if build and not reused then
-        if module.implementation or module.interface or module.deps then
+    if build then
+        local objectdir = path.directory(module.objectfile)
+        batchcmds:mkdir(objectdir)
+        if module.bmifile then
+            local bmidir = path.directory(module.bmifile)
+            batchcmds:mkdir(bmidir)
+        end
+
+        if module.deps then
             _generate_modulemapper_file(target, module)
         end
 
-        if option.get("diagnosis") then
-            if module.name  then
-                batchcmds:show("mapper file for %s (%s) --------\n%s--------", module.name, module.sourcefile, io.readfile(module_mapper))
-            else
-                batchcmds:show("mapper file for %s --------\n%s--------", module.sourcefile, io.readfile(module_mapper))
-            end
-        end
+        local flags = {"-x", "c++"}
         if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
-            batchcmds:mkdir(path.directory(module.objectfile))
-            local flags = {"-x", "c++"}
-            table.insert(flags, module_flag)
-            local name = module.name or module.sourcefile
-            if bmionly then
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.bmi.$(mode) %s", target:fullname(), name)
-                table.insert(flags, module_onlyflag)
-            else
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:fullname(), name)
+            if bmi then
+                if objectfile then
+                    table.insert(flags, module_flag)
+                else
+                    table.insert(flags, module_flag)
+                    table.insert(flags, module_onlyflag)
+                end
             end
-            _batchcmds_compile(batchcmds, target, flags, module.sourcefile, module.objectfile)
-            batchcmds:rm(module_mapper)
+            _batchcmds_compile(batchcmds, target, flags, module, table.join(opt, {batchcmds = batchcmds, mapper_file = module_mapper}))
         else
             batchcmds:rm(module.objectfile) -- force rebuild for .cpp files
         end
-        batchcmds:add_depfiles(module.sourcefile)
-        support.memcache():set2(target:fullname(), "has_built_" .. module.sourcefile, true)
     end
     return os.mtime(module.objectfile)
 end
@@ -264,15 +292,9 @@ function make_headerunit_job(target, headerunit, opt)
     local build = should_build(target, headerunit)
     if build then
         local headerunit_mapper = _generate_headerunit_modulemapper_file(target, headerunit)
-        local name = headerunit.unique and path.filename(headerunit.sourcefile) or headerunit.name
-        if option.get("diagnosis") then
-            print("mapper file for %s (%s) --------\n%s--------", name, headerunit_mapper, io.readfile(headerunit_mapper))
-        end
-        progress.show(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
         _compile(target,
                  _make_headerunitflags(target, headerunit_mapper, headerunit),
-                 path.filename(headerunit.sourcefile), headerunit.bmifile)
-        os.tryrm(headerunit_mapper)
+                 headerunit, table.join(opt, {mapper_file = headerunit_mapper, headerunit = true}))
     end
 end
 
@@ -285,16 +307,10 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, opt)
     local build = should_build(target, headerunit)
     if build then
         local headerunit_mapper = _generate_headerunit_modulemapper_file(target, headerunit)
-        local name = headerunit.unique and path.filename(headerunit.name) or headerunit.name
-        if option.get("diagnosis") then
-            batchcmds:show("mapper file for %s (%s) --------\n%s--------", name, headerunit_mapper, io.readfile(headerunit_mapper))
-        end
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:fullname(), name)
         _batchcmds_compile(batchcmds, target,
                      _make_headerunitflags(target, headerunit_mapper, headerunit),
-                     path.filename(headerunit.sourcefile), headerunit.bmifile)
+                     headerunit, table.join(opt, {mapper_file = headerunit_mapper, headerunit = true}))
         batchcmds:add_depfiles(headerunit.sourcefile)
-        batchcmds:rm(headerunit_mapper)
     end
     batchcmds:add_depvalues(depvalues)
 end

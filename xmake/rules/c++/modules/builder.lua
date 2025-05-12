@@ -594,6 +594,36 @@ function is_dependencies_changed(target, module)
     return requires, changed
 end
 
+function show_progress(target, module, opt)
+    local show = function(...)
+        local batchcmds = opt and opt.batchcmds
+        if batchcmds then
+            batchcmds:show_progress(opt.progress, ...)
+        else
+            progress.show(opt.progress, ...)
+        end
+    end
+    local suffix = opt.suffix or ""
+    local cmd = opt.cmd or ""
+    local dim = ""
+    if option.get("verbose") then
+        dim = "${dim}"
+    end
+    local header = "${clear}${color.build.target}<%s>${clear}" .. dim
+    if opt.headerunit then
+        local name = module.method == "include-angle" and ("<" .. path.filename(module.name) .. ">") or module.name
+        show(header .. " compiling.headerunit.$(mode) %s${clear}%s" .. suffix, target:fullname(), name, cmd)
+    elseif opt.bmi then
+        if opt.objectfile then
+            show(header .. " compiling.module.$(mode) %s${clear}%s" .. suffix, target:fullname(), module.name, cmd)
+        else
+            show(header .. " compiling.module.bmi.$(mode) %s${clear}%s" .. suffix, target:fullname(), module.name, cmd)
+        end
+    else
+        show("compiling.$(mode) %s${clear}%s" .. suffix, module.sourcefile, cmd)
+    end
+end
+
 function clean(target)
     -- we cannot use target:data("cxx.has_modules"),
     -- because on_config will be not called when cleaning targets
