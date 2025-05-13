@@ -419,7 +419,6 @@ function _do_parse(target, sourcebatch)
         modules = _parse_dependencies_data(target, moduleinfos)
         local localcache = support.localcache()
         localcache:set2(target:fullname(), "c++.modules", modules)
-        localcache:save()
 
         mapper.feed(target, modules, sourcebatch.sourcefiles)
 
