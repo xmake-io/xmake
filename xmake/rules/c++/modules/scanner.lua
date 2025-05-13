@@ -296,7 +296,11 @@ function _get_targetdeps_modules(target)
                     fileconfig.undefines = table.join(fileconfig.undefines or {}, dep:get("undefines") or {})
                     fileconfig.includedirs = table.join(fileconfig.includedirs or {}, dep:get("includedirs") or {})
                     if not dep:is_phony() then
-                        fileconfig.external = dep:fullname()
+                        if target:namespace() == dep:namespace() then
+                            fileconfig.external = dep:name()
+                        else
+                            fileconfig.external = dep:fullname()
+                        end
                         fileconfig.bmionly = not dep:is_moduleonly()
                     end
                     if not modules[sourcefile] then
@@ -358,6 +362,7 @@ function _patch_sourcebatch(target, sourcebatch)
             local strict = target:policy("build.c++.modules.reuse.strict") or
                            target:policy("build.c++.modules.tryreuse.discriminate_on_defines")
             local dep = target:dep(fileconfig.external)
+            assert(dep, format("dep target <%s> for <%s>", fileconfig.external, target:fullname()))
 
             local can_reuse = nocheck or _are_flags_compatible(target, dep, sourcefile, {strict = strict})
             if can_reuse then
