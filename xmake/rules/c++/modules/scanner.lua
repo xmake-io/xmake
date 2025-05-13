@@ -24,6 +24,7 @@ import("core.base.hashset")
 import("core.base.graph")
 import("core.base.option")
 import("core.base.profiler")
+import("private.async.jobpool")
 import("async.runjobs")
 import("support")
 import("mapper")
@@ -237,16 +238,22 @@ function _get_package_modules(target, package, opt)
     local package_modules
     local modulesdir = path.join(package:installdir(), "modules")
     local metafiles = os.files(path.join(modulesdir, "*", "*.meta-info"))
+    local jobs = jobpool.new()
     for _, metafile in ipairs(metafiles) do
         package_modules = package_modules or {}
         local modulefile, _, metadata = _parse_meta_info(target, metafile)
+        jobs:addjob("job/parse_meta_file/" .. metafile, function()
+            package_modules = package_modules or {}
+            local modulefile, _, metadata = _parse_meta_info(metafile)
 
-        local bmionly = package:libraryfiles() and true or false
-        package_modules[path.join(modulesdir, modulefile)] = {defines = metadata.defines,
-                                                              undefines = metadata.undefines,
-                                                              bmionly = bmionly,
-                                                              external = opt.external and target:fullname()}
+            local bmionly = package:libraryfiles() and true or false
+            package_modules[path.join(modulesdir, modulefile)] = {defines = metadata.defines,
+                                                                  undefines = metadata.undefines,
+                                                                  bmionly = bmionly,
+                                                                  external = opt.external and target:fullname()}
+        end)
     end
+    runjobs(format("parsing package %s module metafiles", package:name()), jobs, {comax = option.get("jobs") or os.default_njob()})
     profiler.leave(target:fullname(), "c++ modules", "scanner", "get modules from package", package:name())
     return package_modules
 end
