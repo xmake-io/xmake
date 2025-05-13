@@ -77,14 +77,15 @@ function sandbox_lib_detect_find_program._check(program, opt)
     opt = opt or {}
     local findname = program
     if os.subhost() == "windows" then
-        if not opt.shell and not program:endswith(".exe") and not program:endswith(".cmd") and not program:endswith(".bat") then
+        local ext = path.extension(program):lower()
+        if not opt.shell and ext ~= ".exe" and ext ~= ".cmd" and ext ~= ".bat" then
             findname = program .. ".exe"
         end
     elseif os.subhost() == "msys" and os.isfile(program) and os.filesize(program) < 256 then
         -- only a sh script on msys2? e.g. c:/msys64/usr/bin/7z
         -- we need to use sh to wrap it, otherwise os.exec cannot run it
-        local program_lower = program:lower()
-        if not program_lower:endswith(".exe") and not program_lower:endswith(".cmd") and not program_lower:endswith(".bat") then
+        local ext = path.extension(program):lower()
+        if ext ~= ".exe" and ext ~= ".cmd" and ext ~= ".bat" then
             program = "sh " .. program
         end
         findname = program
