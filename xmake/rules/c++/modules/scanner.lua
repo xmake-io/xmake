@@ -796,7 +796,6 @@ function sort_modules_by_dependencies(target, modules)
                 wprint("some modules have got culled, use verbose (-v) mode to more informations")
             end
         end
-        table.sort(objectfiles)
         built_headerunits = table.unique(built_headerunits)
 
         built_artifacts = {modules = built_modules, headerunits = built_headerunits, objectfiles = objectfiles}
