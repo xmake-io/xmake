@@ -41,7 +41,7 @@ rule("platform.windows.subsystem")
             if target:has_tool("ld", "clang", "clangxx", "clang_cl") then
                 target:add("ldflags", "-Wl,-subsystem:" .. subsystem, { force = true })
             elseif target:has_tool("ld", "link", "lld-link") then
-                target:add("ldflags", "/SUBSYSTEM:" .. upper(subsystem), { force = true })
+                target:add("ldflags", "/SUBSYSTEM:" .. subsystem:upper(), { force = true })
             elseif target:has_tool("ld", "gcc", "gxx") then
                 target:add("ldflags", "-Wl,-m" .. subsystem, { force = true })
             elseif target:has_tool("ld", "lld") then
