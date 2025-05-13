@@ -449,7 +449,14 @@ function buildenvs(package, opt)
             name = name:gsub("gcc-%d+", "ld")
             name = name:gsub("g%+%+$", "ld")
             name = name:gsub("g%+%+%-%d+", "ld")
-            envs.LD = dir and path.join(dir, name) or name
+            if os.isfile(path.join(dir, name)) then
+                envs.LD = path.join(dir, name)
+            else
+                local ld = find_tool("ld")
+                if ld and path.filename(ld.program) == name then
+                    envs.LD = ld.program
+                end
+            end
         end
         -- we need use clang++ as cxx, autoconf will use it as linker
         -- https://github.com/xmake-io/xmake/issues/2170
