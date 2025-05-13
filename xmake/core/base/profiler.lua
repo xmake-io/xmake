@@ -184,7 +184,7 @@ function profiler:stop()
 
         -- show and save reports
         local report_lines = ""
-        local outfile = os.tmpfile() .. os.date() .. ".log"
+        local outfile = path.join(os.tmpdir(), "perf-call-" .. os.date("%d-%m-%y-%S-%M-%H") .. ".log")
         for _, report in ipairs(reports) do
             local percent = (report.totaltime / totaltime) * 100
             if percent < 1 then
@@ -210,7 +210,7 @@ function profiler:stop()
         -- show and save reports
         local count = 0
         local max_count = 64
-        local outfile = os.tmpfile() .. os.date() .. ".log"
+        local outfile = path.join(os.tmpdir(), "perf-tag-" .. os.date("%d-%m-%y-%S-%M-%H") .. ".log")
         local report_lines = ""
         while h:length() > 0 do
             local report = h:pop()
