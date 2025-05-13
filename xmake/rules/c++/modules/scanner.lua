@@ -240,11 +240,9 @@ function _get_package_modules(target, package, opt)
     local metafiles = os.files(path.join(modulesdir, "*", "*.meta-info"))
     local jobs = jobpool.new()
     for _, metafile in ipairs(metafiles) do
-        package_modules = package_modules or {}
-        local modulefile, _, metadata = _parse_meta_info(target, metafile)
         jobs:addjob("job/parse_meta_file/" .. metafile, function()
             package_modules = package_modules or {}
-            local modulefile, _, metadata = _parse_meta_info(metafile)
+            local modulefile, _, metadata = _parse_meta_info(target, metafile)
 
             local bmionly = package:libraryfiles() and true or false
             package_modules[path.join(modulesdir, modulefile)] = {defines = metadata.defines,
@@ -800,7 +798,6 @@ function sort_modules_by_dependencies(target, modules)
 
         built_artifacts = {modules = built_modules, headerunits = built_headerunits, objectfiles = objectfiles}
         localcache:set2(target:fullname(), "c++.modules.built_artifacts", built_artifacts)
-        localcache:save()
         memcache:set2(target:fullname(), "modules.changed", false)
     end
     assert(built_artifacts, "shouldn't assert here, please open an issue")
@@ -838,6 +835,7 @@ function after_scan(target)
             assert(sourcebatch_builder)
             sourcebatch_builder.objectfiles = objectfiles
         end
+        support.localcache():save()
     end
 end
 
