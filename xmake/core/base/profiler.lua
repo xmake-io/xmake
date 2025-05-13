@@ -182,14 +182,20 @@ function profiler:stop()
             return a.totaltime > b.totaltime
         end)
 
-        -- show reports
+        -- show and save reports
+        local report_lines = ""
+        local outfile = os.tmpfile() .. os.date() .. ".log"
         for _, report in ipairs(reports) do
             local percent = (report.totaltime / totaltime) * 100
             if percent < 1 then
                 break
             end
-            utils.print("%6.3f, %6.2f%%, %7d, %s", report.totaltime, percent, report.callcount, self:_func_title(report.funcinfo))
+            local report_line = string.format("%6.3f, %6.2f%%, %7d, %s", report.totaltime, percent, report.callcount, self:_func_title(report.funcinfo))
+            report_lines = report_lines .. report_line .. "\n"
+            utils.print(report_line)
         end
+        utils.print("full log written to %s", outfile)
+        io.writefile(outfile, report_lines)
     elseif self:is_perf("tag") then
 
         -- sort reports, topN
@@ -201,16 +207,27 @@ function profiler:stop()
             h:push(report)
         end
 
-        -- show reports
+        -- show and save reports
         local count = 0
-        while count < 64 and h:length() > 0 do
+        local max_count = 64
+        local outfile = os.tmpfile() .. os.date() .. ".log"
+        local report_lines = ""
+        while h:length() > 0 do
             local report = h:pop()
-            utils.print("%6.3f, %7d, %s", report.totaltime, report.callcount, self:_tag_title(report.name, report.argv))
+            local report_line = string.format("%6.3f, %7d, %s", report.totaltime, report.callcount, self:_tag_title(report.name, report.argv))
+            report_lines = report_lines .. report_line .. "\n"
             count = count + 1
         end
-        if h:length() > 0 then
+        if count <= max_count then
+            utils.print(report_lines)
+        elseif count > max_count then
+            local max_count_lines = {table.unpack(report_lines:split("\n"), 1, max_count)}
+            utils.print(table.concat(max_count_lines, "\n"))
             utils.print("...")
+            count = count + 1
         end
+        utils.print("full log written to %s", outfile)
+        io.writefile(outfile, report_lines)
    end
 end
 
