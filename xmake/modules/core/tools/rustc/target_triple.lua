@@ -50,9 +50,9 @@ function _translate_plat(plat, arch, opt)
     elseif plat == "linux" then
         return "-unknown-linux-gnu"
     elseif plat == "cross" then
-        local system = opt and opt.system or "-unknown-linux"
-        local abi = opt and opt.abi or "-gnu"
-        return system .. abi
+        local system = opt and opt.system or "unknown-linux"
+        local abi = opt and opt.abi or "gnu"
+        return "-" .. system .. "-" .. abi
     elseif plat == "macosx" then
         return "-apple-darwin"
     elseif plat == "android" then
