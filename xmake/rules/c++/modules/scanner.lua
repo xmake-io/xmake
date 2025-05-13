@@ -132,68 +132,72 @@ function _parse_dependencies_data(target, moduleinfos)
 
     local modules
     local modules_names = hashset.new()
+    local jobs = jobpool.new()
     for _, moduleinfo in ipairs(moduleinfos) do
-        assert(moduleinfo.version <= 1)
-        for _, rule in ipairs(moduleinfo.rules) do
-            modules = modules or {}
-            local module = {objectfile = path.translate(rule["primary-output"]), sourcefile = moduleinfo.sourcefile}
+        jobs:addjob("job/parse_moduleinfo/" .. moduleinfo.sourcefile, function()
+            assert(moduleinfo.version <= 1)
+            for _, rule in ipairs(moduleinfo.rules) do
+                modules = modules or {}
+                local module = {objectfile = path.translate(rule["primary-output"]), sourcefile = moduleinfo.sourcefile}
 
-            if rule.provides then
-                -- assume rule.provides is always one element on C++
-                -- @see https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1689r5.html
-                local provide = rule.provides and rule.provides[1]
-                if provide then
-                    assert(provide["logical-name"])
+                if rule.provides then
+                    -- assume rule.provides is always one element on C++
+                    -- @see https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1689r5.html
+                    local provide = rule.provides and rule.provides[1]
+                    if provide then
+                        assert(provide["logical-name"])
 
-                    module.name = provide["logical-name"]
-                    module.sourcefile = module.sourcefile or path.normalize(provide["source-path"])
-                    modules_names:insert(module.name)
-                    module.headerunit = provide["is-headerunit"]
-                    module.interface = (not module.headerunit and provide["is-interface"] == nil) and true or provide["is-interface"]
-                    if module.name then
-                        module.method = provide["lookup-method"] or "by-name"
+                        module.name = provide["logical-name"]
+                        module.sourcefile = module.sourcefile or path.normalize(provide["source-path"])
+                        modules_names:insert(module.name)
+                        module.headerunit = provide["is-headerunit"]
+                        module.interface = (not module.headerunit and provide["is-interface"] == nil) and true or provide["is-interface"]
+                        if module.name then
+                            module.method = provide["lookup-method"] or "by-name"
+                        end
+
+                        if module.headerunit then
+                            local key = support.get_headerunit_key(target, module.sourcefile)
+                            module.key = key
+                        end
+
+                        -- XMake handle bmifile so we don't need rely on compiler-module-path
+                        module.bmifile = _bmifile_for(target, module)
                     end
+                end
 
-                    if module.headerunit then
-                        local key = support.get_headerunit_key(target, module.sourcefile)
-                        module.key = key
+                if rule.requires then
+                    module.deps = {}
+                    for _, dep in ipairs(rule.requires) do
+                        local method = dep["lookup-method"] or "by-name"
+                        local name = dep["logical-name"]
+                        local headerunit = method:startswith("include")
+                        local key = headerunit and support.get_headerunit_key(target, name)
+                        module.deps[name] = {
+                            name = name,
+                            method = method,
+                            headerunit = headerunit,
+                            key = key,
+                            unique = dep["unique-on-source-path"] or false,
+                        }
                     end
-
-                    -- XMake handle bmifile so we don't need rely on compiler-module-path
-                    module.bmifile = _bmifile_for(target, module)
+                end
+                if module.headerunit then
+                    local key = module.sourcefile .. module.key
+                    if not modules[key] then
+                        modules[key] = table.clone(module)
+                        modules[key].name = module.sourcefile
+                    end
+                    local name = module.name .. module.key
+                    modules[name] = module
+                    modules[name].alias = true
+                else
+                    modules[module.sourcefile] = module
                 end
             end
-
-            if rule.requires then
-                module.deps = {}
-                for _, dep in ipairs(rule.requires) do
-                    local method = dep["lookup-method"] or "by-name"
-                    local name = dep["logical-name"]
-                    local headerunit = method:startswith("include")
-                    local key = headerunit and support.get_headerunit_key(target, name)
-                    module.deps[name] = {
-                        name = name,
-                        method = method,
-                        headerunit = headerunit,
-                        key = key,
-                        unique = dep["unique-on-source-path"] or false,
-                    }
-                end
-            end
-            if module.headerunit then
-                local key = module.sourcefile .. module.key
-                if not modules[key] then
-                    modules[key] = table.clone(module)
-                    modules[key].name = module.sourcefile
-                end
-                local name = module.name .. module.key
-                modules[name] = module
-                modules[name].alias = true
-            else
-                modules[module.sourcefile] = module
-            end
-        end
+        end)
     end
+    runjobs("parsing moduleinfos", jobs, {comax = option.get("jobs") or os.default_njob()})
     profiler.leave(target:fullname(), "c++ modules", "scanner", "parse modulescans")
     return modules, modules_names
 end
