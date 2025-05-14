@@ -449,7 +449,7 @@ function buildenvs(package, opt)
             name = name:gsub("gcc-%d+", "ld")
             name = name:gsub("g%+%+$", "ld")
             name = name:gsub("g%+%+%-%d+", "ld")
-            if os.isfile(path.join(dir, name)) then
+            if dir and os.isfile(path.join(dir, name)) then
                 envs.LD = path.join(dir, name)
             else
                 local ld = find_tool("ld")
