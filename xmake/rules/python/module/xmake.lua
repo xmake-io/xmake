@@ -25,7 +25,7 @@ rule("python.module")
         target:set("prefixname", "")
         target:add("runenvs", "PYTHONPATH", target:targetdir())
         local soabi = target:extraconf("rules", "python.module", "soabi")
-        if soabi then
+        if soabi == nil or soabi then
             import("lib.detect.find_tool")
             local python = assert(find_tool("python3"), "python not found!")
             local result = try { function() return os.iorunv(python.program, {"-c", "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"}) end}
