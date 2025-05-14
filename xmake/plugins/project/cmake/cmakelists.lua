@@ -817,7 +817,7 @@ function _add_target_values(cmakelists, target, name)
         if name:endswith("s") then
             name = name:sub(1, #name - 1)
         end
-        cmakelists:print("if(CMAKE_COMPILER_ID STREQUAL \"MSVC\")")
+        cmakelists:print("if(XMAKE_GLOBAL_COMPILER_ID STREQUAL \"MSVC\")")
         local flags_cl = _map_compflags("cl", "c", name, values)
         for _, flag in ipairs(flags_cl) do
             cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
