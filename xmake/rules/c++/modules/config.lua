@@ -67,6 +67,11 @@ function main(target)
             wprint("build.c++.modules.tryreuse.discriminate_on_defines is deprecated, please use build.c++.modules.reuse.strict")
         end
 
+        local memcache = support.memcache()
+        local targets = memcache:get("targets") or {}
+        targets[target:fullname()] = {}
+        targets[target:fullname()].finished_parsing = false
+        memcache:set("targets", targets)
         -- moduleonly modules are implicitly public
         if target:is_moduleonly() then
             local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
