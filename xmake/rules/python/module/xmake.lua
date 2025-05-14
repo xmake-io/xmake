@@ -19,12 +19,12 @@
 --
 
 -- @see https://github.com/xmake-io/xmake/issues/1896
-rule("python.library")
+rule("python.module")
     on_config(function (target)
         target:set("kind", "shared")
         target:set("prefixname", "")
         target:add("runenvs", "PYTHONPATH", target:targetdir())
-        local soabi = target:extraconf("rules", "python.library", "soabi")
+        local soabi = target:extraconf("rules", "python.module", "soabi")
         if soabi then
             import("lib.detect.find_tool")
             local python = assert(find_tool("python3"), "python not found!")

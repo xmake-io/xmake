@@ -19,7 +19,7 @@
 --
 
 rule("python.cython")
-    add_deps("python.library")
+    add_deps("python.module")
     set_extensions(".py", ".pyx")
 
     on_load(function (target)
