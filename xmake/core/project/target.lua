@@ -2102,10 +2102,19 @@ function _instance:objectfiles()
     local sourcebatches = self:sourcebatches()
     local orderkeys = table.keys(sourcebatches)
     table.sort(orderkeys) -- @note we need to guarantee the order of objectfiles for depend.is_changed() and etc.
+    local unique_table = {}
+    for _, sourcebatch in pairs(sourcebatches) do
+        if sourcebatch.kind_unique then
+            unique_table[sourcebatch.sourcekind] = sourcebatch
+        end
+    end
     for _, k in ipairs(orderkeys) do
         local sourcebatch = sourcebatches[k]
-        table.join2(objectfiles, sourcebatch.objectfiles)
-        batchcount = batchcount + 1
+        local unique_one = unique_table[sourcebatch.sourcekind]
+        if not (unique_one and unique_one ~= sourcebatch) then
+            table.join2(objectfiles, sourcebatch.objectfiles)
+            batchcount = batchcount + 1 
+        end
     end
 
     -- some object files may be repeat and appear link errors if multi-batches exists, so we need to remove all repeat object files
