@@ -413,12 +413,12 @@ end
 function _do_parse(target, sourcebatch)
 
     profiler.enter(target:fullname(), "c++ modules", "scanner", "parse module dependencies and compute dependency graph")
+    local localcache = support.localcache()
     local changed = support.memcache():get2(target:fullname(), "modules.changed")
     local modules
     if changed then
         local moduleinfos = support.load_moduleinfos(target, sourcebatch)
         modules = _parse_dependencies_data(target, moduleinfos)
-        local localcache = support.localcache()
         localcache:set2(target:fullname(), "c++.modules", modules)
 
         mapper.feed(target, modules, sourcebatch.sourcefiles)
@@ -437,22 +437,28 @@ function _do_parse(target, sourcebatch)
                 end
             end
         end
+        -- steal from c++.build sourcebatch named modules with cpp extensions
+        local cxx_sourcebatch = target:sourcebatches()["c++.build"]
+        if cxx_sourcebatch then
+            cxx_sourcebatch.sourcefiles = {}
+            cxx_sourcebatch.dependfiles = {}
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local module = mapper.get(target, sourcefile)
+                if module and not module.interface and not module.implementation then
+                    table.insert(cxx_sourcebatch.sourcefiles, sourcefile)
+                    local objectfile = target:objectfile(sourcefile)
+                    table.insert(cxx_sourcebatch.dependfiles, target:dependfile(objectfile))
+                end
+            end
+            localcache:set2("c++.modules", target:fullname() .. ".c++.build.sourcebatch", cxx_sourcebatch)
+        end
     else
         modules = get_modules(target)
-    end
-
-    -- steal from c++.build sourcebatch named modules with cpp extensions
-    local cxx_sourcebatch = target:sourcebatches()["c++.build"]
-    if cxx_sourcebatch then
-        cxx_sourcebatch.sourcefiles = {}
-        cxx_sourcebatch.dependfiles = {}
-        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            local module = mapper.get(target, sourcefile)
-            if module and not module.interface and not module.implementation then
-                table.insert(cxx_sourcebatch.sourcefiles, sourcefile)
-                local objectfile = target:objectfile(sourcefile)
-                table.insert(cxx_sourcebatch.dependfiles, target:dependfile(objectfile))
-            end
+        local cxx_sourcebatch_cached = localcache:get2("c++.modules", target:fullname() .. ".c++.build.sourcebatch")
+        if cxx_sourcebatch_cached then
+            local cxx_sourcebatch = target:sourcebatches()["c++.build"]
+            cxx_sourcebatch.sourcefiles = cxx_sourcebatch_cached.sourcefiles
+            cxx_sourcebatch.dependfiles = cxx_sourcebatch_cached.dependfiles
         end
     end
 
