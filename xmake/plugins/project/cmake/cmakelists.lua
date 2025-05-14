@@ -370,9 +370,9 @@ function _add_project(cmakelists, outputdir)
     end
     -- Define a language-independant global compiler_id variable
     if (languages and #languages > 0) then
-        cmakelists:print("set(CMAKE_COMPILER_ID CMAKE_%s_COMPILER_ID)", _get_project_languages()[1])
+        cmakelists:print("set(CMAKE_COMPILER_ID ${CMAKE_%s_COMPILER_ID})", _get_project_languages()[1])
     else
-        cmakelists:print("set(CMAKE_COMPILER_ID CMAKE_C_COMPILER_ID)") -- C should be defined by default if not specified
+        cmakelists:print("set(CMAKE_COMPILER_ID ${CMAKE_C_COMPILER_ID})") -- C should be defined by default if not specified
     end
     cmakelists:print("")
 end
