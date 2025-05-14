@@ -46,14 +46,28 @@ function _patch_pkgconfig(package)
     -- get lib/pkgconfig/*.pc or share/pkgconfig/*.pc file
     local libpkgconfigdir = path.join(package:installdir(), "lib", "pkgconfig")
     local sharepkgconfigdir = path.join(package:installdir(), "share", "pkgconfig")
-    local pcfile = (os.isdir(libpkgconfigdir) and find_file("*.pc", libpkgconfigdir))
-        or (os.isdir(sharepkgconfigdir) and find_file("*.pc", sharepkgconfigdir)) or nil
-    if pcfile then
+    local pcfiles = {}
+    table.join2(pcfiles, os.isdir(libpkgconfigdir) and os.files(path.join(libpkgconfigdir, "*.pc")) or {})
+    table.join2(pcfiles, os.isdir(sharepkgconfigdir) and os.files(path.join(sharepkgconfigdir, "*.pc")) or {})
+    if #pcfiles > 0 then
+        for _, pcfile in ipairs(pcfiles) do
+            local pcfile_content = io.readfile(pcfile)
+            if pcfile_content then
+                local pcfile_content, count = pcfile_content:replace(installdir, "${installdir}", {plain = true})
+                if count > 0 then
+                    local line_ending = pcfile_content:find("\r\n") and "\r\n" or "\n"
+                    pcfile_content = "# Modified by Xmake: Using relative paths to make package relocatable" .. line_ending
+                                      .. "installdir=${pcfiledir}/" .. path.unix(path.relative(installdir, path.directory(pcfile))) .. line_ending
+                                      .. pcfile_content
+                    io.writefile(pcfile, pcfile_content)
+                end
+            end
+        end
         return
     end
 
     -- trace
-    pcfile = path.join(libpkgconfigdir, package:name() .. ".pc")
+    local pcfile = path.join(libpkgconfigdir, package:name() .. ".pc")
     vprint("patching %s ..", pcfile)
 
     -- fetch package
