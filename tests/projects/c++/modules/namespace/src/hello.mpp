@@ -1,0 +1,14 @@
+export module hello;
+
+export namespace hello {
+    extern int data__;
+    void say_hello();
+
+    class say {
+    public:
+        say(int data);
+        void hello();
+    private:
+        int data_;
+    };
+}
