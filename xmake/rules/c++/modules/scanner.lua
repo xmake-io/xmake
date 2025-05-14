@@ -374,8 +374,6 @@ end
 -- patch sourcebatch
 function _patch_sourcebatch(target, sourcebatch)
 
-    local cachekey = target:fullname() .. ".patched_sourcebatch"
-
     -- target deps modules
     local depsmodules = _get_targetdeps_modules(target) or {}
 
@@ -386,9 +384,8 @@ function _patch_sourcebatch(target, sourcebatch)
     local keys = #externalmodules > 0 and table.concat(table.orderkeys(externalmodules)) or " "
     local md5sum = hash.md5(bytes(keys))
     local localcache = support.localcache()
-    local cached_patched_sourcebatch = localcache:get(cachekey)
+    local cached_patched_sourcebatch = localcache:get2(target:fullname(), "patched_sourcebatch")
     if not cached_patched_sourcebatch or md5sum ~= cached_patched_sourcebatch.md5sum then
-     -- insert std package and deps modules, try to reused them if possible
         local reuse = target:policy("build.c++.modules.reuse") or
                       target:policy("build.c++.modules.tryreuse")
         local reused = {}
@@ -423,7 +420,7 @@ function _patch_sourcebatch(target, sourcebatch)
             local dependfile = _target:dependfile(sourcefile or objectfile)
             table.insert(sourcebatch.dependfiles, dependfile)
         end
-        localcache:set(cachekey, {sourcefile = sourcebatch.sourcefiles, dependfiles = sourcebatch.dependfiles, reused = reused, md5sum = md5sum})
+        localcache:set2(target:fullname(), "patched_sourcebatch", {sourcefile = sourcebatch.sourcefiles, dependfiles = sourcebatch.dependfiles, reused = reused, md5sum = md5sum})
     else
         local reused = hashset.from(cached_patched_sourcebatch.reused)
         for sourcefile, fileconfig in pairs(externalmodules) do
@@ -503,11 +500,11 @@ function _do_parse(target, sourcebatch)
                     table.insert(cxx_sourcebatch.objectfiles, objectfile)
                 end
             end
-            localcache:set2("c++.modules", target:fullname() .. ".c++.build.sourcebatch", cxx_sourcebatch)
+            localcache:set2(target:fullname(), "c++.build.sourcebatch", cxx_sourcebatch)
         end
     else
         modules = get_modules(target)
-        local cxx_sourcebatch_cached = localcache:get2("c++.modules", target:fullname() .. ".c++.build.sourcebatch")
+        local cxx_sourcebatch_cached = localcache:get2(target:fullname(), "c++.build.sourcebatch")
         if cxx_sourcebatch_cached then
             local cxx_sourcebatch = target:sourcebatches()["c++.build"]
             cxx_sourcebatch.sourcefiles = cxx_sourcebatch_cached.sourcefiles
@@ -517,7 +514,7 @@ function _do_parse(target, sourcebatch)
     end
 
     -- sort modules
-    sort_modules_by_dependencies(target, modules, {jobgraph = target:policy("build.jobgraph")})
+    sort_modules_by_dependencies(target, modules)
     profiler.leave(target:fullname(), "c++ modules", "scanner", "parse module dependencies and compute dependency graph")
 
     -- save cache if all other target finished
