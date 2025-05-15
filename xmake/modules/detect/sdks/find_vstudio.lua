@@ -148,7 +148,7 @@ function find_build_tools(opt)
 
     local includedirs = {
         path.join(variables.VCToolsInstallDir, "include"),
-        path.join(variables.VCToolsInstallDir, "atlmfc/include"),
+        path.join(variables.VCToolsInstallDir, "atlmfc", "include"),
         path.join(variables.WindowsSdkDir, "Include", WindowsSDKVersion, "ucrt"),
         path.join(variables.WindowsSdkDir, "Include", WindowsSDKVersion, "shared"),
         path.join(variables.WindowsSdkDir, "Include", WindowsSDKVersion, "um"),
@@ -158,8 +158,10 @@ function find_build_tools(opt)
 
     local linkdirs = {
         path.join(variables.VCToolsInstallDir, "lib"),
+        path.join(variables.VCToolsInstallDir, "atlmfc", "lib"),
         path.join(variables.WindowsSdkDir, "Lib", WindowsSDKVersion, "ucrt"),
         path.join(variables.WindowsSdkDir, "Lib", WindowsSDKVersion, "um"),
+        path.join(variables.WindowsSdkDir, "Lib", WindowsSDKVersion, "km"),
     }
 
     local archs = {
