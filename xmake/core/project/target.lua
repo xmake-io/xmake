@@ -2375,11 +2375,16 @@ function _instance:sourcebatches()
                 sourcebatch.sourcekind = sourcekind
 
                 -- insert object files to source batches
-                sourcebatch.objectfiles = sourcebatch.objectfiles or {}
-                sourcebatch.dependfiles = sourcebatch.dependfiles or {}
-                local objectfile = self:objectfile(sourcefile, sourcekind)
-                table.insert(sourcebatch.objectfiles, objectfile)
-                table.insert(sourcebatch.dependfiles, self:dependfile(objectfile))
+                -- and we need to avoid duplication with object files, which may cause some conflicts.
+                -- e.g. c++.build, c++ module and unity_build rules
+                -- @see https://github.com/xmake-io/xmake/issues/6420
+                if filerule:extraconf("sourcekinds", sourcekind, "objectfiles") ~= false then
+                    sourcebatch.objectfiles = sourcebatch.objectfiles or {}
+                    sourcebatch.dependfiles = sourcebatch.dependfiles or {}
+                    local objectfile = self:objectfile(sourcefile, sourcekind)
+                    table.insert(sourcebatch.objectfiles, objectfile)
+                    table.insert(sourcebatch.dependfiles, self:dependfile(objectfile))
+                end
             end
         end
     end

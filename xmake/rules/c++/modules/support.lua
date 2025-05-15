@@ -158,7 +158,7 @@ function has_module_extension(sourcefile, opt)
     opt = opt or {}
     local modulexts = _g.modulexts
     if modulexts == nil then
-        modulexts = hashset.of(".mpp", ".mxx", ".cppm", ".ixx")
+        modulexts = hashset.of(".cppm", ".ccm", ".cxxm", ".c++m", ".mpp", ".mxx", ".ixx")
         _g.modulexts = modulexts
     end
     local extension = opt.extension or path.extension(sourcefile)
