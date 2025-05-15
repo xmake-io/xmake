@@ -109,11 +109,9 @@ function find_build_tools(opt)
     end
 
     local variables = {}
-    local VCToolsVersion
-    local vs_toolset = opt.vs_toolset
-    if vs_toolset and os.isdir(path.join(sdkdir, "VC/Tools/MSVC", vs_toolset)) then
-        VCToolsVersion = vs_toolset
-    else
+    local VCInstallDir = path.join(sdkdir, "VC")
+    local VCToolsVersion = opt.vs_toolset
+    if not VCToolsVersion or not os.isdir(path.join(VCInstallDir, "Tools/MSVC", VCToolsVersion)) then
         -- https://github.com/xmake-io/xmake/issues/6159
         local latest_toolset
         for _, dir in ipairs(os.dirs(path.join(sdkdir, "VC/Tools/MSVC/*"))) do
@@ -128,8 +126,9 @@ function find_build_tools(opt)
             return
         end
     end
+    variables.VCInstallDir = VCInstallDir
     variables.VCToolsVersion = VCToolsVersion
-    variables.VCToolsInstallDir = path.join(sdkdir, "VC/Tools/MSVC", VCToolsVersion)
+    variables.VCToolsInstallDir = path.join(VCInstallDir, "Tools/MSVC", VCToolsVersion)
 
     local WindowsSDKVersion
     local vs_sdkver = opt.vs_sdkver
@@ -145,6 +144,11 @@ function find_build_tools(opt)
     end
     variables.WindowsSDKVersion = WindowsSDKVersion
     variables.WindowsSdkDir = path.join(sdkdir, "Windows Kits/10")
+    variables.WindowsSdkBinPath = path.join(variables.WindowsSdkDir, "bin")
+    variables.WindowsSdkVerBinPath = path.join(variables.WindowsSdkBinPath, WindowsSDKVersion)
+    variables.ExtensionSdkDir = path.join(variables.WindowsSdkDir, "ExtensionSdkDir")
+    variables.UCRTVersion = WindowsSDKVersion
+    variables.UniversalCRTSdkDir = variables.WindowsSdkDir
 
     local includedirs = {
         path.join(variables.VCToolsInstallDir, "include"),
@@ -184,15 +188,25 @@ function find_build_tools(opt)
         if #lib ~= 0 then
             local vcvars = {
                 BUILD_TOOLS_ROOT = sdkdir,
+                VSInstallDir = sdkdir,
 
                 -- vs runs in a windows ctx, so the envsep is always ";"
                 INCLUDE = path.joinenv(includedirs, ';'),
                 LIB = path.joinenv(lib, ';'),
 
-                WindowsSdkDir = variables.WindowsSdkDir,
-                WindowsSDKVersion = WindowsSDKVersion,
-                VCToolsInstallDir = variables.VCToolsInstallDir,
                 VSCMD_ARG_HOST_ARCH = "x64",
+
+                VCInstallDir = variables.VCInstallDir,
+                VCToolsVersion = variables.VCToolsVersion,
+                VCToolsInstallDir = variables.VCToolsInstallDir,
+
+                WindowsSDKVersion = variables.WindowsSDKVersion,
+                WindowsSdkDir = variables.WindowsSdkDir,
+                WindowsSdkBinPath = variables.WindowsSdkBinPath,
+                WindowsSdkVerBinPath = variables.WindowsSdkVerBinPath,
+                ExtensionSdkDir = variables.ExtensionSdkDir,
+                UCRTVersion = variables.UCRTVersion,
+                UniversalCRTSdkDir = variables.UniversalCRTSdkDir,
             }
 
             local build_tools_bin = {}
