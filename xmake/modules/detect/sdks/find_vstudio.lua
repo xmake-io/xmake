@@ -193,21 +193,21 @@ function find_build_tools(opt)
                 VSCMD_ARG_HOST_ARCH = "x64",
             }
 
-            local buidl_tools_bin = {}
+            local build_tools_bin = {}
             local host_dir = "Host" .. vcvars.VSCMD_ARG_HOST_ARCH
             if is_host("windows") then
-                table.insert(buidl_tools_bin, path.join(vcvars.VCToolsInstallDir, "bin", host_dir, target_arch))
-                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSdkDir, "bin", WindowsSDKVersion))
-                table.insert(buidl_tools_bin, path.join(vcvars.WindowsSdkDir, "bin", WindowsSDKVersion, "ucrt"))
+                table.insert(build_tools_bin, path.join(vcvars.VCToolsInstallDir, "bin", host_dir, target_arch))
+                table.insert(build_tools_bin, path.join(vcvars.WindowsSdkDir, "bin", WindowsSDKVersion))
+                table.insert(build_tools_bin, path.join(vcvars.WindowsSdkDir, "bin", WindowsSDKVersion, "ucrt"))
             elseif is_host("linux") then
                 -- for msvc-wine
-                table.insert(buidl_tools_bin, path.join(sdkdir, "bin", target_arch))
+                table.insert(build_tools_bin, path.join(sdkdir, "bin", target_arch))
             end
 
             vcvars.VSCMD_ARG_TGT_ARCH = target_arch
-            vcvars.BUILD_TOOLS_BIN = path.joinenv(buidl_tools_bin)
+            vcvars.BUILD_TOOLS_BIN = path.joinenv(build_tools_bin)
 
-            local PATH = buidl_tools_bin
+            local PATH = build_tools_bin
             table.join2(PATH, path.splitenv(os.getenv("PATH")))
             vcvars.PATH = path.joinenv(PATH)
 
