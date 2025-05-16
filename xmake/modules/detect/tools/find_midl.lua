@@ -45,7 +45,7 @@ function main(opt)
         local arch = toolchain and toolchain:arch() or config.arch()
         local bindir = path.join(envs.WindowsSdkDir, "bin", envs.WindowsSDKVersion, arch)
         if os.isdir(bindir) then
-            opt.paths = opt.paths or {}
+            opt.paths = table.wrap(opt.paths)
             table.insert(opt.paths, bindir)
         end
     end

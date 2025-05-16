@@ -45,7 +45,7 @@ function main(opt)
 
     -- find 7z from builtin xmake/winenv
     if is_host("windows") then
-        opt.paths = opt.paths or {}
+        opt.paths = table.wrap(opt.paths)
         table.insert(opt.paths, path.join(os.programdir(), "winenv", "bin"))
     end
 

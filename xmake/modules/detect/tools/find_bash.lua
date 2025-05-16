@@ -43,7 +43,7 @@ function main(opt)
 
     -- find bash from git for windows
     if is_host("windows") then
-        opt.paths = opt.paths or {}
+        opt.paths = table.wrap(opt.paths)
         table.insert(opt.paths, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\GitForWindows;InstallPath)\\bin")
     end
 

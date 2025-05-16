@@ -43,7 +43,7 @@ function main(opt)
 
     -- find it from some logical drives paths
     if is_host("windows") then
-        opt.paths = opt.paths or {}
+        opt.paths = table.wrap(opt.paths)
         for _, logical_drive in ipairs(winos.logical_drives()) do
             table.insert(opt.paths, path.join(logical_drive, "iverilog", "bin"))
         end
