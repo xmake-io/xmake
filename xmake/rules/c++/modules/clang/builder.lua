@@ -218,11 +218,6 @@ function make_module_job(target, module, opt)
 
     local dryrun = option.get("dry-run")
 
-    -- append requires flags
-    -- if module.deps then
-    --     _append_requires_flags(target, module)
-    -- end
-
     local build = should_build(target, module)
     local bmi = opt and opt.bmi
     local objectfile = opt and opt.objectfile
@@ -246,7 +241,7 @@ function make_module_job(target, module, opt)
         elseif bmi then
             _compile_bmi_step(target, module, opt)
         else
-            if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
+            if support.has_module_extension(module.sourcefile) or module.name then
                 _compile_objectfile_step(target, module, opt)
             else
                 os.tryrm(module.objectfile) -- force rebuild for .cpp files
@@ -277,7 +272,7 @@ function make_module_buildcmds(target, batchcmds, module, opt)
         elseif bmi then
             _compile_bmi_step(target, module, table.join(opt, {batchcmds = batchcmds}))
         else
-            if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
+            if support.has_module_extension(module.sourcefile) or module.name then
                 _compile_objectfile_step(target, module, table.join(opt, {batchcmds = batchcmds}))
             else
                 batchcmds:rm(module.objectfile) -- force rebuild for .cpp files

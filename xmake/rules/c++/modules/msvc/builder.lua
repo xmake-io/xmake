@@ -43,7 +43,7 @@ function _make_modulebuildflags(target, module, opt)
     local bmionly = opt.bmi and not opt.objectfile
 
     local flags
-    if module.interface or module.implementation then -- named module
+    if module.name then -- named module
         flags = table.join("-TP", module.interface and interfaceflag or internalpartitionflag, bmionly and ifconlyflag or {}, ifcoutputflag, path(module.bmifile))
     else
         flags = {"-TP"}
@@ -258,7 +258,7 @@ function make_module_job(target, module, opt)
         elseif bmi then
             _compile_bmi_step(target, module, opt)
         else
-            if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
+            if support.has_module_extension(module.sourcefile) or module.name then
                 _compile_objectfile_step(target, module, opt)
             else
                 os.tryrm(module.objectfile) -- force rebuild for .cpp files
@@ -287,7 +287,7 @@ function make_module_buildcmds(target, batchcmds, module, opt)
         elseif bmi then
             _compile_bmi_step(target, module, table.join(opt, {batchcmds = batchcmds}))
         else
-            if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
+            if support.has_module_extension(module.sourcefile) or module.name then
                 _compile_objectfile_step(target, module, table.join(opt, {batchcmds = batchcmds}))
             else
                 batchcmds:rm(module.objectfile) -- force rebuild for .cpp files

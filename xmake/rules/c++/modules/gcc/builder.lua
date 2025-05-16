@@ -129,7 +129,7 @@ end
 function _get_maplines(target, module)
 
     local maplines = {}
-    if module.interface or module.implementation then
+    if module.name then
         table.insert(maplines, module.name .. " " .. path.absolute(module.bmifile))
     end
     for dep_name, dep_module in table.orderpairs(module.deps) do
@@ -223,7 +223,7 @@ function make_module_job(target, module, opt)
         end
 
         local flags = {"-x", "c++"}
-        if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
+        if support.has_module_extension(module.sourcefile) or module.name then
             if bmi then
                 if objectfile then
                     table.insert(flags, module_flag)
@@ -270,7 +270,7 @@ function make_module_buildcmds(target, batchcmds, module, opt)
         end
 
         local flags = {"-x", "c++"}
-        if support.has_module_extension(module.sourcefile) or module.interface or module.implementation then
+        if support.has_module_extension(module.sourcefile) or module.name then
             if bmi then
                 if objectfile then
                     table.insert(flags, module_flag)

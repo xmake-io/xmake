@@ -58,6 +58,5 @@ rule("c++.build.modules.builder")
 -- install modules
 rule("c++.build.modules.install")
     set_extensions(".cppm", ".ccm", ".cxxm", ".c++m", ".mpp", ".mxx", ".ixx")
-
     before_install("install.install")
     before_uninstall("install.uninstall")
