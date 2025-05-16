@@ -2099,7 +2099,6 @@ function _instance:objectfiles()
     -- get object files from source batches
     local objectfiles = {}
     local batchcount = 0
-    local sourcebatches = self:sourcebatches()
     local orderkeys = table.keys(sourcebatches)
     table.sort(orderkeys) -- @note we need to guarantee the order of objectfiles for depend.is_changed() and etc.
     for _, k in ipairs(orderkeys) do
@@ -2381,7 +2380,7 @@ function _instance:sourcebatches()
                 if filerule:extraconf("sourcekinds", sourcekind, "objectfiles") ~= false then
                     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
                     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
-                    local objectfile = self:objectfile(sourcefile, sourcekind)
+                    local objectfile = self:objectfile(sourcefile)
                     table.insert(sourcebatch.objectfiles, objectfile)
                     table.insert(sourcebatch.dependfiles, self:dependfile(objectfile))
                 end

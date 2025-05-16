@@ -67,10 +67,20 @@ function main(target)
             wprint("build.c++.modules.tryreuse.discriminate_on_defines is deprecated, please use build.c++.modules.reuse.strict")
         end
 
+        -- if containes modules, enable objectfiles output of c++.build.modules.builder
+        local rule = target:rule("c++.build.modules.builder")
+        rule = rule:clone()
+        if rule then
+            rule:extraconf_set("sourcekinds", "cxx", "objectfiles", true)
+            target:rule_add(rule)
+            target:add("files")
+        end
+
         -- moduleonly modules are implicitly public
         if target:is_moduleonly() then
-            local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
-            if sourcebatch then
+            local sourcebatches = target:sourcebatches()
+            if sourcebatches and sourcebatches["c++.build.modules.scanner"] then
+                local sourcebatch = sourcebatches["c++.build.modules.scanner"]
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     target:fileconfig_add(sourcefile, {public = true})
                 end
@@ -81,11 +91,15 @@ end
 
 function insert_stdmodules(target)
     if target:data("cxx.has_modules") then
-        -- add std modules to sourcebatch
-        local stdmodules = support.get_stdmodules(target)
-        for _, sourcefile in ipairs(stdmodules) do
-            table.insert(target:sourcebatches()["c++.build.modules.scanner"].sourcefiles, sourcefile)
-            table.insert(target:sourcebatches()["c++.build.modules.builder"].sourcefiles, sourcefile)
+        local sourcebatches = target:sourcebatches()
+        if sourcebatches and sourcebatches["c++.build.modules.scanner"] then
+            local sourcebatch = sourcebatches["c++.build.modules.scanner"]
+            sourcebatch.sourcefiles = sourcebatch.sourcefiles or {}
+            -- add std modules to sourcebatch
+            local stdmodules = support.get_stdmodules(target)
+            for _, sourcefile in ipairs(stdmodules) do
+                table.insert(sourcebatch.sourcefiles, sourcefile)
+            end
         end
     end
 end
