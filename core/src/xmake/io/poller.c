@@ -29,37 +29,17 @@
  * includes
  */
 #include "poller.h"
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * macros
- */
-
-// the singleton type of poller
-#define XM_IO_POLLER    (TB_SINGLETON_TYPE_USER + 4)
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * private implementation
- */
-static tb_handle_t xm_io_poller_instance_init(tb_cpointer_t* ppriv)
-{
-    // init poller
-    tb_poller_ref_t poller = tb_poller_init(tb_null);
-    tb_assert_and_check_return_val(poller, tb_null);
-
-    // attach poller to the current thread
-    tb_poller_attach(poller);
-    return (tb_handle_t)poller;
-}
-static tb_void_t xm_io_poller_instance_exit(tb_handle_t poller, tb_cpointer_t priv)
-{
-    if (poller) tb_poller_exit((tb_poller_ref_t)poller);
-}
+#include "../engine.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_poller_ref_t xm_io_poller()
+tb_poller_ref_t xm_io_poller(lua_State* lua)
 {
-    return (tb_poller_ref_t)tb_singleton_instance(XM_IO_POLLER, xm_io_poller_instance_init, xm_io_poller_instance_exit, tb_null, tb_null);
+    tb_poller_ref_t poller = tb_null;
+    xm_engine_ref_t engine = xm_engine_get(lua);
+    if (engine) poller = xm_engine_poller(engine);
+    tb_assert(poller);
+    return poller;
 }
 

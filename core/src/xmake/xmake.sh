@@ -72,6 +72,7 @@ target "xmake"
     add_files "string/*.c"
     add_files "tty/*.c"
     add_files "utils/*.c"
+    add_files "thread/*.c"
     if is_plat "mingw"; then
         add_files "winos/*.c"
     fi
