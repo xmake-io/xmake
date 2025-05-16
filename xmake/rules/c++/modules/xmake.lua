@@ -20,7 +20,6 @@
 
 -- define rule: c++.build.modules
 rule("c++.build.modules")
-
     -- @note support.contains_modules() need it
     set_extensions(".cppm", ".ccm", ".cxxm", ".c++m", ".mpp", ".mxx", ".ixx")
 
@@ -36,37 +35,29 @@ rule("c++.build.modules")
 -- scan modules
 rule("c++.build.modules.scanner")
     set_sourcekinds("cxx")
-    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-
-    -- generate module dependencies
+    set_extensions(".cppm", ".ccm", ".cxxm", ".c++m", ".mpp", ".mxx", ".ixx")
     on_prepare_files("scanner", {jobgraph = true})
-
-    -- insert objectfiles
     after_prepare_files("scanner.after_scan")
 
 -- build modules
 rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
-    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-
+    set_extensions(".cppm", ".ccm", ".cxxm", ".c++m", ".mpp", ".mxx", ".ixx")
     add_orders("c++.build.modules.scanner", "c++.build.modules.builder")
 
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files("builder.build_bmis", {jobgraph = true, batch = true})
-
     on_build_files("builder.build_objectfiles", {jobgraph = true, batch = true})
 
     -- serial compilation only, usually used to support project generator
     before_buildcmd_files("builder.build_bmis")
-
     on_buildcmd_files("builder.build_objectfiles")
 
     after_clean("builder.clean")
 
 -- install modules
 rule("c++.build.modules.install")
-    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
+    set_extensions(".cppm", ".ccm", ".cxxm", ".c++m", ".mpp", ".mxx", ".ixx")
 
     before_install("install.install")
-
     before_uninstall("install.uninstall")
