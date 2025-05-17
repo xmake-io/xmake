@@ -59,27 +59,32 @@ function main(toolchain)
     local sdkdir = toolchain:sdkdir()
     local bindir = toolchain:bindir()
     local cross  = toolchain:cross()
-    if not sdkdir and not bindir then
+
+    if not bindir then
         bindir = try {function () return os.iorunv("llvm-config", {"--bindir"}) end}
+        if not bindir then
+            if is_host("macosx") then
+                if os.arch() == "arm64" then
+                    bindir = find_path("llvm-ar", "/opt/homebrew/opt/llvm/bin")
+                else
+                    bindir = find_path("llvm-ar", "/usr/local/Cellar/llvm/*/bin")
+                end
+            elseif is_host("windows") then
+                local llvm_ar = find_tool("llvm-ar", {force = true, envs = {PATH = os.getenv("PATH")}})
+                if llvm_ar and llvm_ar.program and path.is_absolute(llvm_ar.program) then
+                    bindir = path.directory(llvm_ar.program)
+                end
+            end
+        end
+        -- trim possible trailing \n
+        bindir = bindir:trim()
+    end
+    
+    if not sdkdir then
         if bindir then
             sdkdir = path.directory(bindir)
         elseif is_host("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
-        elseif is_host("macosx") then
-            if os.arch() == "arm64" then
-                bindir = find_path("llvm-ar", "/opt/homebrew/opt/llvm/bin")
-            else
-                bindir = find_path("llvm-ar", "/usr/local/Cellar/llvm/*/bin")
-            end
-            if bindir then
-                sdkdir = path.directory(bindir)
-            end
-        elseif is_host("windows") then
-            local llvm_ar = find_tool("llvm-ar", {force = true, envs = {PATH = os.getenv("PATH")}})
-            if llvm_ar and llvm_ar.program and path.is_absolute(llvm_ar.program) then
-                bindir = path.directory(llvm_ar.program)
-                sdkdir = path.directory(bindir)
-            end
         end
     end
 
@@ -97,17 +102,11 @@ function main(toolchain)
             end
         end
     end
-    if cross_toolchain then
-        toolchain:config_set("cross", cross_toolchain.cross)
+    if cross_toolchain and cross_toolchain.cross ~= "" then
+        toolchain:config_set("cross", cross_toolchain.cross or cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
         toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
         toolchain:configs_save()
-    else
-        raise("llvm toolchain not found!")
-    end
-
-    if toolchain:is_plat("cross") and (not toolchain:cross() or toolchain:cross():match("^%s*$")) then
-        raise("Missing cross target. Use `--cross=name` to specify.")
     end
 
     -- attempt to find xcode to pass `-isysroot` on macos
