@@ -199,11 +199,11 @@ function build_modules_for_jobgraph(target, jobgraph, built_modules)
     local jobdeps = {}
     local buildfilejobs = {}
 
-    -- if two phase supported only build interface and implementation named modules bmi
+    -- get named modules
     local _built_modules = {}
     for _, sourcefile in ipairs(built_modules) do
         local module = mapper.get(target, sourcefile)
-        if module.interface or module.implementation then
+        if module.name then
             table.insert(_built_modules, sourcefile)
         else
             if not support.is_bmionly(target, sourcefile) then
@@ -217,7 +217,6 @@ function build_modules_for_jobgraph(target, jobgraph, built_modules)
             end
         end
     end
-
     -- add module jobs
     local moduletype = has_two_phase_compilation_support and "bmi" or "onephase"
     local buildgroup = _get_module_buildgroup_for(target, moduletype)
@@ -229,7 +228,7 @@ function build_modules_for_jobgraph(target, jobgraph, built_modules)
             table.insert(buildfilejobs, buildfilejob)
             jobgraph:add(buildfilejob, function(_, _, jobopt)
                 -- build bmi if named job
-                jobopt.bmi = module.interface or module.implementation
+                jobopt.bmi = module.name
                 -- build objectfile here if two phase compilation is not supported
                 jobopt.objectfile = not has_two_phase_compilation_support and not bmionly
                 builder.make_module_job(target, module, jobopt)
@@ -271,7 +270,7 @@ function build_objectfiles_for_jobgraph(target, jobgraph, built_modules)
     else
         for _, sourcefile in ipairs(built_modules) do
             local module = mapper.get(target, sourcefile)
-            if not module.interface and not module.implementation then
+            if not module.name then
                 table.insert(_built_modules, sourcefile)
             end
         end
@@ -306,11 +305,11 @@ function build_modules_for_batchjobs(target, batchjobs, built_modules, opt)
     local builder = _builder(target)
     local has_two_phase_compilation_support = support.has_two_phase_compilation_support(target)
 
-    -- if two phase supported only build interface and implementation named modules bmi
+    -- if two phase supported only build named modules bmi
     local _built_modules = {}
     for _, sourcefile in ipairs(built_modules) do
         local module = mapper.get(target, sourcefile)
-        if module.interface or module.implementation then
+        if module.name then
             table.insert(_built_modules, sourcefile)
         end
     end
@@ -350,7 +349,7 @@ function build_modules_for_batchjobs(target, batchjobs, built_modules, opt)
             sourcefile = module.sourcefile,
             job = batchjobs:newjob(buildfilejob, function(_, _, jobopt)
                 -- build bmi if named job
-                jobopt.bmi = module.interface or module.implementation
+                jobopt.bmi = module.name
                 -- build objectfile here if two phase compilation is not supported
                 jobopt.objectfile = not has_two_phase_compilation_support and not bmionly
                 builder.make_module_job(target, module, jobopt)
@@ -373,7 +372,7 @@ function build_objectfiles_for_batchjobs(target, batchjobs, built_modules, opt)
     else
         for _, sourcefile in ipairs(built_modules) do
             local module = mapper.get(target, sourcefile)
-            if not module.interface and not module.implementation then
+            if not module.name then
                 table.insert(_built_modules, sourcefile)
             end
         end
@@ -410,7 +409,7 @@ function build_modules_for_batchcmds(target, batchcmds, built_modules, opt)
     local _built_modules = {}
     for _, sourcefile in ipairs(built_modules) do
         local module = mapper.get(target, sourcefile)
-        if module.interface or module.implementation then
+        if module.name then
             table.insert(_built_modules, sourcefile)
         end
     end
@@ -419,7 +418,7 @@ function build_modules_for_batchcmds(target, batchcmds, built_modules, opt)
         local bmionly = support.is_bmionly(target, sourcefile)
         local module = mapper.get(target, sourcefile)
         local jobopt = {}
-        jobopt.bmi = module.interface or module.implementation
+        jobopt.bmi = module.name
         jobopt.objectfile = not has_two_phase_compilation_support and not bmionly
         jobopt.progress = opt.progress
         depmtime = math.max(depmtime, builder.make_module_buildcmds(target, batchcmds, module, jobopt))
@@ -440,8 +439,8 @@ function build_objectfiles_for_batchcmds(target, batchcmds, built_modules, opt)
     else
         for _, sourcefile in ipairs(built_modules) do
             local module = mapper.get(target, sourcefile)
-            if not module.interface and not module.implementation then
-            table.insert(_built_modules, sourcefile)
+            if not module.name then
+                table.insert(_built_modules, sourcefile)
             end
         end
     end
@@ -659,7 +658,7 @@ end
 function build_bmis(target, jobgraph, _, opt)
     opt = opt or {}
     if target:data("cxx.has_modules") then
-        if target:is_moduleonly() and not target:data("cxx.modules.reused") then
+        if target:is_moduleonly() and not target:data("cxx.modules.reused") or target:is_phony() then
             return
         end
         profiler.enter(target:fullname(), "c++ modules", "builder", "bmis")
@@ -706,7 +705,7 @@ end
 function build_objectfiles(target, jobgraph, _, opt)
 
     if target:data("cxx.has_modules") then
-        if target:is_moduleonly() and not target:data("cxx.modules.reused") then
+        if target:is_moduleonly() and not target:data("cxx.modules.reused") or target:is_phony() then
             return
         end
         profiler.enter(target:fullname(), "c++ modules", "builder", "objectfiles")

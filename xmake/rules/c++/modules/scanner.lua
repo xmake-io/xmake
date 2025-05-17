@@ -149,8 +149,9 @@ function _parse_dependencies_data(target, moduleinfos)
                     modules_names:insert(module.name)
                     module.headerunit = provide["is-headerunit"]
                     module.interface = (not module.headerunit and provide["is-interface"] == nil) and true or provide["is-interface"]
-                    module.implementation = not module.interface and not module.headerunit
-                    module.method = provide["lookup-method"] or "by-name"
+                    if module.name then
+                        module.method = provide["lookup-method"] or "by-name"
+                    end
 
                     if module.headerunit then
                         local key = support.get_headerunit_key(target, module.sourcefile)
@@ -205,7 +206,7 @@ function _get_edges(target, nodes, modules)
   local deps_names = hashset.new()
   for _, node in ipairs(table.unique(nodes)) do
       local module = modules[node]
-      if module.interface or module.implementation then
+      if module.name then
           if deps_names:has(module.name) then
               raise("duplicate module name detected for \"" .. module.name .. "\"\n  <" .. target:fullname() .. "> -> " .. module.sourcefile .. "\n  <" .. target:fullname() .. "> -> " .. name_filemap[module.name])
           end
@@ -218,7 +219,7 @@ function _get_edges(target, nodes, modules)
       for dep_name, _ in table.orderpairs(module.deps) do
           for _, dep_node in ipairs(nodes) do
               local dep_module = modules[dep_node]
-              if (dep_module.interface or dep_module.implementation or dep_module.headerunit) and dep_name == dep_module.name then
+              if dep_module.name and dep_name == dep_module.name then
                   table.insert(edges, {dep_node, node})
                   break
               end
@@ -292,31 +293,34 @@ function _get_targetdeps_modules(target)
     local _, stdmodules_set = support.get_stdmodules(target)
     local modules
     for _, dep in ipairs(target:orderdeps()) do
-        local sourcebatch = dep:sourcebatches()["c++.build.modules.builder"]
-        if sourcebatch and sourcebatch.sourcefiles then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                modules = modules or {}
-                if support.is_public(dep, sourcefile) or stdmodules_set:has(sourcefile) then
-                    local _fileconfig = dep:fileconfig(sourcefile)
-                    local fileconfig = {}
-                    if _fileconfig then
-                        fileconfig.defines = _fileconfig.defines
-                        fileconfig.undefines = _fileconfig.undefines
-                        fileconfig.includedirs = _fileconfig.includedirs
-                    end
-                    fileconfig.defines = table.join(fileconfig.defines or {}, dep:get("defines") or {})
-                    fileconfig.undefines = table.join(fileconfig.undefines or {}, dep:get("undefines") or {})
-                    fileconfig.includedirs = table.join(fileconfig.includedirs or {}, dep:get("includedirs") or {})
-                    if not dep:is_phony() then
-                        if target:namespace() == dep:namespace() then
-                            fileconfig.external = dep:name()
-                        else
-                            fileconfig.external = dep:fullname()
+        local sourcebatches = dep:sourcebatches()
+        if sourcebatches and sourcebatches["c++.build.modules.scanner"] then
+            local sourcebatch = sourcebatches["c++.build.modules.scanner"]
+            if sourcebatch.sourcefiles then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    modules = modules or {}
+                    if support.is_public(dep, sourcefile) or stdmodules_set:has(sourcefile) then
+                        local _fileconfig = dep:fileconfig(sourcefile)
+                        local fileconfig = {}
+                        if _fileconfig then
+                            fileconfig.defines = _fileconfig.defines
+                            fileconfig.undefines = _fileconfig.undefines
+                            fileconfig.includedirs = _fileconfig.includedirs
                         end
-                        fileconfig.bmionly = not dep:is_moduleonly()
-                    end
-                    if not modules[sourcefile] then
-                        modules[sourcefile] = fileconfig
+                        fileconfig.defines = table.join(fileconfig.defines or {}, dep:get("defines") or {})
+                        fileconfig.undefines = table.join(fileconfig.undefines or {}, dep:get("undefines") or {})
+                        fileconfig.includedirs = table.join(fileconfig.includedirs or {}, dep:get("includedirs") or {})
+                        if not dep:is_phony() then
+                            if target:namespace() == dep:namespace() then
+                                fileconfig.external = dep:name()
+                            else
+                                fileconfig.external = dep:fullname()
+                            end
+                            fileconfig.bmionly = not dep:is_moduleonly()
+                        end
+                        if not modules[sourcefile] then
+                            modules[sourcefile] = fileconfig
+                        end
                     end
                 end
             end
@@ -390,13 +394,12 @@ function _patch_sourcebatch(target, sourcebatch)
     end
 
     sourcebatch.sourcekind = "cxx"
-    sourcebatch.objectfiles = {}
     sourcebatch.dependfiles = {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local reused, from = support.is_reused(target, sourcefile)
         local _target = reused and from or target
         local objectfile = _target:objectfile(sourcefile)
-        local dependfile = _target:dependfile(sourcefile or objectfile)
+        local dependfile = _target:dependfile(objectfile)
         table.insert(sourcebatch.dependfiles, dependfile)
     end
 end
@@ -434,16 +437,24 @@ function _do_parse(target, sourcebatch)
     end
 
     -- steal from c++.build sourcebatch named modules with cpp extensions
-    local cxx_sourcebatch = target:sourcebatches()["c++.build"]
-    if cxx_sourcebatch then
+    local sourcebatches = target:sourcebatches()
+    if sourcebatches and sourcebatches["c++.build"] then
+        local cxx_sourcebatch = sourcebatches["c++.build"]
         cxx_sourcebatch.sourcefiles = {}
         cxx_sourcebatch.dependfiles = {}
+        cxx_sourcebatch.objectfiles = {}
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
             local module = mapper.get(target, sourcefile)
-            if module and not module.interface and not module.implementation then
+            local insert = true
+            if module then
+                insert = not module.name
+            end
+
+            if insert then
                 table.insert(cxx_sourcebatch.sourcefiles, sourcefile)
                 local objectfile = target:objectfile(sourcefile)
                 table.insert(cxx_sourcebatch.dependfiles, target:dependfile(objectfile))
+                table.insert(cxx_sourcebatch.objectfiles, objectfile)
             end
         end
     end
@@ -712,16 +723,14 @@ function sort_modules_by_dependencies(target, modules)
         local culleds
         for _, sourcefile in ipairs(sourcefiles_sorted) do
             local module = mapper.get(target, sourcefile)
-            local is_named = module.interface or module.implementation or module.headerunit
-            local sort = (is_named and module.sourcealias) or (module.headerunit and not module.alias) or (not is_named)
+            local name = module.name
+            local is_named = name ~= nil
+            local sort = (is_named and (module.sourcealias or not module.alias)) or not is_named
             if sort then
                 local insert = false
-                local name
                 local reused, from = support.is_reused(target, sourcefile)
 
-                if module.name and not module.headerunit then -- named modules
-                    name = module.name
-
+                if is_named and not module.headerunit then -- named modules
                     insert = not support.can_be_culled(target, sourcefile)
 
                     -- if module is cullable (culling policy enabled and not a public module), try to cull
@@ -750,9 +759,9 @@ function sort_modules_by_dependencies(target, modules)
                         table.insert(built_headerunits, sourcefile)
                     else
                         table.insert(built_modules, sourcefile)
-                        -- insert objectfile if module is not imported from a static / shared library and if has a custom extension (not .cpp)
+                        -- insert objectfile if module named and is not imported from a static / shared library or if from a C++ file with a c++ module extension
                         -- if not so objectfile will be handled by c++.build rule
-                        if not support.is_bmionly(target, sourcefile) then
+                        if not support.is_bmionly(target, sourcefile) and (support.has_module_extension(sourcefile) or is_named) then
                             local objectfile = target:objectfile(sourcefile)
                             table.insert(objectfiles, tostring(objectfile))
                         end
@@ -800,19 +809,28 @@ function get_modules(target)
 end
 
 function after_scan(target)
-    local compile_commands = os.getenv("XMAKE_IN_PROJECT_GENERATOR") and os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR")
-    if not os.getenv("XMAKE_IN_PROJECT_GENERATOR") or compile_commands then
-        local sourcebatch_scanner = target:sourcebatches()["c++.build.modules.scanner"]
-        local sourcebatch_builder = target:sourcebatches()["c++.build.modules.builder"]
-        if target:data("cxx.has_modules") and not target:is_moduleonly() then
+    local sourcebatches = target:sourcebatches()
+    local sourcebatch_builder = sourcebatches and sourcebatches["c++.build.modules.builder"]
+    local sourcebatch_scanner = sourcebatches and sourcebatches["c++.build.modules.scanner"]
+    if sourcebatch_scanner then
+        sourcebatch_scanner.sourcefiles = {}
+    end
+    if sourcebatch_builder then
+        sourcebatch_builder.sourcefiles = {}
+        sourcebatch_builder.dependfiles = {}
+        sourcebatch_builder.objectfiles = {}
+    end
+    if target:data("cxx.has_modules") then
+        if target:is_moduleonly() or target:is_phony() then
+            return
+        end
+        local compile_commands = os.getenv("XMAKE_IN_PROJECT_GENERATOR") and os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR")
+        local need_objectfiles = not os.getenv("XMAKE_IN_PROJECT_GENERATOR") or compile_commands
+        if need_objectfiles then
             local modules = get_modules(target)
             local _, _, objectfiles = sort_modules_by_dependencies(target, modules, {jobgraph = target:policy("build.jobgraph")})
-            sourcebatch_scanner.objectfiles = objectfiles
+            assert(sourcebatch_builder)
             sourcebatch_builder.objectfiles = objectfiles
-        elseif sourcebatch_scanner then
-            -- avoid duplicate linking of object files of non-module programs
-            sourcebatch_scanner.objectfiles = {}
-            sourcebatch_builder.objectfiles = {}
         end
     end
 end
