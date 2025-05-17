@@ -22,6 +22,7 @@
 import("core.base.json")
 import("core.base.option")
 import("core.base.hashset")
+import("core.base.profiler")
 import("async.runjobs")
 import("private.action.clean.remove_files")
 import("private.async.buildjobs")
@@ -134,6 +135,7 @@ end
 -- should we build this module or headerunit ?
 function should_build(target, module)
 
+    profiler.enter(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
     local memcache = support.memcache()
     local _should_build = memcache:get2(target:fullname(), "should_build_" .. module.sourcefile)
     if _should_build == nil then
@@ -142,6 +144,7 @@ function should_build(target, module)
         if reused then
             local build = should_build(from, module)
             memcache:set2(target:fullname(), "should_build_" .. module.sourcefile, build)
+            profiler.leave(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
             return build
         end
         local compinst = compiler.load("cxx", {target = target})
@@ -164,6 +167,7 @@ function should_build(target, module)
             if should_build(target, mapped_dep) then
                 depend.save(dependinfo, dependfile)
                 memcache:set2(target:fullname(), "should_build_" .. module.sourcefile, true)
+                profiler.leave(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
                 return true
             end
         end
@@ -173,11 +177,14 @@ function should_build(target, module)
         if dryrun or depend.is_changed(old_dependinfo, dependinfo) then
             depend.save(dependinfo, dependfile)
             memcache:set2(target:fullname(), "should_build_" .. module.sourcefile, true)
+            profiler.leave(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
             return true
         end
         memcache:set2(target:fullname(), "should_build_" .. module.sourcefile, false)
+        profiler.leave(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
         return false
     end
+    profiler.leave(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
     return _should_build
 end
 
@@ -186,6 +193,7 @@ end
 -- it not build also objectfiles
 function build_modules_for_jobgraph(target, jobgraph, built_modules)
 
+    profiler.enter(target:fullname(), "c++ modules", "builder", "schedule module bmi build jobs")
     local builder = _builder(target)
     local has_two_phase_compilation_support = support.has_two_phase_compilation_support(target)
     local jobdeps = {}
@@ -246,11 +254,13 @@ function build_modules_for_jobgraph(target, jobgraph, built_modules)
             jobgraph:add_orders(depname, jobname)
         end
     end
+    profiler.leave(target:fullname(), "c++ modules", "builder", "schedule module bmi build jobs")
 end
 
 -- build modules objectfiles for jobgraph if two phase compilation is supported
 function build_objectfiles_for_jobgraph(target, jobgraph, built_modules)
 
+    profiler.enter(target:fullname(), "c++ modules", "builder", "schedule module objectfiles build jobs")
     local builder = _builder(target)
     local has_two_phase_compilation_support = support.has_two_phase_compilation_support(target)
     local buildgroup = _get_module_buildgroup_for(target, "objectfile")
@@ -278,6 +288,7 @@ function build_objectfiles_for_jobgraph(target, jobgraph, built_modules)
             end
         end
     end)
+    profiler.leave(target:fullname(), "c++ modules", "builder", "schedule module objectfiles build jobs")
 end
 
 -- build batchjobs for modules
@@ -450,6 +461,7 @@ end
 -- build headerunits for jobgraph
 function build_headerunits_for_jobgraph(target, jobgraph, built_stlheaderunits, built_headerunits)
 
+    profiler.enter(target:fullname(), "c++ modules", "builder", "schedule headerunits build jobs")
     local builder = _builder(target)
     function make_headerunit_job(headerfile, opt)
         local reused, from = support.is_reused(target, headerfile)
@@ -482,6 +494,7 @@ function build_headerunits_for_jobgraph(target, jobgraph, built_stlheaderunits, 
             end
         end)
     end
+    profiler.leave(target:fullname(), "c++ modules", "builder", "schedule headerunits build jobs")
 end
 
 -- build headerunits for batchjobs
@@ -548,6 +561,7 @@ function build_headerunits_for_batchcmds(target, batchcmds, built_stlheaderunits
 end
 
 function generate_metadata(target, modules)
+    profiler.enter(target:fullname(), "c++ modules", "builder", "generate module metadata")
     local public_modules
     for sourcefile, module in table.orderpairs(modules) do
         local fileconfig = target:fileconfig(sourcefile)
@@ -559,6 +573,7 @@ function generate_metadata(target, modules)
     end
 
     if not public_modules then
+        profiler.leave(target:fullname(), "c++ modules", "builder", "generate module metadata")
         return
     end
 
@@ -570,10 +585,12 @@ function generate_metadata(target, modules)
         local metadata = _generate_meta_module_info(target, module)
         json.savefile(metafilepath, metadata)
     end, {comax = jobs, total = #public_modules})
+    profiler.leave(target:fullname(), "c++ modules", "builder", "generate module metadata")
 end
 
 -- check if dependencies changed
 function is_dependencies_changed(target, module)
+    profiler.enter(target:fullname(), "c++ modules", "builder", "check if dependency chain changed")
     local cachekey = target:fullname() .. (module.name or module.sourcefile)
     local requires = hashset.from(table.keys(module.deps or {}))
     local oldrequires = support.memcache():get2(cachekey, "oldrequires")
@@ -590,6 +607,7 @@ function is_dependencies_changed(target, module)
            end
         end
     end
+    profiler.leave(target:fullname(), "c++ modules", "builder", "check if dependency chain changed")
     return requires, changed
 end
 
@@ -643,6 +661,7 @@ function build_bmis(target, jobgraph, _, opt)
         if target:is_moduleonly() and not target:data("cxx.modules.reused") or target:is_phony() then
             return
         end
+        profiler.enter(target:fullname(), "c++ modules", "builder", "bmis")
         local modules = scanner.get_modules(target)
         -- avoid building non referenced modules
         local built_modules, built_headerunits, _ = scanner.sort_modules_by_dependencies(target, modules, {jobgraph = target:policy("build.jobgraph")})
@@ -679,6 +698,7 @@ function build_bmis(target, jobgraph, _, opt)
         else
             assert(false, "shouldn't be here :D")
         end
+        profiler.leave(target:fullname(), "c++ modules", "builder", "bmis")
     end
 end
 
@@ -688,6 +708,7 @@ function build_objectfiles(target, jobgraph, _, opt)
         if target:is_moduleonly() and not target:data("cxx.modules.reused") or target:is_phony() then
             return
         end
+        profiler.enter(target:fullname(), "c++ modules", "builder", "objectfiles")
         local modules = scanner.get_modules(target)
         -- avoid building non referenced modules
         local built_modules, _, _ = scanner.sort_modules_by_dependencies(target, modules, {jobgraph = target:policy("build.jobgraph")})
@@ -711,6 +732,7 @@ function build_objectfiles(target, jobgraph, _, opt)
         else
             assert(false, "shouldn't be here :D")
         end
+        profiler.leave(target:fullname(), "c++ modules", "builder", "objectfiles")
     end
 end
 

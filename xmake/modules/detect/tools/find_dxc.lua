@@ -43,6 +43,7 @@ function main(opt)
         "$(env VK_SDK_PATH)/Bin",
         "$(env PATH)"
     }
+    opt.paths = table.wrap(opt.paths)
     local program = find_program(opt.program or "dxc.exe", opt)
     local version = nil
     if program and opt and opt.version then
