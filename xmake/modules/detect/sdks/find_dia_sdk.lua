@@ -20,7 +20,9 @@
 
 -- imports
 import("core.project.config")
+import("core.base.option")
 import("core.tool.toolchain")
+import("core.cache.detectcache")
 import("detect.sdks.find_vstudio")
 
 function _is_sdkdir_valid(sdkdir)
@@ -61,23 +63,8 @@ function _find_sdkdir(sdkdir, opt)
     return _is_sdkdir_valid(sdkdir) and sdkdir or nil
 end
 
--- find DIA SDK
---
--- @param sdkdir    the DIA SDK directory
--- @param opt       the argument options, e.g. {toolchain = ..., arch = ...}
---
--- @return          the DIA SDK. e.g. {sdkdir = ..., linkdirs = ..., includedirs = ...}
---
--- @code
---
--- local toolchains = find_dia_sdk("/opt/msvc/DIA SDK")
---
--- @endcode
---
-function main(sdkdir, opt)
-    
-    -- init options
-    opt = opt or {}
+function _find_dia_sdk(sdkdir, opt)
+    -- get sdkdir
     sdkdir = _find_sdkdir(sdkdir, opt)
     if not sdkdir then
         return
@@ -93,7 +80,6 @@ function main(sdkdir, opt)
         }
         arch = supported_arch[arch]
     end
-
     if not arch then
         return
     end
@@ -108,4 +94,47 @@ function main(sdkdir, opt)
             path.join(sdkdir, "include", arch)
         }
     }
+end
+
+-- find DIA SDK
+--
+-- @param sdkdir    the DIA SDK directory
+-- @param opt       the argument options, e.g. {toolchain = ..., arch = ..., force = false, verbose = false}
+--
+-- @return          the DIA SDK. e.g. {sdkdir = ..., linkdirs = ..., includedirs = ...}
+--
+-- @code
+--
+-- local toolchains = find_dia_sdk("/opt/msvc/DIA SDK")
+--
+-- @endcode
+--
+function main(sdkdir, opt)
+    -- init options
+    opt = opt or {}
+
+    -- attempt to load cache first
+    local key = "detect.sdks.find_dia_sdk"
+    local cacheinfo = detectcache:get(key) or {}
+    if not opt.force and cacheinfo.dia_sdk and os.isdir(cacheinfo.dia_sdk.sdkdir) then
+        return cacheinfo.dia_sdk
+    end
+
+    -- find dia sdk
+    local dia_sdk = _find_dia_sdk(sdkdir, opt)
+    if dia_sdk then
+        if opt.verbose or option.get("verbose") then
+            cprint("checking for DIA SDK directory ... ${color.success}%s", dia_sdk.sdkdir)
+        end
+    else
+        if opt.verbose or option.get("verbose") then
+            cprint("checking for DIA SDK directory ... ${color.nothing}${text.nothing}")
+        end
+    end
+
+    -- save to cache
+    cacheinfo.dia_sdk = dia_sdk or false
+    detectcache:set(key, cacheinfo)
+    detectcache:save()
+    return dia_sdk
 end
