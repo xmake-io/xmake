@@ -41,7 +41,7 @@ function _find_sdkdir(sdkdir, opt)
             end
         end
         if not vsdir then
-            local msvc = toolchain.load("msvc")
+            local msvc = toolchain.load("msvc", {plat = config.get("plat"), arch = opt.arch or config.get("arch")})
             if msvc and msvc:check() then
                 local vcvars = msvc:config("vcvars")
                 if vcvars then
