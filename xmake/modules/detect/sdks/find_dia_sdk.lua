@@ -41,7 +41,7 @@ function _find_sdkdir(sdkdir, opt)
             end
         end
         if not vsdir then
-            local msvc = toolchain.load("msvc", {plat = config.get("plat"), arch = opt.arch or config.get("arch")})
+            local msvc = toolchain.load("msvc", {plat = opt.plat or config.get("plat"), arch = opt.arch or config.get("arch")})
             if msvc and msvc:check() then
                 local vcvars = msvc:config("vcvars")
                 if vcvars then
@@ -99,7 +99,7 @@ end
 -- find DIA SDK
 --
 -- @param sdkdir    the DIA SDK directory
--- @param opt       the argument options, e.g. {toolchain = ..., arch = ..., force = false, verbose = false}
+-- @param opt       the argument options, e.g. {toolchain = ..., plat = ..., arch = ..., force = false, verbose = false}
 --
 -- @return          the DIA SDK. e.g. {sdkdir = ..., linkdirs = ..., includedirs = ...}
 --
