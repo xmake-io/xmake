@@ -400,6 +400,7 @@ function _patch_sourcebatch(target, sourcebatch)
             target:fileconfig_add(sourcefile, fileconfig)
             memcache:set2(target:fullname(), "modules.changed", true)
         end
+        sourcebatch.sourcefiles = table.unique(sourcebatch.sourcefiles)
         sourcebatch.sourcekind = "cxx"
         sourcebatch.objectfiles = {}
         sourcebatch.dependfiles = {}
@@ -407,7 +408,7 @@ function _patch_sourcebatch(target, sourcebatch)
             local reused, from = support.is_reused(target, sourcefile)
             local _target = reused and from or target
             local objectfile = _target:objectfile(sourcefile)
-            local dependfile = _target:dependfile(sourcefile or objectfile)
+            local dependfile = _target:dependfile(objectfile)
             table.insert(sourcebatch.dependfiles, dependfile)
         end
         localcache:set2(target:fullname(), "patched_sourcebatch", {sourcefiles = sourcebatch.sourcefiles, dependfiles = sourcebatch.dependfiles, reused = reused, md5sum = md5sum})
@@ -473,11 +474,7 @@ function _do_computedag(target, modules, sourcebatch)
             cxx_sourcebatch.objectfiles = {}
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local module = modules[sourcefile]
-                local insert = true
-                if module then
-                    insert = not module.name
-                end
-
+                local insert = not support.should_be_built_by_builder_rule(target, module)
                 if insert then
                     table.insert(cxx_sourcebatch.sourcefiles, sourcefile)
                     local objectfile = target:objectfile(sourcefile)
@@ -491,10 +488,13 @@ function _do_computedag(target, modules, sourcebatch)
         modules = get_modules(target)
         local cxx_sourcebatch_cached = localcache:get2(target:fullname(), "c++.build.sourcebatch")
         if cxx_sourcebatch_cached then
-            local cxx_sourcebatch = target:sourcebatches()["c++.build"]
-            cxx_sourcebatch.sourcefiles = cxx_sourcebatch_cached.sourcefiles
-            cxx_sourcebatch.dependfiles = cxx_sourcebatch_cached.dependfiles
-            cxx_sourcebatch.objectfiles = cxx_sourcebatch_cached.objectfiles
+            local sourcebatches = target:sourcebatches()
+            if sourcebatches and sourcebatches["c++.build"] then
+                local cxx_sourcebatch = sourcebatches["c++.build"]
+                cxx_sourcebatch.sourcefiles = cxx_sourcebatch_cached.sourcefiles
+                cxx_sourcebatch.dependfiles = cxx_sourcebatch_cached.dependfiles
+                cxx_sourcebatch.objectfiles = cxx_sourcebatch_cached.objectfiles
+            end
         end
     end
 
@@ -775,7 +775,6 @@ function sort_modules_by_dependencies(target, modules)
         for node, module in pairs(modules) do
             table.insert(nodes, module.headerunit and node or module.sourcefile)
         end
-        -- table.unique(nodes)
         local edges = _get_edges(target, nodes, modules)
         local dag = graph.new(true)
         for _, e in ipairs(edges) do
@@ -843,9 +842,9 @@ function sort_modules_by_dependencies(target, modules)
                         table.insert(built_headerunits, sourcefile)
                     else
                         table.insert(built_modules, sourcefile)
-                        -- insert objectfile if module named and is not imported from a static / shared library or if from a C++ file with a c++ module extension
+                        -- insert objectfile if module named and is not imported from a static / shared library or if from a C++ file with a c++ module extension or have deps
                         -- if not so objectfile will be handled by c++.build rule
-                        if not support.is_bmionly(target, sourcefile) and (support.has_module_extension(sourcefile) or is_named) then
+                        if not support.is_bmionly(target, sourcefile) and support.should_be_built_by_builder_rule(target, module) then
                             local objectfile = target:objectfile(sourcefile)
                             table.insert(objectfiles, tostring(objectfile))
                         end

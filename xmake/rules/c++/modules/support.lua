@@ -193,6 +193,10 @@ function set_reused(target, from, sourcefile)
     end
 end
 
+function should_be_built_by_builder_rule(target, module)
+    return has_module_extension(module.sourcefile) or module.name or module.deps
+end
+
 -- query if a module scan artifacts and bmifile are reused from an other target
 function is_reused(target, sourcefile)
     local from = memcache():get2(target:fullname() .. "/modules/" .. sourcefile, "reuse")

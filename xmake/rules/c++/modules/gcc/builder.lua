@@ -223,7 +223,7 @@ function make_module_job(target, module, opt)
         end
 
         local flags = {"-x", "c++"}
-        if support.has_module_extension(module.sourcefile) or module.name then
+        if support.should_be_built_by_builder_rule(target, module) then
             if bmi then
                 if objectfile then
                     table.insert(flags, module_flag)
@@ -270,7 +270,7 @@ function make_module_buildcmds(target, batchcmds, module, opt)
         end
 
         local flags = {"-x", "c++"}
-        if support.has_module_extension(module.sourcefile) or module.name then
+        if support.should_be_built_by_builder_rule(target, module) then
             if bmi then
                 if objectfile then
                     table.insert(flags, module_flag)
