@@ -32,7 +32,7 @@
 -- @endcode
 --
 function xrepo_addenvs(envs)
-    local packagename = "__xrepo_addenvs_" .. hash.strhash32(tostring(envs))
+    local packagename = "__xrepo_addenvs_" .. hash.strhash32(string.serialize(envs))
     package(packagename)
         on_load(function (package)
             if type(envs) == "function" then
