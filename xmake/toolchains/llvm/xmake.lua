@@ -59,10 +59,6 @@ toolchain("llvm")
             end
             toolchain:add("ldflags", "-fuse-ld=lld")
             toolchain:add("shflags", "-fuse-ld=lld")
-        elseif toolchain:is_arch("x86_64", "x64") then
-            march = "-m64"
-        elseif toolchain:is_arch("i386", "x86") then
-            march = "-m32"
         elseif toolchain:is_plat("cross") then
             local sysroot
             local sdkdir = toolchain:sdkdir()
@@ -90,6 +86,10 @@ toolchain("llvm")
                 toolchain:add("ldflags", "--sysroot=" .. sysroot)
                 toolchain:add("shflags", "--sysroot=" .. sysroot)
             end
+        elseif toolchain:is_arch("x86_64", "x64") then
+            march = "-m64"
+        elseif toolchain:is_arch("i386", "x86") then
+            march = "-m32"
         end
         if march then
             toolchain:add("cxflags", march)
@@ -129,3 +129,4 @@ toolchain("llvm")
             toolchain:add("runenvs", "PATH", bindir)
         end
     end)
+

@@ -84,7 +84,7 @@ function main(toolchain)
     end
 
     -- find cross toolchain from external envirnoment
-    local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir, cross = cross})
+    local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir})
     if not cross_toolchain then
         -- find it from packages
         for _, package in ipairs(toolchain:packages()) do
@@ -98,7 +98,7 @@ function main(toolchain)
         end
     end
     if cross_toolchain then
-        toolchain:config_set("cross", cross_toolchain.cross)
+        toolchain:config_set("cross", cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
         toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
         toolchain:configs_save()
@@ -116,3 +116,4 @@ function main(toolchain)
     end
     return cross_toolchain
 end
+
