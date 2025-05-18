@@ -25,7 +25,7 @@ import("core.base.graph")
 import("core.base.option")
 import("core.base.profiler")
 import("core.base.bytes")
-import("private.async.jobpool")
+import("async.jobgraph")
 import("async.runjobs")
 import("support")
 import("mapper")
@@ -105,19 +105,54 @@ end
     }
   }
 }]]
-function _parse_dependencies_data(target, moduleinfos)
+function _parse_moduleinfo(target, moduleinfo)
+    assert(moduleinfo.version <= 1)
+    local module
+    local headerunitsinfo
+    for _, rule in ipairs(moduleinfo.rules) do
+        module = {objectfile = path.translate(rule["primary-output"]), sourcefile = moduleinfo.sourcefile}
 
-    profiler.enter(target:fullname(), "c++ modules", "scanner", "parse modulescans")
-    -- insert headerunit as moduleinfos
-    local headerunitinfos = {}
-    for _, moduleinfo in ipairs(moduleinfos) do
-        assert(moduleinfo.version <= 1)
-        for _, rule in ipairs(moduleinfo.rules) do
+        if rule.provides then
+            -- assume rule.provides is always one element on C++
+            -- @see https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1689r5.html
+            local provide = rule.provides and rule.provides[1]
+            if provide then
+                assert(provide["logical-name"])
+
+                module.name = provide["logical-name"]
+                module.sourcefile = module.sourcefile or path.normalize(provide["source-path"])
+                module.headerunit = provide["is-headerunit"]
+                module.interface = (not module.headerunit and provide["is-interface"] == nil) and true or provide["is-interface"]
+                module.method = provide["lookup-method"] or "by-name"
+
+                if module.headerunit then
+                    local key = support.get_headerunit_key(target, module.sourcefile)
+                    module.key = key
+                end
+
+                -- XMake handle bmifile so we don't need rely on compiler-module-path
+                module.bmifile = _bmifile_for(target, module)
+            end
+        end
+
+        if rule.requires then
+            module.deps = {}
             for _, dep in ipairs(rule.requires) do
                 local method = dep["lookup-method"] or "by-name"
+                local name = dep["logical-name"]
+                local headerunit = method:startswith("include")
+                local key = headerunit and support.get_headerunit_key(target, name)
+                module.deps[name] = {
+                    name = name,
+                    method = method,
+                    headerunit = headerunit,
+                    key = key,
+                    unique = dep["unique-on-source-path"] or false,
+                }
                 if method:startswith("include") then
                     local sourcefile = dep["source-path"]
-                    table.insert(headerunitinfos, {
+                    headerunitsinfo = headerunitsinfo or {}
+                    table.insert(headerunitsinfo, {
                         version = 0,
                         revision = 0,
                         sourcefile = path.normalize(sourcefile),
@@ -129,78 +164,7 @@ function _parse_dependencies_data(target, moduleinfos)
             end
         end
     end
-    table.join2(moduleinfos, headerunitinfos)
-
-    local modules
-    local modules_names = hashset.new()
-    local jobs = jobpool.new()
-    for _, moduleinfo in ipairs(moduleinfos) do
-        jobs:addjob("job/parse_moduleinfo/" .. moduleinfo.sourcefile, function()
-            assert(moduleinfo.version <= 1)
-            for _, rule in ipairs(moduleinfo.rules) do
-                modules = modules or {}
-                local module = {objectfile = path.translate(rule["primary-output"]), sourcefile = moduleinfo.sourcefile}
-
-                if rule.provides then
-                    -- assume rule.provides is always one element on C++
-                    -- @see https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1689r5.html
-                    local provide = rule.provides and rule.provides[1]
-                    if provide then
-                        assert(provide["logical-name"])
-
-                        module.name = provide["logical-name"]
-                        module.sourcefile = module.sourcefile or path.normalize(provide["source-path"])
-                        modules_names:insert(module.name)
-                        module.headerunit = provide["is-headerunit"]
-                        module.interface = (not module.headerunit and provide["is-interface"] == nil) and true or provide["is-interface"]
-                        if module.name then
-                            module.method = provide["lookup-method"] or "by-name"
-                        end
-
-                        if module.headerunit then
-                            local key = support.get_headerunit_key(target, module.sourcefile)
-                            module.key = key
-                        end
-
-                        -- XMake handle bmifile so we don't need rely on compiler-module-path
-                        module.bmifile = _bmifile_for(target, module)
-                    end
-                end
-
-                if rule.requires then
-                    module.deps = {}
-                    for _, dep in ipairs(rule.requires) do
-                        local method = dep["lookup-method"] or "by-name"
-                        local name = dep["logical-name"]
-                        local headerunit = method:startswith("include")
-                        local key = headerunit and support.get_headerunit_key(target, name)
-                        module.deps[name] = {
-                            name = name,
-                            method = method,
-                            headerunit = headerunit,
-                            key = key,
-                            unique = dep["unique-on-source-path"] or false,
-                        }
-                    end
-                end
-                if module.headerunit then
-                    local key = module.sourcefile .. module.key
-                    if not modules[key] then
-                        modules[key] = table.clone(module)
-                        modules[key].name = module.sourcefile
-                    end
-                    local name = module.name .. module.key
-                    modules[name] = module
-                    modules[name].alias = true
-                else
-                    modules[module.sourcefile] = module
-                end
-            end
-        end)
-    end
-    runjobs("parsing moduleinfos", jobs, {comax = option.get("jobs") or os.default_njob()})
-    profiler.leave(target:fullname(), "c++ modules", "scanner", "parse modulescans")
-    return modules, modules_names
+    return module, headerunitsinfo
 end
 
 -- generate edges for DAG
@@ -243,9 +207,9 @@ function _get_package_modules(target, package, opt)
     local package_modules
     local modulesdir = path.join(package:installdir(), "modules")
     local metafiles = os.files(path.join(modulesdir, "*", "*.meta-info"))
-    local jobs = jobpool.new()
+    local jobs = jobgraph.new()
     for _, metafile in ipairs(metafiles) do
-        jobs:addjob("job/parse_meta_file/" .. metafile, function()
+        jobs:add("job/parse_meta_file/" .. metafile, function()
             package_modules = package_modules or {}
             local modulefile, _, metadata = _parse_meta_info(target, metafile)
 
@@ -371,6 +335,30 @@ function _are_flags_compatible(target, other, sourcefile)
     return true
 end
 
+function get_basegroup_for(target)
+    return target:fullname() .. "/modules"
+end
+
+function get_computedagjob_for(target)
+    return get_basegroup_for(target) .. "/computedag"
+end
+
+function get_scangroup_for(target)
+    return get_basegroup_for(target) .. "/scan"
+end
+
+function get_scanfilejob_for(target, sourcefile)
+    return get_scangroup_for(target) .. "/" .. sourcefile
+end
+
+function get_parsegroup_for(target)
+    return get_basegroup_for(target) .. "/parse"
+end
+
+function get_parsefilejob_for(target, sourcefile)
+    return get_parsegroup_for(target) .. "/" .. sourcefile
+end
+
 -- patch sourcebatch
 function _patch_sourcebatch(target, sourcebatch)
 
@@ -395,7 +383,7 @@ function _patch_sourcebatch(target, sourcebatch)
                 local strict = target:policy("build.c++.modules.reuse.strict") or
                                target:policy("build.c++.modules.tryreuse.discriminate_on_defines")
                 local dep = target:dep(fileconfig.external)
-                assert(dep, "dep target <%s> for <%s>", fileconfig.external, target:fullname())
+                assert(dep, "dep target <%s> for <%s> not found", fileconfig.external, target:fullname())
 
                 local can_reuse = nocheck or _are_flags_compatible(target, dep, sourcefile, {strict = strict})
                 if can_reuse then
@@ -420,52 +408,46 @@ function _patch_sourcebatch(target, sourcebatch)
             local dependfile = _target:dependfile(sourcefile or objectfile)
             table.insert(sourcebatch.dependfiles, dependfile)
         end
-        localcache:set2(target:fullname(), "patched_sourcebatch", {sourcefile = sourcebatch.sourcefiles, dependfiles = sourcebatch.dependfiles, reused = reused, md5sum = md5sum})
+        localcache:set2(target:fullname(), "patched_sourcebatch", {sourcefiles = sourcebatch.sourcefiles, dependfiles = sourcebatch.dependfiles, reused = reused, md5sum = md5sum})
     else
         local reused = hashset.from(cached_patched_sourcebatch.reused)
         for sourcefile, fileconfig in pairs(externalmodules) do
-            target:fileconfig_add(sourcefile, fileconfig)
             if reused:has(sourcefile) then
                 local dep = target:dep(fileconfig.external)
+                assert(dep, "dep target <%s> for <%s> not found", fileconfig.external, target:fullname())
                 if dep:is_moduleonly() then
                     dep:data_set("cxx.modules.reused", true)
                 end
                 support.set_reused(target, dep, sourcefile)
             end
+            target:fileconfig_add(sourcefile, fileconfig)
         end
-        table.insert(sourcebatch.sourcefiles, sourcefile)
-        target:fileconfig_add(sourcefile, fileconfig)
-    end
-
-    sourcebatch.sourcekind = "cxx"
-    sourcebatch.objectfiles = {}
-    sourcebatch.dependfiles = {}
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local reused, from = support.is_reused(target, sourcefile)
-        local _target = reused and from or target
-        local objectfile = _target:objectfile(sourcefile)
-        local dependfile = _target:dependfile(objectfile)
-        table.insert(sourcebatch.dependfiles, dependfile)
         sourcebatch.sourcekind = "cxx"
-        sourcebatch.dependfiles= cached_patched_sourcebatch.dependfiles
-        sourcebatch.sourcefiles = cached_patched_sourcebatch.sourcefiles
+        sourcebatch.objectfiles = {}
+        sourcebatch.dependfiles = {}
+        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            local reused, from = support.is_reused(target, sourcefile)
+            local _target = reused and from or target
+            local objectfile = _target:objectfile(sourcefile)
+            local dependfile = _target:dependfile(objectfile)
+            table.insert(sourcebatch.dependfiles, dependfile)
+            sourcebatch.sourcekind = "cxx"
+            sourcebatch.dependfiles= cached_patched_sourcebatch.dependfiles
+            sourcebatch.sourcefiles = cached_patched_sourcebatch.sourcefiles
+            sourcebatch.objectfiles= cached_patched_sourcebatch.objectfiles
+        end
     end
 end
 
-function _do_parse(target, sourcebatch)
+function _do_computedag(target, modules, sourcebatch)
 
-    profiler.enter(target:fullname(), "c++ modules", "scanner", "parse module dependencies and compute dependency graph")
+    profiler.enter(target:fullname(), "c++ modules", "scanner", "compute dag")
     local localcache = support.localcache()
     local memcache = support.memcache()
     local changed = memcache:get2(target:fullname(), "modules.changed")
-    local modules
     if changed then
-        local moduleinfos = support.load_moduleinfos(target, sourcebatch)
-        modules = _parse_dependencies_data(target, moduleinfos)
         localcache:set2(target:fullname(), "c++.modules", modules)
-
         mapper.feed(target, modules, sourcebatch.sourcefiles)
-
         -- check if a dependency is missing
         local modules_names = hashset.from(table.keys(mapper.get_mapper_for(target)))
         for _, module in pairs(modules) do
@@ -473,7 +455,7 @@ function _do_parse(target, sourcebatch)
                 if dep.method == "by-name" then
                     if not modules_names:has(dep_name) then
                         if option.get("diagnosis") then
-                            print("parsing:", target:fullname(), "\nmodules:", modules or {}, "\nmoduleinfos:", moduleinfos or {})
+                            print("parsing:", target:fullname(), "\nmodules:", modules or {})
                         end
                         raise("<%s> missing %s dependency for module %s", target:fullname(), dep_name, module.name or module.sourcefile)
                     end
@@ -488,6 +470,7 @@ function _do_parse(target, sourcebatch)
             cxx_sourcebatch.dependfiles = {}
             cxx_sourcebatch.objectfiles = {}
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local module = modules[sourcefile]
                 local insert = true
                 if module then
                     insert = not module.name
@@ -515,7 +498,6 @@ function _do_parse(target, sourcebatch)
 
     -- sort modules
     sort_modules_by_dependencies(target, modules)
-    profiler.leave(target:fullname(), "c++ modules", "scanner", "parse module dependencies and compute dependency graph")
 
     -- save cache if all other target finished
     local targets = memcache:get("targets")
@@ -529,8 +511,10 @@ function _do_parse(target, sourcebatch)
         end
     end
     if save_cache then
-        support.localcache():save()
+        localcache:save()
     end
+    profiler.leave(target:fullname(), "c++ modules", "scanner", "compute dag")
+    -- jobgraph:dump()
 end
 
 function _do_scan(target, sourcefile, opt)
@@ -545,27 +529,10 @@ end
 -- scan module dependencies
 function _schedule_module_dependencies_scan(target, jobgraph, sourcebatch)
 
-    profiler.enter(target:fullname(), "c++ modules", "scanner", "schedule module dependencies scans")
-    function get_basegroup_for(target)
-        return target:fullname() .. "/modules"
-    end
-    function get_parsejob_for(target)
-        return get_basegroup_for(target) .. "/parse"
-    end
-    function get_scangroup_for(target)
-        return get_basegroup_for(target) .. "/scan"
-    end
-    function get_scanfilejob_for(target, sourcefile)
-        return get_scangroup_for(target) .. "/" .. sourcefile
-    end
-
+    profiler.enter(target:fullname(), "c++ modules", "scanner", "schedule moduleinfo scanning, parsing and dag computation")
     -- if XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR is set, then we can just reuse scan artifacts from build
     if not os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR") or not support.localcache():get2(target:fullname(), "c++.modules") then
-        local parsejob = get_parsejob_for(target)
-        jobgraph:add(parsejob, function()
-            _do_parse(target, sourcebatch)
-        end)
-
+        local memcache = support.memcache()
         local scangroup = get_scangroup_for(target)
         local has_scanjob = false
         jobgraph:group(scangroup, function()
@@ -582,36 +549,82 @@ function _schedule_module_dependencies_scan(target, jobgraph, sourcebatch)
                 end
             end
         end)
+        local modules
+        local parsegroup = get_parsegroup_for(target)
+        jobgraph:group(parsegroup, function()
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local parsefilejob = get_parsefilejob_for(target, sourcefile)
+                if not jobgraph:has(parsefilejob) then
+                    jobgraph:add(parsefilejob, function(_, _, opt)
+                        local changed = memcache:get2(target:fullname(), "modules.changed")
+                        if changed then
+                            modules = modules or {}
+                            local moduleinfo = support.load_moduleinfo(target, sourcefile)
+                            local module, headerunitsinfo = _parse_moduleinfo(target, moduleinfo)
+                            modules[module.sourcefile] = module
+                            for _, headerunitinfo in ipairs(headerunitsinfo) do
+                                local headerunit = _parse_moduleinfo(target, headerunitinfo)
+                                local key = headerunit.sourcefile .. headerunit.key
+                                if not modules[key] then
+                                    modules[key] = table.clone(headerunit)
+                                    modules[key].name = headerunit.sourcefile
+                                end
+                                local name = headerunit.name .. headerunit.key
+                                modules[name] = headerunit
+                                modules[name].alias = true
+                            end
+                        end
+                    end)
+                    local reused, from = support.is_reused(target, sourcefile)
+                    if reused then
+                        local scanfilejob = get_scanfilejob_for(from, sourcefile)
+                        if jobgraph:has(scanfilejob) then
+                            jobgraph:add_orders(scanfilejob, parsefilejob)
+                        else
+                            local jobdeps = memcache:get2(from:fullname(), "jobdeps") or {}
+                            jobdeps.parsefile = jobdeps.parsefile or {}
+                            jobdeps.parsefile[parsefilejob] = scanfilejob
+                            memcache:set2(from:fullname(), "jobdeps", jobdeps)
+                        end
+                    end
+                end
+            end
+        end)
+        local computedagjob = get_computedagjob_for(target)
+        jobgraph:add(computedagjob, function ()
+            _do_computedag(target, modules, sourcebatch)
+        end)
         if has_scanjob then
-            jobgraph:add_orders(scangroup, parsejob)
+            jobgraph:add_orders(scangroup, parsegroup)
         end
-        local memcache = support.memcache()
+        jobgraph:add_orders(parsegroup, computedagjob)
         local jobdeps = memcache:get2(target:fullname(), "jobdeps")
         if jobdeps then
-            -- insert parent scangroup as dependency for parsejob
-            for _, parsedep in ipairs(jobdeps.parsedeps) do
-                if jobgraph:has(parsedep) then
-                    jobgraph:add_orders(parsejob, parsedep)
+            for _, computedag in ipairs(jobdeps.computedag) do
+                if jobgraph:has(computedag) then
+                    jobgraph:add_orders(computedagjob, computedag)
+                end
+            end
+            for from, to in pairs(jobdeps.parsefile) do
+                if jobgraph:has(to) then
+                    jobgraph:add_orders(to, from)
                 end
             end
         end
 
         for _, dep in ipairs(target:orderdeps()) do
-            local dep_parsejob = get_parsejob_for(dep)
-            if jobgraph:has(dep_parsejob) then
-                jobgraph:add_orders(dep_parsejob, parsejob)
+            local dep_computedagjob = get_computedagjob_for(dep)
+            if jobgraph:has(dep_computedagjob) then
+                jobgraph:add_orders(dep_computedagjob, computedagjob)
             else
-                jobdeps = memcache:get2(dep:fullname(), "jobdeps")
-                if not jobdeps then
-                    jobdeps = {}
-                end
-                jobdeps.parsedeps = jobdeps.parsedeps or {}
-                table.insert(jobdeps.parsedeps, parsejob)
+                local jobdeps = memcache:get2(dep:fullname(), "jobdeps") or {}
+                jobdeps.computedag = jobdeps.computedag or {}
+                table.insert(jobdeps.computedag, computedagjob)
                 memcache:set2(dep:fullname(), "jobdeps", jobdeps)
             end
         end
     end
-    profiler.leave(target:fullname(), "c++ modules", "schedule module dependencies scans")
+    profiler.leave(target:fullname(), "c++ modules", "scanner", "schedule moduleinfo scanning, parsing and dag computation")
 end
 
 -- get headerunits info
@@ -895,7 +908,7 @@ function after_scan(target)
         local need_objectfiles = not os.getenv("XMAKE_IN_PROJECT_GENERATOR") or compile_commands
         if need_objectfiles then
             local modules = get_modules(target)
-            local _, _, objectfiles = sort_modules_by_dependencies(target, modules, {jobgraph = target:policy("build.jobgraph")})
+            local _, _, objectfiles = sort_modules_by_dependencies(target, modules)
             assert(sourcebatch_builder)
             sourcebatch_builder.objectfiles = objectfiles
         end

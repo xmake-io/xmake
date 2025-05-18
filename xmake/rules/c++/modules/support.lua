@@ -23,7 +23,6 @@ import("core.base.json")
 import("core.base.hashset")
 import("core.cache.memcache", {alias = "_memcache"})
 import("core.cache.localcache", {alias = "_localcache"})
-import("private.async.jobpool")
 import("async.runjobs")
 import("lib.detect.find_file")
 import("core.project.project")
@@ -236,28 +235,18 @@ function can_be_culled(target, sourcefile)
 end
 
 -- load module infos
-function load_moduleinfos(target, sourcebatch)
-    local moduleinfos
-    local jobs = jobpool.new()
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        jobs:addjob("job/load_moduleinfo/" .. sourcefile, function()
-            local reused, from = is_reused(target, sourcefile)
-            local dependfile = reused and from:dependfile(sourcefile) or target:dependfile(sourcefile)
-            if os.isfile(dependfile) then
-                local data = io.load(dependfile)
-                if data then
-                    moduleinfos = moduleinfos or {}
-                    local moduleinfo = json.decode(data.moduleinfo)
-                    moduleinfo.sourcefile = sourcefile
-                    if moduleinfo then
-                        table.insert(moduleinfos, moduleinfo)
-                    end
-                end
-            end
-        end)
+function load_moduleinfo(target, sourcefile)
+    local reused, from = is_reused(target, sourcefile)
+    local dependfile = reused and from:dependfile(sourcefile) or target:dependfile(sourcefile)
+    local moduleinfo
+    if os.isfile(dependfile) then
+        local data = io.load(dependfile)
+        if data then
+            moduleinfo = json.decode(data.moduleinfo)
+            moduleinfo.sourcefile = sourcefile
+        end
     end
-    runjobs(format("loading module infos for target %s", target:fullname()), jobs, {comax = option.get("jobs") or os.default_njob()})
-    return moduleinfos
+    return moduleinfo
 end
 
 function find_quote_header_file(sourcefile, file)
