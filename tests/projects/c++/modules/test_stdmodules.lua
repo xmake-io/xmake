@@ -4,6 +4,7 @@ CLANG_MIN_VER = "19"
 GCC_MIN_VER = "15"
 MSVC_MIN_VER = "14.35"
 
+<<<<<<< HEAD
 function main(_)
     local clang_options = {stdmodule = true, compiler = "clang", version = CLANG_MIN_VER}
     -- latest mingw gcc 15.1 is broken
