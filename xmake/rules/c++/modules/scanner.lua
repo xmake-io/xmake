@@ -362,6 +362,7 @@ end
 -- patch sourcebatch
 function _patch_sourcebatch(target, sourcebatch)
 
+    local memcache = support.memcache()
     -- target deps modules
     local depsmodules = _get_targetdeps_modules(target) or {}
 
@@ -369,7 +370,8 @@ function _patch_sourcebatch(target, sourcebatch)
     local pkgmodules = _get_packages_modules(target) or {}
 
     local externalmodules = table.join(depsmodules, pkgmodules)
-    local keys = #externalmodules > 0 and table.concat(table.orderkeys(externalmodules)) or " "
+    local keys = #sourcebatch.sourcefiles > 0 and table.concat(sourcebatch.sourcefiles) or " "
+    keys = keys .. (#externalmodules > 0 and table.concat(table.orderkeys(externalmodules)) or " ")
     local md5sum = hash.md5(bytes(keys))
     local localcache = support.localcache()
     local cached_patched_sourcebatch = localcache:get2(target:fullname(), "patched_sourcebatch")
@@ -396,8 +398,8 @@ function _patch_sourcebatch(target, sourcebatch)
             end
             table.insert(sourcebatch.sourcefiles, sourcefile)
             target:fileconfig_add(sourcefile, fileconfig)
+            memcache:set2(target:fullname(), "modules.changed", true)
         end
-
         sourcebatch.sourcekind = "cxx"
         sourcebatch.objectfiles = {}
         sourcebatch.dependfiles = {}
