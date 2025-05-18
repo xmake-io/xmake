@@ -1092,7 +1092,7 @@ function project.requires_str()
                 local ns_requires_str, ns_requires_extra = project.get(namespace .. "::requires"), project.get(namespace .. "::__extra_requires")
                 if ns_requires_str then
                     requires_str = table.wrap(requires_str)
-                    table.insert(requires_str, ns_requires_str)
+                    table.join2(requires_str, ns_requires_str)
                 end
                 if ns_requires_extra then
                     requires_extra = table.wrap(requires_extra)
@@ -1110,7 +1110,7 @@ function project.requires_str()
                 local ns_requireconfs_str, ns_requireconfs_extra = project.get(namespace .. "::requireconfs"), project.get(namespace .. "::__extra_requireconfs")
                 if ns_requireconfs_str then
                     requireconfs_str = table.wrap(requireconfs_str)
-                    table.insert(requireconfs_str, ns_requireconfs_str)
+                    table.join2(requireconfs_str, ns_requireconfs_str)
                 end
                 if ns_requireconfs_extra then
                     requireconfs_extra = table.wrap(requireconfs_extra)
