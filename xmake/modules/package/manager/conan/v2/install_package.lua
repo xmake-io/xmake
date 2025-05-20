@@ -158,7 +158,15 @@ function _conan_get_compiler_version(name, opt)
     local version
     local result = find_tool(name, {program = opt.program, version = true, envs = opt.envs})
     if result and result.version then
-        local v = semver.try_parse(result.version)
+        local compiler_version = result.version
+        local dot_cnt = 0
+        for _ in compiler_version:gmatch("%.") do
+            dot_cnt = dot_cnt + 1
+        end
+        if dot_cnt == 3 then
+            compiler_version = compiler_version:gsub("%.[^%.]+$", "")
+        end
+        local v = semver.try_parse(compiler_version)
         if v then
             if name == "cl" then
                 version = tostring(v:major()) .. tostring(v:minor()):sub(1, 1)
