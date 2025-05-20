@@ -1,1 +1,1 @@
-inherit(".test_stdmodules")
+inherit(".test_partitions")
