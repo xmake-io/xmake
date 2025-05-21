@@ -17,7 +17,7 @@ target("cli")
     add_defines("__tb_prefix__=\"xmake\"")
 
     -- add includes directory
-    add_includedirs("$(projectdir)", "$(projectdir)/src")
+    add_includedirs("../..", "../../src")
 
     -- add common source files
     add_files("**.c")
@@ -54,22 +54,22 @@ target("cli")
 
     -- add install files
     if is_plat("windows") then
-        add_installfiles("$(projectdir)/../LICENSE.md")
-        add_installfiles("$(projectdir)/../NOTICE.md")
-        add_installfiles("$(projectdir)/../xmake/(**.lua)")
-        add_installfiles("$(projectdir)/../xmake/(scripts/**)")
-        add_installfiles("$(projectdir)/../xmake/(templates/**)")
-        add_installfiles("$(projectdir)/../scripts/xrepo.bat")
-        add_installfiles("$(projectdir)/../scripts/xrepo.ps1")
+        add_installfiles("../../../LICENSE.md")
+        add_installfiles("../../../NOTICE.md")
+        add_installfiles("../../../xmake/(**.lua)")
+        add_installfiles("../../../xmake/(scripts/**)")
+        add_installfiles("../../../xmake/(templates/**)")
+        add_installfiles("../../../scripts/xrepo.bat")
+        add_installfiles("../../../scripts/xrepo.ps1")
         set_prefixdir("/", {bindir = "/"})
         after_install(function (target)
             os.cp(path.join(os.programdir(), "winenv"), target:installdir())
         end)
     else
-        add_installfiles("$(projectdir)/../(xmake/**.lua)", {prefixdir = "share"})
-        add_installfiles("$(projectdir)/../(xmake/scripts/**)", {prefixdir = "share"})
-        add_installfiles("$(projectdir)/../(xmake/templates/**)", {prefixdir = "share"})
-        add_installfiles("$(projectdir)/../scripts/xrepo.sh", {prefixdir = "bin", filename = "xrepo"})
+        add_installfiles("../../../(xmake/**.lua)", {prefixdir = "share"})
+        add_installfiles("../../../(xmake/scripts/**)", {prefixdir = "share"})
+        add_installfiles("../../../(xmake/templates/**)", {prefixdir = "share"})
+        add_installfiles("../../../scripts/xrepo.sh", {prefixdir = "bin", filename = "xrepo"})
     end
 
     before_installcmd(function (target, batchcmds, opt)

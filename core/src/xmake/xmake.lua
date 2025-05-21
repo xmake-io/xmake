@@ -34,7 +34,7 @@ target("xmake")
     add_includedirs("..", {interface = true})
     add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)", {public = true})
     add_includedirs("../xxhash")
-    add_includedirs("$(projectdir)/../xmake/scripts/module")
+    add_includedirs("../../../xmake/scripts/module")
 
     -- add header files
     add_headerfiles("../(xmake/*.h)")

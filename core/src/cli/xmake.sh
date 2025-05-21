@@ -10,7 +10,7 @@ target "cli"
     add_defines "__tb_prefix__=\"xmake\""
 
     # add includes directory
-    add_includedirs "${projectdir}/core" "${projectdir}/core/src"
+    add_includedirs "../../../core" "../../../core/src"
 
     # add the common source files
     add_files "**.c"
@@ -23,17 +23,17 @@ target "cli"
     fi
 
     # add install files
-    add_installfiles "${projectdir}/(xmake/**.lua)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/*)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/cmake_importfiles/**)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/completions/**)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/xpack/**)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/xrepo/**)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/virtualenvs/**)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/conan/**)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/module/**)" "share"
-    add_installfiles "${projectdir}/(xmake/templates/**)" "share"
-    add_installfiles "${projectdir}/scripts/xrepo.sh" "bin" "xrepo"
+    add_installfiles "../../../(xmake/**.lua)" "share"
+    add_installfiles "../../../(xmake/scripts/*)" "share"
+    add_installfiles "../../../(xmake/scripts/cmake_importfiles/**)" "share"
+    add_installfiles "../../../(xmake/scripts/completions/**)" "share"
+    add_installfiles "../../../(xmake/scripts/xpack/**)" "share"
+    add_installfiles "../../../(xmake/scripts/xrepo/**)" "share"
+    add_installfiles "../../../(xmake/scripts/virtualenvs/**)" "share"
+    add_installfiles "../../../(xmake/scripts/conan/**)" "share"
+    add_installfiles "../../../(xmake/scripts/module/**)" "share"
+    add_installfiles "../../../(xmake/templates/**)" "share"
+    add_installfiles "../../../scripts/xrepo.sh" "bin" "xrepo"
 
     # fix os.exec() call incorrect program from /mingw64/bin. e.g. python, ..
     #
@@ -68,9 +68,9 @@ xmake_after_install() {
     local installdir=${2}
     if test_eq "${project_generator}" "gmake"; then
         print "\t@if test -f ${installdir}/bin/xmake.exe; then rm ${installdir}/bin/xmake.exe; fi" >> "${xmake_sh_makefile}"
-        print "\t@cp ${projectdir}/scripts/msys/xmake.sh ${installdir}/bin/xmake" >> "${xmake_sh_makefile}"
-        print "\t@cp ${projectdir}/scripts/msys/xmake.cmd ${installdir}/bin/xmake.cmd" >> "${xmake_sh_makefile}"
-        print "\t@cp ${projectdir}/scripts/msys/xmake.ps1 ${installdir}/bin/xmake.ps1" >> "${xmake_sh_makefile}"
+        print "\t@cp ../../../scripts/msys/xmake.sh ${installdir}/bin/xmake" >> "${xmake_sh_makefile}"
+        print "\t@cp ../../../scripts/msys/xmake.cmd ${installdir}/bin/xmake.cmd" >> "${xmake_sh_makefile}"
+        print "\t@cp ../../../scripts/msys/xmake.ps1 ${installdir}/bin/xmake.ps1" >> "${xmake_sh_makefile}"
         print "\t@cp ${builddir}/xmake.exe ${installdir}/share/xmake" >> "${xmake_sh_makefile}"
     fi
 }
