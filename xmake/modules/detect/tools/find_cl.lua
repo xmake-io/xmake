@@ -62,7 +62,9 @@ function main(opt)
             return info
         end
         opt.parse = opt.parse or function (output)
-            return output:match("(%d+%.%d+%.%d*.-)%s")
+            -- we only keep the first three digits of the version number, making sure to provide a valid semver string.
+            -- @see https://github.com/xmake-io/xmake/issues/6474
+            return output:match("%s(%d+%.%d+%.%d+)")
         end
         version = find_programver(program, opt)
     end
