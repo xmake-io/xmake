@@ -127,6 +127,9 @@ function run_tests(clang_options, gcc_options, msvc_options)
         if clang_options then
             build_tests("llvm", clang_options)
             build_tests("clang", clang_options)
+            local clang_cl_options = table.clone(clang_options)
+            clang_cl_options.compiler = "clang-cl"
+            build_tests("clang-cl", clang_cl_options)
             if not clang_options.stdmodule then
                 build_tests("llvm", clang_libcpp_options)
                 build_tests("clang", clang_libcpp_options)
