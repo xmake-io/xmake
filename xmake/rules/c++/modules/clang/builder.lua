@@ -182,7 +182,6 @@ function _get_requiresflags(target, module)
             end
         end
         requiresflags = table.unique(requiresflags)
-        -- table.sort(requiresflags)
         support.memcache():set2(cachekey, "requiresflags", requiresflags)
         support.memcache():set2(cachekey, "oldrequires", requires)
     end
