@@ -28,6 +28,14 @@ import("detect.sdks.find_cross_toolchain")
 -- find xcode on macos
 function _find_xcode(toolchain)
 
+    -- get apple device
+    local appledev = toolchain:config("appledev") or config.get("appledev")
+    if appledev and appledev == "simulator" then
+        appledev = "simulator"
+    elseif not toolchain:is_plat("macosx") and toolchain:is_arch("i386", "x86_64") then
+        appledev = "simulator"
+    end
+
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
     local xcode = find_xcode(toolchain:config("xcode") or config.get("xcode"), {force = true, verbose = true,
@@ -46,8 +54,14 @@ function _find_xcode(toolchain)
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
         cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
     end
+    local target_minver = toolchain:config("target_minver") or config.get("target_minver")
+    if xcode_sdkver and not target_minver then
+        target_minver = xcode.target_minver
+    end
     toolchain:config_set("xcode", xcode.sdkdir)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
+    toolchain:config_set("target_minver", target_minver)
+    toolchain:config_set("appledev", appledev)
     toolchain:configs_save()
     cprint("checking for SDK version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), xcode_sdkver)
 end
