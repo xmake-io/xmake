@@ -102,6 +102,23 @@ function _make_headerunitflags(target, headerunit, headertype)
     return flags
 end
 
+function _get_mapper_str(target, module, opt)
+    local mapper_str
+    if target:policy("build.c++.modules.hide_dependencies") and option.get("diagnosis") then
+        if not opt.headerunit then
+            local requires_flagsfile = target:autogenfile(module.sourcefile .. ".requiresflags.txt")
+            if os.isfile(requires_flagsfile) then
+                if module.name  then
+                    mapper_str = format("\n${dim color.warning}mapper file for %s (%s) --------\n%s\n--------", module.name, module.sourcefile, io.readfile(requires_flagsfile):trim())
+                else
+                    mapper_str = format("\n${dim color.warning}mapper file for %s --------\n%s\n--------", module.sourcefile, io.readfile(requires_flagsfile):trim())
+                end
+            end
+        end
+    end
+    return mapper_str
+end
+
 -- do compile
 function _compile(target, flags, module, opt)
     opt = opt or {}
@@ -121,7 +138,7 @@ function _compile(target, flags, module, opt)
             cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true})
         end
     end
-    show_progress(target, module, table.join(opt, {cmd = cmd}))
+    show_progress(target, module, table.join(opt, {cmd = cmd, suffix = _get_mapper_str(target, module, opt)}))
 
     -- do compile
     if not dryrun then
@@ -148,7 +165,7 @@ function _batchcmds_compile(batchcmds, target, flags, module, opt)
             cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true})
         end
     end
-    show_progress(target, module, table.join(opt, {cmd = cmd, batchcmds = batchcmds}))
+    show_progress(target, module, table.join(opt, {cmd = cmd, batchcmds = batchcmds, suffit = _get_mapper_str(target, module, opt)}))
 
     -- do compile
     batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx", verbose = false})
@@ -215,8 +232,20 @@ function _get_requiresflags(target, module)
 end
 
 function _append_requires_flags(target, module)
-    local requiresflags = _get_requiresflags(target, module)
-    target:fileconfig_add(module.sourcefile, {force = {cxxflags = requiresflags}})
+    local cxxflags = _get_requiresflags(target, module)
+    if #cxxflags > 0 then
+        if target:policy("build.c++.modules.hide_dependencies") then
+            local _cxxflags = {}
+            for _, flag in ipairs(cxxflags) do
+                table.insert(_cxxflags, table.concat(flag, " "))
+            end
+            local requires_flagsfile = target:autogenfile(module.sourcefile .. ".requiresflags.txt")
+            io.writefile(requires_flagsfile, table.concat(_cxxflags, "\n"))
+            target:fileconfig_add(module.sourcefile, {force = {cxxflags = "@" .. requires_flagsfile}})
+        else
+            target:fileconfig_add(module.sourcefile, {force = {cxxflags = cxxflags}})
+        end
+    end
 end
 
 function append_requires_flags(target, built_modules)

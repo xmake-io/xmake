@@ -101,6 +101,24 @@ function _make_headerunitflags(target, headerunit)
     return flags
 end
 
+
+function _get_mapper_str(target, module, opt)
+    local mapper_str
+    if target:policy("build.c++.modules.hide_dependencies") and option.get("diagnosis") then
+        if not opt.headerunit then
+            local requires_flagsfile = target:autogenfile(module.sourcefile .. ".requiresflags.txt")
+            if os.isfile(requires_flagsfile) then
+                if module.name  then
+                    mapper_str = format("\n${dim color.warning}mapper file for %s (%s) --------\n%s\n--------", module.name, module.sourcefile, io.readfile(requires_flagsfile):trim())
+                else
+                    mapper_str = format("\n${dim color.warning}mapper file for %s --------\n%s\n--------", module.sourcefile, io.readfile(requires_flagsfile):trim())
+                end
+            end
+        end
+    end
+    return mapper_str
+end
+
 -- do compile
 function _compile(target, flags, module, opt)
 
@@ -116,7 +134,7 @@ function _compile(target, flags, module, opt)
     if option.get("verbose") then
         cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true})
     end
-    show_progress(target, module, table.join(opt, {cmd = cmd}))
+    show_progress(target, module, table.join(opt, {cmd = cmd, suffix = _get_mapper_str(target, module, opt)}))
 
     -- do compile
     if not dryrun then
@@ -139,7 +157,7 @@ function _batchcmds_compile(batchcmds, target, flags, module, opt)
     if option.get("verbose") then
         cmd = "\n" .. compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, sourcekind = "cxx", rawargs = true})
     end
-    show_progress(target, module, table.join(opt, {cmd = cmd, batchcmds = batchcmds}))
+    show_progress(target, module, table.join(opt, {cmd = cmd, batchcmds = batchcmds, suffix = _get_mapper_str(target, module, opt)}))
 
     -- do compile
     batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx", verbose = false})
@@ -191,15 +209,23 @@ end
 function _append_requires_flags(target, module)
     local cxxflags = {}
     local requiresflags = _get_requiresflags(target, module)
-    for _, flag in ipairs(requiresflags) do
-        -- we need to wrap flag to support flag with space
-        if type(flag) == "string" and flag:find(" ", 1, true) then
-            table.insert(cxxflags, {flag})
+    if #requiresflags> 0 then
+        for _, flag in ipairs(requiresflags) do
+            -- we need to wrap flag to support flag with space
+            if type(flag) == "string" and flag:find(" ", 1, true) then
+                table.insert(cxxflags, {flag})
+            else
+                table.insert(cxxflags, flag)
+            end
+        end
+        if target:policy("build.c++.modules.hide_dependencies") then
+            local requires_flagsfile = target:autogenfile(module.sourcefile .. ".requiresflags.txt")
+            io.writefile(requires_flagsfile, table.concat(cxxflags, "\n"))
+            target:fileconfig_add(module.sourcefile, {force = {cxxflags = "@" .. requires_flagsfile}})
         else
-            table.insert(cxxflags, flag)
+            target:fileconfig_add(module.sourcefile, {force = {cxxflags = cxxflags}})
         end
     end
-    target:fileconfig_add(module.sourcefile, {force = {cxxflags = cxxflags}})
 end
 
 function append_requires_flags(target, built_modules)
@@ -240,7 +266,7 @@ function make_module_job(target, module, opt)
         elseif bmi then
             _compile_bmi_step(target, module, opt)
         else
-            if support.has_module_extension(module.sourcefile) or module.name then
+            if support.should_be_built_by_builder_rule(target, module) then
                 _compile_objectfile_step(target, module, opt)
             else
                 os.tryrm(module.objectfile) -- force rebuild for .cpp files
@@ -271,7 +297,7 @@ function make_module_buildcmds(target, batchcmds, module, opt)
         elseif bmi then
             _compile_bmi_step(target, module, table.join(opt, {batchcmds = batchcmds}))
         else
-            if support.has_module_extension(module.sourcefile) or module.name then
+            if support.should_be_built_by_builder_rule(target, module) then
                 _compile_objectfile_step(target, module, table.join(opt, {batchcmds = batchcmds}))
             else
                 batchcmds:rm(module.objectfile) -- force rebuild for .cpp files
