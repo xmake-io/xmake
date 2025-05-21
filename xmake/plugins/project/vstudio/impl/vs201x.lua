@@ -138,11 +138,9 @@ function _make_custom_commands(target, vcxprojdir)
     -- we use irpairs(groups), because the last group that should be given the highest priority.
     -- rule.on_buildcmd_files should also be executed before building the target
     local cmds_before = target_cmds.get_target_buildcmds(target, {ignored_rules = ignored_rules, stages = {"before", "on"}})
-    _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, "before", cmds_before)
 
     -- add after commands
     local cmds_after = target_cmds.get_target_buildcmds(target, {ignored_rules = ignored_rules, stages = {"after"}})
-    _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, "after", cmds_after)
 
     local commands = {}
     for _, cmd in ipairs(cmds_before) do
