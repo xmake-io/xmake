@@ -76,6 +76,11 @@ function main(target)
             target:add("files")
         end
 
+        local memcache = support.memcache()
+        local targets = memcache:get("targets") or {}
+        targets[target:fullname()] = {}
+        targets[target:fullname()].finished_parsing = false
+        memcache:set("targets", targets)
         -- moduleonly modules are implicitly public
         if target:is_moduleonly() then
             local sourcebatches = target:sourcebatches()

@@ -47,7 +47,6 @@ end
 function feed(target, modules, sourcefiles)
 
     local mapper = get_mapper_for(target, {invalidate = true})
-    local localcache = support.localcache()
     local deps_names = hashset.new()
     local deps_names_map = {}
     local headerunit_aliases = {}
@@ -110,8 +109,6 @@ function feed(target, modules, sourcefiles)
             mapper[name] = _module
         end
     end
-
-    localcache:save()
 end
 
 -- get a module from target mapper by name
