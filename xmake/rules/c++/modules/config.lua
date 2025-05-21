@@ -67,6 +67,10 @@ function main(target)
             wprint("build.c++.modules.tryreuse.discriminate_on_defines is deprecated, please use build.c++.modules.reuse.strict")
         end
 
+        if target:has_tool("cxx", "clang_cl") then
+            target:set("policy", "build.c++.modules.two_phases", false)
+        end
+
         -- if containes modules, enable objectfiles output of c++.build.modules.builder
         local rule = target:rule("c++.build.modules.builder")
         rule = rule:clone()

@@ -1,1 +1,1 @@
-inherit(".test_headerunits")
+inherit(".test_base")
