@@ -67,8 +67,7 @@ toolchain("llvm")
                 end
             end
         elseif toolchain:is_plat("cross") then
-            local cross = toolchain:cross():gsub("(.*)%-$", "%1")
-            target = "--target=" .. cross
+            target = toolchain:cross():gsub("(.*)%-$", "%1")
         end
         local target_flags
         if target then
