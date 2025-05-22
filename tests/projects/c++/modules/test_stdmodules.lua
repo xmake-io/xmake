@@ -1,65 +1,31 @@
-import("lib.detect.find_tool")
-import("core.base.semver")
-import("core.tool.toolchain")
-import("utils.ci.is_running", {alias = "ci_is_running"})
+inherit("test_base")
 
-function _build()
-    if ci_is_running() then
-        os.run("xmake -rvD")
-    else
-        os.run("xmake -r")
-    end
-    local outdata = os.iorun("xmake")
-    if outdata then
-        if outdata:find("compiling") or outdata:find("linking") or outdata:find("generating") then
-            raise("Modules incremental compilation does not work\n%s", outdata)
-        end
-    end
-end
+CLANG_MIN_VER = "19"
+GCC_MIN_VER = "15"
+MSVC_MIN_VER = "14.35"
 
-function main(t)
-    if is_subhost("windows") then
-        local clang = find_tool("clang", {version = true})
-        if clang and clang.version and semver.compare(clang.version, "19.0") >= 0 then
-            os.exec("xmake clean -a")
-            os.exec("xmake f --toolchain=clang -c --yes")
-            _build()
-        end
-        local msvc = toolchain.load("msvc")
-        if msvc and msvc:check() then
-            local vcvars = msvc:config("vcvars")
-            if vcvars and vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.35") then
-                local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-                if os.isdir(stdmodulesdir) then
-                    os.exec("xmake clean -a")
-                    os.exec("xmake f -c --yes")
-                    _build()
-                end
-            end
-        end
-    elseif is_subhost("msys") then
-        local gcc = find_tool("gcc", {version = true})
-        if is_host("linux") and gcc and gcc.version and semver.compare(gcc.version, "15.0") >= 0 then
-            os.exec("xmake f -c -p mingw --yes")
-            _build()
-        end
-    elseif is_host("linux") then -- or is_host("macosx") then
-        local gcc = find_tool("gcc", {version = true})
-        if is_host("linux") and gcc and gcc.version and semver.compare(gcc.version, "15.0") >= 0 then
-            os.exec("xmake f -c --yes")
-            _build()
-        end
-        local clang = find_tool("clang", {version = true})
-        if clang and clang.version and semver.compare(clang.version, "19.0") >= 0 then
-            local gcc = find_tool("clang", {version = true})
-            if gcc and gcc.version and semver.compare(gcc.version, "15.0") >= 0 then
-                os.exec("xmake clean -a")
-                os.exec("xmake f --toolchain=clang -c --yes")
-                _build()
-            end
-            os.exec("xmake clean -a")
-            os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
-            _build()
-        end
+function main(_)
+    local clang_options = {stdmodule = true, compiler = "clang", version = CLANG_MIN_VER}
+    -- latest mingw gcc 15.1 is broken
+    --  error: F:/msys64/mingw64/include/c++/15.1.0/shared_mutex:105:3: error: 'int std::__glibcxx_rwlock_timedrdlock(pthread_rwlock_t*, const timespec*)' exposes TU-local entity 'int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const timespec*)'
+    --   105 |   __glibcxx_rwlock_timedrdlock (pthread_rwlock_t *__rwlock,
+    --       |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    -- In file included from F:/msys64/mingw64/include/c++/15.1.0/x86_64-w64-mingw32/bits/gthr-default.h:35,
+    --                  from F:/msys64/mingw64/include/c++/15.1.0/x86_64-w64-mingw32/bits/gthr.h:157,
+    --                  from F:/msys64/mingw64/include/c++/15.1.0/ext/atomicity.h:37,
+    --                  from F:/msys64/mingw64/include/c++/15.1.0/bits/ios_base.h:41,
+    --                  from F:/msys64/mingw64/include/c++/15.1.0/streambuf:45,
+    --                  from F:/msys64/mingw64/include/c++/15.1.0/bits/streambuf_iterator.h:37,
+    --                  from F:/msys64/mingw64/include/c++/15.1.0/iterator:68,
+    --                  from F:/msys64/mingw64/include/c++/15.1.0/x86_64-w64-mingw32/bits/stdc++.h:56:
+    -- F:/msys64/mingw64/include/pthread.h:296:28: note: 'int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const timespec*)' declared with internal linkage
+    --   296 | WINPTHREAD_RWLOCK_DECL int pthread_rwlock_timedrdlock(pthread_rwlock_t *l, const struct timespec *ts)
+    --       |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~
+    -- F:/msys64/mingw64/include/c++/15.1.0/shared_mutex:115:3: error: 'int std::__glibcxx_rwlock_timedwrlock(pthread_rwlock_t*, const timespec*)' exposes TU-local entity 'int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const timespec*)'
+    --   115 |   __glibcxx_rwlock_timedwrlock (pthread_rwlock_t *__rwlock,   local gcc_options = {stdmodule = true, compiler = "gcc", version = GCC_MIN_VER}
+    if is_subhost("msys") then
+        gcc_options = nil
     end
+    local msvc_options = {stdmodule = true, version = MSVC_MIN_VER}
+    run_tests(clang_options, gcc_options, msvc_options)
 end

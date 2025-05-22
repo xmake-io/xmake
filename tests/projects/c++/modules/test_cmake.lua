@@ -55,6 +55,24 @@ function main(t)
         elseif is_subhost("linux") then
             _build_with("gcc", "14")
             _build_with("clang", "19")
+        elseif is_subhost("macosx") then
+            -- macOS doesn't ship clang-scan-deps currently
+            -- check if normal clang is avalaible
+            local regular_clang_available = false
+
+            local outdata = os.iorun("clang --version")
+            if outdata then
+                regular_clang_available = true
+                if outdata:find("Apple") then
+                    regular_clang_available = false
+                end
+            end
+            if not regular_clang_available then
+                wprint("Appleclang isn't shipped with clang-scan-deps, disabling modules tests")
+                return
+            end
+            _build_with("clang", "19")
         end
+            
     end
 end

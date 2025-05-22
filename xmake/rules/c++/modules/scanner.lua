@@ -389,7 +389,12 @@ function _patch_sourcebatch(target, sourcebatch)
 
                 local can_reuse = nocheck or _are_flags_compatible(target, dep, sourcefile, {strict = strict})
                 if can_reuse then
-                    support.set_reused(target, dep, sourcefile)
+                    local _reused, from = support.is_reused(dep, sourcefile)
+                    if _reused then
+                        support.set_reused(target, from, sourcefile)
+                    else
+                        support.set_reused(target, dep, sourcefile)
+                    end
                     table.insert(reused, sourcefile)
                     if dep:is_moduleonly() then
                         dep:data_set("cxx.modules.reused", true)
@@ -417,10 +422,15 @@ function _patch_sourcebatch(target, sourcebatch)
             if reused:has(sourcefile) then
                 local dep = target:dep(fileconfig.external)
                 assert(dep, "dep target <%s> for <%s> not found", fileconfig.external, target:fullname())
+                local _reused, from = support.is_reused(dep, sourcefile)
+                if _reused then
+                    support.set_reused(target, from, sourcefile)
+                else
+                    support.set_reused(target, dep, sourcefile)
+                end
                 if dep:is_moduleonly() then
                     dep:data_set("cxx.modules.reused", true)
                 end
-                support.set_reused(target, dep, sourcefile)
             end
             target:fileconfig_add(sourcefile, fileconfig)
         end

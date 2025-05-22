@@ -40,6 +40,9 @@ function _make_modulebuildflags(target, module, opt)
         flags = {"-x", "c++-module"}
         if not opt.objectfile then
             table.insert(flags, "--precompile")
+            if target:has_tool("cxx", "clang_cl") then
+                table.join2(flags, "/clang:-o", "/clang:" .. module.bmifile)
+            end
         end
         local std = (module.name == "std" or module.name == "std.compat")
         if std then
@@ -182,7 +185,6 @@ function _get_requiresflags(target, module)
             end
         end
         requiresflags = table.unique(requiresflags)
-        -- table.sort(requiresflags)
         support.memcache():set2(cachekey, "requiresflags", requiresflags)
         support.memcache():set2(cachekey, "oldrequires", requires)
     end
