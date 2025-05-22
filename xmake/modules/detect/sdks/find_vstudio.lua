@@ -518,7 +518,7 @@ function _find_vstudio(opt)
         end
         
         if vswhere_VCAuxiliaryBuildDir then
-            for i, vc_path in ipairs(vswhere_VCAuxiliaryBuildDir) do
+            for _, vc_path in ipairs(vswhere_VCAuxiliaryBuildDir) do
                 if os.isdir(vc_path) then
                     table.insert(paths, 1, vc_path)
                 end
