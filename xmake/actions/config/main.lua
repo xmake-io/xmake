@@ -372,9 +372,11 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     end
 
     -- translate the build directory
-    local builddir = config.get("builddir") or config.get("buildir")
+    local builddir = config.get("builddir")
     if config.get("buildir") then
         wprint("`xmake f --buildir=` has been deprecated, please use `xmake f -o/--builddir=`")
+        builddir = config.get("buildir")
+        config.set("builddir", builddir, {readonly = true, force = true})
     end
     if builddir and path.is_absolute(builddir) then
         config.set("builddir", path.relative(builddir, project.directory()), {readonly = true, force = true})
