@@ -81,11 +81,27 @@ tb_void_t                   xm_engine_register(xm_engine_ref_t engine, tb_char_t
 
 /*! add the embed files
  *
- * @param name              the engine name
+ * @param engine            the engine
  * @param data              the embedfiles data
  * @param size              the data size
  */
 tb_void_t                   xm_engine_add_embedfiles(xm_engine_ref_t engine, tb_byte_t const* data, tb_size_t size);
+
+/* get lua state from engine
+ *
+ * @param engine            the engine
+ *
+ * @return                  the lua state
+ */
+lua_State*                  xm_engine_lua(xm_engine_ref_t engine);
+
+/* get poller from engine
+ *
+ * @param engine            the engine
+ *
+ * @return                  the poller
+ */
+tb_poller_ref_t             xm_engine_poller(xm_engine_ref_t engine);
 
 /*! run main entry of the engine singleton
  *
@@ -98,6 +114,14 @@ tb_void_t                   xm_engine_add_embedfiles(xm_engine_ref_t engine, tb_
  * @return                  the error code of main()
  */
 tb_int_t                    xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv, xm_engine_lni_initalizer_cb_t lni_initalizer);
+
+/*! get engine from the given lua state
+ *
+ * @param lua               the lua state
+ *
+ * @return                  the engine
+ */
+xm_engine_ref_t             xm_engine_get(lua_State* lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
