@@ -4,6 +4,7 @@ import("core.tool.toolchain")
 import("utils.ci.is_running", {alias = "ci_is_running"})
 
 CLANG_MIN_VER = "17"
+CLANG_CL_MIN_VER = "19"
 GCC_MIN_VER = "11"
 MSVC_MIN_VER = "14.29"
 
@@ -83,7 +84,7 @@ function build_tests(toolchain_name, opt)
         wprint(version_str .. "not found, skipping tests")
         return
     end
-    
+
     local policies = "--policies=build.c++.modules.std:" .. (opt.stdmodule and "y" or "n")
     policies = policies .. ",build.c++.modules.fallbackscanner:" .. (opt.fallbackscanner and "y" or "n")
 
@@ -127,9 +128,12 @@ function run_tests(clang_options, gcc_options, msvc_options)
         if clang_options then
             build_tests("llvm", clang_options)
             build_tests("clang", clang_options)
-            local clang_cl_options = table.clone(clang_options)
-            clang_cl_options.compiler = "clang-cl"
-            build_tests("clang-cl", clang_cl_options)
+            if not clang_options.disable_clang_cl then
+                local clang_cl_options = table.clone(clang_options)
+                clang_cl_options.compiler = "clang-cl"
+                clang_cl_options.version = CLANG_CL_MIN_VER
+                build_tests("clang-cl", clang_cl_options)
+            end
             if not clang_options.stdmodule then
                 build_tests("llvm", clang_libcpp_options)
                 build_tests("clang", clang_libcpp_options)
