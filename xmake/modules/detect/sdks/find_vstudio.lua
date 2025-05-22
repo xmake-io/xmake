@@ -491,15 +491,17 @@ function _find_vstudio(opt)
         -- find VC install path (and aux build path) using `vswhere` (for version >= 15.0)
         -- * version > 15.0 eschews registry entries; but `vswhere` (included with version >= 15.2) can be used to find VC install path
         -- ref: https://github.com/Microsoft/vswhere/blob/master/README.md @@ https://archive.is/mEmdu
-        local vswhere_VCAuxiliaryBuildDir = nil
-        local vswhere_Common7ToolsDir = nil
+        local vswhere_VCAuxiliaryBuildDir = {}
+        local vswhere_Common7ToolsDir = {}
         if (tonumber(version) >= 15) and vswhere then
             local vswhere_vrange = format("%s,%s)", version, (version + 1))
             -- build tools: https://github.com/microsoft/vswhere/issues/22 @@ https://aka.ms/vs/workloads
             local result = os.iorunv(vswhere.program, {"-products", "*", "-prerelease", "-property", "installationpath", "-version", vswhere_vrange})
             if result then
-                vswhere_VCAuxiliaryBuildDir = path.join(result:trim(), "VC", "Auxiliary", "Build")
-                vswhere_Common7ToolsDir = path.join(result:trim(), "Common7", "Tools")
+                for _, vc_path in ipairs(result:split("\n")) do
+                    table.insert(vswhere_VCAuxiliaryBuildDir, path.join(vc_path:trim(), "VC", "Auxiliary", "Build"))
+                    table.insert(vswhere_Common7ToolsDir, path.join(vc_path:trim(), "Common7", "Tools"))
+                end
             end
         end
 
@@ -514,8 +516,13 @@ function _find_vstudio(opt)
         if vsenvs[version] then
             table.insert(paths, format("$(env %s)\\..\\..\\VC", vsenvs[version]))
         end
-        if vswhere_VCAuxiliaryBuildDir and os.isdir(vswhere_VCAuxiliaryBuildDir) then
-            table.insert(paths, 1, vswhere_VCAuxiliaryBuildDir)
+        
+        if vswhere_VCAuxiliaryBuildDir then
+            for i, vc_path in ipairs(vswhere_VCAuxiliaryBuildDir) do
+                if os.isdir(vc_path) then
+                    table.insert(paths, 1, vc_path)
+                end
+            end
         end
         if version == "6.0" and os.arch() == "x64" then
             table.insert(paths, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\DevStudio\\6.0\\Products\\Microsoft Visual C++;ProductDir)\\Bin")
@@ -557,8 +564,12 @@ function _find_vstudio(opt)
                 format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\Common7\\Tools", version),
                 format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\Common7\\Tools", version)
             }
-            if vswhere_Common7ToolsDir and os.isdir(vswhere_Common7ToolsDir) then
-                table.insert(paths, 1, vswhere_Common7ToolsDir)
+            if vswhere_Common7ToolsDir then
+                for _, vc_path in ipairs(vswhere_Common7ToolsDir) do
+                    if os.isdir(vc_path) then
+                        table.insert(paths, 1, vc_path)
+                    end
+                end
             end
             vcvarsall = find_file("VsDevCmd.bat", paths)
         end
