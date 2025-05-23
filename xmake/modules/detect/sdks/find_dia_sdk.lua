@@ -71,7 +71,7 @@ function _find_dia_sdk(sdkdir, opt)
     end
 
     -- get arch
-    local arch = opt.arch or config.get("arch")
+    local arch = opt.arch or config.get("arch") or "x64"
     if arch then
         local supported_arch = {
             x64 = "amd64",
@@ -122,6 +122,25 @@ function main(sdkdir, opt)
 
     -- find dia sdk
     local dia_sdk = _find_dia_sdk(sdkdir, opt)
+    if not dia_sdk then
+        local vstudio = find_vstudio()
+        if vstudio then
+            for vsver, value in pairs(vstudio) do
+                if value.vcvarsall then
+                    for arch, vcvarsall_value in pairs(value.vcvarsall) do
+                        local VSInstallDir = vcvarsall_value.VSInstallDir
+                        if VSInstallDir then
+                            dia_sdk = _find_dia_sdk(VSInstallDir, opt)
+                            if dia_sdk then
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     if dia_sdk then
         if opt.verbose or option.get("verbose") then
             cprint("checking for DIA SDK directory ... ${color.success}%s", dia_sdk.sdkdir)
