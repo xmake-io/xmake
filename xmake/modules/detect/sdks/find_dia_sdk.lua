@@ -71,7 +71,7 @@ function _find_dia_sdk(sdkdir, opt)
     end
 
     -- get arch
-    local arch = opt.arch or config.get("arch") or "x64"
+    local arch = opt.arch or config.get("arch") or os.arch()
     if arch then
         local supported_arch = {
             x64 = "amd64",
@@ -132,7 +132,7 @@ function main(sdkdir, opt)
                         if VSInstallDir then
                             dia_sdk = _find_dia_sdk(VSInstallDir, opt)
                             if dia_sdk then
-                                break
+                                goto find
                             end
                         end
                     end
@@ -140,6 +140,8 @@ function main(sdkdir, opt)
             end
         end
     end
+
+::find::
 
     if dia_sdk then
         if opt.verbose or option.get("verbose") then
