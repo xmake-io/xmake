@@ -163,6 +163,8 @@ function main(target, opt)
         local search_dirs = {}
         if qt.bindir_host then table.insert(search_dirs, qt.bindir_host) end
         if qt.bindir then table.insert(search_dirs, qt.bindir) end
+        if qt.libexecdir_host then table.insert(search_dirs, qt.libexecdir_host) end
+        if qt.libexecdir then table.insert(search_dirs, qt.libexecdir) end
         local rcc = find_file("rcc" .. (is_host("windows") and ".exe" or ""), search_dirs)
         if os.isexec(rcc) then
             settings_file:print('   "rcc-binary": "%s",', _escape_path(rcc))
