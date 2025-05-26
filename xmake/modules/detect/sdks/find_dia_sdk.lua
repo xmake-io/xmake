@@ -110,7 +110,6 @@ end
 -- @endcode
 --
 function main(sdkdir, opt)
-    -- init options
     opt = opt or {}
 
     -- attempt to load cache first
@@ -132,7 +131,7 @@ function main(sdkdir, opt)
                         if VSInstallDir then
                             dia_sdk = _find_dia_sdk(VSInstallDir, opt)
                             if dia_sdk then
-                                goto find
+                                goto found
                             end
                         end
                     end
@@ -141,7 +140,7 @@ function main(sdkdir, opt)
         end
     end
 
-::find::
+::found::
 
     if dia_sdk then
         if opt.verbose or option.get("verbose") then
