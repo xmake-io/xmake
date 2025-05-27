@@ -42,7 +42,7 @@ tb_int_t xm_libc_malloc(lua_State* lua)
     tb_pointer_t data = tb_null;
     tb_long_t size = (tb_long_t)luaL_checkinteger(lua, 1);
     if (size > 0) data = tb_malloc(size);
-    lua_pushinteger(lua, (lua_Integer)data);
+    lua_pushinteger(lua, (lua_Integer)(tb_long_t)data);
     return 1;
 }
 
