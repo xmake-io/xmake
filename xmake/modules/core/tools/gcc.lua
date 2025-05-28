@@ -61,13 +61,25 @@ function _get_implibfile(self, targetkind, targetfile, opt)
     end
 end
 
+-- is cosmocc?
+function _is_cosmocc(self)
+    local is_cosmocc = _g._IS_COSMOCC
+    if is_cosmocc == nil then
+        if self:name():startswith("cosmoc") then
+            is_cosmocc = true
+        end
+        _g._IS_COSMOCC = is_cosmocc or false
+    end
+    return is_cosmocc
+end
+
 -- get `-MMD -MF depfile.d` flags, some old gcc does not support it at same time
 function _get_depfile_flags(self)
     local depfile_flags = _g._DEPFILE_FLAGS
     if depfile_flags == nil then
         local nuldev = os.nuldev()
-        if self:name():startswith("cosmoc") then
-            nuldev = os.tmpfile()
+        if _is_cosmocc(self) then
+            nuldev = path.unix(os.tmpfile())
         end
         if self:has_flags({"-MMD", "-MF", nuldev}, "cxflags", { flagskey = "-MMD -MF" }) then
             depfile_flags = {"-MMD", "-MF"}
@@ -967,6 +979,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             -- generate includes file
             local compflags = flags
             if depfile then
+                if _is_cosmocc(self) then
+                    depfile = path.unix(depfile)
+                end
                 local depfile_flags = _get_depfile_flags(self)
                 if depfile_flags then
                     compflags = table.join(compflags, depfile_flags, depfile)
