@@ -64,7 +64,7 @@ tb_int_t xm_io_poller_insert(lua_State* lua)
     tb_poller_object_t object;
     object.type    = otype;
     object.ref.ptr = cdata;
-    lua_pushboolean(lua, tb_poller_insert(xm_io_poller(), &object, events, cdata_str));
+    lua_pushboolean(lua, tb_poller_insert(xm_io_poller(lua), &object, events, cdata_str));
     return 1;
 }
 
