@@ -46,7 +46,7 @@ tb_int_t xm_libc_dataptr(lua_State* lua)
     else if (xm_lua_ispointer(lua, 1))
         data = (tb_pointer_t)xm_lua_topointer(lua, 1);
     else xm_libc_return_error(lua, "libc.dataptr(invalid data)!");
-    lua_pushinteger(lua, (lua_Integer)data);
+    lua_pushinteger(lua, (lua_Integer)(tb_long_t)data);
     return 1;
 }
 
