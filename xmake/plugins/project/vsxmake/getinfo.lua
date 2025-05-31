@@ -387,13 +387,23 @@ end
 
 
 -- make vstudio project
-function main(outputdir, vsinfo)
+function main(outputdir, vsinfo)    
 
     -- enter project directory
-    local oldir = os.cd(project.directory())
-
+    local oldir = os.cd(project.directory())    
+    
     -- init solution directory
-    vsinfo.solution_dir = path.absolute(path.join(outputdir, "vsxmake" .. vsinfo.vstudio_version))
+    local solutiondir = option.get("solutiondir")
+    if solutiondir then
+        -- use custom solution directory relative to xmake.lua root
+        vsinfo.solution_dir = path.absolute(path.join(project.directory(), solutiondir))
+        -- keep project files in default location (separate from solution)
+        vsinfo.project_dir = path.absolute(path.join(outputdir, "vsxmake" .. vsinfo.vstudio_version))
+    else
+        -- use default behavior with outputdir
+        vsinfo.solution_dir = path.absolute(path.join(outputdir, "vsxmake" .. vsinfo.vstudio_version))
+        vsinfo.project_dir = vsinfo.solution_dir
+    end
     vsinfo.programdir = _make_dirs(xmake.programdir())
     vsinfo.programfile = xmake.programfile()
     vsinfo.projectdir = project.directory()
@@ -487,11 +497,9 @@ function main(outputdir, vsinfo)
 
                 -- make target with the given mode and arch
                 targets[targetname] = targets[targetname] or {}
-                local _target = targets[targetname]
-
-                -- init target info
+                local _target = targets[targetname]                -- init target info
                 _target.target = targetname
-                _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
+                _target.vcxprojdir = path.join(vsinfo.project_dir, targetname)
                 _target.target_id = hash.uuid4(targetname)
                 _target.kind = target:kind()
                 _target.absscriptdir = target:scriptdir()

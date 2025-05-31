@@ -41,22 +41,26 @@ rule("plugin.vsxmake.autoupdate")
         -- run only once for all xmake process in vs
         local tmpfile = path.join(config.builddir(), ".gens", "rules", "plugin.vsxmake.autoupdate")
         local dependfile = tmpfile .. ".d"
-        local lockfile = io.openlock(tmpfile .. ".lock")
+        local lockfile = io.openlock(tmpfile .. ".lock")        
         local kind = localcache.get("vsxmake", "kind")
         local modes = localcache.get("vsxmake", "modes")
         local archs = localcache.get("vsxmake", "archs")
         local outputdir = localcache.get("vsxmake", "outputdir")
+        local solutiondir = localcache.get("vsxmake", "solutiondir")
         if lockfile:trylock() then
             if os.getenv("XMAKE_IN_VSTUDIO") and not os.getenv("XMAKE_IN_XREPO") then
                 local sourcefiles = {}
                 for _, target in pairs(project.targets()) do
                     table.join2(sourcefiles, target:sourcefiles(), (target:headerfiles()))
                 end
-                table.sort(sourcefiles)
-                depend.on_changed(function ()
+                table.sort(sourcefiles)                depend.on_changed(function ()
                     -- we use task instead of os.exec("xmake") to avoid the project lock
                     print("update vsxmake project -k %s %s ..", kind or "vsxmake", outputdir or "")
-                    task.run("project", {kind = kind or "vsxmake", modes = modes, archs = archs, outputdir = outputdir})
+                    local task_args = {kind = kind or "vsxmake", modes = modes, archs = archs, outputdir = outputdir}
+                    if solutiondir then
+                        task_args.solutiondir = solutiondir
+                    end
+                    task.run("project", task_args)
                     print("update vsxmake project ok")
                 end, {dependfile = dependfile,
                       files = project.allfiles(),

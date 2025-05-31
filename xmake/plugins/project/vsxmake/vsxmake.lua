@@ -187,7 +187,7 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/1895
 function _save_plugin_arguments()
     local vsxmake_cache = localcache.cache("vsxmake")
-    for _, name in ipairs({"kind", "modes", "archs", "outputdir"}) do
+    for _, name in ipairs({"kind", "modes", "archs", "outputdir", "solutiondir"}) do
         vsxmake_cache:set(name, option.get(name))
     end
     vsxmake_cache:save()
@@ -228,15 +228,13 @@ function make(version)
 
         -- get info and params
         local info = getinfo(outputdir, vsinfo(version))
-        local paramsprovidersln = _buildparams(info)
-
-        -- write solution file
+        local paramsprovidersln = _buildparams(info)        -- write solution file
         local sln = path.join(info.solution_dir, info.slnfile .. ".sln")
         _writefileifneeded(sln, render(template_sln, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidersln))
 
         -- add solution custom file
-        _trycp(template_props, info.solution_dir)
-        _trycp(template_targets, info.solution_dir)
+        _trycp(template_props, info.project_dir)
+        _trycp(template_targets, info.project_dir)
 
         for _, target in ipairs(info.targets) do
             local paramsprovidertarget = _buildparams(info, target, "<!-- nil -->")
