@@ -228,7 +228,9 @@ function make(version)
 
         -- get info and params
         local info = getinfo(outputdir, vsinfo(version))
-        local paramsprovidersln = _buildparams(info)        -- write solution file
+        local paramsprovidersln = _buildparams(info)        
+        
+        -- write solution file
         local sln = path.join(info.solution_dir, info.slnfile .. ".sln")
         _writefileifneeded(sln, render(template_sln, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidersln))
 

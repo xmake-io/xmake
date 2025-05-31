@@ -497,7 +497,9 @@ function main(outputdir, vsinfo)
 
                 -- make target with the given mode and arch
                 targets[targetname] = targets[targetname] or {}
-                local _target = targets[targetname]                -- init target info
+                local _target = targets[targetname]                
+                
+                -- init target info
                 _target.target = targetname
                 _target.vcxprojdir = path.join(vsinfo.project_dir, targetname)
                 _target.target_id = hash.uuid4(targetname)
