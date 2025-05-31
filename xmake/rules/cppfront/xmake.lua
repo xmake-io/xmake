@@ -87,7 +87,7 @@ rule("cppfront.build.cpp2")
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cpp2 %s", sourcefile_cpp2)
         batchcmds:mkdir(basedir)
         batchcmds:vrunv(cppfront.program, argv)
-        batchcmds:compile(sourcefile_cpp, objectfile, {configs = {languages = "c++20"}})
+        batchcmds:compile(sourcefile_cpp, objectfile, {configs = {languages = "c++26"}})
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_cpp2)
