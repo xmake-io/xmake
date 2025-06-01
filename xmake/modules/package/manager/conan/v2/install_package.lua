@@ -248,6 +248,18 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         end
     end
 
+    if configs.conf then
+        if not conf then 
+            conf = {}
+        end
+        for _, pair in ipairs(configs.conf) do
+            local key, value = pair:match("([^=]+)=([^=]+)")
+            if key and value then
+                conf[key] = value
+            end
+        end
+    end
+
     if conf then
         profile:print("")
         profile:print("[conf]")

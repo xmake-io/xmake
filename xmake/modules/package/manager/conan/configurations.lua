@@ -29,7 +29,8 @@ function main()
         settings_host  = {description = "Set the host settings for conan."},
         settings_build = {description = "Set the build settings for conan."},
         imports        = {description = "Set the imports for conan 1.x, it has been deprecated in conan 2.x."},
-        build_requires = {description = "Set the build requires for conan."}
+        build_requires = {description = "Set the build requires for conan."},
+        conf           = {description = "Set the conan configuration, e.g. tools.microsoft.bash:subsystem=msys2"}
     }
 end
 
