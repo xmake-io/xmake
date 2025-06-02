@@ -393,7 +393,11 @@ function main(outputdir, vsinfo)
     local oldir = os.cd(project.directory())
 
     -- init solution directory
-    vsinfo.solution_dir = path.absolute(path.join(outputdir, "vsxmake" .. vsinfo.vstudio_version))
+    if project.policy("generator.vsxmake.multiversion") then
+        vsinfo.solution_dir = path.absolute(path.join(outputdir, "vsxmake" .. vsinfo.vstudio_version))
+    else
+        vsinfo.solution_dir = path.absolute(outputdir)
+    end
     vsinfo.programdir = _make_dirs(xmake.programdir())
     vsinfo.programfile = xmake.programfile()
     vsinfo.projectdir = project.directory()
