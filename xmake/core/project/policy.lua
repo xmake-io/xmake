@@ -178,9 +178,9 @@ function policy.policies()
             --   private: it will disable fetch remote package repositories
             ["network.mode"]                      = {description = "Set the network mode", type = "string"},
             -- Set the compatibility version, e.g. 2.0, 3.0
-            ["compatibility.version"]             = {description = "Set the compatibility version", type = "string", default = "3.0", values = {"2.0", "3.0"},
+            ["compatibility.version"]             = {description = "Set the compatibility version", type = "string", default = "3.0", values = {"2.0", "3.0"}},
             -- Enable or disable multiverison solution output
-            ["generator.vsxmake.multiversion"]    = {description = "Enable or disable multiverison solution output", default = true, type = "boolean"}}
+            ["generator.vsxmake.multiversion"]    = {description = "Enable or disable multiverison solution output", default = true, type = "boolean"}
         }
         policy._POLICIES = policies
     end
