@@ -248,18 +248,6 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         end
     end
 
-    if configs.conf then
-        if not conf then 
-            conf = {}
-        end
-        for _, pair in ipairs(configs.conf) do
-            local key, value = pair:match("([^=]+)=([^=]+)")
-            if key and value then
-                conf[key] = value
-            end
-        end
-    end
-
     if conf then
         profile:print("")
         profile:print("[conf]")
@@ -343,6 +331,18 @@ function main(conan, name, opt)
     for _, setting in ipairs(configs.settings_build) do
         table.insert(argv, "-s:b")
         table.insert(argv, setting)
+    end
+
+    -- set custom host configurations
+    for _, conf in ipairs(configs.configurations or configs.configurations_host) do
+        table.insert(argv, "-c")
+        table.insert(argv, conf)
+    end
+
+    -- set custom build configurations
+    for _, conf in ipairs(configs.configurations_build) do
+        table.insert(argv, "-c:b")
+        table.insert(argv, conf)
     end
 
     -- set remote
