@@ -334,13 +334,13 @@ function main(conan, name, opt)
     end
 
     -- set custom host configurations
-    for _, conf in ipairs(configs.configurations or configs.configurations_host) do
+    for _, conf in ipairs(configs.conf or configs.conf_host) do
         table.insert(argv, "-c")
         table.insert(argv, conf)
     end
 
     -- set custom build configurations
-    for _, conf in ipairs(configs.configurations_build) do
+    for _, conf in ipairs(configs.conf_build) do
         table.insert(argv, "-c:b")
         table.insert(argv, conf)
     end
