@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2022, windows-2025]
         arch: [x64, x86]
 
     runs-on: ${{ matrix.os }}
