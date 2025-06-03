@@ -393,7 +393,12 @@ function main(outputdir, vsinfo)
     local oldir = os.cd(project.directory())
 
     -- init solution directory
-    vsinfo.solution_dir = path.absolute(path.join(outputdir, "vsxmake" .. vsinfo.vstudio_version))
+    vsinfo.vcxproj_rootdir = path.absolute(path.join(outputdir, "vsxmake" .. vsinfo.vstudio_version))
+    if project.policy("generator.vsxmake.root_sln") then
+        vsinfo.solution_dir = path.absolute(outputdir)
+    else
+        vsinfo.solution_dir = vsinfo.vcxproj_rootdir
+    end
     vsinfo.programdir = _make_dirs(xmake.programdir())
     vsinfo.programfile = xmake.programfile()
     vsinfo.projectdir = project.directory()
@@ -491,7 +496,8 @@ function main(outputdir, vsinfo)
 
                 -- init target info
                 _target.target = targetname
-                _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
+                _target.vcxprojdir = path.join(vsinfo.vcxproj_rootdir, targetname)
+                _target.vcxprojdir_relative_sln = path.relative(_target.vcxprojdir, vsinfo.solution_dir)
                 _target.target_id = hash.uuid4(targetname)
                 _target.kind = target:kind()
                 _target.absscriptdir = target:scriptdir()

@@ -235,8 +235,8 @@ function make(version)
         _writefileifneeded(sln, render(template_sln, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidersln))
 
         -- add solution custom file
-        _trycp(template_props, info.solution_dir)
-        _trycp(template_targets, info.solution_dir)
+        _trycp(template_props, info.vcxproj_rootdir)
+        _trycp(template_targets, info.vcxproj_rootdir)
 
         for _, target in ipairs(info.targets) do
             local paramsprovidertarget = _buildparams(info, target, "<!-- nil -->")
