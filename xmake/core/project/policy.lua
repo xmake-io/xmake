@@ -179,8 +179,8 @@ function policy.policies()
             ["network.mode"]                      = {description = "Set the network mode", type = "string"},
             -- Set the compatibility version, e.g. 2.0, 3.0
             ["compatibility.version"]             = {description = "Set the compatibility version", type = "string", default = "3.0", values = {"2.0", "3.0"}},
-            -- Enable or disable multiverison solution output
-            ["generator.vsxmake.multiversion"]    = {description = "Enable or disable multiverison solution output", default = true, type = "boolean"}
+            -- Generate the solution file in root output directory
+            ["generator.vsxmake.root_sln"]        = {description = "Generate the solution file in root output directory", default = false, type = "boolean"}
         }
         policy._POLICIES = policies
     end
