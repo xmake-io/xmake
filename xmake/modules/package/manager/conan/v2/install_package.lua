@@ -333,6 +333,18 @@ function main(conan, name, opt)
         table.insert(argv, setting)
     end
 
+    -- set custom host configurations
+    for _, conf in ipairs(configs.conf or configs.conf_host) do
+        table.insert(argv, "-c")
+        table.insert(argv, conf)
+    end
+
+    -- set custom build configurations
+    for _, conf in ipairs(configs.conf_build) do
+        table.insert(argv, "-c:b")
+        table.insert(argv, conf)
+    end
+
     -- set remote
     if configs.remote then
         table.insert(argv, "-r")
