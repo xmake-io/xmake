@@ -210,7 +210,7 @@ function main(binaryfile, opt)
         _get_all_depends_by_readelf
     }
     if is_host("windows") then
-        table.insert(ops, 2, _get_all_depends_by_dumpbin)
+        table.insert(ops, 1, _get_all_depends_by_dumpbin)
     elseif is_host("linux", "bsd") then
         table.insert(ops, 1, _get_all_depends_by_ldd)
     elseif is_host("macosx") then
