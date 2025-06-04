@@ -19,17 +19,39 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import(".showlist")
 
--- show all platforms
+-- show all targets (optionally filtered by group)
 function main()
     config.load()
+
+    local group_filter = option.get("group")
     local targets = {}
-    for name, _ in pairs(project.targets()) do
-        table.insert(targets, name)
+
+    if not group_filter then
+        for name, _ in pairs(project.targets()) do
+            table.insert(targets, name)
+        end
+    else
+
+        local normalized_filter = path.normalize(group_filter)
+        local filter_prefix = normalized_filter .. "/"
+
+        for name, target in pairs(project.targets()) do
+            local target_group = target:get("group")
+            if target_group then
+                local normalized_target_group = path.normalize(target_group)
+                if normalized_target_group == normalized_filter or
+                   normalized_target_group:startswith(filter_prefix) then
+                    table.insert(targets, name)
+                end
+            end
+        end
     end
+
     showlist(targets)
 end
