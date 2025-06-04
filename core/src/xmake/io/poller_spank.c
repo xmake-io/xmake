@@ -42,7 +42,7 @@ tb_int_t xm_io_poller_spank(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // spank the poller, break the tb_poller_wait() and return all events
-    tb_poller_spak(xm_io_poller());
+    tb_poller_spak(xm_io_poller(lua));
     return 0;
 }
 
