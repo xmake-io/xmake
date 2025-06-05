@@ -29,19 +29,17 @@ import(".showlist")
 function main()
     config.load()
 
-    local group_pattern = option.get("group")
-    if group_pattern then
-        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
-    end
+    local group_pattern = option.get("group") and ("^" .. path.pattern(option.get("group")) .. "$")
     local targets = {}
 
     for name, target in pairs(project.targets()) do
         local group = target:get("group")
         if (target:is_default() and not group_pattern) or
-           (group_pattern and group and (group:match(group_pattern) or
-            table.find_first_if(group:split("[/\\]"), function(i, component)
-                return component:match(group_pattern)
-            end))) then
+           (group_pattern and group and (function()
+                for component in group:gmatch("[^/\\\\]+") do
+                    if component:match(group_pattern) then return true end
+                end
+            end)()) then
             table.insert(targets, name)
         end
     end
