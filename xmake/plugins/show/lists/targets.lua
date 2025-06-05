@@ -29,27 +29,20 @@ import(".showlist")
 function main()
     config.load()
 
-    local group_filter = option.get("group")
+    local group_pattern = option.get("group")
+    if group_pattern then
+        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
+    end
     local targets = {}
 
-    if not group_filter then
-        for name, _ in pairs(project.targets()) do
+    for name, target in pairs(project.targets()) do
+        local group = target:get("group")
+        if (target:is_default() and not group_pattern) or
+           (group_pattern and group and (group:match(group_pattern) or
+            table.find_first_if(group:split("[/\\]"), function(i, component)
+                return component:match(group_pattern)
+            end))) then
             table.insert(targets, name)
-        end
-    else
-
-        local normalized_filter = path.normalize(group_filter)
-        local filter_prefix = normalized_filter .. "/"
-
-        for name, target in pairs(project.targets()) do
-            local target_group = target:get("group")
-            if target_group then
-                local normalized_target_group = path.normalize(target_group)
-                if normalized_target_group == normalized_filter or
-                   normalized_target_group:startswith(filter_prefix) then
-                    table.insert(targets, name)
-                end
-            end
         end
     end
 
