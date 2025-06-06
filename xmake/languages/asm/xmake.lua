@@ -20,7 +20,7 @@
 
 language("asm")
     add_rules("asm")
-    set_sourcekinds {as = {".s", ".S", ".asm"}}
+    set_sourcekinds {as = {".s", ".S", ".asm", ".nasm", ".masm", ".mar", ".sa", ".a", ".A"}}
     set_sourceflags {as = "asflags"}
     set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
