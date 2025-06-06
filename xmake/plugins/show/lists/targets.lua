@@ -28,18 +28,15 @@ import(".showlist")
 -- show all targets (optionally filtered by group)
 function main()
     config.load()
-
-    local group_pattern = option.get("group") and ("^" .. path.pattern(option.get("group")) .. "$")
+    
     local targets = {}
-
+    local group_pattern = option.get("group")
+    if group_pattern then
+        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
+    end
     for name, target in pairs(project.targets()) do
         local group = target:get("group")
-        if (target:is_default() and not group_pattern) or
-           (group_pattern and group and (function()
-                for component in group:gmatch("[^/\\\\]+") do
-                    if component:match(group_pattern) then return true end
-                end
-            end)()) then
+        if (target:is_default() and not group_pattern) or (group_pattern and group and group:match(group_pattern)) then
             table.insert(targets, name)
         end
     end
