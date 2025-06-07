@@ -29,6 +29,7 @@ task("show")
                 values = function (complete, opt)
                     return import("list").lists()
                 end},
+            {'g', "group",  "kv", nil,   "Filter targets by the given group name."},
             {nil, "json",   "k",  false, "Show information with json format."},
             {'t', "target", "kv", nil,   "Show the information of the given target.",
                 values = function (complete, opt)
