@@ -1810,7 +1810,6 @@ function _instance:filerules(sourcefile)
     local override = false
     local fileconfig = self:fileconfig(sourcefile)
     if fileconfig then
-        utils.dump(fileconfig)
         local filerules = fileconfig.rules or fileconfig.rule
         if filerules then
             override = filerules.override
@@ -1861,7 +1860,8 @@ function _instance:filerules(sourcefile)
     local filename = path.filename(sourcefile):lower()
     for _, r in ipairs(table.wrap(key2rules[path.extension(filename, 2)] or
                                   key2rules[path.extension(filename)] or
-                                  key2rules[self:sourcekind_of(filename)])) do
+                                  key2rules[self:sourcekind_of(filename)] or
+                                  key2rules[fileconfig and fileconfig.sourcekind])) do -- add_files("*.nasm", {sourcekind = "asm"})
         if self:extraconf("rules", r:name(), "override") then
             table.insert(rules_override, r)
         else
