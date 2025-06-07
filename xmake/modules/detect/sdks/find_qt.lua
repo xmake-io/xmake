@@ -205,19 +205,23 @@ end
 -- get qt environment
 function _get_qtenvs(qmake, sdkdir)
     local envs = {}
-    local run_args = {"-query"}
+    local results
+
+    -- Try with -qtconf first if sdkdir is provided
     if sdkdir then
         local conf_paths = {path.join(sdkdir, "bin", "target_qt.conf"), path.join(sdkdir, "bin", "qt.conf")}
         for _, conf_path in ipairs(conf_paths) do
             if os.isfile(conf_path) then
-                table.join2(run_args, {"-qtconf", conf_path})
+                results = try {function () return os.iorunv(qmake, {"-query", "-qtconf", conf_path}) end}
                 break
             end
         end
     end
-    local results = try {
+
+    -- Fallback to normal query if sdkdir is not specified or -qtconf not applicable
+    results = results or try {
         function ()
-            return os.iorunv(qmake, run_args)
+            return os.iorunv(qmake, {"-query"})
         end,
         catch {
             function (errors)
