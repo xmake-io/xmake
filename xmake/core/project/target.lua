@@ -201,7 +201,8 @@ function _instance:_update_filerules()
     for _, sourcefile in ipairs(table.wrap(self:get("files"))) do
         local extension = path.extension((sourcefile:gsub("|.*$", "")))
         if not extensions[extension] then
-            local lang = language.load_ex(extension)
+            local sourcekind = self:extraconf("files", sourcefile, "sourcekind")
+            local lang = sourcekind and language.load_sk(sourcekind) or language.load_ex(extension)
             if lang and lang:rules() then
                 table.join2(rulenames, lang:rules())
             end
@@ -1859,7 +1860,8 @@ function _instance:filerules(sourcefile)
     local filename = path.filename(sourcefile):lower()
     for _, r in ipairs(table.wrap(key2rules[path.extension(filename, 2)] or
                                   key2rules[path.extension(filename)] or
-                                  key2rules[self:sourcekind_of(filename)])) do
+                                  key2rules[self:sourcekind_of(filename)] or
+                                  key2rules[fileconfig and fileconfig.sourcekind])) do -- add_files("*.nasm", {sourcekind = "asm"})
         if self:extraconf("rules", r:name(), "override") then
             table.insert(rules_override, r)
         else
