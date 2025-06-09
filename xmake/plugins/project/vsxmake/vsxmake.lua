@@ -26,6 +26,7 @@ import("render")
 import("getinfo")
 import("core.project.config")
 import("core.cache.localcache")
+import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
 
 local template_root = path.join(os.programdir(), "scripts", "vsxmake", "vsproj", "templates")
 local template_sln = path.join(template_root, "sln", "vsxmake.sln")
