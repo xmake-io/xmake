@@ -167,6 +167,7 @@ end
 function _trycp(file, target, targetname)
     targetname = targetname or path.filename(file)
     local targetfile = path.join(target, targetname)
+    targetfile = vsutils.translate_path(targetfile)
     if os.isfile(targetfile) then
         dprint("skipped file %s since the file already exists", path.relative(targetfile))
         return
