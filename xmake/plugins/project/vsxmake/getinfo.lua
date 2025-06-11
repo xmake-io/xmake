@@ -495,7 +495,8 @@ function main(outputdir, vsinfo)
                 local _target = targets[targetname]
 
                 -- init target info
-                _target.target = targetname
+                _target.targetname = targetname
+                _target.targetname_inpath = vsutils.translate_path(targetname)
                 _target.vcxprojdir = path.join(vsinfo.vcxproj_rootdir, targetname)
                 _target.vcxprojdir_relative_sln = path.relative(_target.vcxprojdir, vsinfo.solution_dir)
                 _target.target_id = hash.uuid4(targetname)
