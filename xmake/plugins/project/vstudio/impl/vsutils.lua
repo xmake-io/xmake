@@ -54,5 +54,5 @@ end
 
 -- translate file path (with namespace characters '::', it's invalid path characters on windows)
 function translate_path(filepath)
-    return (filepath:gsub("::", "_"))
+    return (filepath:gsub("::", "#"))
 end
