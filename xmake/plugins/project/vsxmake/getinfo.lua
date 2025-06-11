@@ -498,7 +498,7 @@ function main(outputdir, vsinfo)
                 _target.targetname = targetname
                 _target.targetname_inpath = vsutils.translate_path(targetname)
                 _target.vcxprojdir = path.join(vsinfo.vcxproj_rootdir, targetname)
-                _target.vcxprojdir_relative_sln = path.relative(_target.vcxprojdir, vsinfo.solution_dir)
+                _target.vcxprojdir_relative_sln = vsutils.translate_path(path.relative(_target.vcxprojdir, vsinfo.solution_dir))
                 _target.target_id = hash.uuid4(targetname)
                 _target.kind = target:kind()
                 _target.absscriptdir = target:scriptdir()
