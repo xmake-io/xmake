@@ -619,14 +619,8 @@ end
 -- @note the polymiorphism is not supported for import.inherit mode now.
 --
 function core_sandbox_module.inherit(name, opt)
-
-    -- init opt
     opt = opt or {}
-
-    -- mark as inherit
     opt.inherit = true
-
-    -- import and inherit it
     return core_sandbox_module.import(name, opt)
 end
 
