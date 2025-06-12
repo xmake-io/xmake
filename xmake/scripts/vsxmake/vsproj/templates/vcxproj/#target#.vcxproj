@@ -21,7 +21,7 @@
     <XmakeScriptDir>#scriptdir#</XmakeScriptDir>
     <XmakeProjectDir>#projectdir#</XmakeProjectDir>
     <XmakeProjectFile>#projectfile#</XmakeProjectFile>
-    <XmakeTarget>#target#</XmakeTarget>
+    <XmakeTarget>#targetname#</XmakeTarget>
   </PropertyGroup>
   <PropertyGroup Label="XmakeProgram">
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">$(XMAKE_PROGRAM_DIR)</XmakeProgramDir>

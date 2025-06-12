@@ -26,6 +26,7 @@ import("render")
 import("getinfo")
 import("core.project.config")
 import("core.cache.localcache")
+import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
 
 local template_root = path.join(os.programdir(), "scripts", "vsxmake", "vsproj", "templates")
 local template_sln = path.join(template_root, "sln", "vsxmake.sln")
@@ -166,6 +167,7 @@ end
 function _trycp(file, target, targetname)
     targetname = targetname or path.filename(file)
     local targetfile = path.join(target, targetname)
+    targetfile = vsutils.translate_path(targetfile)
     if os.isfile(targetfile) then
         dprint("skipped file %s since the file already exists", path.relative(targetfile))
         return
@@ -174,6 +176,7 @@ function _trycp(file, target, targetname)
 end
 
 function _writefileifneeded(file, content)
+    file = vsutils.translate_path(file)
     if os.isfile(file) and io.readfile(file) == content then
         dprint("skipped file %s since the file has the same content", path.relative(file))
         return
@@ -219,11 +222,7 @@ function make(version)
     end
 
     return function(outputdir)
-
-        -- trace
         vprint("using project kind vs%d", version)
-
-        -- check
         assert(version >= 2010, "vsxmake does not support vs version lower than 2010")
 
         -- get info and params
@@ -240,20 +239,20 @@ function make(version)
 
         for _, target in ipairs(info.targets) do
             local paramsprovidertarget = _buildparams(info, target, "<!-- nil -->")
-            local proj_dir = info._targets[target].vcxprojdir
+            local vcxproj_dir = info._targets[target].vcxprojdir
 
             -- write project file
-            local proj = path.join(proj_dir, target .. ".vcxproj")
-            _writefileifneeded(proj, render(template_vcx, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
+            local vcxproj_file = path.join(vcxproj_dir, target .. ".vcxproj")
+            _writefileifneeded(vcxproj_file, render(template_vcx, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
 
-            local projfil = path.join(proj_dir, target .. ".vcxproj.filters")
-            _writefileifneeded(projfil, render(template_fil, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
+            local vcxproj_filters = path.join(vcxproj_dir, target .. ".vcxproj.filters")
+            _writefileifneeded(vcxproj_filters, render(template_fil, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
 
             -- add project custom file
-            _trycp(template_props, proj_dir)
-            _trycp(template_targets, proj_dir)
-            _trycp(template_items, proj_dir)
-            _trycp(template_itemfil, proj_dir)
+            _trycp(template_props, vcxproj_dir)
+            _trycp(template_targets, vcxproj_dir)
+            _trycp(template_items, vcxproj_dir)
+            _trycp(template_itemfil, vcxproj_dir)
         end
 
         -- clear config and local cache
