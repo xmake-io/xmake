@@ -64,7 +64,7 @@ function load(target)
     if cxx11abi == nil then
         -- enable cxx11abi on GCC >= 15 as it is required for C++23 module
         local gcc_version = get_gcc_version(target)
-        if gcc_version and semver.compare(gcc_version, "15") > 0 then
+        if gcc_version and semver.compare(gcc_version, "15") >= 0 then
             cxx11abi = true
         end
     end
@@ -323,7 +323,7 @@ function get_gcc_version(target)
     local gcc_version = _g.gcc_version
     if not gcc_version then
         local program, toolname = target:tool("cxx")
-        if program and toolname:startswith("gcc") then
+        if program and (toolname:startswith("gcc") or toolname:startswith("gxx")) then
             local gcc = find_tool(toolname, {program = program, version = true,
                 envs = os.getenvs(), cachekey = "modules_support_gcc_" .. toolname})
             if gcc then
