@@ -27,7 +27,10 @@ rule("python.module")
         local soabi = target:extraconf("rules", "python.module", "soabi")
         if soabi == nil or soabi then
             import("lib.detect.find_tool")
-            local python = assert(find_tool("python3"), "python not found!")
+            local python = target:extraconf("rules", "python.module", "python")
+            if not python then
+                python = assert(find_tool("python3"), "python not found!")
+            end
             local result = try { function() return os.iorunv(python.program, {"-c", "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"}) end}
             if result then
                 result = result:trim()
