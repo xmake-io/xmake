@@ -103,9 +103,8 @@ function is_supported(sourcekind)
 end
 
 -- get cache key
-function cachekey(program, cppinfo, envs)
-    local cppfile = cppinfo.cppfile
-    local cppflags = cppinfo.cppflags
+function cachekey(program, info, opt)
+    local cppflags = info.cppflags
     local items = {program}
     for _, cppflag in ipairs(cppflags) do
         if cppflag:startswith("-D") or cppflag:startswith("/D") then
@@ -116,12 +115,16 @@ function cachekey(program, cppinfo, envs)
         end
     end
     table.sort(items)
-    table.insert(items, hash.xxhash128(cppfile))
-    if envs then
+
+    if opt.preprocess then
+        table.insert(items, hash.xxhash128(info.cppfile))
+    end
+
+    if opt.envs then
         local basename = path.basename(program)
         if basename == "cl" then
             for _, name in ipairs({"WindowsSDKVersion", "VCToolsVersion", "LIB"}) do
-                local val = envs[name]
+                local val = opt.envs[name]
                 if val then
                     table.insert(items, val)
                 end
@@ -275,74 +278,121 @@ end
 
 -- build with cache
 function build(program, argv, opt)
-
-    -- do preprocess
     opt = opt or {}
-    local preprocess = assert(opt.preprocess, "preprocessor not found!")
-    local compile = assert(opt.compile, "compiler not found!")
-    local cppinfo = preprocess(program, argv, opt)
-    if cppinfo then
-        local cachekey = cachekey(program, cppinfo, opt.envs)
+
+    local info
+    -- support preprocess?
+    if is_supported(opt.tool:kind()) then
+        -- do preprocess
+        local preprocess = assert(opt.preprocess, "preprocessor not found!")
+        local compile = assert(opt.compile, "compiler not found!")
+        info = preprocess(program, argv, opt)
+        if info then
+            local cachekey = cachekey(program, info, {envs = opt.envs, preprocess = true})
+            local cache_hit_start_time = os.mclock()
+            local objectfile_cached, objectfile_infofile = get(cachekey)
+            if objectfile_cached then
+                os.cp(objectfile_cached, info.objectfile)
+                -- we need to update mtime for incremental compilation
+                -- @see https://github.com/xmake-io/xmake/issues/2620
+                os.touch(info.objectfile, {mtime = os.time()})
+                -- we need to get outdata/errdata to show warnings,
+                -- @see https://github.com/xmake-io/xmake/issues/2452
+                if objectfile_infofile and os.isfile(objectfile_infofile) then
+                    local extrainfo = io.load(objectfile_infofile)
+                    info.outdata = extrainfo.outdata
+                    info.errdata = extrainfo.errdata
+                end
+                _g.cache_hit_total_time = (_g.cache_hit_total_time or 0) + (os.mclock() - cache_hit_start_time)
+            else
+                -- do compile
+                local preprocess_outdata = info.outdata
+                local preprocess_errdata = info.errdata
+                local compile_start_time = os.mclock()
+                local compile_fallback = opt.compile_fallback
+                if compile_fallback then
+                    local ok = try {function () compile(program, info, opt); return true end}
+                    if not ok then
+                        -- we fallback to compile original source file if compiling preprocessed file fails.
+                        -- https://github.com/xmake-io/xmake/issues/2467
+                        local outdata, errdata = compile_fallback()
+                        info.outdata = outdata
+                        info.errdata = errdata
+                        _g.compile_fallback_count = (_g.compile_fallback_count or 0) + 1
+                    end
+                else
+                    compile(program, info, opt)
+                end
+                -- if no compiler output, we need use preprocessor output, because it maybe contains warning output
+                if not info.outdata or #info.outdata == 0 then
+                    info.outdata = preprocess_outdata
+                end
+                if not info.errdata or #info.errdata == 0 then
+                    info.errdata = preprocess_errdata
+                end
+                _g.compile_total_time = (_g.compile_total_time or 0) + (os.mclock() - compile_start_time)
+                if cachekey then
+                    local extrainfo
+                    if info.outdata and #info.outdata ~= 0 then
+                        extrainfo = extrainfo or {}
+                        extrainfo.outdata = info.outdata
+                    end
+                    if info.errdata and #info.errdata ~= 0 then
+                        extrainfo = extrainfo or {}
+                        extrainfo.errdata = info.errdata
+                    end
+                    local cache_miss_start_time = os.mclock()
+                    put(cachekey, info.objectfile, extrainfo)
+                    _g.cache_miss_total_time = (_g.cache_miss_total_time or 0) + (os.mclock() - cache_miss_start_time)
+                end
+            end
+            os.rm(info.cppfile)
+        else
+            _g.preprocess_error_count = (_g.preprocess_error_count or 0) + 1
+        end
+    else
+        info = {
+            -- Do not use depfile flag to generate cache key
+            cppflags = opt.origin_flags,
+            outputfile = opt.outputfile
+        }
+        local cachekey = cachekey(program, info, {envs = envs})
         local cache_hit_start_time = os.mclock()
         local objectfile_cached, objectfile_infofile = get(cachekey)
         if objectfile_cached then
-            os.cp(objectfile_cached, cppinfo.objectfile)
+            os.cp(objectfile_cached, info.outputfile)
             -- we need to update mtime for incremental compilation
             -- @see https://github.com/xmake-io/xmake/issues/2620
-            os.touch(cppinfo.objectfile, {mtime = os.time()})
+            os.touch(info.outputfile, {mtime = os.time()})
             -- we need to get outdata/errdata to show warnings,
             -- @see https://github.com/xmake-io/xmake/issues/2452
             if objectfile_infofile and os.isfile(objectfile_infofile) then
                 local extrainfo = io.load(objectfile_infofile)
-                cppinfo.outdata = extrainfo.outdata
-                cppinfo.errdata = extrainfo.errdata
+                info.outdata = extrainfo.outdata
+                info.errdata = extrainfo.errdata
             end
             _g.cache_hit_total_time = (_g.cache_hit_total_time or 0) + (os.mclock() - cache_hit_start_time)
         else
             -- do compile
-            local preprocess_outdata = cppinfo.outdata
-            local preprocess_errdata = cppinfo.errdata
             local compile_start_time = os.mclock()
-            local compile_fallback = opt.compile_fallback
-            if compile_fallback then
-                local ok = try {function () compile(program, cppinfo, opt); return true end}
-                if not ok then
-                    -- we fallback to compile original source file if compiling preprocessed file fails.
-                    -- https://github.com/xmake-io/xmake/issues/2467
-                    local outdata, errdata = compile_fallback()
-                    cppinfo.outdata = outdata
-                    cppinfo.errdata = errdata
-                    _g.compile_fallback_count = (_g.compile_fallback_count or 0) + 1
-                end
-            else
-                compile(program, cppinfo, opt)
-            end
-            -- if no compiler output, we need use preprocessor output, because it maybe contains warning output
-            if not cppinfo.outdata or #cppinfo.outdata == 0 then
-                cppinfo.outdata = preprocess_outdata
-            end
-            if not cppinfo.errdata or #cppinfo.errdata == 0 then
-                cppinfo.errdata = preprocess_errdata
-            end
+            local outdata, errdata = os.iorunv(program, argv, {envs = opt.envs})
             _g.compile_total_time = (_g.compile_total_time or 0) + (os.mclock() - compile_start_time)
             if cachekey then
                 local extrainfo
-                if cppinfo.outdata and #cppinfo.outdata ~= 0 then
+                if info.outdata and #info.outdata ~= 0 then
                     extrainfo = extrainfo or {}
-                    extrainfo.outdata = cppinfo.outdata
+                    extrainfo.outdata = info.outdata
                 end
-                if cppinfo.errdata and #cppinfo.errdata ~= 0 then
+                if info.errdata and #info.errdata ~= 0 then
                     extrainfo = extrainfo or {}
-                    extrainfo.errdata = cppinfo.errdata
+                    extrainfo.errdata = info.errdata
                 end
                 local cache_miss_start_time = os.mclock()
-                put(cachekey, cppinfo.objectfile, extrainfo)
+                put(cachekey, info.outputfile, extrainfo)
                 _g.cache_miss_total_time = (_g.cache_miss_total_time or 0) + (os.mclock() - cache_miss_start_time)
             end
         end
-        os.rm(cppinfo.cppfile)
-    else
-        _g.preprocess_error_count = (_g.preprocess_error_count or 0) + 1
     end
-    return cppinfo
+
+    return info
 end
