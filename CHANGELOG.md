@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v3.0.0
+
 ### New features
 
 * [#5926](https://github.com/xmake-io/xmake/issues/5926): Add MIDL support
@@ -1985,6 +1987,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v3.0.0
 
 ### 新特性
 
