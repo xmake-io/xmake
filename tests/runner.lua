@@ -1,7 +1,8 @@
 import("core.base.option")
 import("test_utils.context", { alias = "test_context" })
 
-function main(script)
+function main(script, opt)
+    opt = opt or {}
 
     if os.isdir(script) then
         script = path.join(script, "test.lua")
@@ -21,7 +22,7 @@ function main(script)
     local verbose = option.get("verbose") or option.get("diagnosis")
 
     -- trace
-    cprint(">> testing %s ...", path.relative(root))
+    cprint(">> [%d/%d]: testing %s ...", opt.index, opt.total, path.relative(root))
 
     -- get test functions
     local data = import("test", { rootdir = root, anonymous = true })

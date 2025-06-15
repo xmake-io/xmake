@@ -3,8 +3,8 @@ import("core.base.task")
 import("core.base.option")
 import("runner", {rootdir = os.scriptdir()})
 
-function _run_test(script)
-    runner(script)
+function _run_test(script, opt)
+    runner(script, opt)
 end
 
 -- run test with the given name
@@ -38,8 +38,8 @@ function _run_test_filter(name)
                 cprint(">     %s", v)
             end
         end
-        for _, v in ipairs(tests) do
-            _run_test(v)
+        for i, v in ipairs(tests) do
+            _run_test(v, {index = i, total = #tests})
         end
         cprint("> %d test(s) succeed", #tests)
     end
