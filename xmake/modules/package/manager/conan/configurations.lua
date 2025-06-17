@@ -18,6 +18,47 @@
 -- @file        configurations.lua
 --
 
+-- get arch for conan
+function arch(arch)
+    local map = {x86_64          = "x86_64",
+                 x64             = "x86_64",
+                 i386            = "x86",
+                 x86             = "x86",
+                 armv7           = "armv7",
+                 ["armv7-a"]     = "armv7",  -- for android, deprecated
+                 ["armeabi"]     = "armv7",  -- for android, removed in ndk r17
+                 ["armeabi-v7a"] = "armv7",  -- for android
+                 armv7s          = "armv7s", -- for iphoneos
+                 arm64           = "armv8",  -- for iphoneos
+                 ["arm64-v8a"]   = "armv8",  -- for android
+                 mips            = "mips",
+                 mips64          = "mips64",
+                 wasm32          = "wasm"}
+    return assert(map[arch], "unknown arch(%s)!", arch)
+end
+
+-- get os platform for conan
+function plat(plat)
+    local map = {macosx   = "Macos",
+                 windows  = "Windows",
+                 mingw    = "Windows",
+                 linux    = "Linux",
+                 cross    = "Linux",
+                 iphoneos = "iOS",
+                 android  = "Android",
+                 wasm     = "Emscripten"}
+    return assert(map[plat], "unknown os(%s)!", plat)
+end
+
+-- get build type
+function build_type(mode)
+    if mode == "debug" then
+        return "Debug"
+    else
+        return "Release"
+    end
+end
+
 -- get configurations
 function main()
     return

@@ -27,6 +27,7 @@ import("core.platform.platform")
 import("lib.detect.find_tool")
 import("devel.git")
 import("net.fasturl")
+import("package.manager.conan.configurations")
 
 -- get build env
 function _conan_get_build_env(name, plat)
@@ -107,45 +108,6 @@ function _conan_install_xmake_generator(conan)
     local scriptfile_installed = path.join(homedir, "extensions", "generators", "xmake_generator.py")
     if not os.isfile(scriptfile_installed) or os.mtime(scriptfile_now) > os.mtime(scriptfile_installed) then
         os.vrunv(conan.program, {"config", "install", path.join(os.programdir(), "scripts", "conan")})
-    end
-end
-
--- get arch
-function _conan_get_arch(arch)
-    local map = {x86_64          = "x86_64",
-                 x64             = "x86_64",
-                 i386            = "x86",
-                 x86             = "x86",
-                 armv7           = "armv7",
-                 ["armv7-a"]     = "armv7",  -- for android, deprecated
-                 ["armeabi"]     = "armv7",  -- for android, removed in ndk r17
-                 ["armeabi-v7a"] = "armv7",  -- for android
-                 armv7s          = "armv7s", -- for iphoneos
-                 arm64           = "armv8",  -- for iphoneos
-                 ["arm64-v8a"]   = "armv8",  -- for android
-                 mips            = "mips",
-                 mips64          = "mips64"}
-    return assert(map[arch], "unknown arch(%s)!", arch)
-end
-
--- get os
-function _conan_get_os(plat)
-    local map = {macosx   = "Macos",
-                 windows  = "Windows",
-                 mingw    = "Windows",
-                 linux    = "Linux",
-                 cross    = "Linux",
-                 iphoneos = "iOS",
-                 android  = "Android"}
-    return assert(map[plat], "unknown os(%s)!", plat)
-end
-
--- get build type
-function _conan_get_build_type(mode)
-    if mode == "debug" then
-        return "Debug"
-    else
-        return "Release"
     end
 end
 
@@ -261,9 +223,9 @@ end
 function _conan_generate_build_profile(configs, opt)
     local profile = io.open("profile_build.txt", "w")
     profile:print("[settings]")
-    profile:print("arch=%s", _conan_get_arch(os.arch()))
-    profile:print("build_type=%s", _conan_get_build_type(opt.mode))
-    profile:print("os=%s", _conan_get_os(os.host()))
+    profile:print("arch=%s", configurations.arch(os.arch()))
+    profile:print("build_type=%s", configurations.build_type(opt.mode))
+    profile:print("os=%s", configurations.plat(os.host()))
     _conan_generate_compiler_profile(profile, configs, {plat = os.host(), arch = os.arch()})
     profile:close()
 end
@@ -272,9 +234,9 @@ end
 function _conan_generate_host_profile(configs, opt)
     local profile = io.open("profile_host.txt", "w")
     profile:print("[settings]")
-    profile:print("arch=%s", _conan_get_arch(opt.arch))
-    profile:print("build_type=%s", _conan_get_build_type(opt.mode))
-    profile:print("os=%s", _conan_get_os(opt.plat))
+    profile:print("arch=%s", configurations.arch(opt.arch))
+    profile:print("build_type=%s", configurations.build_type(opt.mode))
+    profile:print("os=%s", configurations.plat(opt.plat))
     _conan_generate_compiler_profile(profile, configs, opt)
     profile:close()
 end
