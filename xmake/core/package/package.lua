@@ -1195,6 +1195,9 @@ function _instance:envs_load()
         for name, values in pairs(manifest.envs) do
             envs[name] = values
         end
+        for _, value in ipairs(manifest.pathenvs) do
+            self:mark_as_pathenv(value)
+        end
     end
 end
 
