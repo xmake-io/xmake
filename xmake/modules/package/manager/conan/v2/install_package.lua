@@ -25,6 +25,8 @@ import("core.project.config")
 import("core.tool.toolchain")
 import("core.platform.platform")
 import("lib.detect.find_tool")
+import("lib.detect.find_file")
+import("detect.sdks.find_emsdk")
 import("devel.git")
 import("net.fasturl")
 import("package.manager.conan.configurations")
@@ -192,8 +194,14 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         conf = {}
         conf["tools.android:ndk_path"] = ndk:config("ndk")
     elseif plat == "wasm" then
+        local emsdk = find_emsdk()
+        assert(emsdk and emsdk.emscripten, "emscripten not found!")
+        local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))
+        assert(emscripten_cmakefile, "Emscripten.cmake not found!")
+
         conf = {}
         conf["tools.build:compiler_executables"] = "{'c':'emcc', 'cpp':'em++'}"
+        conf["tools.cmake.cmaketoolchain:user_toolchain"] = "[" ..emscripten_cmakefile .. "]"
     else
         local program, toolname = platform.tool("cc", plat, arch)
         if toolname == "gcc" or toolname == "clang" then
