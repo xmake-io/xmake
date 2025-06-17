@@ -234,10 +234,10 @@ end
 function _conan_generate_build_profile(configs, opt)
     local profile = io.open("profile_build.txt", "w")
     profile:print("[settings]")
-    profile:print("arch=%s", configurations.arch(opt.arch))
+    profile:print("arch=%s", configurations.arch(os.arch()))
     profile:print("build_type=%s", configurations.build_type(opt.mode))
-    profile:print("os=%s", configurations.plat(opt.plat))
-    _conan_generate_compiler_profile(profile, configs, opt)
+    profile:print("os=%s", configurations.plat(os.host()))
+    _conan_generate_compiler_profile(profile, configs, {plat = os.host(), arch = os.arch()})
     profile:close()
 end
 
@@ -245,10 +245,10 @@ end
 function _conan_generate_host_profile(configs, opt)
     local profile = io.open("profile_host.txt", "w")
     profile:print("[settings]")
-    profile:print("arch=%s", configurations.arch(os.arch()))
+    profile:print("arch=%s", configurations.arch(opt.arch))
     profile:print("build_type=%s", configurations.build_type(opt.mode))
-    profile:print("os=%s", configurations.plat(os.host()))
-    _conan_generate_compiler_profile(profile, configs, {plat = os.host(), arch = os.arch()})
+    profile:print("os=%s", configurations.plat(opt.plat))
+    _conan_generate_compiler_profile(profile, configs, opt)
     profile:close()
 end
 

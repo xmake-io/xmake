@@ -47,7 +47,7 @@ function plat(plat)
                  iphoneos = "iOS",
                  android  = "Android",
                  wasm     = "Emscripten"}
-    return assert(map[plat], "unknown os(%s)!", plat)
+    return assert(map[plat], "unknown plat(%s)!", plat)
 end
 
 -- get build type
