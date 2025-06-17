@@ -156,7 +156,7 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
         opt.progress,
         "${color.build.object}compiling.proto.%s %s",
         (sourcekind == "cxx" and "c++" or "c"),
-        sourcefile_proto
+        path(sourcefile_proto)
     )
     batchcmds:vrunv(protoc, protoc_args)
 
