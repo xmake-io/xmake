@@ -199,9 +199,15 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))
         assert(emscripten_cmakefile, "Emscripten.cmake not found!")
 
+        profile:print("compiler=clang")
+        local version = _conan_get_compiler_version("clang")
+        if version then
+            profile:print("compiler.version=" .. version)
+        end
+
         conf = {}
-        conf["tools.build:compiler_executables"] = "{'c':'emcc', 'cpp':'em++'}"
-        conf["tools.cmake.cmaketoolchain:user_toolchain"] = "[" ..emscripten_cmakefile .. "]"
+        conf["tools.build:compiler_executables"] = "{'c':'emcc', 'cpp':'em++', 'ar':'emar', 'ranlib':'emranlib'}"
+        conf["tools.cmake.cmaketoolchain:user_toolchain"] = "['" ..emscripten_cmakefile .. "']"
     else
         local program, toolname = platform.tool("cc", plat, arch)
         if toolname == "gcc" or toolname == "clang" then

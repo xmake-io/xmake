@@ -47,7 +47,6 @@ end
 function _conan_get_buildinfo(name, opt)
     opt = opt or {}
     local buildinfo_file = _conan_get_buildinfo_file(name, opt.dep_name)
-    print("buildinfo_file", buildinfo_file)
     if not os.isfile(buildinfo_file) then
         return
     end
@@ -58,7 +57,6 @@ function _conan_get_buildinfo(name, opt)
         return
     end
     local buildinfo = io.load(buildinfo_file)
-    print("buildinfo", buildinfo)
     if buildinfo then
         buildinfo = buildinfo[infokey]
     end
