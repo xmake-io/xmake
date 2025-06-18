@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("package.manager.conan.configurations")
 
 -- get build info file
 function _conan_get_buildinfo_file(name, dep_name)
@@ -31,40 +32,12 @@ function _conan_get_buildinfo_file(name, dep_name)
     return path.absolute(path.join(config.builddir() or os.tmpdir(), ".conan", name, filename))
 end
 
--- get conan platform
-function _conan_get_plat(opt)
-    local plats = {macosx = "Macos", windows = "Windows", mingw = "Windows", linux = "Linux", cross = "Linux", iphoneos = "iOS", android = "Android"}
-    return plats[opt.plat]
-end
-
--- get conan architecture
-function _conan_get_arch(opt)
-    local archs = {x86_64          = "x86_64",
-                   x64             = "x86_64",
-                   i386            = "x86",
-                   x86             = "x86",
-                   armv7           = "armv7",
-                   ["armv7-a"]     = "armv7",  -- for android, deprecated
-                   ["armeabi"]     = "armv7",  -- for android, removed in ndk r17
-                   ["armeabi-v7a"] = "armv7",  -- for android
-                   armv7s          = "armv7s", -- for iphoneos
-                   arm64           = "armv8",  -- for iphoneos
-                   ["arm64-v8a"]   = "armv8",  -- for android
-                   mips            = "mips",
-                   mips64          = "mips64"}
-    return archs[opt.arch]
-end
-
--- get conan mode
-function _conan_get_mode(opt)
-    return opt.mode == "debug" and "Debug" or "Release"
-end
-
 -- get info key
 function _conan_get_infokey(opt)
-    local plat = _conan_get_plat(opt)
-    local arch = _conan_get_arch(opt)
-    local mode = _conan_get_mode(opt)
+    opt = opt or {}
+    local plat = configurations.plat(opt.plat)
+    local arch = configurations.arch(opt.arch)
+    local mode = configurations.build_type(opt.mode)
     if plat and arch and mode then
         return plat .. "_" .. arch .. "_" .. mode
     end
