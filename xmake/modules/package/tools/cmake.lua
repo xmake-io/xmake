@@ -994,6 +994,11 @@ function _enter_builddir(package, opt)
     if opt.buildir then
         wprint("{buildir = } has been deprecated, please use {builddir = } in cmake.install")
     end
+    if os.is_host("windows") and os.exists(builddir) and os.isfile(builddir) then
+        -- some projects contain both a cmakelist and a bazel BUILD file, 
+        -- which prevents the creation of a directory named 'build' on windows
+        os.rm(builddir)
+    end
     os.mkdir(path.join(builddir, "install"))
     return os.cd(builddir)
 end
