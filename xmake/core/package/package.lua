@@ -2431,7 +2431,8 @@ function _instance:_generate_sanitizer_configs(checkmode, sourcekind)
     end
 
     -- add ldflags and shflags
-    if self:has_tool("ld", "link", "clang", "clangxx", "gcc", "gxx") then
+    -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
+    if self:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
         configs.ldflags = "-fsanitize=" .. checkmode
         configs.shflags = "-fsanitize=" .. checkmode
     end
