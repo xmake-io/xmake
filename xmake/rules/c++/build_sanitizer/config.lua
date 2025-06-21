@@ -41,7 +41,8 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
     end
 
     -- add ldflags and shflags
-    if target:has_tool("ld", "link", "clang", "clangxx", "gcc", "gxx") then
+    -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
+    if target:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
         target:add("ldflags", "-fsanitize=" .. checkmode, {force = true})
         target:add("shflags", "-fsanitize=" .. checkmode, {force = true})
     end
