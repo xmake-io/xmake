@@ -22,6 +22,7 @@
 import("core.project.project")
 import("vs200x_solution")
 import("vs200x_vcproj")
+import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
 
 -- make vstudio project
 function make(outputdir, vsinfo)
@@ -35,15 +36,16 @@ function make(outputdir, vsinfo)
     -- make solution
     vs200x_solution.make(vsinfo)
 
+    local project_targets = target_utils.get_project_targets()
     -- TODO
     -- disable precompiled header first
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         target:set("pcheader", nil)
         target:set("pcxxheader", nil)
     end
 
     -- make vsprojs
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         if not target:is_phony() then
             vs200x_vcproj.make(vsinfo, target)
         end

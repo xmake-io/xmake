@@ -28,6 +28,7 @@ import("core.language.language")
 import("private.utils.batchcmds")
 import("private.utils.executable_path")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
+import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
 import("actions.test.main", {rootdir = os.programdir(), alias = "test_action"})
 
 -- escape path
@@ -282,7 +283,8 @@ function _add_targets(jsonfile)
     jsonfile:print("[")
     _g.firstline = true
 
-    for _, target in pairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for _, target in pairs(project_targets) do
         if not target:is_phony() then
             _add_target(jsonfile, target)
         end

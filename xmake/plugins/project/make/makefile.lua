@@ -28,6 +28,7 @@ import("core.platform.platform")
 import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
+import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
 
 -- tranlate path
 function _translate_path(filepath, outputdir)
@@ -333,7 +334,8 @@ function _add_toolchains(makefile, outputdir)
     makefile:print("")
 
     -- add toolchains from targets
-    for targetname, target in pairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for targetname, target in pairs(project_targets) do
         if not _phony_or_headeronly(target) then
             local program = _get_program_from_target(target, target:linker():kind())
             if program then
@@ -359,7 +361,8 @@ end
 
 -- add flags
 function _add_flags(makefile, targetflags, outputdir)
-    for targetname, target in pairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for targetname, target in pairs(project_targets) do
         if not _phony_or_headeronly(target) then
             for _, sourcebatch in pairs(target:sourcebatches()) do
                 local sourcekind = sourcebatch.sourcekind
@@ -616,19 +619,20 @@ end
 -- add build targets
 function _add_build_targets(makefile, targetflags, outputdir)
     local default = ""
-    for targetname, target in pairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for targetname, target in pairs(project_targets) do
         if target:is_default() then
             default = default .. " " .. targetname
         end
     end
     makefile:print("default: %s\n", default)
     local all = ""
-    for targetname, _ in pairs(project.targets()) do
+    for targetname, _ in pairs(project_targets) do
         all = all .. " " .. targetname
     end
     makefile:print("all: %s\n", all)
     makefile:print(".PHONY: default all %s\n", all)
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         _add_build_target(makefile, target, targetflags, outputdir)
     end
 end
@@ -638,7 +642,8 @@ function _add_build(makefile, targetflags, outputdir)
 
     -- TODO
     -- disable precompiled header first
-    for _, target in pairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for _, target in pairs(project_targets) do
         target:set("pcheader", nil)
         target:set("pcxxheader", nil)
     end
@@ -665,13 +670,14 @@ end
 -- add clean targets
 function _add_clean_targets(makefile, outputdir)
     local all = ""
-    for targetname, _ in pairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for targetname, _ in pairs(project_targets) do
         all = all .. " clean_" .. targetname
     end
     makefile:print("clean: %s\n", all)
 
     -- add clean targets
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         _add_clean_target(makefile, target, outputdir)
     end
 end

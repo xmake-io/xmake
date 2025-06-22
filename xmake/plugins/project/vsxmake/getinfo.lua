@@ -36,6 +36,7 @@ import("private.action.run.runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
+import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
 
 -- strip dot directories, e.g. ..\..\.. => ..
 -- @see https://github.com/xmake-io/xmake/issues/2039
@@ -298,7 +299,8 @@ end
 function _make_vsinfo_groups()
     local groups = {}
     local group_deps = {}
-    for targetname, target in table.orderpairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for targetname, target in table.orderpairs(project_targets) do
         local group_path = target:get("group")
         if group_path and #(group_path:trim()) > 0 then
             group_path = path.normalize(group_path)
@@ -485,7 +487,8 @@ function main(outputdir, vsinfo)
             os.cd(project.directory())
 
             -- save targets
-            for targetname, target in table.orderpairs(project.targets()) do
+            local project_targets = target_utils.get_project_targets()
+            for targetname, target in table.orderpairs(project_targets) do
 
                 -- https://github.com/xmake-io/xmake/issues/2337
                 target:data_set("plugin.project.kind", "vsxmake")
@@ -588,7 +591,8 @@ function main(outputdir, vsinfo)
     -- we need to set startup project for default or binary target
     -- @see https://github.com/xmake-io/xmake/issues/1249
     local targetnames = {}
-    for targetname, target in table.orderpairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for targetname, target in table.orderpairs(project_targets) do
         if target:get("default") == true then
             table.insert(targetnames, 1, targetname)
         elseif target:is_binary() then

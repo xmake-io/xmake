@@ -61,6 +61,9 @@ task("project")
                 ,   {'a', "archs",     "kv" , nil       ,   "Set the project archs."
                                                         ,   "    e.g. "
                                                         ,   "    - xmake project -k vsxmake -a \"x86,x64\""                                 }
+                ,   {'t', "target",    "kv" , nil       ,   "Set the project target."
+                                                        ,   "    e.g. "
+                                                        ,   "    - xmake project -k compile_commands -t \"custom\""                            }
                 ,   {nil, "lsp",       "kv" , nil       ,   "Set the LSP backend for compile_commands."
                                                         ,   "    e.g. "
                                                         ,   "    - xmake project -k compile_commands --lsp=clangd"
