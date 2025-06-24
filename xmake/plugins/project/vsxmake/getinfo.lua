@@ -454,7 +454,7 @@ function main(outputdir, vsinfo)
             config.set("arch", arch, {readonly = true, force = true})
 
             -- clear all options
-            for _, opt in ipairs(project.options()) do
+            for _, opt in pairs(project.options()) do
                 opt:clear()
             end
 
