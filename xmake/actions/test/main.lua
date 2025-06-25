@@ -168,23 +168,23 @@ function _do_test_target(target, opt)
         end
     end
 
-    if errors and #errors > 0 then
-        opt.errors = errors
-    end
-
     if should_fail then
         if not passed then
             passed = true
-            opt.errors = nil -- clear errors, since failure was expected
+            errors = nil -- clear errors, since failure was expected
         else
             passed = false
             local extra_info = string.format("Test %s unexpectedly passed (should fail)", opt.name)
-            if opt.errors and #opt.errors > 0 then
-                opt.errors = opt.errors .. "\n" .. extra_info
+            if errors and #errors > 0 then
+                errors = errors .. "\n" .. extra_info
             else
-                opt.errors = extra_info
+                errors = extra_info
             end
         end
+    end
+
+    if errors and #errors > 0 then
+        opt.errors = errors
     end
 
     return passed
