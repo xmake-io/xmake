@@ -851,7 +851,7 @@ function _get_default_flags(package, configs, buildtype, opt)
         local cmake = find_tool("cmake")
         local _configs = table.join(configs, "-S " .. path.directory(dummy_cmakelist), "-B " .. tmpdir)
         local outdata = try{ function() return os.iorunv(cmake.program, _configs, {envs = runenvs}) end}
-        if outdata then
+        if outdata and outdata ~= "" then
             cmake_default_flags = {}
             cmake_default_flags.cflags = outdata:match("CMAKE_C_FLAGS is (.-)\n") or " "
             cmake_default_flags.cflags = cmake_default_flags.cflags .. " " .. outdata:match(format("CMAKE_C_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", "")
