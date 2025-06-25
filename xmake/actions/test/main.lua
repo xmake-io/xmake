@@ -64,6 +64,8 @@ function _do_test_target(target, opt)
     os.tryrm(outfile)
     os.tryrm(errfile)
     os.mkdir(autogendir)
+
+    local should_fail = opt.should_fail or false
     local run_timeout = opt.run_timeout
     local ok, syserrors = os.execv(targetfile, runargs, {try = true, timeout = run_timeout,
         curdir = rundir, envs = envs, stdout = outfile, stderr = errfile})
@@ -94,8 +96,8 @@ function _do_test_target(target, opt)
     os.tryrm(outfile)
     os.tryrm(errfile)
 
+    local passed
     if ok == 0 then
-        local passed
         local pass_outputs = table.wrap(opt.pass_outputs)
         local fail_outputs = table.wrap(opt.fail_outputs)
         for _, pass_output in ipairs(pass_outputs) do
@@ -164,15 +166,28 @@ function _do_test_target(target, opt)
                 end
             end
         end
-        if errors and #errors > 0 then
-            opt.errors = errors
-        end
-        return passed
     end
+
     if errors and #errors > 0 then
         opt.errors = errors
     end
-    return false
+
+    if should_fail then
+        if not passed then
+            passed = true
+            opt.errors = nil -- clear errors, since failure was expected
+        else
+            passed = false
+            local extra_info = string.format("Test %s unexpectedly passed (should fail)", opt.name)
+            if opt.errors and #opt.errors > 0 then
+                opt.errors = opt.errors .. "\n" .. extra_info
+            else
+                opt.errors = extra_info
+            end
+        end
+    end
+
+    return passed
 end
 
 -- test target
@@ -309,6 +324,7 @@ function _run_tests(tests)
                 name = testinfo.name,
                 passed = passed,
                 spent = spent,
+                should_fail = testinfo.should_fail or false,
                 stdout = testinfo.stdout,
                 stderr = testinfo.stderr,
                 errors = testinfo.errors})
@@ -331,24 +347,91 @@ function _run_tests(tests)
     -- generate report
     spent = os.mclock() - spent
     local passed_rate = math.floor(report.passed * 100 / report.total)
+
+    local failed_tests = {}
+    local expected_failures = {}
+    local unexpected_passes = {}
+
     print("")
     print("report of tests:")
     for idx, testinfo in ipairs(report.tests) do
-        local status_color = testinfo.passed and "${color.success}" or "${color.failure}"
-        local progress_format = status_color .. theme.get("text.build.progress_format") .. ":${clear} "
+        -- Result label and color logic
+        local result_label
+        local result_color
+
+        if testinfo.should_fail then
+            if testinfo.passed then
+                table.insert(expected_failures, testinfo.name)
+                result_label = "expected failure"
+                result_color = "${color.warning}"
+            else
+                table.insert(unexpected_passes, testinfo.name)
+                result_label = "unexpected pass"
+                result_color = "${color.failure}"
+            end
+        else
+            if testinfo.passed then
+                result_label = "passed"
+                result_color = "${color.success}"
+            else
+                result_label = "failed"
+                result_color = "${color.failure}"
+                table.insert(failed_tests, testinfo.name)
+            end
+        end
+
+        local progress_format = result_color .. theme.get("text.build.progress_format") .. ":${clear} "
         if option.get("verbose") or option.get("diagnosis") then
             progress_format = progress_format .. "${dim}"
         end
+
+        -- Build aligned output line
         local padding = maxwidth - #testinfo.name
+        local filler = string.rep(".", padding)
         local progress_percent = math.floor(idx * 100 / #report.tests)
-        cprint(progress_format .. "%s%s .................................... " .. status_color .. "%s${clear} ${bright}%0.3fs",
-            progress_percent, testinfo.name, (" "):rep(padding), testinfo.passed and "passed" or "failed", testinfo.spent / 1000)
+        cprint(progress_format .. "%s %s " .. result_color .. "%s${clear} ${bright}%0.3fs",
+            progress_percent, testinfo.name, filler, result_label, testinfo.spent / 1000)
+
         _show_output(testinfo, "stdout")
         _show_output(testinfo, "stderr")
         _show_output(testinfo, "errors")
     end
-    cprint("${color.success}%d%%${clear} tests passed, ${color.failure}%d${clear} tests failed out of ${bright}%d${clear}, spent ${bright}%0.3fs",
-        passed_rate, report.total - report.passed, report.total, spent / 1000)
+
+    -- Print the summary
+    local summary = string.format("\n${color.success}%d%%%%${clear} tests passed, ${color.failure}%d${clear} test(s) failed", passed_rate, #failed_tests)
+    if #unexpected_passes > 0 then
+        summary = summary .. string.format(", ${color.failure}%d unexpected pass(es)${clear}", #unexpected_passes)
+    end
+    if #expected_failures > 0 then
+        summary = summary .. string.format(", ${color.warning}%d${clear} expected failure(s)", #expected_failures)
+    end
+
+    summary = summary .. string.format(" out of ${bright}%d${clear}, spent ${bright}%0.3fs", report.total, spent / 1000)
+    cprint(summary)
+    if #failed_tests > 0 or #expected_failures > 0 or #unexpected_passes > 0 then
+        cprint("Detailed summary:")
+    end
+    if #failed_tests > 0 then
+        cprint("${color.failure}Failed tests:${clear}")
+        for _, name in ipairs(failed_tests) do
+            print(" - " .. name)
+        end
+    end
+
+    if #unexpected_passes > 0 then
+        cprint("${color.failure}Unexpected passes:${clear}")
+        for _, name in ipairs(unexpected_passes) do
+            print(" - " .. name)
+        end
+    end
+
+    if #expected_failures > 0 then
+        cprint("${color.warning}Expected failures:${clear}")
+        for _, name in ipairs(expected_failures) do
+            print(" - " .. name)
+        end
+    end
+
     local return_zero = project.policy("test.return_zero_on_failure")
     if not return_zero and report.passed < report.total then
         raise()
