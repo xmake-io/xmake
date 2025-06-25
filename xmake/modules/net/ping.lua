@@ -49,10 +49,20 @@ end
 
 -- using curl to ping host
 function _ping_via_curl(curl, host)
-    local data = try { function () return os.iorunv(curl.program, {"-o", os.nuldev(), "-s", "-w", "%{time_total}", "--max-time", "1", host}) end }
+    local data, dt = try { function ()
+        local t = os.mclock()
+        local outdata = os.iorunv(curl.program, {"-o", os.nuldev(), "-s", "-w", "%{time_total}", "--max-time", "1", host})
+        t = os.mclock() - t
+        return outdata, t
+    end }
     local timeval = 65535
     if data then
-        timeval = tonumber(data:trim()) * 1000
+        local t = tonumber(data:trim())
+        if t then
+            timeval = t * 1000
+        else
+            timeval = dt
+        end
     end
     return timeval
 end
