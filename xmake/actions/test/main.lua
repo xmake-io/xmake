@@ -398,18 +398,8 @@ function _run_tests(tests)
     end
 
     -- Print the summary
-    local summary = string.format("\n${color.success}%d%%%%${clear} tests passed, ${color.failure}%d${clear} test(s) failed", passed_rate, #failed_tests)
-    if #unexpected_passes > 0 then
-        summary = summary .. string.format(", ${color.failure}%d unexpected pass(es)${clear}", #unexpected_passes)
-    end
-    if #expected_failures > 0 then
-        summary = summary .. string.format(", ${color.warning}%d${clear} expected failure(s)", #expected_failures)
-    end
-
-    summary = summary .. string.format(" out of ${bright}%d${clear}, spent ${bright}%0.3fs", report.total, spent / 1000)
-    cprint(summary)
     if #failed_tests > 0 or #expected_failures > 0 or #unexpected_passes > 0 then
-        cprint("Detailed summary:")
+        cprint("\nDetailed summary:")
     end
     if #failed_tests > 0 then
         cprint("${color.failure}Failed tests:${clear}")
@@ -431,6 +421,17 @@ function _run_tests(tests)
             print(" - " .. name)
         end
     end
+
+    local summary = string.format("\n${color.success}%d%%%%${clear} tests passed, ${color.failure}%d${clear} test(s) failed", passed_rate, #failed_tests)
+    if #unexpected_passes > 0 then
+        summary = summary .. string.format(", ${color.failure}%d${clear} unexpected pass(es)", #unexpected_passes)
+    end
+    if #expected_failures > 0 then
+        summary = summary .. string.format(", ${color.warning}%d${clear} expected failure(s)", #expected_failures)
+    end
+
+    summary = summary .. string.format(" out of ${bright}%d${clear}, spent ${bright}%0.3fs", report.total, spent / 1000)
+    cprint(summary)
 
     local return_zero = project.policy("test.return_zero_on_failure")
     if not return_zero and report.passed < report.total then
