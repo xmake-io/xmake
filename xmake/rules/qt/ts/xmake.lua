@@ -4,22 +4,36 @@ rule("qt.ts")
 
     on_config(function (target)
         import("lib.detect.find_file")
+        import("core.base.json")
 
         -- get source file
         local lupdate_argv = {"-no-obsolete"}
         local sourcefile_ts
+        local source_files = {}
         for _, sourcebatch in pairs(target:sourcebatches()) do
             if sourcebatch.rulename == "qt.ts" then
                 sourcefile_ts = sourcebatch.sourcefiles
             else
                 if sourcebatch.sourcefiles then
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        table.join2(lupdate_argv, path(sourcefile))
+                        table.insert(source_files, sourcefile)
                     end
                 end
             end
         end
         if sourcefile_ts then
+            -- save source files
+            source_files = table.unique(source_files)
+            local json_data = {
+                projectFile = "",
+                sources = source_files
+            }
+
+            local json_path = path.join(target:autogendir(), "rules", "qt", "ts", "sources.json")
+            json.savefile(json_path, json_data)
+
+            table.join2(lupdate_argv, {"-project", path(json_path)})
+
             -- get lupdate and lrelease
             local qt = assert(target:data("qt"), "qt not found!")
 
