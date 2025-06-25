@@ -23,8 +23,8 @@ import("core.cache.detectcache")
 import("lib.detect.find_tool")
 import("async.runjobs")
 
--- ping host
-function _ping(ping, host)
+-- using ping to ping host
+function _ping_via_ping(ping, host)
     local data = nil
     if is_host("windows") then
         data = try { function () return os.iorun("%s -n 1 -w 1000 %s", ping.program, host) end }
@@ -47,6 +47,45 @@ function _ping(ping, host)
     return timeval
 end
 
+-- using curl to ping host
+function _ping_via_curl(curl, host)
+    local data = try { function () return os.iorunv(curl.program, {"-o", os.nuldev(), "-s", "-w", "%{time_total}", "--max-time", "1", host}) end }
+    local timeval = 65535
+    if data then
+        timeval = tonumber(data:trim()) * 1000
+    end
+    return timeval
+end
+
+-- using wget to ping host
+function _ping_via_wget(wget, host)
+    local data = try { function ()
+        local t = os.mclock()
+        os.runv(wget.program, {"-O", os.nuldev(), "--timeout=1", host})
+        t = os.mclock() - t
+        return t
+    end }
+    local timeval = 65535
+    if data then
+        timeval = data
+    end
+    return timeval
+end
+
+-- ping host
+-- @see https://github.com/xmake-io/xmake/issues/6579
+function _ping(ping, host)
+    local routers = {
+        ping = _ping_via_ping,
+        curl = _ping_via_curl,
+        wget = _ping_via_wget
+    }
+    local router = routers[ping.name] or _ping_via_ping
+    if router then
+        return router(ping, host)
+    end
+end
+
 -- send ping to hosts
 --
 -- @param hosts     the hosts
@@ -55,9 +94,9 @@ end
 -- @return          the time or -1
 --
 function main(hosts, opt)
-
     opt = opt or {}
-    local ping = find_tool("ping", opt)
+
+    local ping = find_tool("curl", opt) or find_tool("wget") or find_tool("ping", opt)
     if not ping then
         return {}
     end
