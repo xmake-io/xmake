@@ -51,8 +51,10 @@ end
 function _ping_via_curl(curl, host)
     local data, dt = try { function ()
         local t = os.mclock()
-        local outdata = os.iorunv(curl.program, {"-o", os.nuldev(), "-s", "-w", "%{time_total}", "--max-time", "1", host})
+        local tmpfile = os.tmpfile()
+        local outdata = os.iorunv(curl.program, {"-o", tmpfile, "-s", "-w", "%{time_total}", "--max-time", "1", host})
         t = os.mclock() - t
+        os.tryrm(tmpfile)
         return outdata, t
     end }
     local timeval = 65535
