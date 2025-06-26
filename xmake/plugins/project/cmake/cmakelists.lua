@@ -31,6 +31,7 @@ import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("private.utils.target", {alias = "target_utils"})
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
+import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
 import("rules.c++.modules.support", {alias = "module_support", rootdir = os.programdir()})
 
 -- get cmake version
@@ -348,7 +349,8 @@ function _add_project(cmakelists, outputdir)
     -- set project name
     local project_name = project.name()
     if not project_name then
-        for _, target in table.orderpairs(project.targets()) do
+        local project_targets = target_utils.get_project_targets()
+        for _, target in table.orderpairs(project_targets) do
             project_name = target:name()
         end
     end
@@ -1389,7 +1391,8 @@ function _generate_cmakelists(cmakelists, outputdir)
     _add_project(cmakelists, outputdir)
 
     -- add targets
-    for _, target in table.orderpairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for _, target in table.orderpairs(project_targets) do
         _add_target(cmakelists, target, outputdir)
     end
 end

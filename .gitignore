@@ -5,6 +5,7 @@
 .xmake/
 build/
 makefile
+Makefile
 
 # gcc cache
 gcm.cache

@@ -40,6 +40,7 @@ import("private.action.run.runenvs")
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("private.utils.batchcmds")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
+import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
 
 function _translate_path(dir, vcxprojdir)
     if dir == nil then
@@ -436,7 +437,8 @@ function make(outputdir, vsinfo)
             os.cd(project.directory())
 
             -- save targets
-            for targetname, target in table.orderpairs(project.targets()) do
+            local project_targets = target_utils.get_project_targets()
+            for targetname, target in table.orderpairs(project_targets) do
 
                 -- make target with the given mode and arch
                 targets[targetname] = targets[targetname] or {}

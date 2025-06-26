@@ -29,6 +29,7 @@ import("lib.detect.find_tool")
 import("lib.detect.find_toolname")
 import("core.tools.cl.parse_include")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
+import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
 
 -- this sourcebatch is built?
 function _sourcebatch_is_built(sourcebatch)
@@ -420,21 +421,22 @@ function _add_build_for_targets(ninjafile, outputdir)
     -- add build rule for generator
     _add_build_for_generator(ninjafile, outputdir)
 
+    local project_targets = target_utils.get_project_targets()
     -- TODO
     -- disable precompiled header first
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         target:set("pcheader", nil)
         target:set("pcxxheader", nil)
     end
 
     -- build targets
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         _add_build_for_target(ninjafile, target, outputdir)
     end
 
     -- build default
     local default = ""
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in pairs(project_targets) do
         if target:is_default() then
             default = default .. " " .. targetname
         end
@@ -443,7 +445,7 @@ function _add_build_for_targets(ninjafile, outputdir)
 
     -- build all
     local all = ""
-    for targetname, _ in pairs(project.targets()) do
+    for targetname, _ in pairs(project_targets) do
         all = all .. " " .. targetname
     end
     ninjafile:print("build all: phony%s\n", all)
