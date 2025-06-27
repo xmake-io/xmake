@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* [#6592](https://github.com/xmake-io/xmake/pull/6592): Fix objects only links
+
 ## v3.0.0
 
 ### New features
@@ -1987,6 +1991,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* [#6592](https://github.com/xmake-io/xmake/pull/6592): 修复 object 目标的链接问题
 
 ## v3.0.0
 
