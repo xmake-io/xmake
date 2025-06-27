@@ -200,7 +200,7 @@ function _write_section_XCBuildConfiguration(info, lines)
             elseif v == false then
                 string_value = "NO"
             elseif type(v) == "string" then
-                string_value = "\"" .. v .. "\""
+                string_value = v
             elseif type(v) == "number" then
                 string_value = tostring(v)
             end

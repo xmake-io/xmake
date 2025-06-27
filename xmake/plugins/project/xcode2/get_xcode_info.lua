@@ -80,8 +80,15 @@ function _add_XCBuildConfiguration(xcinfo, mode, target)
         end
         if is_app_bundle then
             obj.buildSettings.GENERATE_INFOPLIST_FILE = true
-            obj.buildSettings.PRODUCT_NAME = "$(TARGET_NAME)"
+            obj.buildSettings.PRODUCT_NAME = "\"$(TARGET_NAME)\""
         end
+    else
+        -- This is for root project.
+        obj.buildSettings.SUPPORTED_PLATFORMS = "\"macosx iphoneos\""
+        obj.buildSettings.SDKROOT = "macosx"
+        obj.buildSettings["\"SDKROOT[sdk=macosx*]\""] = "macosx"
+        obj.buildSettings["\"SDKROOT[sdk=iphoneos]\""] = "iphoneos"
+
     end
     local uuid = xcinfo:gen_uuid()
     xcinfo.sections.XCBuildConfiguration = xcinfo.sections.XCBuildConfiguration or {}
