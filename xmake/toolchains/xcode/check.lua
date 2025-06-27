@@ -57,7 +57,11 @@ function main(toolchain)
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
         config.set("xcode_mobile_provision", xcode.mobile_provision, {force = true, readonly = true})
         config.set("xcode_codesign_identity", xcode.codesign_identity, {force = true, readonly = true})
-        cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
+        if xcode.sdkdir then
+            cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
+        else
+            cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
+        end
         if xcode.codesign_identity then
             cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
         else
