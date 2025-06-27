@@ -26,7 +26,7 @@ function test_vsxmake(t)
     -- create sln & vcxproj
     local vs = config.get("vs")
     local vstype = "vsxmake" .. vs
-    os.execv("xmake", {"project", "-k", vstype, "-a", arch})
+    os.execv("xmake", {"project", "-vD", "-k", vstype, "-a", arch})
     os.cd(vstype)
 
     -- run msbuild
