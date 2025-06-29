@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.project")
 
 -- does this flag belong to this tool?
 -- @see https://github.com/xmake-io/xmake/issues/3022
@@ -86,3 +87,12 @@ function translate_flags_in_tool(target, flagkind, flags)
     return result
 end
 
+-- get project targets
+function get_project_targets()
+    local selected_target = option.get("target")
+    if selected_target then
+        -- return table.wrap(project.target(selected_target))
+        return { project.target(selected_target) }
+    end
+    return project.targets()
+end

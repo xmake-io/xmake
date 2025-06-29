@@ -22,7 +22,7 @@
 import("core.project.project")
 import("vs200x_solution")
 import("vs200x_vcproj")
-import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
+import("private.utils.target", {alias = "target_utils"})
 
 -- make vstudio project
 function make(outputdir, vsinfo)

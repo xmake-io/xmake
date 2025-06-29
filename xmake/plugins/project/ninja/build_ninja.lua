@@ -29,7 +29,7 @@ import("lib.detect.find_tool")
 import("lib.detect.find_toolname")
 import("core.tools.cl.parse_include")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
-import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
+import("private.utils.target", {alias = "target_utils"})
 
 -- this sourcebatch is built?
 function _sourcebatch_is_built(sourcebatch)

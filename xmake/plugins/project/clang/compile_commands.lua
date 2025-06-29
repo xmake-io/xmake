@@ -27,8 +27,8 @@ import("core.project.project")
 import("core.language.language")
 import("private.utils.batchcmds")
 import("private.utils.executable_path")
+import("private.utils.target", {alias = "target_utils"})
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
-import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
 import("actions.test.main", {rootdir = os.programdir(), alias = "test_action"})
 
 -- escape path

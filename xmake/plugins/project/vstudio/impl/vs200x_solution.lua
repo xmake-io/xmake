@@ -21,7 +21,7 @@
 -- imports
 import("core.project.project")
 import("vsfile")
-import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
+import("private.utils.target", {alias = "target_utils"})
 
 -- make header
 function _make_header(slnfile, vsinfo)

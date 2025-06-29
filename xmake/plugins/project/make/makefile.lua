@@ -28,7 +28,7 @@ import("core.platform.platform")
 import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
-import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
+import("private.utils.target", {alias = "target_utils"})
 
 -- tranlate path
 function _translate_path(filepath, outputdir)

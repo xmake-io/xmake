@@ -22,7 +22,7 @@
 import("core.tool.compiler")
 import("core.project.project")
 import("core.language.language")
-import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
+import("private.utils.target", {alias = "target_utils"})
 
 -- make the object
 function _make_object(target, flags, sourcefile, objectfile)

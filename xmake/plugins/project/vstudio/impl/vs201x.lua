@@ -40,7 +40,7 @@ import("private.action.run.runenvs")
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("private.utils.batchcmds")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
-import("plugins.project.utils.target_utils", {rootdir = os.programdir()})
+import("private.utils.target", {alias = "target_utils"})
 
 function _translate_path(dir, vcxprojdir)
     if dir == nil then
