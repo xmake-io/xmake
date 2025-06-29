@@ -1,6 +1,6 @@
 inherit("test_base")
 
-CLANG_MIN_VER = "18"
+CLANG_MIN_VER = is_subhost("windows") and "19" or "18"
 GCC_MIN_VER = "13"
 MSVC_MIN_VER = "14.30"
 

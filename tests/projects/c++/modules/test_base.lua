@@ -3,7 +3,7 @@ import("core.base.semver")
 import("core.tool.toolchain")
 import("utils.ci.is_running", {alias = "ci_is_running"})
 
-CLANG_MIN_VER = "17"
+CLANG_MIN_VER = is_subhost("windows") and "19" or "17"
 CLANG_CL_MIN_VER = "19"
 GCC_MIN_VER = "11"
 MSVC_MIN_VER = "14.29"

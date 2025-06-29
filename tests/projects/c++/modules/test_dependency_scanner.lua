@@ -1,7 +1,7 @@
 inherit("test_base")
 import("utils.ci.is_running", {alias = "ci_is_running"})
 
-CLANG_MIN_VER = "17"
+CLANG_MIN_VER = is_subhost("windows") and "19" or "17"
 GCC_MIN_VER = "11"
 MSVC_MIN_VER = "14.29"
 
