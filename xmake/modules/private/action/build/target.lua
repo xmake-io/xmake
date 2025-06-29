@@ -92,8 +92,27 @@ function _match_sourcebatches(target, filepatterns)
     end
 end
 
--- add targetjobs and deps orders
-function _add_targetjobs_orders(jobgraph, target, dep, opt)
+-- add plain orders for targetjobs and deps
+function _add_targetjobs_plain_orders(jobgraph, target, dep, opt)
+    local jobname, jobname_dep
+    local job_kind = opt.job_kind
+    if job_kind == "build" then
+        jobname = target:fullname() .. "/link"
+        jobname_dep = dep:fullname() .. "/link"
+        if not jobgraph:has(jobname) then
+            jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
+        end
+        if not jobgraph:has(jobname_dep) then
+            jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
+        end
+    end
+    if jobname and jobname_dep and jobgraph:has(jobname) and jobgraph:has(jobname_dep) then
+        jobgraph:add_orders(jobname_dep, jobname)
+    end
+end
+
+-- add deep orders for targetjobs and deps
+function _add_targetjobs_deep_orders(jobgraph, target, dep, opt)
     local jobname, jobname_dep
     local job_kind = opt.job_kind
     if dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false then
@@ -102,15 +121,6 @@ function _add_targetjobs_orders(jobgraph, target, dep, opt)
         -- build.across_targets_in_parallel is deprecated
         if dep:policy("build.across_targets_in_parallel") == false then
             wprint("policy(\"build.across_targets_in_parallel\") has been deprecated, please use policy(\"build.fence\") instead of it.")
-        end
-    elseif job_kind == "build" then
-        jobname = target:fullname() .. "/link"
-        jobname_dep = dep:fullname() .. "/link"
-        if not jobgraph:has(jobname) then
-            jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
-        end
-        if not jobgraph:has(jobname_dep) then
-            jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
         end
     end
     if jobname and jobname_dep and jobgraph:has(jobname) and jobgraph:has(jobname_dep) then
@@ -352,7 +362,13 @@ function add_targetjobs_and_deps(jobgraph, target, targetrefs, opt)
         for _, depname in ipairs(target:get("deps")) do
             local dep = project.target(depname, {namespace = target:namespace()})
             add_targetjobs_and_deps(jobgraph, dep, targetrefs, opt)
-            _add_targetjobs_orders(jobgraph, target, dep, opt)
+            _add_targetjobs_plain_orders(jobgraph, target, dep, opt)
+        end
+
+        -- we need to pass to the whole dependency chain
+        -- @see https://github.com/xmake-io/xmake/issues/6586
+        for _, dep in ipairs(target:orderdeps()) do
+            _add_targetjobs_deep_orders(jobgraph, target, dep, opt)
         end
     end
 end
