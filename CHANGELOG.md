@@ -5,6 +5,7 @@
 ### Bugs fixed
 
 * [#6592](https://github.com/xmake-io/xmake/pull/6592): Fix objects only links
+* [#6586](https://github.com/xmake-io/xmake/issues/6586): Fix build.fence policy
 
 ## v3.0.0
 
@@ -1995,6 +1996,7 @@
 ### Bugs 修复
 
 * [#6592](https://github.com/xmake-io/xmake/pull/6592): 修复 object 目标的链接问题
+* [#6586](https://github.com/xmake-io/xmake/issues/6586): 修复 build.fence 策略
 
 ## v3.0.0
 
