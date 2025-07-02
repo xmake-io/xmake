@@ -25,7 +25,6 @@ import("core.project.config")
 import("make.makefile")
 import("make.xmakefile")
 import("cmake.cmakelists")
-import("xcode.xcodeproj")
 import("ninja.build_ninja")
 import("vstudio.vs")
 import("vsxmake.vsxmake")
@@ -33,7 +32,7 @@ import("clang.compile_flags")
 import("clang.compile_commands")
 import("private.utils.statistics")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
-import("xcode2.xcodeproj2")
+import("xcode.xcodeproj")
 
 function makers()
     return {
@@ -43,7 +42,6 @@ function makers()
     ,   cmake            = cmakelists.make
     ,   cmakelists       = cmakelists.make
     ,   xcode            = xcodeproj.make
-    ,   xcode2           = xcodeproj2.make
     ,   ninja            = build_ninja.make
     ,   vs2002           = vs.make(2002)
     ,   vs2003           = vs.make(2003)

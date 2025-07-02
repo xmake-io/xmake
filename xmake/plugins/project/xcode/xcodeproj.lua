@@ -14,32 +14,25 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      ruki
+-- @author      JXMaster
 -- @file        xcodeproj.lua
 --
 
 -- imports
-import(".cmake.cmakelists")
-import("lib.detect.find_tool")
+import("get_xcode_info")
+import("pbxproj")
 
--- TODO maybe we need to implement it by myself, do not use cmake
 function make(outputdir)
 
-    -- check
-    assert(is_plat(os.host()), "only support host platform now!")
+    -- collect xcode info.
+    -- see get_xcode_info.lua file for detailed description
+    -- of the returned info table.
+    local info = get_xcode_info(outputdir)
 
-    -- find cmake
-    local cmake = assert(find_tool("cmake"), "we need cmake to generate xcode project!")
+    -- create xcode dir.
+    local project_bundle = path.join(info.project_dir, info.project_bundle)
+    os.mkdir(project_bundle)
 
-    -- get the cmakelists file
-    local cmakefile = path.join(outputdir, "CMakeLists.txt")
-    if not os.isfile(cmakefile) then
-        cmakelists.make(outputdir)
-    end
-    assert(os.isfile(cmakefile), "CMakeLists.txt not found!")
-
-    -- generate xcode project
-    local oldir = os.cd(os.projectdir())
-    os.vrunv(cmake.program, {"-G", "Xcode", cmakefile})
-    os.cd(oldir)
+    -- create .pbxproj file.
+    pbxproj(info)
 end
