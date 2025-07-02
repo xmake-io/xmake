@@ -39,6 +39,22 @@ function _get_project_modes()
     return ret_modes
 end
 
+-- tranlate path
+function _translate_path(filepath, outputdir)
+    filepath = path.translate(filepath)
+    if filepath == "" then
+        return ""
+    end
+    if path.is_absolute(filepath) then
+        if filepath:startswith(project.directory()) then
+            return path.relative(filepath, outputdir)
+        end
+        return filepath
+    else
+        return path.relative(path.absolute(filepath), outputdir)
+    end
+end
+
 function _add_PBXFileReference(xcinfo, file_info)
     local obj = {}
     obj.explicitFileType = file_info.explicitFileType
@@ -112,23 +128,30 @@ end
 
 function _add_PBXShellScriptBuildPhase(xcinfo, target)
     local obj = {}
-    obj.shellScript = [[
-cd \"]] .. os.projectdir() .. [[\"
-XMAKE_BIN=\"]] .. os.programfile() .. [[\"
+    local shellscript = {}
+    local projectdir = _translate_path(os.projectdir(), xcinfo.project_dir)
+    if projectdir ~= "." then
+        table.insert(shellscript, "cd " .. projectdir)
+    end
+    table.insert(shellscript, [[
+export XMAKE_PROGRAM_FILE=\"]] .. os.programfile() .. [[\"
+export XMAKE_PROGRAM_DIR=\"]] .. os.programdir() .. [[\"
+export XMAKE_COLORTERM=\"nocolor\"
+
 # Running xmake scripts.
-${XMAKE_BIN} f -y -m ${CONFIGURATION} -p ${PLATFORM_NAME} -a ${NATIVE_ARCH} -o ${BUILD_DIR}
-${XMAKE_BIN} build ${TARGET_NAME}\n# Running xmake install scripts.
-XMAKE_BUILD_DIR=${BUILD_DIR}/${PLATFORM_NAME}/${NATIVE_ARCH}/${CONFIGURATION}
+${XMAKE_PROGRAM_FILE} f -y -m ${CONFIGURATION} -p ${PLATFORM_NAME} -a ${NATIVE_ARCH} -o ${BUILD_DIR} || exit -1
+${XMAKE_PROGRAM_FILE} build ${TARGET_NAME} || exit -1
+
 # Copy files to build path.
-if test -e ${CONFIGURATION_BUILD_DIR}
-then
+XMAKE_BUILD_DIR=${BUILD_DIR}/${PLATFORM_NAME}/${NATIVE_ARCH}/${CONFIGURATION}
+if test -e ${CONFIGURATION_BUILD_DIR}; then
     rm -r ${CONFIGURATION_BUILD_DIR}/*
 fi
-if test -e ${XMAKE_BUILD_DIR}
-then
+if test -e ${XMAKE_BUILD_DIR}; then
     cp -r ${XMAKE_BUILD_DIR}/* ${CONFIGURATION_BUILD_DIR}
 fi
-]]
+]])
+    obj.shellScript = table.concat(shellscript, "\n")
     local uuid = xcinfo:gen_uuid()
     xcinfo.sections.PBXShellScriptBuildPhase = xcinfo.sections.PBXShellScriptBuildPhase or {}
     xcinfo.sections.PBXShellScriptBuildPhase[uuid] = obj
@@ -181,7 +204,7 @@ function _add_PBXNativeTarget(xcinfo, target_name, target)
             product_file.explicitFileType = "wrapper.application"
         else
             product_file.explicitFileType = "com.apple.product-type.tool"
-        end 
+        end
     end
     if is_app_bundle then
         product_file.name = target:filename() .. ".app"
