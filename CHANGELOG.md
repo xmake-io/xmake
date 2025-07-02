@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#4810](https://github.com/xmake-io/xmake/issues/4810): Add Native XCode project generator plugin
+
 ### Bugs fixed
 
 * [#6592](https://github.com/xmake-io/xmake/pull/6592): Fix objects only links
@@ -1992,6 +1996,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#4810](https://github.com/xmake-io/xmake/issues/4810): 添加新的原生 Xcode 工程生成插件
 
 ### Bugs 修复
 
