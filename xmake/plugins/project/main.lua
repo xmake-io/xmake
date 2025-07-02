@@ -33,6 +33,7 @@ import("clang.compile_flags")
 import("clang.compile_commands")
 import("private.utils.statistics")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
+import("xcode2.xcodeproj2")
 
 function makers()
     return {
@@ -42,6 +43,7 @@ function makers()
     ,   cmake            = cmakelists.make
     ,   cmakelists       = cmakelists.make
     ,   xcode            = xcodeproj.make
+    ,   xcode2           = xcodeproj2.make
     ,   ninja            = build_ninja.make
     ,   vs2002           = vs.make(2002)
     ,   vs2003           = vs.make(2003)
