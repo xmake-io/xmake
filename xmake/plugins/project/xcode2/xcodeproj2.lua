@@ -23,9 +23,9 @@ import("get_xcode_info")
 import("pbxproj")
 
 function make(outputdir)
-    
+
     -- collect xcode info.
-    -- see get_xcode_info.lua file for detailed description 
+    -- see get_xcode_info.lua file for detailed description
     -- of the returned info table.
     local info = get_xcode_info(outputdir)
 
@@ -35,5 +35,4 @@ function make(outputdir)
 
     -- create .pbxproj file.
     pbxproj(info)
-
 end
