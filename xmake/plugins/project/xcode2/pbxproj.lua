@@ -162,7 +162,7 @@ end
 function _write_section_PBXShellScriptBuildPhase(info, lines)
     table.insert(lines, "/* Begin PBXShellScriptBuildPhase section */")
     for uuid, obj in table.orderpairs(info.sections.PBXShellScriptBuildPhase) do
-        table.insert(lines, "\t\t" .. uuid .. " /* Run xmake Build Command */ = {")
+        table.insert(lines, "\t\t" .. uuid .. " /* Run Xmake Build Command */ = {")
         table.insert(lines, [[
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -173,7 +173,7 @@ function _write_section_PBXShellScriptBuildPhase(info, lines)
 			);
 			inputPaths = (
 			);
-			name = "xmake build";
+			name = "Xmake Build";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -257,7 +257,7 @@ function _write_pbxproj(info)
         write_section(info, lines)
     end
 
-    table.insert(lines, 
+    table.insert(lines,
 [[	};
 	rootObject = ]] .. info.root_object .. [[ /* Project object */;
 }]])
