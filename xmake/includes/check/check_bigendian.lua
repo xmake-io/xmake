@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2024, TBOOX Open Source Group.
+-- Copyright (C) 2024, Xmake Open Source Community.
 --
 -- @author      CarbeneHu
 -- @file        check_bigendian.lua
