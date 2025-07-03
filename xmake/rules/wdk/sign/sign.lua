@@ -94,7 +94,7 @@ function main(target, filepath, mode)
     if mode == "test" and (not certfile and not thumbprint and not store) then
         table.insert(argv, "/a")
         table.insert(argv, "/n")
-        table.insert(argv, "tboox.org(test)")
+        table.insert(argv, "xmake.io(test)")
         table.insert(argv, "/s")
         table.insert(argv, "PrivateCertStore")
     end

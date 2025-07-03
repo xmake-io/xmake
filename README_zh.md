@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://xmake.io/cn">
-    <img width="160" height="160" src="https://tboox.org/static/img/xmake/logo256c.png">
+    <img width="160" height="160" src="https://xmake.io/assets/img/logo.png">
   </a>
 
   <h1>xmake</h1>

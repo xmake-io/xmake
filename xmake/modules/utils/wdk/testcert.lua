@@ -62,7 +62,7 @@ function _install(wdk)
             if not os.isfile(tmpfile) then
                 os.cp(os.programfile(), tmpfile)
             end
-            os.vrunv(signtool, {"sign", "/v", "/a", "/s", "PrivateCertStore", "/n", "tboox.org(test)", tmpfile})
+            os.vrunv(signtool, {"sign", "/v", "/a", "/s", "PrivateCertStore", "/n", "xmake.io(test)", tmpfile})
             return true
         end
     }
@@ -78,7 +78,7 @@ function _install(wdk)
 
     -- get a test certificate
     local testcer = path.join(global.directory(), "sign", "test.cer")
-    local company = "tboox.org(test)"
+    local company = "xmake.io(test)"
 
     -- make a new test certificate @note need re-generate certificate when reinstalling
     local signdir = path.directory(testcer)

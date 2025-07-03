@@ -47,7 +47,7 @@ test_nq() {
 
 # print a LOGO!
 echo 'xmake, A cross-platform build utility based on Lua.   '
-echo 'Copyright (C) 2015-present Ruki Wang, tboox.org, xmake.io'
+echo 'Copyright (C) 2015-present Ruki Wang, https://xmake.io'
 echo '                         _                            '
 echo '    __  ___ __  __  __ _| | ______                    '
 echo '    \ \/ / |  \/  |/ _  | |/ / __ \                   '

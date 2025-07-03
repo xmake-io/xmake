@@ -29,7 +29,7 @@ function _show_version()
     cprint("${bright}xRepo %s/xmake, A cross-platform C/C++ package manager based on Xmake.", xmake.version())
 
     -- show copyright
-    cprint("Copyright (C) 2015-present Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}")
+    cprint("Copyright (C) 2015-present Ruki Wang, ${underline}https://xmake.io${clear}")
     print("")
 
     -- show logo
