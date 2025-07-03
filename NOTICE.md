@@ -1,7 +1,7 @@
 A cross-platform build utility based on Lua
-Copyright 2015-present The TBOOX Open Source Group
+Copyright 2015-present, The Xmake Open Source Community
 
-This product includes software developed by The TBOOX Open Source Group (https://tboox.org/).
+This product includes software developed by The Xmake Open Source Community (https://xmake.io/).
 
 -------------------------------------------------------------------------------
 

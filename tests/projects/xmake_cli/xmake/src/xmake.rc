@@ -22,11 +22,11 @@ BEGIN
         BLOCK "000004B0"
         BEGIN
             VALUE "Comments", "A cross-platform build utility based on Lua\nwebsite: https://xmake.io"
-            VALUE "CompanyName", "The TBOOX Open Source Group"
+            VALUE "CompanyName", "The Xmake Open Source Community"
             VALUE "FileDescription", "XMake build utility"
             VALUE "FileVersion", XM_CONFIG_VERSION "+" STR(XM_CONFIG_VERSION_BUILD)
             VALUE "InternalName", "xmake"
-            VALUE "LegalCopyright", "Copyright (C) 2015-present Ruki Wang, tboox.org, xmake.io"
+            VALUE "LegalCopyright", "Copyright (C) 2015-present Ruki Wang, https://xmake.io"
             VALUE "LegalTrademarks", ""
             VALUE "OriginalFilename", "xmake.exe"
             VALUE "ProductName", "XMake"

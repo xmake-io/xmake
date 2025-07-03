@@ -16,7 +16,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-2020, TBOOX Open Source Group.
+-- Copyright (C) 2015-2020, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        desktop.lua
