@@ -132,8 +132,28 @@ function _get_saved_jobdeps_for(buildfilejob)
     return jobdeps
 end
 
+function _in_project_generator()
+    local memcache = support.memcache()
+    local in_project_generator = memcache:get("in_project_generator")
+    if in_project_generator == nil then
+        local val = os.getenv("XMAKE_IN_PROJECT_GENERATOR")
+        if val and val ~= "" then
+            in_project_generator = true
+        end
+        in_project_generator = in_project_generator or false
+        memcache:set("in_project_generator", in_project_generator)
+    end
+    return in_project_generator
+end
+
 -- should we build this module or headerunit ?
 function should_build(target, module)
+
+    -- if we are generating project files, we always need to generate all build commands.
+    -- @see https://github.com/xmake-io/xmake/issues/6600
+    if _in_project_generator() then
+        return true
+    end
 
     profiler.enter(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
     local memcache = support.memcache()
