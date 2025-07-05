@@ -91,6 +91,16 @@ function main(target)
             -- we need to add includedirs to support import modules for golang
             _add_export_value(target, "includedirs", path.directory(targetfile))
         end
+
+        if target:rule("rust") then
+            local cratetype = target:values("rust.cratetype")
+            -- only bin, lib, rlib, dylib can make use of --extern CRATE[=PATH]
+            if cratetype ~= "staticlib" and cratetype ~= "cdylib" then
+                local cratename = target:values("rust.cratename") or target:name()
+                local extern_crate_opt = string.format('--extern %s=%s', cratename, target:targetfile())
+                _add_export_value(target, "rcldflags", extern_crate_opt)
+            end
+        end
     end
 
     -- we export all links and linkdirs in self/packages/options to the parent target by default
