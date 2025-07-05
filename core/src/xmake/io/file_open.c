@@ -192,10 +192,14 @@ tb_int_t xm_io_file_open(lua_State* lua)
     case 'r': default: mode = TB_FILE_MODE_RO; break;
     }
 
+    // update file?
+    tb_bool_t update = !!tb_strchr(modestr, '+');
+    if (update && mode == TB_FILE_MODE_RO)
+        mode = TB_FILE_MODE_RW;
+
     // get file encoding
     tb_long_t       bomoff = 0;
     tb_stream_ref_t stream = tb_null;
-    tb_bool_t       update = !!tb_strchr(modestr, '+');
     tb_size_t       encoding = XM_IO_FILE_ENCODING_UNKNOWN;
     if (modestr[1] == 'b' || (update && modestr[2] == 'b'))
         encoding = XM_IO_FILE_ENCODING_BINARY;
