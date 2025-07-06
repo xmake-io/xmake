@@ -97,6 +97,18 @@ rule("rust.build")
     end)
     on_build("build.target")
 
+    before_run(function (target)
+        import("lib.detect.find_tool")
+
+        -- Make sure libstd shared library is available
+        local rc = find_tool("rustc")
+        assert(rc, "rustc not found. Failed to add libstd in env")
+        local outdata, errdata = os.iorunv(rc.program, {"--print=sysroot"})
+        assert(not errdata or errdata == "", "failed to find rust sysroot:\n" .. errdata)
+        local libstd = path.join(outdata:trim(), "bin")
+        os.addenvs({PATH = libstd, LD_LIBRARY_PATH = libstd, DYLD_LIBRARY_PATH = libstd})
+    end)
+
 rule("rust")
     add_deps("rust.build")
     add_deps("utils.inherit.links")
