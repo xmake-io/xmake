@@ -49,7 +49,7 @@ rule("qt.ui")
         target:data_set("qt.uic", uic)
     end)
 
-    before_buildcmd_file(function (target, batchcmds, sourcefile_ui, opt)
+    on_preparecmd_file(function (target, batchcmds, sourcefile_ui, opt)
         local uic = target:data("qt.uic")
         local headerfile_dir = path.join(target:autogendir(), "rules", "qt", "ui")
         local headerfile_ui = path.join(headerfile_dir, "ui_" .. path.basename(sourcefile_ui) .. ".h")

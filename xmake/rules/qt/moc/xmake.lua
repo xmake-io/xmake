@@ -22,7 +22,7 @@ rule("qt.moc")
     add_deps("qt.env")
     add_orders("qt.ui", "qt.moc")
     set_extensions(".h", ".hpp")
-    before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+    on_preparecmd_file(function (target, batchcmds, sourcefile, opt)
         import("core.tool.compiler")
         import("lib.detect.find_file")
 
