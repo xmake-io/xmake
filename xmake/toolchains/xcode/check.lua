@@ -62,16 +62,18 @@ function main(toolchain)
         else
             cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
         end
-        if xcode.codesign_identity then
-            cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
-        else
-            cprint("checking for Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
-        end
-        if toolchain:is_plat("iphoneos") then
-            if xcode.mobile_provision then
-                cprint("checking for Mobile Provision of Xcode ... ${color.success}%s", xcode.mobile_provision)
+        if option.get("verbose") then
+            if xcode.codesign_identity then
+                cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
             else
-                cprint("checking for Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
+                cprint("checking for Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
+            end
+            if toolchain:is_plat("iphoneos") then
+                if xcode.mobile_provision then
+                    cprint("checking for Mobile Provision of Xcode ... ${color.success}%s", xcode.mobile_provision)
+                else
+                    cprint("checking for Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
+                end
             end
         end
     end
