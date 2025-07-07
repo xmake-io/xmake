@@ -96,9 +96,7 @@ function main(target)
             local cratetype = target:values("rust.cratetype")
             -- only bin, lib, rlib, dylib can make use of --extern CRATE[=PATH]
             if cratetype ~= "staticlib" and cratetype ~= "cdylib" then
-                local extern_crate_opt = rustc:nf_framework(target:targetfile())
-                local extern_crate = table.concat(extern_crate_opt, " ")
-                _add_export_value(target, "rcflags", extern_crate)
+                _add_export_value(target, "frameworks", target:targetfile())
             end
         end
     end
