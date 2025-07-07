@@ -97,16 +97,18 @@ rule("rust.build")
     end)
     on_build("build.target")
 
-    before_run(function (target)
+    on_config(function (target)
         import("lib.detect.find_tool")
 
-        -- Make sure libstd shared library is available
+        -- Ensure libstd shared library is available when running
         local rc = find_tool("rustc")
         assert(rc, "rustc not found. Failed to add libstd in env")
         local outdata, errdata = os.iorunv(rc.program, {"--print=sysroot"})
         assert(not errdata or errdata == "", "failed to find rust sysroot:\n" .. errdata)
         local libstd = path.join(outdata:trim(), "bin")
-        os.addenvs({PATH = libstd, LD_LIBRARY_PATH = libstd, DYLD_LIBRARY_PATH = libstd})
+        target:add("runenvs", "PATH", libstd)
+        target:add("runenvs", "LD_LIBRARY_PATH", libstd)
+        target:add("runenvs", "DYLD_LIBRARY_PATH", libstd)
     end)
 
 rule("rust")
