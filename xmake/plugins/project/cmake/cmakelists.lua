@@ -40,6 +40,8 @@ function _get_cmake_version()
         local cmake = find_tool("cmake", {version = true})
         if cmake and cmake.version then
             cmake_version = semver.new(cmake.version)
+        else
+            cmake_version = semver.new("3.23")
         end
         _g.cmake_version = cmake_version
     end
