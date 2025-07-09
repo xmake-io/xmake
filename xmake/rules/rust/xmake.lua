@@ -105,10 +105,17 @@ rule("rust.build")
         assert(rc, "rustc not found. Failed to add libstd in env")
         local outdata, errdata = os.iorunv(rc.program, {"--print=sysroot"})
         assert(not errdata or errdata == "", "failed to find rust sysroot:\n" .. errdata)
-        local libstd = path.join(outdata:trim(), "bin")
-        target:add("runenvs", "PATH", libstd)
-        target:add("runenvs", "LD_LIBRARY_PATH", libstd)
-        target:add("runenvs", "DYLD_LIBRARY_PATH", libstd)
+        local rustc_sysroot = outdata:trim()
+        if target:is_plat("windows") then
+            local libstd = path.join(rustc_sysroot, "bin")
+            target:add("runenvs", "PATH", libstd)
+        elseif target:is_plat("macosx") then
+            local libstd = path.join(rustc_sysroot, "lib")
+            target:add("runenvs", "DYLD_LIBRARY_PATH", libstd)
+        else
+            local libstd = path.join(rustc_sysroot, "lib")
+            target:add("runenvs", "LD_LIBRARY_PATH", libstd)
+        end
     end)
 
 rule("rust")
