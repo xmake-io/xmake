@@ -266,9 +266,9 @@ function link(target, opt)
         local ld = target:tool("ld")
         assert(ld, "ld not found!")
         ld = ld:gsub("gcc$", "ld")
-        ld = ld:gsub("gcc-%d+", "ld")
+        ld = ld:gsub("gcc%-%d+$", "ld")
         ld = ld:gsub("g%+%+$", "ld")
-        ld = ld:gsub("g%+%+%-%d+", "ld")
+        ld = ld:gsub("g%+%+%-%d+$", "ld")
 
         -- link target.o
         local argv = {}
