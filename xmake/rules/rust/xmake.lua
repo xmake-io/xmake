@@ -32,6 +32,9 @@ rule("rust.cxxbridge")
 rule("rust.build")
     set_sourcekinds("rc")
     on_load(function (target)
+        -- set cratename
+        local cratename = target:values("rust.cratename") or target:name()
+        target:set("basename", cratename)
         -- set cratetype
         local cratetype = target:values("rust.cratetype")
         if cratetype == "staticlib" then
@@ -43,19 +46,32 @@ rule("rust.build")
             target:add("shflags", "--crate-type=cdylib", {force = true})
             target:add("shflags", "-C prefer-dynamic", {force = true})
         elseif target:is_static() then
+            cratetype = "lib"
+            target:set("values", "rust.cratetype", cratetype)
+            if is_plat("windows") then
+                target:set("prefixname", "lib")
+            end
             target:set("extension", ".rlib")
-            target:add("arflags", "--crate-type=lib", {force = true})
+            target:add("arflags", "--crate-type=" .. cratetype, {force = true})
             target:data_set("inherit.links.deplink", false)
         elseif target:is_shared() then
-            target:add("shflags", "--crate-type=dylib", {force = true})
+            cratetype = "dylib"
+            target:set("values", "rust.cratetype", cratetype)
+            target:add("shflags", "--crate-type=" .. cratetype, {force = true})
             -- fix cannot satisfy dependencies so `std` only shows up once
             -- https://github.com/rust-lang/rust/issues/19680
             --
             -- but it will link dynamic @rpath/libstd-xxx.dylib,
             -- so we can no longer modify and set other rpath paths
             target:add("shflags", "-C prefer-dynamic", {force = true})
+            -- don't add links and instead use --extern CRATE[=PATH]
+            -- also, it'll automatically link from linkdirs (-L) even if no --extern
+            -- https://github.com/xmake-io/xmake/issues/6604
+            target:data_set("inherit.links.deplink", false)
         elseif target:is_binary() then
-            target:add("ldflags", "--crate-type=bin", {force = true})
+            cratetype = "bin"
+            target:set("values", "rust.cratetype", cratetype)
+            target:add("ldflags", "--crate-type=" .. cratetype, {force = true})
         end
 
         -- set edition
@@ -80,6 +96,27 @@ rule("rust.build")
         end
     end)
     on_build("build.target")
+
+    on_config(function (target)
+        import("lib.detect.find_tool")
+
+        -- Ensure libstd shared library is available when running
+        local rc = find_tool("rustc")
+        assert(rc, "rustc not found. Failed to add libstd in env")
+        local outdata, errdata = os.iorunv(rc.program, {"--print=sysroot"})
+        assert(not errdata or errdata == "", "failed to find rust sysroot:\n" .. errdata)
+        local rustc_sysroot = outdata:trim()
+        if target:is_plat("windows") then
+            local libstd = path.join(rustc_sysroot, "bin")
+            target:add("runenvs", "PATH", libstd)
+        elseif target:is_plat("macosx") then
+            local libstd = path.join(rustc_sysroot, "lib")
+            target:add("runenvs", "DYLD_LIBRARY_PATH", libstd)
+        else
+            local libstd = path.join(rustc_sysroot, "lib")
+            target:add("runenvs", "LD_LIBRARY_PATH", libstd)
+        end
+    end)
 
 rule("rust")
     add_deps("rust.build")
