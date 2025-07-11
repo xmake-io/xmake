@@ -139,12 +139,14 @@ end
 
 -- get configs for windows
 function _get_configs_for_windows(configs, opt)
+    print("_get_configs_for_windows")
     local envs = {}
     opt = opt or {}
     local cmake_generator = opt.cmake_generator
     if cmake_generator and not cmake_generator:find("Visual Studio", 1, true) then
         return
     end
+    print("_get_configs_for_windows 111")
     table.insert(configs, "-A")
     if is_arch("x86", "i386") then
         table.insert(configs, "Win32")
@@ -168,10 +170,12 @@ function _get_configs_for_windows(configs, opt)
 
     -- use clang/clang-cl
     local cc = _get_buildenv("cc")
+    print("cc", cc)
     if cc and path.basename(cc):find("clang", 1, true) then
         envs.CMAKE_C_COMPILER = _translate_bin_path(cc)
     end
     local cxx = _get_buildenv("cxx")
+    print("cxx", cxx)
     if cxx and path.basename(cxx):find("clang", 1, true) then
         envs.CMAKE_CXX_COMPILER = _translate_bin_path(cxx)
     end
@@ -494,6 +498,7 @@ function _get_configs(opt)
 
     -- add build directory
     table.insert(configs, '..')
+    print(configs)
     return configs
 end
 
