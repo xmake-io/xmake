@@ -168,11 +168,11 @@ function _get_configs_for_windows(configs, opt)
 
     -- use clang/clang-cl
     local cc = _get_buildenv("cc")
-    if cc and path.basename(cc):find("clang", 1, true) and  then
+    if cc and path.basename(cc):find("clang", 1, true) then
         envs.CMAKE_C_COMPILER = _translate_bin_path(cc)
     end
     local cxx = _get_buildenv("cxx")
-    if cxx and path.basename(cxx):find("clang", 1, true) and  then
+    if cxx and path.basename(cxx):find("clang", 1, true) then
         envs.CMAKE_CXX_COMPILER = _translate_bin_path(cxx)
     end
 
