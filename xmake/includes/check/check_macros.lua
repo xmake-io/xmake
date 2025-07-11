@@ -38,14 +38,14 @@ function check_macros(definition, macros, opt)
                 table.insert(snippets, ([[
                 #if %s
                 #else
-                #   #error %s is not satisfied!
+                    #error %s is not satisfied!
                 #endif
                 ]]):format(macro, macro))
             else
                 table.insert(snippets, ([[
                 #if%s %s
                 #else
-                #   #error %s is not defined!
+                    #error %s is not defined!
                 #endif
                 ]]):format(opt.defined ~= false and "def" or "ndef", macro, macro))
             end
@@ -100,14 +100,14 @@ function configvar_check_macros(definition, macros, opt)
                 table.insert(snippets, ([[
                 #if %s
                 #else
-                #   #error %s is not satisfied!
+                    #error %s is not satisfied!
                 #endif
                 ]]):format(macro, macro))
             else
                 table.insert(snippets, ([[
                 #if%s %s
                 #else
-                #   #error %s is not defined!
+                    #error %s is not defined!
                 #endif
                 ]]):format(opt.defined ~= false and "def" or "ndef", macro, macro))
             end
