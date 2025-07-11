@@ -6,6 +6,7 @@ import("utils.ci.is_running", {alias = "ci_is_running"})
 function _gen_cmakelist()
     if not os.isfile("CMakeLists.txt") then
         os.vrunv("xmake project -k cmake")
+        io.cat("CMakelists.txt")
     end
 end
 

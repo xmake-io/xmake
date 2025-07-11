@@ -166,8 +166,9 @@ end
 -- Did the current cmake native support for c++ modules?
 function _can_native_support_for_cxxmodules()
     local cmake_minver = _get_cmake_minver()
-    print("_can_native_support_for_cxxmodules", cmake_version)
+    print("_can_native_support_for_cxxmodules", cmake_minver)
     if cmake_minver and cmake_minver:ge("3.28") then
+        print("_can_native_support_for_cxxmodules", true)
         return true
     end
 end
@@ -357,6 +358,7 @@ function _add_project(cmakelists, outputdir)
         end
     end
     if _can_native_support_for_cxxmodules() then
+        print("CMAKE_CXX_SCAN_FOR_MODULES")
         cmakelists:print("set(CMAKE_CXX_SCAN_FOR_MODULES ON)")
     end
     local languages = _get_project_languages()
