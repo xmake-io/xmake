@@ -43,6 +43,7 @@ function _get_cmake_version()
         end
         _g.cmake_version = cmake_version
     end
+    print("cmake_version", cmake_version)
     return cmake_version
 end
 
@@ -72,6 +73,7 @@ function _get_cmake_minver()
         end
         _g.cmake_minver = cmake_minver
     end
+    print("cmake_minver", cmake_minver)
     return cmake_minver
 end
 
@@ -164,6 +166,7 @@ end
 -- Did the current cmake native support for c++ modules?
 function _can_native_support_for_cxxmodules()
     local cmake_minver = _get_cmake_minver()
+    print("_can_native_support_for_cxxmodules", cmake_version)
     if cmake_minver and cmake_minver:ge("3.28") then
         return true
     end
