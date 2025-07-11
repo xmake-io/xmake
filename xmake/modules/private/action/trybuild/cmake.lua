@@ -129,19 +129,53 @@ function _get_cmake_system_processor()
     return os.subarch()
 end
 
+-- insert configs from envs
+function _insert_configs_from_envs(configs, envs, opt)
+    opt = opt or {}
+    for k, v in pairs(envs) do
+        table.insert(configs, "-D" .. k .. "=" .. v)
+    end
+end
+
 -- get configs for windows
 function _get_configs_for_windows(configs, opt)
+    local envs = {}
     opt = opt or {}
     local cmake_generator = opt.cmake_generator
-    if cmake_generator and not cmake_generator:find("Visual Studio", 1, true) then
-        return
+    if not cmake_generator or cmake_generator:find("Visual Studio", 1, true) then
+        table.insert(configs, "-A")
+        if is_arch("x86", "i386") then
+            table.insert(configs, "Win32")
+        elseif is_arch("arm64") then
+            table.insert(configs, "ARM64")
+        elseif is_arch("arm64ec") then
+            table.insert(configs, "ARM64EC")
+        elseif is_arch("arm.*") then
+            table.insert(configs, "ARM")
+        else
+            table.insert(configs, "x64")
+        end
+
+        local vs_toolset = config.get("vs_toolset")
+        if vs_toolset then
+            vs_toolset = toolchain_utils.get_vs_toolset_ver(vs_toolset)
+            if vs_toolset then
+                envs.CMAKE_GENERATOR_TOOLSET = vs_toolset
+            end
+        end
     end
-    table.insert(configs, "-A")
-    if is_arch("x86", "i386") then
-        table.insert(configs, "Win32")
-    else
-        table.insert(configs, "x64")
+
+    -- use clang/clang-cl
+    local cc = _get_buildenv("cc")
+    if cc and path.basename(cc):find("clang", 1, true) then
+        envs.CMAKE_C_COMPILER = _translate_bin_path(cc)
     end
+    local cxx = _get_buildenv("cxx")
+    if cxx and path.basename(cxx):find("clang", 1, true) then
+        envs.CMAKE_CXX_COMPILER = _translate_bin_path(cxx)
+    end
+
+    _insert_configs_from_envs(configs, envs, opt)
 end
 
 -- get configs for android
