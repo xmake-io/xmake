@@ -74,6 +74,5 @@ function main(t)
             end
             _build_with("clang", "19")
         end
-            
     end
 end
