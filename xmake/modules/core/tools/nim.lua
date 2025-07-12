@@ -141,6 +141,10 @@ function buildargv(self, sourcefiles, targetkind, targetfile, flags)
         end
         flags = flags_new
     end
+    if targetkind == "static" then
+        local targetname = path.basename(targetkind)
+        table.insert(flags_extra, "--nimMainPrefix:lib" .. targetname)
+    end
     return self:program(), table.join("c", flags, flags_extra, "-o:" .. targetfile, sourcefiles)
 end
 
