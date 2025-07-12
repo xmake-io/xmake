@@ -458,7 +458,7 @@ function _get_configs_for_windows(package, configs, opt)
         end
     end
 
-    -- use clang-cl
+    -- use clang-cl or clang
     if package:has_tool("cc", "clang", "clang_cl") then
         envs.CMAKE_C_COMPILER = _translate_bin_path(package:build_getenv("cc"))
     end
@@ -819,11 +819,15 @@ end
 function _get_default_flags(package, configs, buildtype, opt)
     -- The default flags are different for different platforms
     -- @see https://github.com/xmake-io/xmake-repo/pull/4038#issuecomment-2116489448
-    local cachekey = buildtype .. package:plat() .. package:arch()
+    local cachekey = buildtype .. package:plat() .. package:arch() .. package:build_getenv("cc") .. package:build_getenv("cxx")
     local cmake_default_flags = _g.cmake_default_flags and _g.cmake_default_flags[cachekey]
     if not cmake_default_flags then
         local tmpdir = path.join(os.tmpfile() .. ".dir", package:displayname(), package:mode())
         local dummy_cmakelist = path.join(tmpdir, "CMakeLists.txt")
+
+        -- set compiler
+        local cc_flag =  "-DCMAKE_C_COMPILER=" .. _translate_bin_path(package:build_getenv("cc"))
+        local cxx_flag =  "-DCMAKE_CXX_COMPILER=" .. _translate_bin_path(package:build_getenv("cxx"))
 
         -- About the minimum cmake version requirement
         -- @see https://github.com/xmake-io/xmake/pull/6032
@@ -849,7 +853,7 @@ function _get_default_flags(package, configs, buildtype, opt)
 
         local runenvs = opt.envs or buildenvs(package)
         local cmake = find_tool("cmake")
-        local _configs = table.join(configs, "-S " .. path.directory(dummy_cmakelist), "-B " .. tmpdir)
+        local _configs = table.join(configs, "-S " .. path.directory(dummy_cmakelist), "-B " .. tmpdir, cc_flag, cxx_flag)
         local outdata = try{ function() return os.iorunv(cmake.program, _configs, {envs = runenvs}) end}
         if outdata and outdata ~= "" then
             cmake_default_flags = {}
