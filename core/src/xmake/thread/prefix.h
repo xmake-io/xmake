@@ -12,40 +12,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Copyright (C) 2015-present, Xmake Open Source Community.
+ * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        poller_support.c
+ * @file        prefix.h
  *
  */
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * trace
- */
-#define TB_TRACE_MODULE_NAME    "poller_support"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#ifndef XM_THREAD_PREFIX_H
+#define XM_THREAD_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-#include "poller.h"
+#include "../prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
+ * types
  */
 
-// io.poller_support(events)
-tb_int_t xm_io_poller_support(lua_State* lua)
+// the thread type
+typedef struct __xm_thread_t
 {
-    // check
-    tb_assert_and_check_return_val(lua, 0);
+    tb_thread_ref_t handle;
+    tb_string_t     callback;
+    tb_string_t     callinfo;
 
-    // get events
-    tb_size_t events = (tb_size_t)luaL_checknumber(lua, 1);
+}xm_thread_t;
 
-    // support events for poller
-    lua_pushboolean(lua, tb_poller_support(xm_io_poller(lua), events));
-    return 1;
-}
+
+#endif
+
 
