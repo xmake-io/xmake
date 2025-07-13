@@ -227,7 +227,7 @@ function _get_cxxflags(package, opt)
     table.join2(result, package:config("cxxflags"))
     table.join2(result, package:config("cxflags"))
     if opt.cxxflags then
-        table.join2(result, opt.cflags)
+        table.join2(result, opt.cxxflags)
     end
     if opt.cxflags then
         table.join2(result, opt.cxflags)
