@@ -55,8 +55,8 @@ echo '     >  <  | \__/ | /_| |   <  ___/                   '
 echo '    /_/\_\_|_|  |_|\__ \|_|\_\____|                   '
 echo '                         by ruki, xmake.io            '
 echo '                                                      '
-echo '   👉  Manual: https://xmake.io/#/getting_started     '
-echo '   🙏  Donate: https://xmake.io/#/sponsor             '
+echo '   👉  Manual: https://xmake.io/guide/quick-start     '
+echo '   🙏  Donate: https://xmake.io/about/sponsor         '
 echo '                                                      '
 
 # has sudo?

@@ -503,8 +503,8 @@ function option.show_logo(logo, opt)
 
     -- define footer
     local footer = [[
-    ${point_right}  ${bright}Manual${clear}: ${underline}https://xmake.io/#/getting_started${clear}
-    ${pray}  ${bright}Donate${clear}: ${underline}https://xmake.io/#/sponsor${clear}
+    ${point_right}  ${bright}Manual${clear}: ${underline}https://xmake.io/guide/quick-start${clear}
+    ${pray}  ${bright}Donate${clear}: ${underline}https://xmake.io/about/sponsor${clear}
 ]]
 
     -- show footer
