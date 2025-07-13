@@ -470,7 +470,7 @@ target("app")
     add_files("exe/*.cpp")
 ```
 
-更多WDK驱动程序例子(umdf/kmdf/wdm)，见：[WDK工程例子](https://xmake.io/guide/project_examples?id=wdk%e9%a9%b1%e5%8a%a8%e7%a8%8b%e5%ba%8f)
+更多WDK驱动程序例子(umdf/kmdf/wdm)，见：[WDK工程例子](https://xmake.io/zh/examples/cpp/wdk.html)
 
 #### iOS/MacOS 应用程序
 

@@ -482,7 +482,7 @@ target("app")
     add_files("exe/*.cpp")
 ```
 
-For more WDK driver examples (UMDF/KMDF/WDM), please visit [WDK Program Examples](https://xmake.io/#/guide/project_examples?id=wdk-driver-program)
+For more WDK driver examples (UMDF/KMDF/WDM), please visit [WDK Program Examples](https://xmake.io/examples/cpp/wdk.html)
 
 ### Darwin Applications
 
