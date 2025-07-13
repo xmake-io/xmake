@@ -79,11 +79,11 @@ Although less precise, one can still understand Xmake in the following way:
 Xmake ≈ Make/Ninja + CMake/Meson + Vcpkg/Conan + distcc + ccache/sccache
 ```
 
-If you want to know more, please refer to: the [Documentation](https://xmake.io/guide/quick-start), [GitHub](https://github.com/xmake-io/xmake) or [Gitee](https://gitee.com/tboox/xmake). You are also welcome to join our [community](https://xmake.io/#/about/contact).
+If you want to know more, please refer to the [Documentation](https://xmake.io/guide/quick-start), [GitHub](https://github.com/xmake-io/xmake) or [Gitee](https://gitee.com/tboox/xmake). You are also welcome to join our [community](https://xmake.io/#/about/contact).
 
 The official Xmake repository can be found at [xmake-io/xmake-repo](https://github.com/xmake-io/xmake-repo).
 
-![](https://github.com/xmake-io/xmake-docs/raw/master/assets/img/index/xmake-basic-render.gif)
+![](https://github.com/xmake-io/xmake-docs/raw/master/docs/public/assets/img/index/xmake-basic-render.gif)
 
 ## Installation
 
@@ -373,15 +373,15 @@ Below is a diagram showing roughly the architecture of Xmake, and thus how it fu
 - [X] Support for real time compressed transfer of large files (lz4).
 - [X] Almost zero configuration cost, no shared filesystem required, for convenience and security.
 
-For more details see: [#274](https://github.com/xmake-io/xmake/issues/274)
+For more details see: [Distributed Compilation](https://xmake.io/guide/extras/distributed-compilation.html)
 
 ## Remote Compilation
 
-For more details see: [#622](https://github.com/xmake-io/xmake/issues/622)
+For more details see: [Remote Compilation](https://xmake.io/guide/extras/remote-compilation.html)
 
 ## Local/Remote Build Cache
 
-For more details see: [#622](https://github.com/xmake-io/xmake/issues/2371)
+For more details see: [Build Cache Acceleration](https://xmake.io/guide/extras/build-cache.html)
 
 ## Benchmark
 
@@ -591,7 +591,7 @@ $ xmake l
   }
 ```
 
-To see a list of bultin plugs, please visit [Builtin plugins](https://xmake.io/#/plugin/builtin_plugins).
+To see a list of builtin plugins, please visit [Builtin plugins](https://xmake.io/guide/extensions/builtin-plugins.html).
 
 Please download and install other plugins from the plugins repository [xmake-plugins](https://github.com/xmake-io/xmake-plugins).
 
@@ -668,9 +668,9 @@ with:
 
 ## Who is using Xmake?
 
-The list of people and projects who are using Xmake is available [here](https://xmake.io/#/about/who_is_using_xmake).
+The list of people and projects who are using Xmake is available [here](https://xmake.io/about/who_is_using_xmake.html).
 
-If you are using Xmake, you are welcome to submit your information to the above list through a PR, so that other users and the developers can gauge interest.  Ihis also let users to use xmake more confidently and give us motivation to continue to maintain it.
+If you are using Xmake, you are welcome to submit your information to the above list through a PR, so that other users and the developers can gauge interest.  This also lets users use xmake more confidently and gives us motivation to continue to maintain it.
 
 This will help the Xmake project and it's community grow stronger and expand!
 
@@ -696,6 +696,6 @@ This project exists thanks to all the people who have [contributed](CONTRIBUTING
 * [OpportunityLiu](https://github.com/OpportunityLiu): Improve cuda, tests and ci
 * [xq144](https://github.com/xq114): Improve `xrepo env shell`, and contribute a lot of packages to the [xmake-repo](https://github.com/xmake-io/xmake-repo) repository.
 * [star-hengxing](https://github.com/star-hengxing): Contribute a lot of packages to the [xmake-repo](https://github.com/xmake-io/xmake-repo) repository.
-* [Arthapz](https://github.com/Arthapz): Contribue new C++ Modules implementation.
+* [Arthapz](https://github.com/Arthapz): Contribute new C++ Modules implementation.
 * [SirLynix](https://github.com/SirLynix): Contributed many packages and let more people know about xmake.
 * `enderger`: Helped smooth out the edges on the English translation of the README
