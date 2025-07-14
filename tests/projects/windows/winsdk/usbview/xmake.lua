@@ -9,5 +9,5 @@ target("usbview")
 
     -- add files
     add_files("*.c", "*.rc")
-    add_files("xmlhelper.cpp", {rule = "win.sdk.dotnet"})
+    add_files("xmlhelper.cpp", {rules = "win.sdk.dotnet"})
 

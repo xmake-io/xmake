@@ -150,9 +150,9 @@ target("test")
     -- add files
     add_files("src/*.c|main2.c", {rules = {"stub0a", "stub0b"}})
     add_files("src/main2.c", {rules = {"stub0a", "stub0b", override = true}})
-    add_files("src/man/*.in",   {rule = "man"})
+    add_files("src/man/*.in",   {rules = "man"})
     add_files("src/index.md")
-    add_files("src/test.c.in",  {rule = "c code"})
+    add_files("src/test.c.in",  {rules = "c code"})
 
     before_build(function (target)
         print("target: before_build")
