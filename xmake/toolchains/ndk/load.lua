@@ -174,6 +174,7 @@ function main(toolchain)
         local sysroot_arch = sysroot_archs[arch]
 
         -- add sysroot flags
+        local sysroot_cflags_added = false
         local ndk_sysroot = toolchain:config("ndk_sysroot")
         if ndk_sysroot and os.isdir(ndk_sysroot) then
             local triple = _get_triple(arch)
@@ -186,22 +187,24 @@ function main(toolchain)
             toolchain:add("cflags",   flag_sysroot)
             toolchain:add("cxxflags", flag_sysroot)
             toolchain:add("asflags",  flag_sysroot)
-            toolchain:add("shflags",  flag_sysroot)
-            toolchain:add("ldflags",  flag_sysroot)
             toolchain:add("cflags",   flag_isystem)
             toolchain:add("cxxflags", flag_isystem)
             toolchain:add("asflags",  flag_isystem)
-        else
-            local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver))
-            if os.isdir(ndk_sdkdir) then
-                if sysroot_arch then
-                    local flag_sysroot = "--sysroot=" .. os.args(path.join(ndk_sdkdir, sysroot_arch))
+            sysroot_cflags_added = true
+        end
+        local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver))
+        if os.isdir(ndk_sdkdir) then
+            if sysroot_arch then
+                local flag_sysroot = "--sysroot=" .. os.args(path.join(ndk_sdkdir, sysroot_arch))
+                if not sysroot_cflags_added then
                     toolchain:add("cflags",   flag_sysroot)
                     toolchain:add("cxxflags", flag_sysroot)
                     toolchain:add("asflags",  flag_sysroot)
-                    toolchain:add("ldflags",  flag_sysroot)
-                    toolchain:add("shflags",  flag_sysroot)
                 end
+                -- we need to add sysroot flags for low-version ndk
+                -- @see https://github.com/xmake-io/xmake/issues/6621
+                toolchain:add("ldflags",  flag_sysroot)
+                toolchain:add("shflags",  flag_sysroot)
             end
         end
 
