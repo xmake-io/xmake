@@ -26,15 +26,16 @@ local os            = require("base/os")
 local table         = require("base/table")
 local string        = require("base/string")
 local global        = require("base/global")
+local hashset       = require("base/hashset")
 local interpreter   = require("base/interpreter")
 local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
 local sandbox_os    = require("sandbox/modules/os")
 
 function task.common_options()
-    if not task._COMMON_OPTIONS then
-        task._COMMON_OPTIONS =
-        {
+    local common_options = task._COMMON_OPTIONS
+    if not common_options then
+        common_options = {
             {'q', "quiet",     "k",  nil,   "Quiet operation."                                          }
         ,   {'y', "yes",       "k",  nil,   "Input yes by default if need user confirm."                }
         ,   {nil, "confirm",   "kv", nil,   "Input the given result if need user confirm."
@@ -56,8 +57,26 @@ function task.common_options()
                                         ,   "    3. The Current Directory"                              }
         ,   {category = "action"}
         }
+        task._COMMON_OPTIONS = common_options
     end
     return task._COMMON_OPTIONS
+end
+
+function task._common_option_names()
+    local common_names = task._COMMON_OPTION_NAMES
+    if not common_names then
+        common_names = hashset.new()
+        for i, v in ipairs(task.common_options()) do
+            if v and v[1] then
+                common_names:insert(v[1])
+            end
+            if v and v[2] then
+                common_names:insert(v[2])
+            end
+        end
+        task._COMMON_OPTION_NAMES = common_names
+    end
+    return common_names
 end
 
 -- the directories of tasks
@@ -68,25 +87,15 @@ function task._directories()
 end
 
 -- translate menu
-function task._translate_menu(menu)
-    assert(menu)
-
-    -- the interpreter
+function task._translate_menu(taskname, menu)
     local interp = task._interpreter()
-    assert(interp)
-
-    -- translate options
     local options = menu.options
     if options then
 
         -- make full options
         local options_full = {}
         for _, opt in ipairs(options) do
-
-            -- this option is function? translate it
             if type(opt) == "function" then
-
-                -- call menu script in the sandbox
                 local ok, results = sandbox.load(opt)
                 if ok then
                     if results then
@@ -95,7 +104,6 @@ function task._translate_menu(menu)
                         end
                     end
                 else
-                    -- errors
                     return nil, string.format("taskmenu: %s", results)
                 end
             else
@@ -109,8 +117,6 @@ function task._translate_menu(menu)
 
         -- filter options
         if interp:filter() then
-
-            -- filter option
             for _, opt in ipairs(options) do
 
                 -- filter default
@@ -137,11 +143,8 @@ function task._translate_menu(menu)
                             -- call it in the sandbox
                             local ok, results = sandbox.load(description)
                             if not ok then
-                                -- errors
                                 return nil, string.format("taskmenu: %s", results)
                             end
-
-                            -- ok
                             return results
                         end
                     end
@@ -151,14 +154,20 @@ function task._translate_menu(menu)
 
         -- add common options, we need to avoid repeat because the main/build task will be inserted twice
         if not menu._common_options then
+            local common_option_names = task._common_option_names()
+            for _, v in ipairs(options) do
+                local option_name = v[2] or v[1]
+                if option_name and common_option_names:has(option_name) then
+                    utils.warning("task(%s): option name '%s' is a built-in name and may cause conflicts, please rename it.", taskname, option_name)
+                end
+            end
+
             for i, v in ipairs(task.common_options()) do
                 table.insert(options, i, v)
             end
             menu._common_options = true
         end
     end
-
-    -- ok
     return menu
 end
 
@@ -308,8 +317,6 @@ function task._bind(tasks, interp)
             end
         end
     end
-
-    -- ok
     return true
 end
 
@@ -415,23 +422,18 @@ function task.task(name)
     return task.tasks()[name]
 end
 
--- the menu
+-- get the task menu
 function task.menu(tasks)
-
-    -- make menu
     local menu = {}
     for taskname, taskinst in pairs(tasks) do
-
-        -- has task menu?
         local taskmenu = taskinst:get("menu")
         if taskmenu then
+            -- delay to load main menu
             if taskinst:get("category") == "main" then
-
-                -- delay to load main menu
                 menu.main = function ()
 
                     -- translate main menu
-                    local mainmenu, errors = task._translate_menu(taskmenu)
+                    local mainmenu, errors = task._translate_menu(taskname, taskmenu)
                     if not mainmenu then
                         os.raise(errors)
                     end
@@ -454,16 +456,14 @@ function task.menu(tasks)
 
             -- delay to load task menu
             menu[taskname] = function ()
-                local taskmenu, errors = task._translate_menu(taskmenu)
-                if not taskmenu then
+                local result, errors = task._translate_menu(taskname, taskmenu)
+                if not result then
                     os.raise(errors)
                 end
-                return taskmenu
+                return result
             end
         end
     end
-
-    -- ok?
     return menu
 end
 
