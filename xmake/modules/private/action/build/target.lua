@@ -514,12 +514,12 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                         scriptcmd_file(target, buildcmds, sourcefile, {progress = opt.progress, sourcekind = sourcekind})
                     end
                 else
-                    local batchcmds_ = batchcmds.new({target = target})
                     local sourcekind = sourcebatch.sourcekind
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        local batchcmds_ = batchcmds.new({target = target})
                         scriptcmd_file(target, batchcmds_, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
+                        batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
                     end
-                    batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
                 end
             end)
             has_script = true
