@@ -12,6 +12,7 @@
 * [#6586](https://github.com/xmake-io/xmake/issues/6586): Fix build.fence policy
 * [#6600](https://github.com/xmake-io/xmake/issues/6600): Fix compile_commands generator for c++modules
 * [#6621](https://github.com/xmake-io/xmake/issues/6621): Fix android build for ndk r17c
+* [#6635](https://github.com/xmake-io/xmake/discussions/6635): Fix batchcmds for qt/moc
 
 ## v3.0.0
 
@@ -2009,6 +2010,7 @@
 * [#6586](https://github.com/xmake-io/xmake/issues/6586): 修复 build.fence 策略
 * [#6600](https://github.com/xmake-io/xmake/issues/6600): 修复 compile_commands 生成器
 * [#6621](https://github.com/xmake-io/xmake/issues/6621): 修复 android ndk r17c 构建失败问题
+* [#6635](https://github.com/xmake-io/xmake/discussions/6635): 修复 batchcmds 导致的 qt/moc 增量构建问题
 
 ## v3.0.0
 
