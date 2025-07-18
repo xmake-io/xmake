@@ -12,40 +12,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Copyright (C) 2015-present, Xmake Open Source Community.
+ * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        poller_support.c
+ * @file        thread_exit.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "poller_support"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME                "thread"
+#define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "poller.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
+ * implementation
  */
-
-// io.poller_support(events)
-tb_int_t xm_io_poller_support(lua_State* lua)
+tb_int_t xm_thread_exit(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get events
-    tb_size_t events = (tb_size_t)luaL_checknumber(lua, 1);
+    // is pointer?
+    if (!xm_lua_ispointer(lua, 1))
+        return 0;
 
-    // support events for poller
-    lua_pushboolean(lua, tb_poller_support(xm_io_poller(lua), events));
+    // get thread
+    xm_thread_t* thread = (xm_thread_t*)xm_lua_topointer(lua, 1);
+    tb_check_return_val(thread, 0);
+
+    // exit thread
+    if (thread)
+    {
+        tb_string_exit(&thread->callback);
+        tb_string_exit(&thread->callinfo);
+        if (thread->handle)
+        {
+            tb_thread_exit(thread->handle);
+            thread->handle = tb_null;
+        }
+        tb_free(thread);
+    }
+    lua_pushboolean(lua, tb_true);
     return 1;
 }
 

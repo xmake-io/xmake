@@ -12,40 +12,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Copyright (C) 2015-present, Xmake Open Source Community.
+ * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        poller_support.c
+ * @file        thread_resume.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "poller_support"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME                "thread"
+#define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "poller.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
+ * implementation
  */
-
-// io.poller_support(events)
-tb_int_t xm_io_poller_support(lua_State* lua)
+tb_int_t xm_thread_resume(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get events
-    tb_size_t events = (tb_size_t)luaL_checknumber(lua, 1);
+    // is pointer?
+    if (!xm_lua_ispointer(lua, 1))
+        return 0;
 
-    // support events for poller
-    lua_pushboolean(lua, tb_poller_support(xm_io_poller(lua), events));
+    // get thread
+    xm_thread_t* thread = (xm_thread_t*)xm_lua_topointer(lua, 1);
+    tb_check_return_val(thread && thread->handle, 0);
+
+    // resume thread
+    lua_pushboolean(lua, tb_thread_resume(thread->handle));
     return 1;
 }
 
