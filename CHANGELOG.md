@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v3.0.1
+
 ### New features
 
 * [#4810](https://github.com/xmake-io/xmake/issues/4810): Add Native XCode project generator plugin
@@ -1999,6 +2001,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v3.0.1
 
 ### 新特性
 
