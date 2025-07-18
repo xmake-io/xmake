@@ -128,6 +128,11 @@ end
 
 -- config target
 function sandbox_core_project._config_target(target, opt)
+
+    -- enter the environments of the target packages
+    local oldenvs = os.addenvs(target:pkgenvs())
+
+    -- do config
     local before_config = target:script("config_before")
     if before_config then
         before_config(target, opt)
@@ -160,6 +165,9 @@ function sandbox_core_project._config_target(target, opt)
     if config_after then
         config_after(target, opt)
     end
+
+    -- leave the environments of the target packages
+    os.setenvs(oldenvs)
 end
 
 -- config targets, TODO: We should support parallel configuration
