@@ -114,7 +114,7 @@ irm https://xmake.io/psget.text | iex
 
 #### 其他安装方式
 
-如果不想使用脚本安装，也可以点击查看 [安装文档](https://xmake.io/guide/installation)，了解其他安装方法。
+如果不想使用脚本安装，也可以点击查看 [安装文档](https://xmake.io/zh/guide/quick-start.html#installation)，了解其他安装方法。
 
 ## 简单的工程描述
 

@@ -41,7 +41,7 @@ For example, to copy a directory in sandbox, the calling procedure is: `sandbox_
 
 ## Financial contributions
 
-We also welcome financial contributions in full transparency on our [sponsor](https://xmake.io/#/about/sponsor).
+We also welcome financial contributions in full transparency on our [sponsor](https://xmake.io/about/sponsor).
 Anyone can file an expense. If the expense makes sense for the development of the community, it will be "merged" in the ledger of our open collective by the core contributors and the person who filed the expense will be reimbursed.
 
 # 贡献代码

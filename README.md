@@ -35,7 +35,7 @@
     <a href="https://discord.gg/xmake">
       <img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?style=flat-square" alt="Discord" />
     </a>
-    <a href="https://xmake.io/#/sponsor">
+    <a href="https://xmake.io/about/sponsor">
       <img src="https://img.shields.io/badge/donate-us-orange.svg?style=flat-square" alt="Donate" />
     </a>
   </div>
@@ -46,7 +46,7 @@
 
 ## Support this project
 
-Support this project by [becoming a sponsor](https://xmake.io/#/about/sponsor). Your logo will show up here with a link to your website. 🙏
+Support this project by [becoming a sponsor](https://xmake.io/about/sponsor). Your logo will show up here with a link to your website. 🙏
 
 <a href="https://opencollective.com/xmake#sponsors" target="_blank"><img src="https://opencollective.com/xmake/sponsors.svg?width=890"></a>
 <a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
@@ -79,7 +79,7 @@ Although less precise, one can still understand Xmake in the following way:
 Xmake ≈ Make/Ninja + CMake/Meson + Vcpkg/Conan + distcc + ccache/sccache
 ```
 
-If you want to know more, please refer to the [Documentation](https://xmake.io/guide/quick-start), [GitHub](https://github.com/xmake-io/xmake) or [Gitee](https://gitee.com/tboox/xmake). You are also welcome to join our [community](https://xmake.io/#/about/contact).
+If you want to know more, please refer to the [Documentation](https://xmake.io/guide/quick-start), [GitHub](https://github.com/xmake-io/xmake) or [Gitee](https://gitee.com/tboox/xmake). You are also welcome to join our [community](https://xmake.io/about/contact).
 
 The official Xmake repository can be found at [xmake-io/xmake-repo](https://github.com/xmake-io/xmake-repo).
 
@@ -107,7 +107,7 @@ irm https://xmake.io/psget.text | iex
 
 ### Other installation methods
 
-If you don't want to use the above scripts to install Xmake, visit the [Installation Guide](https://xmake.io/#/guide/installation) for other installation methods (building from source, package managers, etc.).
+If you don't want to use the above scripts to install Xmake, visit the [Installation Guide](https://xmake.io/guide/quick-start.html#installation) for other installation methods (building from source, package managers, etc.).
 
 ## Simple Project Description
 
@@ -330,7 +330,7 @@ Xmake can automatically fetch and install dependencies!
 
 * Official package repository [xmake-repo](https://github.com/xmake-io/xmake-repo) (tbox >1.6.1)
 * Official package manager [Xrepo](https://github.com/xmake-io/xrepo)
-* [User-built repositories](https://xmake.io/#/package/remote_package?id=using-self-built-private-package-repository)
+* [User-built repositories](https://xmake.io/guide/package-management/using-official-packages.html#using-self-built-private-package-repository)
 * Conan (conan::openssl/1.1.1g)
 * Conda (conda::libpng 1.3.67)
 * Vcpkg (vcpkg:ffmpeg)
