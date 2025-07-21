@@ -11,7 +11,7 @@ target("cli")
     -- make as a binary
     set_kind("binary")
     set_basename("xmake")
-    set_targetdir("$(buildir)")
+    set_targetdir("$(builddir)")
 
     -- add definitions
     add_defines("__tb_prefix__=\"xmake\"")

@@ -1256,7 +1256,6 @@ function _get_package_compatkey(dep)
             table.sort(configs_order)
             key = key .. ":" .. string.serialize(configs_order, true)
         end
-
     end
     return key
 end

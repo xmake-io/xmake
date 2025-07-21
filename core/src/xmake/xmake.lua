@@ -27,19 +27,19 @@ target("xmake")
     end
 
     -- set the auto-generated config.h
-    set_configdir("$(buildir)/$(plat)/$(arch)/$(mode)")
+    set_configdir("$(builddir)/$(plat)/$(arch)/$(mode)")
     add_configfiles("xmake.config.h.in")
 
     -- add includes directory
     add_includedirs("..", {interface = true})
-    add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)", {public = true})
+    add_includedirs("$(builddir)/$(plat)/$(arch)/$(mode)", {public = true})
     add_includedirs("../xxhash")
     add_includedirs("$(projectdir)/../xmake/scripts/module")
 
     -- add header files
     add_headerfiles("../(xmake/*.h)")
     add_headerfiles("../(xmake/prefix/*.h)")
-    add_headerfiles("$(buildir)/$(plat)/$(arch)/$(mode)/xmake.config.h", {prefixdir = "xmake"})
+    add_headerfiles("$(builddir)/$(plat)/$(arch)/$(mode)/xmake.config.h", {prefixdir = "xmake"})
 
     -- add the common source files
     add_files("**.c|winos/*.c")
