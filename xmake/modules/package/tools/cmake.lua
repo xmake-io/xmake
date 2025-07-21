@@ -458,12 +458,15 @@ function _get_configs_for_windows(package, configs, opt)
         end
     end
 
-    -- use clang-cl or clang
+    -- use clang-cl or clang, and we need pass --target=xxx flags
     if package:has_tool("cc", "clang", "clang_cl") then
         envs.CMAKE_C_COMPILER = _translate_bin_path(package:build_getenv("cc"))
+        -- @see https://github.com/xmake-io/xmake-repo/issues/7662
+        envs.CMAKE_C_FLAGS    = table.join(package:build_getenv("cflags") or {}, package:build_getenv("cxflags"))
     end
     if package:has_tool("cxx", "clang", "clang_cl") then
         envs.CMAKE_CXX_COMPILER = _translate_bin_path(package:build_getenv("cxx"))
+        envs.CMAKE_CXX_FLAGS    = table.join(package:build_getenv("cxxflags") or {}, package:build_getenv("cxflags"))
     end
 
     -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
