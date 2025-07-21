@@ -26,7 +26,7 @@ rule("platform.windows.def")
             return
         end
 
-        if target:is_plat("windows") and (not target:has_tool("sh", "link")) then
+        if target:is_plat("windows") and (not target:has_tool("sh", "link", "clangxx")) then
             return
         end
 
@@ -36,6 +36,9 @@ rule("platform.windows.def")
                 local flag = path.translate(sourcefile)
                 if target:is_plat("windows") then
                     flag = "/def:" .. flag
+                    if target:has_tool("sh", "clangxx") then
+                        flag = "-Wl," .. flag
+                    end
                 end
                 -- https://github.com/xmake-io/xmake/pull/4901
                 target:add("shflags", flag, {force = true})
