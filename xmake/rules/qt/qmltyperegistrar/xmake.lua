@@ -57,9 +57,12 @@ rule("qt.qmltyperegistrar")
         -- add qmltypes
         target:add("installfiles", path.join(target:get("targetdir"), "plugin.qmltypes"), { prefixdir = path.join("bin", table.unpack(importname:split(".", { plain = true }))) })
 
-        local sourcefile = path.join(target:autogendir(), "rules", "qt", "qmltyperegistrar", target:name() .. "_qmltyperegistrations.cpp")
+        local genbasename = path.join(target:autogendir(), "rules", "qt", "qmltyperegistrar", target:name())
+        local metatypesfile = genbasename .. "_metatypes.json"
+        local sourcefile = genbasename .. "_qmltyperegistrations.cpp"
         local sourcefile_dir = path.directory(sourcefile)
         os.mkdir(sourcefile_dir)
+        target:data_set("qt.qmlplugin.metatypesfile", metatypesfile)
         target:data_set("qt.qmlplugin.sourcefile", sourcefile)
 
         -- add moc arguments
@@ -72,16 +75,17 @@ rule("qt.qmltyperegistrar")
      end)
 
      on_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-
         -- setup qmltyperegistrar arguments
+        local moc = target:data("qt.moc")
         local qmltyperegistrar = target:data("qt.qmltyperegistrar")
+        local metatypesfile = target:data("qt.qmlplugin.metatypesfile")
         local sourcefile = target:data("qt.qmlplugin.sourcefile")
 
         local importname = target:values("qt.qmlplugin.import_name")
         local majorversion = target:values("qt.qmlplugin.majorversion") or 1
         local minorversion = target:values("qt.qmlplugin.minorversion") or 0
 
-        local metatypefiles = {}
+        local metatype_files = {}
         for _, mocedfile in ipairs(sourcebatch.sourcefiles) do
             target:add("includedirs", path.directory(mocedfile))
             local basename = path.basename(mocedfile)
@@ -90,20 +94,29 @@ rule("qt.qmltyperegistrar")
                 filename_moc = basename .. ".moc"
             end
             local sourcefile_moc = target:autogenfile(path.join(path.directory(mocedfile), filename_moc))
-            table.insert(metatypefiles, path(sourcefile_moc .. ".json"))
+            table.insert(metatype_files, path(sourcefile_moc .. ".json"))
         end
 
+        -- generate a common metatypes.json file
+        -- @see https://github.com/xmake-io/xmake/issues/6647
+        local moc_args = {
+            "--collect-json",
+            "-o", metatypesfile
+        }
+        batchcmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmltyperegistrar %s", path.filename(metatypesfile))
+        batchcmds:vrunv(moc, table.join(moc_args, metatype_files))
+
+        -- gen sourcefile
         local args = {
             "--generate-qmltypes=" .. target:get("targetdir") .. "/plugin.qmltypes",
             "--import-name=" .. importname,
             "--major-version=" .. majorversion,
             "--minor-version=" .. minorversion,
-            "-o", sourcefile
+            "-o", sourcefile,
+            metatypesfile
         }
-
-        -- gen sourcefile
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmltyperegistrar %s", path.filename(sourcefile))
-        batchcmds:vrunv(qmltyperegistrar, table.join(args, metatypefiles))
+        batchcmds:vrunv(qmltyperegistrar, args)
 
         -- add objectfile
         local objectfile = target:objectfile(sourcefile)
