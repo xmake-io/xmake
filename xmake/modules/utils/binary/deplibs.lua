@@ -20,10 +20,12 @@
 
 -- imports
 import("core.base.option")
+import("core.base.graph")
+import("core.base.hashset")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
 
-function _get_all_depends_by_dumpbin(binaryfile, opt)
+function _get_depends_by_dumpbin(binaryfile, opt)
     local depends
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
@@ -48,7 +50,7 @@ function _get_all_depends_by_dumpbin(binaryfile, opt)
     return depends
 end
 
-function _get_all_depends_by_objdump(binaryfile, opt)
+function _get_depends_by_objdump(binaryfile, opt)
     local depends
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
@@ -102,7 +104,7 @@ end
 --	libc.so.6 => /lib64/libc.so.6 (0x00007fe240ccd000)
 --	/lib64/ld-linux-x86-64.so.2 (0x00007fe24123a000)
 --
-function _get_all_depends_by_ldd(binaryfile, opt)
+function _get_depends_by_ldd(binaryfile, opt)
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
     if plat ~= "linux" and plat ~= "bsd" then
@@ -143,7 +145,7 @@ end
 -- 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]
 -- 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
 -- 0x000000000000001d (RUNPATH)            Library runpath: [$ORIGIN]
-function _get_all_depends_by_readelf(binaryfile, opt)
+function _get_depends_by_readelf(binaryfile, opt)
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
     if plat ~= "linux" and plat ~= "bsd" and plat ~= "android" and plat ~= "cross" then
@@ -178,7 +180,7 @@ end
 --        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 1600.151.0)
 --        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1336.0.0)
 --
-function _get_all_depends_by_otool(binaryfile, opt)
+function _get_depends_by_otool(binaryfile, opt)
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
     if plat ~= "macosx" and plat ~= "iphoneos" and plat ~= "appletvos" and plat ~= "watchos" then
@@ -203,18 +205,18 @@ function _get_all_depends_by_otool(binaryfile, opt)
     return depends
 end
 
-function main(binaryfile, opt)
+function _get_depends(binaryfile, opt)
     opt = opt or {}
     local ops = {
-        _get_all_depends_by_objdump,
-        _get_all_depends_by_readelf
+        _get_depends_by_objdump,
+        _get_depends_by_readelf
     }
     if is_host("windows") then
-        table.insert(ops, 1, _get_all_depends_by_dumpbin)
+        table.insert(ops, 1, _get_depends_by_dumpbin)
     elseif is_host("linux", "bsd") then
-        table.insert(ops, 1, _get_all_depends_by_ldd)
+        table.insert(ops, 1, _get_depends_by_ldd)
     elseif is_host("macosx") then
-        table.insert(ops, 1, _get_all_depends_by_otool)
+        table.insert(ops, 1, _get_depends_by_otool)
     end
     for _, op in ipairs(ops) do
         local depends = op(binaryfile, opt)
@@ -224,3 +226,71 @@ function main(binaryfile, opt)
     end
 end
 
+-- TODO
+function _resolve_filepath(binaryfile)
+    if binaryfile:startswith("@rpath/") then
+        print("binaryfile", binaryfile)
+    end
+    return binaryfile
+end
+
+function _get_plain_depends(binaryfile, opt)
+    opt = opt or {}
+    local depends = _get_depends(binaryfile, opt)
+    if depends and opt.resolve_path then
+        local result = {}
+        for _, dependfile in ipairs(depends) do
+            dependfile = _resolve_filepath(dependfile)
+            table.insert(result, dependfile)
+        end
+        depends = result
+    end
+    return depends
+end
+
+function _get_recursive_depends(binaryfile, dag, depends, opt)
+    local dependfiles = _get_plain_depends(binaryfile, opt)
+    if dependfiles then
+        for _, dependfile in ipairs(dependfiles) do
+            dag:add_edge(binaryfile, dependfile)
+            if not depends:has(dependfile) then
+                depends:insert(dependfile)
+                _get_recursive_depends(dependfile, dag, depends, opt)
+            end
+        end
+    end
+end
+
+-- get the library dependencies of the give binary files
+--
+-- @param binaryfile the binary file
+-- @param opt        the option, e.g. {recursive = false, resolve_path = true}
+--                      - recursive: recursively get all sub-dependencies, sorted by topology
+--                      - resolve_path: try to resolve the file full path, e.g. @rpath, @loader_path, $ORIGIN, relative path ..
+--
+function main(binaryfile, opt)
+    opt = opt or {}
+--    opt.recursive = true
+--    opt.resolve_path = true
+    if opt.recursive then
+        local dag = graph.new(true)
+        _get_recursive_depends(binaryfile, dag, hashset.new(), opt)
+        local depends, has_cycle = dag:topo_sort()
+        if has_cycle then
+            local files = {}
+            local cycle = dag:find_cycle()
+            if cycle then
+                for _, file in ipairs(cycle) do
+                    table.insert(files, file)
+                end
+                table.insert(files, binaryfile)
+            end
+            raise("deplibs(%s): circular library dependencies detected!\n%s", binaryfile, table.concat(files, "\n   -> "))
+        end
+        if depends and #depends > 1 then
+            return table.slice(depends, 2)
+        end
+    else
+        return _get_plain_depends(binaryfile, opt)
+    end
+end
