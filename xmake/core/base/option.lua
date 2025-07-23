@@ -30,8 +30,6 @@ local text      = require("base/text")
 
 -- translate the menu
 function option._translate(menu)
-
-    -- translate the menus if exists function
     local submenus_all = {}
     for k, submenu in pairs(menu) do
         if type(submenu) == "function" then
@@ -49,13 +47,12 @@ function option._translate(menu)
     end
     table.copy2(menu, submenus_all)
 
-    -- save menu
     option._MENU = menu
     return true
 end
 
+-- show menu in narrow mode?
 function option._modenarrow()
-    -- show menu in narrow mode?
     local width = os.getwinsize().width
     return width > 0 and width < 60
 end
@@ -96,10 +93,6 @@ end
 
 -- init the option
 function option.init(menu)
-
-    -- check
-    assert(menu)
-
     -- translate menu
     local ok, errors = option._translate(menu)
     if not ok then
@@ -146,15 +139,11 @@ function option.init(menu)
 
     -- init the default value
     option.populate_defaults(options, context.defaults)
-
-    -- ok
     return true
 end
 
 -- parse arguments with the given options
 function option.parse(argv, options, opt)
-
-    -- check
     assert(argv and options)
     opt = opt or { populate_defaults = true }
 
@@ -273,15 +262,11 @@ function option.parse(argv, options, opt)
     if opt.populate_defaults then
         option.populate_defaults(options, results)
     end
-
-    -- ok
     return results
 end
 
 -- fill defined with option's default value, in place
 function option.populate_defaults(options, defined)
-
-    -- check
     assert(options and defined)
 
     -- populate the default value
@@ -327,8 +312,6 @@ end
 
 -- get the task menu
 function option.taskmenu(task)
-
-    -- check
     assert(option._MENU)
 
     -- the current task
@@ -351,11 +334,6 @@ end
 
 -- get the given option value for the current task
 function option.get(name)
-
-    -- check
-    assert(name)
-
-    -- the options
     local options = option.options()
     if options then
         local value = options[name]
@@ -368,10 +346,6 @@ end
 
 -- set the given option for the current task
 function option.set(name, value)
-
-    -- check
-    assert(name)
-
     -- cannot be the first context for menu
     assert(#option._CONTEXTS > 1)
 
@@ -398,18 +372,14 @@ end
 function option.default(name)
     assert(name)
 
-    -- the defaults
     local defaults = option.defaults()
     assert(defaults)
 
-    -- get it
     return defaults[name]
 end
 
 -- get the current options
 function option.options()
-
-    -- get it
     local context = option._context()
     if context then
         return context.options
