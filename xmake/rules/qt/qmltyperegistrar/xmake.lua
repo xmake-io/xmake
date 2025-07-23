@@ -58,8 +58,8 @@ rule("qt.qmltyperegistrar")
         target:add("installfiles", path.join(target:get("targetdir"), "plugin.qmltypes"), { prefixdir = path.join("bin", table.unpack(importname:split(".", { plain = true }))) })
 
         local genbasename = path.join(target:autogendir(), "rules", "qt", "qmltyperegistrar", target:name())
-        local metatypesfile = genbasename .. "_metatypes.json"
-        local sourcefile = genbasename .. "_qmltyperegistrations.cpp"
+        local metatypesfile = path(genbasename .. "_metatypes.json")
+        local sourcefile = path(genbasename .. "_qmltyperegistrations.cpp")
         local sourcefile_dir = path.directory(sourcefile)
         os.mkdir(sourcefile_dir)
         target:data_set("qt.qmlplugin.metatypesfile", metatypesfile)
