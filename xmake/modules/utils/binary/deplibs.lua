@@ -229,27 +229,27 @@ end
 
 -- resolve file path with @rpath, @loader_path, and $ORIGIN
 function _resolve_filepath(binaryfile, dependfile, opt)
-    local rpath_cache = opt._rpath_cache
+    local loaderfile = opt._loaderfile
     if dependfile:startswith("@rpath/") then
-        local rpath_list = rpath_cache[binaryfile]
-        if rpath_list == nil then
-            rpath_list = rpath_utils.list(binaryfile)
-            rpath_cache[binaryfile] = rpath_list or false
+        local rpathlist = opt._rpathlist
+        if rpathlist == nil then
+            rpathlist = rpath_utils.list(loaderfile)
+            opt._rpathlist = rpathlist or false
         end
-        if rpath_list then
-            for _, rpath in ipairs(rpath_list) do
+        if rpathlist then
+            for _, rpath in ipairs(rpathlist) do
                 local filepath = dependfile:replace("@rpath/", rpath .. "/", {plain = true})
                 if os.isfile(filepath) then
                     dependfile = filepath
                     break
                 elseif filepath:startswith("@loader_path/") then
-                    filepath = filepath:replace("@loader_path/", path.directory(binaryfile) .. "/", {plain = true})
+                    filepath = filepath:replace("@loader_path/", path.directory(loaderfile) .. "/", {plain = true})
                     if os.isfile(filepath) then
                         dependfile = filepath
                         break
                     end
                 elseif filepath:startswith("$ORIGIN/") then
-                    filepath = filepath:replace("$ORIGIN/", path.directory(binaryfile) .. "/", {plain = true})
+                    filepath = filepath:replace("$ORIGIN/", path.directory(loaderfile) .. "/", {plain = true})
                     if os.isfile(filepath) then
                         dependfile = filepath
                         break
@@ -307,7 +307,7 @@ function main(binaryfile, opt)
     --opt.recursive = true
     --opt.resolve_path = true
     if opt.resolve_path then
-        opt._rpath_cache = {}
+        opt._loaderfile = binaryfile
     end
     binaryfile = path.normalize(path.absolute(binaryfile))
     if opt.recursive then
