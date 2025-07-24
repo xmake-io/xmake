@@ -24,6 +24,7 @@ import("core.base.graph")
 import("core.base.hashset")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
+import("utils.binary.rpath", {alias = "rpath_utils"})
 
 function _get_depends_by_dumpbin(binaryfile, opt)
     local depends
@@ -226,12 +227,41 @@ function _get_depends(binaryfile, opt)
     end
 end
 
--- TODO
-function _resolve_filepath(binaryfile)
-    if binaryfile:startswith("@rpath/") then
-        print("binaryfile", binaryfile)
+-- resolve file path with @rpath, @loader_path, and $ORIGIN
+function _resolve_filepath(binaryfile, dependfile, opt)
+    local rpath_cache = opt._rpath_cache
+    if dependfile:startswith("@rpath/") then
+        local rpath_list = rpath_cache[binaryfile]
+        if rpath_list == nil then
+            rpath_list = rpath_utils.list(binaryfile)
+            rpath_cache[binaryfile] = rpath_list or false
+        end
+        if rpath_list then
+            for _, rpath in ipairs(rpath_list) do
+                local filepath = dependfile:replace("@rpath/", rpath .. "/", {plain = true})
+                if os.isfile(filepath) then
+                    dependfile = filepath
+                    break
+                elseif filepath:startswith("@loader_path/") then
+                    filepath = filepath:replace("@loader_path/", path.directory(binaryfile) .. "/", {plain = true})
+                    if os.isfile(filepath) then
+                        dependfile = filepath
+                        break
+                    end
+                elseif filepath:startswith("$ORIGIN/") then
+                    filepath = filepath:replace("$ORIGIN/", path.directory(binaryfile) .. "/", {plain = true})
+                    if os.isfile(filepath) then
+                        dependfile = filepath
+                        break
+                    end
+                end
+            end
+        end
     end
-    return binaryfile
+    dependfile = path.normalize(dependfile)
+    if binaryfile ~= dependfile then
+        return dependfile
+    end
 end
 
 function _get_plain_depends(binaryfile, opt)
@@ -240,8 +270,10 @@ function _get_plain_depends(binaryfile, opt)
     if depends and opt.resolve_path then
         local result = {}
         for _, dependfile in ipairs(depends) do
-            dependfile = _resolve_filepath(dependfile)
-            table.insert(result, dependfile)
+            dependfile = _resolve_filepath(binaryfile, dependfile, opt)
+            if dependfile then
+                table.insert(result, dependfile)
+            end
         end
         depends = result
     end
@@ -255,7 +287,9 @@ function _get_recursive_depends(binaryfile, dag, depends, opt)
             dag:add_edge(binaryfile, dependfile)
             if not depends:has(dependfile) then
                 depends:insert(dependfile)
-                _get_recursive_depends(dependfile, dag, depends, opt)
+                if os.isfile(dependfile) then
+                    _get_recursive_depends(dependfile, dag, depends, opt)
+                end
             end
         end
     end
@@ -270,8 +304,12 @@ end
 --
 function main(binaryfile, opt)
     opt = opt or {}
---    opt.recursive = true
---    opt.resolve_path = true
+    --opt.recursive = true
+    --opt.resolve_path = true
+    if opt.resolve_path then
+        opt._rpath_cache = {}
+    end
+    binaryfile = path.normalize(path.absolute(binaryfile))
     if opt.recursive then
         local dag = graph.new(true)
         _get_recursive_depends(binaryfile, dag, hashset.new(), opt)
