@@ -236,7 +236,10 @@ end
 function _resolve_filepath(binaryfile, dependfile, opt)
     local loaderfile = opt._loaderfile
     local resolve_hint_paths = opt.resolve_hint_paths
-    if dependfile:startswith("@rpath/") then
+    local resolved = false
+
+    -- resolve path from rpath
+    if not resolved and dependfile:startswith("@rpath/") then
         local rpathlist = opt._rpathlist
         if rpathlist == nil then
             rpathlist = rpath_utils.list(loaderfile)
@@ -247,36 +250,58 @@ function _resolve_filepath(binaryfile, dependfile, opt)
                 local filepath = dependfile:replace("@rpath/", rpath .. "/", {plain = true})
                 if os.isfile(filepath) then
                     dependfile = path.absolute(filepath)
+                    resolved = true
                     break
                 elseif filepath:startswith("@loader_path/") then
                     filepath = filepath:replace("@loader_path/", path.directory(loaderfile) .. "/", {plain = true})
                     if os.isfile(filepath) then
                         dependfile = path.absolute(filepath)
+                        resolved = true
                         break
                     end
                 elseif filepath:startswith("$ORIGIN/") then
                     filepath = filepath:replace("$ORIGIN/", path.directory(loaderfile) .. "/", {plain = true})
                     if os.isfile(filepath) then
                         dependfile = path.absolute(filepath)
+                        resolved = true
                         break
                     end
                 end
             end
         end
     end
+
     if not path.is_absolute(dependfile) then
-        if os.isfile(dependfile) then
+
+        -- resolve absolute path
+        if not resolved and os.isfile(dependfile) then
             dependfile = path.absolute(dependfile)
-        elseif resolve_hint_paths then
+            resolved = true
+        end
+
+        -- resolve path from the hint paths
+        if not resolved and resolve_hint_paths then
             local filename = path.filename(dependfile)
             for _, filepath in ipairs(resolve_hint_paths) do
                 if filename == path.filename(filepath) then
                     dependfile = path.absolute(filepath)
+                    resolved = true
                     break
                 end
             end
         end
+
+        -- resolve path from the current loader directory on windows
+        if not resolved and is_host("windows") then
+            local loaderdir = path.directory(loaderfile)
+            local filepath = parh.absolute(dependfile, loaderdir)
+            if os.isfile(filepath) then
+                dependfile = filepath
+                resolved = true
+            end
+        end
     end
+
     dependfile = path.normalize(dependfile)
     if binaryfile ~= dependfile then
         return dependfile
