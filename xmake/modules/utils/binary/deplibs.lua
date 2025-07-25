@@ -67,26 +67,28 @@ function _get_depends_by_objdump(binaryfile, opt)
         if result then
             for _, line in ipairs(result:split("\n")) do
                 line = line:trim()
-                if plat == "windows" or plat == "mingw" then
-                    if line:startswith("DLL Name:") then
-                        local filename = line:split(":")[2]:trim()
-                        if filename:endswith(".dll") then
+                if not line:endswith(":") then
+                    if plat == "windows" or plat == "mingw" then
+                        if line:startswith("DLL Name:") then
+                            local filename = line:split(":")[2]:trim()
+                            if filename:endswith(".dll") then
+                                depends = depends or {}
+                                table.insert(depends, filename)
+                            end
+                        end
+                    elseif plat == "macosx" or plat == "iphoneos" or plat == "appletvos" or plat == "watchos" then
+                        local filename = line:match(".-%.dylib") or line:match(".-%.framework")
+                        if filename then
                             depends = depends or {}
                             table.insert(depends, filename)
                         end
-                    end
-                elseif plat == "macosx" or plat == "iphoneos" or plat == "appletvos" or plat == "watchos" then
-                    local filename = line:match(".-%.dylib") or line:match(".-%.framework")
-                    if filename then
-                        depends = depends or {}
-                        table.insert(depends, filename)
-                    end
-                else
-                    if line:startswith("NEEDED") then
-                        local filename = line:split("%s+")[2]
-                        if filename and filename:endswith(".so") or filename:find("%.so[%.%d+]+$") then
-                            depends = depends or {}
-                            table.insert(depends, filename)
+                    else
+                        if line:startswith("NEEDED") then
+                            local filename = line:split("%s+")[2]
+                            if filename and filename:endswith(".so") or filename:find("%.so[%.%d+]+$") then
+                                depends = depends or {}
+                                table.insert(depends, filename)
+                            end
                         end
                     end
                 end
@@ -195,10 +197,13 @@ function _get_depends_by_otool(binaryfile, opt)
         local result = try { function () return os.iorunv(otool.program, {"-L", binaryfile}) end }
         if result then
             for _, line in ipairs(result:split("\n")) do
-                local filename = line:match(".-%.dylib") or line:match(".-%.framework")
-                if filename then
-                    depends = depends or {}
-                    table.insert(depends, filename:trim())
+                line = line:trim()
+                if not line:endswith(":") then
+                    local filename = line:match(".-%.dylib") or line:match(".-%.framework")
+                    if filename then
+                        depends = depends or {}
+                        table.insert(depends, filename:trim())
+                    end
                 end
             end
         end
@@ -240,18 +245,18 @@ function _resolve_filepath(binaryfile, dependfile, opt)
             for _, rpath in ipairs(rpathlist) do
                 local filepath = dependfile:replace("@rpath/", rpath .. "/", {plain = true})
                 if os.isfile(filepath) then
-                    dependfile = filepath
+                    dependfile = path.absolute(filepath)
                     break
                 elseif filepath:startswith("@loader_path/") then
                     filepath = filepath:replace("@loader_path/", path.directory(loaderfile) .. "/", {plain = true})
                     if os.isfile(filepath) then
-                        dependfile = filepath
+                        dependfile = path.absolute(filepath)
                         break
                     end
                 elseif filepath:startswith("$ORIGIN/") then
                     filepath = filepath:replace("$ORIGIN/", path.directory(loaderfile) .. "/", {plain = true})
                     if os.isfile(filepath) then
-                        dependfile = filepath
+                        dependfile = path.absolute(filepath)
                         break
                     end
                 end
@@ -304,8 +309,6 @@ end
 --
 function main(binaryfile, opt)
     opt = opt or {}
-    --opt.recursive = true
-    --opt.resolve_path = true
     if opt.resolve_path then
         opt._loaderfile = binaryfile
     end
