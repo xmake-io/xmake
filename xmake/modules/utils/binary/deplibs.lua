@@ -40,7 +40,7 @@ function _get_depends_by_dumpbin(binaryfile, opt)
             if result then
                 for _, line in ipairs(result:split("\n")) do
                     line = line:trim()
-                    if line:endswith(".dll") then
+                    if not line:startswith("Dump of file") and line:endswith(".dll") then
                         depends = depends or {}
                         table.insert(depends, line)
                     end
