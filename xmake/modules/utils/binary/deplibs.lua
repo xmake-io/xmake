@@ -367,6 +367,7 @@ end
 --
 -- @param binaryfile the binary file
 -- @param opt        the option, e.g. {recursive = false, resolve_path = true, resolve_hint_paths = {}}
+--                      - plat, arch: the platform and architecture
 --                      - recursive: recursively get all sub-dependencies, sorted by topology
 --                      - resolve_path: try to resolve the file full path, e.g. @rpath, @loader_path, $ORIGIN, relative path ..
 --                      - resolve_hint_paths: we can resolve and match path from them
