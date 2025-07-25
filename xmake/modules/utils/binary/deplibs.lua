@@ -294,9 +294,9 @@ function _resolve_filepath(binaryfile, dependfile, opt)
         -- resolve path from the current loader directory on windows
         if not resolved and is_host("windows") then
             local loaderdir = path.directory(loaderfile)
-            local filepath = parh.absolute(dependfile, loaderdir)
+            local filepath = path.join(loaderdir, dependfile)
             if os.isfile(filepath) then
-                dependfile = filepath
+                dependfile = path.absolute(filepath)
                 resolved = true
             end
         end
