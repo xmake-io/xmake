@@ -236,6 +236,7 @@ end
 function _resolve_filepath(binaryfile, dependfile, opt)
     local loaderfile = opt._loaderfile
     local resolve_hint_paths = opt.resolve_hint_paths
+    local resolve_search_paths = opt.resolve_search_paths
     local resolved = false
 
     -- resolve path from rpath
@@ -301,8 +302,28 @@ function _resolve_filepath(binaryfile, dependfile, opt)
             end
         end
 
-        -- TODO
+        -- resolve path from the searth paths
+        if resolve_search_paths then
+            for _, searchdir in ipairs(resolve_search_paths) do
+                local filepath = path.join(searchdir, dependfile)
+                if os.isfile(filepath) then
+                    dependfile = path.absolute(filepath)
+                    resolved = true
+                end
+            end
+        end
+
         -- resolve path from LD_LIBRARY_PATH, ...
+        local library_paths = is_host("macosx") and os.getenv("DYLD_LIBRARY_PATH") or os.getenv("LD_LIBRARY_PATH")
+        if library_paths then
+            for _, searchdir in ipairs(path.splitenv(library_paths)) do
+                local filepath = path.join(searchdir, dependfile)
+                if os.isfile(filepath) then
+                    dependfile = path.absolute(filepath)
+                    resolved = true
+                end
+            end
+        end
     end
 
     dependfile = path.normalize(dependfile)
@@ -349,6 +370,7 @@ end
 --                      - recursive: recursively get all sub-dependencies, sorted by topology
 --                      - resolve_path: try to resolve the file full path, e.g. @rpath, @loader_path, $ORIGIN, relative path ..
 --                      - resolve_hint_paths: we can resolve and match path from them
+--                      - resolve_search_paths: the search library paths, like: LD_LIBRARY_PATH, DYLD_LIBRARY_PATH, ...
 --
 function main(binaryfile, opt)
     opt = opt or {}
