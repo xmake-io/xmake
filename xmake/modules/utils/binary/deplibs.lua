@@ -300,6 +300,9 @@ function _resolve_filepath(binaryfile, dependfile, opt)
                 resolved = true
             end
         end
+
+        -- TODO
+        -- resolve path from LD_LIBRARY_PATH, ...
     end
 
     dependfile = path.normalize(dependfile)
