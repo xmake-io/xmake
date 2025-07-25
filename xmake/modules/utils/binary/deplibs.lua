@@ -235,6 +235,7 @@ end
 -- resolve file path with @rpath, @loader_path, and $ORIGIN
 function _resolve_filepath(binaryfile, dependfile, opt)
     local loaderfile = opt._loaderfile
+    local resolve_hint_paths = opt.resolve_hint_paths
     if dependfile:startswith("@rpath/") then
         local rpathlist = opt._rpathlist
         if rpathlist == nil then
@@ -259,6 +260,19 @@ function _resolve_filepath(binaryfile, dependfile, opt)
                         dependfile = path.absolute(filepath)
                         break
                     end
+                end
+            end
+        end
+    end
+    if not path.is_absolute(dependfile) then
+        if os.isfile(dependfile) then
+            dependfile = path.absolute(dependfile)
+        elseif resolve_hint_paths then
+            local filename = path.filename(dependfile)
+            for _, filepath in ipairs(resolve_hint_paths) do
+                if filename == path.filename(filepath) then
+                    dependfile = path.absolute(filepath)
+                    break
                 end
             end
         end
@@ -303,9 +317,10 @@ end
 -- get the library dependencies of the give binary files
 --
 -- @param binaryfile the binary file
--- @param opt        the option, e.g. {recursive = false, resolve_path = true}
+-- @param opt        the option, e.g. {recursive = false, resolve_path = true, resolve_hint_paths = {}}
 --                      - recursive: recursively get all sub-dependencies, sorted by topology
 --                      - resolve_path: try to resolve the file full path, e.g. @rpath, @loader_path, $ORIGIN, relative path ..
+--                      - resolve_hint_paths: we can resolve and match path from them
 --
 function main(binaryfile, opt)
     opt = opt or {}

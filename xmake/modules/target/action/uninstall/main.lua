@@ -70,13 +70,12 @@ function _get_target_package_libfiles(target, opt)
         if target:is_binary() or target:is_shared() or opt.binaryfile then
             -- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
             -- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
-            local deplibs = get_depend_libraries(opt.binaryfile or target:targetfile(), {recursive = true, plat = target:plat(), arch = target:arch()})
+            local deplibs = get_depend_libraries(opt.binaryfile or target:targetfile(), {
+                plat = target:plat(), arch = target:arch(),
+                recursive = true, resolve_path = true, resolve_hint_paths = libfiles})
             if deplibs then
-                local depends = hashset.new()
-                for _, deplib in ipairs(deplibs) do
-                    depends:insert(path.filename(deplib))
-                end
-                table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
+                local depends = hashset.from(deplibs)
+                table.remove_if(libfiles, function (_, libfile) return not depends:has(libfile) end)
             end
         end
     end
