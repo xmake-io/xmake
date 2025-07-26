@@ -62,26 +62,6 @@ function _get_target_installdir(package, target)
     return path.normalize(installdir)
 end
 
--- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
--- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
-function _get_target_package_deplibs(binaryfile, depends, libfiles, opt)
-    local deplibs = get_depend_libraries(binaryfile, {plat = opt.plat, arch = opt.arch})
-    local depends_new = hashset.new()
-    for _, deplib in ipairs(deplibs) do
-        local libname = path.filename(deplib)
-        if not depends:has(libname) then
-            depends:insert(libname)
-            depends_new:insert(libname)
-        end
-    end
-    for _, libfile in ipairs(libfiles) do
-        local libname = path.filename(libfile)
-        if depends_new:has(libname) then
-            _get_target_package_deplibs(libfile, depends, libfiles, opt)
-        end
-    end
-end
-
 function _get_target_package_libfiles(target, opt)
     if option.get("nopkgs") then
         return {}
@@ -101,9 +81,15 @@ function _get_target_package_libfiles(target, opt)
     -- we can only reserve used libraries
     if project.policy("install.strip_packagelibs") then
         if target:is_binary() or target:is_shared() or opt.binaryfile then
-            local depends = hashset.new()
-            _get_target_package_deplibs(opt.binaryfile or target:targetfile(), depends, libfiles, {plat = target:plat(), arch = target:arch()})
-            table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
+            -- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
+            -- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
+            local deplibs = get_depend_libraries(opt.binaryfile or target:targetfile(), {
+                plat = target:plat(), arch = target:arch(),
+                recursive = true, resolve_path = true, resolve_hint_paths = libfiles})
+            if deplibs then
+                local depends = hashset.from(deplibs)
+                table.remove_if(libfiles, function (_, libfile) return not depends:has(libfile) end)
+            end
         end
     end
     return libfiles
