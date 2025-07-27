@@ -31,7 +31,7 @@ function _default_argv(package, configs, opt)
     end
 
     local argv = {}
-    local targets = table.wrap(opt.target)
+    local targets = opt.targets or table.wrap(opt.target)
     if #targets ~= 0 then
         table.join2(argv, targets)
     end
