@@ -1075,7 +1075,7 @@ end
 -- do build for make
 function _build_for_make(package, configs, opt)
     local argv = {}
-    local targets = opt.targets or table.wrap(opt.target)
+    local targets = table.wrap(opt.targets or opt.target)
     if #targets ~= 0 then
         table.join2(argv, targets)
     end
@@ -1121,7 +1121,7 @@ function _build_for_cmakebuild(package, configs, opt)
         table.insert(argv, "--config")
         table.insert(argv, opt.config)
     end
-    local targets = opt.targets or table.wrap(opt.target)
+    local targets = table.wrap(opt.targets or opt.target)
     if #targets ~= 0 then
         table.insert(argv, "--target")
         if #targets > 1 then
@@ -1199,8 +1199,7 @@ function _install_for_ninja(package, configs, opt)
     _fix_pdbdir_for_ninja(package)
     ninja.install(package, {}, {envs = opt.envs or buildenvs(package, opt),
         jobs = opt.jobs,
-        target = opt.target,
-        targets = opt.targets})
+        targets = opt.target or opt.targets})
 end
 
 -- do install for cmake/build
