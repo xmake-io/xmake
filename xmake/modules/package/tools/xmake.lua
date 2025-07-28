@@ -528,8 +528,8 @@ function install(package, configs, opt)
         table.insert(argv, "--jobs=" .. njob)
     end
     local targets = table.wrap(opt.targets or opt.target)
-    if #target ~= 0 then
-        table.join2(argv, target)
+    if #targets ~= 0 then
+        table.join2(argv, targets)
     end
     os.vrunv(os.programfile(), argv, {envs = envs})
 

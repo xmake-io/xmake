@@ -1110,7 +1110,7 @@ function _build_for_ninja(package, configs, opt)
     _fix_pdbdir_for_ninja(package)
     ninja.build(package, {}, {envs = opt.envs or buildenvs(package, opt),
         jobs = opt.jobs,
-        targets = opt.target or opt.targets})
+        targets = opt.targets or opt.target})
 end
 
 -- do build for cmake/build
@@ -1199,7 +1199,7 @@ function _install_for_ninja(package, configs, opt)
     _fix_pdbdir_for_ninja(package)
     ninja.install(package, {}, {envs = opt.envs or buildenvs(package, opt),
         jobs = opt.jobs,
-        targets = opt.target or opt.targets})
+        targets = opt.targets or opt.target})
 end
 
 -- do install for cmake/build
