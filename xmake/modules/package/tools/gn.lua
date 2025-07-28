@@ -127,7 +127,7 @@ function build(package, configs, opt)
 
     -- do build
     local builddir = _get_builddir(opt)
-    local targets = table.wrap(opt.target)
+    local targets = table.wrap(opt.targets or opt.target)
     ninja.build(package, targets, {builddir = builddir, envs = opt.envs or buildenvs(package, opt)})
 end
 
@@ -140,6 +140,6 @@ function install(package, configs, opt)
 
     -- do build and install
     local builddir = _get_builddir(opt)
-    local targets = table.wrap(opt.target)
+    local targets = table.wrap(opt.targets or opt.target)
     ninja.install(package, targets, {builddir = builddir, envs = opt.envs or buildenvs(package, opt)})
 end
