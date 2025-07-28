@@ -527,7 +527,7 @@ function install(package, configs, opt)
     if njob then
         table.insert(argv, "--jobs=" .. njob)
     end
-    local target = table.wrap(opt.target)
+    local target = table.wrap(opt.target or opt.targets)
     if #target ~= 0 then
         table.join2(argv, target)
     end
@@ -536,7 +536,7 @@ function install(package, configs, opt)
     -- do install
     argv = {"install", "-y", "--nopkgs", "-o", package:installdir()}
     _set_builtin_argv(package, argv)
-    local targets = table.wrap(opt.target)
+    local targets = table.wrap(opt.target or opt.targets)
     if #targets ~= 0 then
         table.join2(argv, targets)
     end
