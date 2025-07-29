@@ -73,7 +73,7 @@ end
 function _ping_via_wget(wget, host)
     local data = try { function ()
         local t = os.mclock()
-        os.runv(wget.program, {"-O", os.nuldev(), "--timeout=1", host})
+        os.runv(wget.program, {"-O", os.nuldev(), "--tries=1", "--timeout=1", host})
         t = os.mclock() - t
         return t
     end }
