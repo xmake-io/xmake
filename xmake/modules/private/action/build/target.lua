@@ -290,6 +290,7 @@ function add_targetjobs(jobgraph, target, opt)
 
     local buildcmds = opt.buildcmds
     local job_kind = opt.job_kind
+    local for_generator = opt.for_generator
     local job_begin = string.format("%s/begin_%s", target:fullname(), job_kind)
     local job_end = string.format("%s/end_%s", target:fullname(), job_kind)
     jobgraph:add(job_begin, function (index, total, opt)
@@ -315,7 +316,7 @@ function add_targetjobs(jobgraph, target, opt)
         end
 
         -- clean target first if rebuild
-        if job_kind == "prepare" and target:is_rebuilt() and not option.get("dry-run") then
+        if job_kind == "prepare" and target:is_rebuilt() and not for_generator and not option.get("dry-run") then
             _clean_target(target)
         end
     end)

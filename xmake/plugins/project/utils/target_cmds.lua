@@ -29,7 +29,7 @@ import("private.action.build.target", {alias = "target_buildutils"})
 -- prepare targets
 function prepare_targets()
     local targets_root = target_buildutils.get_root_targets()
-    target_buildutils.run_targetjobs(targets_root, {job_kind = "prepare"})
+    target_buildutils.run_targetjobs(targets_root, {job_kind = "prepare", for_generator = true})
 end
 
 -- get target buildcmds
@@ -58,6 +58,7 @@ function get_target_buildcmds(target, opt)
     local buildcmds = batchcmds.new({target = target})
     local jobgraph = target_buildutils.get_targetjobs({target}, {
         job_kind = "build",
+        for_generator = true,
         buildcmds = buildcmds,
         with_stages = hashset.from(opt.stages or {}),
         ignored_rules = hashset.from(opt.ignored_rules or {})})
