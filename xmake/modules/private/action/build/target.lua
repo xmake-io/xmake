@@ -131,13 +131,13 @@ end
 -- add target jobs for the builtin script
 function add_targetjobs_for_builtin_script(jobgraph, target, opt)
     opt = opt or {}
-    local job_kind = opt.job_kind
+    local job_kind = opt.job_kind or "build"
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
         if job_kind == "prepare" then
             import("private.action.build.prepare_files", {anonymous = true})(jobgraph, target, opt)
         elseif job_kind == "link" then
             import("private.action.build.link_objects", {anonymous = true})(jobgraph, target, opt)
-        else
+        elseif job_kind == "build" then
             import("private.action.build.build_" .. target:kind(), {anonymous = true})(jobgraph, target, opt)
         end
     end
