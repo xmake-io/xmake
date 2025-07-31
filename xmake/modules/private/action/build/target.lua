@@ -148,6 +148,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
     opt = opt or {}
     local has_script = false
     local buildcmds = opt.buildcmds
+    local job_opt = opt.job_opt
     local job_prefix = target:fullname()
     if target == instance then
         job_prefix = job_prefix .. "/target"
@@ -179,7 +180,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
                 --     end)
                 local jobname = string.format("%s/%s", job_prefix, script_name)
                 jobgraph:add(jobname, function (index, total, opt)
-                    script(target, {progress = opt.progress})
+                    script(target, table.join({progress = opt.progress}, job_opt))
                 end)
             end
             has_script = true
@@ -203,7 +204,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
                     scriptcmd(target, buildcmds, {progress = opt.progress})
                 else
                     local batchcmds_ = batchcmds.new({target = target})
-                    scriptcmd(target, batchcmds_, {progress = opt.progress})
+                    scriptcmd(target, batchcmds_, table.join({progress = opt.progress}, job_opt))
                     batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
                 end
             end)
@@ -243,7 +244,8 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
         local script_opt = {
             script_name = script_name,
             scriptcmd_name = scriptcmd_name,
-            buildcmds = opt.buildcmds
+            buildcmds = opt.buildcmds,
+            job_opt = opt.job_opt
         }
         for _, instance in ipairs(instances) do
             -- we need to use this group to sort rule scripts with add_orders
