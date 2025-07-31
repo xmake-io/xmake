@@ -595,7 +595,10 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_SYSTEM_PROCESSOR    = _get_cmake_system_processor(package)
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
-    envs.CMAKE_FIND_ROOT_PATH      = sdkdir
+    -- https://github.com/xmake-io/xmake/issues/6660
+    if sdkdir and sdkdir ~= "/usr" then
+        envs.CMAKE_FIND_ROOT_PATH = sdkdir
+    end
     envs.CMAKE_FIND_ROOT_PATH_MODE_PACKAGE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
@@ -692,7 +695,10 @@ function _get_configs_for_cross(package, configs, opt)
     end
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
-    envs.CMAKE_FIND_ROOT_PATH              = sdkdir
+    -- https://github.com/xmake-io/xmake/issues/6660
+    if sdkdir and sdkdir ~= "/usr" then
+        envs.CMAKE_FIND_ROOT_PATH = sdkdir
+    end
     envs.CMAKE_FIND_ROOT_PATH_MODE_PACKAGE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
@@ -712,7 +718,6 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     opt = opt or {}
     opt.cross                      = true
     local envs                     = {}
-    local sdkdir                   = _translate_paths(package:build_getenv("sdk"))
     envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
     envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
     envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
