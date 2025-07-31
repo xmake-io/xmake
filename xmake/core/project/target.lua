@@ -2002,13 +2002,14 @@ function _instance:sourcefiles()
             removed = true
         end
 
-        -- find source files and try to cache the matching results of os.match across targets
-        -- @see https://github.com/xmake-io/xmake/issues/1353
-        local results = targetcache:get2("sourcefiles", file)
-        if not results then
-            if removed then
-                results = {file}
-            else
+        local results
+        if removed then
+            results = {file}
+        else
+            -- find source files and try to cache the matching results of os.match across targets
+            -- @see https://github.com/xmake-io/xmake/issues/1353
+            results = targetcache:get2("sourcefiles", file)
+            if results == nil then
                 results = os.files(file)
                 if #results == 0 then
                     -- attempt to find source directories if maybe compile it as directory with the custom rules
