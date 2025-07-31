@@ -487,9 +487,18 @@ end
 
 -- install package
 function install(package, configs, opt)
+    opt = opt or {}
+
+    -- copy the ported xmake.lua in the default position if it's missing
+    local xmakefile = path.join(opt.curdir or os.curdir(), "xmake.lua")
+    if not os.isfile(xmakefile) then
+        local xmakefile_port = path.join(package:scriptdir(), "port", "xmake.lua")
+        if os.isfile(xmakefile_port) then
+            os.cp(xmakefile_port, xmakefile)
+        end
+    end
 
     -- get build environments
-    opt = opt or {}
     local envs = opt.envs or buildenvs(package)
 
     -- pass local repositories
@@ -497,7 +506,7 @@ function install(package, configs, opt)
         local repo_argv = {"repo"}
         _set_builtin_argv(package, repo_argv)
         table.join2(repo_argv, {"--add", repo:name(), repo:directory()})
-        os.vrunv(os.programfile(), repo_argv, {envs = envs})
+        os.vrunv(os.programfile(), repo_argv, {envs = envs, curdir = opt.curdir})
     end
 
     -- pass configurations
@@ -518,7 +527,7 @@ function install(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv(os.programfile(), argv, {envs = envs})
+    os.vrunv(os.programfile(), argv, {envs = envs, curdir = opt.curdir})
 
     -- do build
     argv = {"build"}
@@ -531,7 +540,7 @@ function install(package, configs, opt)
     if #targets ~= 0 then
         table.join2(argv, targets)
     end
-    os.vrunv(os.programfile(), argv, {envs = envs})
+    os.vrunv(os.programfile(), argv, {envs = envs, curdir = opt.curdir})
 
     -- do install
     argv = {"install", "-y", "--nopkgs", "-o", package:installdir()}
@@ -540,5 +549,5 @@ function install(package, configs, opt)
     if #targets ~= 0 then
         table.join2(argv, targets)
     end
-    os.vrunv(os.programfile(), argv, {envs = envs})
+    os.vrunv(os.programfile(), argv, {envs = envs, curdir = opt.curdir})
 end
