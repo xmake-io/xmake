@@ -2279,7 +2279,12 @@ end
 function _instance:resourcedir(name)
     local resource = self:resource(name)
     if resource and resource.url then
-        return path.join(self:cachedir(), "resources", name, (path.filename(resource.url):gsub("%?.+$", "")) .. ".dir")
+        local resourceurl = resource.url
+        local resourcedir = path.join(self:cachedir(), "resources", name, (path.filename(resourceurl):gsub("%?.+$", "")))
+        if not resourceurl:startswith("git://") and not resourceurl:endswith(".git") then
+            resourcedir = resourcedir .. ".dir"
+        end
+        return resourcedir
     end
 end
 

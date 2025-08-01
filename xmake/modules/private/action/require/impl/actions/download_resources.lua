@@ -137,9 +137,9 @@ function _download(package, resource_name, resource_url, resource_hash)
     local extension = archive.extension(resource_file)
     local errors
     local ok = try {
-        function() 
+        function ()
             archive.extract(resource_file, resourcedir_tmp)
-            return true 
+            return true
         end,
         catch {
             function (errs)
