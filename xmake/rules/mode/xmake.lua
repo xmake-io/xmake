@@ -197,6 +197,10 @@ rule("mode.coverage")
             target:add("mxflags", "--coverage")
             target:add("ldflags", "--coverage")
             target:add("shflags", "--coverage")
+
+            -- disable build cache, it does not support to cache coverage files
+            -- https://github.com/xmake-io/xmake/issues/6664
+            target:set("policy", "build.ccache", false)
         end
     end)
 
