@@ -238,6 +238,8 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
             table.insert(instances, ruleinst)
         end
     end
+    -- on_config is different from on_build/on_prepare,
+    -- it does not rewrite all rules, and target.on_config needs to be called last.
     if job_kind == "config" then
         instances = table.slice(instances, 2)
         table.insert(instances, target)
