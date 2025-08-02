@@ -126,51 +126,7 @@ function sandbox_core_project.check_options()
     end
 end
 
--- config target
-function sandbox_core_project._config_target(target, opt)
-
-    -- enter the environments of the target packages
-    local oldenvs = os.addenvs(target:pkgenvs())
-
-    -- do config
-    local before_config = target:script("config_before")
-    if before_config then
-        before_config(target, opt)
-    end
-    for _, rule in ipairs(table.wrap(target:orderules())) do
-        local before_config = rule:script("config_before")
-        if before_config then
-            before_config(target, opt)
-        end
-    end
-
-    for _, rule in ipairs(table.wrap(target:orderules())) do
-        local on_config = rule:script("config")
-        if on_config then
-            on_config(target, opt)
-        end
-    end
-    local on_config = target:script("config")
-    if on_config then
-        on_config(target, opt)
-    end
-
-    for _, rule in ipairs(table.wrap(target:orderules())) do
-        local after_config = rule:script("config_after")
-        if after_config then
-            after_config(target, opt)
-        end
-    end
-    local config_after = target:script("config_after")
-    if config_after then
-        config_after(target, opt)
-    end
-
-    -- leave the environments of the target packages
-    os.setenvs(oldenvs)
-end
-
--- config targets, TODO: We should support parallel configuration
+-- config targets
 --
 -- @param opt   the extra option, e.g. {recheck = false}
 --
@@ -182,12 +138,9 @@ end
 -- end
 --
 function sandbox_core_project._config_targets(opt)
-    opt = opt or {}
-    for _, target in ipairs(table.wrap(project.ordertargets())) do
-        if target:is_enabled() then
-            sandbox_core_project._config_target(target, opt)
-        end
-    end
+    import("private.action.build.target", {alias = "target_buildutils"})
+    local targets_root = target_buildutils.get_root_targets()
+    target_buildutils.run_targetjobs(targets_root, {job_kind = "config", job_opt = opt})
 end
 
 -- load rules in the required packages for target
