@@ -238,6 +238,10 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
             table.insert(instances, ruleinst)
         end
     end
+    if job_kind == "config" then
+        instances = table.slice(instances, 2)
+        table.insert(instances, target)
+    end
     local jobsize = jobgraph:size()
     jobgraph:group(group_name, function ()
         local has_script = false
