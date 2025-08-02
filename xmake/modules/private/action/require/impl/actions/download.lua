@@ -149,7 +149,7 @@ function _download(package, url, sourcedir, opt)
 
     -- get package file
     local packagefile = url_filename(url)
-    if opt.download_only then
+    if not os.isfile(packagefile) then -- we need to be compatible with the old file names
         packagefile = package:name() .. "-" .. package:version_str() .. archive.extension(packagefile)
     end
 
