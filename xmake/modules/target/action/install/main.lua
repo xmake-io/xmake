@@ -219,23 +219,29 @@ function _install_shared(target, opt)
     local targetfile = target:targetfile()
 
     if target:is_plat("windows", "mingw") then
+        os.vcp(target:targetfile(), bindir)
+    else
+        -- install target with soname and symlink
+        _copy_file_with_symlinks(targetfile, bindir)
+    end
+    os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
+    _install_shared_libraries(target, opt)
+
+    if option.get("binonly") then
+        return
+    end
+
+    _install_headers(target, opt)
+    if target:is_plat("windows", "mingw") then
         -- install *.lib for shared/windows (*.dll) target
         -- @see https://github.com/xmake-io/xmake/issues/714
-        os.vcp(target:targetfile(), bindir)
         local libdir = _get_target_libdir(target, opt)
         local implibfile = target:artifactfile("implib")
         if os.isfile(implibfile) then
             os.mkdir(libdir)
             os.vcp(implibfile, libdir)
         end
-    else
-        -- install target with soname and symlink
-        _copy_file_with_symlinks(targetfile, bindir)
     end
-    os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
-
-    _install_headers(target, opt)
-    _install_shared_libraries(target, opt)
 end
 
 -- install static library
