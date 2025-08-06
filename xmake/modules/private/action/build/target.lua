@@ -747,13 +747,14 @@ function get_root_targets(targetnames, opt)
             end
         end
     else
+        local all = opt.all
         local group_pattern = opt.group_pattern
         local depset = hashset.new()
         local targets = {}
         for _, target in ipairs(project.ordertargets()) do
             if target:is_enabled() then
                 local group = target:get("group")
-                if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
+                if (target:is_default() and not group_pattern) or all or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
                     for _, depname in ipairs(target:get("deps")) do
                         depset:insert(depname)
                     end
