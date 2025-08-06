@@ -566,8 +566,6 @@ function project._load_requires()
             local info = {__requirestr = requirestr, __requireconfs = requireconfs}
             instance = project_package.load_withinfo(name, info)
         end
-        print(instance:name())
-        instance:dump()
 
         -- add require info
         requires[name] = instance

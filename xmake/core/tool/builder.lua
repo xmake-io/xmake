@@ -580,10 +580,6 @@ function builder:_sort_links_of_items(items, opt)
         linkitems = table.reverse(linkitems)
         for _, item in ipairs(linkitems) do
             local name = item.name
-        if item.name == "linkgroups" then
-            utils.dump(item)
-        end
-
             for _, value in ipairs(item.values) do
                 if name == "links" or name == "syslinks" then
                     if not linkgroups_set:has(value) then
@@ -601,6 +597,8 @@ function builder:_sort_links_of_items(items, opt)
                     if oldvalue == nil then
                         linkgroups_map[key] = value
                     else
+                        -- merge linkgroups if multiple groups have same group name
+                        -- @see https://github.com/xmake-io/xmake/issues/5806
                         local oldvalue_wrap_unlock = table.clone(oldvalue)
                         table.wrap_unlock(oldvalue_wrap_unlock)
                         local value_wrap_unlock = table.clone(value)
@@ -608,16 +606,23 @@ function builder:_sort_links_of_items(items, opt)
                         local newvalue = table.join(oldvalue_wrap_unlock, value_wrap_unlock)
                         table.wrap_lock(newvalue)
                         linkgroups_map[key] = newvalue
+
+                        -- merge linkgroups extras
+                        local extra_merged = {}
+                        local group_name = extra.name
+                        for k, v in pairs(extras) do
+                            if v.name == group_name then
+                                table.join2(extra_merged, v)
+                            end
+                        end
+                        local newgroup_name = table.concat(newvalue, "_")
+                        extras[newgroup_name] = extra_merged
                     end
-                    print(key, string.serialize(linkgroups_map[key]))
-                    print(key, string.serialize(extras))
                 end
             end
         end
-
         links = table.reverse_unique(links)
     end
-    utils.dump(linkgroups_map)
 
     -- sort sublinks
     if sortlinks then
