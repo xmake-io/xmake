@@ -475,6 +475,7 @@ function builder:_add_flags_from_language(flags, opt)
                 self:_add_items_from_toolchain(items, flagname, opt_)
             end
         end
+
     end
 
     -- sort links
@@ -579,6 +580,10 @@ function builder:_sort_links_of_items(items, opt)
         linkitems = table.reverse(linkitems)
         for _, item in ipairs(linkitems) do
             local name = item.name
+        if item.name == "linkgroups" then
+            utils.dump(item)
+        end
+
             for _, value in ipairs(item.values) do
                 if name == "links" or name == "syslinks" then
                     if not linkgroups_set:has(value) then
@@ -591,14 +596,28 @@ function builder:_sort_links_of_items(items, opt)
                     local extra = self:_extraconf(extras, value)
                     local key = extra and extra.name or tostring(value)
                     table.insert(links, "linkgroup::" .. key)
-                    linkgroups_map[key] = value
                     extras_map[key] = extras
+                    local oldvalue = linkgroups_map[key]
+                    if oldvalue == nil then
+                        linkgroups_map[key] = value
+                    else
+                        local oldvalue_wrap_unlock = table.clone(oldvalue)
+                        table.wrap_unlock(oldvalue_wrap_unlock)
+                        local value_wrap_unlock = table.clone(value)
+                        table.wrap_unlock(value_wrap_unlock)
+                        local newvalue = table.join(oldvalue_wrap_unlock, value_wrap_unlock)
+                        table.wrap_lock(newvalue)
+                        linkgroups_map[key] = newvalue
+                    end
+                    print(key, string.serialize(linkgroups_map[key]))
+                    print(key, string.serialize(extras))
                 end
             end
         end
 
         links = table.reverse_unique(links)
     end
+    utils.dump(linkgroups_map)
 
     -- sort sublinks
     if sortlinks then
