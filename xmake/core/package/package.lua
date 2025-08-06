@@ -2160,7 +2160,7 @@ function _instance:fetch_librarydeps()
     if not fetchinfo then
         return
     end
-    fetchinfo = table.copy(fetchinfo) -- avoid the cached fetchinfo be modified
+    fetchinfo = table.clone(fetchinfo, 3) -- avoid the cached fetchinfo be modified
     local librarydeps = self:librarydeps()
     if librarydeps then
         for _, dep in ipairs(librarydeps) do
