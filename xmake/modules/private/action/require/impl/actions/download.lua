@@ -37,6 +37,7 @@ import("utils.archive")
 -- checkout codes from git
 function _checkout(package, url, sourcedir, opt)
     opt = opt or {}
+    local filename = opt.url_filename or url_filename(url)
 
     -- we need to enable longpaths on windows
     local longpaths = package:policy("platform.longpaths")
@@ -62,7 +63,7 @@ function _checkout(package, url, sourcedir, opt)
     -- we can use local package from the search directories directly if network is too slow
     local localdir
     local searchnames = {package:name() .. archive.extension(url),
-                         path.basename(url_filename(url))}
+                         path.basename(filename)}
     for _, searchname in ipairs(searchnames) do
         localdir = find_directory(searchname, core_package.searchdirs())
         if localdir then
@@ -148,9 +149,12 @@ function _download(package, url, sourcedir, opt)
     opt = opt or {}
 
     -- get package file
-    local packagefile = url_filename(url)
-    if not os.isfile(packagefile) then -- we need to be compatible with the old file names
-        packagefile = package:name() .. "-" .. package:version_str() .. archive.extension(packagefile)
+    local packagefile = opt.url_filename
+    if not packagefile then
+        packagefile = url_filename(url)
+        if not os.isfile(packagefile) then -- we need to be compatible with the old file names
+            packagefile = package:name() .. "-" .. package:version_str() .. archive.extension(packagefile)
+        end
     end
 
     -- get sourcehash from the given url
@@ -326,6 +330,7 @@ function main(package, opt)
         local url_includes = package:url_includes(url)
         local url_http_headers = package:url_http_headers(url)
         local url_submodules = package:extraconf("urls", url, "submodules")
+        local url_filename_custom = package:extraconf("urls", url, "filename")
 
         -- filter url
         url = filter.handle(url, package)
@@ -360,19 +365,22 @@ function main(package, opt)
                         url_alias = url_alias,
                         url_excludes = url_excludes,
                         url_includes = url_includes,
-                        url_submodules = url_submodules})
+                        url_submodules = url_submodules,
+                        url_filename = url_filename_custom})
                 elseif git.checkurl(url) then
                     _checkout(package, url, sourcedir, {
                         url_alias = url_alias,
                         url_includes = url_includes,
-                        url_submodules = url_submodules})
+                        url_submodules = url_submodules,
+                        url_filename = url_filename_custom})
                 else
                     _download(package, url, sourcedir, {
                         download_only = opt.download_only,
                         url_alias = url_alias,
                         url_excludes = url_excludes,
                         url_includes = url_includes,
-                    url_http_headers = url_http_headers})
+                        url_http_headers = url_http_headers,
+                        url_filename = url_filename_custom})
                 end
                 return true
             end,
