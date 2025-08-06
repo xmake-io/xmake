@@ -68,7 +68,6 @@ rule("qt.shared")
 -- define rule: qt console
 rule("qt.console")
     add_deps("qt.qrc", "qt.ui", "qt.moc", "qt.ts")
-    add_orders("qt.console", "platform.windows.subsystem")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -85,7 +84,6 @@ rule("qt.console")
 -- define rule: qt widgetapp
 rule("qt.widgetapp")
     add_deps("qt.ui", "qt.moc", "qt._wasm_app", "qt.qrc", "qt.ts")
-    add_orders("qt.widgetapp", "platform.windows.subsystem")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -121,7 +119,6 @@ rule("qt.widgetapp")
 -- define rule: qt static widgetapp
 rule("qt.widgetapp_static")
     add_deps("qt.ui", "qt.moc", "qt._wasm_app", "qt.qrc", "qt.ts")
-    add_orders("qt.widgetapp_static", "platform.windows.subsystem")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -150,7 +147,6 @@ rule("qt.widgetapp_static")
 -- define rule: qt quickapp
 rule("qt.quickapp")
     add_deps("qt.qrc", "qt.moc", "qt._wasm_app", "qt.ts")
-    add_orders("qt.quickapp", "platform.windows.subsystem")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -173,7 +169,6 @@ rule("qt.quickapp")
 -- define rule: qt static quickapp
 rule("qt.quickapp_static")
     add_deps("qt.qrc", "qt.moc", "qt._wasm_app", "qt.ts")
-    add_orders("qt.quickapp_static", "platform.windows.subsystem")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)

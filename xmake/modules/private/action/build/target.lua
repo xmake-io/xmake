@@ -131,13 +131,13 @@ end
 -- add target jobs for the builtin script
 function add_targetjobs_for_builtin_script(jobgraph, target, opt)
     opt = opt or {}
-    local job_kind = opt.job_kind or "build"
+    local job_kind = opt.job_kind
     if target:is_static() or target:is_binary() or target:is_shared() or target:is_object() or target:is_moduleonly() then
         if job_kind == "prepare" then
             import("private.action.build.prepare_files", {anonymous = true})(jobgraph, target, opt)
         elseif job_kind == "link" then
             import("private.action.build.link_objects", {anonymous = true})(jobgraph, target, opt)
-        elseif job_kind == "build" then
+        else
             import("private.action.build.build_" .. target:kind(), {anonymous = true})(jobgraph, target, opt)
         end
     end
@@ -148,7 +148,6 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
     opt = opt or {}
     local has_script = false
     local buildcmds = opt.buildcmds
-    local job_opt = opt.job_opt
     local job_prefix = target:fullname()
     if target == instance then
         job_prefix = job_prefix .. "/target"
@@ -180,7 +179,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
                 --     end)
                 local jobname = string.format("%s/%s", job_prefix, script_name)
                 jobgraph:add(jobname, function (index, total, opt)
-                    script(target, table.join({progress = opt.progress}, job_opt))
+                    script(target, {progress = opt.progress})
                 end)
             end
             has_script = true
@@ -204,7 +203,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
                     scriptcmd(target, buildcmds, {progress = opt.progress})
                 else
                     local batchcmds_ = batchcmds.new({target = target})
-                    scriptcmd(target, batchcmds_, table.join({progress = opt.progress}, job_opt))
+                    scriptcmd(target, batchcmds_, {progress = opt.progress})
                     batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
                 end
             end)
@@ -238,20 +237,13 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
             table.insert(instances, ruleinst)
         end
     end
-    -- on_config is different from on_build/on_prepare,
-    -- it does not rewrite all rules, and target.on_config needs to be called last.
-    if job_kind == "config" then
-        instances = table.slice(instances, 2)
-        table.insert(instances, target)
-    end
     local jobsize = jobgraph:size()
     jobgraph:group(group_name, function ()
         local has_script = false
         local script_opt = {
             script_name = script_name,
             scriptcmd_name = scriptcmd_name,
-            buildcmds = opt.buildcmds,
-            job_opt = opt.job_opt
+            buildcmds = opt.buildcmds
         }
         for _, instance in ipairs(instances) do
             -- we need to use this group to sort rule scripts with add_orders
