@@ -38,6 +38,7 @@ task("install")
                                               "    xmake install --group=benchmark/*"     },
             {'a', "all",        "k",  nil   , "Install all targets."                      },
             {nil, "nopkgs",     "k",  nil   , "Only install targets without packages."    },
+            {nil, "binonly",    "k",  nil   , "Only install targets with bindir."         },
             {nil, "admin",      "k",  nil   , "Try to request administrator permission to install"},
             {},
             {nil, "target",     "v",  nil   , "The target name. It will install all default targets if this parameter is not specified.",
