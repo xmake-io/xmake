@@ -93,8 +93,6 @@ end
 
 -- load compiler tool
 function compiler._load_tool(sourcekind, target)
-
-    -- get program from target
     local program, toolname, toolchain_info
     if target and target.tool then
         program, toolname, toolchain_info = target:tool(sourcekind)
@@ -144,11 +142,7 @@ function compiler.load(sourcekind, target)
     compiler._INSTANCES = compiler._INSTANCES or {}
     local instance = compiler._INSTANCES[cachekey]
     if not instance then
-
-        -- new instance
         instance = table.inherit(compiler, builder)
-
-        -- save the compiler tool
         instance._TOOL = compiler_tool
 
         -- load the compiler language from the source kind
@@ -203,8 +197,6 @@ end
 
 -- build the source files (compile and link)
 function compiler:build(sourcefiles, targetfile, opt)
-
-    -- init options
     opt = opt or {}
 
     -- get compile flags
@@ -228,15 +220,11 @@ function compiler:build(sourcefiles, targetfile, opt)
     if not targetkind and opt.target and opt.target.targetkind then
         targetkind = opt.target:kind()
     end
-
-    -- get it
     return sandbox.load(self:_tool().build, self:_tool(), sourcefiles, targetkind or "binary", targetfile, flags)
 end
 
 -- get the build arguments list (compile and link)
 function compiler:buildargv(sourcefiles, targetfile, opt)
-
-    -- init options
     opt = opt or {}
 
     -- get compile flags
@@ -260,8 +248,6 @@ function compiler:buildargv(sourcefiles, targetfile, opt)
     if not targetkind and opt.target and opt.target.targetkind then
         targetkind = opt.target:kind()
     end
-
-    -- get it
     return self:_tool():buildargv(sourcefiles, targetkind or "binary", targetfile, flags)
 end
 
