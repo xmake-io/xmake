@@ -136,6 +136,9 @@ function compiler.load(sourcekind, target)
     local plat = compiler_tool:plat() or config.plat() or os.host()
     local arch = compiler_tool:arch() or config.arch() or os.arch()
     local cachekey = sourcekind .. (program_or_errors or "") .. plat .. arch
+    if target then
+        cachekey = cachekey .. tostring(target)
+    end
 
     -- get it directly from cache dirst
     compiler._INSTANCES = compiler._INSTANCES or {}
@@ -322,14 +325,10 @@ end
 -- @return      flags list
 --
 function compiler:compflags(opt)
-
-    -- init options
     opt = opt or {}
 
     -- get target
-    local target = opt.target
-
-    -- get target kind
+    local target = opt.target or self:target()
     local targetkind = opt.targetkind
     if not targetkind and target and target:type() == "target" then
         targetkind = target:kind()
