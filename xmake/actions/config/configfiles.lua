@@ -74,7 +74,7 @@ function _get_configfiles()
                 table.insert(srcinfo.targets, target)
 
                 -- save preprocessors
-                local preprocessor = target:extraconf("configfiles", srcfile, "preprocessor")
+                local preprocessor = fileinfo and fileinfo.preprocessor
                 if preprocessor then
                     srcinfo.preprocessors = srcinfo.preprocessors or {}
                     table.insert(srcinfo.preprocessors, preprocessor)
