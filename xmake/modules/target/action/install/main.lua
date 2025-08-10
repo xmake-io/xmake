@@ -50,7 +50,7 @@ function _get_target_includedir(target, opt)
 end
 
 function _get_target_package_libfiles(target, opt)
-    if option.get("nopkgs") then
+    if not option.get("packages") then
         return {}
     end
     opt = opt or {}
@@ -204,57 +204,72 @@ end
 
 -- install binary
 function _install_binary(target, opt)
-    local bindir = _get_target_bindir(target, opt)
-    os.mkdir(bindir)
-    os.vcp(target:targetfile(), bindir)
-    os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
-    _install_shared_libraries(target, opt)
-    _update_install_rpath(target, opt)
+    if option.get("libraries") then
+        _install_shared_libraries(target, opt)
+    end
+    if option.get("binaries") then
+        local bindir = _get_target_bindir(target, opt)
+        os.mkdir(bindir)
+        os.vcp(target:targetfile(), bindir)
+        os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
+        _update_install_rpath(target, opt)
+    end
 end
 
 -- install shared library
 function _install_shared(target, opt)
-    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt)
-    os.mkdir(bindir)
-    local targetfile = target:targetfile()
+    if option.get("libraries") then
+        local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt)
+        os.mkdir(bindir)
+        local targetfile = target:targetfile()
 
-    if target:is_plat("windows", "mingw") then
-        -- install *.lib for shared/windows (*.dll) target
-        -- @see https://github.com/xmake-io/xmake/issues/714
-        os.vcp(target:targetfile(), bindir)
-        local libdir = _get_target_libdir(target, opt)
-        local implibfile = target:artifactfile("implib")
-        if os.isfile(implibfile) then
-            os.mkdir(libdir)
-            os.vcp(implibfile, libdir)
+        if target:is_plat("windows", "mingw") then
+            -- install *.lib for shared/windows (*.dll) target
+            -- @see https://github.com/xmake-io/xmake/issues/714
+            os.vcp(target:targetfile(), bindir)
+            local libdir = _get_target_libdir(target, opt)
+            local implibfile = target:artifactfile("implib")
+            if os.isfile(implibfile) then
+                os.mkdir(libdir)
+                os.vcp(implibfile, libdir)
+            end
+        else
+            -- install target with soname and symlink
+            _copy_file_with_symlinks(targetfile, bindir)
         end
-    else
-        -- install target with soname and symlink
-        _copy_file_with_symlinks(targetfile, bindir)
+        os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
+        _install_shared_libraries(target, opt)
     end
-    os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
-
-    _install_headers(target, opt)
-    _install_shared_libraries(target, opt)
+    if option.get("headers") then
+        _install_headers(target, opt)
+    end
 end
 
 -- install static library
 function _install_static(target, opt)
-    local libdir = _get_target_libdir(target, opt)
-    os.mkdir(libdir)
-    os.vcp(target:targetfile(), libdir)
-    os.trycp(target:symbolfile(), path.join(libdir, path.filename(target:symbolfile())))
-    _install_headers(target, opt)
+    if option.get("libraries") then
+        local libdir = _get_target_libdir(target, opt)
+        os.mkdir(libdir)
+        os.vcp(target:targetfile(), libdir)
+        os.trycp(target:symbolfile(), path.join(libdir, path.filename(target:symbolfile())))
+    end
+    if option.get("headers") then
+        _install_headers(target, opt)
+    end
 end
 
 -- install headeronly library
 function _install_headeronly(target, opt)
-    _install_headers(target, opt)
+    if option.get("headers") then
+        _install_headers(target, opt)
+    end
 end
 
 -- install moduleonly library
 function _install_moduleonly(target, opt)
-    _install_headers(target, opt)
+    if option.get("headers") then
+        _install_headers(target, opt)
+    end
 end
 
 function main(target, opt)

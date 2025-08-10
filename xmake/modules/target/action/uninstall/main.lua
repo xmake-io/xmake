@@ -50,9 +50,6 @@ function _get_target_includedir(target, opt)
 end
 
 function _get_target_package_libfiles(target, opt)
-    if option.get("nopkgs") then
-        return {}
-    end
     opt = opt or {}
     local libfiles = {}
     for _, pkg in ipairs(target:orderpkgs(opt)) do
