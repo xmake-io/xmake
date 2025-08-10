@@ -93,8 +93,6 @@ end
 
 -- load compiler tool
 function compiler._load_tool(sourcekind, target)
-
-    -- get program from target
     local program, toolname, toolchain_info
     if target and target.tool then
         program, toolname, toolchain_info = target:tool(sourcekind)
@@ -136,16 +134,15 @@ function compiler.load(sourcekind, target)
     local plat = compiler_tool:plat() or config.plat() or os.host()
     local arch = compiler_tool:arch() or config.arch() or os.arch()
     local cachekey = sourcekind .. (program_or_errors or "") .. plat .. arch
+    if target then
+        cachekey = cachekey .. tostring(target)
+    end
 
     -- get it directly from cache dirst
     compiler._INSTANCES = compiler._INSTANCES or {}
     local instance = compiler._INSTANCES[cachekey]
     if not instance then
-
-        -- new instance
         instance = table.inherit(compiler, builder)
-
-        -- save the compiler tool
         instance._TOOL = compiler_tool
 
         -- load the compiler language from the source kind
@@ -200,8 +197,6 @@ end
 
 -- build the source files (compile and link)
 function compiler:build(sourcefiles, targetfile, opt)
-
-    -- init options
     opt = opt or {}
 
     -- get compile flags
@@ -225,15 +220,11 @@ function compiler:build(sourcefiles, targetfile, opt)
     if not targetkind and opt.target and opt.target.targetkind then
         targetkind = opt.target:kind()
     end
-
-    -- get it
     return sandbox.load(self:_tool().build, self:_tool(), sourcefiles, targetkind or "binary", targetfile, flags)
 end
 
 -- get the build arguments list (compile and link)
 function compiler:buildargv(sourcefiles, targetfile, opt)
-
-    -- init options
     opt = opt or {}
 
     -- get compile flags
@@ -257,8 +248,6 @@ function compiler:buildargv(sourcefiles, targetfile, opt)
     if not targetkind and opt.target and opt.target.targetkind then
         targetkind = opt.target:kind()
     end
-
-    -- get it
     return self:_tool():buildargv(sourcefiles, targetkind or "binary", targetfile, flags)
 end
 
@@ -322,14 +311,10 @@ end
 -- @return      flags list
 --
 function compiler:compflags(opt)
-
-    -- init options
     opt = opt or {}
 
     -- get target
-    local target = opt.target
-
-    -- get target kind
+    local target = opt.target or self:target()
     local targetkind = opt.targetkind
     if not targetkind and target and target:type() == "target" then
         targetkind = target:kind()

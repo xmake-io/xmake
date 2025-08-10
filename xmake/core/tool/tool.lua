@@ -246,6 +246,11 @@ function tool.load(kind, opt)
 
     -- init cachekey
     local cachekey = kind .. (program or "") .. plat .. arch .. (opt.host and "host" or "")
+    if toolchain_info and toolchain_info.cachekey then
+        -- it maybe contains target key
+        -- @see https://github.com/xmake-io/xmake/issues/6672
+        cachekey = cachekey .. toolchain_info.cachekey
+    end
 
     -- get it directly from cache dirst
     tool._TOOLS = tool._TOOLS or {}
