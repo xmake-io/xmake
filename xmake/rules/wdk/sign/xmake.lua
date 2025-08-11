@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, Xmake Open Source Community.
+-- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        xmake.lua
@@ -24,7 +24,7 @@
 --   - wdk.sign.mode:       nosign/test/release (default: nosign)
 --   - wdk.sign.store:      PrivateCertStore
 --   - wdk.sign.thumbprint: 032122545DCAA6167B1ADBE5F7FDF07AE2234AAA
---   - wdk.sign.company:    xmake.io
+--   - wdk.sign.company:    tboox.org
 --   - wdk.sign.certfile:   signcert.cer
 --   - wdk.sign.timestamp:  http://timestamp.verisign.com/scripts/timstamp.dll
 --
@@ -127,7 +127,7 @@ rule("wdk.sign")
 
             -- do inf2cat
             local inf2cat_dir = path.directory(target:targetfile())
-            local inf2cat_argv = {"/driver:" .. inf2cat_dir}
+            local inf2cat_argv = {"/driver:" .. inf2cat_dir, "/uselocaltime"}
             local inf2cat_os = target:values("wdk.inf2cat.os") or {"XP_" .. arch, "7_" .. arch, "8_" .. arch, "10_" .. arch}
             table.insert(inf2cat_argv, "/os:" .. table.concat(table.wrap(inf2cat_os), ','))
             os.vrunv(inf2cat, inf2cat_argv)
