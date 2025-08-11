@@ -543,7 +543,7 @@ function install(package, configs, opt)
     os.vrunv(os.programfile(), argv, {envs = envs, curdir = opt.curdir})
 
     -- do install
-    argv = {"install", "-y", "--nopkgs", "-o", package:installdir()}
+    argv = {"install", "-y", "--packages=n", "-o", package:installdir()}
     _set_builtin_argv(package, argv)
     local targets = table.wrap(opt.targets or opt.target)
     if #targets ~= 0 then

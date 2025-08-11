@@ -63,9 +63,6 @@ function _get_target_installdir(package, target)
 end
 
 function _get_target_package_libfiles(target, opt)
-    if option.get("nopkgs") then
-        return {}
-    end
     opt = opt or {}
     local libfiles = {}
     for _, pkg in ipairs(target:orderpkgs(opt)) do
