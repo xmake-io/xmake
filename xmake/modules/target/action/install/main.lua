@@ -82,7 +82,7 @@ function _get_target_package_libfiles(target, opt)
 end
 
 -- get target libraries
-function _get_target_libfiles(target, libfiles, binaryfile, refs)
+function _get_target_libfiles(target, libfiles, binaryfile, refs, opt)
     if not refs[target] then
         local plaindeps = target:get("deps")
         if plaindeps then
@@ -94,14 +94,14 @@ function _get_target_libfiles(target, libfiles, binaryfile, refs)
                         if os.isfile(depfile) then
                             table.insert(libfiles, depfile)
                         end
-                        _get_target_libfiles(dep, libfiles, dep:targetfile(), refs)
+                        _get_target_libfiles(dep, libfiles, dep:targetfile(), refs, opt)
                     elseif dep:is_library() then
-                        _get_target_libfiles(dep, libfiles, binaryfile, refs)
+                        _get_target_libfiles(dep, libfiles, binaryfile, refs, opt)
                     end
                 end
             end
         end
-        table.join2(libfiles, _get_target_package_libfiles(target, {binaryfile = binaryfile}))
+        table.join2(libfiles, _get_target_package_libfiles(target, table.join({binaryfile = binaryfile}, opt)))
         refs[target] = true
     end
 end
@@ -162,7 +162,7 @@ function _install_shared_libraries(target, opt)
 
     -- get all dependent shared libraries
     local libfiles = {}
-    _get_target_libfiles(target, libfiles, target:targetfile(), {})
+    _get_target_libfiles(target, libfiles, target:targetfile(), {}, opt)
     libfiles = table.unique(libfiles)
 
     -- do install
