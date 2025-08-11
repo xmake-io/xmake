@@ -159,6 +159,9 @@ function sandbox_core_project._load_package_rules_for_target(target)
                         target:rule_add(dep)
                     end
                 end
+            else
+                -- @see https://github.com/xmake-io/xmake/issues/6682
+                raise("target(\"%s\"): unknown package rule in add_rules(\"%s\")", target:fullname(), rulename)
             end
         end
     end
