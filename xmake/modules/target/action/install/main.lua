@@ -273,10 +273,18 @@ end
 
 function main(target, opt)
     opt = opt or {}
-    opt.headers = opt.headers or true
-    opt.binaries = opt.binaries or true
-    opt.libraries = opt.libraries or true
-    opt.packages = opt.packages or true
+    if opt.headers == nil then
+        opt.headers = true
+    end
+    if opt.binaries == nil then
+        opt.binaries = true
+    end
+    if opt.libraries == nil then
+        opt.libraries = true
+    end
+    if opt.packages == nil then
+        opt.packages = true
+    end
 
     local installdir = opt.installdir or target:installdir()
     if not installdir then
