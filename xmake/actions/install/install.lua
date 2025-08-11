@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.task")
+import("core.base.option")
 import("core.project.rule")
 import("core.project.project")
 import("target.action.install", {alias = "_do_install_target"})
@@ -42,7 +43,11 @@ function _on_install_target(target)
     if done then return end
 
     -- do install
-    _do_install_target(target)
+    _do_install_target(target, {
+        headers = option.get("headers"),
+        binaries = option.get("binaries"),
+        libraries = option.get("libraries"),
+        packages = option.get("packages")})
 end
 
 -- install the given target

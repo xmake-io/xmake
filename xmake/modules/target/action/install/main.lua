@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("core.base.option")
 import("core.base.hashset")
 import("core.project.project")
 import("utils.binary.deplibs", {alias = "get_depend_libraries"})
@@ -50,10 +49,10 @@ function _get_target_includedir(target, opt)
 end
 
 function _get_target_package_libfiles(target, opt)
-    if not option.get("packages") then
+    opt = opt or {}
+    if not opt.packages then
         return {}
     end
-    opt = opt or {}
     local libfiles = {}
     for _, pkg in ipairs(target:orderpkgs(opt)) do
         if pkg:enabled() and pkg:get("libfiles") then
@@ -204,10 +203,10 @@ end
 
 -- install binary
 function _install_binary(target, opt)
-    if option.get("libraries") then
+    if opt.libraries then
         _install_shared_libraries(target, opt)
     end
-    if option.get("binaries") then
+    if opt.binaries then
         local bindir = _get_target_bindir(target, opt)
         os.mkdir(bindir)
         os.vcp(target:targetfile(), bindir)
@@ -218,7 +217,7 @@ end
 
 -- install shared library
 function _install_shared(target, opt)
-    if option.get("libraries") then
+    if opt.libraries then
         local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt)
         os.mkdir(bindir)
         local targetfile = target:targetfile()
@@ -240,40 +239,45 @@ function _install_shared(target, opt)
         os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
         _install_shared_libraries(target, opt)
     end
-    if option.get("headers") then
+    if opt.headers then
         _install_headers(target, opt)
     end
 end
 
 -- install static library
 function _install_static(target, opt)
-    if option.get("libraries") then
+    if opt.libraries then
         local libdir = _get_target_libdir(target, opt)
         os.mkdir(libdir)
         os.vcp(target:targetfile(), libdir)
         os.trycp(target:symbolfile(), path.join(libdir, path.filename(target:symbolfile())))
     end
-    if option.get("headers") then
+    if opt.headers then
         _install_headers(target, opt)
     end
 end
 
 -- install headeronly library
 function _install_headeronly(target, opt)
-    if option.get("headers") then
+    if opt.headers then
         _install_headers(target, opt)
     end
 end
 
 -- install moduleonly library
 function _install_moduleonly(target, opt)
-    if option.get("headers") then
+    if opt.headers then
         _install_headers(target, opt)
     end
 end
 
 function main(target, opt)
     opt = opt or {}
+    opt.headers = opt.headers or true
+    opt.binaries = opt.binaries or true
+    opt.libraries = opt.libraries or true
+    opt.packages = opt.packages or true
+
     local installdir = opt.installdir or target:installdir()
     if not installdir then
         wprint("please use `xmake install -o installdir` or `set_installdir` to set install directory.")
