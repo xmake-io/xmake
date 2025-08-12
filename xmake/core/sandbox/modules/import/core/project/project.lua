@@ -150,8 +150,8 @@ function sandbox_core_project._load_package_rules_for_target(target)
     for _, rulename in ipairs(table.wrap(target:get("rules"))) do
         local packagename = rulename:match("@(.-)/")
         if packagename then
-            local pkginfo = project.required_package(packagename)
             local ruleinst
+            local pkginfo = project.required_package(packagename)
             if pkginfo then
                 ruleinst = pkginfo:rule(rulename)
                 if ruleinst then
