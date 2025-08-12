@@ -374,6 +374,7 @@ function _patch_sourcebatch(target, sourcebatch)
     keys = keys .. (#externalmodules > 0 and table.concat(table.orderkeys(externalmodules)) or " ")
     local md5sum = hash.md5(bytes(keys))
     local localcache = support.localcache()
+
     local cached_patched_sourcebatch = localcache:get2(target:fullname(), "patched_sourcebatch")
     if not cached_patched_sourcebatch or md5sum ~= cached_patched_sourcebatch.md5sum then
         local reuse = target:policy("build.c++.modules.reuse") or
@@ -403,7 +404,6 @@ function _patch_sourcebatch(target, sourcebatch)
             end
             table.insert(sourcebatch.sourcefiles, sourcefile)
             target:fileconfig_add(sourcefile, fileconfig)
-            memcache:set2(target:fullname(), "modules.changed", true)
         end
         sourcebatch.sourcekind = "cxx"
         sourcebatch.objectfiles = {}
@@ -416,6 +416,7 @@ function _patch_sourcebatch(target, sourcebatch)
             table.insert(sourcebatch.dependfiles, dependfile)
         end
         localcache:set2(target:fullname(), "patched_sourcebatch", {sourcefiles = sourcebatch.sourcefiles, dependfiles = sourcebatch.dependfiles, reused = reused, md5sum = md5sum})
+        memcache:set2(target:fullname(), "modules.changed", true)
     else
         local reused = hashset.from(cached_patched_sourcebatch.reused)
         for sourcefile, fileconfig in pairs(externalmodules) do
