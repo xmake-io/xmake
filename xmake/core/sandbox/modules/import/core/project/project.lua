@@ -151,16 +151,17 @@ function sandbox_core_project._load_package_rules_for_target(target)
         local packagename = rulename:match("@(.-)/")
         if packagename then
             local pkginfo = project.required_package(packagename)
+            local ruleinst
             if pkginfo then
-                local r = pkginfo:rule(rulename)
-                if r then
-                    target:rule_add(r)
-                    for _, dep in pairs(table.wrap(r:deps())) do
+                ruleinst = pkginfo:rule(rulename)
+                if ruleinst then
+                    target:rule_add(ruleinst)
+                    for _, dep in pairs(table.wrap(ruleinst:deps())) do
                         target:rule_add(dep)
                     end
                 end
-            else
-                -- @see https://github.com/xmake-io/xmake/issues/6682
+            end
+            if not ruleinst then
                 raise("target(\"%s\"): unknown package rule in add_rules(\"%s\")", target:fullname(), rulename)
             end
         end
