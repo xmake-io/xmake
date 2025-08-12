@@ -1,0 +1,5 @@
+export module foo;
+
+export {
+   inline int foo() { return 1; }
+}
