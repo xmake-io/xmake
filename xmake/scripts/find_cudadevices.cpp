@@ -1,4 +1,5 @@
 #include <cuda_runtime.h>
+#include <cuda.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -15,6 +16,19 @@ inline void check(cudaError_t result)
         fprintf(stderr, PRINT_SUFFIX "%s (%s)", cudaGetErrorName(result), cudaGetErrorString(result));
         cudaDeviceReset();
         // Make sure we call CUDA Device Reset before exiting
+        exit(0);
+    }
+}
+
+inline void check_driver(CUresult result)
+{
+    static char unknown[] = "unknown";
+    if (result != CUDA_SUCCESS)
+    {
+        const char *name = NULL, *msg = NULL;
+        cuGetErrorName(result, &name);
+        cuGetErrorString(result, &msg);
+        fprintf(stderr, PRINT_SUFFIX "%s (%s)", name ? name : unknown, msg ? msg : unknown);
         exit(0);
     }
 }
@@ -115,21 +129,16 @@ inline void print_device(int id)
     PRINT_PROPERTY(maxThreadsPerBlock);
     PRINT_PROPERTY(maxThreadsDim);
     PRINT_PROPERTY(maxGridSize);
-    PRINT_PROPERTY(clockRate);
     PRINT_PROPERTY(totalConstMem);
     PRINT_PROPERTY(major);
     PRINT_PROPERTY(minor);
     PRINT_PROPERTY(textureAlignment);
     PRINT_PROPERTY(texturePitchAlignment);
-    PRINT_BOOL_PROPERTY(deviceOverlap);
     PRINT_PROPERTY(multiProcessorCount);
-    PRINT_BOOL_PROPERTY(kernelExecTimeoutEnabled);
     PRINT_BOOL_PROPERTY(integrated);
     PRINT_BOOL_PROPERTY(canMapHostMemory);
-    PRINT_PROPERTY(computeMode);
     PRINT_PROPERTY(maxTexture1D);
     PRINT_PROPERTY(maxTexture1DMipmap);
-    PRINT_PROPERTY(maxTexture1DLinear);
     PRINT_PROPERTY(maxTexture2D);
     PRINT_PROPERTY(maxTexture2DMipmap);
     PRINT_PROPERTY(maxTexture2DLinear);
@@ -156,7 +165,6 @@ inline void print_device(int id)
     PRINT_BOOL_PROPERTY(tccDriver);
     PRINT_PROPERTY(asyncEngineCount);
     PRINT_BOOL_PROPERTY(unifiedAddressing);
-    PRINT_PROPERTY(memoryClockRate);
     PRINT_PROPERTY(memoryBusWidth);
     PRINT_PROPERTY(l2CacheSize);
     PRINT_PROPERTY(maxThreadsPerMultiProcessor);
@@ -167,18 +175,37 @@ inline void print_device(int id)
     PRINT_PROPERTY(regsPerMultiprocessor);
     PRINT_BOOL_PROPERTY(isMultiGpuBoard);
     PRINT_PROPERTY(multiGpuBoardGroupID);
-    PRINT_PROPERTY(singleToDoublePrecisionPerfRatio);
     PRINT_BOOL_PROPERTY(pageableMemoryAccess);
     PRINT_BOOL_PROPERTY(concurrentManagedAccess);
     PRINT_BOOL_PROPERTY(managedMemory);
+
+#if MY_CUDA_VER < 1300
+    PRINT_PROPERTY(clockRate);
+    PRINT_PROPERTY(memoryClockRate);
+    PRINT_BOOL_PROPERTY(deviceOverlap);
+    PRINT_BOOL_PROPERTY(kernelExecTimeoutEnabled);
+    PRINT_PROPERTY(computeMode);
+    PRINT_PROPERTY(maxTexture1DLinear);
+    PRINT_PROPERTY(singleToDoublePrecisionPerfRatio);
+#else
+    int clockRate, memoryClockRate, computeMode;
+    check_driver(cuDeviceGetAttribute(&clockRate, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, id));
+    check_driver(cuDeviceGetAttribute(&memoryClockRate, CU_DEVICE_ATTRIBUTE_MEMORY_CLOCK_RATE, id));
+    check_driver(cuDeviceGetAttribute(&computeMode, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, id));
+    print_property("clockRate", clockRate);
+    print_property("memoryClockRate", memoryClockRate);
+    print_property("computeMode", computeMode);
+#endif
 
 #if MY_CUDA_VER >= 900
     // Added in cuda 9.0
     PRINT_BOOL_PROPERTY(computePreemptionSupported);
     PRINT_BOOL_PROPERTY(canUseHostPointerForRegisteredMem);
     PRINT_BOOL_PROPERTY(cooperativeLaunch);
-    PRINT_BOOL_PROPERTY(cooperativeMultiDeviceLaunch);
     PRINT_PROPERTY(sharedMemPerBlockOptin);
+#if MY_CUDA_VER < 1300
+    PRINT_BOOL_PROPERTY(cooperativeMultiDeviceLaunch);
+#endif
 #endif
 
 #if MY_CUDA_VER >= 902

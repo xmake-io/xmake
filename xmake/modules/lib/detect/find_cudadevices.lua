@@ -130,7 +130,7 @@ function _find_devices(verbose, opt)
     local results, errors = try
     {
         function ()
-            local args = { sourcefile, "-run", "-o", outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }
+            local args = { sourcefile, "-run", "-lcuda", "-o", outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }
             if opt.arch == "x86" then
                 table.insert(args, "-m32")
             elseif opt.arch == "x64" or opt.arch == "x86_64" then
@@ -247,6 +247,8 @@ function _order_by_flops(devices)
     ,   [80] =     64
     ,   [86] =    128
     ,   [87] =    128
+    ,   [89] =    128
+    ,   [90] =    128
     }
 
     for _, dev in ipairs(devices) do
@@ -254,7 +256,7 @@ function _order_by_flops(devices)
         if dev.major == 9999 and dev.minor == 9999 then
             sm_per_multiproc = 1
         else
-            sm_per_multiproc = ngpu_arch_cores_per_sm[dev.major * 10 + dev.minor] or 64;
+            sm_per_multiproc = ngpu_arch_cores_per_sm[dev.major * 10 + dev.minor] or 128;
         end
         dev["$flops"] = dev.multiProcessorCount * sm_per_multiproc * dev.clockRate
     end
