@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        xmake.lua
@@ -24,7 +24,7 @@
 --   - wdk.sign.mode:       nosign/test/release (default: nosign)
 --   - wdk.sign.store:      PrivateCertStore
 --   - wdk.sign.thumbprint: 032122545DCAA6167B1ADBE5F7FDF07AE2234AAA
---   - wdk.sign.company:    tboox.org
+--   - wdk.sign.company: xmake.io
 --   - wdk.sign.certfile:   signcert.cer
 --   - wdk.sign.timestamp:  http://timestamp.verisign.com/scripts/timstamp.dll
 --
