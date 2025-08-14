@@ -37,26 +37,40 @@ toolchain("emcc")
     on_check(function (toolchain)
         import("lib.detect.find_tool")
         import("detect.sdks.find_emsdk")
+        local emsdk
         for _, package in ipairs(toolchain:packages()) do
             local installdir = package:installdir()
             if installdir and os.isdir(installdir) then
-                local emsdk = find_emsdk(installdir)
+                emsdk = find_emsdk(installdir)
                 if emsdk then
-                    toolchain:config_set("bindir", emsdk.emscripten)
-                    toolchain:config_set("sdkdir", emsdk.sdkdir)
-                    toolchain:configs_save()
-                    return emsdk
+                    break
                 end
             end
+        end
+        if not emsdk then
+            emsdk = find_emsdk()
+        end
+        if emsdk then
+            toolchain:config_set("bindir", emsdk.emscripten)
+            toolchain:config_set("sdkdir", emsdk.sdkdir)
+            toolchain:configs_save()
+            return emsdk
         end
         return find_tool("emcc")
     end)
 
     on_load(function (toolchain)
-        toolchain:add("cxflags", "")
-        toolchain:add("asflags", "")
-        toolchain:add("ldflags", "")
-        toolchain:add("shflags", "")
+        if toolchain:is_arch("wasm64") then
+            toolchain:add("cxflags", "-sMEMORY64=1")
+            toolchain:add("asflags", "-sMEMORY64=1")
+            toolchain:add("ldflags", "-sMEMORY64=1")
+            toolchain:add("shflags", "-sMEMORY64=1")
+        else
+            toolchain:add("cxflags", "")
+            toolchain:add("asflags", "")
+            toolchain:add("ldflags", "")
+            toolchain:add("shflags", "")
+        end
         for _, package in ipairs(toolchain:packages()) do
             local envs = package:envs()
             if envs then
