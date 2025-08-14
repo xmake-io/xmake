@@ -205,14 +205,19 @@ function is_public(target, sourcefile)
     return fileconfig and fileconfig.public or false
 end
 
--- query if a module is external
-function is_external(target, sourcefile)
+-- query if a module from a target dep
+function is_from_dep(target, sourcefile)
     local fileconfig = target:fileconfig(sourcefile)
-    local external = fileconfig and fileconfig.external
-    return external or false
+    return fileconfig and fileconfig.from_dep or false
 end
 
--- query if a module is external
+-- query if a module from a package
+function is_from_package(target, sourcefile)
+    local fileconfig = target:fileconfig(sourcefile)
+    return fileconfig and fileconfig.from_package or false
+end
+
+-- query if we should only build bmi
 function is_bmionly(target, sourcefile)
     local fileconfig = target:fileconfig(sourcefile)
     return fileconfig and fileconfig.bmionly or false

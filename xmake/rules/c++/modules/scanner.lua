@@ -217,7 +217,8 @@ function _get_package_modules(target, package, opt)
             package_modules[path.join(modulesdir, modulefile)] = {defines = metadata.defines,
                                                                   undefines = metadata.undefines,
                                                                   bmionly = bmionly,
-                                                                  external = opt.external and target:fullname()}
+                                                                  from_dep = opt.from_dep and opt.from_dep:name(),
+                                                                  from_package = true}
         end)
     end
     runjobs(format("parsing package %s module metafiles", package:name()), jobs, {comax = option.get("jobs") or os.default_njob()})
@@ -228,12 +229,13 @@ end
 function _get_packages_for(target)
     local packages = {}
     for _, pkg in pairs(target:orderpkgs()) do
-        packages[pkg:name()] = {pkg = pkg, external = false}
+        packages[pkg:name()] = {pkg = pkg, from_dep = false, from_package = true}
     end
-    for _, dep in pairs(target:orderdeps()) do
+    for name, dep in pairs(target:orderdeps()) do
         local dep_packages = _get_packages_for(dep)
         for pkgname, package in pairs(dep_packages) do
-            packages[pkgname] = {pkg = package.pkg, external = package.external or dep}
+        	-- print(package)
+            packages[pkgname] = {pkg = package.pkg, from_dep = package.from_dep or dep, from_package = true}
         end
     end
     return packages
@@ -248,7 +250,7 @@ function _get_packages_modules(target)
         packages_modules = {}
         local packages = _get_packages_for(target)
         for _, package in table.orderpairs(packages) do
-            local package_modules = _get_package_modules(package.external or target, package.pkg, {external = package.external})
+            local package_modules = _get_package_modules(package.from_dep or target, package.pkg, {from_dep = package.from_dep})
             if package_modules then
                packages_modules = packages_modules or {}
                table.join2(packages_modules, package_modules)
@@ -286,9 +288,9 @@ function _get_targetdeps_modules(target)
                         fileconfig.includedirs = table.join(fileconfig.includedirs or {}, dep:get("includedirs") or {})
                         if not dep:is_phony() then
                             if target:namespace() == dep:namespace() then
-                                fileconfig.external = dep:name()
+                                fileconfig.from_dep = dep:name()
                             else
-                                fileconfig.external = dep:fullname()
+                                fileconfig.from_dep = dep:fullname()
                             end
                             fileconfig.bmionly = not dep:is_moduleonly()
                         end
@@ -369,9 +371,9 @@ function _patch_sourcebatch(target, sourcebatch)
     -- package modules
     local pkgmodules = _get_packages_modules(target) or {}
 
-    local externalmodules = table.join(depsmodules, pkgmodules)
+    local from_depmodules = table.join(depsmodules, pkgmodules)
     local keys = #sourcebatch.sourcefiles > 0 and table.concat(sourcebatch.sourcefiles) or " "
-    keys = keys .. (#externalmodules > 0 and table.concat(table.orderkeys(externalmodules)) or " ")
+    keys = keys .. (#from_depmodules > 0 and table.concat(table.orderkeys(from_depmodules)) or " ")
     local md5sum = hash.md5(bytes(keys))
     local localcache = support.localcache()
 
@@ -380,13 +382,13 @@ function _patch_sourcebatch(target, sourcebatch)
         local reuse = target:policy("build.c++.modules.reuse") or
                       target:policy("build.c++.modules.tryreuse")
         local reused = {}
-        for sourcefile, fileconfig in pairs(externalmodules) do
-            if reuse and fileconfig.external then
+        for sourcefile, fileconfig in pairs(from_depmodules) do
+            if reuse and fileconfig.from_dep then
                 local nocheck = target:policy("build.c++.modules.reuse.nocheck")
                 local strict = target:policy("build.c++.modules.reuse.strict") or
                                target:policy("build.c++.modules.tryreuse.discriminate_on_defines")
-                local dep = target:dep(fileconfig.external)
-                assert(dep, "dep target <%s> for <%s> not found", fileconfig.external, target:fullname())
+                local dep = target:dep(fileconfig.from_dep)
+                assert(dep, "dep target <%s> for <%s> not found", fileconfig.from_dep, target:fullname())
 
                 local can_reuse = nocheck or _are_flags_compatible(target, dep, sourcefile, {strict = strict})
                 if can_reuse then
@@ -419,10 +421,10 @@ function _patch_sourcebatch(target, sourcebatch)
         memcache:set2(target:fullname(), "modules.changed", true)
     else
         local reused = hashset.from(cached_patched_sourcebatch.reused)
-        for sourcefile, fileconfig in pairs(externalmodules) do
+        for sourcefile, fileconfig in pairs(from_depmodules) do
             if reused:has(sourcefile) then
-                local dep = target:dep(fileconfig.external)
-                assert(dep, "dep target <%s> for <%s> not found", fileconfig.external, target:fullname())
+                local dep = target:dep(fileconfig.from_dep)
+                assert(dep, "dep target <%s> for <%s> not found", fileconfig.from_dep, target:fullname())
                 local _reused, from = support.is_reused(dep, sourcefile)
                 if _reused then
                     support.set_reused(target, from, sourcefile)
@@ -861,8 +863,10 @@ function sort_modules_by_dependencies(target, modules)
                             table.insert(objectfiles, tostring(objectfile))
                         end
                    end
-                elseif support.is_external(target, sourcefile) or module.headerunit or name == "std" or name == "std.compat" then
+                elseif support.is_from_dep(target, sourcefile) or support.is_from_package(target, sourcefile) or support.is_public(target, sourcefile) or module.headerunit or name == "std" or name == "std.compat" then
                 else
+                    local p = support.is_public(target, sourcefile)
+                    local e = support.is_from_dep(target, sourcefile)
                     sourcefiles_sorted_set:remove(sourcefile)
                     culleds = culleds or {}
                     culleds[target:fullname()] = culleds[target:fullname()] or {}
