@@ -85,14 +85,16 @@ function feed(target, modules, sourcefiles)
                 local reused, from = support.is_reused(target, sourcefile)
                 if reused then
                     local module = get(from, sourcefile)
-                    mapper[module.name] =  module
-                    for dep_name, dep_module in pairs(module.deps) do
-                        if dep_module.headerunit then
-                            local key = dep_name .. dep_module.key
-                            mapper[key] = get(from, key)
-                            local sourcefile = mapper[key].sourcefile
-                            mapper[sourcefile .. dep_module.key] = table.clone(mapper[key])
-                            mapper[sourcefile .. dep_module.key].alias = false
+                    if module.name then
+                        mapper[module.name] =  module
+                        for dep_name, dep_module in pairs(module.deps) do
+                            if dep_module.headerunit then
+                                local key = dep_name .. dep_module.key
+                                mapper[key] = get(from, key)
+                                local sourcefile = mapper[key].sourcefile
+                                mapper[sourcefile .. dep_module.key] = table.clone(mapper[key])
+                                mapper[sourcefile .. dep_module.key].alias = false
+                            end
                         end
                     end
                 end
