@@ -127,7 +127,7 @@ rule("wdk.sign")
 
             -- do inf2cat
             local inf2cat_dir = path.directory(target:targetfile())
-            local inf2cat_argv = {"/driver:" .. inf2cat_dir}
+            local inf2cat_argv = {"/driver:" .. inf2cat_dir, "/uselocaltime"}
             local inf2cat_os = target:values("wdk.inf2cat.os") or {"XP_" .. arch, "7_" .. arch, "8_" .. arch, "10_" .. arch}
             table.insert(inf2cat_argv, "/os:" .. table.concat(table.wrap(inf2cat_os), ','))
             os.vrunv(inf2cat, inf2cat_argv)
