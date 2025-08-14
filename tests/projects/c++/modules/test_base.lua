@@ -9,26 +9,22 @@ GCC_MIN_VER = "11"
 MSVC_MIN_VER = "14.29"
 
 function _build(check_outdata)
+    local flags = ""
+    if ci_is_running() then
+     flags = "-vD"
+    end
     if check_outdata then
         local outdata
-        if ci_is_running() then
-            outdata = os.iorun("xmake -rvD")
-        else
-            outdata = os.iorun("xmake -rv")
-        end
+        outdata = os.iorun("xmake -r " ..  flags)
         if outdata then
             if outdata:find(check_outdata.str, 1, true) then
                 raise(check_outdata.format_string, outdata)
             end
         end
     else
-        if ci_is_running() then
-            os.run("xmake -rvD")
-        else
-            os.run("xmake -r")
-        end
+        os.run("xmake -r " .. flags)
     end
-    local outdata = os.iorun("xmake")
+    local outdata = os.iorun("xmake " .. flags)
     if outdata then
         if outdata:find("compiling", 1, true) or outdata:find("linking", 1, true) or outdata:find("generating", 1, true) then
             raise("Modules incremental compilation does not work\n%s", outdata)

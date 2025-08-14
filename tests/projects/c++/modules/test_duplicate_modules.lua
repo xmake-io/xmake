@@ -6,13 +6,13 @@ GCC_MIN_VER = "11"
 MSVC_MIN_VER = "14.29"
 
 function _build()
+    local flags = ""
+    if ci_is_running() then
+     flags = "-vD"
+    end
     try {
         function ()
-            if ci_is_running() then
-                os.run("xmake -rvD")
-            else
-                os.run("xmake -r")
-            end
+            os.run("xmake -r " .. flags)
         end,
         catch {
             function (errors)
