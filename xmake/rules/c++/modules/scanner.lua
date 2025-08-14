@@ -527,7 +527,6 @@ function _do_computedag(target, modules, sourcebatch)
         localcache:save()
     end
     profiler.leave(target:fullname(), "c++ modules", "scanner", "compute dag")
-    -- jobgraph:dump()
 end
 
 function _do_scan(target, sourcefile, opt)
@@ -897,7 +896,7 @@ end
 
 function get_modules(target)
     local modules = support.localcache():get2(target:fullname(), "c++.modules")
-    assert(modules, "no modules!")
+    assert(modules, "no modules! (" .. target:fullname() .. ")")
     return modules
 end
 
@@ -932,6 +931,12 @@ function main(target, jobgraph, sourcebatch)
     profiler.enter(target:fullname(), "c++ modules", "scanner", "scan")
     local compile_commands = os.getenv("XMAKE_IN_PROJECT_GENERATOR") and os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR")
     if target:data("cxx.has_modules") and (not os.getenv("XMAKE_IN_PROJECT_GENERATOR") or compile_commands) then
+        local memcache = support.memcache()
+        local targets = memcache:get("targets") or {}
+        targets[target:fullname()] = {}
+        targets[target:fullname()].finished_parsing = false
+        memcache:set("targets", targets)
+
         _patch_sourcebatch(target, sourcebatch)
         _schedule_module_dependencies_scan(target, jobgraph, sourcebatch)
     end
