@@ -344,28 +344,21 @@ function task._load(filepath)
     if not ok then
         return nil, errors
     end
-
-    -- ok?
     return tasks
 end
 
 -- get task apis
 function task.apis()
-
-    return
-    {
-        values =
-        {
+    return {
+        values = {
             -- task.set_xxx
             "task.set_category"     -- main, action, plugin, task (default)
-        }
-    ,   dictionary =
-        {
+        },
+        dictionary = {
             -- task.set_xxx
             "task.set_menu"
-        }
-    ,   script =
-        {
+        },
+        script = {
             -- task.on_xxx
             "task.on_run"
         }
@@ -490,8 +483,6 @@ end
 
 -- run given task
 function task:run(...)
-
-    -- check
     local on_run = self:get("run")
     if not on_run then
         return false, string.format("task(\"%s\"): no run script, please call on_run() first!", self:fullname())
