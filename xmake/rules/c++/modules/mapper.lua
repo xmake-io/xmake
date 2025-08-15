@@ -80,8 +80,8 @@ function feed(target, modules, sourcefiles)
     -- replace target reused module by dep module
     if reuse then
         for _, sourcefile in ipairs(sourcefiles) do
-            local external = support.is_external(target, sourcefile)
-            if external then
+            local from_dep = support.is_from_dep(target, sourcefile)
+            if from_dep then
                 local reused, from = support.is_reused(target, sourcefile)
                 if reused then
                     local module = get(from, sourcefile)
