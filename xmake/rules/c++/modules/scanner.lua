@@ -460,6 +460,7 @@ function _do_computedag(target, modules, sourcebatch)
     local localcache = support.localcache()
     local memcache = support.memcache()
     local changed = memcache:get2(target:fullname(), "modules.changed")
+
     if changed then
         localcache:set2(target:fullname(), "c++.modules", modules)
         mapper.feed(target, modules, sourcebatch.sourcefiles)
@@ -485,17 +486,19 @@ function _do_computedag(target, modules, sourcebatch)
             cxx_sourcebatch.dependfiles = {}
             cxx_sourcebatch.objectfiles = {}
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local module = modules[sourcefile]
-                local insert = true
-                if module then
-                    insert = not module.name
-                end
+                if not support.has_module_extension(sourcefile) then
+                    local module = modules[sourcefile]
+                    local insert = true
+                    if module then
+                        insert = not module.name
+                    end
 
-                if insert then
-                    table.insert(cxx_sourcebatch.sourcefiles, sourcefile)
-                    local objectfile = target:objectfile(sourcefile)
-                    table.insert(cxx_sourcebatch.dependfiles, target:dependfile(objectfile))
-                    table.insert(cxx_sourcebatch.objectfiles, objectfile)
+                    if insert then
+                        table.insert(cxx_sourcebatch.sourcefiles, sourcefile)
+                        local objectfile = target:objectfile(sourcefile)
+                        table.insert(cxx_sourcebatch.dependfiles, target:dependfile(objectfile))
+                        table.insert(cxx_sourcebatch.objectfiles, objectfile)
+                    end
                 end
             end
             localcache:set2(target:fullname(), "c++.build.sourcebatch", cxx_sourcebatch)
