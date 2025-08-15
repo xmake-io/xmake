@@ -1686,10 +1686,20 @@ _get_target_toolchain_flags_for_clang() {
             fi
         fi
     fi
+    # set target and sysroot
     if is_plat "macosx"; then
         _os_iorunv "xcrun" "-sdk" "macosx" "--show-sdk-path"; local sdkdir="${_ret}"
         if test_nz "${sdkdir}"; then
             flags="${flags} -isysroot \"${sdkdir}\""
+
+            # get target minver and set target flags
+            path_basename "${sdkdir}"; local basename="${_ret}"
+            if test_nz "${basename}" && string_startswith "${basename}" "MacOSX"; then
+                string_replace "${basename}" "MacOSX" ""; local target_minver="${_ret}"
+                if test_nz "${target_minver}"; then
+                    flags="${flags} -target ${arch}-apple-macos${target_minver}"
+                fi
+            fi
         fi
     fi
     _ret="${flags}"
@@ -1722,10 +1732,20 @@ _get_target_toolchain_flags_for_tcc() {
             fi
         fi
     fi
+    # set target and sysroot
     if is_plat "macosx"; then
         _os_iorunv "xcrun" "-sdk" "macosx" "--show-sdk-path"; local sdkdir="${_ret}"
         if test_nz "${sdkdir}"; then
             flags="${flags} -isysroot \"${sdkdir}\""
+
+            # get target minver and set target flags
+            path_basename "${sdkdir}"; local basename="${_ret}"
+            if test_nz "${basename}" && string_startswith "${basename}" "MacOSX"; then
+                string_replace "${basename}" "MacOSX" ""; local target_minver="${_ret}"
+                if test_nz "${target_minver}"; then
+                    flags="${flags} -target ${arch}-apple-macos${target_minver}"
+                fi
+            fi
         fi
     fi
     _ret="${flags}"
