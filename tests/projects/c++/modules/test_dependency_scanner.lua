@@ -6,13 +6,13 @@ GCC_MIN_VER = "11"
 MSVC_MIN_VER = "14.29"
 
 function _build(platform, toolchain_name, runtimes, policies, flags)
-    os.exec("xmake f" .. platform .. "--toolchain=" .. toolchain_name .. runtimes .. "-c --yes " .. policies .. " --foo=n")
-    local outdata
+    local flags = ""
     if ci_is_running() then
-        outdata = os.iorun("xmake -rvD")
-    else
-        outdata = os.iorun("xmake -rv")
+     flags = "-vD"
     end
+    os.exec("xmake f" .. platform .. "--toolchain=" .. toolchain_name .. runtimes .. "-c --yes " .. policies .. " --foo=n" .. " " .. flags)
+    local outdata
+    outdata = os.iorun("xmake -r " .. flags)
     if outdata then
         if outdata:find("FOO") then
             raise("Modules dependency scanner update does not work\n%s", outdata)
