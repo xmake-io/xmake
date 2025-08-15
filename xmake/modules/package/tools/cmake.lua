@@ -633,6 +633,15 @@ function _get_configs_for_wasm(package, configs, opt)
         end
     end
 
+    -- pass toolchain flags cross-compilation
+    -- @see https://github.com/xmake-io/xmake/issues/6690
+    envs.CMAKE_C_FLAGS             = _get_cflags(package, {cross = true})
+    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, {cross = true})
+    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, {cross = true})
+    envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, {cross = true})
+    envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, {cross = true})
+    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, {cross = true})
+
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/5577
     -- https://github.com/emscripten-core/emscripten/issues/13310
