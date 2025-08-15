@@ -140,6 +140,11 @@ function _translate_arguments(arguments)
         if arg == "-I" then
             is_include = true
         end
+        -- ignore pch flags
+        -- https://github.com/xmake-io/xmake/issues/6710
+        if arg == "-include-pch" or arg:endswith(".pch") then
+            arg = nil
+        end
         if arg then
             -- improve to support for "/usr/bin/xcrun -sdk macosx clang"
             -- @see
@@ -264,13 +269,6 @@ function _add_target(jsonfile, target)
     -- enter package environments
     local oldenvs = os.addenvs(target:pkgenvs())
 
-    -- we enable it for clangd, @see https://github.com/xmake-io/xmake/issues/2818
-    local lsp = _get_lsp()
-    if not lsp or lsp ~= "clangd" then
-        target:set("pcheader", nil)
-        target:set("pcxxheader", nil)
-    end
-
     -- add target commands
     _add_target_commands(jsonfile, target)
 
@@ -310,7 +308,6 @@ function make(outputdir)
     local oldir = os.cd(os.projectdir())
     local jsonfile = io.open(path.join(outputdir, "compile_commands.json"), "w")
     os.setenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR", "true")
-    target_cmds.prepare_targets()
     _add_targets(jsonfile)
     jsonfile:close()
     os.setenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR", nil)
