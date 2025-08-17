@@ -137,12 +137,12 @@ function _translate_arguments(arguments)
                 end
             end
         end
-        if arg == "-I" then
+        if arg and arg == "-I" then
             is_include = true
         end
         -- ignore pch flags
         -- https://github.com/xmake-io/xmake/issues/6710
-        if arg == "-include-pch" or arg:endswith(".pch") then
+        if arg and (arg == "-include-pch" or arg:endswith(".pch")) then
             arg = nil
         end
         if arg then
