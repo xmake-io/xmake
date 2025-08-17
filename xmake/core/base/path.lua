@@ -412,6 +412,9 @@ end
 
 -- new a path instance
 function path.new(p, transform)
+    if path.instance_of(p) then
+        p = tostring(p)
+    end
     return _instance.new(p, transform)
 end
 
