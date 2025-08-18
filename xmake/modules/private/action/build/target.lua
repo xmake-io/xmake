@@ -778,6 +778,10 @@ end
 function run_targetjobs(targets_root, opt)
     opt = opt or {}
     local job_kind = opt.job_kind
+    local comax = option.get("jobs") or os.default_njob()
+    if job_kind == "config" then
+        --comax = option.get("jobs") or 1
+    end
     local jobgraph = get_targetjobs(targets_root, opt)
     if jobgraph and not jobgraph:empty() then
         local curdir = os.curdir()
@@ -786,7 +790,7 @@ function run_targetjobs(targets_root, opt)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, comax = option.get("jobs") or 1, curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
+        end, comax = comax, curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
         os.cd(curdir)
         return true
     end
@@ -804,7 +808,7 @@ function run_filejobs(targets_root, opt)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, comax = option.get("jobs") or 1, curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
+        end, comax = option.get("jobs") or os.default_njob(), curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
         os.cd(curdir)
         return true
     end
