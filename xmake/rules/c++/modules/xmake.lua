@@ -23,6 +23,11 @@ rule("c++.build.modules")
     -- @note support.contains_modules() need it
     set_extensions(".cppm", ".ccm", ".cxxm", ".c++m", ".mpp", ".mxx", ".ixx")
 
+    -- clang/support/config will be depend on target/symbols in release modules (hidden)
+    -- @see The default config parallel execution will cause incremental compilation problems
+    add_orders("mode.release", "c++.build.modules")
+    add_orders("mode.minsizerel", "c++.build.modules")
+
     add_deps("c++.build.modules.scanner",
              "c++.build.modules.builder",
              "c++.build.modules.install")
