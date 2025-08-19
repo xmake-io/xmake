@@ -115,7 +115,8 @@ end
 function _add_targetjobs_deep_orders(jobgraph, target, dep, opt)
     local jobname, jobname_dep
     local job_kind = opt.job_kind
-    if dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false then
+    local dep_fence = opt.dep_fence or dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false
+    if dep_fence then
         jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
         jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
         -- build.across_targets_in_parallel is deprecated
@@ -786,7 +787,7 @@ function run_targetjobs(targets_root, opt)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, comax = option.get("jobs") or 1, curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
+        end, comax = option.get("jobs") or os.default_njob(), curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
         os.cd(curdir)
         return true
     end
@@ -804,7 +805,7 @@ function run_filejobs(targets_root, opt)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, comax = option.get("jobs") or 1, curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
+        end, comax = option.get("jobs") or os.default_njob(), curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
         os.cd(curdir)
         return true
     end
