@@ -83,21 +83,19 @@ function match_copyfiles(instance, filetype, outputdir, opt)
                     -- add the source copied files
                     table.join2(srcfiles, srcpaths)
 
-                    -- the copied directory exists?
-                    if outputdir then
+                    -- get the file info
+                    local fileinfo = extrainfo[copyfile] or {}
 
-                        -- get the file info
-                        local fileinfo = extrainfo[copyfile] or {}
+                    -- get the prefix directory
+                    local prefixdir = fileinfo.prefixdir
+                    if fileinfo.rootdir then
+                        rootdir = fileinfo.rootdir
+                    end
 
-                        -- get the prefix directory
-                        local prefixdir = fileinfo.prefixdir
-                        if fileinfo.rootdir then
-                            rootdir = fileinfo.rootdir
-                        end
+                    -- add the destinate copied files
+                    for _, srcpath in ipairs(srcpaths) do
 
-                        -- add the destinate copied files
-                        for _, srcpath in ipairs(srcpaths) do
-
+                        if outputdir then
                             -- get the destinate directory
                             local dstdir = outputdir
                             if prefixdir then
@@ -125,8 +123,9 @@ function match_copyfiles(instance, filetype, outputdir, opt)
 
                             -- add it
                             table.insert(dstfiles, dstfile)
-                            table.insert(fileinfos, fileinfo)
                         end
+
+                        table.insert(fileinfos, fileinfo)
                     end
                 end
             end
