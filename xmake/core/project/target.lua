@@ -2196,7 +2196,8 @@ end
 
 -- get the extra files
 function _instance:extrafiles()
-    return (match_copyfiles(self, "extrafiles"))
+    local extrafiles, _, extrainfo = match_copyfiles(self, "extrafiles")
+    return extrafiles, extrainfo
 end
 
 -- get depend file from object file
