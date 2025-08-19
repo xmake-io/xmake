@@ -115,7 +115,8 @@ end
 function _add_targetjobs_deep_orders(jobgraph, target, dep, opt)
     local jobname, jobname_dep
     local job_kind = opt.job_kind
-    if job_kind == "config" or dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false then
+    local dep_fence = opt.dep_fence or dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false
+    if dep_fence then
         jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
         jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
         -- build.across_targets_in_parallel is deprecated

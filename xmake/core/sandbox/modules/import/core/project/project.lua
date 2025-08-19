@@ -142,7 +142,7 @@ function sandbox_core_project._config_targets(opt)
 
     -- we need to config all targets (contains non-default targets)
     local targets_root = target_buildutils.get_root_targets(nil, {all = true})
-    target_buildutils.run_targetjobs(targets_root, {job_kind = "config", job_opt = opt})
+    target_buildutils.run_targetjobs(targets_root, {job_kind = "config", dep_fence = true, job_opt = opt})
 end
 
 -- load rules in the required packages for target
