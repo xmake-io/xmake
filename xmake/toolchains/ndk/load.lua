@@ -379,8 +379,8 @@ function main(toolchain)
     end
     -- fix [[note: clang++: error: no such file or directory: '"-llog']] on windows
     -- @note 'link-args=...' should not be 'link-args="..."'
-    toolchain:set("rcshflags", {"-C", "link-args=" .. (table.concat(rcshflags, " "):gsub("%-march=.-%s", ""))}, {expand=false})
-    toolchain:set("rcldflags", {"-C", "link-args=" .. (table.concat(rcldflags, " "):gsub("%-march=.-%s", ""))}, {expand=false})
+    toolchain:set("rcshflags", {"-C", "link-args=" .. (table.concat(rcshflags, " "):gsub("%-march=.-%s", ""))}, {expand = false})
+    toolchain:set("rcldflags", {"-C", "link-args=" .. (table.concat(rcldflags, " "):gsub("%-march=.-%s", ""))}, {expand = false})
     local sh = toolchain:tool("sh") -- @note we cannot use `config.get("sh")`, because we need to check sh first
     if sh then
         toolchain:add("rcshflags", "-C linker=" .. sh)
