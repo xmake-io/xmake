@@ -42,7 +42,7 @@ rule("qt.qmltyperegistrar")
         assert(importname, "QML plugin import name not set")
 
         local targetdir = target:targetdir()
-        for _, dir in pairs(importname:split(".", { plain = true })) do
+        for _, dir in ipairs(importname:split(".", {plain = true})) do
             targetdir = path.join(targetdir, dir)
         end
         os.mkdir(targetdir)
