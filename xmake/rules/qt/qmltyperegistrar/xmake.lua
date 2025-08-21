@@ -58,8 +58,8 @@ rule("qt.qmltyperegistrar")
         target:add("installfiles", path.join(target:get("targetdir"), "plugin.qmltypes"), { prefixdir = path.join("bin", table.unpack(importname:split(".", { plain = true }))) })
 
         local genbasename = path.join(target:autogendir(), "rules", "qt", "qmltyperegistrar", target:name())
-        local metatypesfile = path(genbasename .. "_metatypes.json")
-        local sourcefile = path(genbasename .. "_qmltyperegistrations.cpp")
+        local metatypesfile = genbasename .. "_metatypes.json"
+        local sourcefile = genbasename .. "_qmltyperegistrations.cpp"
         local sourcefile_dir = path.directory(sourcefile)
         os.mkdir(sourcefile_dir)
         target:data_set("qt.qmlplugin.metatypesfile", metatypesfile)
@@ -101,7 +101,7 @@ rule("qt.qmltyperegistrar")
         -- @see https://github.com/xmake-io/xmake/issues/6647
         local moc_args = {
             "--collect-json",
-            "-o", metatypesfile
+            "-o", path(metatypesfile)
         }
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmltyperegistrar %s", path.filename(metatypesfile))
         batchcmds:vrunv(moc, table.join(moc_args, metatype_files))
@@ -112,8 +112,8 @@ rule("qt.qmltyperegistrar")
             "--import-name=" .. importname,
             "--major-version=" .. majorversion,
             "--minor-version=" .. minorversion,
-            "-o", sourcefile,
-            metatypesfile
+            "-o", path(sourcefile),
+            path(metatypesfile)
         }
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmltyperegistrar %s", path.filename(sourcefile))
         batchcmds:vrunv(qmltyperegistrar, args)
