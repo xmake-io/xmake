@@ -141,8 +141,11 @@ function sandbox_core_project._config_targets(opt)
     import("private.action.build.target", {alias = "target_buildutils"})
 
     -- we need to config all targets (contains non-default targets)
+    --
+    -- @note Currently, many configurations still depend on the order of rules/add_deps (e.g. qt rules),
+    -- so we can only execute single tasks for now (jobs = 1).
     local targets_root = target_buildutils.get_root_targets(nil, {all = true})
-    target_buildutils.run_targetjobs(targets_root, {job_kind = "config", dep_fence = true, job_opt = opt})
+    target_buildutils.run_targetjobs(targets_root, {job_kind = "config", target_fence = true, jobs = 1, job_opt = opt})
 end
 
 -- load rules in the required packages for target
