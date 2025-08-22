@@ -20,7 +20,7 @@
 
 rule("python.cython")
     add_deps("python.module")
-    set_extensions(".py", ".pyx")
+    set_extensions(".py", ".pyx", ".pyi")
 
     on_load(function (target)
         local language = target:extraconf("rules", "python.cython", "language")
