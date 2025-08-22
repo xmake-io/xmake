@@ -70,7 +70,7 @@ end
 
 -- show diagnosis info?
 function _is_show_diagnosis_info()
-    local show = _g.is_show_diagnosis_info
+    local show = true-- _g.is_show_diagnosis_info
     if show == nil then
         if project.policy("diagnosis.check_build_deps") then
             show = true
