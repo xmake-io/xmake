@@ -406,7 +406,9 @@ function make(outputdir, vsinfo)
 
                 -- clear all options
                 for _, opt in pairs(project.options()) do
-                    opt:clear()
+                    if not config.readonly(opt:fullname()) then
+                        opt:clear()
+                    end
                 end
 
                 -- clear cache
