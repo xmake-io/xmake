@@ -197,10 +197,10 @@ function main()
         -- to avoid trigger recheck configs
         config.clear()
         task.run("build", {target = option.get("target"), all = option.get("all")}, {disable_dump = true})
+    else
+        -- it will call on_config, we need to avoid repeat call it when autobuild is enabled.
+        project.load_targets()
     end
-
-    -- load targets
-    project.load_targets()
 
     -- check targets first
     local targetname
