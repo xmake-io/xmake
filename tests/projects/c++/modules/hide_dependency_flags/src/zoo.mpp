@@ -1,0 +1,8 @@
+export module zoo;
+
+export namespace zoo {
+    int add(int a, int b) {
+        return a + b;
+    }
+}
+
