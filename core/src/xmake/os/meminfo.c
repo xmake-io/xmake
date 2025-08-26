@@ -35,6 +35,7 @@
 #   include <mach/vm_statistics.h>
 #   include <mach-o/dyld.h>
 #   include <mach-o/nlist.h>
+#   include <AvailabilityMacros.h>
 #elif defined(TB_CONFIG_OS_LINUX)
 #   include <stdio.h>
 #   include <sys/sysinfo.h>
@@ -65,7 +66,11 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t* ptotalsize, tb_int_t* pavailsize)
     if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info_t) &vmstat, &count) == KERN_SUCCESS)
     {
         tb_int_t pagesize = (tb_int_t)tb_page_size();
-        tb_int64_t totalsize = (tb_int64_t)(vmstat.inactive_count + vmstat.free_count + vmstat.active_count + vmstat.wire_count + vmstat.compressor_page_count) * pagesize;
+        tb_int64_t totalsize = (tb_int64_t)(vmstat.inactive_count + vmstat.free_count + vmstat.active_count + vmstat.wire_count 
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+        + vmstat.compressor_page_count
+#endif
+        ) * pagesize;
         /*
          * NB: speculative pages are already accounted for in "free_count",
          * so "speculative_count" is the number of "free" pages that are
