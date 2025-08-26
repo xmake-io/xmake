@@ -15,39 +15,44 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        prefix.h
+ * @file        thread_mutex_exit.c
  *
  */
-#ifndef XM_THREAD_PREFIX_H
-#define XM_THREAD_PREFIX_H
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * trace
+ */
+#define TB_TRACE_MODULE_NAME                "thread_mutex"
+#define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "../prefix.h"
+#include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * types
+ * implementation
  */
-
-// the thread type
-typedef struct __xm_thread_t
+tb_int_t xm_thread_mutex_exit(lua_State* lua)
 {
-    tb_thread_ref_t handle;
-    tb_string_t     callback;
-    tb_string_t     callinfo;
+    tb_assert_and_check_return_val(lua, 0);
 
-}xm_thread_t;
+    if (!xm_lua_ispointer(lua, 1))
+        return 0;
 
-// the thread mutex type
-typedef struct __xm_thread_mutex_t
-{
-    tb_mutex_ref_t  handle;
-    tb_atomic_t     refn;
+    xm_thread_mutex_t* thread_mutex = (xm_thread_mutex_t*)xm_lua_topointer(lua, 1);
+    tb_check_return_val(thread_mutex, 0);
 
-}xm_thread_mutex_t;
-
-
-#endif
-
+    if (thread_mutex && tb_atomic_fetch_and_sub(&thread_mutex->refn, 1) == 1)
+    {
+        if (thread_mutex->handle)
+        {
+            tb_mutex_exit(thread_mutex->handle);
+            thread_mutex->handle = tb_null;
+        }
+        tb_free(thread_mutex);
+    }
+    lua_pushboolean(lua, tb_true);
+    return 1;
+}
 

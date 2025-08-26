@@ -346,6 +346,12 @@ tb_int_t xm_thread_wait(lua_State* lua);
 tb_int_t xm_thread_suspend(lua_State* lua);
 tb_int_t xm_thread_resume(lua_State* lua);
 
+// the thread/mutex functions
+tb_int_t xm_thread_mutex_init(lua_State* lua);
+tb_int_t xm_thread_mutex_exit(lua_State* lua);
+tb_int_t xm_thread_mutex_lock(lua_State* lua);
+tb_int_t xm_thread_mutex_unlock(lua_State* lua);
+
 // open cjson
 __tb_extern_c_enter__
 tb_int_t luaopen_cjson(lua_State *l);
@@ -635,12 +641,16 @@ static luaL_Reg const g_utils_functions[] =
 // the thread functions
 static luaL_Reg const g_thread_functions[] =
 {
-    { "thread_init",    xm_thread_init      }
-,   { "thread_exit",    xm_thread_exit      }
-,   { "thread_wait",    xm_thread_wait      }
-,   { "thread_resume",  xm_thread_resume    }
-,   { "thread_suspend", xm_thread_suspend   }
-,   { tb_null,          tb_null             }
+    { "thread_init",    xm_thread_init         }
+,   { "thread_exit",    xm_thread_exit         }
+,   { "thread_wait",    xm_thread_wait         }
+,   { "thread_resume",  xm_thread_resume       }
+,   { "thread_suspend", xm_thread_suspend      }
+,   { "mutex_init",     xm_thread_mutex_init   }
+,   { "mutex_exit",     xm_thread_mutex_exit   }
+,   { "mutex_lock",     xm_thread_mutex_lock   }
+,   { "mutex_unlock",   xm_thread_mutex_unlock }
+,   { tb_null,          tb_null                }
 };
 
 // the lua global instance for signal handler

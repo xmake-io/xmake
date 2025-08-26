@@ -15,39 +15,35 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        prefix.h
+ * @file        thread_mutex_lock.c
  *
  */
-#ifndef XM_THREAD_PREFIX_H
-#define XM_THREAD_PREFIX_H
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * trace
+ */
+#define TB_TRACE_MODULE_NAME                "thread_mutex"
+#define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "../prefix.h"
+#include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * types
+ * implementation
  */
-
-// the thread type
-typedef struct __xm_thread_t
+tb_int_t xm_thread_mutex_lock(lua_State* lua)
 {
-    tb_thread_ref_t handle;
-    tb_string_t     callback;
-    tb_string_t     callinfo;
+    tb_assert_and_check_return_val(lua, 0);
 
-}xm_thread_t;
+    if (!xm_lua_ispointer(lua, 1))
+        return 0;
 
-// the thread mutex type
-typedef struct __xm_thread_mutex_t
-{
-    tb_mutex_ref_t  handle;
-    tb_atomic_t     refn;
+    xm_thread_mutex_t* thread_mutex = (xm_thread_mutex_t*)xm_lua_topointer(lua, 1);
+    tb_check_return_val(thread_mutex && thread_mutex->handle, 0);
 
-}xm_thread_mutex_t;
-
-
-#endif
-
+    lua_pushboolean(lua, tb_mutex_enter(thread_mutex->handle));
+    return 1;
+}
 
