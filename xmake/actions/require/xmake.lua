@@ -52,7 +52,7 @@ task("require")
                 ,   {'j', "jobs",       "kv", tostring(os.default_njob()),
                                                          "Set the number of parallel compilation jobs."                        }
                 ,   {nil, "linkjobs",   "kv", nil,       "Set the number of parallel link jobs."                               }
-                ,   {nil, "shallow",    "k",  nil,       "Does not install dependent packages."                                }
+                ,   {nil, "shallow",    "k",  nil,       "Does not install or download dependent packages."                    }
                 ,   {nil, "build",      "k",  nil,       "Always build and install packages from source."                      }
                 ,   {'l', "list",       "k",  nil,       "List all package dependencies in project.",
                                                          "e.g.",
