@@ -197,10 +197,9 @@ function thread.new(callback, opt)
     return _instance.new(callback, opt)
 end
 
--- get the running thread
+-- get the running thread name
 function thread.running()
-    -- TODO
-    return "<unknown>"
+    return thread._RUNNING
 end
 
 -- run thread
@@ -252,6 +251,9 @@ function thread._run_thread(callback_str, callinfo_str)
     if not sandbox_inst then
         return false, errors
     end
+
+    -- save the running thread name
+    thread._RUNNING = threadname
 
     -- do callback
     return sandbox.load(sandbox_inst:script(), table.unpack(argv or {}))
