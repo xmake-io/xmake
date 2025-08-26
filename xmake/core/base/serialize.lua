@@ -204,10 +204,7 @@ function serialize._resolvefunction(root, fenv, bytecode)
             if upname == nil or upname == "" then
                 break
             end
-            local upvalue = fenv[upname]
-            if upvalue ~= nil then
-                debug.setupvalue(func, i, upvalue)
-            end
+            debug.setupvalue(func, i, fenv[upname])
         end
     end
     return func
