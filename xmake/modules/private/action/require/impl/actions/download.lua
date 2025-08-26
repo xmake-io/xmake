@@ -217,6 +217,12 @@ function _download(package, url, sourcedir, opt)
 
     -- we do not extract it if we download only it.
     if opt.download_only then
+        tty.erase_line_to_start().cr()
+        if cached then
+            cprint("${yellow}  => ${clear}download %s .. ${color.success}cached", url)
+        else
+            cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
+        end
         return
     end
 
@@ -440,15 +446,6 @@ function main(package, opt)
         }
 
         if ok then
-            -- download only packages, we need not to install it, so we need flush console output
-            if opt.download_only then
-                tty.erase_line_to_start().cr()
-                if git.checkurl(url) then
-                    cprint("${yellow}  => ${clear}clone %s %s .. ${color.success}${text.success}", url, package:version_str())
-                else
-                    cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
-                end
-            end
             break
         end
     end
