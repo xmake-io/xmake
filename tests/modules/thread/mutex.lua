@@ -1,8 +1,7 @@
-import("core.thread.thread")
-import("core.thread.mutex")
+import("core.base.thread")
 
 function callback(mutex)
-    import("core.thread.thread")
+    import("core.base.thread")
     print("%s: starting ..", thread.running())
     local dt = os.mclock()
     for i = 1, 10 do
@@ -16,9 +15,9 @@ function callback(mutex)
 end
 
 function main()
-    local m = mutex.new()
-    local t0 = thread.start_named("thread_0", callback, m)
-    local t1 = thread.start_named("thread_1", callback, m)
+    local mutex = thread.mutex()
+    local t0 = thread.start_named("thread_0", callback, mutex)
+    local t1 = thread.start_named("thread_1", callback, mutex)
     t0:wait(-1)
     t1:wait(-1)
 end

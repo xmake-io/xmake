@@ -21,25 +21,25 @@
 -- load modules
 local utils     = require("base/utils")
 local string    = require("base/string")
-local thread    = require("thread/thread")
+local thread    = require("base/thread")
 local raise     = require("sandbox/modules/raise")
 
 -- define module
-local sandbox_core_thread            = sandbox_core_thread or {}
-local sandbox_core_thread_instance   = sandbox_core_thread_instance or {}
+local sandbox_core_base_thread            = sandbox_core_base_thread or {}
+local sandbox_core_base_thread_instance   = sandbox_core_base_thread_instance or {}
 
 -- export the thread status
-sandbox_core_thread.STATUS_READY     = thread.STATUS_READY
-sandbox_core_thread.STATUS_RUNNING   = thread.STATUS_RUNNING
-sandbox_core_thread.STATUS_SUSPENDED = thread.STATUS_SUSPENDED
-sandbox_core_thread.STATUS_DEAD      = thread.STATUS_DEAD
+sandbox_core_base_thread.STATUS_READY     = thread.STATUS_READY
+sandbox_core_base_thread.STATUS_RUNNING   = thread.STATUS_RUNNING
+sandbox_core_base_thread.STATUS_SUSPENDED = thread.STATUS_SUSPENDED
+sandbox_core_base_thread.STATUS_DEAD      = thread.STATUS_DEAD
 
 -- wrap thread
 function _thread_wrap(instance)
 
     -- hook thread interfaces
     local hooked = {}
-    for name, func in pairs(sandbox_core_thread_instance) do
+    for name, func in pairs(sandbox_core_base_thread_instance) do
         if not name:startswith("_") and type(func) == "function" then
             hooked["_" .. name] = instance["_" .. name] or instance[name]
             hooked[name] = func
@@ -52,7 +52,7 @@ function _thread_wrap(instance)
 end
 
 -- start thread
-function sandbox_core_thread_instance.start(instance)
+function sandbox_core_base_thread_instance.start(instance)
     local ok, errors = instance:_start()
     if not ok then
         raise(errors)
@@ -61,7 +61,7 @@ function sandbox_core_thread_instance.start(instance)
 end
 
 -- suspend thread
-function sandbox_core_thread_instance.suspend(instance)
+function sandbox_core_base_thread_instance.suspend(instance)
     local ok, errors = instance:_suspend()
     if not ok then
         raise(errors)
@@ -69,7 +69,7 @@ function sandbox_core_thread_instance.suspend(instance)
 end
 
 -- resume thread
-function sandbox_core_thread_instance.resume(instance)
+function sandbox_core_base_thread_instance.resume(instance)
     local ok, errors = instance:_resume()
     if not ok then
         raise(errors)
@@ -77,7 +77,7 @@ function sandbox_core_thread_instance.resume(instance)
 end
 
 -- wait thread
-function sandbox_core_thread_instance.wait(instance, timeout)
+function sandbox_core_base_thread_instance.wait(instance, timeout)
     local ok, errors = instance:_wait(timeout)
     if ok < 0 then
         raise(errors)
@@ -85,7 +85,7 @@ function sandbox_core_thread_instance.wait(instance, timeout)
 end
 
 -- new thread
-function sandbox_core_thread.new(callback, opt)
+function sandbox_core_base_thread.new(callback, opt)
     local instance, errors = thread.new(callback, opt)
     if not instance then
         raise(errors)
@@ -94,22 +94,22 @@ function sandbox_core_thread.new(callback, opt)
 end
 
 -- start a thread
-function sandbox_core_thread.start(callback, ...)
-    return sandbox_core_thread.start_withopt(callback, {argv = table.pack(...)})
+function sandbox_core_base_thread.start(callback, ...)
+    return sandbox_core_base_thread.start_withopt(callback, {argv = table.pack(...)})
 end
 
 -- start a named thread
-function sandbox_core_thread.start_named(name, callback, ...)
-    return sandbox_core_thread.start_withopt(callback, {name = name, argv = table.pack(...)})
+function sandbox_core_base_thread.start_named(name, callback, ...)
+    return sandbox_core_base_thread.start_withopt(callback, {name = name, argv = table.pack(...)})
 end
 
 -- start a thread with options
-function sandbox_core_thread.start_withopt(callback, opt)
-    return sandbox_core_thread.new(callback, opt):start()
+function sandbox_core_base_thread.start_withopt(callback, opt)
+    return sandbox_core_base_thread.new(callback, opt):start()
 end
 
 -- get the running thread
-function sandbox_core_thread.running()
+function sandbox_core_base_thread.running()
     local instance, errors = thread.running()
     if not instance then
         raise(errors)
@@ -118,5 +118,5 @@ function sandbox_core_thread.running()
 end
 
 -- return module
-return sandbox_core_thread
+return sandbox_core_base_thread
 

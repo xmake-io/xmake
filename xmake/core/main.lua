@@ -41,7 +41,7 @@ local project       = require("project/project")
 local localcache    = require("cache/localcache")
 local profiler      = require("base/profiler")
 local debugger      = require("base/debugger")
-local thread        = require("thread/thread")
+local thread        = require("base/thread")
 
 -- init the option menu
 local menu =

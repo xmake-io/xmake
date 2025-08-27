@@ -1,7 +1,7 @@
-import("core.thread.thread")
+import("core.base.thread")
 
 function callback(id)
-    import("core.thread.thread")
+    import("core.base.thread")
     print("%s: %d starting ..", thread.running(), id)
     local dt = os.mclock()
     for i = 1, 10 do
