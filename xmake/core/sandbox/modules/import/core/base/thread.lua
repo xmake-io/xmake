@@ -27,6 +27,7 @@ local raise     = require("sandbox/modules/raise")
 -- define module
 local sandbox_core_base_thread            = sandbox_core_base_thread or {}
 local sandbox_core_base_thread_instance   = sandbox_core_base_thread_instance or {}
+local sandbox_core_base_thread_mutex      = sandbox_core_base_thread_mutex or {}
 
 -- export the thread status
 sandbox_core_base_thread.STATUS_READY     = thread.STATUS_READY
@@ -84,6 +85,30 @@ function sandbox_core_base_thread_instance.wait(instance, timeout)
     end
 end
 
+-- lock mutex
+function sandbox_core_base_thread_mutex.lock(mutex)
+    local ok, errors = mutex:_lock()
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- unlock mutex
+function sandbox_core_base_thread_mutex.unlock(mutex)
+    local ok, errors = mutex:_unlock()
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- close mutex
+function sandbox_core_base_thread_mutex.close(mutex)
+    local ok, errors = mutex:_close()
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- new thread
 function sandbox_core_base_thread.new(callback, opt)
     local instance, errors = thread.new(callback, opt)
@@ -116,6 +141,28 @@ function sandbox_core_base_thread.running()
     end
     return instance
 end
+
+-- open a mutex
+function sandbox_core_base_thread.mutex(name)
+    local mutex, errors = thread.mutex(name)
+    if not mutex then
+        raise(errors)
+    end
+
+    -- hook filemutex interfaces
+    local hooked = {}
+    for name, func in pairs(sandbox_core_base_thread_mutex) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = mutex["_" .. name] or mutex[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        mutex[name] = func
+    end
+    return mutex
+end
+
 
 -- return module
 return sandbox_core_base_thread
