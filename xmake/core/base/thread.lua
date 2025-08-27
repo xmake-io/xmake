@@ -92,11 +92,22 @@ function _thread:start()
     end
     assert(not self:cdata())
 
+    -- translate arguments (mutex, ...)
+    local argv = {}
+    for _, arg in ipairs(self._ARGV) do
+        -- is mutex? we can only pass cdata address
+        if type(arg) == "table" and arg._LOCK and arg.cdata then
+            arg = {mutex = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+            -- TODO increase refn
+        end
+        table.insert(argv, arg)
+    end
+
     -- serialize and pass callback and arguments to this thread
     -- we do not use string.serialize to serialize callback, because it's slower (deserialize)
     -- and we cannot strip function debug info, we need to reserve _ENV, and other upvalue names
     local callback = string._dump(self._CALLBACK)
-    local callinfo = {name = self:name(), argv = self._ARGV}
+    local callinfo = {name = self:name(), argv = argv}
     callinfo = string.serialize(callinfo, {strip = true, indent = false})
 
     -- init and start thread
@@ -387,6 +398,18 @@ function thread._run_thread(callback_str, callinfo_str)
 
     -- save the running thread name
     thread._RUNNING = threadname
+
+    -- translate arguments (mutex, ...)
+    if argv then
+        local newargv = {}
+        for _, arg in ipairs(argv) do
+            if type(arg) == "table" and arg.mutex and arg.caddr then
+                arg = _mutex.new(arg.name, libc.ptraddr(arg.caddr))
+            end
+            table.insert(newargv, arg)
+        end
+        argv = newargv
+    end
 
     -- do callback
     return sandbox.load(sandbox_inst:script(), table.unpack(argv or {}))
