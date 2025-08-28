@@ -354,6 +354,13 @@ tb_int_t xm_thread_mutex_trylock(lua_State* lua);
 tb_int_t xm_thread_mutex_unlock(lua_State* lua);
 tb_int_t xm_thread_mutex_incref(lua_State* lua);
 
+// the thread/event functions
+tb_int_t xm_thread_event_init(lua_State* lua);
+tb_int_t xm_thread_event_exit(lua_State* lua);
+tb_int_t xm_thread_event_post(lua_State* lua);
+tb_int_t xm_thread_event_wait(lua_State* lua);
+tb_int_t xm_thread_event_incref(lua_State* lua);
+
 // open cjson
 __tb_extern_c_enter__
 tb_int_t luaopen_cjson(lua_State *l);
@@ -654,6 +661,11 @@ static luaL_Reg const g_thread_functions[] =
 ,   { "mutex_trylock",  xm_thread_mutex_trylock }
 ,   { "mutex_unlock",   xm_thread_mutex_unlock  }
 ,   { "mutex_incref",   xm_thread_mutex_incref  }
+,   { "event_init",     xm_thread_event_init    }
+,   { "event_exit",     xm_thread_event_exit    }
+,   { "event_post",     xm_thread_event_post    }
+,   { "event_wait",     xm_thread_event_wait    }
+,   { "event_incref",   xm_thread_event_incref  }
 ,   { tb_null,          tb_null                 }
 };
 

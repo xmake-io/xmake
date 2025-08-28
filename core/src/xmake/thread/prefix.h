@@ -39,6 +39,14 @@ typedef struct __xm_thread_t
 
 }xm_thread_t;
 
+// the thread event type
+typedef struct __xm_thread_event_t
+{
+    tb_event_ref_t  handle;
+    tb_atomic_t     refn;
+
+}xm_thread_event_t;
+
 // the thread mutex type
 typedef struct __xm_thread_mutex_t
 {
@@ -46,6 +54,15 @@ typedef struct __xm_thread_mutex_t
     tb_atomic_t     refn;
 
 }xm_thread_mutex_t;
+
+// get the thread event from arguments
+static __tb_inline__ xm_thread_event_t* xm_thread_event_get(lua_State* lua, tb_int_t index)
+{
+    xm_thread_event_t* thread_event = tb_null;
+    if (xm_lua_isinteger(lua, index)) thread_event = (xm_thread_event_t*)(tb_size_t)(tb_long_t)lua_tointeger(lua, index);
+    else if (xm_lua_ispointer(lua, index)) thread_event = (xm_thread_event_t*)xm_lua_topointer(lua, index);
+    return thread_event;
+}
 
 // get the thread mutex from arguments
 static __tb_inline__ xm_thread_mutex_t* xm_thread_mutex_get(lua_State* lua, tb_int_t index)

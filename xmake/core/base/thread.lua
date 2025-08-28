@@ -22,6 +22,7 @@
 local thread    = thread or {}
 local _thread   = _thread or {}
 local _mutex    = _mutex or {}
+local _event    = _event or {}
 
 -- load modules
 local io      = require("base/io")
@@ -96,9 +97,13 @@ function _thread:start()
     local argv = {}
     for _, arg in ipairs(self._ARGV) do
         -- is mutex? we can only pass cdata address
-        if type(arg) == "table" and arg._LOCK and arg.cdata then
+        if type(arg) == "table" and arg._MUTEX and arg.cdata then
             thread.mutex_incref(arg:cdata())
             arg = {mutex = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+        -- is event? we can only pass cdata address
+        elseif type(arg) == "table" and arg._EVENT and arg.cdata then
+            thread.event_incref(arg:cdata())
+            arg = {event = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
         end
         table.insert(argv, arg)
     end
@@ -196,10 +201,10 @@ function _thread:__gc()
 end
 
 -- new an mutex
-function _mutex.new(name, lock)
+function _mutex.new(name, cdata)
     local mutex = table.inherit(_mutex)
     mutex._NAME = name
-    mutex._LOCK = lock
+    mutex._MUTEX = cdata
     mutex._LOCKED_NUM = 0
     setmetatable(mutex, _mutex)
     return mutex
@@ -212,7 +217,7 @@ end
 
 -- get the cdata
 function _mutex:cdata()
-    return self._LOCK
+    return self._MUTEX
 end
 
 -- is locked?
@@ -220,19 +225,16 @@ function _mutex:islocked()
     return self._LOCKED_NUM > 0
 end
 
--- lock file
+-- lock mutex
 --
 -- @return          ok, errors
 --
 function _mutex:lock()
-
-    -- ensure opened
     local ok, errors = self:_ensure_opened()
     if not ok then
         return false, errors
     end
 
-    -- lock it
     if self._LOCKED_NUM > 0 or thread.mutex_lock(self:cdata()) then
         self._LOCKED_NUM = self._LOCKED_NUM + 1
         return true
@@ -241,21 +243,18 @@ function _mutex:lock()
     end
 end
 
--- try to lock file
+-- try to lock mutex
 --
 -- @param opt       the argument option, {shared = true}
 --
 -- @return          ok, errors
 --
 function _mutex:trylock(opt)
-
-    -- ensure opened
     local ok, errors = self:_ensure_opened()
     if not ok then
         return false, errors
     end
 
-    -- try lock it
     if self._LOCKED_NUM > 0 or thread.mutex_trylock(self:cdata(), opt) then
         self._LOCKED_NUM = self._LOCKED_NUM + 1
         return true
@@ -264,16 +263,13 @@ function _mutex:trylock(opt)
     end
 end
 
--- unlock file
+-- unlock mutex
 function _mutex:unlock(opt)
-
-    -- ensure opened
     local ok, errors = self:_ensure_opened()
     if not ok then
         return false, errors
     end
 
-    -- unlock it
     if self._LOCKED_NUM > 1 or (self._LOCKED_NUM > 0 and thread.mutex_unlock(self:cdata())) then
         if self._LOCKED_NUM > 0 then
             self._LOCKED_NUM = self._LOCKED_NUM - 1
@@ -298,7 +294,7 @@ function _mutex:close()
     -- close it
     ok = thread.mutex_exit(self:cdata())
     if ok then
-        self._LOCK = nil
+        self._MUTEX = nil
         self._LOCKED_NUM = 0
     end
     return ok
@@ -320,7 +316,92 @@ end
 -- gc(mutex)
 function _mutex:__gc()
     if self:cdata() and thread.mutex_exit(self:cdata()) then
-        self._LOCK = nil
+        self._MUTEX = nil
+        self._LOCKED_NUM = 0
+    end
+end
+
+-- new an event
+function _event.new(name, cdata)
+    local event = table.inherit(_event)
+    event._NAME = name
+    event._EVENT = cdata
+    setmetatable(event, _event)
+    return event
+end
+
+-- get the event name
+function _event:name()
+    return self._NAME
+end
+
+-- get the cdata
+function _event:cdata()
+    return self._EVENT
+end
+
+-- post event
+--
+-- @return          ok, errors
+--
+function _event:post()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    if not thread.event_post(self:cdata()) then
+        return false, string.format("%s: post failed!", self)
+    end
+    return true
+end
+
+-- wait event
+function _event:wait(timeout)
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    local ok, errors = thread.event_wait(self:cdata(), timeout)
+    if ok < 0 then
+        return false, string.format("%s: wait failed, errors: %s!", self, errors or "unknown")
+    end
+    return ok
+end
+
+-- close event
+function _event:close()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    ok = thread.event_exit(self:cdata())
+    if ok then
+        self._MUTEX = nil
+        self._LOCKED_NUM = 0
+    end
+    return ok
+end
+
+-- ensure the file is opened
+function _event:_ensure_opened()
+    if not self:cdata() then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
+end
+
+-- tostring(event)
+function _event:__tostring()
+    return "<event: " .. (self:name() or tostring(self:cdata())) .. ">"
+end
+
+-- gc(event)
+function _event:__gc()
+    if self:cdata() and thread.event_exit(self:cdata()) then
+        self._MUTEX = nil
         self._LOCKED_NUM = 0
     end
 end
@@ -403,6 +484,8 @@ function thread._run_thread(callback_str, callinfo_str)
         for _, arg in ipairs(argv) do
             if type(arg) == "table" and arg.mutex and arg.caddr then
                 arg = _mutex.new(arg.name, libc.ptraddr(arg.caddr))
+            elseif type(arg) == "table" and arg.event and arg.caddr then
+                arg = _event.new(arg.name, libc.ptraddr(arg.caddr))
             end
             table.insert(newargv, arg)
         end
@@ -420,6 +503,16 @@ function thread.mutex(name)
         return _mutex.new(name, mutex)
     else
         return nil, string.format("cannot open mutex: %s", os.strerror())
+    end
+end
+
+-- open a event
+function thread.event(name)
+    local event = thread.event_init()
+    if event then
+        return _event.new(name, event)
+    else
+        return nil, string.format("cannot open event: %s", os.strerror())
     end
 end
 
