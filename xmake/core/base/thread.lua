@@ -24,6 +24,7 @@ local _thread    = _thread or {}
 local _mutex     = _mutex or {}
 local _event     = _event or {}
 local _semaphore = _semaphore or {}
+local _queue     = _queue or {}
 
 -- load modules
 local io      = require("base/io")
@@ -109,6 +110,10 @@ function _thread:start()
         elseif type(arg) == "table" and arg._SEMAPHORE and arg.cdata then
             thread.semaphore_incref(arg:cdata())
             arg = {semaphore = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+        -- is queue? we can only pass cdata address
+        elseif type(arg) == "table" and arg._QUEUE and arg.cdata then
+            thread.queue_incref(arg:cdata())
+            arg = {queue = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
         end
         table.insert(argv, arg)
     end
@@ -494,6 +499,137 @@ function _semaphore:__gc()
     end
 end
 
+-- new an queue
+function _queue.new(name, cdata)
+    local queue = table.inherit(_queue)
+    queue._NAME = name
+    queue._QUEUE = cdata
+    setmetatable(queue, _queue)
+    return queue
+end
+
+-- get the queue name
+function _queue:name()
+    return self._NAME
+end
+
+-- get the cdata
+function _queue:cdata()
+    return self._QUEUE
+end
+
+-- get queue size
+function _queue:size()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
+    end
+
+    return thread.queue_size(self:cdata())
+end
+
+-- is empty queue?
+function _queue:empty()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
+    end
+
+    return thread.queue_size(self:cdata()) == 0
+end
+
+-- clear queue
+function _queue:clear()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    local ok, errors = thread.queue_clear(self:cdata())
+    if not ok then
+        return false, string.format("%s: clear failed, errors: %s!", self, errors or "unknown")
+    end
+    return ok
+end
+
+-- push queue item
+function _queue:push(value)
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    if type(value) == "table" then
+        value = string.serialize(value, {strip = true, indent = false})
+        if value == nil then
+            return false, string.format("%s: cannot serialize value: %s", self, value)
+        end
+        value = "__table_" .. value
+    end
+
+    local ok, errors = thread.queue_push(self:cdata(), value)
+    if not ok then
+        return false, string.format("%s: push item failed, errors: %s!", self, errors or "unknown")
+    end
+    return ok
+end
+
+-- pop queue item
+function _queue:pop()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors or "unknown"
+    end
+
+    local value, errors = thread.queue_pop(self:cdata())
+    if value == nil and errors then
+        return nil, string.format("%s: push item failed, errors: %s!", self, errors or "unknown")
+    end
+
+    if type(value) == "string" and value:startswith("__table_") then
+        value = value:sub(9)
+        value, errors = string.deserialize(value)
+        if not value then
+            return nil, string.format("invalid queue item, %s!", errors or "unknown")
+        end
+    end
+    return value
+end
+
+-- close queue
+function _queue:close()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    ok = thread.queue_exit(self:cdata())
+    if ok then
+        self._QUEUE = nil
+    end
+    return ok
+end
+
+-- ensure the file is opened
+function _queue:_ensure_opened()
+    if not self:cdata() then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
+end
+
+-- tostring(queue)
+function _queue:__tostring()
+    return "<queue: " .. (self:name() or tostring(self:cdata())) .. ">"
+end
+
+-- gc(queue)
+function _queue:__gc()
+    if self:cdata() and thread.queue_exit(self:cdata()) then
+        self._QUEUE = nil
+    end
+end
+
 -- new a thread
 --
 -- @param callback      the thread callback
@@ -576,6 +712,8 @@ function thread._run_thread(callback_str, callinfo_str)
                 arg = _event.new(arg.name, libc.ptraddr(arg.caddr))
             elseif type(arg) == "table" and arg.semaphore and arg.caddr then
                 arg = _semaphore.new(arg.name, libc.ptraddr(arg.caddr))
+            elseif type(arg) == "table" and arg.queue and arg.caddr then
+                arg = _queue.new(arg.name, libc.ptraddr(arg.caddr))
             end
             table.insert(newargv, arg)
         end
@@ -613,6 +751,16 @@ function thread.semaphore(name, value)
         return _semaphore.new(name, semaphore)
     else
         return nil, string.format("cannot open semaphore: %s", os.strerror())
+    end
+end
+
+-- open a queue
+function thread.queue(name)
+    local queue = thread.queue_init()
+    if queue then
+        return _queue.new(name, queue)
+    else
+        return nil, string.format("cannot open queue: %s", os.strerror())
     end
 end
 

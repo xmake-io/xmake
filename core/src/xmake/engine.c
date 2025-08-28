@@ -368,6 +368,15 @@ tb_int_t xm_thread_semaphore_post(lua_State* lua);
 tb_int_t xm_thread_semaphore_wait(lua_State* lua);
 tb_int_t xm_thread_semaphore_incref(lua_State* lua);
 
+// the thread/queue functions
+tb_int_t xm_thread_queue_init(lua_State* lua);
+tb_int_t xm_thread_queue_exit(lua_State* lua);
+tb_int_t xm_thread_queue_size(lua_State* lua);
+tb_int_t xm_thread_queue_clear(lua_State* lua);
+tb_int_t xm_thread_queue_incref(lua_State* lua);
+tb_int_t xm_thread_queue_push(lua_State* lua);
+tb_int_t xm_thread_queue_pop(lua_State* lua);
+
 // open cjson
 __tb_extern_c_enter__
 tb_int_t luaopen_cjson(lua_State *l);
@@ -678,6 +687,13 @@ static luaL_Reg const g_thread_functions[] =
 ,   { "semaphore_post",   xm_thread_semaphore_post   }
 ,   { "semaphore_wait",   xm_thread_semaphore_wait   }
 ,   { "semaphore_incref", xm_thread_semaphore_incref }
+,   { "queue_init",       xm_thread_queue_init       }
+,   { "queue_exit",       xm_thread_queue_exit       }
+,   { "queue_size",       xm_thread_queue_size       }
+,   { "queue_clear",      xm_thread_queue_clear      }
+,   { "queue_incref",     xm_thread_queue_incref     }
+,   { "queue_push",       xm_thread_queue_push       }
+,   { "queue_pop",        xm_thread_queue_pop        }
 ,   { tb_null,            tb_null                    }
 };
 

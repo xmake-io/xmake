@@ -30,6 +30,7 @@ local sandbox_core_base_thread_instance  = sandbox_core_base_thread_instance or 
 local sandbox_core_base_thread_mutex     = sandbox_core_base_thread_mutex or {}
 local sandbox_core_base_thread_event     = sandbox_core_base_thread_event or {}
 local sandbox_core_base_thread_semaphore = sandbox_core_base_thread_semaphore or {}
+local sandbox_core_base_thread_queue     = sandbox_core_base_thread_queue or {}
 
 -- export the thread status
 sandbox_core_base_thread.STATUS_READY     = thread.STATUS_READY
@@ -161,6 +162,59 @@ function sandbox_core_base_thread_semaphore.close(semaphore)
     end
 end
 
+-- get queue size
+function sandbox_core_base_thread_queue.size(queue)
+    local size, errors = queue:_size()
+    if not size then
+        raise(errors)
+    end
+    return size
+end
+
+-- is empty queue?
+function sandbox_core_base_thread_queue.empty(queue)
+    local ok, errors = queue:_empty()
+    if ok == nil then
+        raise(errors)
+    end
+    return ok
+end
+
+-- clear queue
+function sandbox_core_base_thread_queue.clear(queue)
+    local ok, errors = queue:_clear()
+    if not ok then
+        raise(errors)
+    end
+    return ok
+end
+
+-- push queue item
+function sandbox_core_base_thread_queue.push(queue, value)
+    local ok, errors = queue:_push(value)
+    if not ok then
+        raise(errors)
+    end
+    return ok
+end
+
+-- pop queue item
+function sandbox_core_base_thread_queue.pop(queue)
+    local value, errors = queue:_pop()
+    if value == nil and errors then
+        raise(errors)
+    end
+    return value
+end
+
+-- close queue
+function sandbox_core_base_thread_queue.close(queue)
+    local ok, errors = queue:_close()
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- new thread
 function sandbox_core_base_thread.new(callback, opt)
     local instance, errors = thread.new(callback, opt)
@@ -255,6 +309,27 @@ function sandbox_core_base_thread.semaphore(name, value)
         semaphore[name] = func
     end
     return semaphore
+end
+
+-- open a queue
+function sandbox_core_base_thread.queue(name)
+    local queue, errors = thread.queue(name)
+    if not queue then
+        raise(errors)
+    end
+
+    -- hook filequeue interfaces
+    local hooked = {}
+    for name, func in pairs(sandbox_core_base_thread_queue) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = queue["_" .. name] or queue[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        queue[name] = func
+    end
+    return queue
 end
 
 -- return module
