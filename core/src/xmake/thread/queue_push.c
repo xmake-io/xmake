@@ -63,7 +63,7 @@ tb_int_t xm_thread_queue_push(lua_State* lua)
             tb_memcpy(item.u.string, data, data_size);
         }
     }
-    else if (lua_isinteger(lua, 2))
+    else if (xm_lua_isinteger(lua, 2))
     {
         item.kind = (tb_uint32_t)XM_THREAD_QUEUE_ITEM_INT;
         item.u.integer = lua_tointeger(lua, 2);
