@@ -1,0 +1,8 @@
+export module bar;
+import zoo;
+
+export namespace bar {
+    int add(int a, int b) {
+        return zoo::add(a, b);
+    }
+}
