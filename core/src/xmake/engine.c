@@ -361,6 +361,13 @@ tb_int_t xm_thread_event_post(lua_State* lua);
 tb_int_t xm_thread_event_wait(lua_State* lua);
 tb_int_t xm_thread_event_incref(lua_State* lua);
 
+// the thread/semaphore functions
+tb_int_t xm_thread_semaphore_init(lua_State* lua);
+tb_int_t xm_thread_semaphore_exit(lua_State* lua);
+tb_int_t xm_thread_semaphore_post(lua_State* lua);
+tb_int_t xm_thread_semaphore_wait(lua_State* lua);
+tb_int_t xm_thread_semaphore_incref(lua_State* lua);
+
 // open cjson
 __tb_extern_c_enter__
 tb_int_t luaopen_cjson(lua_State *l);
@@ -650,23 +657,28 @@ static luaL_Reg const g_utils_functions[] =
 // the thread functions
 static luaL_Reg const g_thread_functions[] =
 {
-    { "thread_init",    xm_thread_init          }
-,   { "thread_exit",    xm_thread_exit          }
-,   { "thread_wait",    xm_thread_wait          }
-,   { "thread_resume",  xm_thread_resume        }
-,   { "thread_suspend", xm_thread_suspend       }
-,   { "mutex_init",     xm_thread_mutex_init    }
-,   { "mutex_exit",     xm_thread_mutex_exit    }
-,   { "mutex_lock",     xm_thread_mutex_lock    }
-,   { "mutex_trylock",  xm_thread_mutex_trylock }
-,   { "mutex_unlock",   xm_thread_mutex_unlock  }
-,   { "mutex_incref",   xm_thread_mutex_incref  }
-,   { "event_init",     xm_thread_event_init    }
-,   { "event_exit",     xm_thread_event_exit    }
-,   { "event_post",     xm_thread_event_post    }
-,   { "event_wait",     xm_thread_event_wait    }
-,   { "event_incref",   xm_thread_event_incref  }
-,   { tb_null,          tb_null                 }
+    { "thread_init",      xm_thread_init             }
+,   { "thread_exit",      xm_thread_exit             }
+,   { "thread_wait",      xm_thread_wait             }
+,   { "thread_resume",    xm_thread_resume           }
+,   { "thread_suspend",   xm_thread_suspend          }
+,   { "mutex_init",       xm_thread_mutex_init       }
+,   { "mutex_exit",       xm_thread_mutex_exit       }
+,   { "mutex_lock",       xm_thread_mutex_lock       }
+,   { "mutex_trylock",    xm_thread_mutex_trylock    }
+,   { "mutex_unlock",     xm_thread_mutex_unlock     }
+,   { "mutex_incref",     xm_thread_mutex_incref     }
+,   { "event_init",       xm_thread_event_init       }
+,   { "event_exit",       xm_thread_event_exit       }
+,   { "event_post",       xm_thread_event_post       }
+,   { "event_wait",       xm_thread_event_wait       }
+,   { "event_incref",     xm_thread_event_incref     }
+,   { "semaphore_init",   xm_thread_semaphore_init   }
+,   { "semaphore_exit",   xm_thread_semaphore_exit   }
+,   { "semaphore_post",   xm_thread_semaphore_post   }
+,   { "semaphore_wait",   xm_thread_semaphore_wait   }
+,   { "semaphore_incref", xm_thread_semaphore_incref }
+,   { tb_null,            tb_null                    }
 };
 
 // the lua global instance for signal handler

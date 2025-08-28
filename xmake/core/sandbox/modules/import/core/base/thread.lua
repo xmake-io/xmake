@@ -25,10 +25,11 @@ local thread    = require("base/thread")
 local raise     = require("sandbox/modules/raise")
 
 -- define module
-local sandbox_core_base_thread            = sandbox_core_base_thread or {}
-local sandbox_core_base_thread_instance   = sandbox_core_base_thread_instance or {}
-local sandbox_core_base_thread_mutex      = sandbox_core_base_thread_mutex or {}
-local sandbox_core_base_thread_event      = sandbox_core_base_thread_event or {}
+local sandbox_core_base_thread           = sandbox_core_base_thread or {}
+local sandbox_core_base_thread_instance  = sandbox_core_base_thread_instance or {}
+local sandbox_core_base_thread_mutex     = sandbox_core_base_thread_mutex or {}
+local sandbox_core_base_thread_event     = sandbox_core_base_thread_event or {}
+local sandbox_core_base_thread_semaphore = sandbox_core_base_thread_semaphore or {}
 
 -- export the thread status
 sandbox_core_base_thread.STATUS_READY     = thread.STATUS_READY
@@ -135,6 +136,31 @@ function sandbox_core_base_thread_event.close(event)
     end
 end
 
+-- post semaphore
+function sandbox_core_base_thread_semaphore.post(semaphore, value)
+    local ok, errors = semaphore:_post(value)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- wait semaphore
+function sandbox_core_base_thread_semaphore.wait(semaphore, timeout)
+    local ok, errors = semaphore:_wait(timeout)
+    if ok < 0 then
+        raise(errors)
+    end
+    return ok
+end
+
+-- close semaphore
+function sandbox_core_base_thread_semaphore.close(semaphore)
+    local ok, errors = semaphore:_close()
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- new thread
 function sandbox_core_base_thread.new(callback, opt)
     local instance, errors = thread.new(callback, opt)
@@ -208,6 +234,27 @@ function sandbox_core_base_thread.event(name)
         event[name] = func
     end
     return event
+end
+
+-- open a semaphore
+function sandbox_core_base_thread.semaphore(name, value)
+    local semaphore, errors = thread.semaphore(name, value)
+    if not semaphore then
+        raise(errors)
+    end
+
+    -- hook filesemaphore interfaces
+    local hooked = {}
+    for name, func in pairs(sandbox_core_base_thread_semaphore) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = semaphore["_" .. name] or semaphore[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        semaphore[name] = func
+    end
+    return semaphore
 end
 
 -- return module

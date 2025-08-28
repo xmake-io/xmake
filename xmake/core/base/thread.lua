@@ -19,10 +19,11 @@
 --
 
 -- define module
-local thread    = thread or {}
-local _thread   = _thread or {}
-local _mutex    = _mutex or {}
-local _event    = _event or {}
+local thread     = thread or {}
+local _thread    = _thread or {}
+local _mutex     = _mutex or {}
+local _event     = _event or {}
+local _semaphore = _semaphore or {}
 
 -- load modules
 local io      = require("base/io")
@@ -104,6 +105,10 @@ function _thread:start()
         elseif type(arg) == "table" and arg._EVENT and arg.cdata then
             thread.event_incref(arg:cdata())
             arg = {event = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+        -- is semaphore? we can only pass cdata address
+        elseif type(arg) == "table" and arg._SEMAPHORE and arg.cdata then
+            thread.semaphore_incref(arg:cdata())
+            arg = {semaphore = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
         end
         table.insert(argv, arg)
     end
@@ -379,8 +384,7 @@ function _event:close()
 
     ok = thread.event_exit(self:cdata())
     if ok then
-        self._MUTEX = nil
-        self._LOCKED_NUM = 0
+        self._EVENT = nil
     end
     return ok
 end
@@ -401,8 +405,92 @@ end
 -- gc(event)
 function _event:__gc()
     if self:cdata() and thread.event_exit(self:cdata()) then
-        self._MUTEX = nil
-        self._LOCKED_NUM = 0
+        self._EVENT = nil
+    end
+end
+
+-- new an semaphore
+function _semaphore.new(name, cdata)
+    local semaphore = table.inherit(_semaphore)
+    semaphore._NAME = name
+    semaphore._SEMAPHORE = cdata
+    setmetatable(semaphore, _semaphore)
+    return semaphore
+end
+
+-- get the semaphore name
+function _semaphore:name()
+    return self._NAME
+end
+
+-- get the cdata
+function _semaphore:cdata()
+    return self._SEMAPHORE
+end
+
+-- post semaphore
+--
+-- @param value     the semaphore value
+--
+-- @return          ok, errors
+--
+function _semaphore:post(value)
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    if not thread.semaphore_post(self:cdata(), value) then
+        return false, string.format("%s: post failed!", self)
+    end
+    return true
+end
+
+-- wait semaphore
+function _semaphore:wait(timeout)
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    local ok, errors = thread.semaphore_wait(self:cdata(), timeout)
+    if ok < 0 then
+        return false, string.format("%s: wait failed, errors: %s!", self, errors or "unknown")
+    end
+    return ok
+end
+
+-- close semaphore
+function _semaphore:close()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    ok = thread.semaphore_exit(self:cdata())
+    if ok then
+        self._SEMAPHORE = nil
+    end
+    return ok
+end
+
+-- ensure the file is opened
+function _semaphore:_ensure_opened()
+    if not self:cdata() then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
+end
+
+-- tostring(semaphore)
+function _semaphore:__tostring()
+    return "<semaphore: " .. (self:name() or tostring(self:cdata())) .. ">"
+end
+
+-- gc(semaphore)
+function _semaphore:__gc()
+    if self:cdata() and thread.semaphore_exit(self:cdata()) then
+        self._SEMAPHORE = nil
     end
 end
 
@@ -486,6 +574,8 @@ function thread._run_thread(callback_str, callinfo_str)
                 arg = _mutex.new(arg.name, libc.ptraddr(arg.caddr))
             elseif type(arg) == "table" and arg.event and arg.caddr then
                 arg = _event.new(arg.name, libc.ptraddr(arg.caddr))
+            elseif type(arg) == "table" and arg.semaphore and arg.caddr then
+                arg = _semaphore.new(arg.name, libc.ptraddr(arg.caddr))
             end
             table.insert(newargv, arg)
         end
@@ -513,6 +603,16 @@ function thread.event(name)
         return _event.new(name, event)
     else
         return nil, string.format("cannot open event: %s", os.strerror())
+    end
+end
+
+-- open a semaphore
+function thread.semaphore(name, value)
+    local semaphore = thread.semaphore_init(value or 0)
+    if semaphore then
+        return _semaphore.new(name, semaphore)
+    else
+        return nil, string.format("cannot open semaphore: %s", os.strerror())
     end
 end
 
