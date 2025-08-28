@@ -15,7 +15,7 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        mutex_init.c
+ * @file        thread_mutex_incref.c
  *
  */
 
@@ -33,38 +33,14 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_mutex_init(lua_State* lua)
+tb_int_t xm_thread_mutex_incref(lua_State* lua)
 {
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_bool_t ok = tb_false;
-    xm_thread_mutex_t* thread_mutex = tb_null;
-    do
-    {
-        thread_mutex = tb_malloc0_type(xm_thread_mutex_t);
-        tb_assert_and_check_break(thread_mutex);
+    xm_thread_mutex_t* thread_mutex = xm_thread_mutex_get(lua, 1);
+    tb_assert_and_check_return_val(thread_mutex && thread_mutex->handle, 0);
 
-        thread_mutex->refn = 1;
-        thread_mutex->handle = tb_mutex_init();
-        tb_assert_and_check_break(thread_mutex->handle);
-
-        xm_lua_pushpointer(lua, (tb_pointer_t)thread_mutex);
-        ok = tb_true;
-
-    } while (0);
-
-    if (!ok)
-    {
-        if (thread_mutex)
-        {
-            if (thread_mutex->handle)
-            {
-                tb_mutex_exit(thread_mutex->handle);
-                thread_mutex->handle = tb_null;
-            }
-            tb_free(thread_mutex);
-        }
-        lua_pushnil(lua);
-    }
+    lua_pushboolean(lua, tb_atomic_fetch_and_add(&thread_mutex->refn, 1) >= 1);
     return 1;
 }
+

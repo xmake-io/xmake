@@ -97,8 +97,8 @@ function _thread:start()
     for _, arg in ipairs(self._ARGV) do
         -- is mutex? we can only pass cdata address
         if type(arg) == "table" and arg._LOCK and arg.cdata then
+            thread.mutex_incref(arg:cdata())
             arg = {mutex = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
-            -- TODO increase refn
         end
         table.insert(argv, arg)
     end
