@@ -7,8 +7,8 @@ function callback(mutex)
     for i = 1, 10 do
         mutex:lock()
         print("%s: %d", thread.running(), i)
-        os.sleep(1000)
         mutex:unlock()
+        os.sleep(1000)
     end
     dt = os.mclock() - dt
     print("%s: end, dt: %d ms", thread.running(), dt)

@@ -37,11 +37,8 @@ tb_int_t xm_thread_mutex_trylock(lua_State* lua)
 {
     tb_assert_and_check_return_val(lua, 0);
 
-    if (!xm_lua_ispointer(lua, 1))
-        return 0;
-
-    xm_thread_mutex_t* thread_mutex = (xm_thread_mutex_t*)xm_lua_topointer(lua, 1);
-    tb_check_return_val(thread_mutex && thread_mutex->handle, 0);
+    xm_thread_mutex_t* thread_mutex = xm_thread_mutex_get(lua, 1);
+    tb_assert_and_check_return_val(thread_mutex && thread_mutex->handle, 0);
 
     lua_pushboolean(lua, tb_mutex_enter_try(thread_mutex->handle));
     return 1;

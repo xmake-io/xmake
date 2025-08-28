@@ -47,6 +47,14 @@ typedef struct __xm_thread_mutex_t
 
 }xm_thread_mutex_t;
 
+// get the thread mutex from arguments
+static __tb_inline__ xm_thread_mutex_t* xm_thread_mutex_get(lua_State* lua, tb_int_t index)
+{
+    xm_thread_mutex_t* thread_mutex = tb_null;
+    if (xm_lua_isinteger(lua, index)) thread_mutex = (xm_thread_mutex_t*)(tb_size_t)(tb_long_t)lua_tointeger(lua, index);
+    else if (xm_lua_ispointer(lua, index)) thread_mutex = (xm_thread_mutex_t*)xm_lua_topointer(lua, index);
+    return thread_mutex;
+}
 
 #endif
 

@@ -222,11 +222,9 @@ end
 
 -- lock file
 --
--- @param opt       the argument option, {shared = true}
---
 -- @return          ok, errors
 --
-function _mutex:lock(opt)
+function _mutex:lock()
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -235,7 +233,7 @@ function _mutex:lock(opt)
     end
 
     -- lock it
-    if self._LOCKED_NUM > 0 or thread.mutex_lock(self:cdata(), opt) then
+    if self._LOCKED_NUM > 0 or thread.mutex_lock(self:cdata()) then
         self._LOCKED_NUM = self._LOCKED_NUM + 1
         return true
     else
