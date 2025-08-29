@@ -692,8 +692,6 @@ function thread._run_thread(callback_str, callinfo_str)
     end
 
     -- bind sandbox
---    local sandbox_inst, errors = sandbox.new(callback, {
---        filter = interp:filter(), rootdir = interp:rootdir(), namespace = interp:namespace()})
     local sandbox_inst, errors = sandbox.new(callback)
     if not sandbox_inst then
         return false, errors
