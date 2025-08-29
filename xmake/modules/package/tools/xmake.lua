@@ -291,6 +291,12 @@ function _get_configs(package, configs, opt)
             policies = "package.include_external_headers:n"
         end
     end
+    if policies:find("package.build.ccache", 1, true) then
+        table.insert(configs, "--ccachedir=" .. path.join(path.directory(package:cachedir()), "build_cache"))
+        policies = policies .. ",build.ccache:y"
+    else
+        policies = policies .. ",build.ccache:n"
+    end
     if policies then
         table.insert(configs, "--policies=" .. policies)
     end
@@ -513,7 +519,6 @@ function install(package, configs, opt)
     -- we need to put `-P` in the first argument of _set_builtin_argv() to avoid option.parse() parsing errors
     local argv = {"f"}
     _set_builtin_argv(package, argv)
-    table.insert(argv, "-y")
     table.insert(argv, "-c")
     for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
