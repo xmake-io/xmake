@@ -377,6 +377,14 @@ tb_int_t xm_thread_queue_incref(lua_State* lua);
 tb_int_t xm_thread_queue_push(lua_State* lua);
 tb_int_t xm_thread_queue_pop(lua_State* lua);
 
+// the thread/sharedata functions
+tb_int_t xm_thread_sharedata_init(lua_State* lua);
+tb_int_t xm_thread_sharedata_exit(lua_State* lua);
+tb_int_t xm_thread_sharedata_clear(lua_State* lua);
+tb_int_t xm_thread_sharedata_incref(lua_State* lua);
+tb_int_t xm_thread_sharedata_set(lua_State* lua);
+tb_int_t xm_thread_sharedata_get_(lua_State* lua);
+
 // open cjson
 __tb_extern_c_enter__
 tb_int_t luaopen_cjson(lua_State *l);
@@ -694,6 +702,12 @@ static luaL_Reg const g_thread_functions[] =
 ,   { "queue_incref",     xm_thread_queue_incref     }
 ,   { "queue_push",       xm_thread_queue_push       }
 ,   { "queue_pop",        xm_thread_queue_pop        }
+,   { "sharedata_init",   xm_thread_sharedata_init   }
+,   { "sharedata_exit",   xm_thread_sharedata_exit   }
+,   { "sharedata_clear",  xm_thread_sharedata_clear  }
+,   { "sharedata_incref", xm_thread_sharedata_incref }
+,   { "sharedata_set",    xm_thread_sharedata_set    }
+,   { "sharedata_get",    xm_thread_sharedata_get_   }
 ,   { tb_null,            tb_null                    }
 };
 

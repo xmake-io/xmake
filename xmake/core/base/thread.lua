@@ -25,6 +25,7 @@ local _mutex     = _mutex or {}
 local _event     = _event or {}
 local _semaphore = _semaphore or {}
 local _queue     = _queue or {}
+local _sharedata = _sharedata or {}
 
 -- load modules
 local io        = require("base/io")
@@ -116,6 +117,10 @@ function _thread:start()
         elseif type(arg) == "table" and arg._QUEUE and arg.cdata then
             thread.queue_incref(arg:cdata())
             arg = {queue = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+        -- is sharedata? we can only pass cdata address
+        elseif type(arg) == "table" and arg._SHAREDATA and arg.cdata then
+            thread.sharedata_incref(arg:cdata())
+            arg = {sharedata = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
         end
         table.insert(argv, arg)
     end
@@ -647,6 +652,117 @@ function _queue:__gc()
     end
 end
 
+-- new an sharedata
+function _sharedata.new(name, cdata)
+    local sharedata = table.inherit(_sharedata)
+    sharedata._NAME = name
+    sharedata._SHAREDATA = cdata
+    setmetatable(sharedata, _sharedata)
+    return sharedata
+end
+
+-- get the sharedata name
+function _sharedata:name()
+    return self._NAME
+end
+
+-- get the cdata
+function _sharedata:cdata()
+    return self._SHAREDATA
+end
+
+-- clear sharedata
+function _sharedata:clear()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    local ok, errors = thread.sharedata_clear(self:cdata())
+    if not ok then
+        return false, string.format("%s: clear failed, errors: %s!", self, errors or "unknown")
+    end
+    return ok
+end
+
+-- set sharedata
+function _sharedata:set(value)
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    if type(value) == "table" then
+        value = string.serialize(value, {strip = true, indent = false})
+        if value == nil then
+            return false, string.format("%s: cannot serialize value: %s", self, value)
+        end
+        value = "__table_" .. value
+    end
+
+    local ok, errors = thread.sharedata_set(self:cdata(), value)
+    if not ok then
+        return false, string.format("%s: set sharedata failed, errors: %s!", self, errors or "unknown")
+    end
+    return ok
+end
+
+-- get sharedata
+function _sharedata:get()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors or "unknown"
+    end
+
+    local value, errors = thread.sharedata_get(self:cdata())
+    if value == nil and errors then
+        return nil, string.format("%s: get sharedata failed, errors: %s!", self, errors or "unknown")
+    end
+
+    if type(value) == "string" and value:startswith("__table_") then
+        value = value:sub(9)
+        value, errors = string.deserialize(value)
+        if not value then
+            return nil, string.format("invalid sharedata, %s!", errors or "unknown")
+        end
+    end
+    return value
+end
+
+-- close sharedata
+function _sharedata:close()
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    ok = thread.sharedata_exit(self:cdata())
+    if ok then
+        self._SHAREDATA = nil
+    end
+    return ok
+end
+
+-- ensure the file is opened
+function _sharedata:_ensure_opened()
+    if not self:cdata() then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
+end
+
+-- tostring(sharedata)
+function _sharedata:__tostring()
+    return "<sharedata: " .. (self:name() or tostring(self:cdata())) .. ">"
+end
+
+-- gc(sharedata)
+function _sharedata:__gc()
+    if self:cdata() and thread.sharedata_exit(self:cdata()) then
+        self._SHAREDATA = nil
+    end
+end
+
 -- new a thread
 --
 -- @param callback      the thread callback
@@ -731,6 +847,8 @@ function thread._run_thread(callback_str, callinfo_str)
                 arg = _semaphore.new(arg.name, libc.ptraddr(arg.caddr))
             elseif type(arg) == "table" and arg.queue and arg.caddr then
                 arg = _queue.new(arg.name, libc.ptraddr(arg.caddr))
+            elseif type(arg) == "table" and arg.sharedata and arg.caddr then
+                arg = _sharedata.new(arg.name, libc.ptraddr(arg.caddr))
             end
             table.insert(newargv, arg)
         end
@@ -787,6 +905,16 @@ function thread.queue(name)
         return _queue.new(name, queue)
     else
         return nil, string.format("cannot open queue: %s", os.strerror())
+    end
+end
+
+-- open a sharedata
+function thread.sharedata(name)
+    local sharedata = thread.sharedata_init()
+    if sharedata then
+        return _sharedata.new(name, sharedata)
+    else
+        return nil, string.format("cannot open sharedata: %s", os.strerror())
     end
 end
 

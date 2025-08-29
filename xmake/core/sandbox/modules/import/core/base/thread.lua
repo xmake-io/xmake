@@ -31,6 +31,7 @@ local sandbox_core_base_thread_mutex     = sandbox_core_base_thread_mutex or {}
 local sandbox_core_base_thread_event     = sandbox_core_base_thread_event or {}
 local sandbox_core_base_thread_semaphore = sandbox_core_base_thread_semaphore or {}
 local sandbox_core_base_thread_queue     = sandbox_core_base_thread_queue or {}
+local sandbox_core_base_thread_sharedata = sandbox_core_base_thread_sharedata or {}
 
 -- export the thread status
 sandbox_core_base_thread.STATUS_READY     = thread.STATUS_READY
@@ -215,6 +216,41 @@ function sandbox_core_base_thread_queue.close(queue)
     end
 end
 
+-- clear sharedata
+function sandbox_core_base_thread_sharedata.clear(sharedata)
+    local ok, errors = sharedata:_clear()
+    if not ok then
+        raise(errors)
+    end
+    return ok
+end
+
+-- set sharedata
+function sandbox_core_base_thread_sharedata.set(sharedata, value)
+    local ok, errors = sharedata:_set(value)
+    if not ok then
+        raise(errors)
+    end
+    return ok
+end
+
+-- get sharedata
+function sandbox_core_base_thread_sharedata.get(sharedata)
+    local value, errors = sharedata:_get()
+    if value == nil and errors then
+        raise(errors)
+    end
+    return value
+end
+
+-- close sharedata
+function sandbox_core_base_thread_sharedata.close(sharedata)
+    local ok, errors = sharedata:_close()
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- new thread
 function sandbox_core_base_thread.new(callback, opt)
     local instance, errors = thread.new(callback, opt)
@@ -330,6 +366,27 @@ function sandbox_core_base_thread.queue(name)
         queue[name] = func
     end
     return queue
+end
+
+-- open a sharedata
+function sandbox_core_base_thread.sharedata(name)
+    local sharedata, errors = thread.sharedata(name)
+    if not sharedata then
+        raise(errors)
+    end
+
+    -- hook filesharedata interfaces
+    local hooked = {}
+    for name, func in pairs(sandbox_core_base_thread_sharedata) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = sharedata["_" .. name] or sharedata[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        sharedata[name] = func
+    end
+    return sharedata
 end
 
 -- return module
