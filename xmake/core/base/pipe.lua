@@ -285,6 +285,11 @@ function _instance:__gc()
     end
 end
 
+-- new a pipe
+function pipe.new(cdata, name)
+    return _instance.new(cdata, name)
+end
+
 -- open a named pipe file
 --
 -- 1. named pipe (server-side):

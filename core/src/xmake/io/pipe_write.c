@@ -41,7 +41,7 @@ tb_int_t xm_io_pipe_write(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // check pipe
-    if (!xm_lua_ispointer(lua, 1))
+    if (!xm_pipe_file_is_valid(lua, 1))
     {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid pipe file!");
@@ -49,7 +49,7 @@ tb_int_t xm_io_pipe_write(lua_State* lua)
     }
 
     // get pipe file
-    tb_pipe_file_ref_t pipefile = (tb_pipe_file_ref_t)xm_lua_topointer(lua, 1);
+    tb_pipe_file_ref_t pipefile = xm_pipe_file_get(lua, 1);
     tb_check_return_val(pipefile, 0);
 
     // get data and size
