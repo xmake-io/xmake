@@ -94,6 +94,21 @@ typedef struct __xm_io_file_t
 
 } xm_io_file_t;
 
+// check pipe file
+static __tb_inline__ tb_bool_t xm_pipe_file_is_valid(lua_State* lua, tb_int_t index)
+{
+    return xm_lua_ispointer(lua, index) || xm_lua_isinteger(lua, index);
+}
+
+// get the pipe file from arguments
+static __tb_inline__ tb_pipe_file_ref_t xm_pipe_file_get(lua_State* lua, tb_int_t index)
+{
+    tb_pipe_file_ref_t pipe_file = tb_null;
+    if (xm_lua_isinteger(lua, index)) pipe_file = (tb_pipe_file_ref_t)(tb_size_t)(tb_long_t)lua_tointeger(lua, index);
+    else if (xm_lua_ispointer(lua, index)) pipe_file = (tb_pipe_file_ref_t)xm_lua_topointer(lua, index);
+    return pipe_file;
+}
+
 #endif
 
 

@@ -27,12 +27,14 @@ local _semaphore = _semaphore or {}
 local _queue     = _queue or {}
 
 -- load modules
-local io      = require("base/io")
-local libc    = require("base/libc")
-local bytes   = require("base/bytes")
-local table   = require("base/table")
-local string  = require("base/string")
-local sandbox = require("sandbox/sandbox")
+local io        = require("base/io")
+local libc      = require("base/libc")
+local pipe      = require("base/pipe")
+local bytes     = require("base/bytes")
+local table     = require("base/table")
+local string    = require("base/string")
+local scheduler = require("base/scheduler")
+local sandbox   = require("sandbox/sandbox")
 
 -- the thread status
 thread.STATUS_READY     = 1
@@ -118,11 +120,20 @@ function _thread:start()
         table.insert(argv, arg)
     end
 
+    -- init callback info
+    local callback = string._dump(self._CALLBACK)
+    local callinfo = {name = self:name(), argv = argv}
+
+    -- we need a pipe pair to wait and listen thread exit event
+    local rpipe, wpipe = pipe.openpair("BA") -- rpipe (block)
+    self._RPIPE = rpipe
+    callinfo.wpipe = libc.dataptr(wpipe:cdata())
+    -- we need to suppress gc to free it, because it has been transfer to thread in another lua state instance
+    wpipe._PIPE = nil
+
     -- serialize and pass callback and arguments to this thread
     -- we do not use string.serialize to serialize callback, because it's slower (deserialize)
     -- and we cannot strip function debug info, we need to reserve _ENV, and other upvalue names
-    local callback = string._dump(self._CALLBACK)
-    local callinfo = {name = self:name(), argv = argv}
     callinfo = string.serialize(callinfo, {strip = true, indent = false})
 
     -- init and start thread
@@ -177,7 +188,13 @@ function _thread:wait(timeout)
     end
     assert(self:cdata())
 
-    local ok, errors = thread.thread_wait(self:cdata(), timeout)
+    local ok, errors
+    local rpipe = self._RPIPE
+    if rpipe and scheduler:co_running() then
+        ok, errors = rpipe:wait(pipe.EV_READ, timeout)
+    else
+        ok, errors = thread.thread_wait(self:cdata(), timeout)
+    end
     if ok < 0 then
         return -1, errors or string.format("%s: failed to resume thread!", self)
     end
@@ -656,6 +673,7 @@ function thread._run_thread(callback_str, callinfo_str)
     local callinfo
     local argv
     local threadname
+    local wpipe
     if callinfo_str then
         local result, errors = string.deserialize(callinfo_str)
         if not result then
@@ -665,6 +683,7 @@ function thread._run_thread(callback_str, callinfo_str)
         if callinfo then
             argv = callinfo.argv
             threadname = callinfo.name
+            wpipe = pipe.new(libc.ptraddr(callinfo.wpipe))
         end
     end
 
@@ -719,7 +738,16 @@ function thread._run_thread(callback_str, callinfo_str)
     end
 
     -- do callback
-    return sandbox.load(sandbox_inst:script(), table.unpack(argv or {}))
+    local ok, errors = sandbox.load(sandbox_inst:script(), table.unpack(argv or {}))
+
+    -- thread is finished, we need to notify the waited thread
+    if wpipe then
+        local ok, errors = wpipe:write("exited")
+        if ok == nil then
+            return false, errors
+        end
+    end
+    return ok, errors
 end
 
 -- open a mutex
