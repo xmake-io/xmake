@@ -437,8 +437,9 @@ function main(package)
     {
         function ()
 
-            print(os.curdir())
+            print(os.curdir(), package:installdir(), os.isdir(package:installdir()))
             print(os.filedirs("*"))
+            os.vcp("*", package:installdir())
 
             -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable
             local installed_now = false
