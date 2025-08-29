@@ -37,7 +37,7 @@ jobs:
 
       - name: Tests
         run: |
-          xmake lua -v -D tests/run.lua
+          xmake lua -v -D tests/run.lua toolchain_muslcc
           xrepo --version
 
       - name: Artifact
