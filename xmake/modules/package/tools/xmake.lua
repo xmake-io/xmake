@@ -280,7 +280,7 @@ function _get_configs(package, configs, opt)
     if not package:use_external_includes() and (not policies or not policies:find("package.include_external_headers", 1, true)) then
         table.insert(policies_list, "package.include_external_headers:n")
     end
-    if policies:find("package.build.ccache", 1, true) then
+    if policies and policies:find("package.build.ccache", 1, true) then
         table.insert(configs, "--ccachedir=" .. path.join(path.directory(package:cachedir()), "build_cache"))
         table.insert(policies_list, "build.ccache")
     end
