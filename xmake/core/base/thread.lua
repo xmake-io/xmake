@@ -101,26 +101,28 @@ function _thread:start()
     -- translate arguments (mutex, ...)
     local argv = {}
     for _, arg in ipairs(self._ARGV) do
-        -- is mutex? we can only pass cdata address
-        if type(arg) == "table" and arg._MUTEX and arg.cdata then
-            thread.mutex_incref(arg:cdata())
-            arg = {mutex = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
-        -- is event? we can only pass cdata address
-        elseif type(arg) == "table" and arg._EVENT and arg.cdata then
-            thread.event_incref(arg:cdata())
-            arg = {event = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
-        -- is semaphore? we can only pass cdata address
-        elseif type(arg) == "table" and arg._SEMAPHORE and arg.cdata then
-            thread.semaphore_incref(arg:cdata())
-            arg = {semaphore = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
-        -- is queue? we can only pass cdata address
-        elseif type(arg) == "table" and arg._QUEUE and arg.cdata then
-            thread.queue_incref(arg:cdata())
-            arg = {queue = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
-        -- is sharedata? we can only pass cdata address
-        elseif type(arg) == "table" and arg._SHAREDATA and arg.cdata then
-            thread.sharedata_incref(arg:cdata())
-            arg = {sharedata = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+        if type(arg) == "table" then
+            -- is mutex? we can only pass cdata address
+            if arg._MUTEX and arg.cdata then
+                thread.mutex_incref(arg:cdata())
+                arg = {mutex = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+            -- is event? we can only pass cdata address
+            elseif arg._EVENT and arg.cdata then
+                thread.event_incref(arg:cdata())
+                arg = {event = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+            -- is semaphore? we can only pass cdata address
+            elseif arg._SEMAPHORE and arg.cdata then
+                thread.semaphore_incref(arg:cdata())
+                arg = {semaphore = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+            -- is queue? we can only pass cdata address
+            elseif arg._QUEUE and arg.cdata then
+                thread.queue_incref(arg:cdata())
+                arg = {queue = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+            -- is sharedata? we can only pass cdata address
+            elseif arg._SHAREDATA and arg.cdata then
+                thread.sharedata_incref(arg:cdata())
+                arg = {sharedata = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+            end
         end
         table.insert(argv, arg)
     end
