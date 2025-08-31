@@ -270,30 +270,24 @@ function _get_configs(package, configs, opt)
     end
 
     local policies = get_config("policies")
+    local policies_list = policies and policies:split(",") or {}
     if package:config("lto") and (not policies or not policies:find("build.optimization.lto", 1, true)) then
-        if policies then
-            policies = policies .. ",build.optimization.lto"
-        else
-            policies = "build.optimization.lto"
-        end
+        table.insert(policies_list, "build.optimization.lto")
     end
     if package:config("asan") and (not policies or not policies:find("build.sanitizer.address", 1, true)) then
-        if policies then
-            policies = policies .. ",build.sanitizer.address"
-        else
-            policies = "build.sanitizer.address"
-        end
+        table.insert(policies_list, "build.sanitizer.address")
     end
     if not package:use_external_includes() and (not policies or not policies:find("package.include_external_headers", 1, true)) then
-        if policies then
-            policies = policies .. ",package.include_external_headers:n"
-        else
-            policies = "package.include_external_headers:n"
-        end
+        table.insert(policies_list, "package.include_external_headers:n")
+    end
+    if policies and policies:find("package.build.ccache", 1, true) then
+        table.insert(configs, "--ccachedir=" .. path.join(path.directory(package:cachedir()), "build_cache"))
+        table.insert(policies_list, "build.ccache")
     end
     if policies then
-        table.insert(configs, "--policies=" .. policies)
+        table.insert(configs, "--policies=" .. table.concat(policies_list, ","))
     end
+
     if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
         table.insert(cxflags, "-fPIC")
     end
