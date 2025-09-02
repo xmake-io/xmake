@@ -4,6 +4,7 @@
 
 ### New features
 
+* [#6755](https://github.com/xmake-io/xmake/issues/6755): Add native thread support
 * [#6641](https://github.com/xmake-io/xmake/pull/6641): Add pkgenvs to target/config
 * [#6644](https://github.com/xmake-io/xmake/pull/6644): Support .def file with clang
 * [#6695](https://github.com/xmake-io/xmake/pull/6695): Add /uselocaltime to inf2cat args
@@ -19,7 +20,6 @@
 * [#6714](https://github.com/xmake-io/xmake/pull/6714): Improve tests for c++ modules
 * [#6719](https://github.com/xmake-io/xmake/pull/6719): Improve comax for config
 * [#6725](https://github.com/xmake-io/xmake/pull/6725): Improve target:extrafiles
-* [#6729](https://github.com/xmake-io/xmake/pull/6729): Continue to improve comax
 
 ### Bugs fixed
 
@@ -2042,6 +2042,47 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#6755](https://github.com/xmake-io/xmake/issues/6755): 添加原生线程支持
+* [#6641](https://github.com/xmake-io/xmake/pull/6641): 为 `target/config` 添加 `pkgenvs`
+* [#6644](https://github.com/xmake-io/xmake/pull/6644): 支持使用 clang 编译 .def 文件
+* [#6695](https://github.com/xmake-io/xmake/pull/6695): 为 inf2cat 添加 `/uselocaltime` 参数
+* [#6709](https://github.com/xmake-io/xmake/pull/6709): 支持 wasm64 架构
+* [#6737](https://github.com/xmake-io/xmake/pull/6737): 为 cython 规则添加 python 存根文件扩展
+
+### 改进
+
+* [#6651](https://github.com/xmake-io/xmake/pull/6651): 改进依赖文件
+* [#6656](https://github.com/xmake-io/xmake/pull/6656): 使构建工具支持传入 `opt.targets`
+* [#6688](https://github.com/xmake-io/xmake/pull/6688): 改进安装目标
+* [#6692](https://github.com/xmake-io/xmake/pull/6692): 改进 protobuf 测试
+* [#6714](https://github.com/xmake-io/xmake/pull/6714): 改进 C++ 模块测试
+* [#6719](https://github.com/xmake-io/xmake/pull/6719): 改进 comax 配置
+* [#6725](https://github.com/xmake-io/xmake/pull/6725): 改进 `target:extrafiles`
+
+### Bugs 修复
+
+* [#6648](https://github.com/xmake-io/xmake/pull/6648): 修复(qt.qmltyperegistrar): 收集 metatypes 信息
+* [#6661](https://github.com/xmake-io/xmake/pull/6661): 通过设置 "--tries=1" 修复 `_ping_via_wget` 长时间阻塞的问题
+* [#6665](https://github.com/xmake-io/xmake/pull/6665): 修复 cmake/mingw
+* [#6674](https://github.com/xmake-io/xmake/pull/6674): 尝试修复包中的 linkgroups
+* [#6675](https://github.com/xmake-io/xmake/pull/6675): 撤销 "改进配置目标"
+* [#6686](https://github.com/xmake-io/xmake/pull/6686): 修复编译器缓存
+* [#6698](https://github.com/xmake-io/xmake/pull/6698): 修复(C++ 模块) 处理空模块
+* [#6699](https://github.com/xmake-io/xmake/pull/6699): 修复(C++ 模块) 修复删除模块文件时 xmake 不更新模块映射器的问题
+* [#6706](https://github.com/xmake-io/xmake/pull/6706): 修复 CUDA 13 的 `find_cudadevices`
+* [#6707](https://github.com/xmake-io/xmake/pull/6707): 修复(C++ 模块) 修复 sourcebatch 缓存
+* [#6712](https://github.com/xmake-io/xmake/pull/6712): 修复(C++ 模块) 修复禁用的目标被配置用于模块编译的问题
+* [#6713](https://github.com/xmake-io/xmake/pull/6713): 修复(C++ 模块) 修复非 .cpp 文件从 `c++.build` sourcebatch 中被窃取的问题
+* [#6715](https://github.com/xmake-io/xmake/pull/6715): 修复(C++ 模块) 修复公共剔除模块错误地发出警告的问题
+* [#6718](https://github.com/xmake-io/xmake/pull/6718): 忽略 pch 标志
+* [#6732](https://github.com/xmake-io/xmake/pull/6732): 修复: android ndk rust link-args
+* [#6735](https://github.com/xmake-io/xmake/pull/6735): 修复(qt.qmltyperegistrar): 扩展依赖项以进行重建
+* [#6738](https://github.com/xmake-io/xmake/pull/6738): 修复 protobuf 的目标依赖
+* [#6741](https://github.com/xmake-io/xmake/pull/6741): 修复 vsxmake 选项
+* [#6747](https://github.com/xmake-io/xmake/pull/6747): `meminfo.c`: < 10.7 版本上没有 `vmstat.compressor_page_count`
 
 ## v3.0.1
 
