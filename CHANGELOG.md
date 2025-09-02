@@ -2,6 +2,47 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#6641](https://github.com/xmake-io/xmake/pull/6641): Add pkgenvs to target/config
+* [#6644](https://github.com/xmake-io/xmake/pull/6644): Support .def file with clang
+* [#6695](https://github.com/xmake-io/xmake/pull/6695): Add /uselocaltime to inf2cat args
+* [#6709](https://github.com/xmake-io/xmake/pull/6709): Support for wasm64
+* [#6737](https://github.com/xmake-io/xmake/pull/6737): Add python stub file extension to cython rule
+
+### Changes
+
+* [#6651](https://github.com/xmake-io/xmake/pull/6651): Improve depfiles
+* [#6656](https://github.com/xmake-io/xmake/pull/6656): Make build tools support passing in `opt.targets`
+* [#6688](https://github.com/xmake-io/xmake/pull/6688): Improve to install targets
+* [#6692](https://github.com/xmake-io/xmake/pull/6692): Improve protobuf test
+* [#6714](https://github.com/xmake-io/xmake/pull/6714): Improve tests for c++ modules
+* [#6719](https://github.com/xmake-io/xmake/pull/6719): Improve comax for config
+* [#6725](https://github.com/xmake-io/xmake/pull/6725): Improve target:extrafiles
+* [#6729](https://github.com/xmake-io/xmake/pull/6729): Continue to improve comax
+
+### Bugs fixed
+
+* [#6648](https://github.com/xmake-io/xmake/pull/6648): Fix(qt.qmltyperegistrar): Collect metatypes info
+* [#6661](https://github.com/xmake-io/xmake/pull/6661): Fix prolonged blocking in _ping_via_wget by setting "--tries=1"
+* [#6665](https://github.com/xmake-io/xmake/pull/6665): Fix cmake/mingw
+* [#6674](https://github.com/xmake-io/xmake/pull/6674): Attempt to fix linkgroups in package
+* [#6675](https://github.com/xmake-io/xmake/pull/6675): Revert "improve to config targets"
+* [#6686](https://github.com/xmake-io/xmake/pull/6686): Fix compiler cache
+* [#6698](https://github.com/xmake-io/xmake/pull/6698): Fix(c++ modules) handle empty modules
+* [#6699](https://github.com/xmake-io/xmake/pull/6699): Fix(c++ modules) fix xmake not updating module mapper when module file is removed
+* [#6706](https://github.com/xmake-io/xmake/pull/6706): Fix find_cudadevices for CUDA 13
+* [#6707](https://github.com/xmake-io/xmake/pull/6707): Fix(c++ modules) fix sourcebatch caching
+* [#6712](https://github.com/xmake-io/xmake/pull/6712): Fix(c++ modules) fix disabled target getting configured for module compilation
+* [#6713](https://github.com/xmake-io/xmake/pull/6713): Fix(c++ modules) fix non .cpp file stealed from c++.build sourcebatch
+* [#6715](https://github.com/xmake-io/xmake/pull/6715): Fix(c++ modules) fix public culled module incorrectly emiting a warning
+* [#6718](https://github.com/xmake-io/xmake/pull/6718): Ignore pch flags
+* [#6732](https://github.com/xmake-io/xmake/pull/6732): Fix: android ndk rust link-args
+* [#6735](https://github.com/xmake-io/xmake/pull/6735): Fix(qt.qmltyperegistrar): Extend dependencies for rebuild
+* [#6738](https://github.com/xmake-io/xmake/pull/6738): Fix protobuf for target deps
+* [#6741](https://github.com/xmake-io/xmake/pull/6741): Fix vsxmake options
+* [#6747](https://github.com/xmake-io/xmake/pull/6747): meminfo.c: no vmstat.compressor_page_count on < 10.7
+
 ## v3.0.1
 
 ### New features
