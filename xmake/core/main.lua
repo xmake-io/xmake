@@ -41,6 +41,7 @@ local project       = require("project/project")
 local localcache    = require("cache/localcache")
 local profiler      = require("base/profiler")
 local debugger      = require("base/debugger")
+local thread        = require("base/thread")
 
 -- init the option menu
 local menu =
@@ -258,6 +259,22 @@ function main._limit_root()
     return not option.get("root") and os.getenv("XMAKE_ROOT") ~= 'y' and os.host() ~= 'haiku'
 end
 
+-- run task
+function main._run_task(taskname)
+    local taskinst = task.task(taskname) or project.task(taskname)
+    if not taskinst then
+        return false, string.format("do unknown task(%s)!", taskname)
+    end
+
+    scheduler:co_start_named("xmake " .. taskname, function ()
+        local ok, errors = taskinst:run()
+        if not ok then
+            os.raise(errors)
+        end
+    end)
+    return true
+end
+
 -- the main entry function
 function main.entry()
 
@@ -314,22 +331,21 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
         localcache.save("history")
     end
 
-    -- get task instance
-    local taskname = option.taskname() or "build"
-    local taskinst = task.task(taskname) or project.task(taskname)
-    if not taskinst then
-        return main._exit(false, string.format("do unknown task(%s)!", taskname))
+    -- enable scheduler
+    scheduler:enable(true)
+
+    -- run task or thread
+    local thread_callback = xmake._THREAD_CALLBACK
+    if thread_callback then
+        ok, errors = thread._run_thread(thread_callback, xmake._THREAD_CALLINFO)
+    else
+        ok, errors = main._run_task(option.taskname() or "build")
+    end
+    if not ok then
+        return main._exit(ok, errors)
     end
 
-    -- run task
-    scheduler:enable(true)
-    scheduler:co_start_named("xmake " .. taskname, function ()
-        local ok, errors = taskinst:run()
-        if not ok then
-            os.raise(errors)
-        end
-
-    end)
+    -- start runloop
     ok, errors = scheduler:runloop()
     if not ok then
         return main._exit(ok, errors)

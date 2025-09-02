@@ -53,7 +53,7 @@ else -- >= Lua 5.2
             elseif f < 1 then
                 error("thread environments unsupported in Lua 5.2", 3) --[*]
             end
-            f = debug.getinfo(f+2, 'f').func
+            f = debug.getinfo(f + 2, 'f').func
         elseif type(f) ~= 'function' then
             error(("bad argument #1 to '%s' (number expected, got %s)"):format(type(name, f)), 2)
         end
