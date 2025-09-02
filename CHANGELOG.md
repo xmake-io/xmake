@@ -27,7 +27,6 @@
 * [#6661](https://github.com/xmake-io/xmake/pull/6661): Fix prolonged blocking in _ping_via_wget by setting "--tries=1"
 * [#6665](https://github.com/xmake-io/xmake/pull/6665): Fix cmake/mingw
 * [#6674](https://github.com/xmake-io/xmake/pull/6674): Attempt to fix linkgroups in package
-* [#6675](https://github.com/xmake-io/xmake/pull/6675): Revert "improve to config targets"
 * [#6686](https://github.com/xmake-io/xmake/pull/6686): Fix compiler cache
 * [#6698](https://github.com/xmake-io/xmake/pull/6698): Fix(c++ modules) handle empty modules
 * [#6699](https://github.com/xmake-io/xmake/pull/6699): Fix(c++ modules) fix xmake not updating module mapper when module file is removed
@@ -2068,7 +2067,6 @@
 * [#6661](https://github.com/xmake-io/xmake/pull/6661): 通过设置 "--tries=1" 修复 `_ping_via_wget` 长时间阻塞的问题
 * [#6665](https://github.com/xmake-io/xmake/pull/6665): 修复 cmake/mingw
 * [#6674](https://github.com/xmake-io/xmake/pull/6674): 尝试修复包中的 linkgroups
-* [#6675](https://github.com/xmake-io/xmake/pull/6675): 撤销 "改进配置目标"
 * [#6686](https://github.com/xmake-io/xmake/pull/6686): 修复编译器缓存
 * [#6698](https://github.com/xmake-io/xmake/pull/6698): 修复(C++ 模块) 处理空模块
 * [#6699](https://github.com/xmake-io/xmake/pull/6699): 修复(C++ 模块) 修复删除模块文件时 xmake 不更新模块映射器的问题
