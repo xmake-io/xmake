@@ -1,0 +1,154 @@
+--!A cross-platform build utility based on Lua
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+--
+-- Copyright (C) 2015-present, Xmake Open Source Community.
+--
+-- @author      ruki
+-- @file        run.lua
+--
+
+-- imports
+import("core.sandbox.module")
+
+-- print verbose log
+function _print_vlog(script_type, script_name, args, opt)
+    if not opt.verbose then
+        return
+    end
+    cprintf("running %s ${underline}%s${reset}", script_type, script_name)
+    if args.n > 0 then
+        print(" with args:")
+        if not opt.diagnosis then
+            for i = 1, args.n do
+                print("  - " .. todisplay(args[i]))
+            end
+        else
+            utils.dump(table.unpack(args, 1, args.n))
+        end
+    else
+        print(".")
+    end
+end
+
+function _is_callable(func)
+    if type(func) == "function" then
+        return true
+    elseif type(func) == "table" then
+        local meta = debug.getmetatable(func)
+        if meta and meta.__call then
+            return true
+        end
+    end
+end
+
+function _run_script(script, args, opt)
+
+    local func
+    local printresult = false
+    local script_type, script_name
+
+    -- import and run script
+    if path.extension(script) == ".lua" and os.isfile(script) then
+
+        -- run the given lua script file (xmake lua /tmp/script.lua)
+        script_type, script_name = "given lua script file", path.relative(script)
+        func = import(path.basename(script), {rootdir = path.directory(script), anonymous = true})
+    elseif os.isfile(path.join(os.scriptdir(), "scripts", script .. ".lua")) then
+
+        -- run builtin lua script (xmake lua echo "hello xmake")
+        script_type, script_name = "builtin lua script", script
+        func = import("scripts." .. script, {anonymous = true})
+    else
+
+        -- attempt to find the builtin module
+        local object = nil
+        for _, name in ipairs(script:split("%.")) do
+            object = object and object[name] or module.get(name)
+            if not object then
+                break
+            end
+        end
+        if object then
+            -- run builtin modules (xmake lua core.xxx.xxx)
+            script_type, script_name = "builtin module", script
+            func = object
+        else
+            -- run imported modules (xmake lua core.xxx.xxx)
+            script_type, script_name = "imported module", script
+            func = import(script, {anonymous = true})
+        end
+        printresult = true
+    end
+
+    -- print verbose log
+    _print_vlog(script_type or "script", script_name or "", args, opt)
+
+    -- dump func() result
+    if _is_callable(func) then
+        local result = table.pack(func(table.unpack(args, 1, args.n)))
+        if printresult and result and result.n ~= 0 then
+            utils.dump(table.unpack(result, 1, result.n))
+        end
+    else
+        -- dump variables directly
+        utils.dump(func)
+    end
+end
+
+function _run_commanad(command, args, opt)
+    local tmpfile = os.tmpfile() .. ".lua"
+    io.writefile(tmpfile, "function main(...)\n" .. command .. "\nend")
+    return _run_script(tmpfile, args, opt)
+end
+
+function _get_args(opt)
+    opt = opt or {}
+
+    -- get arguments
+    local args = opt.arguments or {}
+    args.n = #args
+
+    -- get deserialize tag
+    local deserialize = opt.deserialize
+    if not deserialize then
+        return args
+    end
+    deserialize = tostring(deserialize)
+
+    -- deserialize prefixed arguments
+    for i, value in ipairs(args) do
+        if value:startswith(deserialize) then
+            local v, err = string.deserialize(value:sub(#deserialize + 1))
+            if err then
+                raise(err)
+            else
+                args[i] = v
+            end
+        end
+    end
+    return args
+end
+
+function main(script, opt)
+    opt = opt or {}
+    local result
+    local curdir = opt.curdir or os.workingdir()
+    local oldir = os.cd(curdir)
+    if opt.command then
+        result = _run_commanad(script, _get_args(opt), opt)
+    end
+    result = _run_script(script, _get_args(opt), opt)
+    os.cd(oldir)
+    return result
+end
