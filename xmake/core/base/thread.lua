@@ -132,7 +132,7 @@ function _thread:start()
     local callinfo = {name = self:name(), argv = argv}
 
     -- we need a pipe pair to wait and listen thread exit event
-    local rpipe, wpipe = pipe.openpair("BA") -- rpipe (block)
+    local rpipe, wpipe = pipe.openpair("AA")
     self._RPIPE = rpipe
     callinfo.wpipe = libc.dataptr(wpipe:cdata(), {ffi = false})
     -- we need to suppress gc to free it, because it has been transfer to thread in another lua state instance
@@ -198,12 +198,24 @@ function _thread:wait(timeout)
     local ok, errors
     local rpipe = self._RPIPE
     if rpipe and scheduler:co_running() then
-        ok, errors = rpipe:wait(pipe.EV_READ, timeout)
+        local buff = bytes(16)
+        local read, data_or_errors = rpipe:read(buff, 1, {block = true, timeout = timeout})
+        if read > 0 then
+            ok = 1
+        else
+            ok = read
+            errors = data_or_errors
+        end
     else
         ok, errors = thread.thread_wait(self:cdata(), timeout)
     end
     if ok < 0 then
         return -1, errors or string.format("%s: failed to resume thread!", self)
+    end
+
+    if rpipe then
+        rpipe:close()
+        self._RPIPE = nil
     end
 
     if ok > 0 then
@@ -231,6 +243,10 @@ end
 function _thread:__gc()
     if self:cdata() and self:is_dead() and thread.thread_exit(self:cdata()) then
         self._HANLDE = nil
+    end
+    if self._RPIPE then
+        self._RPIPE:close()
+        self._RPIPE = nil
     end
 end
 
@@ -862,10 +878,11 @@ function thread._run_thread(callback_str, callinfo_str)
 
     -- thread is finished, we need to notify the waited thread
     if wpipe then
-        local ok, errors = wpipe:write("exited")
-        if ok == nil then
+        local ok, errors = wpipe:write("1", {block = true})
+        if ok < 0 then
             return false, errors
         end
+        wpipe:close()
     end
     return ok, errors
 end
