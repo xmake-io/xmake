@@ -54,8 +54,8 @@ rule("xmake.cli")
         local headerdir = path.join(target:autogendir(), "rules", "xmake.cli", "include")
         local headerfile = path.join(headerdir, "luafiles.xmz.h")
         target:add("includedirs", headerdir)
-        argv = {"lua", "private.utils.bin2c", "--nozeroend", "-i", path(archivefile), "-o", path(headerfile)}
-        batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
+        argv = {"--nozeroend", "-i", path(archivefile), "-o", path(headerfile)}
+        batchcmds:vlua("private.utils.bin2c", argv)
 
         batchcmds:add_depfiles(sourcefiles)
         batchcmds:set_depmtime(os.mtime(dependfile))
