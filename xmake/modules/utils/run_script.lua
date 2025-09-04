@@ -19,8 +19,9 @@
 --
 
 -- imports
-import("core.sandbox.module")
+import("core.base.option")
 import("core.base.thread")
+import("core.sandbox.module")
 
 -- print verbose log
 function _print_vlog(script_type, script_name, args, opt)
@@ -142,10 +143,24 @@ function _get_args(opt)
 end
 
 function _run(script, opt)
+    opt = opt or {}
+
+    if opt.quiet then
+        option.save()
+        option.set("quiet", true, {force = true})
+    end
+
+    local curdir = opt.curdir or os.workingdir()
+    local oldir = os.cd(curdir)
     if opt.command then
         _run_commanad(script, _get_args(opt), opt)
     else
         _run_script(script, _get_args(opt), opt)
+    end
+    os.cd(oldir)
+
+    if opt.quiet then
+        option.restore()
     end
 end
 
@@ -163,12 +178,11 @@ end
 --                     - deserialize deserialize arguments starts with given prefix
 --                     - arguments   the script arguments
 --                     - thread      run script in a new native thread
+--                     - quiet       enable quiet output
 --                     - verbose     enable verbose output
 --                     - diagnosis   enable diagnosis output
 function main(script, opt)
     opt = opt or {}
-    local curdir = opt.curdir or os.workingdir()
-    local oldir = os.cd(curdir)
     if opt.thread then
         local argv
         for _, arg in ipairs(opt.arguments) do
@@ -183,6 +197,7 @@ function main(script, opt)
             command = opt.command,
             deserialize = opt.deserialize,
             arguments = argv,
+            quiet = opt.quiet,
             verbose = opt.verbose,
             diagnosis = opt.diagnosis
         }
@@ -191,5 +206,4 @@ function main(script, opt)
     else
         _run(script, opt)
     end
-    os.cd(oldir)
 end

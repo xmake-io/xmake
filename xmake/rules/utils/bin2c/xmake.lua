@@ -48,7 +48,7 @@ rule("utils.bin2c")
         if nozeroend then
             table.insert(argv, "--nozeroend")
         end
-        batchcmds:lua("private.utils.bin2c", argv)
+        batchcmds:vlua("private.utils.bin2c", argv)
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_bin)
