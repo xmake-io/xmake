@@ -55,15 +55,15 @@ function main()
     -- run script
     local script = option.get("script")
     if script then
-        return run_script(script, {
+        run_script(script, {
             curdir = os.workingdir(),
             verbose = option.get("verbose"),
             diagnosis = option.get("diagnosis"),
             command = option.get("command"),
             arguments = option.get("arguments"),
             deserialize = option.get("deserialize")})
+    else
+        -- enter interactive mode
+        sandbox.interactive()
     end
-
-    -- enter interactive mode
-    sandbox.interactive()
 end

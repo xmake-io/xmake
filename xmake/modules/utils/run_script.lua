@@ -20,6 +20,7 @@
 
 -- imports
 import("core.sandbox.module")
+import("core.base.thread")
 
 -- print verbose log
 function _print_vlog(script_type, script_name, args, opt)
@@ -109,7 +110,7 @@ end
 function _run_commanad(command, args, opt)
     local tmpfile = os.tmpfile() .. ".lua"
     io.writefile(tmpfile, "function main(...)\n" .. command .. "\nend")
-    return _run_script(tmpfile, args, opt)
+    _run_script(tmpfile, args, opt)
 end
 
 function _get_args(opt)
@@ -140,15 +141,47 @@ function _get_args(opt)
     return args
 end
 
+function _run(script, opt)
+    if opt.command then
+        _run_commanad(script, _get_args(opt), opt)
+    else
+        _run_script(script, _get_args(opt), opt)
+    end
+end
+
+function _run_in_thread(script, opt)
+    import("utils.run_script", {anonymous = true})(script, opt)
+end
+
+-- run lua script
+--
+-- @param script      the script file or string or module name
+--                    e.g. /tmp/test.lua, "print("hello")", "utils.bin2c"
+-- @param opt         the options
+--                     - curdir      the currect directory
+--                     - command     run script as command
+--                     - deserialize deserialize arguments starts with given prefix
+--                     - arguments   the script arguments
+--                     - thread      run script in a new native thread
+--                     - verbose     enable verbose output
+--                     - diagnosis   enable diagnosis output
 function main(script, opt)
     opt = opt or {}
-    local result
     local curdir = opt.curdir or os.workingdir()
     local oldir = os.cd(curdir)
-    if opt.command then
-        result = _run_commanad(script, _get_args(opt), opt)
+    if opt.thread then
+        local thread_opt = {
+            curdir = curdir,
+            command = opt.command,
+            deserialize = opt.deserialize,
+            arguments = opt.arguments,
+            verbose = opt.verbose,
+            diagnosis = opt.diagnosis
+        }
+        local t = thread.start_named("utils.run_script", _run_in_thread, script, thread_opt)
+        t:wait(-1)
+    else
+        _run(script, opt)
     end
-    result = _run_script(script, _get_args(opt), opt)
     os.cd(oldir)
-    return result
 end
