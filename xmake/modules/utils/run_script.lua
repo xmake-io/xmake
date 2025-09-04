@@ -170,11 +170,19 @@ function main(script, opt)
     local curdir = opt.curdir or os.workingdir()
     local oldir = os.cd(curdir)
     if opt.thread then
+        local argv
+        for _, arg in ipairs(opt.arguments) do
+            argv = argv or {}
+            if path.instance_of(arg) then
+                arg = tostring(arg)
+            end
+            table.insert(argv, arg)
+        end
         local thread_opt = {
             curdir = curdir,
             command = opt.command,
             deserialize = opt.deserialize,
-            arguments = opt.arguments,
+            arguments = argv,
             verbose = opt.verbose,
             diagnosis = opt.diagnosis
         }
