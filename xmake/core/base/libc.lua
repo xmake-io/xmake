@@ -121,8 +121,9 @@ function libc.setbyte(data, offset, value)
 end
 
 function libc.dataptr(data, opt)
-    if ffi then
-        if opt and opt.gc then
+    opt = opt or {}
+    if ffi and opt.ffi ~= false then
+        if opt.gc then
             return ffi.gc(ffi.cast("unsigned char*", data), ffi.C.free)
         else
             return ffi.cast("unsigned char*", data)
@@ -132,8 +133,9 @@ function libc.dataptr(data, opt)
     end
 end
 
-function libc.ptraddr(data)
-    if ffi then
+function libc.ptraddr(data, opt)
+    opt = opt or {}
+    if ffi and opt.ffi ~= false then
         return tonumber(ffi.cast('unsigned long long', data))
     else
         return data
