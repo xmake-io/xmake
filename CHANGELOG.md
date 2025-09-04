@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v3.0.2
+
 ### New features
 
 * [#6755](https://github.com/xmake-io/xmake/issues/6755): Add native thread support
@@ -2041,6 +2043,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v3.0.2
 
 ### 新特性
 
