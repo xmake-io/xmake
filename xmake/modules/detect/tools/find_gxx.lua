@@ -52,8 +52,7 @@ function main(opt)
                 command = "--version",
                 cachekey = "find_gxx_is_clang",
                 envs = opt.envs,
-                parse = function(output)
-                    return output:find("clang", 1, true)
+                    return output:find("clang", 1, true) ~= nil
                 end
             })
         if versioninfo then
