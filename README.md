@@ -699,3 +699,7 @@ This project exists thanks to all the people who have [contributed](CONTRIBUTING
 * [Arthapz](https://github.com/Arthapz): Contribute new C++ Modules implementation.
 * [SirLynix](https://github.com/SirLynix): Contributed many packages and let more people know about xmake.
 * `enderger`: Helped smooth out the edges on the English translation of the README
+
+### Powered by
+
+[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSource)
