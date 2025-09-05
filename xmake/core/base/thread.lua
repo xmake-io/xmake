@@ -105,19 +105,19 @@ function _thread:start()
             -- is mutex? we can only pass cdata address
             if arg._MUTEX and arg.cdata then
                 thread.mutex_incref(arg:cdata())
-                arg = {mutex = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+                arg = {mutex = true, name = arg:name(), caddr = libc.dataptr(arg:cdata(), {ffi = false})}
             -- is event? we can only pass cdata address
             elseif arg._EVENT and arg.cdata then
                 thread.event_incref(arg:cdata())
-                arg = {event = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+                arg = {event = true, name = arg:name(), caddr = libc.dataptr(arg:cdata(), {ffi = false})}
             -- is semaphore? we can only pass cdata address
             elseif arg._SEMAPHORE and arg.cdata then
                 thread.semaphore_incref(arg:cdata())
-                arg = {semaphore = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+                arg = {semaphore = true, name = arg:name(), caddr = libc.dataptr(arg:cdata(), {ffi = false})}
             -- is queue? we can only pass cdata address
             elseif arg._QUEUE and arg.cdata then
                 thread.queue_incref(arg:cdata())
-                arg = {queue = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+                arg = {queue = true, name = arg:name(), caddr = libc.dataptr(arg:cdata(), {ffi = false})}
             -- is sharedata? we can only pass cdata address
             elseif arg._SHAREDATA and arg.cdata then
                 thread.sharedata_incref(arg:cdata())
@@ -132,9 +132,9 @@ function _thread:start()
     local callinfo = {name = self:name(), argv = argv}
 
     -- we need a pipe pair to wait and listen thread exit event
-    local rpipe, wpipe = pipe.openpair("BA") -- rpipe (block)
+    local rpipe, wpipe = pipe.openpair("AA")
     self._RPIPE = rpipe
-    callinfo.wpipe = libc.dataptr(wpipe:cdata())
+    callinfo.wpipe = libc.dataptr(wpipe:cdata(), {ffi = false})
     -- we need to suppress gc to free it, because it has been transfer to thread in another lua state instance
     wpipe._PIPE = nil
 
@@ -198,12 +198,24 @@ function _thread:wait(timeout)
     local ok, errors
     local rpipe = self._RPIPE
     if rpipe and scheduler:co_running() then
-        ok, errors = rpipe:wait(pipe.EV_READ, timeout)
+        local buff = bytes(16)
+        local read, data_or_errors = rpipe:read(buff, 1, {block = true, timeout = timeout})
+        if read > 0 then
+            ok = 1
+        else
+            ok = read
+            errors = data_or_errors
+        end
     else
         ok, errors = thread.thread_wait(self:cdata(), timeout)
     end
     if ok < 0 then
         return -1, errors or string.format("%s: failed to resume thread!", self)
+    end
+
+    if rpipe then
+        rpipe:close()
+        self._RPIPE = nil
     end
 
     if ok > 0 then
@@ -231,6 +243,10 @@ end
 function _thread:__gc()
     if self:cdata() and self:is_dead() and thread.thread_exit(self:cdata()) then
         self._HANLDE = nil
+    end
+    if self._RPIPE then
+        self._RPIPE:close()
+        self._RPIPE = nil
     end
 end
 
@@ -801,7 +817,7 @@ function thread._run_thread(callback_str, callinfo_str)
         if callinfo then
             argv = callinfo.argv
             threadname = callinfo.name
-            wpipe = pipe.new(libc.ptraddr(callinfo.wpipe))
+            wpipe = pipe.new(libc.ptraddr(callinfo.wpipe, {ffi = false}))
         end
     end
 
@@ -842,15 +858,15 @@ function thread._run_thread(callback_str, callinfo_str)
         local newargv = {}
         for _, arg in ipairs(argv) do
             if type(arg) == "table" and arg.mutex and arg.caddr then
-                arg = _mutex.new(arg.name, libc.ptraddr(arg.caddr))
+                arg = _mutex.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
             elseif type(arg) == "table" and arg.event and arg.caddr then
-                arg = _event.new(arg.name, libc.ptraddr(arg.caddr))
+                arg = _event.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
             elseif type(arg) == "table" and arg.semaphore and arg.caddr then
-                arg = _semaphore.new(arg.name, libc.ptraddr(arg.caddr))
+                arg = _semaphore.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
             elseif type(arg) == "table" and arg.queue and arg.caddr then
-                arg = _queue.new(arg.name, libc.ptraddr(arg.caddr))
+                arg = _queue.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
             elseif type(arg) == "table" and arg.sharedata and arg.caddr then
-                arg = _sharedata.new(arg.name, libc.ptraddr(arg.caddr))
+                arg = _sharedata.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
             end
             table.insert(newargv, arg)
         end
@@ -862,10 +878,11 @@ function thread._run_thread(callback_str, callinfo_str)
 
     -- thread is finished, we need to notify the waited thread
     if wpipe then
-        local ok, errors = wpipe:write("exited")
-        if ok == nil then
+        local ok, errors = wpipe:write("1", {block = true})
+        if ok < 0 then
             return false, errors
         end
+        wpipe:close()
     end
     return ok, errors
 end

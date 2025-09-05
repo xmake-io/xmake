@@ -38,7 +38,7 @@ rule("utils.bin2c")
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.bin2c %s", sourcefile_bin)
         batchcmds:mkdir(headerdir)
-        local argv = {"lua", "private.utils.bin2c", "-i", path(sourcefile_bin), "-o", path(headerfile)}
+        local argv = {"-i", path(sourcefile_bin), "-o", path(headerfile)}
         local linewidth = target:extraconf("rules", "utils.bin2c", "linewidth")
         if linewidth then
             table.insert(argv, "-w")
@@ -48,7 +48,7 @@ rule("utils.bin2c")
         if nozeroend then
             table.insert(argv, "--nozeroend")
         end
-        batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
+        batchcmds:vlua("private.utils.bin2c", argv)
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_bin)

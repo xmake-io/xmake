@@ -28,6 +28,7 @@ import("core.theme.theme")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
+import("utils.run_script")
 import("utils.progress", {alias = "progress_utils"})
 import("utils.binary.rpath", {alias = "rpath_utils"})
 
@@ -102,9 +103,7 @@ end
 -- run command: os.execv
 function _runcmd_execv(cmd, opt)
     if cmd.program then
-        if opt.dryrun then
-            print(os.args(table.join(cmd.program, cmd.argv)))
-        else
+        if not opt.dryrun then
             os.execv(cmd.program, cmd.argv, cmd.opt)
         end
     end
@@ -114,9 +113,43 @@ end
 function _runcmd_vexecv(cmd, opt)
     if cmd.program then
         if opt.dryrun then
-            print(os.args(table.join(cmd.program, cmd.argv)))
+            vprint(os.args(table.join(cmd.program, cmd.argv)))
         else
             os.vexecv(cmd.program, cmd.argv, cmd.opt)
+        end
+    end
+end
+
+-- run command: lua
+function _runcmd_lua(cmd, opt)
+    if cmd.script then
+        if not opt.dryrun then
+            local runopt = table.clone(cmd.opt) or {}
+            runopt.arguments = cmd.argv
+            runopt.quiet = true
+            -- it will run in a separate native thread, which will not block other coroutine jobs
+            runopt.thread = true
+            run_script(cmd.script, runopt)
+        end
+    end
+end
+
+-- run command: vlua
+function _runcmd_vlua(cmd, opt)
+    if cmd.script then
+        vprint(os.args(table.join("xmake", "lua", cmd.script, cmd.argv)))
+        if not opt.dryrun then
+            local runopt = table.clone(cmd.opt) or {}
+            runopt.arguments = cmd.argv
+            if option.get("diagnosis") then
+                runopt.verbose = true
+                runopt.diagnosis = true
+            else
+                runopt.quiet = not option.get("verbose")
+            end
+            -- it will run in a separate native thread, which will not block other coroutine jobs
+            runopt.thread = true
+            run_script(cmd.script, runopt)
         end
     end
 end
@@ -214,6 +247,8 @@ function _runcmd(cmd, opt)
             vrunv        = _runcmd_vrunv,
             execv        = _runcmd_execv,
             vexecv       = _runcmd_vexecv,
+            lua          = _runcmd_lua,
+            vlua         = _runcmd_vlua,
             mkdir        = _runcmd_mkdir,
             rmdir        = _runcmd_rmdir,
             cd           = _runcmd_cd,
@@ -269,6 +304,16 @@ end
 -- add command: os.vexecv
 function batchcmds:vexecv(program, argv, opt)
     table.insert(self:cmds(), {kind = "vexecv", program = program, argv = argv, opt = opt})
+end
+
+-- add command: run lua script file, command or module
+function batchcmds:lua(script, argv, opt)
+    table.insert(self:cmds(), {kind = "lua", script = script, argv = argv, opt = opt})
+end
+
+-- add command: run lua script file, command or module
+function batchcmds:vlua(script, argv, opt)
+    table.insert(self:cmds(), {kind = "vlua", script = script, argv = argv, opt = opt})
 end
 
 -- add command: compiler.compile
