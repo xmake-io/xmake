@@ -1,3 +1,5 @@
+import("lib.detect.find_tool")
+
 function test_config(t)
 
     -- xmake
@@ -8,21 +10,26 @@ function test_config(t)
     print("config targets/1k: xmake: %d ms", dt1)
 
     -- cmake
-    os.tryrm("build")
-    os.mkdir("build")
-    local dt2 = os.mclock()
-    os.runv("cmake", {"..", "-G", "Ninja"}, {curdir = "build"})
-    dt2 = os.mclock() - dt2
-    print("config targets/1k: cmake: %d ms", dt2)
+    local cmake = find_tool("cmake")
+    if cmake then
+        os.tryrm("build")
+        os.mkdir("build")
+        local dt2 = os.mclock()
+        os.runv(cmake.program, {"..", "-G", "Ninja"}, {curdir = "build"})
+        dt2 = os.mclock() - dt2
+        print("config targets/1k: cmake: %d ms", dt2)
+        t:require((dt2 > dt1) or (dt2 + 1000 > dt1))
+    end
 
     -- meson
-    os.tryrm("build")
-    local dt3 = os.mclock()
-    os.runv("meson", {"setup", "build"})
-    dt3 = os.mclock() - dt3
-    print("config targets/1k: meson: %d ms", dt3)
-
-    t:require((dt2 > dt1) or (dt2 + 1000 > dt1))
-    t:require((dt3 > dt1) or (dt3 + 1000 > dt1))
+    local meson = find_tool("meson")
+    if meson then
+        os.tryrm("build")
+        local dt3 = os.mclock()
+        os.runv(meson.program, {"setup", "build"})
+        dt3 = os.mclock() - dt3
+        print("config targets/1k: meson: %d ms", dt3)
+        t:require((dt3 > dt1) or (dt3 + 1000 > dt1))
+    end
 end
 
