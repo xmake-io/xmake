@@ -20,7 +20,7 @@ function test_config(t)
         print("config targets/1k: cmake/default: %d ms", cmake_default_dt)
         t:require((cmake_default_dt > xmake_dt) or (cmake_default_dt + 1000 > xmake_dt))
 
-        if find_tool("ninja") then
+        if find_tool("ninja") and not is_subhost("windows") then
             os.tryrm("build")
             os.mkdir("build")
             local cmake_ninja_dt = os.mclock()
@@ -30,7 +30,7 @@ function test_config(t)
             t:require((cmake_ninja_dt > xmake_dt) or (cmake_ninja_dt + 1000 > xmake_dt))
         end
 
-        if find_tool("make") then
+        if find_tool("make") and not is_subhost("windows") then
             os.tryrm("build")
             os.mkdir("build")
             local cmake_makefile_dt = os.mclock()
