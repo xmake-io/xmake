@@ -100,6 +100,7 @@ function _get_apis()
     ,   "target.add_includedirs"
     ,   "target.add_sysincludedirs"
     ,   "target.add_frameworkdirs"
+    ,   "target.add_embeddirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
     ,   "option.add_includedirs"

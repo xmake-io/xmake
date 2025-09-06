@@ -661,6 +661,11 @@ function nf_includedir(self, dir)
     return {"-I" .. path.translate(dir)}
 end
 
+-- make the embeddir flag
+function nf_embeddir(self, dir)
+    return {"--embed-dir=" .. path.translate(dir)}
+end
+
 -- make the sysincludedir flag
 function nf_sysincludedir(self, dir)
     return {"-isystem", path.translate(dir)}
