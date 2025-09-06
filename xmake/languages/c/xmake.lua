@@ -44,6 +44,7 @@ language("c")
         ,   "target.languages"
         ,   "target.pcheader"
         ,   "target.includedirs"
+        ,   "target.embeddirs"
         ,   "target.defines"
         ,   "target.undefines"
         ,   "target.frameworkdirs"
