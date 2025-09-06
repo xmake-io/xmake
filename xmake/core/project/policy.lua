@@ -106,6 +106,9 @@ function policy.policies()
             ["build.c++.msvc.runtime"]            = {description = "Set the default vs runtime.", type = "string", values = {"MT", "MD"}},
             -- Enable cuda device link
             ["build.cuda.devlink"]                = {description = "Enable Cuda devlink.", type = "boolean"},
+            -- Enable linker output, e.g. show -Wl,--print-memory-usage output for gcc/g++
+            -- @see https://github.com/xmake-io/xmake/discussions/6772
+            ["build.linker.output"]               = {description = "Enable linker output.", type = "boolean"},
             -- Enable build jobgraph
             ["build.jobgraph"]                    = {description = "Enable build jobgraph.", default = true, type = "boolean"},
             -- Enable windows UAC and set level, e.g. invoker, admin, highest

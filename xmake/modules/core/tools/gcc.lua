@@ -937,6 +937,13 @@ end
 function link(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
 
+    -- enable linker output?
+    local target = opt.target
+    local linker_output = option.get("verbose")
+    if linker_output == nil and target and target.policy and target:policy("build.linker.output") then
+        linker_output = true
+    end
+
     os.mkdir(path.directory(targetfile))
     local implibfile = _get_implibfile(self, targetkind, targetfile, opt)
     if implibfile then
@@ -944,7 +951,7 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     end
 
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
-    if option.get("verbose") then
+    if linker_output then
         os.execv(program, argv, {envs = self:runenvs(), shell = opt.shell})
     else
         os.vrunv(program, argv, {envs = self:runenvs(), shell = opt.shell})
