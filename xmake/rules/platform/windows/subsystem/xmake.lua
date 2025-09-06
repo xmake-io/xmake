@@ -22,7 +22,7 @@
 -- set any of  "boot_application" "console" "efi_application" "efi_boot_service_driver" "efi_rom" "efi_runtime_driver" "native" "posix" "windows"
 -- with target:set_values("windows.subsystem", <your value>) and the rule will pass the proper flag to the linker
 rule("platform.windows.subsystem")
-    on_config("mingw", "windows", function(target)
+    after_config("mingw", "windows", function(target)
         local subsystems = {
             "BOOT_APPLICATION", "CONSOLE", "EFI_APPLICATION", "EFI_BOOT_SERVICE_DRIVER", "EFI_ROM", "EFI_RUNTIME_DRIVER", "NATIVE", "POSIX", "WINDOWS"
         }
