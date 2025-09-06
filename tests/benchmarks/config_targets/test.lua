@@ -12,6 +12,14 @@ function test_config(t)
     -- cmake
     local cmake = find_tool("cmake")
     if cmake then
+        os.tryrm("build")
+        os.mkdir("build")
+        local cmake_default_dt = os.mclock()
+        os.runv(cmake.program, {".."}, {curdir = "build"})
+        cmake_default_dt = os.mclock() - cmake_default_dt
+        print("config targets/1k: cmake/default: %d ms", cmake_default_dt)
+        t:require((cmake_default_dt > xmake_dt) or (cmake_default_dt + 1000 > xmake_dt))
+
         if find_tool("ninja") then
             os.tryrm("build")
             os.mkdir("build")
