@@ -32,6 +32,7 @@ import("private.utils.batchcmds")
 import("private.utils.target", {alias = "target_utils"})
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 import("rules.c++.modules.support", {alias = "module_support", rootdir = os.programdir()})
+import("private.utils.executable_path")
 
 -- get cmake version
 function _get_cmake_version()
@@ -302,7 +303,7 @@ function _set_compiler(cmakelists)
     if config.get("toolchain") then
         local cc = platform.tool("cc")
         if cc then
-            cc = path.unix(cc)
+            cc = path.unix(executable_path(cc))
             cmakelists:print("set(CMAKE_C_COMPILER \"%s\")", cc)
         end
         local cxx, cxx_name = platform.tool("cxx")
@@ -320,7 +321,7 @@ function _set_compiler(cmakelists)
                     cxx = name
                 end
             end
-            cxx = path.unix(cxx)
+            cxx = path.unix(executable_path(cxx))
             cmakelists:print("set(CMAKE_CXX_COMPILER \"%s\")", cxx)
         end
     end
