@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
+import("detect.tools.find_gcc")
 
 -- find c++
 --
@@ -36,15 +37,10 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
     opt = opt or {}
 
-    -- find program
-    local program = find_program(opt.program or "c++", opt)
-
-    -- find program version
     local version = nil
+    local program = find_program(opt.program or "c++", opt)
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
@@ -52,10 +48,7 @@ function main(opt)
     -- is clang++ or c++
     local is_clang = false
     if program then
-        local versioninfo = os.iorunv(program, {"--version"})
-        if versioninfo and versioninfo:find("clang", 1, true) then
-            is_clang = true
-        end
+        is_clang = find_gcc.check_clang(program, opt)
     end
     return program, version, (is_clang and "clangxx" or "cxx")
 end

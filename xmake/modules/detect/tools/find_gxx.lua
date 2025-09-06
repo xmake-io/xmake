@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
+import("detect.tools.find_gcc")
 
 -- find g++
 --
@@ -46,11 +47,8 @@ function main(opt)
 
     -- is clang++ or g++
     local is_clang = false
-    if program then
-        local versioninfo = os.iorunv(program, {"--version"}, {envs = opt.envs})
-        if versioninfo and versioninfo:find("clang", 1, true) then
-            is_clang = true
-        end
+    if program and is_host("macosx") then
+        is_clang = find_gcc.check_clang(program, opt)
     end
     return program, version, (is_clang and "clangxx" or "gxx")
 end
