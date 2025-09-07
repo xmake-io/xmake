@@ -41,7 +41,6 @@ function main(toolchain)
         toolchain:config_set("mingw", mingw.sdkdir)
         toolchain:config_set("cross", mingw.cross)
         toolchain:config_set("bindir", mingw.bindir)
-        toolchain:configs_save()
         return true
     end
 end

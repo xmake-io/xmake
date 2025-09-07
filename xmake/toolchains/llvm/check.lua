@@ -62,7 +62,6 @@ function _find_xcode(toolchain)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
     toolchain:config_set("target_minver", target_minver)
     toolchain:config_set("appledev", appledev)
-    toolchain:configs_save()
     cprint("checking for SDK version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), xcode_sdkver)
 end
 
@@ -115,7 +114,6 @@ function main(toolchain)
         toolchain:config_set("cross", cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
         toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
-        toolchain:configs_save()
     else
         raise("llvm toolchain not found!")
     end

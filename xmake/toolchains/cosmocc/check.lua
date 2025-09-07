@@ -67,7 +67,6 @@ function main(toolchain)
         if envs then
             toolchain:config_set("envs", envs)
         end
-        toolchain:configs_save()
     else
         raise("cosmocc toolchain not found!")
     end

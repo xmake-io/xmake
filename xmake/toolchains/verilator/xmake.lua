@@ -39,7 +39,6 @@ toolchain("verilator")
             cprint("${dim}checking for verilator ... ${color.nothing}${text.nothing}")
             raise("verilator not found!")
         end
-        toolchain:configs_save()
         return true
     end)
 

@@ -89,7 +89,6 @@ function _check_vstudio(toolchain)
             config.set("vs", vs, {force = true, readonly = true})
         end
         toolchain:config_set("vs", vs)
-        toolchain:configs_save()
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
         if msvc and msvc.version then
             cprint("checking for Microsoft C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), msvc.version)

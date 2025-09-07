@@ -37,7 +37,6 @@ function main(toolchain)
             cprint("checking for Intel Data Parallel C++ (%s) ... ${color.success}${text.success}", toolchain:arch())
             toolchain:config_set("icxenv", icxenv)
             toolchain:config_set("bindir", icxenv.bindir)
-            toolchain:configs_save()
             return true
         end
         return true

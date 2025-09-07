@@ -44,7 +44,6 @@ function main(toolchain)
         toolchain:config_set("cross", cross_toolchain.cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
         toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
-        toolchain:configs_save()
     else
         raise("cross toolchain not found!")
     end

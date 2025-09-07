@@ -73,7 +73,6 @@ toolchain("kotlin-native")
                 toolchain:config_set("sdkdir", path.directory(bindir))
                 toolchain:config_set("runenvs", runenvs)
             end
-            toolchain:configs_save()
             return true
         end
     end)

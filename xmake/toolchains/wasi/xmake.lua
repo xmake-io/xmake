@@ -47,7 +47,6 @@ toolchain("wasi")
         if wasisdk then
             toolchain:config_set("bindir", wasisdk.bindir)
             toolchain:config_set("sdkdir", wasisdk.sdkdir)
-            toolchain:configs_save()
             return wasisdk
         end
         return import("lib.detect.find_tool")("clang", {paths = toolchain:bindir()})

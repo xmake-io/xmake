@@ -52,7 +52,6 @@ function main(toolchain)
         toolchain:config_set("cross", cross_toolchain.cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
         toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
-        toolchain:configs_save()
         -- init default target os
         if not config.get("target_os") then
             config.set("target_os", "linux", {readonly = true, force = true})
