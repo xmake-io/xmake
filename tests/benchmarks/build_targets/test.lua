@@ -6,7 +6,7 @@ function test_build(t)
     -- xmake
     os.tryrm("build")
     local xmake_dt = os.mclock()
-    os.runv(os.programfile())
+    os.run("xmake")
     xmake_dt = os.mclock() - xmake_dt
     print("build targets/30: xmake: %d ms", xmake_dt)
 
@@ -64,7 +64,7 @@ function test_build(t)
         os.tryrm("build")
         local meson_dt = os.mclock()
         os.runv(meson.program, {"setup", "build"})
-        os.runv("ninja", {"-C", "build"})
+        os.runv(meson.program, {"compile", "-C", "build"})
         meson_dt = os.mclock() - meson_dt
         print("build targets/30: meson: %d ms", meson_dt)
         t:require((meson_dt > xmake_dt) or (meson_dt + 1000 > xmake_dt))

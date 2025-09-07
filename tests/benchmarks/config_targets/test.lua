@@ -6,7 +6,7 @@ function test_config(t)
     -- xmake
     os.tryrm("build")
     local xmake_dt = os.mclock()
-    os.runv(os.programfile(), {"config", "-c"})
+    os.runv("xmake", {"config", "-c"})
     xmake_dt = os.mclock() - xmake_dt
     print("config targets/1k: xmake: %d ms", xmake_dt)
 
