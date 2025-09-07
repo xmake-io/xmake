@@ -1,4 +1,5 @@
 import("lib.detect.find_tool")
+import("core.tool.toolchain")
 
 function test_config(t)
 
@@ -20,11 +21,23 @@ function test_config(t)
         print("config targets/1k: cmake/default: %d ms", cmake_default_dt)
         t:require((cmake_default_dt > xmake_dt) or (cmake_default_dt + 1000 > xmake_dt))
 
-        if find_tool("ninja") and not is_subhost("windows") then
+        local ninja = find_tool("ninja")
+        if ninja then
             os.tryrm("build")
             os.mkdir("build")
+            local configs = {}
+            local envs
+            if is_host("windows") then
+                table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. ninja.program)
+                local msvc = toolchain.load("msvc")
+                if msvc:check() then
+                    table.insert(configs, "-DCMAKE_CXX_COMPILER=" .. (msvc:tool("cxx")))
+                    table.insert(configs, "-DCMAKE_C_COMPILER=" .. (msvc:tool("cc")))
+                    envs = os.joinenvs(msvc:runenvs())
+                end
+            end
             local cmake_ninja_dt = os.mclock()
-            os.runv(cmake.program, {"..", "-G", "Ninja"}, {curdir = "build"})
+            os.runv(cmake.program, table.join("..", "-G", "Ninja", configs), {curdir = "build", envs = envs})
             cmake_ninja_dt = os.mclock() - cmake_ninja_dt
             print("config targets/1k: cmake/ninja: %d ms", cmake_ninja_dt)
             t:require((cmake_ninja_dt > xmake_dt) or (cmake_ninja_dt + 1000 > xmake_dt))
@@ -52,4 +65,5 @@ function test_config(t)
         t:require((meson_dt > xmake_dt) or (meson_dt + 1000 > xmake_dt))
     end
 end
+
 
