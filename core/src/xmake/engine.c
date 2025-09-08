@@ -65,11 +65,6 @@
 #   include "lz4/prefix.h"
 #endif
 
-// for lua
-#ifndef USE_LUAJIT
-#   include "../../lua/lua/lstate.h"
-#endif
-
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
@@ -1418,13 +1413,8 @@ static tb_bool_t xm_engine_extract_programfiles(xm_engine_t* engine, tb_char_t c
 
 static tb_void_t xm_engine_bind_to_lua(lua_State* lua, xm_engine_t* engine)
 {
-#ifdef USE_LUAJIT
     lua_pushlightuserdata(lua, engine);
     lua_setglobal(lua, "__global_engine");
-#else
-    global_State* g = G(lua);
-    g->ud = engine;
-#endif
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -1764,12 +1754,7 @@ xm_engine_ref_t xm_engine_get(lua_State* lua)
 {
     tb_assert_and_check_return_val(lua, tb_null);
 
-#ifdef USE_LUAJIT
     lua_getglobal(lua, "__global_engine");
     return (xm_engine_ref_t)lua_touserdata(lua, -1);
-#else
-    global_State* g = G(lua);
-    return (xm_engine_ref_t)g->ud;
-#endif
 }
 
