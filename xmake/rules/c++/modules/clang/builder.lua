@@ -217,7 +217,7 @@ function _append_requires_flags(target, module)
         for _, flag in ipairs(requiresflags) do
             -- we need to wrap flag to support flag with space
             if type(flag) == "string" and flag:find(" ", 1, true) and not hide_dependencies then
-                    table.insert(cxxflags, {flag})
+                table.insert(cxxflags, {flag})
             else
                 if hide_dependencies then
                     table.insert(cxxflags, '"' .. path.unix(flag) .. '"')
