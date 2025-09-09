@@ -7,10 +7,12 @@ function test_build(t)
         return
     end
 
+    local jobs = tostring(os.default_njob())
+
     -- xmake
     os.tryrm("build")
     local xmake_dt = os.mclock()
-    os.run("xmake")
+    os.runv("xmake", {"-j" .. jobs})
     xmake_dt = os.mclock() - xmake_dt
     print("build targets/30: xmake: %d ms", xmake_dt)
 
@@ -21,7 +23,7 @@ function test_build(t)
         os.mkdir("build")
         local cmake_default_dt = os.mclock()
         os.runv(cmake.program, {".."}, {curdir = "build"})
-        os.runv(cmake.program, {"--build", "."}, {curdir = "build"})
+        os.runv(cmake.program, {"--build", ".", "-j" .. jobs}, {curdir = "build"})
         cmake_default_dt = os.mclock() - cmake_default_dt
         print("build targets/30: cmake/default: %d ms", cmake_default_dt)
         t:require((cmake_default_dt > xmake_dt) or (cmake_default_dt + 2000 > xmake_dt))
@@ -43,7 +45,7 @@ function test_build(t)
             end
             local cmake_ninja_dt = os.mclock()
             os.runv(cmake.program, table.join("..", "-G", "Ninja", configs), {curdir = "build", envs = envs})
-            os.runv(cmake.program, {"--build", "."}, {curdir = "build", envs = envs})
+            os.runv(cmake.program, {"--build", ".", "-j" .. jobs}, {curdir = "build", envs = envs})
             cmake_ninja_dt = os.mclock() - cmake_ninja_dt
             print("build targets/30: cmake/ninja: %d ms", cmake_ninja_dt)
             t:require((cmake_ninja_dt > xmake_dt) or (cmake_ninja_dt + 2000 > xmake_dt))
@@ -55,7 +57,7 @@ function test_build(t)
             os.mkdir("build")
             local cmake_makefile_dt = os.mclock()
             os.runv(cmake.program, {"..", "-G", "Unix Makefiles"}, {curdir = "build"})
-            os.runv(cmake.program, {"--build", "."}, {curdir = "build"})
+            os.runv(cmake.program, {"--build", ".", "-j" .. jobs}, {curdir = "build"})
             cmake_makefile_dt = os.mclock() - cmake_makefile_dt
             print("build targets/30: cmake/makefile: %d ms", cmake_makefile_dt)
             t:require((cmake_makefile_dt > xmake_dt) or (cmake_makefile_dt + 2000 > xmake_dt))
@@ -74,7 +76,7 @@ function test_build(t)
         io.replace("build/build.ninja", "ccache", "")
 
         local meson_build_dt = os.mclock()
-        os.runv(meson.program, {"compile", "-C", "build"})
+        os.runv(meson.program, {"compile", "-j", jobs, "-C", "build"})
         meson_build_dt = os.mclock() - meson_build_dt
         local meson_dt = meson_setup_dt + meson_build_dt
         print("build targets/30: meson: %d ms", meson_dt)
