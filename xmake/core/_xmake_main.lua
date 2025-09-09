@@ -36,6 +36,7 @@ xmake._PROJECT_FILE     = "xmake.lua"
 xmake._WORKING_DIR      = os.curdir()
 xmake._FEATURES         = _FEATURES
 xmake._LUAJIT           = _LUAJIT
+xmake._EMBED            = _EMBED
 xmake._THREAD_CALLBACK  = _THREAD_CALLBACK
 xmake._THREAD_CALLINFO  = _THREAD_CALLINFO
 

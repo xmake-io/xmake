@@ -31,6 +31,7 @@ sandbox_xmake.branch      = xmake.branch
 sandbox_xmake.programdir  = xmake.programdir
 sandbox_xmake.programfile = xmake.programfile
 sandbox_xmake.luajit      = xmake.luajit
+sandbox_xmake.is_embed    = xmake.is_embed
 sandbox_xmake.argv        = xmake.argv
 
 -- return module

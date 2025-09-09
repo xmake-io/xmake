@@ -3,6 +3,10 @@ import("core.tool.toolchain")
 
 function test_config(t)
 
+    if xmake.is_embed() then
+        return
+    end
+
     -- xmake
     os.tryrm("build")
     local xmake_dt = os.mclock()

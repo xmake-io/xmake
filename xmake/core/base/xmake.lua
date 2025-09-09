@@ -62,6 +62,11 @@ function xmake.luajit()
     return xmake._LUAJIT
 end
 
+-- is embed?
+function xmake.is_embed()
+    return xmake._EMBED
+end
+
 -- get command arguments
 function xmake.argv()
     return xmake._ARGV
