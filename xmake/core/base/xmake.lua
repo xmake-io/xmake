@@ -64,7 +64,7 @@ end
 
 -- is embed?
 function xmake.is_embed()
-    return xmake._EMBED
+    return xmake._EMBED or false
 end
 
 -- get command arguments
