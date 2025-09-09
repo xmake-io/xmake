@@ -90,7 +90,7 @@ function main(target)
 end
 
 function insert_stdmodules(target)
-    if target:data("cxx.has_modules") then
+    if target:data("cxx.has_modules") and target:policy("build.c++.modules.std") then
         local sourcebatches = target:sourcebatches()
         if sourcebatches and sourcebatches["c++.build.modules.scanner"] then
             local sourcebatch = sourcebatches["c++.build.modules.scanner"]
