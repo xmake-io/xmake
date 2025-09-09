@@ -124,6 +124,13 @@ rule("wdk.man")
         end
         os.vrunv(ctrpp, args)
 
+        if target:has_tool("cxx", "clang", "clangxx") then
+            if resourcefile and os.isfile(resourcefile) then
+                local content = io.readfile(resourcefile)
+                io.writefile(resourcefile, content, {encoding = "utf8"})
+            end
+        end
+
         -- update files and values to the dependent file
         dependinfo.files  = {sourcefile}
         dependinfo.values = args

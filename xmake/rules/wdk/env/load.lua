@@ -68,7 +68,10 @@ function _base(target, mode)
 
     -- add link directories
     target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, mode, arch))
-    target:add("linkdirs", path.join(wdk.libdir, "wdf", mode .. "df", arch, ver))
+    local p = path.join(wdk.libdir, "wdf", mode .. "df", arch, ver)
+    if os.isdir(p) then
+        target:add("linkdirs", p)
+    end
 end
 
 -- load for umdf environment
