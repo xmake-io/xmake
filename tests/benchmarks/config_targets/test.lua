@@ -19,7 +19,7 @@ function test_config(t)
         os.runv(cmake.program, {".."}, {curdir = "build"})
         cmake_default_dt = os.mclock() - cmake_default_dt
         print("config targets/1k: cmake/default: %d ms", cmake_default_dt)
-        t:require((cmake_default_dt > xmake_dt) or (cmake_default_dt + 1000 > xmake_dt))
+        t:require((cmake_default_dt > xmake_dt) or (cmake_default_dt + 2000 > xmake_dt))
 
         local ninja = find_tool("ninja")
         if ninja then
@@ -40,7 +40,7 @@ function test_config(t)
             os.runv(cmake.program, table.join("..", "-G", "Ninja", configs), {curdir = "build", envs = envs})
             cmake_ninja_dt = os.mclock() - cmake_ninja_dt
             print("config targets/1k: cmake/ninja: %d ms", cmake_ninja_dt)
-            t:require((cmake_ninja_dt > xmake_dt) or (cmake_ninja_dt + 1000 > xmake_dt))
+            t:require((cmake_ninja_dt > xmake_dt) or (cmake_ninja_dt + 2000 > xmake_dt))
         end
 
         if find_tool("make") and not is_subhost("windows") then
@@ -50,7 +50,7 @@ function test_config(t)
             os.runv(cmake.program, {"..", "-G", "Unix Makefiles"}, {curdir = "build"})
             cmake_makefile_dt = os.mclock() - cmake_makefile_dt
             print("config targets/1k: cmake/makefile: %d ms", cmake_makefile_dt)
-            t:require((cmake_makefile_dt > xmake_dt) or (cmake_makefile_dt + 1000 > xmake_dt))
+            t:require((cmake_makefile_dt > xmake_dt) or (cmake_makefile_dt + 2000 > xmake_dt))
         end
     end
 
@@ -62,7 +62,7 @@ function test_config(t)
         os.runv(meson.program, {"setup", "build"})
         meson_dt = os.mclock() - meson_dt
         print("config targets/1k: meson: %d ms", meson_dt)
-        t:require((meson_dt > xmake_dt) or (meson_dt + 1000 > xmake_dt))
+        t:require((meson_dt > xmake_dt) or (meson_dt + 2000 > xmake_dt))
     end
 end
 

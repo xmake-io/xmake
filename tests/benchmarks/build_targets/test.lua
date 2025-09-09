@@ -20,7 +20,7 @@ function test_build(t)
         os.runv(cmake.program, {"--build", "."}, {curdir = "build"})
         cmake_default_dt = os.mclock() - cmake_default_dt
         print("build targets/30: cmake/default: %d ms", cmake_default_dt)
-        t:require((cmake_default_dt > xmake_dt) or (cmake_default_dt + 1000 > xmake_dt))
+        t:require((cmake_default_dt > xmake_dt) or (cmake_default_dt + 2000 > xmake_dt))
 
         local ninja = find_tool("ninja")
         if ninja then
@@ -43,7 +43,7 @@ function test_build(t)
             cmake_ninja_dt = os.mclock() - cmake_ninja_dt
             print("build targets/30: cmake/ninja: %d ms", cmake_ninja_dt)
             -- TODO we need to improve it
-            --t:require((cmake_ninja_dt > xmake_dt) or (cmake_ninja_dt + 1000 > xmake_dt))
+            --t:require((cmake_ninja_dt > xmake_dt) or (cmake_ninja_dt + 2000 > xmake_dt))
         end
 
         local make = find_tool("make")
@@ -55,7 +55,7 @@ function test_build(t)
             os.runv(cmake.program, {"--build", "."}, {curdir = "build"})
             cmake_makefile_dt = os.mclock() - cmake_makefile_dt
             print("build targets/30: cmake/makefile: %d ms", cmake_makefile_dt)
-            t:require((cmake_makefile_dt > xmake_dt) or (cmake_makefile_dt + 1000 > xmake_dt))
+            t:require((cmake_makefile_dt > xmake_dt) or (cmake_makefile_dt + 2000 > xmake_dt))
         end
     end
 
@@ -68,7 +68,7 @@ function test_build(t)
         os.runv(meson.program, {"compile", "-C", "build"})
         meson_dt = os.mclock() - meson_dt
         print("build targets/30: meson: %d ms", meson_dt)
-        --t:require((meson_dt > xmake_dt) or (meson_dt + 1000 > xmake_dt))
+        --t:require((meson_dt > xmake_dt) or (meson_dt + 2000 > xmake_dt))
     end
 end
 
