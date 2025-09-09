@@ -31,7 +31,6 @@ function main(toolchain)
     if cross_toolchain then
         toolchain:config_set("cross", cross_toolchain.cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
-        toolchain:configs_save()
         return true
     end
     return find_tool("sdcc")

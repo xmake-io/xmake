@@ -42,7 +42,6 @@ function _check_hdk(toolchain)
         toolchain:config_set("sdkdir", hdk.sdkdir)
         toolchain:config_set("bindir", hdk.bindir)
         toolchain:config_set("sysroot", hdk.sysroot)
-        toolchain:configs_save()
         return true
     else
         --[[TODO we also need to add this tips when use remote hdk toolchain

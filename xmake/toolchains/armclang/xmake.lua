@@ -44,7 +44,6 @@ toolchain("armclang")
             else
                 toolchain:config_set("toolset_as", "armasm")
             end
-            toolchain:configs_save()
             return true
         end
     end)

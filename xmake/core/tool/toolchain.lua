@@ -48,13 +48,18 @@ function _instance.new(name, info, cachekey, is_builtin, configs)
     if #parts > 0 then
         instance._NAMESPACE = table.concat(parts, "::")
     end
-    instance._INFO       = info
-    instance._IS_BUILTIN = is_builtin
-    instance._CACHE      = toolchain._localcache()
-    instance._CACHEKEY   = cachekey
-    instance._CONFIGS    = instance._CACHE:get(cachekey) or {}
+    instance._INFO          = info
+    instance._IS_BUILTIN    = is_builtin
+    instance._CACHE         = toolchain._localcache()
+    instance._CACHEKEY      = cachekey
+    local toolchain_configs = instance._CACHE:get(cachekey)
+    if toolchain_configs == nil then
+        toolchain_configs = {}
+        instance._CACHE:set(cachekey, toolchain_configs)
+    end
+    instance._CONFIGS = toolchain_configs
     for k, v in pairs(configs) do
-        instance._CONFIGS[k] = v
+        toolchain_configs[k] = v
     end
     -- is global toolchain for the whole platform?
     configs.plat = nil
@@ -63,7 +68,7 @@ function _instance.new(name, info, cachekey, is_builtin, configs)
     local plat = config.get("plat") or os.host()
     local arch = config.get("arch") or os.arch()
     if instance:is_plat(plat) and instance:is_arch(arch) and #table.keys(configs) == 0 then
-        instance._CONFIGS.__global = true
+        toolchain_configs.__global = true
     end
     return instance
 end
@@ -281,10 +286,9 @@ function _instance:config_set(name, data)
     self._CONFIGS[name] = data
 end
 
--- save user configs
+-- save user config (deprecated)
 function _instance:configs_save()
-    self._CACHE:set(self:cachekey(), self._CONFIGS)
-    self._CACHE:save()
+    utils.warning("toolchain:configs_save() is deprecated, please remove it.")
 end
 
 -- do check, we only check it once for all architectures
@@ -305,7 +309,6 @@ function _instance:check()
         -- we need to persist this state
         checked = checked or false
         self:config_set("__checked", checked)
-        self:configs_save()
     end
     return checked
 end
@@ -828,7 +831,6 @@ function toolchain.tool(toolchains, toolkind, opt)
         cache:set2(cachekey, "program", program)
         cache:set2(cachekey, "toolname", toolname)
         cache:set2(cachekey, "toolchain_info", toolchain_info)
-        cache:save()
     end
     return program, toolname, toolchain_info
 end
@@ -869,6 +871,14 @@ function toolchain.toolconfig(toolchains, name, opt)
         cache:set2(cachekey, name, toolconfig or false)
     end
     return toolconfig or nil
+end
+
+-- save all configs to the local cache
+--
+-- @see flushing localcache for each test is too slow,
+-- so we only flush the toolchain configuration cache once after the configuration is completed.
+function toolchain.save()
+    toolchain._localcache():save()
 end
 
 -- return module

@@ -95,7 +95,6 @@ function _check_vstudio(toolchain)
             config.set("vs", vs, {force = true, readonly = true})
         end
         toolchain:config_set("vs", vs)
-        toolchain:configs_save()
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
     else
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
@@ -122,7 +121,6 @@ function _check_intel_on_windows(toolchain)
             if tool then
                 cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
                 toolchain:config_set("varsall", ifortvarsall)
-                toolchain:configs_save()
                 return _check_vstudio(toolchain)
             end
         end
@@ -143,7 +141,6 @@ function _check_intel_on_linux(toolchain)
             cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
             toolchain:config_set("ifortenv", ifortenv)
             toolchain:config_set("bindir", ifortenv.bindir)
-            toolchain:configs_save()
             return true
         end
         return true

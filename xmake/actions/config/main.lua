@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.global")
 import("core.base.hashset")
+import("core.tool.toolchain")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
@@ -443,6 +444,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     config.save()
     localcache.set("config", "options", options)
     localcache.save("config")
+
+    -- save toolchain cache
+    toolchain.save()
 
     -- unlock the whole project
     project.unlock()

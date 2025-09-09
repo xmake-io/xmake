@@ -55,7 +55,6 @@ function _check_ndk(toolchain)
         toolchain:config_set("ndk_sdkver", ndk.sdkver)
         toolchain:config_set("ndk_toolchains_ver", ndk.toolchains_ver)
         toolchain:config_set("ndk_sysroot", ndk.sysroot)
-        toolchain:configs_save()
         return true
     else
         --[[TODO we also need to add this tips when use remote ndk toolchain
@@ -73,7 +72,6 @@ function _check_android_sdk(toolchain)
     if sdk then
         toolchain:config_set("android_sdk", sdk.sdkdir)
         toolchain:config_set("build_toolver", sdk.build_toolver)
-        toolchain:configs_save()
     end
 end
 

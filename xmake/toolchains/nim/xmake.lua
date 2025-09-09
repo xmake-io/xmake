@@ -40,7 +40,6 @@ toolchain("nim")
         end
         if nim then
             toolchain:config_set("nim", nim)
-            toolchain:configs_save()
             return true
         end
     end)

@@ -98,7 +98,6 @@ function _check_vstudio(toolchain)
             config.set("vs", vs, {force = true, readonly = true})
         end
         toolchain:config_set("vs", vs)
-        toolchain:configs_save()
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
         if clang_cl and clang_cl.version then
             cprint("checking for LLVM Clang C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), clang_cl.version)

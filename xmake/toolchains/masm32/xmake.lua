@@ -36,7 +36,6 @@ toolchain("masm32")
         if masm32 and masm32.sdkdir and masm32.bindir and find_tool("ml.exe", {program = path.join(masm32.bindir, "ml.exe")}) then
             toolchain:config_set("sdkdir", masm32.sdkdir)
             toolchain:config_set("bindir", masm32.bindir)
-            toolchain:configs_save()
             return true
         end
     end)

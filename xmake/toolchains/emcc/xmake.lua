@@ -53,7 +53,6 @@ toolchain("emcc")
         if emsdk then
             toolchain:config_set("bindir", emsdk.emscripten)
             toolchain:config_set("sdkdir", emsdk.sdkdir)
-            toolchain:configs_save()
             return emsdk
         end
         return find_tool("emcc")

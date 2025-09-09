@@ -67,7 +67,6 @@ toolchain("zig")
             _setup_zigcc_wrapper(zig)
             toolchain:config_set("zig", zig)
             toolchain:config_set("zig_version", zig_version)
-            toolchain:configs_save()
             return true
         end
     end)

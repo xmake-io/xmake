@@ -1548,6 +1548,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         // init the temporary directory
         if (!xm_engine_get_temporary_directory(engine->tmpdir, sizeof(engine->tmpdir), name, version_cstr))
             break;
+
+        lua_pushboolean(engine->lua, tb_true);
+        lua_setglobal(engine->lua, "_EMBED");
 #endif
 
         // init short version string

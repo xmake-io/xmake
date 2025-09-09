@@ -49,6 +49,5 @@ toolchain("iverilog")
             cprint("${dim}checking for vvp ... ${color.nothing}${text.nothing}")
             raise("iverilog not found!")
         end
-        toolchain:configs_save()
         return true
     end)

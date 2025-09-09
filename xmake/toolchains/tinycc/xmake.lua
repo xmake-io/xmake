@@ -45,7 +45,6 @@ toolchain("tinycc")
             if os.isfile(tcc.program) then
                 toolchain:config_set("bindir", path.directory(tcc.program))
             end
-            toolchain:configs_save()
             return true
         end
     end)

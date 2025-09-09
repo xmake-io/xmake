@@ -37,7 +37,6 @@ toolchain("armcc")
         local mdk = find_mdk()
         if mdk and mdk.sdkdir_armcc and find_tool("armcc") then
             toolchain:config_set("sdkdir", mdk.sdkdir_armcc)
-            toolchain:configs_save()
             return true
         end
     end)
