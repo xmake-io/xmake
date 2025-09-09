@@ -66,10 +66,17 @@ function test_build(t)
     local meson = find_tool("meson")
     if meson then
         os.tryrm("build")
-        local meson_dt = os.mclock()
+        local meson_setup_dt = os.mclock()
         os.runv(meson.program, {"setup", "build"})
+        meson_setup_dt = os.mclock() - meson_setup_dt
+
+        -- ccache will cache object files globally, which may affect the results of the second run.
+        io.replace("build/build.ninja", "ccache", "")
+
+        local meson_build_dt = os.mclock()
         os.runv(meson.program, {"compile", "-C", "build"})
-        meson_dt = os.mclock() - meson_dt
+        meson_build_dt = os.mclock() - meson_build_dt
+        local meson_dt = meson_setup_dt + meson_build_dt
         print("build targets/30: meson: %d ms", meson_dt)
         t:require((meson_dt > xmake_dt) or (meson_dt + 2000 > xmake_dt))
     end
