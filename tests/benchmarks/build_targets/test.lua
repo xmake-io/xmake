@@ -11,6 +11,7 @@ function test_build(t)
 
     -- xmake
     os.tryrm("build")
+    os.tryrm(".xmake")
     local xmake_dt = os.mclock()
     os.runv("xmake", {"-j" .. jobs})
     xmake_dt = os.mclock() - xmake_dt
