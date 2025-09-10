@@ -500,7 +500,7 @@ end
 function _build_for_msvc(opt)
     local runenvs = _get_msvc_runenvs()
     local msbuild = find_tool("msbuild", {envs = runenvs})
-    local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
+    local slnfile = assert(find_file("*.sln", os.curdir()) or find_file("*.slnx", os.curdir()), "*.sln/slnx file not found!")
     os.vexecv(msbuild.program, {slnfile, "-nologo", "-t:Build", "-m",
         "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"),
         "-p:Platform=" .. _get_vsarch()}, {envs = runenvs})
