@@ -553,7 +553,7 @@ target("test")
 
 ## 插件
 
-#### 生成IDE工程文件插件（makefile, vs2002 - vs2022, ...）
+#### 生成IDE工程文件插件（makefile, vs2002 - vs2026, ...）
 
 ```bash
 $ xmake project -k vsxmake -m "debug,release" # 新版vs工程生成插件（推荐）
