@@ -347,6 +347,20 @@ function get_moduleheaderflag(target)
     return moduleheaderflag or nil
 end
 
+function get_modulesreducedbmiflag(target)
+    local modulesreducedbmiflag = _g.modulesreducedbmiflag
+    if modulesreducedbmiflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
+            modulesreducedbmiflag = "-fmodules-reduced-bmi"
+        elseif compinst:has_flags("-fexperimental-modules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
+            modulesreducedbmiflag = "-fexperimental-modules-reduced-bmi"
+        end
+        _g.modulesreducedbmiflag = modulesreducedbmiflag or false
+    end
+    return modulesreducedbmiflag or nil
+end
+
 function has_clangscandepssupport(target)
     local support_clangscandeps = _g.support_clangscandeps
     if support_clangscandeps == nil then

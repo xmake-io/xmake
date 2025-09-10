@@ -31,14 +31,32 @@ import("support")
 import(".mapper")
 import(".builder", {inherit = true})
 
+function _get_bmifile(target, module)
+    local has_reduced_bmi = support.get_modulesreducedbmiflag(target)
+    local has_two_phases = target:policy("build.c++.modules.two_phases")
+    -- disabled with two phases currently, LLVM currently have a bug which prevent to emit reduced bmi when using two phase compilation
+    -- will be enabled after the fix
+    local add_reduced_flag = not has_two_phases and has_reduced_bmi
+    local bmifile = module.bmifile
+
+    if has_two_phases and add_reduced_flag then
+        bmifile = path.join(path.directory(module.bmifile), "reduced." .. path.filename(module.bmifile))
+    end
+
+    return bmifile, add_reduced_flag
+end
+
 function _make_modulebuildflags(target, module, opt)
     assert(not module.headerunit)
+
+    local modules_reduced_bmi_flag = support.get_modulesreducedbmiflag(target)
+    local has_two_phases = target:policy("build.c++.modules.two_phases")
     local flags
-    local two_phases = target:policy("build.c++.modules.two_phases")
     if opt.bmi then
         local module_outputflag = support.get_moduleoutputflag(target)
 
         flags = {"-x", "c++-module"}
+
         if not opt.objectfile then
             table.insert(flags, "--precompile")
             if target:has_tool("cxx", "clang_cl") then
@@ -49,10 +67,18 @@ function _make_modulebuildflags(target, module, opt)
         if std then
             table.join2(flags, {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier", "-Wno-deprecated-declarations"})
         end
-        table.insert(flags, module_outputflag .. module.bmifile)
+
+        local bmifile, add_reduced_flag = _get_bmifile(target, module)
+        if add_reduced_flag then
+            table.insert(flags, modules_reduced_bmi_flag)
+        end
+
+        if not has_two_phases or add_reduced_flag  then
+            table.insert(flags, module_outputflag .. bmifile)
+        end
     else
         flags = {}
-        if not two_phases or not module.bmifile then
+        if not has_two_phases or not module.bmifile then
             flags = {"-x", "c++"}
         end
         local std = (module.name == "std" or module.name == "std.compat")
@@ -200,7 +226,8 @@ function _get_requiresflags(target, module)
             local dep_module = mapper.get(target, required)
             assert(dep_module, "module dependency %s required for %s not found", required, name)
 
-            local mapflag = dep_module.headerunit and modulefileflag .. dep_module.bmifile or format("%s%s=%s", modulefileflag, required, dep_module.bmifile)
+            local dep_bmifile, _ = dep.headerunit and dep_module.bmifile or _get_bmifile(target, dep_module)
+            local mapflag = dep_module.headerunit and modulefileflag .. dep_bmifile or format("%s%s=%s", modulefileflag, required, dep_bmifile)
             table.insert(requiresflags, mapflag)
 
             -- append deps
@@ -219,6 +246,7 @@ end
 function _append_requires_flags(target, module)
     local cxxflags = {}
     local requiresflags = _get_requiresflags(target, module)
+    local has_two_phases = target:policy("build.c++.modules.two_phases")
     local hide_dependencies = target:policy("build.c++.modules.hide_dependencies")
     if #requiresflags> 0 then
         for _, flag in ipairs(requiresflags) do
