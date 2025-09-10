@@ -27,6 +27,9 @@ Environment:
 #include "kcs.h"
 #include "kcsCounters.h"
 
+#include <stdlib.h>
+#include <math.h>
+
 #pragma code_seg("PAGE")
 
 DRIVER_INITIALIZE DriverEntry;

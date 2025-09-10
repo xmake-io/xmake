@@ -8,6 +8,12 @@ target("UMDFSkeleton")
     add_files("*.cpp", {rules = "wdk.tracewpp"})
     add_files("*.rc", "*.inx")
     set_values("wdk.umdf.sdkver", "1.9")
-    add_shflags("/DEF:exports.def", {force = true})
-    add_shflags("/ENTRY:_DllMainCRTStartup" .. (is_arch("x86") and "@12" or ""), {force = true})
+    add_files("exports.def")
+    on_config(function(target)
+        if target:has_tool("sh", "clang", "clangxx") then
+            target:add("shflags", "-Wl,/ENTRY:_DllMainCRTStartup" .. (is_arch("x86") and "@12" or ""), {force = true})
+        else
+            target:add("shflags", "/ENTRY:_DllMainCRTStartup" .. (is_arch("x86") and "@12" or ""), {force = true})
+        end
+    end)
 

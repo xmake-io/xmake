@@ -32,6 +32,7 @@ Environment:
 
 #pragma warning (disable:4305)
 
+DSM_INIT_DATA gDsmInitData;
 
 //
 // Flag to indicate whether to NT_ASSERT or ignore a particular condition.
@@ -3430,7 +3431,7 @@ Return Value:
 
 NTSTATUS
 DsmRemovePath(
-    _In_ IN PDSM_CONTEXT DsmContext,
+    _In_ IN PVOID _DsmContext,
     _In_ IN PVOID PathId
     )
 /*++
@@ -3455,6 +3456,8 @@ Return Value:
 {
     PDSM_FAILOVER_GROUP failGroup;
     KIRQL irql;
+
+    PDSM_CONTEXT DsmContext = (PDSM_CONTEXT)_DsmContext;
 
     TracePrint((TRACE_LEVEL_VERBOSE,
                 TRACE_FLAG_PNP,

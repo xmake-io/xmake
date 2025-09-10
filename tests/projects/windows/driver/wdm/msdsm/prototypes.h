@@ -206,7 +206,7 @@ DsmRemoveDevice(
 
 NTSTATUS
 DsmRemovePath(
-    _In_ IN PDSM_CONTEXT DsmContext,
+    _In_ IN PVOID DsmContext,
     _In_ IN PVOID PathId
     );
 
