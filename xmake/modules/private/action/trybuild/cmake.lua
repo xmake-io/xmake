@@ -395,20 +395,9 @@ end
 
 -- get cmake generator for msvc
 function _get_cmake_generator_for_msvc()
-    local vsvers =
-    {
-        ["2022"] = "17",
-        ["2019"] = "16",
-        ["2017"] = "15",
-        ["2015"] = "14",
-        ["2013"] = "12",
-        ["2012"] = "11",
-        ["2010"] = "10",
-        ["2008"] = "9"
-    }
     local vs = _get_msvc():config("vs") or config.get("vs")
     assert(vsvers[vs], "Unknown Visual Studio version: '" .. tostring(vs) .. "' set in project.")
-    return "Visual Studio " .. vsvers[vs] .. " " .. vs
+    return "Visual Studio " .. toolchain_utils.get_vsver(vs) .. " " .. vs
 end
 
 -- get configs for cmake generator
@@ -500,7 +489,7 @@ end
 function _build_for_msvc(opt)
     local runenvs = _get_msvc_runenvs()
     local msbuild = find_tool("msbuild", {envs = runenvs})
-    local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
+    local slnfile = assert(find_file("*.sln", os.curdir()) or find_file("*.slnx", os.curdir()), "*.sln/slnx file not found!")
     os.vexecv(msbuild.program, {slnfile, "-nologo", "-t:Build", "-m",
         "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"),
         "-p:Platform=" .. _get_vsarch()}, {envs = runenvs})

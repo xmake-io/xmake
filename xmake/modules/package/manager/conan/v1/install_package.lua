@@ -27,6 +27,7 @@ import("core.platform.platform")
 import("lib.detect.find_tool")
 import("devel.git")
 import("net.fasturl")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- get build env
 function _conan_get_build_env(name, plat)
@@ -197,20 +198,11 @@ function main(conan, name, opt)
 
     -- set compiler settings
     if opt.plat == "windows" then
-        local vsvers = {["2022"] = "17",
-                        ["2019"] = "16",
-                        ["2017"] = "15",
-                        ["2015"] = "14",
-                        ["2013"] = "12",
-                        ["2012"] = "11",
-                        ["2010"] = "10",
-                        ["2008"] = "9",
-                        ["2005"] = "8"}
         local vs = assert(config.get("vs"), "vs not found!")
         table.insert(argv, "-s")
         table.insert(argv, "compiler=Visual Studio")
         table.insert(argv, "-s")
-        table.insert(argv, "compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
+        table.insert(argv, "compiler.version=" .. toolchain_utils.get_vsver(vs))
         if configs.runtimes then
             table.insert(argv, "-s")
             table.insert(argv, "compiler.runtime=" .. configs.runtimes)

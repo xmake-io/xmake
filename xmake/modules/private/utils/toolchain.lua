@@ -35,6 +35,21 @@ function is_compatible_with_host(name)
     end
 end
 
+-- get vs version
+function get_vsver(vs)
+    local vsvers = {["2026"] = "18",
+                    ["2022"] = "17",
+                    ["2019"] = "16",
+                    ["2017"] = "15",
+                    ["2015"] = "14",
+                    ["2013"] = "12",
+                    ["2012"] = "11",
+                    ["2010"] = "10",
+                    ["2008"] = "9",
+                    ["2005"] = "8"}
+    return assert(vsvers[vs], "unknown msvc version!")
+end
+
 -- get vs toolset version, e.g. v143, v144, ..
 function get_vs_toolset_ver(vs_toolset)
     local toolset_ver

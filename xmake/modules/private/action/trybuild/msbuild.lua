@@ -27,7 +27,7 @@ import("lib.detect.find_tool")
 
 -- find project file
 function _find_projectfile()
-    return find_file("*.sln", os.curdir())
+    return find_file("*.sln", os.curdir()) or find_file("*.slnx", os.curdir())
 end
 
 -- detect build-system and configuration file
