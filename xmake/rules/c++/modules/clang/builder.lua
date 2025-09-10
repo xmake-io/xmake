@@ -34,6 +34,7 @@ import(".builder", {inherit = true})
 function _make_modulebuildflags(target, module, opt)
     assert(not module.headerunit)
     local flags
+    local two_phases = target:policy("build.c++.modules.two_phases")
     if opt.bmi then
         local module_outputflag = support.get_moduleoutputflag(target)
 
@@ -50,7 +51,10 @@ function _make_modulebuildflags(target, module, opt)
         end
         table.insert(flags, module_outputflag .. module.bmifile)
     else
-        flags = {"-x", "c++"}
+        flags = {}
+        if not two_phases or not module.bmifile then
+            flags = {"-x", "c++"}
+        end
         local std = (module.name == "std" or module.name == "std.compat")
         if std then
             table.join2(flags, {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier", "-Wno-deprecated-declarations"})
@@ -127,10 +131,13 @@ function _compile(target, flags, module, opt)
 
     opt = opt or {}
     local sourcefile = module.sourcefile
+    if not opt.bmi and opt.objectfile and module.bmifile then
+        sourcefile = module.bmifile
+    end
     local outputfile = ((opt.bmi and not opt.objectfile) or opt.headerunit) and module.bmifile or module.objectfile
     local dryrun = option.get("dry-run")
     local compinst = target:compiler("cxx")
-    local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
+    local compflags = compinst:compflags({sourcefile = module.sourcefile, target = target, sourcekind = "cxx"})
     flags = table.join(compflags or {}, flags or {})
     -- trace
     local cmd
@@ -152,7 +159,7 @@ function _batchcmds_compile(batchcmds, target, flags, module, opt)
     local sourcefile = module.sourcefile
     local outputfile = (opt.bmi and not opt.objectfile) and module.bmifile or module.objectfile
     local compinst = target:compiler("cxx")
-    local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
+    local compflags = compinst:compflags({sourcefile = module.sourcefile, target = target, sourcekind = "cxx"})
     flags = table.join("-c", compflags or {}, flags or {}, {"-o", outputfile, sourcefile})
 
     -- trace
