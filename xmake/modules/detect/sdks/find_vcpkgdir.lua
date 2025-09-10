@@ -68,7 +68,6 @@ function main()
             end
         end
         detectcache:set("detect.sdks.find_vcpkgdir", vcpkgdir or false)
-        detectcache:save()
     end
     return vcpkgdir or nil
 end

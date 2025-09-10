@@ -158,6 +158,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.mingw = mingw or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return mingw
 end

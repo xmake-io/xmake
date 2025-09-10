@@ -199,6 +199,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.xcode = xcode or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return xcode
 end

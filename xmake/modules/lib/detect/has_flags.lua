@@ -150,7 +150,6 @@ function main(name, flags, opt)
     -- save result to cache
     cacheinfo[key] = result
     detectcache:set("lib.detect.has_flags", cacheinfo)
-    detectcache:save()
     scheduler.co_unlock(key)
     return result
 end

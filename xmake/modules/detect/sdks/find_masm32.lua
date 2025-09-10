@@ -89,6 +89,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.masm32 = masm32 or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return masm32
 end

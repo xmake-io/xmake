@@ -110,6 +110,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.hdk = hdk or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return hdk
 end

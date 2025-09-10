@@ -176,6 +176,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.cuda = cuda or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return cuda
 end

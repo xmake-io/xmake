@@ -60,7 +60,6 @@ function probe_include_note_from_cl()
             os.tryrm(projectdir)
         end
         detectcache:set(key, note)
-        detectcache:save()
     end
     return note
 end

@@ -98,7 +98,6 @@ function main(name, opt)
 
         -- cache result
         detectcache:set2(cachekey, packagekey, result and result or false)
-        detectcache:save()
 
         -- trace
         if opt.verbose or option.get("verbose") then
