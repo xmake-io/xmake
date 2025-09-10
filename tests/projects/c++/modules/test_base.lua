@@ -81,8 +81,10 @@ function build_tests(toolchain_name, opt)
         return
     end
 
+    local two_phases = (opt.two_phases == nil or opt.two_phases == true)
     local policies = "--policies=build.c++.modules.std:" .. (opt.stdmodule and "y" or "n")
     policies = policies .. ",build.c++.modules.fallbackscanner:" .. (opt.fallbackscanner and "y" or "n")
+    policies = policies .. ",build.c++.modules.two_phases:" .. (two_phases and "y" or "n")
 
     local platform = " "
     if opt.platform then
@@ -92,10 +94,8 @@ function build_tests(toolchain_name, opt)
     local runtimes = " "
     if opt.runtimes then
         runtimes = " --runtimes=" .. opt.runtimes .. " "
-        print("running with config: (toolchain: %s, compiler: %s, version: %s, runtimes: %s)", toolchain_name, compiler, version, opt.runtimes)
-    else
-        print("running with config: (toolchain: %s, compiler: %s, version: %s)", toolchain_name, compiler, version)
     end
+    print("running with config: (toolchain: %s, compiler: %s, version: %s, runtimes: %s, stdmodule: %s, fallback scanner: %s, two phases: %s)", toolchain_name, compiler, version, opt.runtimes or "default", opt.stdmodule or false, opt.fallbackscanner or false, two_phases)
 
     local flags = ""
     if opt.flags then
@@ -124,21 +124,25 @@ function run_tests(clang_options, gcc_options, msvc_options)
         if clang_options then
             build_tests("llvm", clang_options)
             build_tests("clang", clang_options)
+            build_tests("clang", table.join(clang_options, {two_phases = false}))
             if not clang_options.disable_clang_cl then
                 local clang_cl_options = table.clone(clang_options)
                 clang_cl_options.compiler = "clang-cl"
                 clang_cl_options.version = CLANG_CL_MIN_VER
                 build_tests("clang-cl", clang_cl_options)
+                build_tests("clang-cl", table.join(clang_options, {two_phases = false}))
             end
             if not clang_options.stdmodule then
                 build_tests("llvm", clang_libcpp_options)
                 build_tests("clang", clang_libcpp_options)
+                build_tests("clang", table.join(clang_libcpp_options, {two_phases = false}))
             else
                 wprint("std modules tests skipped for Windows clang libc++ as it's not currently supported officially")
             end
         end
         if msvc_options then
             build_tests("msvc", msvc_options)
+            build_tests("msvc", table.join(msvc_options, {two_phases = false}))
         end
     elseif is_subhost("macosx") then
         if clang_options then
@@ -161,6 +165,7 @@ function run_tests(clang_options, gcc_options, msvc_options)
             end
             build_tests("llvm", clang_options)
             build_tests("clang", clang_options)
+            build_tests("clang", table.join(clang_options, {two_phases = false}))
         end
     elseif is_subhost("msys") then
         if clang_options then
@@ -168,22 +173,28 @@ function run_tests(clang_options, gcc_options, msvc_options)
             clang_libcpp_options.platform = "mingw"
             build_tests("llvm", clang_options)
             build_tests("clang", clang_options)
+            build_tests("clang", table.join(clang_options, {two_phases = false}))
             build_tests("llvm", clang_libcpp_options)
             build_tests("clang", clang_libcpp_options)
+            build_tests("clang", table.join(clang_libcpp_options, {two_phases = false}))
         end
         if gcc_options then
             gcc_options.platform = "mingw"
             build_tests("gcc", gcc_options)
+            build_tests("gcc", table.join(gcc_options, {two_phases = false}))
         end
     elseif is_host("linux") then
         if clang_options then
             build_tests("llvm", clang_options)
             build_tests("clang", clang_options)
+            build_tests("clang", table.join(clang_options, {two_phases = false}))
             build_tests("llvm", clang_libcpp_options)
             build_tests("clang", clang_libcpp_options)
+            build_tests("clang", table.join(clang_libcpp_options, {two_phases = false}))
         end
         if gcc_options then
             build_tests("gcc", gcc_options)
+            build_tests("gcc", table.join(gcc_options, {two_phases = false}))
         end
     end
 end
