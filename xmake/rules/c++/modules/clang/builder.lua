@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.json")
+import("core.base.bytes")
 import("core.base.option")
 import("core.base.semver")
 import("utils.progress")
@@ -44,6 +45,19 @@ function _get_bmifile(target, module)
     end
 
     return bmifile, add_reduced_flag
+end
+
+function _update_bmihash(target, module)
+    local localcache = support.localcache()
+
+    local bmifile = _get_bmifile(target, module)
+    local bmihash = hash.xxhash128(bytes(io.readfile(bmifile)))
+    local old_bmihash = localcache:get2(bmifile, "hash")
+
+    if not old_bmihash or bmihash ~= old_bmihash then
+        localcache:set2(bmifile, "hash", bmihash)
+        support.memcache():set2(bmifile, "updated", true)
+    end
 end
 
 function _make_modulebuildflags(target, module, opt)
@@ -285,10 +299,22 @@ end
 function make_module_job(target, module, opt)
 
     local dryrun = option.get("dry-run")
+    local enable_hash_comparison = target:policy("build.c++.modules.non_cascading_changes")
 
-    local build = should_build(target, module)
+    local build, because_of_dependencies = should_build(target, module)
     local bmi = opt and opt.bmi
     local objectfile = opt and opt.objectfile
+
+    if build and enable_hash_comparison and because_of_dependencies then
+        build = false
+        for dep_name, dep_module in table.orderpairs(module.deps) do
+            local mapped_dep = mapper.get(target, dep_module.headerunit and dep_name .. dep_module.key or dep_name)
+            if support.memcache():get2(_get_bmifile(target, dep_module), "updated") then
+                build = true
+                break
+            end
+        end
+    end
 
     if build then
         if not dryrun then
@@ -314,6 +340,10 @@ function make_module_job(target, module, opt)
             else
                 os.tryrm(module.objectfile) -- force rebuild for .cpp files
             end
+        end
+
+        if enable_hash_comparison and bmi then
+            _update_bmihash(target, module)
         end
     end
 end
