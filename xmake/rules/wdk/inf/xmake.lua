@@ -41,7 +41,6 @@ rule("wdk.inf")
 
         -- get stampinf
         local stampinf = path.join(wdk.bindir, wdk.sdkver, arch, is_host("windows") and "stampinf.exe" or "stampinf")
-        assert(stampinf and os.isexec(stampinf), "stampinf not found!")
 
         -- save uic
         target:data_set("wdk.stampinf", stampinf)
@@ -93,6 +92,7 @@ rule("wdk.inf")
 
         -- get stampinf
         local stampinf = target:data("wdk.stampinf")
+        assert(stampinf and os.isexec(stampinf), "stampinf not found!")
 
         -- update the timestamp
         os.cp(sourcefile, targetfile)

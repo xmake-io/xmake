@@ -47,7 +47,6 @@ rule("wdk.mof")
             os.run("%s %s", program, tmpmof)
             os.tryrm(tmpmof)
         end})
-        assert(mofcomp, "mofcomp not found!")
 
         -- get wmimofck
         local wmimofck = nil
@@ -59,7 +58,6 @@ rule("wdk.mof")
         else
             wmimofck = path.join(wdk.bindir, wdk.sdkver, "x86", "wmimofck.exe")
         end
-        assert(wmimofck and os.isexec(wmimofck), "wmimofck not found!")
 
         -- save mofcomp and wmimofck
         target:data_set("wdk.mofcomp", mofcomp)
@@ -77,9 +75,11 @@ rule("wdk.mof")
 
         -- get mofcomp
         local mofcomp = target:data("wdk.mofcomp")
+        assert(mofcomp and os.isexec(mofcomp), "mofcomp not found!")
 
         -- get wmimofck
         local wmimofck = target:data("wdk.wmimofck")
+        assert(wmimofck and os.isexec(wmimofck), "wmimofck not found!")
 
         -- get output directory
         local outputdir = path.join(target:autogendir(), "rules", "wdk", "mof")

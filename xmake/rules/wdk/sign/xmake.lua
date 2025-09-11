@@ -54,7 +54,6 @@ rule("wdk.sign")
         if not os.isexec(inf2cat) then
             inf2cat = path.join(wdk.bindir, wdk.sdkver, "x86", "inf2cat.exe")
         end
-        assert(os.isexec(inf2cat), "inf2cat not found!")
         target:data_set("wdk.sign.inf2cat", inf2cat)
 
         -- check
@@ -117,6 +116,7 @@ rule("wdk.sign")
 
         -- get inf2cat
         local inf2cat = target:data("wdk.sign.inf2cat")
+        assert(inf2cat and os.isexec(inf2cat), "inf2cat not found!")
 
         -- sign the target file
         sign(target, target:targetfile(), signmode)
