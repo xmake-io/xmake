@@ -764,9 +764,20 @@ end
 
 -- get cmake generator for msvc
 function _get_cmake_generator_for_msvc(package)
+    local vsvers =
+    {
+        ["2022"] = "17",
+        ["2019"] = "16",
+        ["2017"] = "15",
+        ["2015"] = "14",
+        ["2013"] = "12",
+        ["2012"] = "11",
+        ["2010"] = "10",
+        ["2008"] = "9"
+    }
     local vs = _get_msvc(package):config("vs") or config.get("vs")
     assert(vsvers[vs], "Unknown Visual Studio version: '" .. tostring(vs) .. "' set in project.")
-    return "Visual Studio " .. toolchain_utils.get_vsver(vs) .. " " .. vs
+    return "Visual Studio " .. vsvers[vs] .. " " .. vs
 end
 
 -- get configs for cmake generator

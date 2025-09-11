@@ -56,8 +56,7 @@ local vcvars = {"path",
 -- init vsvers
 local vsvers =
 {
-    ["18.0"] = "2026"
-,   ["17.0"] = "2022"
+    ["17.0"] = "2022"
 ,   ["16.0"] = "2019"
 ,   ["15.0"] = "2017"
 ,   ["14.0"] = "2015"
@@ -76,8 +75,7 @@ local vsvers =
 -- init vsenvs
 local vsenvs =
 {
-    ["18.0"] = "VS180COMNTOOLS"
-,   ["17.0"] = "VS170COMNTOOLS"
+    ["17.0"] = "VS170COMNTOOLS"
 ,   ["16.0"] = "VS160COMNTOOLS"
 ,   ["15.0"] = "VS150COMNTOOLS"
 ,   ["14.0"] = "VS140COMNTOOLS"

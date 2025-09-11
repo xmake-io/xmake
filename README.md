@@ -565,7 +565,7 @@ target("test")
 
 ## Plugins
 
-#### Generate IDE project file plugin（makefile, vs2002 - vs2026 .. ）
+#### Generate IDE project file plugin（makefile, vs2002 - vs2022 .. ）
 
 ```bash
 $ xmake project -k vsxmake -m "debug,release" # New vsproj generator (Recommended)
