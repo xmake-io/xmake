@@ -43,7 +43,7 @@ jobs:
       - name: Artifact
         run: |
           cd core
-          xrepo env -b zig xmake f --embed=y --toolchain=zig --cross=x86_64-linux-gnu.2.29 -c
+          xrepo env -b zig xmake f --embed=y --toolchain=zig --cross=x86_64-linux-musl -c
           xmake
           mkdir ../artifacts
           cp build/xmake ../artifacts/xmake-bundle
