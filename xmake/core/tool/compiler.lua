@@ -122,17 +122,18 @@ function compiler.load(sourcekind, target)
         return nil, "unknown source kind!"
     end
 
-    -- load compiler tool first (with cache)
-    local compiler_tool, program_or_errors = compiler._load_tool(sourcekind, target)
-    if not compiler_tool then
-        return nil, program_or_errors
-    end
-
     -- init cache key
     -- @note we need plat/arch,
     -- because it is possible for the compiler to do cross-compilation with the -target parameter
-    local plat = compiler_tool:plat() or config.plat() or os.host()
-    local arch = compiler_tool:arch() or config.arch() or os.arch()
+    local plat = config.plat() or os.host()
+    local arch = config.arch() or os.arch()
+    if target and target.tool then
+        local _, _, toolchain_info = target:tool(sourcekind)
+        if toolchain_info then
+            plat = toolchain_info.plat
+            arch = toolchain_info.arch
+        end
+    end
     local cachekey = sourcekind .. (program_or_errors or "") .. plat .. arch
     if target then
         cachekey = cachekey .. tostring(target)
@@ -143,6 +144,13 @@ function compiler.load(sourcekind, target)
     local instance = compiler._INSTANCES[cachekey]
     if not instance then
         instance = table.inherit(compiler, builder)
+
+        -- load compiler tool
+        -- @NOTE We cannot cache the tool, otherwise it may cause duplicate toolchain flags to be added
+        local compiler_tool, program_or_errors = compiler._load_tool(sourcekind, target)
+        if not compiler_tool then
+            return nil, program_or_errors
+        end
         instance._TOOL = compiler_tool
 
         -- load the compiler language from the source kind
@@ -188,7 +196,7 @@ function compiler.load(sourcekind, target)
 
     -- we need to load it at the end because in tool.load().
     -- because we may need to call has_flags, which requires the full platform toolchain flags
-    local ok, errors = compiler_tool:_load_once()
+    local ok, errors = instance:_tool():_load_once()
     if not ok then
         return nil, errors
     end

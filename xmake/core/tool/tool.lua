@@ -241,22 +241,8 @@ function tool.load(kind, opt)
     local toolchain_info = opt.toolchain_info or {}
 
     -- get platform and architecture
-    local plat = toolchain_info.plat or config.get("plat") or os.host()
-    local arch = toolchain_info.arch or config.get("arch") or os.arch()
-
-    -- init cachekey
-    local cachekey = kind .. (program or "") .. plat .. arch .. (opt.host and "host" or "")
-    if toolchain_info and toolchain_info.cachekey then
-        -- it maybe contains target key
-        -- @see https://github.com/xmake-io/xmake/issues/6672
-        cachekey = cachekey .. toolchain_info.cachekey
-    end
-
-    -- get it directly from cache dirst
-    tool._TOOLS = tool._TOOLS or {}
-    if tool._TOOLS[cachekey] then
-        return tool._TOOLS[cachekey]
-    end
+    local plat = toolchain_info.plat or config.plat() or os.host()
+    local arch = toolchain_info.arch or config.arch() or os.arch()
 
     -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
     if program then
@@ -310,7 +296,6 @@ function tool.load(kind, opt)
     if not instance then
         return nil, errors
     end
-    tool._TOOLS[cachekey] = instance
     return instance
 end
 
