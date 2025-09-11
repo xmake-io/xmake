@@ -39,26 +39,23 @@ function main(opt)
     -- init options
     opt = opt or {}
     
-    -- find program
-    local program = find_program(opt.program or "nix", opt)
-    
-    -- nix might be installed in different locations
-    if not program and not opt.program then
-        -- check common nix installation paths
-        local paths = {
-            "/nix/var/nix/profiles/default/bin/nix", -- multi-user installation
-            "/home/" .. (os.getenv("USER") or "user") .. "/.nix-profile/bin/nix", -- single user installation
-            "/run/current-system/sw/bin/nix", -- only on nixos, maybe separate nix logic from nixos logic?
-            "/usr/local/bin/nix", -- default path of nix when compiling nix from source
+    -- add common nix installation paths if no specific program is given
+    if not opt.program then
+        opt.paths = opt.paths or {}
+        local nix_paths = {
+            "/nix/var/nix/profiles/default/bin", -- multi-user installation
+            "/home/" .. (os.getenv("USER") or "user") .. "/.nix-profile/bin", -- single user installation
+            "/run/current-system/sw/bin", -- only on nixos, maybe separate nix logic from nixos logic?
+            "/usr/local/bin", -- default path of nix when compiling nix from source
         }
         
-        for _, nixpath in ipairs(paths) do
-            if os.isfile(nixpath) then
-                program = nixpath
-                break
-            end
+        for _, nixpath in ipairs(nix_paths) do
+            table.insert(opt.paths, nixpath)
         end
     end
+    
+    -- find program
+    local program = find_program(opt.program or "nix", opt)
     
     -- find program version
     local version = nil
@@ -67,16 +64,6 @@ function main(opt)
             -- parse version from "nix (Nix) 2.18.1" format
             return output:match("nix %(Nix%) ([%d%.]+)")
         end)
-    end
-    
-    -- validate that nix is working
-    if program then
-        local ok = try {function ()
-            return os.iorunv(program, {"--version"}, {stdout = os.nuldev()})
-        end}
-        if not ok then
-            program = nil
-        end
     end
     
     return program, version
