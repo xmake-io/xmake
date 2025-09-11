@@ -67,9 +67,7 @@ function _get_available_nix_paths()
             -- Also check for manifest (generation info)
             local manifest = path.join(location, "manifest.nix")
             if os.isfile(manifest) then
-                local manifest_content = try {function()
-                    return io.readfile(manifest)
-                end}
+                local manifest_content = io.readfile(manifest)
                 
                 if manifest_content then
                     -- Extract store paths from manifest
@@ -142,17 +140,8 @@ function _find_in_store_path(store_path, name)
         if os.isdir(pcdir) then
             local pcfiles = os.files(path.join(pcdir, name .. ".pc"))
             if #pcfiles > 0 then
-                -- Use pkg-config to get proper info
-                local old_path = os.getenv("PKG_CONFIG_PATH")
-                os.setenv("PKG_CONFIG_PATH", pcdir .. (old_path and (":" .. old_path) or ""))
-                
-                local pcresult = find_package_from_pkgconfig(name)
-                
-                if old_path then
-                    os.setenv("PKG_CONFIG_PATH", old_path)
-                else
-                    os.setenv("PKG_CONFIG_PATH", nil)
-                end
+                -- Use pkg-config with configdirs
+                local pcresult = find_package_from_pkgconfig(name, {configdirs = pcdir})
                 
                 if pcresult then
                     return pcresult

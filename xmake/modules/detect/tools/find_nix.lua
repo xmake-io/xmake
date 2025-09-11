@@ -45,10 +45,15 @@ function main(opt)
         local nix_paths = {
             "/nix/var/nix/profiles/default/bin", -- multi-user installation
             "/home/" .. (os.getenv("USER") or "user") .. "/.nix-profile/bin", -- single user installation
-            "/run/current-system/sw/bin", -- only on nixos, maybe separate nix logic from nixos logic?
             "/usr/local/bin", -- default path of nix when compiling nix from source
         }
+
+        -- NixOS-specific paths
+        if linuxos.name() == "nixos" then
+            table.insert(nix_paths, "/run/current-system/sw/bin")
+        end
         
+        opt.paths = table.wrap(opt.paths)
         for _, nixpath in ipairs(nix_paths) do
             table.insert(opt.paths, nixpath)
         end

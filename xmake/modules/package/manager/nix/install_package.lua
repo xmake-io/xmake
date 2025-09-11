@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
+import("private.core.base.is_cross")
 
 -- install package
 --
@@ -39,9 +40,9 @@ function main(name, opt)
         raise("nix not found!")
     end
     
-    -- check architecture (nix supports cross compilation but for simplicity...)
-    if opt.arch ~= os.arch() then
-        raise("cannot install package(%s) for arch(%s)!", name, opt.arch)
+    -- check architecture 
+    if is_cross(opt.plat, opt.arch) then
+        raise("cannot install package(%s) for cross compilation!", name)
     end
     
     local success = false
