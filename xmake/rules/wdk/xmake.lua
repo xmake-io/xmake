@@ -24,8 +24,8 @@ rule("wdk.driver")
     -- add rules
     add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp", "wdk.sign", "wdk.package.cab")
 
-    -- after load
-    after_load(function (target)
+    -- on config
+    on_config(function (target)
 
         -- load environment
         if target:rule("wdk.env.umdf") then

@@ -213,7 +213,7 @@ GetCoinstallerVersion(
 
 VOID __cdecl
 main(
-    _In_ ULONG argc,
+    _In_ INT argc,
     _In_reads_(argc) PCHAR argv[]
     )
 {

@@ -115,7 +115,7 @@ Notes:
 //
 // Initialization data structure that needs to be filled in for MPIO
 //
-DSM_INIT_DATA gDsmInitData;
+extern DSM_INIT_DATA gDsmInitData;
 
 //
 // Macro used to round of a number to the nearest 8 byte aligned one.
