@@ -76,7 +76,6 @@ function _check_from_arglist(flags, opt, islinker)
 
         -- save cache
         detectcache:set2(key, flagskey, allflags)
-        detectcache:save()
     end
     return allflags[flags[1]]
 end

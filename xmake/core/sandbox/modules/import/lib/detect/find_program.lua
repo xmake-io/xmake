@@ -338,7 +338,6 @@ function sandbox_lib_detect_find_program.main(name, opt)
 
     -- cache result
     detectcache:set2(cachekey, name, result and result or false)
-    detectcache:save()
 
     -- trace
     if option.get("verbose") or opt.verbose then

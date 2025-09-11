@@ -379,6 +379,5 @@ function main(sdkdir, opt)
     else
         detectcache:set(key, cacheinfo)
     end
-    detectcache:save()
     return qt
 end

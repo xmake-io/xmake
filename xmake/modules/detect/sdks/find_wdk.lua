@@ -182,6 +182,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.wdk = wdk or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return wdk
 end

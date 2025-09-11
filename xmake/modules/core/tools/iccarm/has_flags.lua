@@ -60,7 +60,6 @@ function _check_from_arglist(flags, opt, islinker)
             end
         end
         detectcache:set2(key, flagskey, allflags)
-        detectcache:save()
     end
     local flag = flags[1]
     return allflags[flag]

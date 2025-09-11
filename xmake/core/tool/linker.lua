@@ -130,7 +130,8 @@ function linker.load(targetkind, sourcekinds, target)
         end
     end
 
-    -- load linker tool first (with cache)
+    -- load linker tool first, we need to get the correct plat/arch
+    -- @NOTE We cannot cache the tool, otherwise it may cause duplicate toolchain flags to be added
     local linkertool, linkerinfo_or_errors = linker._load_tool(targetkind, sourcekinds, target)
     if not linkertool then
         return nil, linkerinfo_or_errors
@@ -218,7 +219,7 @@ function linker.load(targetkind, sourcekinds, target)
 
     -- we need to load it at the end because in tool.load().
     -- because we may need to call has_flags, which requires the full platform toolchain flags
-    local ok, errors = linkertool:_load_once()
+    local ok, errors = instance:_tool():_load_once()
     if not ok then
         return nil, errors
     end

@@ -109,7 +109,6 @@ function sandbox_lib_detect_find_programver.main(program, opt)
 
     -- save result
     detectcache:set2(cachekey, program, result and result or false)
-    detectcache:save()
     scheduler.co_unlock(lockname)
     return result
 end

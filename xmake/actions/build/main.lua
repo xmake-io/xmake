@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.global")
 import("core.base.task")
 import("core.tool.toolchain")
+import("core.cache.detectcache")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
@@ -130,6 +131,9 @@ function build_targets(targetnames, opt)
             -- save toolchain configs
             toolchain.save()
 
+            -- save detect cache
+            detectcache:save()
+
             -- dump cache stats
             if option.get("diagnosis") then
                 build_cache.dump_stats()
@@ -147,6 +151,9 @@ function build_targets(targetnames, opt)
 
                 -- save toolchain configs
                 toolchain.save()
+
+                -- save detect cache
+                detectcache:save()
 
                 -- raise
                 if errors then

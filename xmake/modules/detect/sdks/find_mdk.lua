@@ -118,6 +118,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.mdk = mdk or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return mdk
 end

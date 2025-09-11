@@ -202,7 +202,6 @@ function _get_devices(opt)
 
     -- fill cache
     detectcache:set(cachekey, cachedata)
-    detectcache:save()
     return devices
 end
 

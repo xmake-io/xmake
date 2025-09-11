@@ -142,7 +142,6 @@ function main(hosts, opt)
 
     if cacheinfo then
         detectcache:set("net.ping", cacheinfo)
-        detectcache:save()
     end
     return results
 end

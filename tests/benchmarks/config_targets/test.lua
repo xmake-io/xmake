@@ -9,6 +9,7 @@ function test_config(t)
 
     -- xmake
     os.tryrm("build")
+    os.tryrm(".xmake")
     local xmake_dt = os.mclock()
     os.runv("xmake", {"config", "-c"})
     xmake_dt = os.mclock() - xmake_dt

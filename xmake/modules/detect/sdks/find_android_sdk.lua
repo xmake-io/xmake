@@ -124,6 +124,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.sdk = sdk or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return sdk
 end

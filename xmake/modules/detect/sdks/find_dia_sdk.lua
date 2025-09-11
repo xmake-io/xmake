@@ -155,6 +155,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.dia_sdk = dia_sdk or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return dia_sdk
 end

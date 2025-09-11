@@ -63,10 +63,7 @@ function _check_from_arglist(flags, opt)
 
         -- save cache
         detectcache:set2(key, flagskey, allflags)
-        detectcache:save()
     end
-
-    -- ok?
     return allflags[flags[1]]
 end
 

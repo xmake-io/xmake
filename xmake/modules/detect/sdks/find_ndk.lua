@@ -304,6 +304,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.ndk = ndk or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return ndk
 end

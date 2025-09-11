@@ -117,6 +117,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.c51 = c51 or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return c51
 end

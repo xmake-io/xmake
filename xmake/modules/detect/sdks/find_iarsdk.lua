@@ -90,6 +90,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.iarsdk = iarsdk or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return iarsdk
 end

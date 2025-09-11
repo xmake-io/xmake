@@ -130,6 +130,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.dotnet = dotnet or false
     detectcache:set(key, cacheinfo)
-    detectcache:save()
     return dotnet
 end
