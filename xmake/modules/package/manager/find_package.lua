@@ -59,6 +59,7 @@ function _find_package_with_builtin_rule(package_name, opt)
         local find_from_host = not is_cross(plat, arch)
         if find_from_host and not is_host("windows") then
             table.insert(managers, "brew")
+            table.insert(managers, "nix")
         end
         -- vcpkg/conan support multi-platforms/architectures
         table.insert(managers, "vcpkg")
