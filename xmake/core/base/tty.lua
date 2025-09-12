@@ -154,26 +154,30 @@ function tty.shell()
     local shell = tty._SHELL
     if shell == nil then
         local subhost = xmake._SUBHOST
-        if subhost == "windows" then
-            if os.getenv("PROMPT") then
-                shell = "cmd"
-            else
-                local ok, result = os.iorun("pwsh -v")
-                if ok then
-                    shell = "pwsh"
-                else
-                    shell = "powershell"
-                end
-            end
+        if os.getenv("NU_VERSION") then
+            shell = "nu"
         else
-            shell = os.getenv("XMAKE_SHELL")
-            if not shell then
-                shell = os.getenv("SHELL")
-                if shell then
-                    for _, shellname in ipairs({"zsh", "bash", "sh"}) do
-                        if shell:find(shellname) then
-                            shell = shellname
-                            break
+            if subhost == "windows" then
+                if os.getenv("PROMPT") then
+                    shell = "cmd"
+                else
+                    local ok, result = os.iorun("pwsh -v")
+                    if ok then
+                        shell = "pwsh"
+                    else
+                        shell = "powershell"
+                    end
+                end
+            else
+                shell = os.getenv("XMAKE_SHELL")
+                if not shell then
+                    shell = os.getenv("SHELL")
+                    if shell then
+                        for _, shellname in ipairs({"zsh", "bash", "sh"}) do
+                            if shell:find(shellname) then
+                                shell = shellname
+                                break
+                            end
                         end
                     end
                 end

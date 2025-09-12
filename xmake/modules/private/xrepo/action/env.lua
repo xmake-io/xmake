@@ -380,8 +380,14 @@ end
 -- run shell
 function _run_shell(envs)
     local shell = os.shell()
+    local args = table.wrap(option.get("arguments"))
     if shell == "pwsh" or shell == "powershell" then
-        os.execv("pwsh", option.get("arguments"), {envs = envs})
+        os.execv("pwsh", args, {envs = envs})
+    elseif shell == "nu" then
+        if #args ~=0 then
+            table.insert(args, 1, "-c")
+        end
+        os.execv("nu", args, {envs = envs})
     elseif shell:endswith("sh") then
         local prompt = _get_prompt()
         local ps1 = os.getenv("PS1")
@@ -392,11 +398,11 @@ function _run_shell(envs)
         else
             prompt = prompt .. " > "
         end
-        os.execv(shell, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
+        os.execv(shell, args, {envs = table.join({PS1 = prompt}, envs)})
     elseif shell == "cmd" or is_host("windows") then
         local prompt = _get_prompt()
         prompt = prompt .. " $P$G"
-        local args = table.join({"/k", "set PROMPT=" .. prompt}, option.get("arguments"))
+        local args = table.join({"/k", "set PROMPT=" .. prompt}, args)
         os.execv("cmd", args, {envs = envs})
     else
         assert("shell not found!")
