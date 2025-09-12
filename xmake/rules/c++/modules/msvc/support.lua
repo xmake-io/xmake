@@ -90,6 +90,7 @@ function strippeable_flags()
         "C",
         "analyze",
         "?",
+        "external",
     }
     local splitted_strippeable_flags = {
         "Fo",
