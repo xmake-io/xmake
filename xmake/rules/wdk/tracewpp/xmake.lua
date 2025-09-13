@@ -41,7 +41,6 @@ rule("wdk.tracewpp")
         if not os.isexec(tracewpp) then
             tracewpp = path.join(wdk.bindir, wdk.sdkver, arch, is_host("windows") and "tracewpp.exe" or "tracewpp")
         end
-        assert(os.isexec(tracewpp), "tracewpp not found!")
 
         -- save tracewpp
         target:data_set("wdk.tracewpp", tracewpp)
@@ -61,6 +60,7 @@ rule("wdk.tracewpp")
 
         -- get tracewpp
         local tracewpp = target:data("wdk.tracewpp")
+        assert(tracewpp and os.isexec(tracewpp), "tracewpp not found!")
 
         -- get outputdir
         local outputdir = path.join(target:autogendir(), "rules", "wdk", "wpp")
