@@ -180,18 +180,6 @@ function should_build(target, module)
         local old_dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
         old_dependinfo.files = {module.sourcefile}
 
-        -- force rebuild a module if any of its module dependency is rebuilt
-        for dep_name, dep_module in table.orderpairs(module.deps) do
-            local mapped_dep = mapper.get(target, dep_module.headerunit and dep_name .. dep_module.key or dep_name)
-
-            if should_build(target, mapped_dep) then
-                depend.save(dependinfo, dependfile)
-                memcache:set2(target:fullname(), "should_build_" .. module.sourcefile, true)
-                profiler.leave(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
-                return true
-            end
-        end
-
         -- need build this object?
         local dryrun = option.get("dry-run")
         if dryrun or depend.is_changed(old_dependinfo, dependinfo) then
@@ -200,6 +188,19 @@ function should_build(target, module)
             profiler.leave(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
             return true
         end
+
+        -- force rebuild a module if any of its module dependency is rebuilt
+        for dep_name, dep_module in table.orderpairs(module.deps) do
+            local mapped_dep = mapper.get(target, dep_module.headerunit and dep_name .. dep_module.key or dep_name)
+
+            if should_build(target, mapped_dep) then
+                depend.save(dependinfo, dependfile)
+                memcache:set2(target:fullname(), "should_build_" .. module.sourcefile, true)
+                profiler.leave(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
+                return true, true
+            end
+        end
+
         memcache:set2(target:fullname(), "should_build_" .. module.sourcefile, false)
         profiler.leave(target:fullname(), "c++ modules", "builder", "check if " .. (module.name or module.sourcefile) .. " should be rebuilt")
         return false

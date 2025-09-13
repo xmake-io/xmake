@@ -72,6 +72,8 @@ function policy.policies()
             ["build.rpath"]                       = {description = "Enable build rpath.", default = true, type = "boolean"},
             -- Enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
+            -- Enable non cascading changes (experimental)
+            ["build.c++.modules.non_cascading_changes"] = {description = "Enable non cascading changes when supported (experimental).", default = false, type = "boolean"},
             -- Hide C++ required files to reduce noise (may reduce build performance)
             ["build.c++.modules.hide_dependencies"] = {description = "Hide dependencies from the commandline when build C++ modules.", default = false, type = "boolean"},
             -- Enable two phase compilation for C++ modules if supported by the compiler
