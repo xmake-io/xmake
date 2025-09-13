@@ -153,10 +153,11 @@ end
 function tty.shell()
     local shell = tty._SHELL
     if shell == nil then
-        local subhost = xmake._SUBHOST
         if os.getenv("NU_VERSION") then
             shell = "nu"
-        else
+        end
+        if not shell then
+            local subhost = xmake._SUBHOST
             if subhost == "windows" then
                 if os.getenv("PROMPT") then
                     shell = "cmd"
@@ -168,17 +169,18 @@ function tty.shell()
                         shell = "powershell"
                     end
                 end
-            else
-                shell = os.getenv("XMAKE_SHELL")
-                if not shell then
-                    shell = os.getenv("SHELL")
-                    if shell then
-                        for _, shellname in ipairs({"zsh", "bash", "sh"}) do
-                            if shell:find(shellname) then
-                                shell = shellname
-                                break
-                            end
-                        end
+            end
+        end
+        if not shell then
+            shell = os.getenv("XMAKE_SHELL")
+        end
+        if not shell then
+            shell = os.getenv("SHELL")
+            if shell then
+                for _, shellname in ipairs({"zsh", "bash", "sh"}) do
+                    if shell:find(shellname) then
+                        shell = shellname
+                        break
                     end
                 end
             end
@@ -449,3 +451,4 @@ end
 
 -- return module
 return tty
+
