@@ -66,11 +66,11 @@ function _run_script(script, args, opt)
         -- run the given lua script file (xmake lua /tmp/script.lua)
         script_type, script_name = "given lua script file", path.relative(script)
         func = import(path.basename(script), {rootdir = path.directory(script), anonymous = true})
-    elseif os.isfile(path.join(os.scriptdir(), "scripts", script .. ".lua")) then
+    elseif os.isfile(path.join(os.programdir(), "plugins", "lua", "scripts", script .. ".lua")) then
 
         -- run builtin lua script (xmake lua echo "hello xmake")
         script_type, script_name = "builtin lua script", script
-        func = import("scripts." .. script, {anonymous = true})
+        func = import("scripts." .. script, {anonymous = true, rootdir = path.join(os.programdir(), "plugins", "lua")})
     else
 
         -- attempt to find the builtin module
