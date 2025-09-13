@@ -31,7 +31,7 @@ toolchain("clang" .. suffix)
     set_runtimes("c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
 
     set_toolset("cc",      "clang" .. suffix)
-    set_toolset("cxx",     "clang" .. suffix, "clang++" .. suffix)
+    set_toolset("cxx",     "clang++" .. suffix, "clang" .. suffix)
     set_toolset("ld",      "clang++" .. suffix, "clang" .. suffix)
     set_toolset("sh",      "clang++" .. suffix, "clang" .. suffix)
     set_toolset("ar",      "ar",      "llvm-ar" .. suffix)
