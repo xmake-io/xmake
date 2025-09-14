@@ -139,18 +139,39 @@ function _get_envsdir_builtin()
     return path.join(os.programdir(), "scripts", "xrepo", "envs")
 end
 
--- get bound environment or packages
-function _get_boundenv(opt)
-    local bind = (opt and opt.bind) or option.get("bind")
-    if bind then
-        for _, envsdir in ipairs({_get_envsdir(), _get_envsdir_builtin()}) do
-            local envfile = path.join(envsdir, bind .. ".lua")
-            if envfile and os.isfile(envfile) then
-                return envfile
-            end
+-- get envfironment files
+function _get_envfiles()
+    local envfiles = {}
+    for _, envsdir in ipairs({_get_envsdir(), _get_envsdir_builtin()}) do
+        for _, envfile in ipairs(os.files(path.join(envsdir, "*.lua"))) do
+            envfiles[path.basename(envfile)] = envfile
         end
     end
-    return bind
+    return envfiles
+end
+
+-- get bound environment files or packages
+function _get_boundenvs(opt)
+    local packages = {}
+    local files = {}
+    local bind = (opt and opt.bind) or option.get("bind")
+    if bind then
+        local envfiles = _get_envfiles()
+        for _, binditem in ipairs(bind:split(',', {plain = true})) do
+            binditem = binditem:trim()
+            if envfiles[binditem] then
+                table.insert(files, envfiles[binditem])
+            else
+                table.insert(packages, binditem)
+            end
+        end
+    else
+        local program = option.get("program")
+        if program then
+            table.insert(packages, program)
+        end
+    end
+    return packages, files
 end
 
 -- add values to environment variable
@@ -244,19 +265,13 @@ end
 -- get package environments
 function _package_getenvs(opt)
     local envs = os.getenvs()
-    local boundenv = _get_boundenv(opt)
-    local has_envfile = false
-    local packages = nil
-    if boundenv and os.isfile(boundenv) then
-        has_envfile = true
-    else
-        packages = boundenv or option.get("program")
-    end
+    local packages, envfiles = _get_boundenvs(opt)
+    local has_envfile = #envfiles > 0
     local oldir = os.curdir()
-    if (os.isfile(os.projectfile()) and not boundenv) or has_envfile then
+    if (os.isfile(os.projectfile()) and not option.get("bind")) or has_envfile then
         if has_envfile then
             _enter_project()
-            table.insert(project.rcfiles(), boundenv)
+            table.join2(project.rcfiles(), envfiles)
         end
         task.run("config", {}, {disable_dump = true})
         _toolchain_addenvs(envs)
@@ -267,10 +282,9 @@ function _package_getenvs(opt)
         if not has_envfile then
             _target_addenvs(envs)
         end
-    elseif packages then
+    elseif #packages > 0 then
         _enter_project()
         local envfile = os.tmpfile() .. ".lua"
-        packages = packages:split(',', {plain = true})
         local file = io.open(envfile, "w")
         for _, requirename in ipairs(packages) do
             file:print("add_requires(\"%s\")", requirename)
@@ -337,13 +351,13 @@ end
 function _get_prompt(bnd)
     bnd = bnd or option.get("bind")
     local prompt
-    local boundenv = _get_boundenv({bind = bnd})
-    if boundenv then
-        if os.isfile(boundenv) then
-            prompt = path.basename(boundenv)
+    local packages, envfiles = _get_boundenvs({bind = bnd})
+    if #packages > 0 or #envfiles > 0 then
+        if #packages == 0 and #envfiles == 1 then
+            prompt = path.basename(envfiles[1])
         else
-            prompt = boundenv:sub(1, math.min(#boundenv, 16))
-            if boundenv ~= prompt then
+            prompt = bnd:sub(1, math.min(#bnd, 16))
+            if bnd ~= prompt then
                 prompt = prompt .. ".."
             end
         end
