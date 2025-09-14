@@ -55,7 +55,7 @@ rule("wdk.package.cab")
 
         -- get makecab
         local makecab = find_program("makecab", {check = "/?"})
-        assert(makecab, "makecab not found!")
+        assert(makecab and os.isexec(makecab), "makecab not found!")
 
         -- make .ddf file
         local file = io.open(ddfile, "w")
