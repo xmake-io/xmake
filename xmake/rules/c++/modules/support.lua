@@ -69,6 +69,24 @@ function load(target)
     _support(target).load(target)
 end
 
+function get_cpplibrary_name(target)
+    -- libc++ come first because on windows, if we use libc++ clang will still use msvc crt so MD / MT / MDd / MTd can be set
+    if target:has_runtime("c++_shared", "c++_static") then
+        return "c++"
+    elseif target:has_runtime("stdc++_shared", "stdc++_static") then
+        return "stdc++"
+    elseif target:has_runtime("MD", "MT", "MDd", "MTd") then
+        return "msstl"
+    end
+    if target:is_plat("macosx", "iphoneos", "appletvos") then
+        return "c++"
+    elseif target:is_plat("linux") then
+        return "stdc++"
+    elseif target:is_plat("windows") then
+        return "msstl"
+    end
+end
+
 function has_two_phase_compilation_support(target)
     return _support(target).has_two_phase_compilation_support(target)
 end
@@ -282,13 +300,14 @@ end
 
 -- get stdmodules
 function get_stdmodules(target)
-    local stdmodules = memcache():get("c++.modules.stdmodules")
-    local stdmodules_set = memcache():get("c++.modules.stdmodules_set")
+    local cpplib = get_cpplibrary_name(target)
+    local stdmodules = memcache():get2(cpplib, "c++.modules.stdmodules")
+    local stdmodules_set = memcache():get2(cpplib, "c++.modules.stdmodules_set")
     if not stdmodules or not stdmodules_set then
         stdmodules = _support(target).get_stdmodules(target)
         stdmodules_set = hashset.from(stdmodules or {})
-        memcache():set("c++.modules.stdmodules", stdmodules)
-        memcache():set("c++.modules.stdmodules_set", stdmodules_set)
+        memcache():set2(cpplib, "c++.modules.stdmodules", stdmodules)
+        memcache():set2(cpplib, "c++.modules.stdmodules_set", stdmodules_set)
     end
     return stdmodules, stdmodules_set
 end

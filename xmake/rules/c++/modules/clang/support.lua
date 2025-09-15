@@ -38,7 +38,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
     local argv = {"-E", "-x", "c++", tmpfile}
-    local cpplib = _get_cpplibrary_name(target)
+    local cpplib = get_cpplibrary_name(target)
     if cpplib then
         if cpplib == "c++" then
             table.insert(argv, 1, "-stdlib=libc++")
@@ -60,24 +60,6 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
         end
     end
     os.tryrm(tmpfile)
-end
-
-function _get_cpplibrary_name(target)
-    -- libc++ come first because on windows, if we use libc++ clang will still use msvc crt so MD / MT / MDd / MTd can be set
-    if target:has_runtime("c++_shared", "c++_static") then
-        return "c++"
-    elseif target:has_runtime("stdc++_shared", "stdc++_static") then
-        return "stdc++"
-    elseif target:has_runtime("MD", "MT", "MDd", "MTd") then
-        return "msstl"
-    end
-    if target:is_plat("macosx", "iphoneos", "appletvos") then
-        return "c++"
-    elseif target:is_plat("linux") then
-        return "stdc++"
-    elseif target:is_plat("windows") then
-        return "msstl"
-    end
 end
 
 function _get_std_module_manifest_path(target)
@@ -168,7 +150,7 @@ function toolchain_includedirs(target)
         local clang, toolname = target:tool("cxx")
         assert(toolname:startswith("clang"))
         _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
-        local cpplib = _get_cpplibrary_name(target)
+        local cpplib = get_cpplibrary_name(target)
         local runtime_flag
         if cpplib then
             if cpplib == "c++" then
@@ -261,7 +243,7 @@ function get_stdmodules(target)
     if not target:policy("build.c++.modules.std") then
         return
     end
-    local cpplib = _get_cpplibrary_name(target)
+    local cpplib = get_cpplibrary_name(target)
     if cpplib then
         if cpplib == "c++" then
             -- libc++ module is found by parsing libc++.modules.json
