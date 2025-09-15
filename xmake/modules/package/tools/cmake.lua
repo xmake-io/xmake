@@ -941,8 +941,6 @@ end
 function _get_configs(package, configs, opt)
     configs = configs or {}
     opt._configs_str = string.serialize(configs, {indent = false, strip = true})
-
-
     _get_configs_for_install(package, configs, opt)
     _get_configs_for_generator(package, configs, opt)
     if package:is_plat("windows") then
