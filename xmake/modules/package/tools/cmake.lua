@@ -942,9 +942,6 @@ function _get_configs(package, configs, opt)
     configs = configs or {}
     opt._configs_str = string.serialize(configs, {indent = false, strip = true})
 
-    -- we need to get the default flags first to avoid being overwritten.
-    -- @see https://github.com/xmake-io/xmake/issues/6781
-    local envs = _get_envs_for_default_flags(package, configs, opt)
 
     _get_configs_for_install(package, configs, opt)
     _get_configs_for_generator(package, configs, opt)
@@ -980,6 +977,7 @@ function _get_configs(package, configs, opt)
         table.insert(configs, "-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
     end
 
+    local envs = _get_envs_for_default_flags(package, configs, opt)
     local runtime_envs = _get_envs_for_runtime_flags(package, configs, opt)
     if runtime_envs then
         envs = envs or {}
