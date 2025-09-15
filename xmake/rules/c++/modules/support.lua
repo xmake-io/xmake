@@ -258,6 +258,12 @@ function can_be_culled(target, sourcefile)
             can_cull = can_cull and fileconfig.cull
         end
     end
+    if can_cull then
+        can_cull = false
+        if is_stdmodule or (fileconfig and fileconfig.external) then
+            can_cull = true
+        end
+    end
     return can_cull and not public
 end
 
