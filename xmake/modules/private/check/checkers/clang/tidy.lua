@@ -26,6 +26,7 @@ import("core.project.config")
 import("core.project.project")
 import("lib.detect.find_tool")
 import("async.runjobs")
+import("utils.progress")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 
@@ -118,10 +119,11 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
             end
             table.insert(argv, sourcefile)
         end
+        progress.show(100, "clang-tidy.analyzing %s .. %d", sourcefiles[1], #sourcefiles)
         local argsfile = os.tmpfile() .. ".args.txt"
         io.writefile(argsfile, os.args(argv))
         argv = {"@" .. argsfile}
-        os.execv(clang_tidy.program, argv, {curdir = projectdir})
+        os.vrunv(clang_tidy.program, argv, {curdir = projectdir})
         os.rm(argsfile)
     else
         -- split sourcefiles
@@ -143,8 +145,9 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
 
         -- run clang-tidy
         runjobs("checker.tidy", function (index, total, opt)
-            local argv = sourcefiles_jobs[index]
-            os.execv(clang_tidy.program, argv, {curdir = projectdir})
+            local tidy_argv = sourcefiles_jobs[index]
+            progress.show(index * 100 / total, "clang-tidy.analyzing %s .. %d", tidy_argv[1], #tidy_argv)
+            os.vrunv(clang_tidy.program, tidy_argv, {curdir = projectdir})
         end, {total = #sourcefiles_jobs, comax = opt.jobs or os.default_njob()})
     end
 end
