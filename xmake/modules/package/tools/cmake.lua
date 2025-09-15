@@ -315,6 +315,13 @@ function _get_shflags(package, opt)
     end
 end
 
+-- get arflags
+function _get_arflags(package, opt)
+    local result = table.wrap(package:build_getenv("arflags"))
+    if #result > 0 then
+        return os.args(_translate_paths(result))
+    end
+end
 -- get cmake version
 function _get_cmake_version()
     local cmake_version = _g.cmake_version
@@ -401,27 +408,6 @@ end
 -- get configs for generic
 function _get_configs_for_generic(package, configs, opt)
     local envs = {}
-    local cflags = _get_cflags(package, opt)
-    if cflags then
-        envs.CMAKE_C_FLAGS = cflags
-    end
-    local cxxflags = _get_cxxflags(package, opt)
-    if cxxflags then
-        envs.CMAKE_CXX_FLAGS = cxxflags
-    end
-    local asflags = _get_asflags(package, opt)
-    if asflags then
-        envs.CMAKE_ASM_FLAGS = asflags
-    end
-    local ldflags = _get_ldflags(package, opt)
-    if ldflags then
-        envs.CMAKE_EXE_LINKER_FLAGS = ldflags
-    end
-    local shflags = _get_shflags(package, opt)
-    if shflags then
-        envs.CMAKE_SHARED_LINKER_FLAGS = shflags
-        envs.CMAKE_MODULE_LINKER_FLAGS = shflags
-    end
     if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
         envs.CMAKE_POSITION_INDEPENDENT_CODE = "ON"
     end
@@ -461,12 +447,9 @@ function _get_configs_for_windows(package, configs, opt)
     -- use clang-cl or clang, and we need pass --target=xxx flags
     if package:has_tool("cc", "clang", "clang_cl") then
         envs.CMAKE_C_COMPILER = _translate_bin_path(package:build_getenv("cc"))
-        -- @see https://github.com/xmake-io/xmake-repo/issues/7662
-        envs.CMAKE_C_FLAGS    = _get_cflags(package, {cross = true})
     end
     if package:has_tool("cxx", "clang", "clang_cl") then
         envs.CMAKE_CXX_COMPILER = _translate_bin_path(package:build_getenv("cxx"))
-        envs.CMAKE_CXX_FLAGS    = _get_cxxflags(package, {cross = true})
     end
 
     -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
@@ -535,13 +518,6 @@ function _get_configs_for_appleos(package, configs, opt)
     opt = opt or {}
     local envs                     = {}
     opt.cross                      = true
-    envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
-    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
-    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
-    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
-    envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
-    envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
-    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     -- https://cmake.org/cmake/help/v3.17/manual/cmake-toolchains.7.html#id25
     if package:is_plat("watchos") then
         envs.CMAKE_SYSTEM_NAME = "watchOS"
@@ -580,13 +556,6 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
     envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
     envs.CMAKE_RC_COMPILER         = _translate_bin_path(package:build_getenv("mrc"))
-    envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
-    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
-    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
-    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
-    envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
-    envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
-    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
     -- @see https://cmake.org/cmake/help/latest/variable/CMAKE_CROSSCOMPILING.html
     -- https://github.com/xmake-io/xmake/pull/5888
     if not is_host("windows") then
@@ -633,15 +602,6 @@ function _get_configs_for_wasm(package, configs, opt)
         end
     end
 
-    -- pass toolchain flags cross-compilation
-    -- @see https://github.com/xmake-io/xmake/issues/6690
-    envs.CMAKE_C_FLAGS             = _get_cflags(package, {cross = true})
-    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, {cross = true})
-    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, {cross = true})
-    envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, {cross = true})
-    envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, {cross = true})
-    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, {cross = true})
-
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/5577
     -- https://github.com/emscripten-core/emscripten/issues/13310
@@ -679,14 +639,7 @@ function _get_configs_for_cross(package, configs, opt)
     if package:has_tool("ld", "gxx", "clangxx") then
         envs.CMAKE_CXX_LINK_EXECUTABLE = ld .. " <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
     end
-    envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
-    envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
-    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
-    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
-    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
-    envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
-    envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
-    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_RANLIB = _translate_bin_path(package:build_getenv("ranlib"))
     -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if package:is_cross() then
@@ -743,14 +696,7 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     if package:has_tool("ld", "gxx", "clangxx") then
         envs.CMAKE_CXX_LINK_EXECUTABLE = ld .. " <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
     end
-    envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
-    envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
-    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
-    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
-    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
-    envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
-    envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
-    envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
+    envs.CMAKE_RANLIB = _translate_bin_path(package:build_getenv("ranlib"))
     -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if package:is_cross() then
@@ -866,21 +812,23 @@ function _get_default_flags(package, configs, buildtype, opt)
 
         local runenvs = opt.envs or buildenvs(package)
         local cmake = find_tool("cmake")
-        local _configs = table.join(configs, "-S " .. path.directory(dummy_cmakelist), "-B " .. tmpdir, cflags or {}, cxxflags)
+        local _configs = table.join(configs, "-S", path.directory(dummy_cmakelist), "-B", tmpdir, cflags or {}, cxxflags)
         local outdata = try{ function() return os.iorunv(cmake.program, _configs, {envs = runenvs}) end}
         if outdata and outdata ~= "" then
             cmake_default_flags = {}
-            cmake_default_flags.cflags = outdata:match("CMAKE_C_FLAGS is (.-)\n") or " "
-            cmake_default_flags.cflags = cmake_default_flags.cflags .. " " .. outdata:match(format("CMAKE_C_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", "")
-            cmake_default_flags.cxxflags = outdata:match("CMAKE_CXX_FLAGS is (.-)\n") or " "
-            cmake_default_flags.cxxflags = cmake_default_flags.cxxflags .. " " .. outdata:match(format("CMAKE_CXX_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", "")
-            cmake_default_flags.ldflags = outdata:match("CMAKE_EXE_LINKER_FLAGS is (.-)\n") or " "
-            cmake_default_flags.ldflags = cmake_default_flags.ldflags .. " " .. outdata:match(format("CMAKE_EXE_LINKER_FLAGS_%s is (.-)\n", buildtype))
-            cmake_default_flags.shflags = outdata:match("CMAKE_SHARED_LINKER_FLAGS is (.-)\n") or " "
-            cmake_default_flags.shflags = cmake_default_flags.shflags .. " " .. outdata:match(format("CMAKE_SHARED_LINKER_FLAGS_%s is (.-)\n", buildtype))
-            cmake_default_flags.arflags = outdata:match("CMAKE_STATIC_LINKER_FLAGS is (.-)\n") or " "
-            cmake_default_flags.arflags = cmake_default_flags.arflags .. " " ..outdata:match(format("CMAKE_STATIC_LINKER_FLAGS_%s is (.-)\n", buildtype))
-
+            cmake_default_flags.CMAKE_C_FLAGS = outdata:match("CMAKE_C_FLAGS is (.-)\n")
+            cmake_default_flags["CMAKE_C_FLAGS_" .. buildtype] = outdata:match(format("CMAKE_C_FLAGS_%s is (.-)\n", buildtype))
+            cmake_default_flags.CMAKE_CXX_FLAGS = outdata:match("CMAKE_CXX_FLAGS is (.-)\n")
+            cmake_default_flags["CMAKE_CXX_FLAGS_" .. buildtype] = outdata:match(format("CMAKE_CXX_FLAGS_%s is (.-)\n", buildtype))
+            cmake_default_flags.CMAKE_CXX_FLAGS = outdata:match("CMAKE_CXX_FLAGS is (.-)\n")
+            cmake_default_flags["CMAKE_EXE_LINKER_FLAGS_" .. buildtype] = outdata:match(format("CMAKE_EXE_LINKER_FLAGS_%s is (.-)\n", buildtype))
+            cmake_default_flags.CMAKE_SHARED_LINKER_FLAGS = outdata:match("CMAKE_SHARED_LINKER_FLAGS is (.-)\n")
+            cmake_default_flags["CMAKE_SHARED_LINKER_FLAGS_" .. buildtype] = outdata:match(format("CMAKE_SHARED_LINKER_FLAGS_%s is (.-)\n", buildtype))
+            cmake_default_flags.CMAKE_STATIC_LINKER_FLAGS = outdata:match("CMAKE_STATIC_LINKER_FLAGS is (.-)\n")
+            cmake_default_flags["CMAKE_STATIC_LINKER_FLAGS_" .. buildtype] = outdata:match(format("CMAKE_STATIC_LINKER_FLAGS_%s is (.-)\n", buildtype))
+            for k, v in ipairs(cmake_default_flags) do
+                cmake_default_flags[k] = v:replace("/M[DT]d", ""):replace("/M[DT]", "")
+            end
             _g.cmake_default_flags = _g.cmake_default_flags or {}
             _g.cmake_default_flags[cachekey] = cmake_default_flags
         end
@@ -905,25 +853,30 @@ function _get_envs_for_default_flags(package, configs, opt)
     local default_flags = _get_default_flags(package, configs, buildtype, opt)
     if default_flags then
         if not opt.cxxflags and not opt.cxflags then
-            envs[format("CMAKE_CXX_FLAGS_%s", buildtype)] = default_flags.cxxflags
+            envs.CMAKE_CXX_FLAGS = default_flags.CMAKE_CXX_FLAGS
+            envs["CMAKE_CXX_FLAGS_" .. buildtype] = default_flags["CMAKE_CXX_FLAGS_" .. buildtype]
         end
         if not opt.cflags and not opt.cxflags then
-            envs[format("CMAKE_C_FLAGS_%s", buildtype)] = default_flags.cflags
+            envs.CMAKE_C_FLAGS = default_flags.CMAKE_C_FLAGS
+            envs["CMAKE_C_FLAGS_" .. buildtype] = default_flags["CMAKE_C_FLAGS_" .. buildtype]
         end
         if not opt.ldflags then
-            envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)] = default_flags.ldflags
+            envs.CMAKE_EXE_LINKER_FLAGS = default_flags.CMAKE_EXE_LINKER_FLAGS
+            envs["CMAKE_EXE_LINKER_FLAGS_" .. buildtype] = default_flags["CMAKE_EXE_LINKER_FLAGS_" .. buildtype]
         end
         if not opt.arflags then
-            envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = default_flags.arflags
+            envs.CMAKE_STATIC_LINKER_FLAGS = default_flags.CMAKE_STATIC_LINKER_FLAGS
+            envs["CMAKE_STATIC_LINKER_FLAGS_" .. buildtype] = default_flags["CMAKE_STATIC_LINKER_FLAGS_" .. buildtype]
         end
         if not opt.shflags then
-            envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = default_flags.shflags
+            envs.CMAKE_SHARED_LINKER_FLAGS = default_flags.CMAKE_SHARED_LINKER_FLAGS
+            envs["CMAKE_SHARED_LINKER_FLAGS_" .. buildtype] = default_flags["CMAKE_SHARED_LINKER_FLAGS_" .. buildtype]
         end
     end
     return envs
 end
 
-function _get_envs_for_runtime_flags(package, configs, opt)
+function _get_envs_for_runtime_flags(package, opt)
     local buildtype = _get_cmake_buildtype(package)
     local envs = {}
     local runtimes = package:runtimes()
@@ -934,6 +887,45 @@ function _get_envs_for_runtime_flags(package, configs, opt)
         envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "static", {"cxx"}, "runtime", runtimes)
         envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes)
         envs[format("CMAKE_MODULE_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes)
+    end
+    return envs
+end
+
+function _get_envs_for_flags(package, configs, opt)
+    -- get the default envs
+    local envs = _get_envs_for_default_flags(package, configs, opt) or {}
+    local runtime_envs = _get_envs_for_runtime_flags(package, opt)
+    if runtime_envs then
+        for name, value in pairs(runtime_envs) do
+            envs[name] = (envs[name] or " ") .. " " .. table.concat(value, " ")
+        end
+    end
+
+    -- get the platform/toolchain envs
+    local platform_envs = {}
+    if package:is_plat("windows") then
+        -- use clang-cl or clang, and we need pass --target=xxx flags
+        if package:has_tool("cc", "clang", "clang_cl") then
+            -- @see https://github.com/xmake-io/xmake-repo/issues/7662
+            platform_envs.CMAKE_C_FLAGS = _get_cflags(package, {cross = true})
+        end
+        if package:has_tool("cxx", "clang", "clang_cl") then
+            platform_envs.CMAKE_CXX_FLAGS = _get_cxxflags(package, {cross = true})
+        end
+    elseif package:is_plat("wasm") then
+        -- pass toolchain flags cross-compilation
+        -- @see https://github.com/xmake-io/xmake/issues/6690
+        opt.cross = true
+    end
+    platform_envs.CMAKE_C_FLAGS             = platform_envs.CMAKE_C_FLAGS or _get_cflags(package, opt)
+    platform_envs.CMAKE_CXX_FLAGS           = platform_envs.CMAKE_CXX_FLAGS or _get_cxxflags(package, opt)
+    platform_envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
+    platform_envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
+    platform_envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    platform_envs.CMAKE_MODULE_LINKER_FLAGS = _get_shflags(package, opt)
+    platform_envs.CMAKE_STATIC_LINKER_FLAGS = _get_arflags(package, opt)
+    for name, value in pairs(platform_envs) do
+        envs[name] = (envs[name] or " ") .. " " .. value
     end
     return envs
 end
@@ -975,22 +967,19 @@ function _get_configs(package, configs, opt)
         table.insert(configs, "-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
     end
 
-    local envs = _get_envs_for_default_flags(package, configs, opt)
-    local runtime_envs = _get_envs_for_runtime_flags(package, configs, opt)
-    if runtime_envs then
-        envs = envs or {}
-        for name, value in pairs(runtime_envs) do
-            envs[name] = (envs[name] or " ") .. " " .. table.concat(value, " ")
-        end
-    end
-    _insert_configs_from_envs(configs, envs or {}, opt)
+    -- insert flags to configs
+    --
+    -- @note We need to rely on configs to get the exact default flags
+    -- @see https://github.com/xmake-io/xmake/issues/6781
+    local envs = _get_envs_for_flags(package, configs, opt)
+    _insert_configs_from_envs(configs, envs, opt)
 
+    -- enable ccache?
     local ccache = package:data("ccache")
     if ccache then
         table.insert(configs, "-DCMAKE_C_COMPILER_LAUNCHER=" .. ccache)
         table.insert(configs, "-DCMAKE_CXX_COMPILER_LAUNCHER=" .. ccache)
     end
-
     return configs
 end
 
