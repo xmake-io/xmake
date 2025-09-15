@@ -26,6 +26,7 @@ import("core.project.config")
 import("core.project.project")
 import("lib.detect.find_tool")
 import("async.runjobs")
+import("utils.progress")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 
@@ -44,14 +45,14 @@ local options = {
     {nil, "checks",     "kv", nil,  "Set the given checks.",
                                     "e.g.",
                                     "    - xmake check clang.tidy --checks=\"*\""},
-    {"f", "files",      "v",  nil,  "Set files path with pattern",
+    {"f", "files",      "kv", nil,  "Set files path with pattern",
                                     "e.g.",
                                     "    - xmake check clang.tidy -f src/main.c",
                                     "    - xmake check clang.tidy -f 'src/*.c" .. path.envsep() .. "src/**.cpp'"},
-    {nil, "target",     "v",  nil,  "Check the sourcefiles of the given target.",
+    {nil, "targets",    "vs",  nil,  "Check the sourcefiles of the given target.",
                                     ".e.g",
                                     "    - xmake check clang.tidy",
-                                    "    - xmake check clang.tidy [target]"}
+                                    "    - xmake check clang.tidy [targets]"}
 }
 
 -- show checks list
@@ -110,33 +111,44 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
         table.insert(argv, "--quiet")
     end
     -- https://github.com/llvm/llvm-project/pull/120547
-    if clang_tidy.version and semver.compare(clang_tidy.version, "19.1.6") > 0 and #sourcefiles > 32 then
+    local arguments_maxn = 32
+    if clang_tidy.version and semver.compare(clang_tidy.version, "19.1.6") > 0 and #sourcefiles > arguments_maxn then
         for _, sourcefile in ipairs(sourcefiles) do
             if not path.is_absolute(sourcefile) then
                 sourcefile = path.absolute(sourcefile, projectdir)
             end
             table.insert(argv, sourcefile)
         end
+        progress.show(100, "clang-tidy.analyzing %s .. %d", sourcefiles[1], #sourcefiles)
         local argsfile = os.tmpfile() .. ".args.txt"
         io.writefile(argsfile, os.args(argv))
         argv = {"@" .. argsfile}
-        os.execv(clang_tidy.program, argv, {curdir = projectdir})
+        os.vrunv(clang_tidy.program, argv, {curdir = projectdir})
         os.rm(argsfile)
-    elseif #sourcefiles <= 32 then
-        for _, sourcefile in ipairs(sourcefiles) do
-            if not path.is_absolute(sourcefile) then
-                sourcefile = path.absolute(sourcefile, projectdir)
-            end
-            table.insert(argv, sourcefile)
-        end
-        os.execv(clang_tidy.program, argv, {curdir = projectdir})
     else
+        -- split sourcefiles
+        local sourcefiles_argv = {}
+        local sourcefiles_jobs = {}
         for _, sourcefile in ipairs(sourcefiles) do
             if not path.is_absolute(sourcefile) then
                 sourcefile = path.absolute(sourcefile, projectdir)
             end
-            os.execv(clang_tidy.program, table.join(argv, sourcefile), {curdir = projectdir})
+            table.insert(sourcefiles_argv, sourcefile)
+            if #sourcefiles_argv >= arguments_maxn then
+                table.insert(sourcefiles_jobs, sourcefiles_argv)
+                sourcefiles_argv = {}
+            end
         end
+        if #sourcefiles_argv > 0 then
+            table.insert(sourcefiles_jobs, sourcefiles_argv)
+        end
+
+        -- run clang-tidy
+        runjobs("checker.tidy", function (index, total, opt)
+            local tidy_argv = sourcefiles_jobs[index]
+            progress.show(index * 100 / total, "clang-tidy.analyzing %s .. %d", tidy_argv[1], #tidy_argv)
+            os.vrunv(clang_tidy.program, tidy_argv, {curdir = projectdir})
+        end, {total = #sourcefiles_jobs, comax = opt.jobs or os.default_njob()})
     end
 end
 
@@ -178,9 +190,12 @@ function _check(clang_tidy, opt)
             end
         end
     else
-        local targetname = opt.target
-        if targetname then
-            _add_target_files(sourcefiles, project.target(targetname))
+        local targetnames = opt.targets
+        if targetnames then
+            for _, targetname in ipairs(targetnames) do
+                local target = assert(project.target(targetname), "unknown target(%s)", targetname)
+                _add_target_files(sourcefiles, target)
+            end
         else
             for _, target in ipairs(project.ordertargets()) do
                 _add_target_files(sourcefiles, target)
@@ -219,7 +234,6 @@ function main(argv)
         clang_tidy = find_tool("clang-tidy", {force = true, version = true})
     end
     assert(clang_tidy, "clang-tidy not found!")
-    print(clang_tidy)
 
     -- list checks
     if args.list then
