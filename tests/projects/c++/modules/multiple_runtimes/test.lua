@@ -1,47 +1,68 @@
-inherit(".test_base")
+import("lib.detect.find_tool")
+import("core.base.semver")
+import("core.tool.toolchain")
+import("utils.ci.is_running", {alias = "ci_is_running"})
 
 CLANG_MIN_VER = "19"
 GCC_MIN_VER = "15"
 MSVC_MIN_VER = "14.35"
 
 function main(_)
-    local format_string = "Multiple runtimes don't work"
+    if not is_subhost("windows") and not is_host("linux") then
+        return
+    end
 
-    local clang_options
-    if not is_plat("windows") then -- remove when std module is supported for libc++ on windows
-        local str
-        if is_plat("windows") then
-            str = "v1\\std.cppm"
-        else
-            str = "v1/std.cppm"
+    if is_subhost("windows") then
+        local msvc = toolchain.load("msvc")
+        if not msvc or not msvc:check() then
+            wprint("msvc not found, skipping tests")
+            return
         end
-        clang_options = {stdmodule = true, compiler = "clang", version = CLANG_MIN_VER, check_outdata = {str = str, format_string = format_string}}
-    end
-    local gcc_options
-    if is_plat("mingw") or is_plat("linux") then
-        gcc_options = {stdmodule = true, compiler = "gcc", version = GCC_MIN_VER, check_outdata = {str = "v1/std.cppm", format_string = format_string}}
+        local vcvars = msvc:config("vcvars")
+        if not vcvars or not vcvars.VCInstallDir or not vcvars.VCToolsVersion then
+            wprint("msvc not found, skipping tests")
+            return
+        end
+        local version = vcvars.VCToolsVersion
+        if not version or not (semver.compare(version, MSVC_MIN_VER) >= 0) then
+            return
+        end
+        -- on windows, llvm libc++ std module is currently not supported, uncommend when supported
+        local clang = find_tool("clang", {version = true})
+        if not (clang and clang.version and semver.compare(clang.version, CLANG_MIN_VER) >= 0) then
+            return
+        end
+    else
+        local gcc = find_tool("gcc", {version = true})
+        if not (gcc and gcc.version and semver.compare(gcc.version, GCC_MIN_VER) >= 0) then
+            return
+        end
+        local clang = find_tool("clang", {version = true})
+        if not (clang and clang.version and semver.compare(clang.version, CLANG_MIN_VER) >= 0) then
+            return
+        end
     end
 
-    -- latest mingw gcc 15.1 is broken
-    --  error: F:/msys64/mingw64/include/c++/15.1.0/shared_mutex:105:3: error: 'int std::__glibcxx_rwlock_timedrdlock(pthread_rwlock_t*, const timespec*)' exposes TU-local entity 'int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const timespec*)'
-    --   105 |   __glibcxx_rwlock_timedrdlock (pthread_rwlock_t *__rwlock,
-    --       |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    -- In file included from F:/msys64/mingw64/include/c++/15.1.0/x86_64-w64-mingw32/bits/gthr-default.h:35,
-    --                  from F:/msys64/mingw64/include/c++/15.1.0/x86_64-w64-mingw32/bits/gthr.h:157,
-    --                  from F:/msys64/mingw64/include/c++/15.1.0/ext/atomicity.h:37,
-    --                  from F:/msys64/mingw64/include/c++/15.1.0/bits/ios_base.h:41,
-    --                  from F:/msys64/mingw64/include/c++/15.1.0/streambuf:45,
-    --                  from F:/msys64/mingw64/include/c++/15.1.0/bits/streambuf_iterator.h:37,
-    --                  from F:/msys64/mingw64/include/c++/15.1.0/iterator:68,
-    --                  from F:/msys64/mingw64/include/c++/15.1.0/x86_64-w64-mingw32/bits/stdc++.h:56:
-    -- F:/msys64/mingw64/include/pthread.h:296:28: note: 'int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const timespec*)' declared with internal linkage
-    --   296 | WINPTHREAD_RWLOCK_DECL int pthread_rwlock_timedrdlock(pthread_rwlock_t *l, const struct timespec *ts)
-    --       |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~
-    -- F:/msys64/mingw64/include/c++/15.1.0/shared_mutex:115:3: error: 'int std::__glibcxx_rwlock_timedwrlock(pthread_rwlock_t*, const timespec*)' exposes TU-local entity 'int pthread_rwlock_timedwrlock(pthread_rwlock_t*, const timespec*)'
-    --   115 |   __glibcxx_rwlock_timedwrlock (pthread_rwlock_t *__rwlock,   local gcc_options = {stdmodule = true, compiler = "gcc", version = GCC_MIN_VER}
-    if is_subhost("msys") then
-        gcc_options = nil
+    local cl_str = "modules\\std.ixx"
+    local clang_str = is_host("windows") and "v1\\std.cppm" or "v1/std.cppm"
+    local gcc_str = "v1/std.cppm"
+
+    local flags = ""
+    if ci_is_running() then
+     flags = "-vD"
     end
-    local msvc_options = {stdmodule = true, version = MSVC_MIN_VER, check_outdata = {std = "modules\\std.ixx"}}
-    run_tests(clang_options, gcc_options, msvc_options)
+    local outdata
+    outdata = os.iorun("xmake -r " ..  flags)
+    if outdata then
+        local error = true
+        -- on windows, llvm libc++ std module is currently not supported, uncommend when supported
+        if is_host("windows") and outdata:find(cl_str, 1, true) and outdata:find(clang_str, 1, true) then
+            error = false
+        elseif outdata:find(clang_str, 1, true) and outdata:find(gcc_str, 1, true) then
+            error = false
+        end
+        if error then
+            raise("Multiple runtimes doesn't work\n%s", outdata)
+        end
+    end
 end
