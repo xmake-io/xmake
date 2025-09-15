@@ -15,11 +15,11 @@ function main(_)
         else
             str = "v1/std.cppm"
         end
-        clang_options = {stdmodule = true, compiler = "clang", version = CLANG_MIN_VER, {str = str, format_string = format_string}}
+        clang_options = {stdmodule = true, compiler = "clang", version = CLANG_MIN_VER, check_outdata = {str = str, format_string = format_string}}
     end
     local gcc_options
     if is_plat("mingw") or is_plat("linux") then
-        gcc_options = {stdmodule = true, compiler = "gcc", version = GCC_MIN_VER, {str = "v1/std.cppm", format_string = format_string}}
+        gcc_options = {stdmodule = true, compiler = "gcc", version = GCC_MIN_VER, check_outdata = {str = "v1/std.cppm", format_string = format_string}}
     end
 
     -- latest mingw gcc 15.1 is broken
@@ -42,6 +42,6 @@ function main(_)
     if is_subhost("msys") then
         gcc_options = nil
     end
-    local msvc_options = {stdmodule = true, version = MSVC_MIN_VER, {std = "modules\\std.ixx"}}
+    local msvc_options = {stdmodule = true, version = MSVC_MIN_VER, check_outdata = {std = "modules\\std.ixx"}}
     run_tests(clang_options, gcc_options, msvc_options)
 end

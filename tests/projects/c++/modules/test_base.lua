@@ -107,7 +107,7 @@ function build_tests(toolchain_name, opt)
     if opt.build then
         opt.build()
     else
-        _build(opt.find_in_outdata)
+        _build(opt.check_outdata)
     end
     if opt.after_build then
         opt.after_build(platform, toolchain_name, runtimes, policies, flags)
