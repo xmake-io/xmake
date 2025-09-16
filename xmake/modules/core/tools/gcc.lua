@@ -841,7 +841,7 @@ function nf_pcheader(self, pcheaderfile, opt)
     if self:kind() == "cc" then
         local target = opt.target
         local pcoutputfile = target:pcoutputfile("c")
-        if self:name() == "clang" then
+        if self:name():startswith("clang") then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
             return {"-I", path.directory(pcoutputfile), "-include", path.filename(pcheaderfile)}
@@ -854,7 +854,7 @@ function nf_pcxxheader(self, pcheaderfile, opt)
     if self:kind() == "cxx" then
         local target = opt.target
         local pcoutputfile = target:pcoutputfile("cxx")
-        if self:name() == "clang" then
+        if self:name():startswith("clang") then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
             return {"-I", path.directory(pcoutputfile), "-include", path.filename(pcheaderfile)}
