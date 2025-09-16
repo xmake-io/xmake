@@ -144,8 +144,10 @@ function _get_available_nix_paths()
     
     -- Get paths from common Nix environment locations
     local env_locations = {
+        os.getenv("NIX_PROFILES") or "",
+        (os.getenv("HOME") or "") .. "/.nix-profile",
         "/nix/var/nix/profiles/default",
-        (os.getenv("HOME") or "") .. "/.nix-profile"
+        "/run/current-system/sw" -- NixOS
     }
     
     for _, location in ipairs(env_locations) do
