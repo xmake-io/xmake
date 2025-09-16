@@ -116,13 +116,13 @@ end
 -- profiling call
 function profiler:_profiling_call(funcinfo)
     local report = self:_func_report(funcinfo)
-    report.calltime    = os.clock()
+    report.calltime    = os.mclock()
     report.callcount   = report.callcount + 1
 end
 
 -- profiling return
 function profiler:_profiling_return(funcinfo)
-    local stoptime = os.clock()
+    local stoptime = os.mclock()
     local report = self:_func_report(funcinfo)
     if report.calltime and report.calltime > 0 then
 		report.totaltime = report.totaltime + (stoptime - report.calltime)
@@ -160,7 +160,7 @@ function profiler:start()
     elseif self:is_perf("call") then
         self._REPORTS        = self._REPORTS or {}
         self._REPORTS_BY_KEY = self._REPORTS_BY_KEY or {}
-        self._STARTIME       = self._STARTIME or os.clock()
+        self._STARTIME       = self._STARTIME or os.mclock()
         debug.sethook(profiler._profiling_handler, 'cr', 0)
     end
 end
@@ -170,7 +170,7 @@ function profiler:stop()
     if self:is_trace() then
         debug.sethook()
     elseif self:is_perf("call") then
-        self._STOPTIME = os.clock()
+        self._STOPTIME = os.mclock()
         debug.sethook()
 
         -- calculate the total time
@@ -190,7 +190,7 @@ function profiler:stop()
             if percent < 1 then
                 break
             end
-            local report_line = string.format("%6.3f, %6.2f%%, %7d, %s", report.totaltime, percent, report.callcount, self:_func_title(report.funcinfo))
+            local report_line = string.format("%6.3f, %6.2f%%, %7d, %s", report.totaltime / 1000.0, percent, report.callcount, self:_func_title(report.funcinfo))
             report_lines = report_lines .. report_line .. "\n"
             utils.print(report_line)
         end
@@ -214,7 +214,7 @@ function profiler:stop()
         local report_lines = ""
         while h:length() > 0 do
             local report = h:pop()
-            local report_line = string.format("%6.3f, %7d, %s", report.totaltime, report.callcount, self:_tag_title(report.name, report.argv))
+            local report_line = string.format("%6.3f, %7d, %s", report.totaltime / 1000.0, report.callcount, self:_tag_title(report.name, report.argv))
             report_lines = report_lines .. report_line .. "\n"
             count = count + 1
         end
@@ -241,7 +241,7 @@ function profiler:enter(name, ...)
     if is_perf_tag then
         local argv = table.pack(...)
         local report = self:_tag_report(name, argv)
-        report.calltime    = os.clock()
+        report.calltime    = os.mclock()
         report.callcount   = report.callcount + 1
     end
 end
@@ -254,7 +254,7 @@ function profiler:leave(name, ...)
         self._IS_PERF_TAG = is_perf_tag
     end
     if is_perf_tag then
-        local stoptime = os.clock()
+        local stoptime = os.mclock()
         local argv = table.pack(...)
         local report = self:_tag_report(name, argv)
         if report.calltime and report.calltime > 0 then
