@@ -35,10 +35,9 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
-    opt         = opt or {}
-    opt.check   = opt.check or function (program)
+    opt = opt or {}
+    opt.norunfile = true
+    opt.check = opt.check or function (program)
         local ok = try { function () os.runv(program, {}, {envs = opt.envs}); return true end }
         if not ok then
             -- @see https://github.com/xmake-io/xmake/issues/3057
