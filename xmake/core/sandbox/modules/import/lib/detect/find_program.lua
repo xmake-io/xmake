@@ -178,6 +178,11 @@ end
 -- find program
 function sandbox_lib_detect_find_program._find(name, paths, opt)
 
+    -- valid program file?
+    if path.is_absolute(name) and os.isfile(name) then
+        return name
+    end
+
     -- attempt to find it from the given directories
     local program_path = sandbox_lib_detect_find_program._find_from_paths(name, paths, opt)
     if program_path and opt.system ~= false then
