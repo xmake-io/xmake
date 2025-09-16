@@ -227,7 +227,7 @@ function _show_target(target)
             cprint("      ${color.dump.reference}->${clear} %s", os.args(compinst:compflags()))
         end
     end
-    local linker = target:linker()
+    local linker = targetfile and target:linker()
     if linker then
         cprint("    ${color.dump.string}linker (%s)${clear}: %s", linker:kind(), linker:program())
         cprint("      ${color.dump.reference}->${clear} %s", os.args(linker:linkflags()))
@@ -239,7 +239,6 @@ function _show_target(target)
             cprint("      ${color.dump.reference}->${clear} %s", os.args(compinst:compflags({target = target})))
         end
     end
-    local linker = target:linker()
     if linker then
         cprint("    ${color.dump.string}linkflags (%s)${clear}:", linker:kind())
         cprint("      ${color.dump.reference}->${clear} %s", os.args(linker:linkflags({target = target})))
