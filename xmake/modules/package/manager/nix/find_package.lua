@@ -207,8 +207,6 @@ function _validate_package_in_store_path(store_path, name)
     if os.isdir(libdir) then
         local libfiles = os.files(path.join(libdir, "lib" .. name .. ".*"))
         if #libfiles > 0 then
-            for _, libfile in ipairs(libfiles) do
-            end
             return true
         end
     end
@@ -263,7 +261,6 @@ function _find_in_store_path(store_path, name)
                                 path.join(libdir, "*.a"), 
                                 path.join(libdir, "*.dylib*"))
         
-        local found_libs = {}
         for _, libfile in ipairs(libfiles) do
             local filename = path.filename(libfile)
             local linkname = filename:match("^lib(.+)%.so") or 
@@ -274,7 +271,6 @@ function _find_in_store_path(store_path, name)
                 if linkname == name or linkname:find(name) then
                     table.insert(result.links, linkname)
                     table.insert(result.libfiles, libfile)
-                    found_libs[linkname] = true
                 end
                 
                 if filename:endswith(".a") then
@@ -369,6 +365,9 @@ function main(name, opt)
         for i, store_path in ipairs(nix_paths) do
             local result = _find_in_store_path(store_path, actual_name)
             if result then
+                if opt.verbose or option.get("verbose") then
+                    print("Found " .. actual_name .. " in: " .. store_path)
+                end
                 return result
             end
         end
@@ -389,6 +388,9 @@ function main(name, opt)
         if storepath and os.isdir(storepath) then
             local result = _find_in_store_path(storepath, actual_name)
             if result then
+                if opt.verbose or option.get("verbose") then
+                    print("Built and found " .. actual_name .. " in: " .. storepath)
+                end
                 return result
             end
         end
