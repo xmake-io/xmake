@@ -43,6 +43,8 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
     -- do not attempt to run program? check it fastly
     if opt.norun then
         return os.isfile(program)
+    elseif opt.norunfile and path.is_absolute(program) and os.isfile(program) then
+        return true
     end
 
     -- no check script? attempt to run it directly
@@ -295,6 +297,7 @@ end
 --                    - opt.paths     the program paths (e.g. dirs, paths, winreg paths, script paths)
 --                    - opt.check     the check script or command
 --                    - opt.norun     do not attempt to run program to check program fastly
+--                    - opt.norunfile do not attempt to run program to check program if it's valid file path.
 --                    - opt.system    true: only find it from system, false: only find it from xmake/packages
 --
 -- @return          the program name or path
