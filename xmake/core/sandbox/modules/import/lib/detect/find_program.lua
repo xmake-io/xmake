@@ -178,11 +178,6 @@ end
 -- find program
 function sandbox_lib_detect_find_program._find(name, paths, opt)
 
-    -- valid program file?
-    if path.is_absolute(name) and os.isfile(name) then
-        return name
-    end
-
     -- attempt to find it from the given directories
     local program_path = sandbox_lib_detect_find_program._find_from_paths(name, paths, opt)
     if program_path and opt.system ~= false then
@@ -205,7 +200,11 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
         if not program_name:endswith(".exe") then
             program_name = program_name .. ".exe"
         end
-        program_path = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" .. program_name)
+        if path.is_absolute(program_name) and os.isfile(program_name) then
+            program_path = program_name
+        else
+            program_path = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" .. program_name)
+        end
         if program_path then
             program_path = program_path:trim()
             if os.isexec(program_path) then
@@ -216,10 +215,19 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
             end
         end
     else
-        -- attempt to find it use `which program` command
-        local ok, program_path = os.iorunv("which", {name})
-        if ok and program_path then
-            program_path = program_path:trim()
+        if path.is_absolute(name) and os.isfile(name) then
+            program_path = name
+        else
+            -- attempt to find it use `which program` command
+            local ok, result = os.iorunv("which", {name})
+            if ok and result then
+                program_path = result:trim()
+            else
+                program_path = nil
+            end
+        end
+
+        if program_path then
             local program_path_real = sandbox_lib_detect_find_program._check(program_path, opt)
             if program_path_real then
                 return program_path_real
