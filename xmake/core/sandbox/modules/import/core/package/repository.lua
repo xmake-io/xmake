@@ -114,12 +114,12 @@ function sandbox_core_package_repository.repositories(is_global)
         end
 
         -- add artifacts urls
-        local artifacts_urls = localcache.cache("repository"):get("artifacts_urls")
-        if not artifacts_urls then
-            local binary_repo = os.getenv("XMAKE_BINARY_REPO")
-            if binary_repo then
-                artifacts_urls = {binary_repo}
-            else
+        local artifacts_urls = os.getenv("XMAKE_BINARY_REPO")
+        if artifacts_urls then
+            artifacts_urls = {artifacts_urls}
+        else
+            artifacts_urls = localcache.cache("repository"):get("artifacts_urls")
+            if not artifacts_urls then
                 artifacts_urls = {"https://github.com/xmake-mirror/build-artifacts.git",
                                   "https://gitlab.com/xmake-mirror/build-artifacts.git",
                                   "https://gitee.com/xmake-mirror/build-artifacts.git"}
@@ -140,12 +140,12 @@ function sandbox_core_package_repository.repositories(is_global)
         end
 
         -- add main urls
-        local mainurls = localcache.cache("repository"):get("mainurls")
-        if not mainurls then
-            local mainrepo = os.getenv("XMAKE_MAIN_REPO")
-            if mainrepo then
-                mainurls = {mainrepo}
-            else
+        local mainurls = os.getenv("XMAKE_MAIN_REPO")
+        if mainurls then
+            mainurls = {mainurls}
+        else
+            mainurls = localcache.cache("repository"):get("mainurls")
+            if not mainurls then
                 mainurls = {"https://github.com/xmake-io/xmake-repo.git",
                             "https://gitlab.com/tboox/xmake-repo.git",
                             "https://gitee.com/tboox/xmake-repo.git"}
