@@ -396,7 +396,6 @@ end
 -- get cmake generator for msvc
 function _get_cmake_generator_for_msvc()
     local vs = _get_msvc():config("vs") or config.get("vs")
-    assert(vsvers[vs], "Unknown Visual Studio version: '" .. tostring(vs) .. "' set in project.")
     return "Visual Studio " .. toolchain_utils.get_vsver(vs) .. " " .. vs
 end
 
