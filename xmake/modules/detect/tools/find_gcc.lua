@@ -53,6 +53,7 @@ end
 --
 function main(opt)
     opt = opt or {}
+    opt.norunfile = true
     local program = find_program(opt.program or "gcc", opt)
     local version = nil
     if program and opt.version then

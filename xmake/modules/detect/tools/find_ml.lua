@@ -35,16 +35,14 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
+    opt = opt or {}
+    opt.norunfile = true
+    opt.check = opt.check or function (program)
+        os.runv(program, {}, {envs = opt.envs})
+    end
 
-    -- init options
-    opt       = opt or {}
-    opt.check = opt.check or function (program) os.runv(program, {}, {envs = opt.envs}) end
-
-    -- find program
-    local program = find_program(opt.program or "ml.exe", opt)
-
-    -- find program version
     local version = nil
+    local program = find_program(opt.program or "ml.exe", opt)
     if program and opt and opt.version then
         opt.command = opt.command or function () local _, info = os.iorunv(program, {}, {envs = opt.envs}); return info end
         opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end

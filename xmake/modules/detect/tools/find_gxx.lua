@@ -37,8 +37,8 @@ import("detect.tools.find_gcc")
 -- @endcode
 --
 function main(opt)
-
     opt = opt or {}
+    opt.norunfile = true
     local program = find_program(opt.program or "g++", opt)
     local version = nil
     if program and opt and opt.version then

@@ -51,7 +51,8 @@ end
 -- @endcode
 --
 function main(opt)
-    opt       = opt or {}
+    opt = opt or {}
     opt.check = opt.check or _check
+    opt.norunfile = true
     return find_program(opt.program or "ar", opt)
 end

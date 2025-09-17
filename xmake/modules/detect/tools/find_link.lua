@@ -43,6 +43,7 @@ function main(opt)
 
     -- init options
     opt = opt or {}
+    opt.norunfile = true
     opt.check = opt.check or function (program)
         local toolchain = opt.toolchain
         if toolchain and toolchain:name() == "masm32" then

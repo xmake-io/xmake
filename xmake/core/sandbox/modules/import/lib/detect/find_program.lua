@@ -43,6 +43,8 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
     -- do not attempt to run program? check it fastly
     if opt.norun then
         return os.isfile(program)
+    elseif opt.norunfile and path.is_absolute(program) and os.isfile(program) then
+        return true
     end
 
     -- no check script? attempt to run it directly
@@ -200,7 +202,11 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
         if not program_name:endswith(".exe") then
             program_name = program_name .. ".exe"
         end
-        program_path = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" .. program_name)
+        if path.is_absolute(program_name) and os.isfile(program_name) then
+            program_path = program_name
+        else
+            program_path = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" .. program_name)
+        end
         if program_path then
             program_path = program_path:trim()
             if os.isexec(program_path) then
@@ -211,10 +217,19 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
             end
         end
     else
-        -- attempt to find it use `which program` command
-        local ok, program_path = os.iorunv("which", {name})
-        if ok and program_path then
-            program_path = program_path:trim()
+        if path.is_absolute(name) and os.isfile(name) then
+            program_path = name
+        else
+            -- attempt to find it use `which program` command
+            local ok, result = os.iorunv("which", {name})
+            if ok and result then
+                program_path = result:trim()
+            else
+                program_path = nil
+            end
+        end
+
+        if program_path then
             local program_path_real = sandbox_lib_detect_find_program._check(program_path, opt)
             if program_path_real then
                 return program_path_real
@@ -282,6 +297,7 @@ end
 --                    - opt.paths     the program paths (e.g. dirs, paths, winreg paths, script paths)
 --                    - opt.check     the check script or command
 --                    - opt.norun     do not attempt to run program to check program fastly
+--                    - opt.norunfile do not attempt to run program to check program if it's valid file path.
 --                    - opt.system    true: only find it from system, false: only find it from xmake/packages
 --
 -- @return          the program name or path
