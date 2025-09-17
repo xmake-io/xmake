@@ -136,7 +136,10 @@ function _show_target(target)
     print("The information of target(%s):", target:name())
     cprint("    ${color.dump.string}at${clear}: %s", path.join(target:scriptdir(), "xmake.lua"))
     cprint("    ${color.dump.string}kind${clear}: %s", target:kind())
-    cprint("    ${color.dump.string}targetfile${clear}: %s", target:targetfile())
+    local targetfile = target:targetfile()
+    if targetfile then
+        cprint("    ${color.dump.string}targetfile${clear}: %s", targetfile)
+    end
     local deps = target:get("deps")
     if deps then
         cprint("    ${color.dump.string}deps${clear}:")
@@ -224,7 +227,7 @@ function _show_target(target)
             cprint("      ${color.dump.reference}->${clear} %s", os.args(compinst:compflags()))
         end
     end
-    local linker = target:linker()
+    local linker = targetfile and target:linker()
     if linker then
         cprint("    ${color.dump.string}linker (%s)${clear}: %s", linker:kind(), linker:program())
         cprint("      ${color.dump.reference}->${clear} %s", os.args(linker:linkflags()))
@@ -236,7 +239,6 @@ function _show_target(target)
             cprint("      ${color.dump.reference}->${clear} %s", os.args(compinst:compflags({target = target})))
         end
     end
-    local linker = target:linker()
     if linker then
         cprint("    ${color.dump.string}linkflags (%s)${clear}:", linker:kind())
         cprint("      ${color.dump.reference}->${clear} %s", os.args(linker:linkflags({target = target})))
