@@ -85,7 +85,6 @@ function _get_shell_build_inputs()
         return all_paths
     end
     
-    
     -- Environment variables to check for nix store paths
     local env_vars = {
         "PATH",
@@ -196,7 +195,7 @@ function _validate_package_in_store_path(store_path, name)
     
     -- Look for exact match, or package name in the store path
     local name_match = store_name:find(search_name, 1, true) or 
-                      store_name:find(search_name:gsub("%-", "%%-")) -- handle hyphens
+                      store_name:find((search_name:gsub("%-", "%%-"))) -- handle hyphens
     
     if name_match then
         return true
@@ -268,7 +267,7 @@ function _find_in_store_path(store_path, name)
                            filename:match("^lib(.+)%.dylib")
             
             if linkname then
-                if linkname == name or linkname:find(name) then
+                if linkname == name or linkname:find(name, 1, true) then
                     table.insert(result.links, linkname)
                     table.insert(result.libfiles, libfile)
                 end
