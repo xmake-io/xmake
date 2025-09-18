@@ -21,6 +21,7 @@
 -- imports
 import("core.language.language")
 import("core.cache.global_detectcache")
+import("core.base.hashset")
 
 -- attempt to check it from known flags
 function _check_from_knownargs(flags, opt)
