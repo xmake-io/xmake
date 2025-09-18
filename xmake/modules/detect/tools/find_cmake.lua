@@ -40,6 +40,7 @@ function main(opt)
 
     -- init options
     opt = opt or {}
+    opt.norunfile = true
     if is_host("windows") then
         opt.paths = "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Kitware\\CMake;InstallDir)\\bin"
     end

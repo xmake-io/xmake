@@ -40,6 +40,7 @@ function main(opt)
 
     -- find program
     opt = opt or {}
+    opt.norunfile = true
     local program = find_program(opt.program or "ninja", opt)
     if not program and is_host("windows") then
         local msvc = toolchain.load("msvc", {plat = os.host(), arch = os.arch()})
