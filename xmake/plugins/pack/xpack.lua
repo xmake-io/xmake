@@ -210,7 +210,9 @@ function xpack:inputkind()
             runself  = "source",
             deb      = "source",
             srpm     = "source",
-            rpm      = "source"
+            rpm      = "source",
+            appimage = "binary",
+            dmg      = "binary"
         }
         inputkind = inputkinds[self:format()] or "binary"
     end
@@ -229,7 +231,9 @@ function xpack:outputkind()
         runself  = "source",
         deb      = "binary",
         srpm     = "source",
-        rpm      = "binary"
+        rpm      = "binary",
+        appimage = "binary",
+        dmg      = "binary"
     }
     local outputkind = outputkinds[self:format()] or "binary"
     return outputkind
@@ -378,7 +382,9 @@ function xpack:extension()
             runself  = ".gz.run",
             deb      = ".deb",
             srpm     = ".src.rpm",
-            rpm      = ".rpm"
+            rpm      = ".rpm",
+            appimage = ".AppImage",
+            dmg      = ".dmg"
         }
         extension = extensions[self:format()] or ""
     end
