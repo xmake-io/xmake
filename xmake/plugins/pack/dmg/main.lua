@@ -270,8 +270,6 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
         else
             print("Warning: QML usage detected but no valid QML directory found")
         end
-    else
-        print("No QML usage detected, skipping -qmldir option")
     end
 
     -- Execute macdeployqt
@@ -323,12 +321,6 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
                 if qt_ref and not qt_ref:find("@executable_path") and not qt_ref:find("@rpath") then
                     table.insert(external_qt_refs, qt_ref)
                 end
-            end
-            
-            if #external_qt_refs > 0 then
-                -- Don't fail here as some external references might be acceptable
-            else
-                print("Qt dependency verification successful - all Qt references are bundled")
             end
         end
     end
@@ -544,10 +536,6 @@ end
 -- main packing function
 function _pack_dmg(package)
     local is_qt = _is_qt_project(package)
-    if is_qt then
-        print("Detected Qt project - will use Qt-specific packaging")
-    end
-    
     -- find required tools
     local create_dmg = _get_create_dmg()
     if not create_dmg then
