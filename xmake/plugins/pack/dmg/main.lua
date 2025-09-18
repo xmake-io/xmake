@@ -418,7 +418,6 @@ function _find_background_image(package)
     for _, bg_path in ipairs(bg_paths) do
         if os.isfile(bg_path) then
             ab_bg_path = path.absolute(bg_path)
-            print("Found background image at:", ab_bg_path)
             return ab_bg_path
         end
     end
