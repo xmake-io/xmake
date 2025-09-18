@@ -34,7 +34,7 @@ toolchain("rust")
         if toolchain:config("appledev") == "simulator" then
             opt.apple_sim = true
         end
- 
+
         local target = target_triple(toolchain:plat(), toolchain:arch(), opt)
         if target then
             toolchain:add("rcflags", "--target=" .. target)
