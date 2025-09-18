@@ -75,12 +75,12 @@ function _check_vsenv(toolchain)
                 if pathenv then
                     paths = path.splitenv(pathenv)
                 end
-                local tool = find_tool("cl.exe", {version = true, force = true, paths = paths, envs = vcvars})
+                local tool = find_tool("cl.exe", {force = true, paths = paths, envs = vcvars})
                 if tool then
                     program = tool.program
                 end
                 if program then
-                    return vsver, tool
+                    return vsver
                 end
             end
         end
@@ -117,7 +117,7 @@ function _check_intel_on_windows(toolchain)
         local iclvarsall = iccenv.iclvars
         local iclenv = iclvarsall[toolchain:arch()]
         if iclenv and iclenv.PATH and iclenv.INCLUDE and iclenv.LIB then
-            local tool = find_tool("icl.exe", {force = true, envs = iclenv, version = true})
+            local tool = find_tool("icl.exe", {force = true, envs = iclenv})
             if tool then
                 cprint("checking for Intel C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
                 toolchain:config_set("varsall", iclvarsall)

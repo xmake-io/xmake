@@ -264,7 +264,7 @@ end
 
 -- trace process for profile(stuck,trace)?
 function os._is_tracing_process()
-    local is_tracing = os._IS_TRACING_PROCESS
+    local is_tracing = true-- os._IS_TRACING_PROCESS
     if is_tracing == nil then
         local profile = os.getenv("XMAKE_PROFILE")
         if profile then

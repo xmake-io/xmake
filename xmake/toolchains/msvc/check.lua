@@ -69,12 +69,12 @@ function _check_vsenv(toolchain)
 
                 -- check compiler
                 local program = nil
-                local tool = find_tool("cl.exe", {version = true, force = true, envs = vcvars})
+                local tool = find_tool("cl.exe", {force = true, envs = vcvars})
                 if tool then
                     program = tool.program
                 end
                 if program then
-                    return vsver, tool
+                    return vsver
                 end
             end
         end
@@ -83,16 +83,13 @@ end
 
 -- check the visual studio
 function _check_vstudio(toolchain)
-    local vs, msvc = _check_vsenv(toolchain)
+    local vs = _check_vsenv(toolchain)
     if vs then
         if toolchain:is_global() then
             config.set("vs", vs, {force = true, readonly = true})
         end
         toolchain:config_set("vs", vs)
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
-        if msvc and msvc.version then
-            cprint("checking for Microsoft C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), msvc.version)
-        end
     else
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
     end
@@ -112,16 +109,15 @@ function _check_vc_build_tools(toolchain, sdkdir)
 
     local vcvars = vcvarsall[toolchain:arch()]
     if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
-        -- save vcvars
         toolchain:config_set("vcvars", vcvars)
         toolchain:config_set("vcarchs", table.orderkeys(vcvarsall))
         toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
         toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
 
         -- check compiler
-        local cl = find_tool("cl.exe", {version = true, force = true, envs = vcvars})
-        if cl and cl.version then
-            cprint("checking for Microsoft C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), cl.version)
+        local cl = find_tool("cl.exe", {force = true, envs = vcvars})
+        if cl then
+            cprint("checking for Microsoft C/C++ Compiler (%s) ... ${color.success}", toolchain:arch())
         end
         return vcvars
     end
