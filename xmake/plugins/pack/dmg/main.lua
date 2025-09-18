@@ -31,8 +31,6 @@ import("detect.sdks.find_qt")
 function _get_create_dmg()
     local create_dmg = find_tool("create-dmg")
     if not create_dmg then
-        print("Error: create-dmg not found. Please install it first:")
-        print("brew install create-dmg")
         return nil
     end
     return create_dmg
@@ -52,8 +50,6 @@ function _get_macdeployqt()
         end
         
         if not macdeployqt then
-            print("Warning: macdeployqt not found. Qt dependencies may not be bundled correctly.")
-            print("Make sure Qt development tools are installed and macdeployqt is in PATH.")
             return nil
         end
     end
@@ -67,7 +63,6 @@ function _is_qt_project(package)
     if links then
         for _, link in ipairs(links) do
             if link:lower():find("qt") then
-                print("Qt project detected via link:", link)
                 return true
             end
         end
@@ -81,7 +76,6 @@ function _is_qt_project(package)
             local executables = os.files(path.join(macos_dir, "*"))
             for _, executable in ipairs(executables) do
                 if os.isfile(executable) then
-                    print("Checking executable for Qt dependencies:", executable)
                     local otool_output = os.iorunv("otool", {"-L", executable})
                     if otool_output then
                         -- Check for Qt frameworks in otool output
@@ -89,7 +83,6 @@ function _is_qt_project(package)
                            otool_output:find("QtCore") or 
                            otool_output:find("QtGui") or
                            otool_output:find("QtWidgets") then
-                            print("Qt project detected via otool analysis")
                             return true
                         end
                     end
@@ -109,14 +102,12 @@ function _is_qt_project(package)
                                content:find("QApplication") or
                                content:find("QWidget") or
                                content:find("QMainWindow")) then
-                    print("Qt project detected via source file analysis:", srcfile)
                     return true
                 end
             end
         end
     end
 
-    print("No Qt dependencies detected")
     return false
 end
 
@@ -126,7 +117,6 @@ function _check_qml_usage(package, app_source)
     if links then
         for _, link in ipairs(links) do
             if link:lower():find("qml") or link:lower():find("quick") then
-                print("QML usage detected via link:", link)
                 return true
             end
         end
@@ -141,7 +131,6 @@ function _check_qml_usage(package, app_source)
                 local otool_output = os.iorunv("otool", {"-L", executable})
                 if otool_output then
                     if otool_output:find("QtQml") or otool_output:find("QtQuick") then
-                        print("QML usage detected via otool analysis")
                         return true
                     end
                 end
@@ -152,7 +141,6 @@ function _check_qml_usage(package, app_source)
     -- Method 3: Check for .qml files in project
     local qml_files = os.files("**.qml")
     if qml_files and #qml_files > 0 then
-        print("QML usage detected via .qml files:", #qml_files, "files found")
         return true
     end
 
@@ -166,7 +154,6 @@ function _check_qml_usage(package, app_source)
                                content:find("#include.*QQuick") or
                                content:find("QQmlEngine") or
                                content:find("QQuickView")) then
-                    print("QML usage detected via source file analysis:", srcfile)
                     return true
                 end
             end
@@ -198,7 +185,6 @@ function _find_valid_qml_dir(qt)
     
     for _, qml_dir in ipairs(possible_qml_dirs) do
         if os.isdir(qml_dir) then
-            print("Found valid QML directory:", qml_dir)
             return qml_dir
         end
     end
@@ -207,7 +193,6 @@ function _find_valid_qml_dir(qt)
     local temp_qml_dir = path.join(os.tmpdir(), "empty_qml")
     if not os.isdir(temp_qml_dir) then
         os.mkdir(temp_qml_dir)
-        print("Created temporary empty QML directory:", temp_qml_dir)
     end
     
     return temp_qml_dir
@@ -215,20 +200,14 @@ end
 
 -- deploy Qt dependencies using macdeployqt
 function _deploy_qt_dependencies(package, app_source, macdeployqt)
-    print("Deploying Qt dependencies using macdeployqt...")
 
     -- Get Qt SDK information
     local qt = find_qt()
     if not qt then
-        print("Warning: Qt SDK not found, cannot determine Qt version")
         return false
     end
 
     local qt_version = qt.sdkver or "5.15.3"
-    print("Target Qt version:", qt_version)
-    print("Qt SDK directory:", qt.sdkdir)
-    print("Qt binary directory:", qt.bindir)
-    print("Qt library directory:", qt.libdir)
 
     -- Verify the .app bundle structure
     local contents_dir = path.join(app_source, "Contents")
@@ -236,22 +215,14 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
     local info_plist = path.join(contents_dir, "Info.plist")
 
     if not os.isdir(contents_dir) then
-        print("Error: Contents directory not found:", contents_dir)
         return false
     end
     if not os.isdir(macos_dir) then
-        print("Error: MacOS directory not found:", macos_dir)
         return false
     end
     if not os.isfile(info_plist) then
-        print("Error: Info.plist not found:", info_plist)
         return false
     end
-
-    print("App bundle structure verified:")
-    print("  Contents dir:", contents_dir)
-    print("  MacOS dir:", macos_dir)
-    print("  Info.plist:", info_plist)
 
     -- Find the main executable
     local executables = os.files(path.join(macos_dir, "*"))
@@ -264,11 +235,8 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
     end
 
     if not main_executable then
-        print("Error: No executable found in MacOS directory")
         return false
     end
-
-    print("Main executable:", main_executable)
 
     -- Set up environment variables for macdeployqt
     local envs = {}
@@ -299,7 +267,6 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
         if qml_dir then
             table.insert(args, "-qmldir")
             table.insert(args, qml_dir)
-            print("Using QML directory:", qml_dir)
         else
             print("Warning: QML usage detected but no valid QML directory found")
         end
@@ -307,19 +274,9 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
         print("No QML usage detected, skipping -qmldir option")
     end
 
-    print("Running macdeployqt with command:")
-    print("  Program:", macdeployqt.program)
-    print("  Args:", table.concat(args, " "))
-    print("  Environment variables:")
-    for k, v in pairs(envs) do
-        print("    " .. k .. "=" .. v)
-    end
-
     -- Execute macdeployqt
-    print("Executing macdeployqt...")
     local ok, err = os.iorunv(macdeployqt.program, args, {envs = envs})
     if not ok then
-        print("Error: macdeployqt failed:", err or "unknown error")
         return false
     end
 
@@ -329,21 +286,14 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
     
     if os.isdir(frameworks_dir) then
         local qt_frameworks = os.dirs(path.join(frameworks_dir, "Qt*.framework"))
-        print("Qt frameworks bundled:", #qt_frameworks)
         if #qt_frameworks > 0 then
             success = true
-            for _, framework in ipairs(qt_frameworks) do
-                print("  - " .. path.filename(framework))
-            end
         else
             print("Warning: No Qt frameworks found in Frameworks directory")
         end
         
         -- Show all bundled frameworks
         local all_frameworks = os.dirs(path.join(frameworks_dir, "*.framework"))
-        if #all_frameworks > #qt_frameworks then
-            print("Other frameworks bundled:", #all_frameworks - #qt_frameworks)
-        end
     else
         print("Warning: Frameworks directory not created:", frameworks_dir)
     end
@@ -352,10 +302,8 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
     local plugins_dir = path.join(contents_dir, "PlugIns")
     if os.isdir(plugins_dir) then
         local qt_plugins = os.dirs(path.join(plugins_dir, "*"))
-        print("Qt plugin directories:", #qt_plugins)
         for _, plugin_dir in ipairs(qt_plugins) do
             local plugin_files = os.files(path.join(plugin_dir, "*"))
-            print("  - " .. path.filename(plugin_dir) .. ": " .. #plugin_files .. " files")
         end
         if #qt_plugins > 0 then
             success = true
@@ -366,7 +314,6 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
 
     -- Final verification: check executable dependencies
     if success then
-        print("Verifying Qt dependencies in app bundle...")
         local otool_output = os.iorunv("otool", {"-L", main_executable})
         if otool_output then
             local external_qt_refs = {}
@@ -379,21 +326,11 @@ function _deploy_qt_dependencies(package, app_source, macdeployqt)
             end
             
             if #external_qt_refs > 0 then
-                print("Warning: External Qt references found (may indicate incomplete bundling):")
-                for _, ref in ipairs(external_qt_refs) do
-                    print("  - " .. ref)
-                end
                 -- Don't fail here as some external references might be acceptable
             else
                 print("Qt dependency verification successful - all Qt references are bundled")
             end
         end
-    end
-
-    if success then
-        print("macdeployqt completed successfully")
-    else
-        print("macdeployqt completed with issues")
     end
 
     return success
@@ -405,16 +342,8 @@ function _find_app_bundle(package)
     local plat = os.host()  -- Get current platform (macosx, linux, windows, etc.)
     local arch = os.arch()  -- Get current architecture (arm64, x86_64, etc.)
     local mode = is_mode("debug") and "debug" or "release"  -- Get build mode
-    
-    print("Current build configuration:")
-    print("  Platform:", plat)
-    print("  Architecture:", arch) 
-    print("  Mode:", mode)
-    
     local app_name = package:get("title") or package:name()
     local appbundle_name = app_name .. ".app"
-    
-    print("Looking for .app bundle:", appbundle_name)
     
     -- Build platform-specific path patterns
     local platform_paths = {
@@ -452,33 +381,19 @@ function _find_app_bundle(package)
         table.insert(possible_locations, path.join(base_path, "bin", appbundle_name))
     end
     
-    print("Checking possible locations:")
     for i, location in ipairs(possible_locations) do
         local abs_location = path.absolute(location)
-        print(string.format("  [%d] Checking: %s", i, abs_location))
-        
         if os.isdir(abs_location) then
             -- Verify this is actually a .app bundle
             local info_plist = path.join(abs_location, "Contents", "Info.plist")
             local macos_dir = path.join(abs_location, "Contents", "MacOS")
-            
-            print("      Directory exists!")
-            print("      Info.plist exists:", os.isfile(info_plist))
-            print("      MacOS dir exists:", os.isdir(macos_dir))
-            
             if os.isfile(info_plist) and os.isdir(macos_dir) then
-                print("✓ Found valid .app bundle:", abs_location)
                 return abs_location, appbundle_name
             else
                 print("      Invalid .app structure")
             end
         end
     end
-    
-    print("1. Is your .app file actually built?")
-    print("2. Run 'find . -name \"*.app\" -type d' to list all .app directories")
-    print("3. Check if the .app has the correct internal structure (Contents/Info.plist, Contents/MacOS/)")
-    
     return nil, nil
 end
 
@@ -507,13 +422,6 @@ function _find_background_image(package)
             return ab_bg_path
         end
     end
-    
-    print("Warning: No background image found. Searched paths:")
-    for _, p in ipairs(bg_paths) do
-        print("  -", p)
-    end
-    print("You can specify custom background with package:set('dmg_background', 'path/to/bg.svg')")
-    
     return nil
 end
 
@@ -525,7 +433,6 @@ function _get_dmg_file(package)
     
     -- ensure single .dmg extension
     dmg_path = dmg_path:gsub("%.dmg+$", ".dmg")
-    
     return dmg_path
 end
 
@@ -537,27 +444,16 @@ function _create_staging_dir(package, app_source, appbundle_name, bg_image)
         os.vrunv("rm", {"-rf", staging_dir})
     end
     os.mkdir(staging_dir)
-    print("Created staging directory:", staging_dir)
-    
     -- copy .app bundle to staging
     local app_dest = path.join(staging_dir, appbundle_name)
-    print("Copying app bundle...")
-    print("  From:", app_source)
-    print("  To:", app_dest)
-    
     os.vcp(app_source, app_dest)
     if not os.isdir(app_dest) then
-        print("Error: Failed to copy app bundle to staging directory")
         return nil
     end
     
     -- copy background image if exists
     if bg_image then
         local bg_dest = path.join(staging_dir, path.filename(bg_image))
-        print("Copying background image...")
-        print("  From:", bg_image)
-        print("  To:", bg_dest)
-        
         os.vcp(bg_image, bg_dest)
         if not os.isfile(bg_dest) then
             print("Warning: Failed to copy background image")
@@ -569,8 +465,6 @@ end
 
 -- create dmg using create-dmg
 function _create_dmg_with_create_dmg(create_dmg, package, staging_dir, dmg_file, appbundle_name, bg_image)
-    print("Creating DMG with create-dmg...")
-    
     local config = {
         title = (package:get("title") or package:name() .. " Installer"),
         window_pos = package:get("dmg_window_pos") or "400,200",
@@ -579,7 +473,6 @@ function _create_dmg_with_create_dmg(create_dmg, package, staging_dir, dmg_file,
         app_position = package:get("dmg_icon_position") or "160,185",
         apps_link_position = package:get("dmg_applications_pos") or "500,185"
     }
-    
     -- parse window position
     local window_pos_x, window_pos_y = config.window_pos:match("(%d+),(%d+)")
     window_pos_x = window_pos_x or "400"
@@ -619,15 +512,9 @@ function _create_dmg_with_create_dmg(create_dmg, package, staging_dir, dmg_file,
         table.insert(args, 3, "--background")
         table.insert(args, 4, bg_name)
     end
-    print ("DMG configuration:", args)
-
     -- add output file and source directory at the end
     table.insert(args, dmg_file)
     table.insert(args, staging_dir)
-    
-    print("create-dmg command:")
-    print("  " .. create_dmg.program .. " \\\n    " .. table.concat(args, " \\\n    "))
-    
     -- ensure output directory exists
     os.vrunv("mkdir", {"-p", path.directory(dmg_file)})
     
@@ -638,10 +525,8 @@ function _create_dmg_with_create_dmg(create_dmg, package, staging_dir, dmg_file,
     local ok, errors = os.iorunv(create_dmg.program, args)
     
     if ok then
-        print("DMG created successfully!")
         return true
     else
-        print("Error: create-dmg failed")
         if errors then
             print("Error output:", errors)
         end
@@ -652,28 +537,8 @@ end
 -- verify dmg file
 function _verify_dmg(dmg_file)
     if not os.isfile(dmg_file) then
-        print("Error: DMG file was not created:", dmg_file)
         return false
-    end
-    
-    -- get file size
-    local file_info = os.iorunv("ls", {"-lh", dmg_file})
-    if file_info then
-        print("DMG file details:", file_info:trim())
-    end
-    
-    -- try to verify with hdiutil if available
-    local hdiutil = find_tool("hdiutil")
-    if hdiutil then
-        print("Verifying DMG integrity...")
-        local verify_ok = os.runv(hdiutil.program, {"verify", dmg_file})
-        if verify_ok then
-            print("DMG verification passed")
-        else
-            print("Warning: DMG verification failed")
-        end
-    end
-    
+    end    
     return true
 end
 
@@ -700,13 +565,7 @@ function _pack_dmg(package)
     if is_qt then
         local macdeployqt = _get_macdeployqt()
         if macdeployqt then
-            print("Processing Qt dependencies with macdeployqt...")
             local qt_success = _deploy_qt_dependencies(package, app_source, macdeployqt)
-            if qt_success then
-                print("Qt dependencies processed successfully")
-            else
-                print("Warning: Qt dependency processing failed, but continuing with DMG creation")
-            end
         else
             print("Warning: macdeployqt not available, Qt dependencies may not be properly bundled")
         end
@@ -718,9 +577,6 @@ function _pack_dmg(package)
     -- get output dmg path
     local dmg_file = package:outputfile() or _get_dmg_file(package)
     dmg_file = dmg_file:gsub("%.dmg+$", ".dmg")  -- clean up extension
-    
-    print("Output DMG will be:", dmg_file)
-    
     -- create staging directory
     local staging_dir = _create_staging_dir(package, app_source, appbundle_name, bg_image)
     if not staging_dir then
@@ -737,8 +593,6 @@ function _pack_dmg(package)
     
     -- cleanup staging directory
     os.tryrm(staging_dir)
-    print("Cleaned up staging directory")
-    
     return success
 end
 
@@ -756,12 +610,9 @@ function main(package)
     cprint("packing %s", dmg_file)
     
     local success = _pack_dmg(package)
-    
     if success then
-        print("=== DMG Packaging Completed Successfully! ===")
         print("Final DMG file:", dmg_file)
     else
-        print("=== DMG Packaging Failed! ===")
         os.exit(1)
     end
 end
