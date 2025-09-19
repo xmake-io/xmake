@@ -2,6 +2,45 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#6778](https://github.com/xmake-io/xmake/pull/6778): Add build.linker.output
+* [#6779](https://github.com/xmake-io/xmake/pull/6779): Add #embed and embedirs support
+* [#6787](https://github.com/xmake-io/xmake/pull/6787): Support for vs2026
+* [#6785](https://github.com/xmake-io/xmake/pull/6785): Support clang and llvm for wdk rules
+* [#6791](https://github.com/xmake-io/xmake/pull/6791): Add Nix Package Manager Support
+* [#6800](https://github.com/xmake-io/xmake/pull/6800): Support nushell for xrepo env
+* [#6796](https://github.com/xmake-io/xmake/pull/6796): Enable support of incomplete wdk
+
+### Changes
+
+* [#6765](https://github.com/xmake-io/xmake/pull/6765): Improve bin2c to use native thread
+* [#6771](https://github.com/xmake-io/xmake/pull/6771): Fix find gcc/gxx cache
+* [#6776](https://github.com/xmake-io/xmake/pull/6776): Revert config targets
+* [#6777](https://github.com/xmake-io/xmake/pull/6777): Fix executable path for cmake
+* [#6782](https://github.com/xmake-io/xmake/pull/6782): Update engine
+* [#6783](https://github.com/xmake-io/xmake/pull/6783): Fix build.c++.modules.std policy
+* [#6744](https://github.com/xmake-io/xmake/pull/6744): Use a file for requires flags when --verbose or --diagnosis is supplied
+* [#6780](https://github.com/xmake-io/xmake/pull/6780): Add benchmarks and optimize config/build targets
+* [#6784](https://github.com/xmake-io/xmake/pull/6784): Continue to optimize building targets speed
+* [#6793](https://github.com/xmake-io/xmake/pull/6793): Use musl to avoid glibc's version issue
+* [#6788](https://github.com/xmake-io/xmake/pull/6788): Improve incremental build clang
+* [#6811](https://github.com/xmake-io/xmake/pull/6811): Improve clang-tidy
+* [#6810](https://github.com/xmake-io/xmake/pull/6810): Improve the default flags for cmake
+* [#6801](https://github.com/xmake-io/xmake/pull/6801): Change compilers priority for gcc and clang
+* [#6819](https://github.com/xmake-io/xmake/pull/6819): Improve show target
+* [#6817](https://github.com/xmake-io/xmake/pull/6817): Improve build targets
+* [#6822](https://github.com/xmake-io/xmake/pull/6822): Prioritize envs over repo cache
+* [#6824](https://github.com/xmake-io/xmake/pull/6824): Improve has_flags
+* [#6832](https://github.com/xmake-io/xmake/pull/6832): Optimize codesign
+
+### Bugs fixed
+
+* [#6808](https://github.com/xmake-io/xmake/pull/6808): Fix xrepo env
+* [#6821](https://github.com/xmake-io/xmake/pull/6821): Clean undefined vsvers
+* [#6818](https://github.com/xmake-io/xmake/pull/6818): Fix Nix Package Detection in nix-shell Environment
+* [#6798](https://github.com/xmake-io/xmake/pull/6798): Add external to the strippeable_flags for msvc
+
 ## v3.0.2
 
 ### New features
@@ -2043,6 +2082,45 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#6778](https://github.com/xmake-io/xmake/pull/6778): 添加 build.linker.output
+* [#6779](https://github.com/xmake-io/xmake/pull/6779): 添加 #embed 和 embedirs 支持
+* [#6787](https://github.com/xmake-io/xmake/pull/6787): 支持 vs2026
+* [#6785](https://github.com/xmake-io/xmake/pull/6785): 为 wdk 规则支持 clang 和 llvm
+* [#6791](https://github.com/xmake-io/xmake/pull/6791): 添加 Nix 包管理器支持
+* [#6800](https://github.com/xmake-io/xmake/pull/6800): 为 xrepo env 支持 nushell
+* [#6796](https://github.com/xmake-io/xmake/pull/6796): 启用不完整 wdk 的支持
+
+### 改进
+
+* [#6765](https://github.com/xmake-io/xmake/pull/6765): 改进 bin2c 使用原生线程
+* [#6771](https://github.com/xmake-io/xmake/pull/6771): 修复 find gcc/gxx 缓存
+* [#6776](https://github.com/xmake-io/xmake/pull/6776): 回滚配置目标
+* [#6777](https://github.com/xmake-io/xmake/pull/6777): 修复 cmake 的可执行文件路径
+* [#6782](https://github.com/xmake-io/xmake/pull/6782): 更新引擎
+* [#6783](https://github.com/xmake-io/xmake/pull/6783): 修复 build.c++.modules.std 策略
+* [#6744](https://github.com/xmake-io/xmake/pull/6744): 当提供 --verbose 或 --diagnosis 时使用文件来存储 requires 标志
+* [#6780](https://github.com/xmake-io/xmake/pull/6780): 添加基准测试并优化配置/构建目标
+* [#6784](https://github.com/xmake-io/xmake/pull/6784): 继续优化构建目标速度
+* [#6793](https://github.com/xmake-io/xmake/pull/6793): 使用 musl 避免 glibc 版本问题
+* [#6788](https://github.com/xmake-io/xmake/pull/6788): 改进 clang 增量构建
+* [#6811](https://github.com/xmake-io/xmake/pull/6811): 改进 clang-tidy
+* [#6810](https://github.com/xmake-io/xmake/pull/6810): 改进 cmake 的默认标志
+* [#6801](https://github.com/xmake-io/xmake/pull/6801): 更改 gcc 和 clang 的编译器优先级
+* [#6819](https://github.com/xmake-io/xmake/pull/6819): 改进 show target
+* [#6817](https://github.com/xmake-io/xmake/pull/6817): 改进构建目标
+* [#6822](https://github.com/xmake-io/xmake/pull/6822): 优先使用环境变量而不是仓库缓存
+* [#6824](https://github.com/xmake-io/xmake/pull/6824): 改进 has_flags
+* [#6832](https://github.com/xmake-io/xmake/pull/6832): 优化代码签名
+
+### Bugs 修复
+
+* [#6808](https://github.com/xmake-io/xmake/pull/6808): 修复 xrepo env
+* [#6821](https://github.com/xmake-io/xmake/pull/6821): 清理未定义的 vsvers
+* [#6818](https://github.com/xmake-io/xmake/pull/6818): 修复 nix-shell 环境中的 Nix 包检测
+* [#6798](https://github.com/xmake-io/xmake/pull/6798): 为 msvc 的 strippeable_flags 添加 external
 
 ## v3.0.2
 
