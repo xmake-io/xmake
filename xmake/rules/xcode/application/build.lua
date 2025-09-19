@@ -86,9 +86,10 @@ function main (target, opt)
         end
 
         -- generate embedded.mobileprovision to *.app/embedded.mobileprovision
+        local mobile_provision
         local mobile_provision_embedded = path.join(bundledir, "embedded.mobileprovision")
         if target:is_plat("iphoneos") then
-            local mobile_provision = target:values("xcode.mobile_provision") or codesign.xcode_mobile_provision()
+            mobile_provision = target:values("xcode.mobile_provision") or codesign.xcode_mobile_provision()
             if mobile_provision then
                 os.tryrm(mobile_provision_embedded)
                 local provisions = codesign.mobile_provisions()
