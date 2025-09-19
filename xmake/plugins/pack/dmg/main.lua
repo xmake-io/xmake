@@ -45,7 +45,7 @@ end
 -- detect if this is a Qt project
 function _is_qt_project(package)
     -- method 1: check Qt rules
-    local rules = package:rules()
+    local rules = target:rules()
     if rules then
         for _, rule in ipairs(rules) do
             local rule_name = rule:name()
@@ -58,7 +58,7 @@ function _is_qt_project(package)
     end
 
     -- method 2: check target's Qt data 
-    local qt_data = package:data("qt")
+    local qt_data = target:data("qt")
     if qt_data then
         return true
     end
@@ -72,66 +72,120 @@ function _is_qt_project(package)
     return false
 end
 
-function _check_qml_usage(package)
-    -- method 1: check Qt rules
-    local rules = package:rules()
-    if rules then
-        for _, rule in ipairs(rules) do
-            local rule_name = rule:name()
-            if rule_name and (rule_name:find("qml", 1, true) or rule_name:find("quick", 1, true)) then
+-- detect if this is a Qt project
+function _is_qt_project(package)
+    -- Method 1: Check for Qt libraries in links
+    local links = package:get("links")
+    if links then
+        for _, link in ipairs(links) do
+            if link:lower():find("qt") then
+                print("Qt project detected via link:", link)
                 return true
             end
         end
     end
-    
-    -- method 2: check Qt data for QML
-    local qml_data = package:data("qml")
-    if qml_data then
-        return true
+
+    -- Method 2: Check executable for Qt dependencies using otool
+    local app_source, _ = _find_app_bundle(package)
+    if app_source then
+        local macos_dir = path.join(app_source, "Contents", "MacOS")
+        if os.isdir(macos_dir) then
+            local executables = os.files(path.join(macos_dir, "*"))
+            for _, executable in ipairs(executables) do
+                if os.isfile(executable) then
+                    print("Checking executable for Qt dependencies:", executable)
+                    local otool_output = os.iorunv("otool", {"-L", executable})
+                    if otool_output then
+                        -- Check for Qt frameworks in otool output
+                        if otool_output:lower():find("qt") or 
+                           otool_output:find("QtCore") or 
+                           otool_output:find("QtGui") or
+                           otool_output:find("QtWidgets") then
+                            print("Qt project detected via otool analysis")
+                            return true
+                        end
+                    end
+                end
+            end
+        end
     end
-    
-    -- method 3: check for .qml files
-    local qml_files = os.files("**.qml")
-    if qml_files and #qml_files > 0 then
-        return true
+
+    -- Method 3: Check source files for Qt headers/includes
+    local srcfiles, _ = package:sourcefiles()
+    for _, srcfile in ipairs(srcfiles or {}) do
+        if srcfile:endswith(".cpp") or srcfile:endswith(".cc") or srcfile:endswith(".cxx") or srcfile:endswith(".mm") then
+            if os.isfile(srcfile) then
+                local content = io.readfile(srcfile)
+                if content and (content:find("#include.*[Qq][Tt]") or 
+                               content:find("#include.*<Q") or
+                               content:find("QApplication") or
+                               content:find("QWidget") or
+                               content:find("QMainWindow")) then
+                    print("Qt project detected via source file analysis:", srcfile)
+                    return true
+                end
+            end
+        end
     end
-    print("No QML usage detected")
+
+    print("No Qt dependencies detected")
     return false
 end
 
-function _find_valid_qml_dir(qt)
-    local possible_qml_dirs = {}
-    
-    -- Standard QML directory locations
-    if qt.sdkdir then
-        table.insert(possible_qml_dirs, path.join(qt.sdkdir, "qml"))
-        table.insert(possible_qml_dirs, path.join(qt.sdkdir, "lib", "qml"))
-        table.insert(possible_qml_dirs, path.join(qt.sdkdir, "share", "qt6", "qml"))
-    end
-    
-    -- Qt-specific qmldir if available
-    if qt.qmldir then
-        table.insert(possible_qml_dirs, qt.qmldir)
-    end
-    
-    -- Project-specific QML directories
-    table.insert(possible_qml_dirs, "qml")
-    table.insert(possible_qml_dirs, "src/qml")
-    table.insert(possible_qml_dirs, "resources/qml")
-    
-    for _, qml_dir in ipairs(possible_qml_dirs) do
-        if os.isdir(qml_dir) then
-            return qml_dir
+function _check_qml_usage(package, app_source)
+    -- Method 1: Check for QML-related libraries in links
+    local links = package:get("links")
+    if links then
+        for _, link in ipairs(links) do
+            if link:lower():find("qml") or link:lower():find("quick") then
+                print("QML usage detected via link:", link)
+                return true
+            end
         end
     end
-    
-    -- If no existing QML directory found, create a temporary empty one
-    local temp_qml_dir = path.join(os.tmpdir(), "empty_qml")
-    if not os.isdir(temp_qml_dir) then
-        os.mkdir(temp_qml_dir)
+
+    -- Method 2: Check executable for QML/Quick dependencies
+    local macos_dir = path.join(app_source, "Contents", "MacOS")
+    if os.isdir(macos_dir) then
+        local executables = os.files(path.join(macos_dir, "*"))
+        for _, executable in ipairs(executables) do
+            if os.isfile(executable) then
+                local otool_output = os.iorunv("otool", {"-L", executable})
+                if otool_output then
+                    if otool_output:find("QtQml") or otool_output:find("QtQuick") then
+                        print("QML usage detected via otool analysis")
+                        return true
+                    end
+                end
+            end
+        end
     end
-    
-    return temp_qml_dir
+
+    -- Method 3: Check for .qml files in project
+    local qml_files = os.files("**.qml")
+    if qml_files and #qml_files > 0 then
+        print("QML usage detected via .qml files:", #qml_files, "files found")
+        return true
+    end
+
+    -- Method 4: Check source files for QML-related includes
+    local srcfiles, _ = package:sourcefiles()
+    for _, srcfile in ipairs(srcfiles or {}) do
+        if srcfile:endswith(".cpp") or srcfile:endswith(".cc") or srcfile:endswith(".cxx") or srcfile:endswith(".mm") then
+            if os.isfile(srcfile) then
+                local content = io.readfile(srcfile)
+                if content and (content:find("#include.*QQml") or 
+                               content:find("#include.*QQuick") or
+                               content:find("QQmlEngine") or
+                               content:find("QQuickView")) then
+                    print("QML usage detected via source file analysis:", srcfile)
+                    return true
+                end
+            end
+        end
+    end
+
+    return false
 end
 
 -- deploy Qt dependencies using macdeployqt
