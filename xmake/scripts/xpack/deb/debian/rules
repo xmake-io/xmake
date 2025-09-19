@@ -32,6 +32,9 @@ install: build
 	dh_testroot
 	dh_installdirs
 	${PACKAGE_INSTALLCMDS}
+	# Remove RPATH from all binaries and libraries
+	find $(PREFIX) -type f -executable -exec chrpath -d {} \; 2>/dev/null || true
+	find $(PREFIX) -name "*.so*" -exec chrpath -d {} \; 2>/dev/null || true
 
 distclean: clean
 
@@ -58,3 +61,7 @@ binary-arch: build install
 	dh_builddeb
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install uninstall configure
+override_dh_shlibdeps:
+	dh_shlibdeps -- \
+	  -xlibQt5Core.so.5  -xlibQt5Gui.so.5  -xlibQt5Widgets.so.5 \
+	  -xlibQt6Core.so.6  -xlibQt6Gui.so.6  -xlibQt6Widgets.so.6
