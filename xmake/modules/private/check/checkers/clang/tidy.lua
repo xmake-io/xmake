@@ -83,6 +83,19 @@ function _add_target_files(sourcefiles, target)
     end
 end
 
+function _run_clang_tidy(clang_tidy, argv, opt)
+    -- https://github.com/llvm/llvm-project/pull/120547
+    if clang_tidy.version and semver.compare(clang_tidy.version, "19.1.6") > 0 and #argv > 10 then
+        local argsfile = os.tmpfile() .. ".args.txt"
+        io.writefile(argsfile, os.args(argv))
+        argv = {"@" .. argsfile}
+        os.vrunv(clang_tidy.program, argv, opt)
+        os.rm(argsfile)
+    else
+        os.vrunv(clang_tidy.program, argv, opt)
+    end
+end
+
 -- check sourcefiles
 function _check_sourcefiles(clang_tidy, sourcefiles, opt)
     opt = opt or {}
@@ -110,46 +123,31 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
     if opt.quiet then
         table.insert(argv, "--quiet")
     end
-    -- https://github.com/llvm/llvm-project/pull/120547
-    local arguments_maxn = 32
-    if clang_tidy.version and semver.compare(clang_tidy.version, "19.1.6") > 0 and #sourcefiles > arguments_maxn then
-        for _, sourcefile in ipairs(sourcefiles) do
-            if not path.is_absolute(sourcefile) then
-                sourcefile = path.absolute(sourcefile, projectdir)
-            end
-            table.insert(argv, sourcefile)
-        end
-        progress.show(100, "clang-tidy.analyzing %s .. %d", sourcefiles[1], #sourcefiles)
-        local argsfile = os.tmpfile() .. ".args.txt"
-        io.writefile(argsfile, os.args(argv))
-        argv = {"@" .. argsfile}
-        os.vrunv(clang_tidy.program, argv, {curdir = projectdir})
-        os.rm(argsfile)
-    else
-        -- split sourcefiles
-        local sourcefiles_argv = {}
-        local sourcefiles_jobs = {}
-        for _, sourcefile in ipairs(sourcefiles) do
-            if not path.is_absolute(sourcefile) then
-                sourcefile = path.absolute(sourcefile, projectdir)
-            end
-            table.insert(sourcefiles_argv, sourcefile)
-            if #sourcefiles_argv >= arguments_maxn then
-                table.insert(sourcefiles_jobs, sourcefiles_argv)
-                sourcefiles_argv = {}
-            end
-        end
-        if #sourcefiles_argv > 0 then
-            table.insert(sourcefiles_jobs, sourcefiles_argv)
-        end
 
-        -- run clang-tidy
-        runjobs("checker.tidy", function (index, total, opt)
-            local tidy_argv = sourcefiles_jobs[index]
-            progress.show(index * 100 / total, "clang-tidy.analyzing %s .. %d", tidy_argv[1], #tidy_argv)
-            os.vrunv(clang_tidy.program, tidy_argv, {curdir = projectdir})
-        end, {total = #sourcefiles_jobs, comax = opt.jobs or os.default_njob()})
+    -- split sourcefiles
+    local arguments_maxn = 32
+    local sourcefiles_argv = {}
+    local sourcefiles_jobs = {}
+    for _, sourcefile in ipairs(sourcefiles) do
+        if not path.is_absolute(sourcefile) then
+            sourcefile = path.absolute(sourcefile, projectdir)
+        end
+        table.insert(sourcefiles_argv, sourcefile)
+        if #sourcefiles_argv >= arguments_maxn then
+            table.insert(sourcefiles_jobs, sourcefiles_argv)
+            sourcefiles_argv = {}
+        end
     end
+    if #sourcefiles_argv > 0 then
+        table.insert(sourcefiles_jobs, sourcefiles_argv)
+    end
+
+    -- run clang-tidy
+    runjobs("checker.tidy", function (index, total, opt)
+        local tidy_argv = sourcefiles_jobs[index]
+        progress.show(index * 100 / total, "clang-tidy.analyzing %s .. %d", tidy_argv[1], #tidy_argv)
+        _run_clang_tidy(clang_tidy, tidy_argv, {curdir = projectdir})
+    end, {total = #sourcefiles_jobs, comax = opt.jobs or os.default_njob()})
 end
 
 -- do check
