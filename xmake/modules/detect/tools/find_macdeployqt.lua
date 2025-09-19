@@ -32,10 +32,13 @@ import("detect.sdks.find_qt")
 --
 -- @endcode
 --
-function main()
+function main(opt)
+
+    -- init options
+    opt = opt or {}
 
     -- find program from system PATH
-    local program = find_program("macdeployqt")
+    local program = find_program(opt.program or "macdeployqt")
 
     -- If not found, try to find it in the Qt installation
     if not program then
@@ -44,10 +47,8 @@ function main()
             local macdeployqt_path = path.join(qt.bindir, "macdeployqt")
             if os.isfile(macdeployqt_path) then
                 program = {program = macdeployqt_path}
-                print("found macdeployqt in Qt SDK: %s", macdeployqt_path)
             end
         end
     end
-    print("macdeployqt: %s", program and program.program or "not found")
     return program
 end
