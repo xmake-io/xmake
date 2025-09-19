@@ -39,31 +39,31 @@ end
 
 -- get linuxdeploy tool
 function _get_linuxdeploy()
-    local linuxdeploy = find_tool("linuxdeploy")
-    if not linuxdeploy then
-        local linuxdeploy_url = "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
-        local linuxdeploy_path = path.join(os.tmpdir(), "linuxdeploy")
-        if not os.isfile(linuxdeploy_path) then
-            os.runv("wget", {"-O", linuxdeploy_path, linuxdeploy_url})
-            os.runv("chmod", {"+x", linuxdeploy_path})
-        end
-        linuxdeploy = {program = linuxdeploy_path}
-    end
+    local linuxdeploy = assert(find_tool("linuxdeploy"), "linuxdeploy not found!")
+    -- if not linuxdeploy then
+    --     local linuxdeploy_url = "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+    --     local linuxdeploy_path = path.join(os.tmpdir(), "linuxdeploy")
+    --     if not os.isfile(linuxdeploy_path) then
+    --         os.runv("wget", {"-O", linuxdeploy_path, linuxdeploy_url})
+    --         os.runv("chmod", {"+x", linuxdeploy_path})
+    --     end
+    --     linuxdeploy = {program = linuxdeploy_path}
+    -- end
     return linuxdeploy
 end
 
 -- get linuxqtdeploy tool
 function _get_linuxdeployqt()
-    local linuxdeployqt = find_tool("linuxdeployqt")
-    if not linuxdeployqt then
-        local linuxdeployqt_url = "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
-        local linuxdeployqt_path = path.join(os.tmpdir(), "linuxdeployqt")
-        if not os.isfile(linuxdeployqt_path) then
-            os.runv("wget", {"-O", linuxdeployqt_path, linuxdeployqt_url})
-            os.runv("chmod", {"+x", linuxdeployqt_path})
-        end
-        linuxdeployqt = {program = linuxdeployqt_path}
-    end
+    local linuxdeployqt = assert(find_tool("linuxdeployqt"), "linuxdeployqt not found!")
+    -- if not linuxdeployqt then
+    --     local linuxdeployqt_url = "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+    --     local linuxdeployqt_path = path.join(os.tmpdir(), "linuxdeployqt")
+    --     if not os.isfile(linuxdeployqt_path) then
+    --         os.runv("wget", {"-O", linuxdeployqt_path, linuxdeployqt_url})
+    --         os.runv("chmod", {"+x", linuxdeployqt_path})
+    --     end
+    --     linuxdeployqt = {program = linuxdeployqt_path}
+    -- end
     return linuxdeployqt
 end
 
