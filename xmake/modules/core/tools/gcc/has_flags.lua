@@ -21,6 +21,7 @@
 -- imports
 import("core.cache.detectcache")
 import("core.language.language")
+import("core.base.hashset")
 
 -- is linker?
 function _islinker(flags, opt)
@@ -45,6 +46,14 @@ end
 -- attempt to check it from known flags
 function _check_from_knownargs(flags, opt, islinker)
     local flag = flags[1]
+    local known_flags = _g.known_flags
+    if known_flags == nil then
+        known_flags = hashset.from({"-O", "-O0", "-O1", "-O2", "-O3", "-Os", "-g"})
+        _g.known_flags = known_flags
+    end
+    if known_flags:has(flag) then
+        return true
+    end
     if not islinker then
         if flag:startswith("-D") or
            flag:startswith("-U") or
@@ -119,10 +128,10 @@ function main(flags, opt)
 
     -- attempt to check it from the argument list
     if not opt.tryrun then
-        if _check_from_arglist(flags, opt, islinker) then
+        if _check_from_knownargs(flags, opt, islinker) then
             return true
         end
-        if _check_from_knownargs(flags, opt, islinker) then
+        if _check_from_arglist(flags, opt, islinker) then
             return true
         end
     end

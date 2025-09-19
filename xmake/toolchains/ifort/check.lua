@@ -75,12 +75,12 @@ function _check_vsenv(toolchain)
                 if pathenv then
                     paths = path.splitenv(pathenv)
                 end
-                local tool = find_tool("cl.exe", {version = true, force = true, paths = paths, envs = vcvars})
+                local tool = find_tool("cl.exe", {force = true, paths = paths, envs = vcvars})
                 if tool then
                     program = tool.program
                 end
                 if program then
-                    return vsver, tool
+                    return vsver
                 end
             end
         end

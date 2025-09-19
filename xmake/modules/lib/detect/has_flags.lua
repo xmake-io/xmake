@@ -53,8 +53,10 @@ function main(name, flags, opt)
     opt.flagskey = opt.flagskey or table.concat(flags, " ")
     opt.sysflags = table.wrap(opt.sysflags)
 
+    -- @note avoid running additional `program --version` processes
+    --opt.version = true
+
     -- find tool program and version first
-    opt.version = true
     local tool = find_tool(name, opt)
     if not tool then
         return false
@@ -63,7 +65,7 @@ function main(name, flags, opt)
     -- init tool
     opt.toolname   = tool.name
     opt.program    = tool.program
-    opt.programver = tool.version
+    --opt.programver = tool.version
 
     -- get tool platform
     local plat = opt.plat or config.get("plat") or os.host()
