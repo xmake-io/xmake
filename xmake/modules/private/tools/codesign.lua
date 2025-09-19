@@ -20,6 +20,8 @@
 
 -- imports
 import("lib.detect.find_tool")
+import("core.base.global")
+import("core.project.config")
 import("core.cache.global_detectcache")
 
 -- get mobile provision name
@@ -134,8 +136,47 @@ function unsign(programdir)
     os.vrunv(codesign.program, {"--remove-signature", programdir})
 end
 
--- main entry
-function main (programdir, codesign_identity, mobile_provision, opt)
+-- get the current codesign identity of xcode
+function xcode_codesign_identity()
+    local codesign_identity = config.get("xcode_codesign_identity")
+    if codesign_identity == nil then -- we will disable codesign_identity if be false
+        codesign_identity = global.get("xcode_codesign_identity")
+    end
+    if codesign_identity == nil then
+        local identities = codesign_identities()
+        if identities then
+            for identity, _ in pairs(identities) do
+                codesign_identity = identity
+                break
+            end
+        end
+    end
+    return codesign_identity
+end
+
+-- get the current mobile provision of xcode
+function xcode_mobile_provision()
+    local mobile_provision = config.get("xcode_mobile_provision")
+    if mobile_provision == nil then -- we will disable mobile_provision if be false
+        mobile_provision = global.get("xcode_mobile_provision")
+    end
+
+    local provisions = mobile_provisions()
+    if provisions then
+        if mobile_provision == nil then
+            for provision, _ in pairs(provisions) do
+                mobile_provision = provision
+                break
+            end
+        -- valid mobile provision not found? reset it
+        elseif not provisions[mobile_provision] then
+            mobile_provision = nil
+        end
+    end
+    return mobile_provision
+end
+
+function main(programdir, codesign_identity, mobile_provision, opt)
 
     -- only for macosx
     opt = opt or {}
