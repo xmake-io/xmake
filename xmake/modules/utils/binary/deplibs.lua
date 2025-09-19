@@ -372,6 +372,7 @@ end
 --                      - resolve_path: try to resolve the file full path, e.g. @rpath, @loader_path, $ORIGIN, relative path ..
 --                      - resolve_hint_paths: we can resolve and match path from them
 --                      - resolve_search_paths: the search library paths, like: LD_LIBRARY_PATH, DYLD_LIBRARY_PATH, ...
+--                      - check_cycle: check cycle deps
 --
 function main(binaryfile, opt)
     opt = opt or {}
@@ -383,7 +384,7 @@ function main(binaryfile, opt)
         local dag = graph.new(true)
         _get_recursive_depends(binaryfile, dag, hashset.new(), opt)
         local depends, has_cycle = dag:topo_sort()
-        if has_cycle then
+        if has_cycle and opt.check_cycle then
             local files = {}
             local cycle = dag:find_cycle()
             if cycle then
