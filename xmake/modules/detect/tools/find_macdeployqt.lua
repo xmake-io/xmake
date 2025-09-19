@@ -41,14 +41,14 @@ function main(opt)
     local program = find_program(opt.program or "macdeployqt")
 
     -- If not found, try to find it in the Qt installation
-    if not program then
-        local qt = find_qt()
-        if qt and qt.bindir then
-            local macdeployqt_path = path.join(qt.bindir, "macdeployqt")
-            if os.isfile(macdeployqt_path) then
-                program = {program = macdeployqt_path}
-            end
-        end
-    end
+    -- if not program then
+    --     local qt = find_qt()
+    --     if qt and qt.bindir then
+    --         local macdeployqt_path = path.join(qt.bindir, "macdeployqt")
+    --         if os.isfile(macdeployqt_path) then
+    --             program = {program = macdeployqt_path}
+    --         end
+    --     end
+    -- end
     return program
 end
