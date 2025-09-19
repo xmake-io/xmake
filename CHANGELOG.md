@@ -16,7 +16,6 @@
 
 * [#6765](https://github.com/xmake-io/xmake/pull/6765): Improve bin2c to use native thread
 * [#6771](https://github.com/xmake-io/xmake/pull/6771): Fix find gcc/gxx cache
-* [#6776](https://github.com/xmake-io/xmake/pull/6776): Revert config targets
 * [#6777](https://github.com/xmake-io/xmake/pull/6777): Fix executable path for cmake
 * [#6782](https://github.com/xmake-io/xmake/pull/6782): Update engine
 * [#6783](https://github.com/xmake-io/xmake/pull/6783): Fix build.c++.modules.std policy
@@ -29,7 +28,7 @@
 * [#6810](https://github.com/xmake-io/xmake/pull/6810): Improve the default flags for cmake
 * [#6801](https://github.com/xmake-io/xmake/pull/6801): Change compilers priority for gcc and clang
 * [#6819](https://github.com/xmake-io/xmake/pull/6819): Improve show target
-* [#6817](https://github.com/xmake-io/xmake/pull/6817): Improve build targets
+* [#6817](https://github.com/xmake-io/xmake/pull/6817): Improve build targets speed
 * [#6822](https://github.com/xmake-io/xmake/pull/6822): Prioritize envs over repo cache
 * [#6824](https://github.com/xmake-io/xmake/pull/6824): Improve has_flags
 * [#6832](https://github.com/xmake-io/xmake/pull/6832): Optimize codesign
@@ -2097,9 +2096,7 @@
 
 * [#6765](https://github.com/xmake-io/xmake/pull/6765): 改进 bin2c 使用原生线程
 * [#6771](https://github.com/xmake-io/xmake/pull/6771): 修复 find gcc/gxx 缓存
-* [#6776](https://github.com/xmake-io/xmake/pull/6776): 回滚配置目标
 * [#6777](https://github.com/xmake-io/xmake/pull/6777): 修复 cmake 的可执行文件路径
-* [#6782](https://github.com/xmake-io/xmake/pull/6782): 更新引擎
 * [#6783](https://github.com/xmake-io/xmake/pull/6783): 修复 build.c++.modules.std 策略
 * [#6744](https://github.com/xmake-io/xmake/pull/6744): 当提供 --verbose 或 --diagnosis 时使用文件来存储 requires 标志
 * [#6780](https://github.com/xmake-io/xmake/pull/6780): 添加基准测试并优化配置/构建目标
@@ -2110,7 +2107,7 @@
 * [#6810](https://github.com/xmake-io/xmake/pull/6810): 改进 cmake 的默认标志
 * [#6801](https://github.com/xmake-io/xmake/pull/6801): 更改 gcc 和 clang 的编译器优先级
 * [#6819](https://github.com/xmake-io/xmake/pull/6819): 改进 show target
-* [#6817](https://github.com/xmake-io/xmake/pull/6817): 改进构建目标
+* [#6817](https://github.com/xmake-io/xmake/pull/6817): 改进构建速度
 * [#6822](https://github.com/xmake-io/xmake/pull/6822): 优先使用环境变量而不是仓库缓存
 * [#6824](https://github.com/xmake-io/xmake/pull/6824): 改进 has_flags
 * [#6832](https://github.com/xmake-io/xmake/pull/6832): 优化代码签名
