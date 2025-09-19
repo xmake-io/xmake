@@ -211,7 +211,6 @@ function xpack:inputkind()
             deb      = "source",
             srpm     = "source",
             rpm      = "source",
-            appimage = "binary",
             dmg      = "binary"
         }
         inputkind = inputkinds[self:format()] or "binary"
@@ -232,7 +231,6 @@ function xpack:outputkind()
         deb      = "binary",
         srpm     = "source",
         rpm      = "binary",
-        appimage = "binary",
         dmg      = "binary"
     }
     local outputkind = outputkinds[self:format()] or "binary"
@@ -383,7 +381,6 @@ function xpack:extension()
             deb      = ".deb",
             srpm     = ".src.rpm",
             rpm      = ".rpm",
-            appimage = ".AppImage",
             dmg      = ".dmg"
         }
         extension = extensions[self:format()] or ""
