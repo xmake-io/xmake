@@ -74,17 +74,6 @@ end
 
 -- detect if this is a Qt project
 function _is_qt_project(package)
-    -- Method 1: Check for Qt libraries in links
-    local links = package:get("links")
-    if links then
-        for _, link in ipairs(links) do
-            if link:lower():find("qt") then
-                print("Qt project detected via link:", link)
-                return true
-            end
-        end
-    end
-
     -- Method 2: Check executable for Qt dependencies using otool
     local app_source, _ = _find_app_bundle(package)
     if app_source then
@@ -527,10 +516,7 @@ end
 function _pack_dmg(package)
     local is_qt = _is_qt_project(package)
     -- find required tools
-    local create_dmg = _get_create_dmg()
-    if not create_dmg then
-        return false
-    end
+    local create_dmg = assert(_get_create_dmg(), "create-dmg not found")
     
     -- find existing .app bundle
     local app_source, appbundle_name = _find_app_bundle(package)

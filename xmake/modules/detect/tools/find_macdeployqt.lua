@@ -44,9 +44,10 @@ function main()
             local macdeployqt_path = path.join(qt.bindir, "macdeployqt")
             if os.isfile(macdeployqt_path) then
                 program = {program = macdeployqt_path}
+                print("found macdeployqt in Qt SDK: %s", macdeployqt_path)
             end
         end
     end
-
+    print("macdeployqt: %s", program and program.program or "not found")
     return program
 end
