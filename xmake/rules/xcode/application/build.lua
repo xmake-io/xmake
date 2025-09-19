@@ -86,21 +86,24 @@ function main (target, opt)
         end
 
         -- generate embedded.mobileprovision to *.app/embedded.mobileprovision
+        local mobile_provision
         local mobile_provision_embedded = path.join(bundledir, "embedded.mobileprovision")
-        local mobile_provision = target:values("xcode.mobile_provision") or get_config("xcode_mobile_provision")
-        if mobile_provision and target:is_plat("iphoneos") then
-            os.tryrm(mobile_provision_embedded)
-            local provisions = codesign.mobile_provisions()
-            if provisions then
-                local mobile_provision_data = provisions[mobile_provision]
-                if mobile_provision_data then
-                    io.writefile(mobile_provision_embedded, mobile_provision_data)
+        if target:is_plat("iphoneos") then
+            mobile_provision = target:values("xcode.mobile_provision") or codesign.xcode_mobile_provision()
+            if mobile_provision then
+                os.tryrm(mobile_provision_embedded)
+                local provisions = codesign.mobile_provisions()
+                if provisions then
+                    local mobile_provision_data = provisions[mobile_provision]
+                    if mobile_provision_data then
+                        io.writefile(mobile_provision_embedded, mobile_provision_data)
+                    end
                 end
             end
         end
 
         -- do codesign
-        local codesign_identity = target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity")
+        local codesign_identity = target:values("xcode.codesign_identity") or codesign.xcode_codesign_identity()
         if target:is_plat("macosx") or (target:is_plat("iphoneos") and target:is_arch("x86_64", "i386")) then
             codesign_identity = nil
         end

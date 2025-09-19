@@ -120,47 +120,7 @@ function _find_xcode(sdkdir, opt)
 
     -- find the target minver
     local target_minver = _find_target_minver(sdkdir, sdkver, opt)
-
-    -- find codesign
-    local codesign_identity, mobile_provision
-    if opt.find_codesign then
-
-        -- find codesign identity
-        codesign_identity = config.get("xcode_codesign_identity")
-        if codesign_identity == nil then -- we will disable codesign_identity if be false
-            codesign_identity = global.get("xcode_codesign_identity")
-        end
-        if codesign_identity == nil then
-            local codesign_identities = codesign.codesign_identities()
-            if codesign_identities then
-                for identity, _ in pairs(codesign_identities) do
-                    codesign_identity = identity
-                    break
-                end
-            end
-        end
-
-        -- find mobile provision only for iphoneos
-        if opt.plat == "iphoneos" then
-            local mobile_provisions = codesign.mobile_provisions()
-            if mobile_provisions then
-                mobile_provision = config.get("xcode_mobile_provision")
-                if mobile_provision == nil then -- we will disable mobile_provision if be false
-                    mobile_provision = global.get("xcode_mobile_provision")
-                end
-                if mobile_provision == nil then
-                    for provision, _ in pairs(mobile_provisions) do
-                        mobile_provision = provision
-                        break
-                    end
-                -- valid mobile provision not found? reset it
-                elseif not mobile_provisions[mobile_provision] then
-                    mobile_provision = nil
-                end
-            end
-        end
-    end
-    return {sdkdir = sdkdir, sdkver = sdkver, target_minver = target_minver, codesign_identity = codesign_identity, mobile_provision = mobile_provision}
+    return {sdkdir = sdkdir, sdkver = sdkver, target_minver = target_minver}
 end
 
 -- find xcode toolchain

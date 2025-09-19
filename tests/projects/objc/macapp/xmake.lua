@@ -2,9 +2,6 @@ add_rules("mode.debug", "mode.release")
 
 rule("test")
     add_deps("xcode.application")
-    after_build(function ()
-        print("xxx")
-    end)
 
 target("test")
     add_rules("xcode.application")

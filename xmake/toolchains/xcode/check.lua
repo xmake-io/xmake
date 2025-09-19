@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_xcode")
 import("private.utils.executable_path")
+import("private.tools.codesign")
 
 -- main entry
 function main(toolchain)
@@ -41,7 +42,6 @@ function main(toolchain)
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
     local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true,
-                                                   find_codesign = toolchain:is_global(),
                                                    sdkver = xcode_sdkver,
                                                    appledev = appledev,
                                                    plat = toolchain:plat(),
@@ -55,22 +55,22 @@ function main(toolchain)
     xcode_sdkver = xcode.sdkver
     if toolchain:is_global() then
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
-        config.set("xcode_mobile_provision", xcode.mobile_provision, {force = true, readonly = true})
-        config.set("xcode_codesign_identity", xcode.codesign_identity, {force = true, readonly = true})
         if xcode.sdkdir then
             cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
         else
             cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
         end
         if option.get("verbose") then
-            if xcode.codesign_identity then
-                cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
+            local codesign_identity = codesign.xcode_codesign_identity()
+            if codesign_identity then
+                cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", codesign_identity)
             else
                 cprint("checking for Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
             end
             if toolchain:is_plat("iphoneos") then
-                if xcode.mobile_provision then
-                    cprint("checking for Mobile Provision of Xcode ... ${color.success}%s", xcode.mobile_provision)
+                local mobile_provision = codesign.xcode_mobile_provision()
+                if mobile_provision then
+                    cprint("checking for Mobile Provision of Xcode ... ${color.success}%s", mobile_provision)
                 else
                     cprint("checking for Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
                 end
