@@ -70,21 +70,9 @@ end
 -- collect Qt dependencies with linuxdeployqt (rewritten)
 function _collect_qt_deps_with_linuxdeployqt(package, appdir, linuxdeployqt)
 
-    -- 获取Qt SDK信息
-    local qt = find_qt()
-    if not qt then
-        -- print("Warning: Qt SDK not found, cannot determine Qt version")
-        return false
-    end
-
-    local qt_version = qt.sdkver or "5.15.3"
-    -- print("Target Qt version:", qt_version)
-    -- print("Qt SDK directory:", qt.sdkdir)
-    -- print("Qt binary directory:", qt.bindir)
-    -- print("Qt library directory:", qt.libdir)
-    -- print("Qt plugins directory:", qt.pluginsdir)
-
-    -- 验证必要文件
+    -- get qt info
+    local qt = assert(find_qt(), "qt not found!")  
+    local qt_version = assert(qt.sdkver, "Failed to determine Qt version. Please ensure your Qt installation is correctly detected by xmake.")  
     local main_executable = path.join(appdir, "usr/bin", package:name())
     local desktop_file = path.join(appdir, package:name() .. ".desktop")
 
@@ -95,13 +83,8 @@ function _collect_qt_deps_with_linuxdeployqt(package, appdir, linuxdeployqt)
         return false
     end
 
-    -- print("Main executable:", main_executable)
-    -- print("Desktop file:", desktop_file)
-
-    -- 设置环境变量
+    -- set environment variables 
     local envs = {}
-    
-    -- 设置Qt相关环境变量
     if qt.bindir then
         envs.PATH = qt.bindir .. ":" .. (os.getenv("PATH") or "")
     end
@@ -111,76 +94,58 @@ function _collect_qt_deps_with_linuxdeployqt(package, appdir, linuxdeployqt)
     if qt.pluginsdir then
         envs.QT_PLUGIN_PATH = qt.pluginsdir
     end
-    
-    -- 设置Qt安装目录
+
+    -- set Qt installation directory
     if qt.sdkdir then
         envs.QTDIR = qt.sdkdir
     end
 
-    -- 构建linuxdeployqt命令参数
+    -- build linuxdeployqt command arguments
     local args = { desktop_file, "-bundle-non-qt-libs" }
-    
-    -- 添加详细输出选项
     table.insert(args, "-verbose=2")
     
-    -- 如果是Qt6，添加特定选项
+    -- if Qt version is 6, add specific options
     if qt_version and qt_version:startswith("6") then
         table.insert(args, "-qmldir=" .. (qt.qmldir or path.join(qt.sdkdir, "qml")))
     elseif qt_version and qt_version:startswith("5") then
-        -- Qt5特定选项
+        -- add Qt5 specific options
         if qt.qmldir and os.isdir(qt.qmldir) then
             table.insert(args, "-qmldir=" .. qt.qmldir)
         end
     end
-    -- 执行linuxdeployqt
-    -- print("Executing linuxdeployqt...", linuxdeployqt.program, table.concat(args, " "))
+    -- execute linuxdeployqt
     local ok, err = os.iorunv(linuxdeployqt.program, args, {curdir = appdir, envs = envs})
     if not ok then
         return false
     end
 
-    -- 验证结果：检查收集的库和插件
+    -- validate result: check collected libraries and plugins
     local lib_dir = path.join(appdir, "usr/lib")
     local plugins_dir = path.join(appdir, "usr/plugins")
     
     local success = false
     
-    -- 检查库目录
+    -- check library directory
     if os.isdir(lib_dir) then
         local collected_libs = os.files(path.join(lib_dir, "libQt*.so*"))
         -- print("Qt libraries collected:", #collected_libs)
         if #collected_libs > 0 then
             success = true
-        else
-            print("Warning: No Qt libraries found in lib directory")
         end
-        
-        -- 显示所有收集的库
-        local all_libs = os.files(path.join(lib_dir, "*.so*"))
     else
-        print("Warning: Library directory not created:", lib_dir)
+        wprint("Warning: Library directory not created: %s", lib_dir)
     end
-
-    -- 检查插件目录
+    -- check plugins directory
     if os.isdir(plugins_dir) then
         local collected_plugins = os.files(path.join(plugins_dir, "**"))
         -- print("Qt plugins collected:", #collected_plugins)
         if #collected_plugins > 0 then
             success = true
-            -- 显示插件分类
-            local plugin_categories = {}
-            for _, plugin in ipairs(collected_plugins) do
-                local category = path.directory(path.relative(plugin, plugins_dir))
-                plugin_categories[category] = (plugin_categories[category] or 0) + 1
-            end
-        else
-            print("Warning: No Qt plugins found")
         end
     else
-        print("Warning: Plugins directory not created:", plugins_dir)
+        wprint("Warning: Plugins directory not created: %s", plugins_dir)
     end
-
-    -- 最终验证：检查可执行文件的Qt依赖是否满足
+    -- final validation: check if main executable has Qt dependencies
     if success then
         local ldd_output = os.iorunv("ldd", {main_executable})
         if ldd_output then
@@ -191,19 +156,19 @@ function _collect_qt_deps_with_linuxdeployqt(package, appdir, linuxdeployqt)
                     local lib_path = line:match("=> ([^%s]+)")
                     if lib_path and lib_path:find("not found") then
                         table.insert(missing_qt_libs, lib_name)
-                    elseif lib_path and not lib_path:startswith(lib_dir) then
-                        -- Qt库没有指向AppDir中的版本，可能有问题
-                        print("Warning: Qt library not from AppDir:", lib_name, "->", lib_path)
+                    elseif lib_path then
+                        local normalized_lib_path = path.normalize(path.absolute(lib_path, appdir))
+                        if not normalized_lib_path:startswith(lib_dir) then
+                            wprint("Warning: Qt library not from AppDir: %s -> %s", lib_name, lib_path)
+                        end
                     end
                 end
             end
-            
             if #missing_qt_libs > 0 then
                 success = false
             end
         end
     end
-
     return success
 end
 
@@ -218,12 +183,11 @@ function _is_qt_project(package)
     local links = package:get("links")
     if links then
         for _, link in ipairs(links) do
-            if link:lower():find("qt") then
+            if link:lower():find("qt", 1, true) then
                 return true
             end
         end
     end
-
     -- Method 4: Check executable for Qt dependencies using ldd
     local main_executable = nil
     
@@ -251,9 +215,9 @@ function _is_qt_project(package)
         local ldd_output = os.iorunv("ldd", {main_executable})
         if ldd_output then
             -- Check for Qt libraries in ldd output
-            if ldd_output:lower():find("libqt") or 
-               ldd_output:lower():find("qt5") or 
-               ldd_output:lower():find("qt6") then
+            if ldd_output:lower():find("libqt", 1, true) or 
+                ldd_output:lower():find("qt5", 1, true) or 
+                ldd_output:lower():find("qt6", 1, true) then    
                 return true
             end
         end
@@ -266,10 +230,10 @@ function _is_qt_project(package)
             if os.isfile(srcfile) then
                 local content = io.readfile(srcfile)
                 if content and (content:find("#include.*[Qq][Tt]") or 
-                               content:find("#include.*<Q") or
-                               content:find("QApplication") or
-                               content:find("QWidget") or
-                               content:find("QMainWindow")) then
+                    content:find("#include.*<Q") or
+                    content:find("QApplication", 1, true) or
+                    content:find("QWidget", 1, true) or
+                    content:find("QMainWindow", 1, true)) then
                     return true
                 end
             end
@@ -281,19 +245,16 @@ end
 
 -- translate the file path for AppDir structure
 function _translate_filepath(package, filepath, appdir)
-    -- 获取安装根目录
     local install_rootdir = package:install_rootdir()
     
-    -- 如果路径在安装根目录下，转换为相对路径
+    -- translate to relative path
     if filepath:startswith(install_rootdir) then
         local relative_path = path.relative(filepath, install_rootdir)
-        
-        -- 移除开头的 usr/ 如果存在（因为我们会添加自己的 usr 前缀）
+        -- translate to relative path
         if relative_path:startswith("usr/") then
-            relative_path = relative_path:sub(5) -- 移除 "usr/"
+            relative_path = relative_path:sub(5) 
         end
-        
-        -- 映射到AppDir的usr目录结构
+        -- map to AppDir's usr directory structure
         if relative_path:startswith("bin/") then
             return path.join(appdir, "usr", relative_path)
         elseif relative_path:startswith("lib/") then
@@ -303,26 +264,24 @@ function _translate_filepath(package, filepath, appdir)
         elseif relative_path:startswith("include/") then
             return path.join(appdir, "usr", relative_path)
         else
-            -- 根据文件扩展名智能映射
             local filename = path.filename(filepath)
             local ext = path.extension(filename):lower()
-            
-            -- 二进制可执行文件 -> usr/bin
+
+            -- binary executable -> usr/bin
             if ext == "" or ext == ".exe" then
                 return path.join(appdir, "usr", "bin", filename)
-            -- 库文件 -> usr/lib
+            -- library file -> usr/lib
             elseif ext == ".so" or ext == ".dylib" or ext == ".dll" then
                 return path.join(appdir, "usr", "lib", filename)
-            -- 图标文件 -> usr/share/icons/hicolor
+            -- icon file -> usr/share/icons/hicolor
             elseif ext == ".png" or ext == ".svg" or ext == ".ico" or ext == ".xpm" then
                 local icon_dir = path.join(appdir, "usr/share/icons/hicolor/256x256/apps")
                 return path.join(icon_dir, filename)
-            -- 桌面文件 -> usr/share/applications
+            -- desktop file -> usr/share/applications
             elseif ext == ".desktop" then
                 return path.join(appdir, "usr/share/applications", filename)
-            -- 其他文件 -> usr/share/<package-name> 或基于原始路径
+            -- other files -> usr/share/<package-name> or based on original path
             else
-                -- 尝试保持原始目录结构
                 local dirname = path.directory(relative_path)
                 if dirname and dirname ~= "." then
                     return path.join(appdir, "usr", "share", package:name(), dirname, filename)
@@ -332,26 +291,21 @@ function _translate_filepath(package, filepath, appdir)
             end
         end
     else
-        -- 对于绝对路径或其他路径，根据文件类型智能映射
         local filename = path.filename(filepath)
         local ext = path.extension(filename):lower()
-        
-        -- 源代码文件不应该被安装到bin目录
         if ext == ".cpp" or ext == ".c" or ext == ".h" or ext == ".hpp" or 
            ext == ".py" or ext == ".js" or ext == ".java" or ext == ".go" then
-            -- 源代码文件应该被跳过或放到开发目录
-            return nil -- 返回nil表示不应该被复制
-        -- 二进制文件
+            return nil
+        -- binary file
         elseif ext == "" or ext == ".exe" then
             return path.join(appdir, "usr", "bin", filename)
-        -- 库文件
+        -- library file
         elseif ext == ".so" or ext == ".dylib" or ext == ".dll" then
             return path.join(appdir, "usr", "lib", filename)
-        -- 图标文件
+        -- icon file
         elseif ext == ".png" or ext == ".svg" or ext == ".ico" or ext == ".xpm" then
             local icon_dir = path.join(appdir, "usr/share/icons/hicolor/256x256/apps")
             return path.join(icon_dir, filename)
-        -- 其他文件
         else
             return path.join(appdir, "usr", "share", package:name(), filename)
         end
@@ -507,13 +461,12 @@ function _collect_deps_with_linuxdeploy(package, appdir, linuxdeploy)
     if not ok then
         return false
     end
-    
-    -- 检查linuxdeploy是否创建了lib目录
+
+    -- check if linuxdeploy created lib directory
     local lib_dir = path.join(appdir, "usr/lib")
-    if os.isdir(lib_dir) then
-        local libs = os.files(path.join(lib_dir, "*.so*"))
-    else
-        print("linuxdeploy did not create lib directory")
+    if not os.isdir(lib_dir) then
+        wprint("Warning: lib directory was not created by linuxdeploy!")
+        return false
     end
     
     return true
@@ -535,8 +488,6 @@ function _collect_deps_manually(package, appdir)
     
     local lib_dir = path.join(appdir, "usr/lib")
     os.mkdir(lib_dir)
-    
-    local copied_count = 0
     
     -- parse ldd output and copy libraries
     for line in ldd_output:gmatch("[^\r\n]+") do
@@ -562,7 +513,6 @@ function _collect_deps_manually(package, appdir)
                 local dst_path = path.join(lib_dir, lib_name)
                 if not os.isfile(dst_path) then
                     os.cp(lib_path, dst_path)
-                    copied_count = copied_count + 1
                 end
             end
         end
@@ -579,7 +529,7 @@ function _pack_appimage(appimagetool, package)
     local appdir = path.join(os.tmpdir(), appdir_name)
     os.tryrm(appdir)
     
-    -- 创建标准的AppDir结构
+    -- create AppDir structure
     os.mkdir(appdir)
     os.mkdir(path.join(appdir, "usr"))
     os.mkdir(path.join(appdir, "usr/bin"))
@@ -590,12 +540,10 @@ function _pack_appimage(appimagetool, package)
     os.mkdir(path.join(appdir, "usr/share/icons/hicolor"))
     os.mkdir(path.join(appdir, "usr/share/icons/hicolor/256x256"))
     os.mkdir(path.join(appdir, "usr/share/icons/hicolor/256x256/apps"))
-
-    -- 设置prefixdir为/usr，这样文件会被安装到正确的usr目录
     local original_prefixdir = package:get("prefixdir")
     package:set("prefixdir", "/usr")
     
-    -- 安装文件到AppDir
+    -- install files to AppDir
     local installcmds = {}
     _get_installcmds(package, appdir, installcmds, batchcmds.get_installcmds(package):cmds())
     for _, component in table.orderpairs(package:components()) do
@@ -604,17 +552,15 @@ function _pack_appimage(appimagetool, package)
         end
     end
     
-    -- 执行安装命令
+    -- execute install commands
     for _, cmd in ipairs(installcmds) do
         os.exec(cmd)
     end
-    
-    -- 恢复原始的prefixdir
     if original_prefixdir then
         package:set("prefixdir", original_prefixdir)
     end
 
-    -- 复制源文件
+    -- copy source files
     local srcfiles, dstfiles = package:sourcefiles()
     for idx, srcfile in ipairs(srcfiles) do
         local dstfile = _translate_filepath(package, dstfiles[idx], appdir)
@@ -635,21 +581,21 @@ function _pack_appimage(appimagetool, package)
         end
     end
 
-    -- 创建AppImage所需的文件
+    -- create files required for AppImage
     _create_desktop_file(package, appdir)
     _create_apprun(package, appdir)
     _copy_icon(package, appdir)
 
-    -- 将.desktop文件复制到正确的位置
+    -- copy .desktop file to correct location
     local desktop_file = path.join(appdir, package:name() .. ".desktop")
     local desktop_usr_file = path.join(appdir, "usr/share/applications", package:name() .. ".desktop")
     os.cp(desktop_file, desktop_usr_file)
 
-    -- 使用适当的工具收集依赖
+    -- use appropriate tools to collect dependencies
     local deps_collected = false
     
     if is_qt then
-        -- Qt项目使用 linuxqtdeploy
+        -- Qt projects use linuxdeployqt to collect dependencies
         local linuxdeployqt = _get_linuxdeployqt()
         if linuxdeployqt then
             deps_collected = _collect_qt_deps_with_linuxdeployqt(package, appdir, linuxdeployqt)
@@ -657,8 +603,8 @@ function _pack_appimage(appimagetool, package)
             print("linuxdeployqt not available, will try fallback methods")
         end
     end
-    
-    -- 如果不是Qt项目或Qt工具失败，使用标准linuxdeploy
+
+    -- If not a Qt project or Qt tool failed, use linuxdeploy
     if not deps_collected then
         local linuxdeploy = _get_linuxdeploy()
         if linuxdeploy then
@@ -668,30 +614,25 @@ function _pack_appimage(appimagetool, package)
         end
     end
     
-    -- 如果所有自动工具都失败，使用手动方式作为后备
+    -- use manual method as fallback
     if not deps_collected then
         _collect_deps_manually(package, appdir)
     end
     
-    -- 检查最终的lib目录内容
+    -- check final lib directory content
     local lib_dir = path.join(appdir, "usr/lib")
-    if os.isdir(lib_dir) then
-        local all_files = os.files(path.join(lib_dir, "*"))
-    else
-        print("Warning: lib directory was not created!")
-    end
 
-    -- 使用 appimagetool 构建最终的 AppImage
+    -- use appimagetool to build final AppImage
     local appimage_file = package:outputfile() or _get_appimage_file(package)
     os.tryrm(appimage_file)
     
-    -- 设置架构环境变量
+    -- set architecture environment variable
     local arch = package:get("arch") or "x86_64"
     local envs = {ARCH = arch}
     
     os.vrunv(appimagetool.program, {appdir, appimage_file}, {envs = envs})
 
-    -- 清理临时目录
+    -- clean up temporary directory
     os.tryrm(appdir)
 end
 
