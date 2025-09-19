@@ -39,6 +39,7 @@ end
 -- get macdeployqt tool for Qt applications
 function _get_macdeployqt()
     local macdeployqt = assert(find_tool("macdeployqt"), "macdeployqt not found!")
+    print("11111111111111macdeployqt: %s", macdeployqt.program)
     return macdeployqt
 end
 
@@ -527,11 +528,8 @@ function _pack_dmg(package)
     -- handle Qt dependencies if this is a Qt project
     if is_qt then
         local macdeployqt = _get_macdeployqt()
-        if macdeployqt then
-            local qt_success = _deploy_qt_dependencies(package, app_source, macdeployqt)
-        else
-            print("Warning: macdeployqt not available, Qt dependencies may not be properly bundled")
-        end
+        local qt_success = _deploy_qt_dependencies(package, app_source, macdeployqt)
+        print("Qt dependencies deployment:", qt_success and "success" or "failed")
     end
     -- find background image 
     local bg_image = _find_background_image(package)
