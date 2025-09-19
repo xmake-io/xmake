@@ -38,128 +38,64 @@ end
 
 -- get macdeployqt tool for Qt applications
 function _get_macdeployqt()
-    local macdeployqt = find_tool("macdeployqt")
-    if not macdeployqt then
-        -- Try to find it in Qt installation
-        local qt = find_qt()
-        if qt and qt.bindir then
-            local macdeployqt_path = path.join(qt.bindir, "macdeployqt")
-            if os.isfile(macdeployqt_path) then
-                macdeployqt = {program = macdeployqt_path}
-            end
-        end
-        
-        if not macdeployqt then
-            return nil
-        end
-    end
+    local macdeployqt = assert(find_tool("macdeployqt"), "macdeployqt not found!")
     return macdeployqt
 end
 
 -- detect if this is a Qt project
 function _is_qt_project(package)
-    -- Method 1: Check for Qt libraries in links
-    local links = package:get("links")
-    if links then
-        for _, link in ipairs(links) do
-            if link:lower():find("qt") then
+    -- method 1: check Qt rules
+    local rules = package:rules()
+    if rules then
+        for _, rule in ipairs(rules) do
+            local rule_name = rule:name()
+            if rule_name and (rule_name:find("qt", 1, true) or 
+                             rule_name:find("qt6", 1, true) or 
+                             rule_name:find("qt5", 1, true)) then
                 return true
             end
         end
     end
 
-    -- Method 2: Check executable for Qt dependencies using otool
-    local app_source, _ = _find_app_bundle(package)
-    if app_source then
-        local macos_dir = path.join(app_source, "Contents", "MacOS")
-        if os.isdir(macos_dir) then
-            local executables = os.files(path.join(macos_dir, "*"))
-            for _, executable in ipairs(executables) do
-                if os.isfile(executable) then
-                    local otool_output = os.iorunv("otool", {"-L", executable})
-                    if otool_output then
-                        -- Check for Qt frameworks in otool output
-                        if otool_output:lower():find("qt") or 
-                           otool_output:find("QtCore") or 
-                           otool_output:find("QtGui") or
-                           otool_output:find("QtWidgets") then
-                            return true
-                        end
-                    end
-                end
-            end
-        end
+    -- method 2: check target's Qt data 
+    local qt_data = package:data("qt")
+    if qt_data then
+        return true
     end
-
-    -- Method 3: Check source files for Qt headers/includes
-    local srcfiles, _ = package:sourcefiles()
-    for _, srcfile in ipairs(srcfiles or {}) do
-        if srcfile:endswith(".cpp") or srcfile:endswith(".cc") or srcfile:endswith(".cxx") or srcfile:endswith(".mm") then
-            if os.isfile(srcfile) then
-                local content = io.readfile(srcfile)
-                if content and (content:find("#include.*[Qq][Tt]") or 
-                               content:find("#include.*<Q") or
-                               content:find("QApplication") or
-                               content:find("QWidget") or
-                               content:find("QMainWindow")) then
-                    return true
-                end
-            end
-        end
+    
+    -- method 3: check Qt environment variables 
+    local qt_env = os.getenv("QTDIR") or os.getenv("QT_DIR") or os.getenv("Qt6_DIR") or os.getenv("Qt5_DIR")
+    if qt_env then
+        return true
     end
-
+    print("Not a Qt project")
     return false
 end
 
-function _check_qml_usage(package, app_source)
-    -- Method 1: Check for QML-related libraries in links
-    local links = package:get("links")
-    if links then
-        for _, link in ipairs(links) do
-            if link:lower():find("qml") or link:lower():find("quick") then
+function _check_qml_usage(package)
+    -- method 1: check Qt rules
+    local rules = package:rules()
+    if rules then
+        for _, rule in ipairs(rules) do
+            local rule_name = rule:name()
+            if rule_name and (rule_name:find("qml", 1, true) or rule_name:find("quick", 1, true)) then
                 return true
             end
         end
     end
-
-    -- Method 2: Check executable for QML/Quick dependencies
-    local macos_dir = path.join(app_source, "Contents", "MacOS")
-    if os.isdir(macos_dir) then
-        local executables = os.files(path.join(macos_dir, "*"))
-        for _, executable in ipairs(executables) do
-            if os.isfile(executable) then
-                local otool_output = os.iorunv("otool", {"-L", executable})
-                if otool_output then
-                    if otool_output:find("QtQml") or otool_output:find("QtQuick") then
-                        return true
-                    end
-                end
-            end
-        end
+    
+    -- method 2: check Qt data for QML
+    local qml_data = package:data("qml")
+    if qml_data then
+        return true
     end
-
-    -- Method 3: Check for .qml files in project
+    
+    -- method 3: check for .qml files
     local qml_files = os.files("**.qml")
     if qml_files and #qml_files > 0 then
         return true
     end
-
-    -- Method 4: Check source files for QML-related includes
-    local srcfiles, _ = package:sourcefiles()
-    for _, srcfile in ipairs(srcfiles or {}) do
-        if srcfile:endswith(".cpp") or srcfile:endswith(".cc") or srcfile:endswith(".cxx") or srcfile:endswith(".mm") then
-            if os.isfile(srcfile) then
-                local content = io.readfile(srcfile)
-                if content and (content:find("#include.*QQml") or 
-                               content:find("#include.*QQuick") or
-                               content:find("QQmlEngine") or
-                               content:find("QQuickView")) then
-                    return true
-                end
-            end
-        end
-    end
-
+    print("No QML usage detected")
     return false
 end
 
@@ -557,10 +493,8 @@ function _pack_dmg(package)
             print("Warning: macdeployqt not available, Qt dependencies may not be properly bundled")
         end
     end
-    
-    -- find background image (optional)
+    -- find background image 
     local bg_image = _find_background_image(package)
-    
     -- get output dmg path
     local dmg_file = package:outputfile() or _get_dmg_file(package)
     dmg_file = dmg_file:gsub("%.dmg+$", ".dmg")  -- clean up extension
@@ -569,15 +503,12 @@ function _pack_dmg(package)
     if not staging_dir then
         return false
     end
-    
     -- create dmg
     local success = _create_dmg_with_create_dmg(create_dmg, package, staging_dir, dmg_file, appbundle_name, bg_image)
-    
     if success then
         -- verify the result
         success = _verify_dmg(dmg_file)
     end
-    
     -- cleanup staging directory
     os.tryrm(staging_dir)
     return success
@@ -587,7 +518,6 @@ end
 function main(package)
     -- only for macOS
     if not is_host("macosx") then
-        print("DMG packaging is only supported on macOS")
         return
     end
     
@@ -599,7 +529,5 @@ function main(package)
     local success = _pack_dmg(package)
     if success then
         print("Final DMG file:", dmg_file)
-    else
-        os.exit(1)
     end
 end
