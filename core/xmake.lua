@@ -75,7 +75,7 @@ option_end()
 
 -- the mimalloc option
 option("mimalloc")
-    set_default(true)
+    set_default(false)
     set_description("Use mimalloc as memory allocator")
 option_end()
 

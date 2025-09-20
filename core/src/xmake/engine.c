@@ -1295,7 +1295,9 @@ static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data,
 #ifdef XM_CONFIG_API_HAVE_MIMALLOC
     tb_pointer_t ptr = tb_null;
     if (nsize == 0 && data) mi_free(data);
-    else ptr = mi_realloc(data, nsize);
+    else if (!data) ptr = mi_malloc(nsize);
+    else if (nsize != osize) ptr = mi_realloc(data, nsize);
+    else ptr = data;
     return ptr;
 #else
     tb_pointer_t ptr = tb_null;
