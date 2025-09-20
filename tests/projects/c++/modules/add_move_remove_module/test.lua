@@ -5,10 +5,10 @@ CLANG_MIN_VER = is_subhost("windows") and "19" or "17"
 GCC_MIN_VER = "11"
 MSVC_MIN_VER = "14.29"
 
-function _build(check_outdata)
+function _build(_)
     local flags = ""
     if ci_is_running() then
-     flags = "-vD"
+        flags = "-vD"
     end
     os.run("xmake -r " .. flags)
     io.writefile("src/bar.mpp", "export module bar;\n export {\n inline int bar() { return 0; }\n}")
