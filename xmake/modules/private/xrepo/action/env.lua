@@ -270,19 +270,20 @@ function _package_getenvs(opt)
     local has_packages = #packages > 0
     local in_project = os.isfile(os.projectfile()) and not option.get("bind")
     local oldir = os.curdir()
-    if has_envfiles or has_packages then
+    if not in_project then
         _enter_project()
-        if has_envfiles then
-            table.join2(project.rcfiles(), envfiles)
-        else
-            local envfile = os.tmpfile() .. ".lua"
-            local file = io.open(envfile, "w")
-            for _, requirename in ipairs(packages) do
-                file:print("add_requires(\"%s\")", requirename)
-            end
-            file:close()
-            table.insert(project.rcfiles(), envfile)
+    end
+    if has_envfiles then
+        table.join2(project.rcfiles(), envfiles)
+    end
+    if has_packages then
+        local envfile = os.tmpfile() .. ".lua"
+        local file = io.open(envfile, "w")
+        for _, requirename in ipairs(packages) do
+            file:print("add_requires(\"%s\")", requirename)
         end
+        file:close()
+        table.insert(project.rcfiles(), envfile)
     end
     if in_project or has_envfiles or has_packages then
         task.run("config", {}, {disable_dump = true})
