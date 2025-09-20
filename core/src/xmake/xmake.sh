@@ -31,6 +31,9 @@ target "xmake"
         else
             add_deps "lua"
         fi
+        if has_config "mimalloc"; then
+            add_deps "mimalloc"
+        fi
     fi
 
     # add options

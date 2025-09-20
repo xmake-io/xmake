@@ -35,6 +35,9 @@ option "runtime" "Use luajit or lua runtime" "lua"
 # always use external dependencies
 option "external" "Always use external dependencies" false
 
+# use mimalloc
+option "mimalloc" "Use mimalloc as memory allocator" false
+
 # the readline option
 option "readline"
     add_links "readline"
@@ -226,6 +229,10 @@ if ! has_config "external"; then
     includes "src/lz4"
     includes "src/sv"
     includes "src/tbox"
+    if has_config "mimalloc"; then
+        includes "src/mimalloc"
+    fi
 fi
 includes "src/xmake"
 includes "src/cli"
+
