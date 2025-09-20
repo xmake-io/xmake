@@ -266,24 +266,17 @@ end
 function _package_getenvs(opt)
     local envs = os.getenvs()
     local packages, envfiles = _get_boundenvs(opt)
-    local has_envfile = #envfiles > 0
+    local has_envfiles = #envfiles > 0
+    local has_packages = #packages > 0
+    local in_project = os.isfile(os.projectfile()) and not option.get("bind")
     local oldir = os.curdir()
-    if (os.isfile(os.projectfile()) and not option.get("bind")) or has_envfile then
-        if has_envfile then
-            _enter_project()
-            table.join2(project.rcfiles(), envfiles)
-        end
-        task.run("config", {}, {disable_dump = true})
-        _toolchain_addenvs(envs)
-        local requires, requires_extra = get_requires()
-        for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
-            _package_addenvs(envs, instance)
-        end
-        if not has_envfile then
-            _target_addenvs(envs)
-        end
-    elseif #packages > 0 then
+    if not in_project then
         _enter_project()
+    end
+    if has_envfiles then
+        table.join2(project.rcfiles(), envfiles)
+    end
+    if has_packages then
         local envfile = os.tmpfile() .. ".lua"
         local file = io.open(envfile, "w")
         for _, requirename in ipairs(packages) do
@@ -291,10 +284,18 @@ function _package_getenvs(opt)
         end
         file:close()
         table.insert(project.rcfiles(), envfile)
+    end
+    if in_project or has_envfiles or has_packages then
         task.run("config", {}, {disable_dump = true})
+        if in_project or has_envfiles then
+            _toolchain_addenvs(envs)
+        end
         local requires, requires_extra = get_requires()
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
+        end
+        if in_project then
+            _target_addenvs(envs)
         end
     end
     local results = {}
