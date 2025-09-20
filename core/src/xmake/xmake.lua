@@ -16,6 +16,9 @@ target("xmake")
     if has_config("lua_cjson") then
         add_deps("lua-cjson")
     end
+    if has_config("mimalloc") then
+        add_deps("mimalloc")
+    end
     if is_plat("windows") and has_config("pdcurses") then
         add_deps("pdcurses")
     end

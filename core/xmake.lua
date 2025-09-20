@@ -73,6 +73,12 @@ option("lua_cjson")
     set_description("Use lua-cjson as json parser")
 option_end()
 
+-- the mimalloc option
+option("mimalloc")
+    set_default(true)
+    set_description("Use mimalloc as memory allocator")
+option_end()
+
 -- the readline option
 option("readline")
     set_description("Enable or disable readline library")
@@ -140,6 +146,9 @@ else
 end
 if has_config("lua_cjson") then
     includes("src/lua-cjson")
+end
+if has_config("mimalloc") then
+    includes("src/mimalloc")
 end
 if is_config("runtime", "luajit") then
     includes("src/luajit")

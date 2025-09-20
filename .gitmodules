@@ -19,3 +19,6 @@
 [submodule "core/src/lz4/lz4"]
 	path = core/src/lz4/lz4
 	url = ../../xmake-io/xmake-core-lz4.git
+[submodule "core/src/mimalloc/mimalloc"]
+	path = core/src/mimalloc/mimalloc
+	url = ../../xmake-io/xmake-core-mimalloc.git

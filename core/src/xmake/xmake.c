@@ -23,6 +23,9 @@
  * includes
  */
 #include "xmake.h"
+#ifdef XM_CONFIG_API_HAVE_MIMALLOC
+#   include "mimalloc.h"
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -80,6 +83,42 @@ static __tb_inline__ tb_bool_t xm_version_check(tb_hize_t build)
     return tb_false;
 }
 
+#ifdef XM_CONFIG_API_HAVE_MIMALLOC
+static tb_pointer_t tb_mimalloc_allocator_malloc(tb_allocator_ref_t allocator, tb_size_t size __tb_debug_decl__)
+{
+    return mi_malloc(size);
+}
+static tb_pointer_t tb_mimalloc_allocator_ralloc(tb_allocator_ref_t allocator, tb_pointer_t data, tb_size_t size __tb_debug_decl__)
+{
+    return mi_realloc(data, size);
+}
+static tb_bool_t tb_mimalloc_allocator_free(tb_allocator_ref_t allocator, tb_pointer_t data __tb_debug_decl__)
+{
+    mi_free(data);
+    return tb_true;
+}
+static tb_bool_t tb_mimalloc_allocator_instance_init(tb_handle_t instance, tb_cpointer_t priv)
+{
+    tb_allocator_ref_t allocator = (tb_allocator_ref_t)instance;
+    tb_check_return_val(allocator, tb_false);
+
+    allocator->type   = TB_ALLOCATOR_TYPE_NONE;
+    allocator->flag   = TB_ALLOCATOR_FLAG_NOLOCK;
+    allocator->malloc = tb_mimalloc_allocator_malloc;
+    allocator->ralloc = tb_mimalloc_allocator_ralloc;
+    allocator->free   = tb_mimalloc_allocator_free;
+    return tb_true;
+}
+
+static tb_allocator_ref_t xm_mimalloc_allocator()
+{
+    static tb_atomic32_t    s_inited = 0;
+    static tb_allocator_t   s_allocator = {0};
+    tb_singleton_static_init(&s_inited, &s_allocator, tb_mimalloc_allocator_instance_init, tb_null);
+    return &s_allocator;
+}
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
@@ -94,23 +133,18 @@ tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build)
     // check version
     xm_version_check(build);
 
-#if 0
-    // init tbox, we always use the tbox's default allocator
-    if (!tb_init(tb_null, tb_default_allocator(tb_null, 0))) return tb_false;
+    // init tbox
+#ifdef XM_CONFIG_API_HAVE_MIMALLOC
+    if (!tb_init(tb_null, xm_mimalloc_allocator())) return tb_false;
 #else
-    // init tbox, since small compilation mode is enabled, it still uses the native allocator
     if (!tb_init(tb_null, tb_null)) return tb_false;
 #endif
 
-    // trace
     tb_trace_d("init: ok");
-
-    // ok
     return tb_true;
 }
 tb_void_t xm_exit()
 {
-    // exit tbox
     tb_exit();
 }
 tb_version_t const* xm_version()
@@ -127,7 +161,6 @@ tb_version_t const* xm_version()
         s_version.alter = XM_VERSION_ALTER;
         s_version.build = (tb_hize_t)tb_atoll(XM_VERSION_BUILD_STRING);
     }
-
     return &s_version;
 }
 

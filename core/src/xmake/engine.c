@@ -65,6 +65,11 @@
 #   include "lz4/prefix.h"
 #endif
 
+// use mimalloc
+#ifdef XM_CONFIG_API_HAVE_MIMALLOC
+#   include "mimalloc.h"
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
@@ -81,7 +86,11 @@
 #endif
 
 // hook lua memory allocator
-#define XM_HOOK_LUA_MEMALLOC        (0)
+#ifdef XM_CONFIG_API_HAVE_MIMALLOC
+#   define XM_HOOK_LUA_MEMALLOC      (1)
+#else
+#   define XM_HOOK_LUA_MEMALLOC      (0)
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
@@ -1283,12 +1292,19 @@ static tb_void_t xm_engine_init_signal(xm_engine_t* engine)
 // udata is unused, it has been used by engine. see xm_engine_bind_to_lua()
 static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data, size_t osize, size_t nsize)
 {
+#ifdef XM_CONFIG_API_HAVE_MIMALLOC
+    tb_pointer_t ptr = tb_null;
+    if (nsize == 0 && data) mi_free(data);
+    else ptr = mi_realloc(data, nsize);
+    return ptr;
+#else
     tb_pointer_t ptr = tb_null;
     if (nsize == 0 && data) tb_free(data);
     else if (!data) ptr = tb_malloc((tb_size_t)nsize);
     else if (nsize != osize) ptr = tb_ralloc(data, (tb_size_t)nsize);
     else ptr = data;
     return ptr;
+#endif
 }
 #endif
 
