@@ -39,7 +39,8 @@ function _url_extension(url)
     local extension = archive.extension(url)
     if extension == "" then
         -- maybe non-archive file, e.g. .exe, .sh, ..
-        extension = path.extension(url)
+        local urlpath = url:split('?', {plain = true})[1]
+        extension = path.extension(urlpath)
     end
     return extension
 end

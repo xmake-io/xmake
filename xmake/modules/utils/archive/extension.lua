@@ -22,9 +22,10 @@
 import("core.base.hashset")
 
 -- get the archive extension
-function main(archivefile)
+function main(url)
+    local urlpath = url:split('?', {plain = true})[1]
     local extension = ""
-    local filename = path.filename(archivefile)
+    local filename = path.filename(urlpath)
     local extensionset = hashset.from({
         ".xmz", -- xmake compression format
         ".zip", ".7z", ".gz", ".xz", ".zst", ".tgz",
