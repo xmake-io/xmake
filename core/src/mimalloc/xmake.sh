@@ -34,20 +34,15 @@ target "mimalloc"
     # fast atomics
     if is_plat "macosx" "iphoneos" && is_arch "arm64"; then
         add_cflags "-Xarch_arm64;-march=armv8.1-a"
-    elif is_plat "windows"; then
-        add_cflags "/arch:armv8.1"
     elif is_arch "arm64"; then
         add_cflags "-march=armv8.1-a"
     fi
 
     add_defines "MI_SKIP_COLLECT_ON_EXIT=1"
-    if is_plat "windows" && is_kind "static"; then
-        add_defines "MI_WIN_USE_FIXED_TLS=1"
-    fi
     if is_plat "mingw"; then
         add_defines "_WIN32_WINNT=0x600"
     fi
 
-    if is_plat "windows" "mingw"; then
+    if is_plat "mingw"; then
         add_syslinks "psapi" "shell32" "user32" "advapi32" "bcrypt" "{public}"
     fi

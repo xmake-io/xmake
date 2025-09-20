@@ -36,7 +36,7 @@ target("mimalloc")
     -- fast atomics
     if is_plat("macosx", "iphoneos") and is_arch("arm64") then
         add_cflags("-Xarch_arm64;-march=armv8.1-a")
-    elseif is_plat("windows") then
+    elseif is_plat("windows") and is_arch("arm64") then
         add_cflags("cl:/arch:armv8.1")
     elseif is_arch("arm64") then
         add_cflags("-march=armv8.1-a", {tools = {"gcc", "clang", "gxx", "clangxx"}})
