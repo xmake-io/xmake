@@ -76,7 +76,7 @@ function _find_app_bundle(package)
             if os.isfile(info_plist) and os.isdir(macos_dir) then
                 return abs_location, appbundle_name
             else
-                print("      Invalid .app structure")
+                raise("Invalid .app structure")
             end
         end
     end
@@ -135,7 +135,7 @@ function _create_staging_dir(package, app_source, appbundle_name, bg_image)
         local bg_dest = path.join(staging_dir, path.filename(bg_image))
         os.vcp(bg_image, bg_dest)
         if not os.isfile(bg_dest) then
-            print("Warning: Failed to copy background image")
+            wprint("Warning: Failed to copy background image")
         end
     end
     return staging_dir
@@ -192,15 +192,7 @@ function _create_dmg_with_create_dmg(create_dmg, package, staging_dir, dmg_file,
     os.vrunv("mkdir", {"-p", path.directory(dmg_file)})
     os.vrunv("rm", {"-f", dmg_file})
     -- run create-dmg
-    local ok, errors = os.iorunv(create_dmg.program, args)
-    if ok then
-        return true
-    else
-        if errors then
-            print("Error output:", errors)
-        end
-        return false
-    end
+    os.iorunv(create_dmg.program, args)
 end
 -- verify dmg file
 function _verify_dmg(dmg_file)
@@ -215,9 +207,11 @@ function _pack_dmg(package)
     local create_dmg = _get_create_dmg()
     -- find existing .app bundle
     local app_source, appbundle_name = _find_app_bundle(package)
+    
     if not app_source then
         return false
     end
+
     -- find background image (optional)
     local bg_image = _find_background_image(package)
     -- get output dmg path
