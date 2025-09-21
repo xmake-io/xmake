@@ -36,7 +36,7 @@ option "runtime" "Use luajit or lua runtime" "lua"
 option "external" "Always use external dependencies" false
 
 # use mimalloc
-option "mimalloc" "Use mimalloc as memory allocator" false
+option "mimalloc" "Use mimalloc as memory allocator" true
 
 # the readline option
 option "readline"
