@@ -224,53 +224,30 @@ function _extract_package_info(store_paths, package_name, opt)
         libfiles = {}
     }
     
-    -- Group paths by package
-    local packages = _group_store_paths_by_package(store_paths, opt)
-    
-    -- Find matching package
-    local matching_outputs = nil
-    local search_name = package_name:lower()
-    
-    for pkg_name, outputs in pairs(packages) do
-        local pkg_lower = pkg_name:lower()
-        local name_in_pkg = pkg_lower:find(search_name, 1, true)
-        local pkg_in_name = search_name:find(pkg_lower, 1, true)
-        
-        if name_in_pkg or pkg_in_name then
-            matching_outputs = outputs
-            if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Found package match: " .. pkg_name .. " (" .. #outputs .. " outputs)")
-            end
-            break
-        end
-    end
-    
-    -- Also check direct path name matches for cases where grouping fails
-    if not matching_outputs then
-        matching_outputs = {}
-        for _, store_path in ipairs(store_paths) do
-            local path_name = path.basename(store_path):lower()
-            if path_name:find(search_name, 1, true) then
-                table.insert(matching_outputs, store_path)
-            end
-        end
-    end
-    
-    if not matching_outputs or #matching_outputs == 0 then
-        return nil
-    end
-    
-    -- Try pkg-config search first
-    local pkgconfig_result = _find_with_pkgconfig(package_name, matching_outputs, opt)
-    
-    -- Process all outputs of the package
-    for _, store_path in ipairs(matching_outputs) do
-        -- Add include directories from any output that has them
+    -- Process store paths, not just the ones that match the package name
+    -- This ensures we get include directories from propagated dependencies
+    for _, store_path in ipairs(store_paths) do
+        -- Add include directories from ALL store paths
         local includedir = path.join(store_path, "include")
         if os.isdir(includedir) then
             table.insert(result.includedirs, includedir)
             if opt and (opt.verbose or option.get("verbose")) then
                 print("Nix: Found include dir: " .. includedir)
+            end
+            
+            -- Recursively add one level of subdirectories to handle cases where
+            -- headers are organized in subdirectories
+            local subdirs = try {function() 
+                return os.dirs(path.join(includedir, "*")) 
+            end} or {}
+            
+            for _, subdir in ipairs(subdirs) do
+                if os.isdir(subdir) then
+                    table.insert(result.includedirs, subdir)
+                    if opt and (opt.verbose or option.get("verbose")) then
+                        print("Nix: Found include subdir: " .. subdir)
+                    end
+                end
             end
         end
         
@@ -330,25 +307,58 @@ function _extract_package_info(store_paths, package_name, opt)
         end
     end
     
+    -- Try pkg-config search with all store paths
+     local pkgconfig_result = _find_with_pkgconfig(package_name, store_paths, opt)
+    
     -- Merge pkg-config results if available (prioritize pkg-config results)
     if pkgconfig_result then
-        -- Use pkg-config results preferentially, but supplement with discovered paths
+        -- Create new result starting with pkg-config data (highest priority)
+        local merged_result = {
+            includedirs = {},
+            bindirs = result.bindirs,  -- Keep discovered bin dirs
+            linkdirs = {},
+            links = {},
+            libfiles = result.libfiles  -- Keep discovered lib files
+        }
+        
+        -- Add pkg-config include dirs first (highest priority)
         for _, incdir in ipairs(pkgconfig_result.includedirs or {}) do
-            table.insert(result.includedirs, incdir)
-        end
-        for _, linkdir in ipairs(pkgconfig_result.linkdirs or {}) do
-            table.insert(result.linkdirs, linkdir)
-        end
-        for _, link in ipairs(pkgconfig_result.links or {}) do
-            table.insert(result.links, link)
+            table.insert(merged_result.includedirs, incdir)
         end
         
-        -- Add any additional paths we found that pkg-config might have missed
+        -- Add our discovered include dirs after pkg-config ones
+        for _, incdir in ipairs(result.includedirs) do
+            table.insert(merged_result.includedirs, incdir)
+        end
+        
+        -- Add pkg-config link dirs first
+        for _, linkdir in ipairs(pkgconfig_result.linkdirs or {}) do
+            table.insert(merged_result.linkdirs, linkdir)
+        end
+        
+        -- Add our discovered link dirs after pkg-config ones
+        for _, linkdir in ipairs(result.linkdirs) do
+            table.insert(merged_result.linkdirs, linkdir)
+        end
+        
+        -- Add pkg-config links first
+        for _, link in ipairs(pkgconfig_result.links or {}) do
+            table.insert(merged_result.links, link)
+        end
+        
+        -- Add our discovered links after pkg-config ones
+        for _, link in ipairs(result.links) do
+            table.insert(merged_result.links, link)
+        end
+        
+        -- Add any system links from pkg-config
         if pkgconfig_result.syslinks then
             for _, link in ipairs(pkgconfig_result.syslinks) do
-                table.insert(result.links, link)
+                table.insert(merged_result.links, link)
             end
         end
+        
+        result = merged_result
     end
     
     -- Remove duplicates
