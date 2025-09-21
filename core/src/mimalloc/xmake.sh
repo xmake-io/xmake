@@ -33,7 +33,8 @@ target "mimalloc"
 
     # fast atomics
     if is_plat "macosx" "iphoneos" && is_arch "arm64"; then
-        add_cflags "-Xarch_arm64;-march=armv8.1-a"
+        add_cflags "-Xarch_arm64"
+        add_cflags "-march=armv8.1-a"
     elif is_arch "arm64"; then
         add_cflags "-march=armv8.1-a"
     fi
