@@ -190,3 +190,37 @@ jobs:
           asset_name: xmake-bundle-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
           asset_content_type: application/zip
 
+      - name: Keep master branch's assets
+        if: github.event.action == 'published' && matrix.os == 'windows-2025' && matrix.arch == 'x64'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $shouldKeepAssets = @(
+            "xmake-master.arm64.exe", 
+            "xmake-master.arm64.zip", 
+            "xmake-master.tar.gz", 
+            "xmake-master.win32.exe", 
+            "xmake-master.win32.zip",
+            "xmake-master.win64.exe",
+            "xmake-master.win64.zip",
+            "xmake-master.zip"
+          )
+
+          $releases = gh release list --limit 5 --json tagName | ConvertFrom-Json | ForEach-Object { $_.tagName }
+          $latestTag = gh release view --json tagName --jq .tagName
+          $prevTag = $releases | Where-Object { $_ -ne $latestTag } | Select-Object -First 1
+
+          Write-Host "Previous release: $prevTag"
+
+          foreach ($asset in $shouldKeepAssets) {
+            Write-Host "Downloading $asset from $prevTag..."
+            gh release download $prevTag --pattern $asset --dir .
+            if (-not (Test-Path $asset)) {
+              Write-Error "Failed to download $asset from previous release!"
+              exit 1
+            }
+            Write-Host "Uploading $asset to $latestTag..."
+            gh release upload $latestTag $asset
+          }
