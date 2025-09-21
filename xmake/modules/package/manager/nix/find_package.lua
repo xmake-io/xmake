@@ -24,320 +24,604 @@ import("lib.detect.find_tool")
 import("private.core.base.is_cross")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
--- check if we're in a nix-shell environment
-function _in_nix_shell()
-    local in_nix_shell = os.getenv("IN_NIX_SHELL")
-    return in_nix_shell == "pure" or in_nix_shell == "impure"
-end
-
--- extract store paths from nix environment variables with better filtering
-function _extract_nix_store_paths(env_var_name, env_var_value)
-    local paths = {}
-    local seen = {}
-    
-    if env_var_value == "" then
-        return paths
-    end
-    
-    -- Handle different environment variable formats
-    local separators = {
-        PATH = ":",
-        PKG_CONFIG_PATH = ":",
-        LIBRARY_PATH = ":",
-        LD_LIBRARY_PATH = ":",
-        C_INCLUDE_PATH = ":",
-        CPLUS_INCLUDE_PATH = ":",
-        NIX_LDFLAGS = "%s",  -- space separated, may contain -L flags
-        NIX_CFLAGS_COMPILE = "%s"  -- space separated, may contain -I flags
-    }
-    
-    local separator = separators[env_var_name] or ":"
-    local pattern = separator == ":" and "[^:]+" or "[^%s]+"
-    
-    for item in env_var_value:gmatch(pattern) do
-        local clean_item = item
-        
-        -- Remove flag prefixes for compiler/linker flags
-        if env_var_name == "NIX_LDFLAGS" then
-            clean_item = item:gsub("^%-L", "")
-        elseif env_var_name == "NIX_CFLAGS_COMPILE" then
-            clean_item = item:gsub("^%-[iI]system%s*", ""):gsub("^%-I", "")
-        end
-        
-        if clean_item:startswith("/nix/store/") then
-            local store_path = clean_item:match("(/nix/store/[^/]+)")
-            if store_path and not seen[store_path] then
-                seen[store_path] = true
-                table.insert(paths, store_path)
-            end
-        end
-    end
-    
-    return paths
-end
-
--- get current shell buildInputs from environment with improved detection
-function _get_shell_build_inputs()
+-- recursively follow propagated build inputs
+function _follow_propagated_inputs(store_paths, opt, visited)
+    visited = visited or {}
     local all_paths = {}
     local seen = {}
     
-    if not _in_nix_shell() then
-        return all_paths
+    -- Add initial paths
+    for _, store_path in ipairs(store_paths) do
+        if not seen[store_path] then
+            seen[store_path] = true
+            table.insert(all_paths, store_path)
+        end
     end
     
-    -- Environment variables to check for nix store paths
-    local env_vars = {
-        "PATH",
-        "PKG_CONFIG_PATH", 
-        "LIBRARY_PATH",
-        "LD_LIBRARY_PATH",
-        "C_INCLUDE_PATH",
-        "CPLUS_INCLUDE_PATH",
-        "NIX_LDFLAGS",
-        "NIX_CFLAGS_COMPILE"
-    }
-    
-    for _, env_var in ipairs(env_vars) do
-        local env_value = os.getenv(env_var) or ""
-        local paths = _extract_nix_store_paths(env_var, env_value)
+    -- Process each path
+    local i = 1
+    while i <= #all_paths do
+        local store_path = all_paths[i]
         
-        for _, path in ipairs(paths) do
-            if not seen[path] then
-                seen[path] = true
-                table.insert(all_paths, path)
+        if not visited[store_path] then
+            visited[store_path] = true
+            
+            -- Check for propagated-build-inputs file
+            local prop_file = path.join(store_path, "nix-support", "propagated-build-inputs")
+            if os.isfile(prop_file) then
+                local content = try {function() 
+                    return io.readfile(prop_file):trim()
+                end}
+                
+                if content and content ~= "" then
+                    -- Parse propagated paths
+                    for prop_path in content:gmatch("%S+") do
+                        if prop_path:startswith("/nix/store/") and not seen[prop_path] then
+                            seen[prop_path] = true
+                            table.insert(all_paths, prop_path)
+                            if opt and (opt.verbose or option.get("verbose")) then
+                                print("Nix: Added propagated: " .. prop_path)
+                            end
+                        end
+                    end
+                end
             end
         end
+        
+        i = i + 1
     end
     
     return all_paths
 end
 
--- get all nix store paths currently available in environment
-function _get_available_nix_paths()
+-- parse store paths from environment variables
+function _parse_store_paths_from_env(env_vars, opt)
     local paths = {}
     local seen = {}
     
-    -- First, get paths from current shell if we're in nix-shell
-    if _in_nix_shell() then
-        local shell_paths = _get_shell_build_inputs()
-        for _, path in ipairs(shell_paths) do
-            if not seen[path] then
-                seen[path] = true
-                table.insert(paths, path)
-            end
-        end
+    if opt and (opt.verbose or option.get("verbose")) then
+        print("Nix: Parsing store paths from environment variables")
     end
     
-    -- Get paths from environment PATH (additional check)
-    local env_path = os.getenv("PATH") or ""
-    
-    for dir in env_path:gmatch("[^:]+") do
-        if dir:startswith("/nix/store/") then
-            local store_path = dir:match("(/nix/store/[^/]+)")
-            if store_path and not seen[store_path] then
-                seen[store_path] = true
-                table.insert(paths, store_path)
-            end
-        end
-    end
-    
-    -- Get paths from common Nix environment locations
-    local env_locations = {
-        os.getenv("NIX_PROFILES") or "",
-        (os.getenv("HOME") or "") .. "/.nix-profile",
-        "/nix/var/nix/profiles/default",
-        "/run/current-system/sw" -- NixOS
-    }
-    
-    for _, location in ipairs(env_locations) do
-        if location ~= "" and os.isdir(location) then
-            
-            -- Check if it's a symlink to store path
-            local target = try {function()
-                return os.iorunv("readlink", {"-f", location}):trim()
-            end}
-            
-            if target and target:startswith("/nix/store/") then
-                local store_path = target:match("(/nix/store/[^/]+)")
-                if store_path and not seen[store_path] then
-                    seen[store_path] = true
-                    table.insert(paths, store_path)
-                end
-            end
-            
-            -- Also check for manifest (generation info)
-            local manifest = path.join(location, "manifest.nix")
-            if os.isfile(manifest) then
-                local manifest_content = io.readfile(manifest)
-                
-                if manifest_content then
-                    -- Extract store paths from manifest
-                    for store_path in manifest_content:gmatch('(/nix/store/[^"\'%s]+)') do
-                        if not seen[store_path] then
-                            seen[store_path] = true
-                            table.insert(paths, store_path)
+    for _, var_name in ipairs(env_vars) do
+        local env_value = os.getenv(var_name) or ""
+        
+        if env_value ~= "" then
+            -- Split by spaces and colons, extract store paths
+            for item in env_value:gmatch("[^%s:]+") do
+                if item:startswith("/nix/store/") then
+                    local store_path = item:match("(/nix/store/[^/]+)")
+                    if store_path and not seen[store_path] then
+                        seen[store_path] = true
+                        table.insert(paths, store_path)
+                        if opt and (opt.verbose or option.get("verbose")) then
+                            print("Nix: Found store path: " .. store_path)
                         end
                     end
                 end
             end
         end
     end
-
+    
+    -- Follow propagated build inputs
+    paths = _follow_propagated_inputs(paths, opt)
+    
     return paths
 end
 
--- check if a store path actually contains the requested package
-function _validate_package_in_store_path(store_path, name)
-    
-    -- Check if the store path name contains the package name
-    local store_name = path.basename(store_path):lower()
-    local search_name = name:lower()
-    
-    -- Look for exact match, or package name in the store path
-    local name_match = store_name:find(search_name, 1, true) or 
-                      store_name:find((search_name:gsub("%-", "%%-"))) -- handle hyphens
-    
-    if name_match then
-        return true
-    end
-    
-    -- Check for libraries with the package name
-    local libdir = path.join(store_path, "lib")
-    if os.isdir(libdir) then
-        local libfiles = os.files(path.join(libdir, "lib" .. name .. ".*"))
-        if #libfiles > 0 then
-            return true
-        end
-    end
-    
-    -- Check for pkg-config files
-    local pkgconfigdirs = {
-        path.join(store_path, "lib", "pkgconfig"),
-        path.join(store_path, "share", "pkgconfig")
-    }
-    
-    for _, pcdir in ipairs(pkgconfigdirs) do
-        if os.isdir(pcdir) then
-            local pcfiles = os.files(path.join(pcdir, name .. ".pc"))
-            if #pcfiles > 0 then
-                return true
-            end
-        end
-    end
-
-    return false
+-- check if we're in a nix-shell environment
+function _in_nix_shell()
+    local in_nix_shell = os.getenv("IN_NIX_SHELL")
+    return in_nix_shell == "pure" or in_nix_shell == "impure"
 end
 
--- find package in a specific nix store path with validation
-function _find_in_store_path(store_path, name)
+-- group store paths by package base name
+function _group_store_paths_by_package(store_paths, opt)
+    local packages = {}
     
-    if not os.isdir(store_path) then
-        return nil
-    end
-    
-    -- First validate that this store path actually contains our package
-    if not _validate_package_in_store_path(store_path, name) then
-        return nil
-    end
-    
-    local result = {}
-    
-    -- Find include directories
-    local includedir = path.join(store_path, "include")
-    if os.isdir(includedir) then
-        result.includedirs = {includedir}
-    end
-    
-    -- Find libraries
-    local libdir = path.join(store_path, "lib")
-    if os.isdir(libdir) then
-        result.linkdirs = {libdir}
-        result.links = {}
-        result.libfiles = {}
-        
-        -- Scan for library files related to our package
-        local libfiles = os.files(path.join(libdir, "*.so*"), 
-                                path.join(libdir, "*.a"), 
-                                path.join(libdir, "*.dylib*"))
-        
-        for _, libfile in ipairs(libfiles) do
-            local filename = path.filename(libfile)
-            local linkname = filename:match("^lib(.+)%.so") or 
-                           filename:match("^lib(.+)%.a") or 
-                           filename:match("^lib(.+)%.dylib")
+    for _, store_path in ipairs(store_paths) do
+        if os.isdir(store_path) then
+            local path_name = path.basename(store_path)
             
-            if linkname then
-                if linkname == name or linkname:find(name, 1, true) then
-                    table.insert(result.links, linkname)
-                    table.insert(result.libfiles, libfile)
+            -- Extract package name (everything before version or output suffix)
+            -- Format: hash-packagename-version[-output]
+            local package_base = path_name:match("^[^%-]+-([^%-]+)")
+            if package_base then
+                if not packages[package_base] then
+                    packages[package_base] = {}
                 end
-                
-                if filename:endswith(".a") then
-                    result.static = true
-                else
-                    result.shared = true
-                end
+                table.insert(packages[package_base], store_path)
             end
         end
     end
     
-    -- Find pkg-config files
-    local pkgconfigdirs = {
-        path.join(store_path, "lib", "pkgconfig"),
-        path.join(store_path, "share", "pkgconfig")
+    return packages
+end
+
+-- pkg-config search that handles all outputs
+function _find_with_pkgconfig(package_name, store_paths, opt)
+    if opt and (opt.verbose or option.get("verbose")) then
+        print("Nix: pkg-config search for " .. package_name)
+    end
+    
+    -- Collect all pkg-config directories from all store paths
+    local all_pkgconfig_dirs = {}
+    local pkgconfig_env_additions = {}
+    
+    for _, store_path in ipairs(store_paths) do
+        local pkgconfig_dirs = {
+            path.join(store_path, "lib", "pkgconfig"),
+            path.join(store_path, "share", "pkgconfig")
+        }
+        
+        for _, pkgconfig_dir in ipairs(pkgconfig_dirs) do
+            if os.isdir(pkgconfig_dir) then
+                table.insert(all_pkgconfig_dirs, pkgconfig_dir)
+                table.insert(pkgconfig_env_additions, pkgconfig_dir)
+            end
+        end
+    end
+    
+    if #all_pkgconfig_dirs == 0 then
+        return nil
+    end
+    
+    -- Set up PKG_CONFIG_PATH environment for search
+    local original_pkg_config_path = os.getenv("PKG_CONFIG_PATH") or ""
+    local new_pkg_config_path = table.concat(pkgconfig_env_additions, ":")
+    if original_pkg_config_path ~= "" then
+        new_pkg_config_path = new_pkg_config_path .. ":" .. original_pkg_config_path
+    end
+    
+    -- set PKG_CONFIG_PATH
+    os.setenv("PKG_CONFIG_PATH", new_pkg_config_path)
+    
+    -- Try pkg-config with the enhanced path
+    local result = nil
+    
+    -- First try direct package name
+    result = find_package_from_pkgconfig(package_name)
+    
+    if not result then
+        -- Try alternative names - check what .pc files actually exist
+        for _, pkgconfig_dir in ipairs(all_pkgconfig_dirs) do
+            local pc_files = try {function() 
+                return os.files(path.join(pkgconfig_dir, "*.pc")) 
+            end} or {}
+            
+            for _, pc_file in ipairs(pc_files) do
+                local pc_name = path.basename(pc_file):match("^(.+)%.pc$")
+                if pc_name then
+                    local name_lower = package_name:lower()
+                    local pc_lower = pc_name:lower()
+                    
+                    -- Check for partial matches
+                    if pc_lower:find(name_lower, 1, true) or name_lower:find(pc_lower, 1, true) then
+                        result = find_package_from_pkgconfig(pc_name)
+                        if result then
+                            if opt and (opt.verbose or option.get("verbose")) then
+                                print("Nix: Found via pkg-config: " .. pc_name)
+                            end
+                            break
+                        end
+                    end
+                end
+            end
+            if result then break end
+        end
+    end
+    
+    return result
+end
+
+-- extract package info from all outputs of a package
+function _extract_package_info(store_paths, package_name, opt)
+    local result = {
+        includedirs = {},
+        bindirs = {},
+        linkdirs = {},
+        links = {},
+        libfiles = {}
     }
     
-    for _, pcdir in ipairs(pkgconfigdirs) do
-        if os.isdir(pcdir) then
-            local pcfiles = os.files(path.join(pcdir, name .. ".pc"))
-            if #pcfiles > 0 then
-                -- Use pkg-config with configdirs
-                local pcresult = find_package_from_pkgconfig(name, {configdirs = pcdir})
+    -- Group paths by package
+    local packages = _group_store_paths_by_package(store_paths, opt)
+    
+    -- Find matching package
+    local matching_outputs = nil
+    local search_name = package_name:lower()
+    
+    for pkg_name, outputs in pairs(packages) do
+        local pkg_lower = pkg_name:lower()
+        local name_in_pkg = pkg_lower:find(search_name, 1, true)
+        local pkg_in_name = search_name:find(pkg_lower, 1, true)
+        
+        if name_in_pkg or pkg_in_name then
+            matching_outputs = outputs
+            if opt and (opt.verbose or option.get("verbose")) then
+                print("Nix: Found package match: " .. pkg_name .. " (" .. #outputs .. " outputs)")
+            end
+            break
+        end
+    end
+    
+    -- Also check direct path name matches for cases where grouping fails
+    if not matching_outputs then
+        matching_outputs = {}
+        for _, store_path in ipairs(store_paths) do
+            local path_name = path.basename(store_path):lower()
+            if path_name:find(search_name, 1, true) then
+                table.insert(matching_outputs, store_path)
+            end
+        end
+    end
+    
+    if not matching_outputs or #matching_outputs == 0 then
+        return nil
+    end
+    
+    -- Try pkg-config search first
+    local pkgconfig_result = _find_with_pkgconfig(package_name, matching_outputs, opt)
+    
+    -- Process all outputs of the package
+    for _, store_path in ipairs(matching_outputs) do
+        -- Add include directories from any output that has them
+        local includedir = path.join(store_path, "include")
+        if os.isdir(includedir) then
+            table.insert(result.includedirs, includedir)
+            if opt and (opt.verbose or option.get("verbose")) then
+                print("Nix: Found include dir: " .. includedir)
+            end
+        end
+        
+        -- Add bin directories from any output that has them
+        local bindir = path.join(store_path, "bin")
+        if os.isdir(bindir) then
+            table.insert(result.bindirs, bindir)
+            if opt and (opt.verbose or option.get("verbose")) then
+                print("Nix: Found bin dir: " .. bindir)
+            end
+        end
+        
+        -- Add lib directories and scan for libraries from any output that has them
+        local libdir = path.join(store_path, "lib")
+        if os.isdir(libdir) then
+            -- Check if this lib dir actually contains libraries (not just cmake/pkgconfig)
+            local libfiles = try {function()
+                local files = {}
+                local so_files = os.files(path.join(libdir, "*.so*")) or {}
+                local a_files = os.files(path.join(libdir, "*.a")) or {}
+                local dylib_files = os.files(path.join(libdir, "*.dylib*")) or {}
+                for _, f in ipairs(so_files) do table.insert(files, f) end
+                for _, f in ipairs(a_files) do table.insert(files, f) end  
+                for _, f in ipairs(dylib_files) do table.insert(files, f) end
+                return files
+            end} or {}
+            
+            if #libfiles > 0 then
+                table.insert(result.linkdirs, libdir)
+                if opt and (opt.verbose or option.get("verbose")) then
+                    print("Nix: Found lib dir: " .. libdir .. " (" .. #libfiles .. " libraries)")
+                end
                 
-                if pcresult then
-                    return pcresult
+                for _, libfile in ipairs(libfiles) do
+                    local filename = path.filename(libfile)
+                    local linkname = filename:match("^lib(.+)%.so") or 
+                                   filename:match("^lib(.+)%.a") or 
+                                   filename:match("^lib(.+)%.dylib")
+                    
+                    if linkname then
+                        table.insert(result.links, linkname)
+                        table.insert(result.libfiles, libfile)
+                    end
+                end
+            else
+                -- If no actual libraries but has cmake/pkgconfig, still add for potential cmake usage
+                local has_cmake = os.isdir(path.join(libdir, "cmake"))
+                local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
+                
+                if has_cmake or has_pkgconfig then
+                    table.insert(result.linkdirs, libdir)
+                    if opt and (opt.verbose or option.get("verbose")) then
+                        print("Nix: Found lib dir: " .. libdir .. " (cmake/pkgconfig only)")
+                    end
                 end
             end
         end
     end
     
+    -- Merge pkg-config results if available (prioritize pkg-config results)
+    if pkgconfig_result then
+        -- Use pkg-config results preferentially, but supplement with discovered paths
+        for _, incdir in ipairs(pkgconfig_result.includedirs or {}) do
+            table.insert(result.includedirs, incdir)
+        end
+        for _, linkdir in ipairs(pkgconfig_result.linkdirs or {}) do
+            table.insert(result.linkdirs, linkdir)
+        end
+        for _, link in ipairs(pkgconfig_result.links or {}) do
+            table.insert(result.links, link)
+        end
+        
+        -- Add any additional paths we found that pkg-config might have missed
+        if pkgconfig_result.syslinks then
+            for _, link in ipairs(pkgconfig_result.syslinks) do
+                table.insert(result.links, link)
+            end
+        end
+    end
+    
+    -- Remove duplicates
+    local function remove_duplicates(arr)
+        local seen = {}
+        local clean = {}
+        for _, item in ipairs(arr) do
+            if not seen[item] then
+                seen[item] = true
+                table.insert(clean, item)
+            end
+        end
+        return clean
+    end
+    
+    result.includedirs = remove_duplicates(result.includedirs)
+    result.bindirs = remove_duplicates(result.bindirs)
+    result.linkdirs = remove_duplicates(result.linkdirs)
+    result.links = remove_duplicates(result.links)
+    result.libfiles = remove_duplicates(result.libfiles)
+    
     -- Return result if we found anything useful
-    if result.includedirs or (result.links and #result.links > 0) then
+    if (#result.includedirs > 0) or (#result.bindirs > 0) or (#result.links > 0) or (#result.linkdirs > 0) then
         return result
     end
     
     return nil
 end
 
--- try to build package with modern nix (flakes)
-function _try_modern_nix_build(name)
+-- priority 1: nix shell (flake or legacy)
+function _find_in_nix_shell(package_name, opt)
+    if not _in_nix_shell() then
+        return nil
+    end
+    
+    -- Parse buildInputs environment variables
+    local build_env_vars = {
+        "buildInputs",
+        "nativeBuildInputs", 
+        "propagatedBuildInputs",
+        "propagatedNativeBuildInputs"
+    }
+    
+    local store_paths = _parse_store_paths_from_env(build_env_vars, opt)
+    if #store_paths > 0 then
+        local result = _extract_package_info(store_paths, package_name, opt)
+        if result then
+            if opt and (opt.verbose or option.get("verbose")) then
+                print("Found " .. package_name .. " in nix-shell environment with " .. #store_paths .. " paths")
+            end
+            return result
+        end
+    end
+    
+    return nil
+end
+
+-- priority 2: profile installs
+function _find_in_nix_profile(package_name, opt)
     local nix = find_tool("nix")
     if not nix then
         return nil
     end
     
-    -- Try with flakes syntax
-    local storepath = try {function()
-        return os.iorunv(nix.program, {"build", "nixpkgs#" .. name, "--print-out-paths", "--no-link"}):trim()
+    local profile_list = try {function()
+        return os.iorunv(nix.program, {"profile", "list", "--extra-experimental-features 'nix-command flakes'"}):trim()
     end}
     
-    return storepath
+    if profile_list then
+        local store_paths = {}
+        for line in profile_list:gmatch("[^\n]+") do
+            -- Parse nix profile list output format
+            local store_path = line:match("(/nix/store/[^%s]+)")
+            if store_path then
+                table.insert(store_paths, store_path)
+            end
+        end
+        
+        if #store_paths > 0 then
+            -- Follow propagated inputs for profile packages too
+            store_paths = _follow_propagated_inputs(store_paths, opt)
+            local result = _extract_package_info(store_paths, package_name, opt)
+            if result then
+                if opt and (opt.verbose or option.get("verbose")) then
+                    print("Found " .. package_name .. " in nix profile with " .. #store_paths .. " paths")
+                end
+                return result
+            end
+        end
+    end
+    
+    return nil
 end
 
--- try to build package with legacy nix
-function _try_legacy_nix_build(name)
-    local nix_build = find_tool("nix-build")
-    if not nix_build then
+-- priority 3: home-manager (with tool)
+function _find_in_home_manager_tool(package_name, opt)
+    local home_manager = find_tool("home-manager")
+    if not home_manager then
         return nil
     end
     
-    -- Try legacy nix-build
-    local storepath = try {function()
-        return os.iorunv(nix_build.program, {"<nixpkgs>", "-A", name, "--no-out-link"}):trim()
+    local hm_packages = try {function()
+        return os.iorunv(home_manager.program, {"packages"}):trim()
     end}
     
-    return storepath
+    if hm_packages then
+        local store_paths = {}
+        for line in hm_packages:gmatch("[^\n]+") do
+            local store_path = line:match("(/nix/store/[^%s]+)")
+            if store_path then
+                table.insert(store_paths, store_path)
+            end
+        end
+        
+        if #store_paths > 0 then
+            store_paths = _follow_propagated_inputs(store_paths, opt)
+            local result = _extract_package_info(store_paths, package_name, opt)
+            if result then
+                if opt and (opt.verbose or option.get("verbose")) then
+                    print("Found " .. package_name .. " in home-manager with " .. #store_paths .. " paths")
+                end
+                return result
+            end
+        end
+    end
+    
+    return nil
 end
+
+-- priority 4: home-manager (without tool)
+function _find_in_home_manager_profile(package_name, opt)
+    local nix_store = find_tool("nix-store")
+    if not nix_store then
+        return nil
+    end
+    
+    local user = os.getenv("USER") or "unknown"
+    local user_profile = "/etc/profiles/per-user/" .. user
+    
+    if not os.isdir(user_profile) then
+        return nil
+    end
+    
+    local requisites = try {function()
+        return os.iorunv(nix_store.program, {"--query", "--requisites", user_profile}):trim()
+    end}
+    
+    if requisites then
+        local store_paths = {}
+        for line in requisites:gmatch("[^\n]+") do
+            if line:startswith("/nix/store/") then
+                table.insert(store_paths, line)
+            end
+        end
+        
+        if #store_paths > 0 then
+            -- Note: requisites already includes everything, no need to follow propagated inputs again
+            local result = _extract_package_info(store_paths, package_name, opt)
+            if result then
+                if opt and (opt.verbose or option.get("verbose")) then
+                    print("Found " .. package_name .. " in home-manager profile with " .. #store_paths .. " paths")
+                end
+                return result
+            end
+        end
+    end
+    
+    return nil
+end
+
+-- priority 5: nixos user packages
+function _find_in_nixos_user_packages(package_name, opt)
+    local nixos_option = find_tool("nixos-option")
+    if not nixos_option then
+        return nil
+    end
+    
+    local user = os.getenv("USER") or "unknown"
+    local user_packages = try {function()
+        return os.iorunv(nixos_option.program, {"users.users." .. user .. ".packages"}):trim()
+    end}
+    
+    if user_packages then
+        local store_paths = {}
+        for store_path in user_packages:gmatch('(/nix/store/[^"\'%s]+)') do
+            table.insert(store_paths, store_path)
+        end
+        
+        if #store_paths > 0 then
+            store_paths = _follow_propagated_inputs(store_paths, opt)
+            local result = _extract_package_info(store_paths, package_name, opt)
+            if result then
+                if opt and (opt.verbose or option.get("verbose")) then
+                    print("Found " .. package_name .. " in NixOS user packages with " .. #store_paths .. " paths")
+                end
+                return result
+            end
+        end
+    end
+    
+    return nil
+end
+
+-- priority 6: nixos system packages
+function _find_in_nixos_system_packages(package_name, opt)
+    local nixos_option = find_tool("nixos-option")
+    if not nixos_option then
+        return nil
+    end
+    
+    local system_packages = try {function()
+        return os.iorunv(nixos_option.program, {"environment.systemPackages"}):trim()
+    end}
+    
+    if system_packages then
+        local store_paths = {}
+        for store_path in system_packages:gmatch('(/nix/store/[^"\'%s]+)') do
+            table.insert(store_paths, store_path)
+        end
+        
+        if #store_paths > 0 then
+            store_paths = _follow_propagated_inputs(store_paths, opt)
+            local result = _extract_package_info(store_paths, package_name, opt)
+            if result then
+                if opt and (opt.verbose or option.get("verbose")) then
+                    print("Found " .. package_name .. " in NixOS system packages with " .. #store_paths .. " paths")
+                end
+                return result
+            end
+        end
+    end
+    
+    return nil
+end
+
+-- priority 7: nixos current system
+function _find_in_nixos_current_system(package_name, opt)
+    local nix_store = find_tool("nix-store")
+    if not nix_store then
+        return nil
+    end
+    
+    if not os.isdir("/run/current-system") then
+        return nil
+    end
+    
+    local requisites = try {function()
+        return os.iorunv(nix_store.program, {"--query", "--requisites", "/run/current-system"}):trim()
+    end}
+    
+    if requisites then
+        local store_paths = {}
+        for line in requisites:gmatch("[^\n]+") do
+            if line:startswith("/nix/store/") then
+                table.insert(store_paths, line)
+            end
+        end
+        
+        if #store_paths > 0 then
+            -- Note: requisites already includes everything, no need to follow propagated inputs again
+            local result = _extract_package_info(store_paths, package_name, opt)
+            if result then
+                if opt and (opt.verbose or option.get("verbose")) then
+                    print("Found " .. package_name .. " in NixOS current system with " .. #store_paths .. " paths")
+                end
+                return result
+            end
+        end
+    end
+    
+    return nil
+end
+
 
 -- main find function
 function main(name, opt)
@@ -356,43 +640,27 @@ function main(name, opt)
         force_nix = true
     end
     
-    -- Get all available Nix store paths
-    local nix_paths = _get_available_nix_paths()
+    -- Search priority chain
+    local search_functions = {
+        _find_in_nix_shell,
+        _find_in_nix_profile,
+        _find_in_home_manager_tool,
+        _find_in_home_manager_profile,
+        _find_in_nixos_user_packages,
+        _find_in_nixos_system_packages,
+        _find_in_nixos_current_system
+    }
     
-    -- Search through available paths first (prioritize shell environment)
-    if #nix_paths > 0 then
-        for i, store_path in ipairs(nix_paths) do
-            local result = _find_in_store_path(store_path, actual_name)
-            if result then
-                if opt.verbose or option.get("verbose") then
-                    print("Found " .. actual_name .. " in: " .. store_path)
-                end
-                return result
-            end
+    for _, search_func in ipairs(search_functions) do
+        local result = search_func(actual_name, opt)
+        if result then
+            return result
         end
     end
     
-    -- If not found in available paths and not in nix-shell, try building
-    if not _in_nix_shell() or force_nix then
-        local storepath = nil
-        
-        -- Try modern nix first
-        storepath = _try_modern_nix_build(actual_name)
-        
-        -- Fallback to legacy nix-build
-        if not storepath then
-            storepath = _try_legacy_nix_build(actual_name)
-        end
-        
-        if storepath and os.isdir(storepath) then
-            local result = _find_in_store_path(storepath, actual_name)
-            if result then
-                if opt.verbose or option.get("verbose") then
-                    print("Built and found " .. actual_name .. " in: " .. storepath)
-                end
-                return result
-            end
-        end
+    -- No results found
+    if force_nix and opt and (opt.verbose or option.get("verbose")) then
+        print("Nix: Package " .. actual_name .. " not found in any nix environment")
     end
     
     return nil
