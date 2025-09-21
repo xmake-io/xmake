@@ -69,8 +69,6 @@ local apis = {
         "xpack.add_buildrequires",
         -- set nsis display icon
         "xpack.set_nsis_displayicon",
-        -- set icon name
-        "xpack.set_iconname",
         -- set dmg window position
         "xpack.set_dmg_window_pos",
         -- set dmg window size
