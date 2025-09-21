@@ -1434,13 +1434,12 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         tb_strlcpy(engine->name, name, sizeof(engine->name));
 
         // init lua
-        engine->lua = luaL_newstate();
-        tb_assert_and_check_break(engine->lua);
-
 #if XM_HOOK_LUA_MEMALLOC
-        // hook lua memmory, @note we cannot set udata argument, xm_engine_bind_to_lua() has used it.
-        lua_setallocf(engine->lua, xm_engine_lua_realloc, tb_null);
+        engine->lua = lua_newstate(xm_engine_lua_realloc, tb_null);
+#else
+        engine->lua = luaL_newstate();
 #endif
+        tb_assert_and_check_break(engine->lua);
 
         // open lua libraries
         luaL_openlibs(engine->lua);
