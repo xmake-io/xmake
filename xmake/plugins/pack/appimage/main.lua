@@ -186,7 +186,6 @@ Version=1.0
     )
     local desktop_file = path.join(appdir, package:name() .. ".desktop")
     io.writefile(desktop_file, desktop_content)
-    return desktop_file
 end
 -- create AppRun script
 function _create_apprun(package, appdir)
@@ -202,22 +201,18 @@ exec "${HERE}/%s" "$@"
     local apprun_file = path.join(appdir, "AppRun")
     io.writefile(apprun_file, apprun_content)
     os.runv("chmod", {"+x", apprun_file})
-    return apprun_file
 end
 -- copy icon file
 function _copy_icon(package, appdir)
     local iconfile = package:get("iconfile")
     local iconname = package:get("iconname") or package:name()
     if iconfile and os.isfile(iconfile) then
-        -- 复制图标到usr/share/icons/hicolor目录
         local icon_dir = path.join(appdir, "usr/share/icons/hicolor/256x256/apps")
         os.mkdir(icon_dir)
         local icon_dst = path.join(icon_dir, iconname .. path.extension(iconfile))
         os.cp(iconfile, icon_dst)
-        -- 同时复制到AppDir根目录供.desktop文件使用
         local root_icon = path.join(appdir, iconname .. path.extension(iconfile))
         os.cp(iconfile, root_icon)
-        return icon_dst
     else
         return nil
     end
@@ -255,7 +250,8 @@ end
 function _pack_appimage(appimagetool, package)
     -- create temporary AppDir
     local appdir_name = package:name() .. ".AppDir"
-    local appdir = path.join(os.tmpdir(), appdir_name)
+    local appdir = path.join(package:builddir(), appdir_name)
+    print("Creating temporary AppDir: %s", appdir)
     os.tryrm(appdir)
     -- create AppDir structure
     os.mkdir(appdir)
@@ -321,7 +317,7 @@ function _pack_appimage(appimagetool, package)
     local appimage_file = package:outputfile() or _get_appimage_file(package)
     os.tryrm(appimage_file)
     -- set architecture environment variable
-    local arch = package:get("arch") or "x86_64"
+    local arch = package:arch() or "x86_64"
     local envs = {ARCH = arch}
     os.vrunv(appimagetool.program, {appdir, appimage_file}, {envs = envs})
     -- clean up temporary directory
