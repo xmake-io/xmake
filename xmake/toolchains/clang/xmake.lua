@@ -53,7 +53,10 @@ toolchain("clang" .. suffix)
             end
         end
 
-        return import("lib.detect.find_tool")("clang" .. suffix)
+        local name = "clang" .. suffix
+        -- Use program for clang-xx toolchain
+        -- @see https://github.com/xmake-io/xmake/pull/6824#issuecomment-3316027626
+        return import("lib.detect.find_tool")(name, {program = name})
     end)
 
     on_load(function (toolchain)
