@@ -636,7 +636,7 @@ function main(name, opt)
     local actual_name = name
     local force_nix = false
     if name:startswith("nix::") then
-        actual_name = name:sub(6) -- Remove "nix::" prefix
+        actual_name = name:sub(5) -- Remove "nix::" prefix
         force_nix = true
     end
     
