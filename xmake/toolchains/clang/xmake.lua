@@ -53,7 +53,7 @@ toolchain("clang" .. suffix)
             end
         end
 
-        return import("lib.detect.find_tool")("clang" .. suffix)
+        return import("lib.detect.find_tool")("clang", {program = "clang" .. suffix})
     end)
 
     on_load(function (toolchain)

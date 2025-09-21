@@ -43,7 +43,7 @@ toolchain("gcc" .. suffix)
     set_toolset("as", "gcc" .. suffix)
 
     on_check(function (toolchain)
-        return import("lib.detect.find_tool")("gcc" .. suffix)
+        return import("lib.detect.find_tool")("gcc", {program = "gcc" .. suffix})
     end)
 
     on_load(function (toolchain)
