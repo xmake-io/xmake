@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v3.0.3
+
 ### New features
 
 * [#6778](https://github.com/xmake-io/xmake/pull/6778): Add build.linker.output
@@ -17,7 +19,6 @@
 * [#6765](https://github.com/xmake-io/xmake/pull/6765): Improve bin2c to use native thread
 * [#6771](https://github.com/xmake-io/xmake/pull/6771): Fix find gcc/gxx cache
 * [#6777](https://github.com/xmake-io/xmake/pull/6777): Fix executable path for cmake
-* [#6782](https://github.com/xmake-io/xmake/pull/6782): Update engine
 * [#6783](https://github.com/xmake-io/xmake/pull/6783): Fix build.c++.modules.std policy
 * [#6744](https://github.com/xmake-io/xmake/pull/6744): Use a file for requires flags when --verbose or --diagnosis is supplied
 * [#6780](https://github.com/xmake-io/xmake/pull/6780): Add benchmarks and optimize config/build targets
@@ -2081,6 +2082,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v3.0.3
 
 ### 新特性
 
