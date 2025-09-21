@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      RubMaker
 -- @file        find_linuxdeploy.lua
@@ -20,12 +20,13 @@
 
 -- imports
 import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
 -- find linuxdeploy
 --
--- @param opt   the argument options
+-- @param opt   the argument options, e.g. {version = true}
 --
--- @return      program path or nil
+-- @return      program, version
 --
 -- @code
 --
@@ -34,38 +35,36 @@ import("lib.detect.find_program")
 -- @endcode
 --
 function main(opt)
+    -- init options
     opt = opt or {}
     
-    -- find linuxdeploy in system PATH
-    local program = find_program("linuxdeploy", opt)
-    
-    -- if not found, check common installation paths
-    if not program then
-        local homedir = os.getenv("HOME") 
-        local paths = {
-            "/usr/local/bin/linuxdeploy",
-            "/usr/bin/linuxdeploy",
-            "/opt/linuxdeploy/linuxdeploy",
-            path.join(os.tmpdir(), "linuxdeploy"),
-            path.join(homedir, "Downloads/linuxdeploy"),
-            path.join(homedir, "downloads/linuxdeploy"),
-            path.join(homedir, ".local/bin/linuxdeploy"),
-            path.join(homedir, "bin/linuxdeploy"),
-            "/snap/bin/linuxdeploy",
-            "/var/lib/flatpak/exports/bin/linuxdeploy",
-            path.join(homedir, ".local/share/flatpak/exports/bin/linuxdeploy"),
-            path.join(os.curdir(), "linuxdeploy"),
-            path.join(os.curdir(), "tools/linuxdeploy"),
-            path.join(os.curdir(), "bin/linuxdeploy")
+    -- add common linuxdeploy installation paths if no specific program is given
+    if not opt.program then
+        opt.paths = opt.paths or {}
+        local homedir = os.getenv("HOME") or "~"
+        local linuxdeploy_paths = {
+            "/usr/local/bin",                    -- standard system path
+            "/usr/bin",                          -- system binary path
+            "/opt/linuxdeploy",                  -- custom installation directory
+            path.join(homedir, ".local/bin"),      -- user local bin
+            path.join(homedir, "bin"),             -- user bin
+            path.join(homedir, "Downloads"),       -- common download location
+            path.join(homedir, "downloads"),       -- lowercase download location
+            os.tmpdir(),                           -- temporary directory
+            "/snap/bin",                          -- snap packages
+            "/var/lib/flatpak/exports/bin",       -- flatpak system
+            path.join(homedir, ".local/share/flatpak/exports/bin"), -- flatpak user
+            path.join(os.curdir(), "tools"),       -- project tools directory
+            path.join(os.curdir(), "bin")          -- project bin directory
         }
         
-        for _, p in ipairs(paths) do
-            if os.isfile(p) and os.isexec(p) then
-                program = p
-                break
-            end
+        opt.paths = table.wrap(opt.paths)
+        for _, deploypath in ipairs(linuxdeploy_paths) do
+            table.insert(opt.paths, deploypath)
         end
     end
     
+    -- find program
+    local program = find_program(opt.program or "linuxdeploy", opt)
     return program
 end

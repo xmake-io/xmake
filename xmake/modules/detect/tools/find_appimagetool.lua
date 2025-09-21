@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      RubMaker
 -- @file        find_appimagetool.lua
@@ -20,12 +20,13 @@
 
 -- imports
 import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
 -- find appimagetool
 --
--- @param opt   the argument options
+-- @param opt   the argument options, e.g. {version = true}
 --
--- @return      program path or nil
+-- @return      program
 --
 -- @code
 --
@@ -34,26 +35,26 @@ import("lib.detect.find_program")
 -- @endcode
 --
 function main(opt)
+    -- init options
     opt = opt or {}
     
-    -- find appimagetool in system PATH
-    local program = find_program("appimagetool", opt)
-    
-    -- if not found, check common installation paths
-    if not program then
-        local paths = {
-            "/usr/local/bin/appimagetool",
-            "/usr/bin/appimagetool",
-            "/opt/appimagetool/appimagetool"
+    -- add common appimagetool installation paths if no specific program is given
+    if not opt.program then
+        opt.paths = opt.paths or {}
+        local appimagetool_paths = {
+            "/usr/bin",                    -- standard system path
+            "/usr/local/bin",              -- local installation
+            "/opt/appimagetool",           -- custom installation directory
+            path.join(os.getenv("HOME") or "~", ".local/bin")  -- user local bin
         }
         
-        for _, p in ipairs(paths) do
-            if os.isfile(p) and os.isexec(p) then
-                program = p
-                break
-            end
+        opt.paths = table.wrap(opt.paths)
+        for _, apppath in ipairs(appimagetool_paths) do
+            table.insert(opt.paths, apppath)
         end
     end
     
+    -- find program
+    local program = find_program(opt.program or "appimagetool", opt)
     return program
 end
