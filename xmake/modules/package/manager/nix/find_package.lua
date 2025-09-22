@@ -118,62 +118,28 @@ function _path_matches_package(store_path, package_name, opt)
 end
 
 function _find_with_pkgconfig(package_name, store_paths, opt)
-    local relevant_paths = {}
     for _, store_path in ipairs(store_paths) do
-        if _path_matches_package(store_path, package_name, opt) then
-            table.insert(relevant_paths, store_path)
-        end
-    end
-    if #relevant_paths == 0 then
-        return nil
-    end
-    local all_pkgconfig_dirs = {}
-    local pkgconfig_env_additions = {}
-    for _, store_path in ipairs(relevant_paths) do
         local pkgconfig_dirs = {
             path.join(store_path, "lib", "pkgconfig"),
             path.join(store_path, "share", "pkgconfig")
         }
-        for _, pkgconfig_dir in ipairs(pkgconfig_dirs) do
-            if os.isdir(pkgconfig_dir) then
-                table.insert(all_pkgconfig_dirs, pkgconfig_dir)
-                table.insert(pkgconfig_env_additions, pkgconfig_dir)
-            end
-        end
-    end
-    if #all_pkgconfig_dirs == 0 then
-        return nil
-    end
-    local original_pkg_config_path = os.getenv("PKG_CONFIG_PATH") or ""
-    local new_pkg_config_path = table.concat(pkgconfig_env_additions, ":")
-    if original_pkg_config_path ~= "" then
-        new_pkg_config_path = new_pkg_config_path .. ":" .. original_pkg_config_path
-    end
-    os.setenv("PKG_CONFIG_PATH", new_pkg_config_path)
-    local result = find_package_from_pkgconfig(package_name)
-    if result then
-        return result
-    end
-    for _, pkgconfig_dir in ipairs(all_pkgconfig_dirs) do
-        local pc_files = try {function()
-            return os.files(path.join(pkgconfig_dir, "*.pc"))
-        end} or {}
-        for _, pc_file in ipairs(pc_files) do
-            local pc_name = path.basename(pc_file):match("^(.+)%.pc$")
-            if pc_name then
-                local name_lower = package_name:lower()
-                local pc_lower = pc_name:lower()
-                if pc_lower:find(name_lower, 1, true) or name_lower:find(pc_lower, 1, true) then
-                    result = find_package_from_pkgconfig(pc_name)
-                    if result then
-                        break
+        
+        for _, pcdir in ipairs(pkgconfig_dirs) do
+            if os.isdir(pcdir) then
+                if opt and (opt.verbose or option.get("verbose")) then
+                    print("Nix: Attempting pkg-config lookup: " .. package_name .. " (configdirs=" .. pcdir .. ")")
+                end
+                local result = find_package_from_pkgconfig(package_name, {configdirs = pcdir})
+                if result then
+                    if opt and (opt.verbose or option.get("verbose")) then
+                        print("Nix: Found package via pkg-config: " .. package_name)
                     end
+                    return result
                 end
             end
         end
-        if result then break end
     end
-    return result
+    return nil
 end
 
 function _extract_package_info(store_paths, package_name, opt)
@@ -184,49 +150,37 @@ function _extract_package_info(store_paths, package_name, opt)
         links = {},
         libfiles = {}
     }
+
+    -- Try pkg-config first
     local pkgconfig_result = _find_with_pkgconfig(package_name, store_paths, opt)
     if pkgconfig_result then
         return pkgconfig_result
     end
+
     local main_package_paths = {}
-    local dependency_paths = {}
-    local found_main_package = false
     for _, store_path in ipairs(store_paths) do
         if _path_matches_package(store_path, package_name, opt) then
             table.insert(main_package_paths, store_path)
-            found_main_package = true
-        else
-            table.insert(dependency_paths, store_path)
         end
     end
-    if not found_main_package then
-        return nil
-    end
-    for _, store_path in ipairs(main_package_paths) do
+
+    -- Collect includedirs and linkdirs from all store paths
+    for _, store_path in ipairs(store_paths) do
         local includedir = path.join(store_path, "include")
         if os.isdir(includedir) then
             table.insert(result.includedirs, includedir)
-            if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Found main package include dir: " .. includedir)
-            end
             local subdirs = try {function()
                 return os.dirs(path.join(includedir, "*"))
             end} or {}
             for _, subdir in ipairs(subdirs) do
                 if os.isdir(subdir) then
                     table.insert(result.includedirs, subdir)
-                    if opt and (opt.verbose or option.get("verbose")) then
-                        print("Nix: Found main package include subdir: " .. subdir)
-                    end
                 end
             end
         end
         local bindir = path.join(store_path, "bin")
         if os.isdir(bindir) then
             table.insert(result.bindirs, bindir)
-            if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Found main package bin dir: " .. bindir)
-            end
         end
         local libdir = path.join(store_path, "lib")
         if os.isdir(libdir) then
@@ -242,19 +196,16 @@ function _extract_package_info(store_paths, package_name, opt)
             end} or {}
             if #libfiles > 0 then
                 table.insert(result.linkdirs, libdir)
-                if opt and (opt.verbose or option.get("verbose")) then
-                    print("Nix: Found main package lib dir: " .. libdir .. " (" .. #libfiles .. " libraries)")
-                end
-                for _, libfile in ipairs(libfiles) do
-                    local filename = path.filename(libfile)
-                    local linkname = filename:match("^lib(.+)%.so") or
-                                   filename:match("^lib(.+)%.a") or
-                                   filename:match("^lib(.+)%.dylib")
-                    if linkname then
-                        table.insert(result.links, linkname)
-                        table.insert(result.libfiles, libfile)
-                        if opt and (opt.verbose or option.get("verbose")) then
-                            print("Nix: Found main package library: " .. linkname .. " -> " .. libfile)
+                -- Only add links/libfiles for main package paths
+                if _path_matches_package(store_path, package_name, opt) then
+                    for _, libfile in ipairs(libfiles) do
+                        local filename = path.filename(libfile)
+                        local linkname = filename:match("^lib(.+)%.so") or
+                                       filename:match("^lib(.+)%.a") or
+                                       filename:match("^lib(.+)%.dylib")
+                        if linkname then
+                            table.insert(result.links, linkname)
+                            table.insert(result.libfiles, libfile)
                         end
                     end
                 end
@@ -263,74 +214,11 @@ function _extract_package_info(store_paths, package_name, opt)
                 local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
                 if has_cmake or has_pkgconfig then
                     table.insert(result.linkdirs, libdir)
-                    if opt and (opt.verbose or option.get("verbose")) then
-                        print("Nix: Found main package lib dir: " .. libdir .. " (cmake/pkgconfig only)")
-                    end
                 end
             end
         end
     end
-    for _, store_path in ipairs(dependency_paths) do
-        local includedir = path.join(store_path, "include")
-        if os.isdir(includedir) then
-            table.insert(result.includedirs, includedir)
-            if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Found dependency include dir: " .. includedir)
-            end
-            local subdirs = try {function()
-                return os.dirs(path.join(includedir, "*"))
-            end} or {}
-            for _, subdir in ipairs(subdirs) do
-                if os.isdir(subdir) then
-                    table.insert(result.includedirs, subdir)
-                    if opt and (opt.verbose or option.get("verbose")) then
-                        print("Nix: Found dependency include subdir: " .. subdir)
-                    end
-                end
-            end
-        end
-        local libdir = path.join(store_path, "lib")
-        if os.isdir(libdir) then
-            local libfiles = try {function()
-                local files = {}
-                local so_files = os.files(path.join(libdir, "*.so*")) or {}
-                local a_files = os.files(path.join(libdir, "*.a")) or {}
-                local dylib_files = os.files(path.join(libdir, "*.dylib*")) or {}
-                for _, f in ipairs(so_files) do table.insert(files, f) end
-                for _, f in ipairs(a_files) do table.insert(files, f) end
-                for _, f in ipairs(dylib_files) do table.insert(files, f) end
-                return files
-            end} or {}
-            if #libfiles > 0 then
-                table.insert(result.linkdirs, libdir)
-                if opt and (opt.verbose or option.get("verbose")) then
-                    print("Nix: Found dependency lib dir: " .. libdir .. " (" .. #libfiles .. " libraries)")
-                end
-                for _, libfile in ipairs(libfiles) do
-                    local filename = path.filename(libfile)
-                    local linkname = filename:match("^lib(.+)%.so") or
-                                   filename:match("^lib(.+)%.a") or
-                                   filename:match("^lib(.+)%.dylib")
-                    if linkname then
-                        table.insert(result.links, linkname)
-                        table.insert(result.libfiles, libfile)
-                        if opt and (opt.verbose or option.get("verbose")) then
-                            print("Nix: Found dependency library: " .. linkname .. " -> " .. libfile)
-                        end
-                    end
-                end
-            else
-                local has_cmake = os.isdir(path.join(libdir, "cmake"))
-                local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
-                if has_cmake or has_pkgconfig then
-                    table.insert(result.linkdirs, libdir)
-                    if opt and (opt.verbose or option.get("verbose")) then
-                        print("Nix: Found dependency lib dir: " .. libdir .. " (cmake/pkgconfig only)")
-                    end
-                end
-            end
-        end
-    end
+
     local function remove_duplicates(arr)
         local seen = {}
         local clean = {}
@@ -348,18 +236,8 @@ function _extract_package_info(store_paths, package_name, opt)
     result.links = remove_duplicates(result.links)
     result.libfiles = remove_duplicates(result.libfiles)
     if (#result.includedirs > 0) or (#result.bindirs > 0) or (#result.links > 0) or (#result.linkdirs > 0) then
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: DEBUG: Package info extraction succeeded for '" .. package_name .. "'")
-            print("Nix: DEBUG: Found " .. #result.includedirs .. " include dirs, " ..
-                  #result.bindirs .. " bin dirs, " .. #result.linkdirs .. " link dirs, " ..
-                  #result.links .. " links")
-            print("Nix: DEBUG: Main package paths: " .. #main_package_paths .. ", Dependency paths: " .. #dependency_paths)
-        end
         return result
     else
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: DEBUG: Package info extraction found no useful information for '" .. package_name .. "'")
-        end
         return nil
     end
 end
@@ -390,6 +268,12 @@ function _find_in_nix_shell(package_name, opt)
     return nil
 end
 
+-- Find package from current user's nix profile, includes nix-env installed packages
+-- Note: nix-env only lists one output in the profile list
+-- $ nix-env -iA nixpkgs.<package> # installs multiple outputs, but only one is listed in the profile
+-- this can cause issues if the main output does not contain the necessary files
+-- Example: zlib.dev contains the headers, but zlib only contains the library
+-- there does not seem to be an straight-forward way to find all outputs...
 function _find_in_nix_profile(package_name, opt)
     local nix = find_tool("nix")
     if not nix then
@@ -420,6 +304,7 @@ function _find_in_nix_profile(package_name, opt)
     return nil
 end
 
+-- Popular nix-community tool to declaratively manage user environments (NixOS and non-NixOS)
 function _find_in_home_manager_tool(package_name, opt)
     local home_manager = find_tool("home-manager")
     if not home_manager then
@@ -450,6 +335,7 @@ function _find_in_home_manager_tool(package_name, opt)
     return nil
 end
 
+-- Home manager can be installed as a module in nixos, in which case the home-manager tool is missing.
 function _find_in_home_manager_profile(package_name, opt)
     local nix_store = find_tool("nix-store")
     if not nix_store then
@@ -483,6 +369,7 @@ function _find_in_home_manager_profile(package_name, opt)
     return nil
 end
 
+-- nixos-option is not always configured properly, but if it is, we can find user/system packages
 function _find_in_nixos_user_packages(package_name, opt)
     local nixos_option = find_tool("nixos-option")
     if not nixos_option then
@@ -538,6 +425,7 @@ function _find_in_nixos_system_packages(package_name, opt)
     return nil
 end
 
+-- Includes all system/user/home-manager packages
 function _find_in_nixos_current_system(package_name, opt)
     local nix_store = find_tool("nix-store")
     if not nix_store then
