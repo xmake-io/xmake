@@ -848,31 +848,7 @@ end
 
 function _get_envs_for_default_flags(package, configs, opt)
     local buildtype = _get_cmake_buildtype(package)
-    local envs = {}
-    local default_flags = _get_default_flags(package, configs, buildtype, opt)
-    if default_flags then
-        if not opt.cxxflags and not opt.cxflags then
-            envs.CMAKE_CXX_FLAGS = default_flags.CMAKE_CXX_FLAGS
-            envs["CMAKE_CXX_FLAGS_" .. buildtype] = default_flags["CMAKE_CXX_FLAGS_" .. buildtype]
-        end
-        if not opt.cflags and not opt.cxflags then
-            envs.CMAKE_C_FLAGS = default_flags.CMAKE_C_FLAGS
-            envs["CMAKE_C_FLAGS_" .. buildtype] = default_flags["CMAKE_C_FLAGS_" .. buildtype]
-        end
-        if not opt.ldflags then
-            envs.CMAKE_EXE_LINKER_FLAGS = default_flags.CMAKE_EXE_LINKER_FLAGS
-            envs["CMAKE_EXE_LINKER_FLAGS_" .. buildtype] = default_flags["CMAKE_EXE_LINKER_FLAGS_" .. buildtype]
-        end
-        if not opt.arflags then
-            envs.CMAKE_STATIC_LINKER_FLAGS = default_flags.CMAKE_STATIC_LINKER_FLAGS
-            envs["CMAKE_STATIC_LINKER_FLAGS_" .. buildtype] = default_flags["CMAKE_STATIC_LINKER_FLAGS_" .. buildtype]
-        end
-        if not opt.shflags then
-            envs.CMAKE_SHARED_LINKER_FLAGS = default_flags.CMAKE_SHARED_LINKER_FLAGS
-            envs["CMAKE_SHARED_LINKER_FLAGS_" .. buildtype] = default_flags["CMAKE_SHARED_LINKER_FLAGS_" .. buildtype]
-        end
-    end
-    return envs
+    return table.clone(_get_default_flags(package, configs, buildtype, opt)) or {}
 end
 
 function _get_envs_for_runtime_flags(package, opt)
@@ -892,7 +868,7 @@ end
 
 function _get_envs_for_flags(package, configs, opt)
     -- get the default envs
-    local envs = _get_envs_for_default_flags(package, configs, opt) or {}
+    local envs = _get_envs_for_default_flags(package, configs, opt)
     local runtime_envs = _get_envs_for_runtime_flags(package, opt)
     if runtime_envs then
         for name, value in pairs(runtime_envs) do
