@@ -117,6 +117,7 @@ function _path_matches_package(store_path, package_name, opt)
     return false
 end
 
+-- find package with pkg-config in a specific directory
 function _find_with_pkgconfig(package_name, store_paths, opt)
     for _, store_path in ipairs(store_paths) do
         local pkgconfig_dirs = {
@@ -150,22 +151,31 @@ function _extract_package_info(store_paths, package_name, opt)
         links = {},
         libfiles = {}
     }
-
+    
     -- Try pkg-config first
     local pkgconfig_result = _find_with_pkgconfig(package_name, store_paths, opt)
     if pkgconfig_result then
         return pkgconfig_result
     end
-
+    
     local main_package_paths = {}
+    local propagated_paths = {}
+    
     for _, store_path in ipairs(store_paths) do
         if _path_matches_package(store_path, package_name, opt) then
             table.insert(main_package_paths, store_path)
+        else
+            -- Add non-matching paths as propagated dependencies
+            table.insert(propagated_paths, store_path)
         end
     end
-
-    -- Collect includedirs and linkdirs from all store paths
-    for _, store_path in ipairs(store_paths) do
+    
+    if #main_package_paths == 0 then
+        return nil
+    end
+    
+    -- Process main package paths
+    for _, store_path in ipairs(main_package_paths) do
         local includedir = path.join(store_path, "include")
         if os.isdir(includedir) then
             table.insert(result.includedirs, includedir)
@@ -196,17 +206,14 @@ function _extract_package_info(store_paths, package_name, opt)
             end} or {}
             if #libfiles > 0 then
                 table.insert(result.linkdirs, libdir)
-                -- Only add links/libfiles for main package paths
-                if _path_matches_package(store_path, package_name, opt) then
-                    for _, libfile in ipairs(libfiles) do
-                        local filename = path.filename(libfile)
-                        local linkname = filename:match("^lib(.+)%.so") or
-                                       filename:match("^lib(.+)%.a") or
-                                       filename:match("^lib(.+)%.dylib")
-                        if linkname then
-                            table.insert(result.links, linkname)
-                            table.insert(result.libfiles, libfile)
-                        end
+                for _, libfile in ipairs(libfiles) do
+                    local filename = path.filename(libfile)
+                    local linkname = filename:match("^lib(.+)%.so") or
+                                   filename:match("^lib(.+)%.a") or
+                                   filename:match("^lib(.+)%.dylib")
+                    if linkname then
+                        table.insert(result.links, linkname)
+                        table.insert(result.libfiles, libfile)
                     end
                 end
             else
@@ -218,7 +225,63 @@ function _extract_package_info(store_paths, package_name, opt)
             end
         end
     end
-
+    
+    -- Process all propagated paths for include directories, bin directories, and libraries
+    for _, store_path in ipairs(propagated_paths) do
+        local includedir = path.join(store_path, "include")
+        if os.isdir(includedir) then
+            table.insert(result.includedirs, includedir)
+            -- Also add subdirectories of include for propagated deps
+            local subdirs = try {function()
+                return os.dirs(path.join(includedir, "*"))
+            end} or {}
+            for _, subdir in ipairs(subdirs) do
+                if os.isdir(subdir) then
+                    table.insert(result.includedirs, subdir)
+                end
+            end
+        end
+        
+        local bindir = path.join(store_path, "bin")
+        if os.isdir(bindir) then
+            table.insert(result.bindirs, bindir)
+        end
+        
+        local libdir = path.join(store_path, "lib")
+        if os.isdir(libdir) then
+            local libfiles = try {function()
+                local files = {}
+                local so_files = os.files(path.join(libdir, "*.so*")) or {}
+                local a_files = os.files(path.join(libdir, "*.a")) or {}
+                local dylib_files = os.files(path.join(libdir, "*.dylib*")) or {}
+                for _, f in ipairs(so_files) do table.insert(files, f) end
+                for _, f in ipairs(a_files) do table.insert(files, f) end
+                for _, f in ipairs(dylib_files) do table.insert(files, f) end
+                return files
+            end} or {}
+            if #libfiles > 0 then
+                table.insert(result.linkdirs, libdir)
+                for _, libfile in ipairs(libfiles) do
+                    local filename = path.filename(libfile)
+                    local linkname = filename:match("^lib(.+)%.so") or
+                                   filename:match("^lib(.+)%.a") or
+                                   filename:match("^lib(.+)%.dylib")
+                    if linkname then
+                        table.insert(result.links, linkname)
+                        table.insert(result.libfiles, libfile)
+                    end
+                end
+            else
+                -- Also check for cmake/pkgconfig dirs in propagated deps
+                local has_cmake = os.isdir(path.join(libdir, "cmake"))
+                local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
+                if has_cmake or has_pkgconfig then
+                    table.insert(result.linkdirs, libdir)
+                end
+            end
+        end
+    end
+    
     local function remove_duplicates(arr)
         local seen = {}
         local clean = {}
@@ -235,7 +298,7 @@ function _extract_package_info(store_paths, package_name, opt)
     result.linkdirs = remove_duplicates(result.linkdirs)
     result.links = remove_duplicates(result.links)
     result.libfiles = remove_duplicates(result.libfiles)
-    if #main_package_paths > 0 and ((#result.links > 0) or (#result.libfiles > 0)) then
+    if (#result.includedirs > 0) or (#result.bindirs > 0) or (#result.links > 0) or (#result.linkdirs > 0) then
         return result
     else
         return nil
@@ -280,7 +343,7 @@ function _find_in_nix_profile(package_name, opt)
         return nil
     end
     local profile_list = try {function()
-        return os.iorunv(nix.program, {"profile", "list", "--extra-experimental-features 'nix-command flakes'"}):trim()
+        return os.iorunv(nix.program, {"profile", "list", "--extra-experimental-features", "nix-command flakes"}):trim()
     end}
     if profile_list then
         local store_paths = {}
@@ -425,7 +488,7 @@ function _find_in_nixos_system_packages(package_name, opt)
     return nil
 end
 
--- Includes all system/user/home-manager packages
+-- Includes all system/current user/home-manager packages
 function _find_in_nixos_current_system(package_name, opt)
     local nix_store = find_tool("nix-store")
     if not nix_store then
