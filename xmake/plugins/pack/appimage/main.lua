@@ -48,69 +48,75 @@ end
 -- translate the file path for AppDir structure
 function _translate_filepath(package, filepath, appdir)
     local install_rootdir = package:install_rootdir()
+    local dstpath = nil
     -- translate to relative path
     if filepath:startswith(install_rootdir) then
         local relative_path = path.relative(filepath, install_rootdir)
         -- translate to relative path
         if relative_path:startswith("usr/") then
-            relative_path = relative_path:sub(5) 
+            relative_path = relative_path:sub(5)
         end
         -- map to AppDir's usr directory structure
         if relative_path:startswith("bin/") then
-            return path.join(appdir, "usr", relative_path)
+            dstpath = path.join(appdir, "usr", relative_path)
         elseif relative_path:startswith("lib/") then
-            return path.join(appdir, "usr", relative_path)
+            dstpath = path.join(appdir, "usr", relative_path)
         elseif relative_path:startswith("share/") then
-            return path.join(appdir, "usr", relative_path)
+            dstpath = path.join(appdir, "usr", relative_path)
         elseif relative_path:startswith("include/") then
-            return path.join(appdir, "usr", relative_path)
+            dstpath = path.join(appdir, "usr", relative_path)
         else
             local filename = path.filename(filepath)
             local ext = path.extension(filename):lower()
             -- binary executable -> usr/bin
             if ext == "" or ext == ".exe" then
-                return path.join(appdir, "usr", "bin", filename)
+                dstpath = path.join(appdir, "usr", "bin", filename)
             -- library file -> usr/lib
             elseif ext == ".so" or ext == ".dylib" or ext == ".dll" then
-                return path.join(appdir, "usr", "lib", filename)
+                dstpath = path.join(appdir, "usr", "lib", filename)
             -- icon file -> usr/share/icons/hicolor
             elseif ext == ".png" or ext == ".svg" or ext == ".ico" or ext == ".xpm" then
                 local icon_dir = path.join(appdir, "usr/share/icons/hicolor/256x256/apps")
-                return path.join(icon_dir, filename)
+                dstpath = path.join(icon_dir, filename)
             -- desktop file -> usr/share/applications
             elseif ext == ".desktop" then
-                return path.join(appdir, "usr/share/applications", filename)
+                dstpath = path.join(appdir, "usr/share/applications", filename)
             -- other files -> usr/share/<package-name> or based on original path
             else
                 local dirname = path.directory(relative_path)
                 if dirname and dirname ~= "." then
-                    return path.join(appdir, "usr", "share", package:name(), dirname, filename)
+                    dstpath = path.join(appdir, "usr", "share", package:name(), dirname, filename)
                 else
-                    return path.join(appdir, "usr", "share", package:name(), filename)
+                    dstpath = path.join(appdir, "usr", "share", package:name(), filename)
                 end
             end
         end
     else
         local filename = path.filename(filepath)
         local ext = path.extension(filename):lower()
-        if ext == ".cpp" or ext == ".c" or ext == ".h" or ext == ".hpp" or 
+        if ext == ".cpp" or ext == ".c" or ext == ".h" or ext == ".hpp" or
            ext == ".py" or ext == ".js" or ext == ".java" or ext == ".go" then
             return nil
         -- binary file
         elseif ext == "" or ext == ".exe" then
-            return path.join(appdir, "usr", "bin", filename)
+            dstpath = path.join(appdir, "usr", "bin", filename)
         -- library file
         elseif ext == ".so" or ext == ".dylib" or ext == ".dll" then
-            return path.join(appdir, "usr", "lib", filename)
+            dstpath = path.join(appdir, "usr", "lib", filename)
         -- icon file
         elseif ext == ".png" or ext == ".svg" or ext == ".ico" or ext == ".xpm" then
             local icon_dir = path.join(appdir, "usr/share/icons/hicolor/256x256/apps")
-            return path.join(icon_dir, filename)
+            dstpath = path.join(icon_dir, filename)
         else
-            return path.join(appdir, "usr", "share", package:name(), filename)
+            dstpath = path.join(appdir, "usr", "share", package:name(), filename)
         end
     end
+    if dstpath then
+        os.mkdir(path.directory(dstpath))
+    end
+    return dstpath
 end
+
 -- get install command for AppDir
 function _get_customcmd(package, appdir, installcmds, cmd)
     local opt = cmd.opt or {}
@@ -127,6 +133,7 @@ function _get_customcmd(package, appdir, installcmds, cmd)
                 end
             end
             if dstfile then
+                os.mkdir(path.directory(dstfile))
                 table.insert(installcmds, string.format("install -Dpm0755 \"%s\" \"%s\"", srcfile, dstfile))
             end
         end
@@ -159,6 +166,7 @@ function _get_customcmd(package, appdir, installcmds, cmd)
         table.insert(installcmds, string.format("%s", os.args(table.join(cmd.program, argv))))
     end
 end
+
 -- get install commands for AppDir
 function _get_installcmds(package, appdir, installcmds, cmds)
     for _, cmd in ipairs(cmds) do
@@ -177,7 +185,7 @@ Exec=%s
 Icon=%s
 Categories=%s
 Version=1.0
-]], 
+]],
         package:get("title") or package:name(),
         package:get("description") or package:get("title") or package:name(),
         package:name(),
@@ -185,6 +193,8 @@ Version=1.0
         package:get("category") or "Utility"
     )
     local desktop_file = path.join(appdir, package:name() .. ".desktop")
+    -- mkdir desktop file
+    os.mkdir(path.directory(desktop_file))
     io.writefile(desktop_file, desktop_content)
 end
 -- create AppRun script
@@ -255,15 +265,7 @@ function _pack_appimage(appimagetool, package)
     os.tryrm(appdir)
     -- create AppDir structure
     os.mkdir(appdir)
-    os.mkdir(path.join(appdir, "usr"))
-    os.mkdir(path.join(appdir, "usr/bin"))
-    os.mkdir(path.join(appdir, "usr/lib"))
-    os.mkdir(path.join(appdir, "usr/share"))
-    os.mkdir(path.join(appdir, "usr/share/applications"))
-    os.mkdir(path.join(appdir, "usr/share/icons"))
-    os.mkdir(path.join(appdir, "usr/share/icons/hicolor"))
-    os.mkdir(path.join(appdir, "usr/share/icons/hicolor/256x256"))
-    os.mkdir(path.join(appdir, "usr/share/icons/hicolor/256x256/apps"))
+
     local original_prefixdir = package:get("prefixdir")
     package:set("prefixdir", "/usr")
     -- install files to AppDir
