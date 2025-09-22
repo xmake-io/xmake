@@ -235,7 +235,7 @@ function _extract_package_info(store_paths, package_name, opt)
     result.linkdirs = remove_duplicates(result.linkdirs)
     result.links = remove_duplicates(result.links)
     result.libfiles = remove_duplicates(result.libfiles)
-    if (#result.includedirs > 0) or (#result.bindirs > 0) or (#result.links > 0) or (#result.linkdirs > 0) then
+    if #main_package_paths > 0 and ((#result.links > 0) or (#result.libfiles > 0)) then
         return result
     else
         return nil
