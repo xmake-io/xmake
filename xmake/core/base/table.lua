@@ -533,7 +533,7 @@ end
 
 -- is empty table?
 function table.empty(tbl)
-    return type(tbl) == "table" and #tbl == 0 and #table.keys(tbl) == 0
+    return type(tbl) == "table" and next(tbl) == nil
 end
 
 -- return indices or keys for the given value
