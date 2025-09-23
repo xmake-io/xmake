@@ -24,6 +24,11 @@ import("lib.detect.find_tool")
 import("private.core.base.is_cross")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
+-- static caches
+local _store_paths_cache = {}
+local _propagated_inputs_cache = {}
+local _pkgconfig_cache = {}
+
 -- recursively follow propagated build inputs
 function _follow_propagated_inputs(store_paths, opt, visited)
     visited = visited or {}
@@ -42,22 +47,40 @@ function _follow_propagated_inputs(store_paths, opt, visited)
         local store_path = all_paths[i]
         if not visited[store_path] then
             visited[store_path] = true
-            local prop_file = path.join(store_path, "nix-support", "propagated-build-inputs")
-            if os.isfile(prop_file) then
-                local content = try {function()
-                    return io.readfile(prop_file):trim()
-                end}
-                if content and content ~= "" then
-                    for prop_path in content:gmatch("%S+") do
-                        if prop_path:startswith("/nix/store/") and not seen[prop_path] then
-                            seen[prop_path] = true
-                            table.insert(all_paths, prop_path)
-                            if opt and (opt.verbose or option.get("verbose")) then
-                                print("Nix: Added propagated: " .. prop_path)
+            -- cache propagated inputs per store_path
+            if _propagated_inputs_cache[store_path] then
+                for _, prop_path in ipairs(_propagated_inputs_cache[store_path]) do
+                    if prop_path:startswith("/nix/store/") and not seen[prop_path] then
+                        seen[prop_path] = true
+                        table.insert(all_paths, prop_path)
+                        if opt and (opt.verbose or option.get("verbose")) then
+                            print("Nix: Added propagated (cached): " .. prop_path)
+                        end
+                    end
+                end
+            else
+                local prop_file = path.join(store_path, "nix-support", "propagated-build-inputs")
+                local prop_paths = {}
+                if os.isfile(prop_file) then
+                    local content = try {function()
+                        return io.readfile(prop_file):trim()
+                    end}
+                    if content and content ~= "" then
+                        for prop_path in content:gmatch("%S+") do
+                            if prop_path:startswith("/nix/store/") and not seen[prop_path] then
+                                seen[prop_path] = true
+                                table.insert(all_paths, prop_path)
+                                table.insert(prop_paths, prop_path)
+                                if opt and (opt.verbose or option.get("verbose")) then
+                                    print("Nix: Added propagated: " .. prop_path)
+                                end
+                            else
+                                table.insert(prop_paths, prop_path)
                             end
                         end
                     end
                 end
+                _propagated_inputs_cache[store_path] = prop_paths
             end
         end
         i = i + 1
@@ -67,6 +90,14 @@ end
 
 -- parse store paths from environment variables
 function _parse_store_paths_from_env(env_vars, opt)
+    local cache_key = table.concat(env_vars, "|")
+    if _store_paths_cache[cache_key] then
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: Using cached store paths for env_vars: " .. cache_key)
+        end
+        return _store_paths_cache[cache_key]
+    end
+
     local paths = {}
     local seen = {}
 
@@ -93,6 +124,7 @@ function _parse_store_paths_from_env(env_vars, opt)
     end
 
     paths = _follow_propagated_inputs(paths, opt)
+    _store_paths_cache[cache_key] = paths
     return paths
 end
 
@@ -119,12 +151,20 @@ end
 
 -- find package with pkg-config in a specific directory
 function _find_with_pkgconfig(package_name, store_paths, opt)
+    local cache_key = package_name .. ":" .. table.concat(store_paths, ";")
+    if _pkgconfig_cache[cache_key] then
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: Using cached pkg-config result for: " .. cache_key)
+        end
+        return _pkgconfig_cache[cache_key]
+    end
+
     for _, store_path in ipairs(store_paths) do
         local pkgconfig_dirs = {
             path.join(store_path, "lib", "pkgconfig"),
             path.join(store_path, "share", "pkgconfig")
         }
-        
+
         for _, pcdir in ipairs(pkgconfig_dirs) do
             if os.isdir(pcdir) then
                 if opt and (opt.verbose or option.get("verbose")) then
@@ -135,11 +175,13 @@ function _find_with_pkgconfig(package_name, store_paths, opt)
                     if opt and (opt.verbose or option.get("verbose")) then
                         print("Nix: Found package via pkg-config: " .. package_name)
                     end
+                    _pkgconfig_cache[cache_key] = result
                     return result
                 end
             end
         end
     end
+    _pkgconfig_cache[cache_key] = nil
     return nil
 end
 
