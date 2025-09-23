@@ -59,7 +59,7 @@ function _do_show(str, opt)
 end
 
 -- show result
-function _show(apiname, value, target, opt)
+function _show(apiname, value, instance, opt)
     opt = opt or {}
 
     -- match level? verbose: note/warning/error, default: warning/error
@@ -69,13 +69,13 @@ function _show(apiname, value, target, opt)
     end
 
     -- get source information
-    local sourceinfo = target:sourceinfo(apiname, value) or {}
+    local sourceinfo = instance:sourceinfo(apiname, value) or {}
     local sourcetips = sourceinfo.file or ""
     if sourceinfo.line then
         sourcetips = sourcetips .. ":" .. (sourceinfo.line or -1)
     end
     if #sourcetips == 0 then
-        sourcetips = string.format("target(%s)", target:name())
+        sourcetips = string.format("%s(%s)", instance:type(), instance:name())
     end
 
     -- get level tips
@@ -105,21 +105,21 @@ function _show(apiname, value, target, opt)
         probable_value = probable_value})
 end
 
--- check target
-function _check_target(target, apiname, valueset, level, opt)
-    local target_valueset = valueset
+-- check instance
+function _check_instance(instance, apiname, valueset, level, opt)
+    local instance_valueset = valueset
     if type(opt.values) == "function" then
-        local target_values = opt.values(target)
-        if target_values then
-            target_valueset = hashset.from(target_values)
+        local instance_values = opt.values(instance)
+        if instance_values then
+            instance_valueset = hashset.from(instance_values)
         end
     end
-    local values = target:get(apiname)
+    local values = instance:get(apiname)
     for _, value in ipairs(values) do
         if opt.check then
-            local ok, errors = opt.check(target, value)
+            local ok, errors = opt.check(instance, value)
             if not ok then
-                local reported = _show(apiname, value, target, {
+                local reported = _show(apiname, value, instance, {
                     show = opt.show,
                     showstr = errors,
                     level = level})
@@ -127,10 +127,10 @@ function _check_target(target, apiname, valueset, level, opt)
                     checker.update_stats(level)
                 end
             end
-        elseif not target_valueset:has(value) then
-            local reported = _show(apiname, value, target, {
+        elseif not instance_valueset:has(value) then
+            local reported = _show(apiname, value, instance, {
                 show = opt.show,
-                valueset = target_valueset,
+                valueset = instance_valueset,
                 level = level})
             if reported then
                 checker.update_stats(level)
@@ -153,8 +153,8 @@ function check_flag(target, toolinst, flagkind, flag)
     return true
 end
 
--- check api configuration in targets
-function check_targets(apiname, opt)
+-- check api configuration in instances
+function check_instances(apiname, instances_func, opt)
     opt = opt or {}
     local level = opt.level or "warning"
     local valueset
@@ -163,11 +163,22 @@ function check_targets(apiname, opt)
     else
         valueset = hashset.new()
     end
-    if opt.target then
-        _check_target(opt.target, apiname, valueset, level, opt)
+    if opt.instance then
+        _check_instance(opt.instance, apiname, valueset, level, opt)
     else
-        for _, target in pairs(project.targets()) do
-            _check_target(target, apiname, valueset, level, opt)
+        for _, instance in pairs(instances_func()) do
+            _check_instance(instance, apiname, valueset, level, opt)
         end
     end
+end
+
+-- check api configuration in targets
+function check_targets(apiname, opt)
+    check_instances(apiname, project.targets, opt)
+end
+
+-- check api configuration in packages
+function check_packages(apiname, opt)
+    -- TODO add project.packages
+    check_instances(apiname, function() return {} end, opt)
 end

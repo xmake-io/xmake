@@ -70,7 +70,7 @@ function main(targetnames, opt)
         if (info.build and opt.build) or (info.build_failure and opt.build_failure) then
             local check = import("private.check.checkers." .. name, {anonymous = true})
             for _, target in ipairs(targets) do
-                check({target = target, show = _show})
+                check({instance = target, show = _show})
             end
         end
     end

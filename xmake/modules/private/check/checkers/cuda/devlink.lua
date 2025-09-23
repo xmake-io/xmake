@@ -43,8 +43,8 @@ function _check_target(target, opt)
 end
 
 function main(opt)
-    if opt.target then
-        _check_target(opt.target, opt)
+    if opt.instance then
+        _check_target(opt.instance, opt)
     else
         for _, target in pairs(project.targets()) do
             _check_target(target, opt)
