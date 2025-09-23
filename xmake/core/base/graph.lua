@@ -92,7 +92,7 @@ end
 
 -- has the given vertex?
 function graph:has_vertex(v)
-    return table.contains(self:vertices(), v)
+    return self._adjacent_edges[v] ~= nil
 end
 
 -- add an isolated without edges
@@ -375,25 +375,22 @@ end
 
 -- add edge
 function graph:add_edge(from, to)
+    if self:has_edge(from, to) then
+        return
+    end
+    self:add_vertex(from)
+    self:add_vertex(to)
     local e = edge.new(from, to)
-    if not self:has_vertex(from) then
-        table.insert(self._vertices, from)
-        self._adjacent_edges[from] = {}
-    end
-    if not self:has_vertex(to) then
-        table.insert(self._vertices, to)
-        self._adjacent_edges[to] = {}
-    end
     local edges_map = self._edges_map
     edges_map[from] = edges_map[from] or {}
     edges_map[from][to] = true
     if self:is_directed() then
         table.insert(self._adjacent_edges[from], e)
     else
-        table.insert(self._adjacent_edges[from], e)
-        table.insert(self._adjacent_edges[to], e)
         edges_map[to] = edges_map[to] or {}
         edges_map[to][from] = true
+        table.insert(self._adjacent_edges[from], e)
+        table.insert(self._adjacent_edges[to], e)
     end
     table.insert(self._edges, e)
 
@@ -403,18 +400,16 @@ end
 
 -- has the given edge?
 function graph:has_edge(from, to)
-    local edges = self:adjacent_edges(from)
-    if edges then
-        local edges_map = self._edges_map
-        local from_map = edges_map[from]
+    local edges_map = self._edges_map
+    local from_map = edges_map[from]
+    if self:is_directed() then
         if from_map and from_map[to] then
             return true
-        else
-            for _, e in ipairs(edges) do
-                if e:to() == to then
-                    return true
-                end
-            end
+        end
+    else
+        local to_map = edges_map[to]
+        if from_map and to_map and from_map[to] and to_map[from] then
+            return true
         end
     end
     return false
