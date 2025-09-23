@@ -403,16 +403,11 @@ function graph:has_edge(from, to)
     local edges_map = self._edges_map
     local from_map = edges_map[from]
     if self:is_directed() then
-        if from_map and from_map[to] then
-            return true
-        end
+        return from_map and from_map[to]
     else
         local to_map = edges_map[to]
-        if from_map and to_map and from_map[to] and to_map[from] then
-            return true
-        end
+        return from_map and to_map and from_map[to] and to_map[from]
     end
-    return false
 end
 
 -- clone graph
