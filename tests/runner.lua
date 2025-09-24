@@ -19,7 +19,7 @@ function main(script, opt)
 
     local root = path.directory(script)
 
-    local verbose = option.get("verbose") or option.get("diagnosis")
+    local verbose = true--option.get("verbose") or option.get("diagnosis")
 
     -- trace
     cprint(">> [%d/%d]: testing %s ...", opt.index, opt.total, path.relative(root))
@@ -37,6 +37,7 @@ function main(script, opt)
 
     -- run test
     local succeed_count = 0
+    print(data)
     for k, v in pairs(data) do
         if k:startswith("test") and type(v) == "function" then
             if verbose then print(">>     running %s ...", k) end
@@ -52,6 +53,7 @@ function main(script, opt)
                 catch
                 {
                     function (errors)
+                        print(errors, v)
                         if errors then
                             errors = tostring(errors)
                         end

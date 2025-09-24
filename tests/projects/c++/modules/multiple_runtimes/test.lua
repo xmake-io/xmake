@@ -55,8 +55,10 @@ function main(_)
     local flags = true and "-vD" or ""
     local outdata
     print("AAAAAAAAAAAAAAAAAAA")
-    outdata = os.iorun("xmake -rvD")-- " ..  flags)
+    os.iorun("xmake f -vD")
     print("BBBBBBBBBBBBBBBBBBB")
+    outdata = os.iorun("xmake b -vD")-- " ..  flags)
+    print("CCCCCCCCCCCCCCCCCCC")
     -- if outdata then
     --     local success = false
     --     -- on windows, llvm libc++ std module is currently not supported, uncommend when supported
