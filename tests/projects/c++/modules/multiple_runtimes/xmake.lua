@@ -1,5 +1,4 @@
 add_rules("mode.debug", "mode.release")
-add_files("src/*.cpp")
 set_languages("c++23")
 set_encodings("utf-8")
 
@@ -23,7 +22,7 @@ end
 if is_plat("windows") then
     target("msvc")
         set_kind("binary")
-        set_toolchains("msvc")
+        -- set_toolchains("msvc")
         set_policy("build.c++.modules", true)
         add_files("src/main.cpp")
 end

@@ -78,9 +78,10 @@ function get_cpplibrary_name(target)
     elseif target:has_runtime("MD", "MT", "MDd", "MTd") then
         return "msstl"
     end
+    -- if no specified runtime, fallback on native platform C++ library
     if target:is_plat("macosx", "iphoneos", "appletvos") then
         return "c++"
-    elseif target:is_plat("linux") then
+    elseif target:is_plat("linux") or target:is_plat("mingw") then
         return "stdc++"
     elseif target:is_plat("windows") then
         return "msstl"
@@ -259,10 +260,7 @@ function can_be_culled(target, sourcefile)
         end
     end
     if can_cull then
-        can_cull = false
-        if is_stdmodule or (fileconfig and fileconfig.external) then
-            can_cull = true
-        end
+        can_cull = is_stdmodule or (fileconfig and fileconfig.external)
     end
     return can_cull and not public
 end
