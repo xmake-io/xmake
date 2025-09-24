@@ -167,31 +167,21 @@ function jobgraph:add_orders(...)
                     -- we use a bridge job as a node to bridge the two groups.
                     local bridge = {from_group = prev_name, to_group = name}
                     for _, job in ipairs(prev) do
-                        if not dag:has_edge(job, bridge) then
-                            dag:add_edge(job, bridge)
-                        end
+                        dag:add_edge(job, bridge)
                     end
                     for _, job in ipairs(curr) do
-                        if not dag:has_edge(bridge, job) then
-                            dag:add_edge(bridge, job)
-                        end
+                        dag:add_edge(bridge, job)
                     end
                 elseif curr_is_group then
                     for _, job in ipairs(curr) do
-                        if not dag:has_edge(prev, job) then
-                            dag:add_edge(prev, job)
-                        end
+                        dag:add_edge(prev, job)
                     end
                 elseif prev_is_group then
                     for _, job in ipairs(prev) do
-                        if not dag:has_edge(job, curr) then
-                            dag:add_edge(job, curr)
-                        end
+                        dag:add_edge(job, curr)
                     end
                 else
-                    if not dag:has_edge(prev, curr) then
-                        dag:add_edge(prev, curr)
-                    end
+                    dag:add_edge(prev, curr)
                 end
             end
             prev = curr
