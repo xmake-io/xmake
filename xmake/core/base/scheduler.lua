@@ -296,22 +296,15 @@ function scheduler:_co_curenvs_update(envs)
         return
     end
 
-    -- save the current directory hash
-    local envs_hash = ""
+    -- save the current environments
     envs = envs or os.getenvs()
-    for _, key in ipairs(table.orderkeys(envs)) do
-        envs_hash = envs_hash .. key:upper() .. envs[key]
-    end
-    envs_hash = hash.uuid4(envs_hash):sub(1, 8)
-    self._CO_CURENVS_HASH = envs_hash
-
-    -- save the current directory for each coroutine
     local co_curenvs = self._CO_CURENVS
     if not co_curenvs then
         co_curenvs = {}
         self._CO_CURENVS = co_curenvs
     end
-    co_curenvs[running] = {envs_hash, envs}
+    co_curenvs[running] = envs
+    self._CO_CURENVS_CURRENT = envs
 end
 
 -- resume it's waiting coroutine if all coroutines are dead in group
@@ -451,10 +444,10 @@ function scheduler:co_resume(co, ...)
         end
 
         -- has the current environments been changed? restore it
-        local curenvs = self._CO_CURENVS_HASH
+        local curenvs = self._CO_CURENVS_CURRENT
         local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
-        if oldenvs and curenvs ~= oldenvs[1] and running:is_isolated() then -- hash changed?
-            os.setenvs(oldenvs[2])
+        if oldenvs and curenvs ~= oldenvs and running:is_isolated() then -- hash changed?
+            os.setenvs(oldenvs)
         end
     end
 
@@ -476,10 +469,10 @@ function scheduler:co_suspend(...)
     end
 
     -- has the current environments been changed? restore it
-    local curenvs = self._CO_CURENVS_HASH
+    local curenvs = self._CO_CURENVS_CURRENT
     local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
-    if oldenvs and curenvs ~= oldenvs[1] and running:is_isolated() then -- hash changed?
-        os.setenvs(oldenvs[2])
+    if oldenvs and curenvs ~= oldenvs and running:is_isolated() then -- hash changed?
+        os.setenvs(oldenvs)
     end
 
     -- return results
