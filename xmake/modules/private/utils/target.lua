@@ -37,7 +37,14 @@ function flag_belong_to_tool(flag, toolinst, extraconf)
         for_this_tool = false
         local splitinfo = flag:split("::", {plain = true})
         local toolname = splitinfo[1]
-        if toolname == toolinst:name() then
+        local realname = toolinst:name()
+        -- We need compatibility with gcc/g++, clang/clang++ for c++ compiler/linker
+        -- @see https://github.com/xmake-io/xmake/issues/6852
+        if realname == "clangxx" or realname == "gxx" then
+            toolname = toolname:rtrim("xx")
+            realname = realname:rtrim("xx")
+        end
+        if toolname == realname then
             flag = splitinfo[2]
             for_this_tool = true
         end
