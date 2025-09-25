@@ -1408,7 +1408,7 @@ end
 --    ...
 -- end
 function _instance:has_tool(toolkind, ...)
-    local target_utils = target._target_utils
+    local target_utils = package._target_utils
     if target_utils == nil then
         target_utils = sandbox_module.import("private.utils.target", {anonymous = true})
         target._target_utils = target_utils
