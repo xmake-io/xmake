@@ -22,6 +22,28 @@
 import("core.base.option")
 import("core.project.project")
 
+-- Is this target has these tools?
+function has_tool(target, toolkind, ...)
+    local _, toolname = target:tool(toolkind)
+    if toolname then
+        -- We need compatibility with gcc/g++, clang/clang++ for c++ compiler/linker
+        -- @see https://github.com/xmake-io/xmake/issues/6852
+        local trim_xx = false
+        if toolname == "clangxx" or toolname == "gxx" then
+            toolname = toolname:rtrim("xx")
+            trim_xx = true
+        end
+        for _, v in ipairs(table.pack(...)) do
+            if trim_xx then
+                v = v:rtrim("xx")
+            end
+            if v and toolname:find("^" .. v:gsub("%-", "%%-") .. "$") then
+                return true
+            end
+        end
+    end
+end
+
 -- does this flag belong to this tool?
 -- @see https://github.com/xmake-io/xmake/issues/3022
 --
