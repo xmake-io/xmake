@@ -30,7 +30,7 @@ import("core.project.project")
 -- only for clang: add_cxxflags("clang::-stdlib=libc++")
 -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
 --
-function flag_belong_to_tool(target, flag, toolinst, extraconf)
+function flag_belong_to_tool(flag, toolinst, extraconf)
     local for_this_tool = true
     local flagconf = extraconf and extraconf[flag]
     if type(flag) == "string" and flag:find("::", 1, true) then
@@ -79,7 +79,7 @@ function translate_flags_in_tool(target, flagkind, flags)
     --
     local result = {}
     for _, flag in ipairs(flags) do
-        flag = flag_belong_to_tool(target, flag, toolinst, extraconf)
+        flag = flag_belong_to_tool(flag, toolinst, extraconf)
         if flag then
             table.insert(result, flag)
         end
