@@ -32,7 +32,7 @@ local STORE_PATHS_CACHE = "nix_store_paths"
 local PACKAGE_INFO_CACHE = "nix_package_info"
 local PROPAGATED_CACHE = "nix_propagated"
 local PKGCONFIG_CACHE = "nix_pkgconfig"
-local DERIVATION_CACHE = "nix_derivation"
+local DERIVATION_CACHE = "nix_derivation_info"
 
 -- get nix cache instance
 local function get_nix_cache()
@@ -77,165 +77,136 @@ local function generate_env_cache_key()
     return table.concat(key_parts, "|")
 end
 
-
-
--- get derivation info for a store path with caching
-local function get_derivation_info(store_path, opt)
+-- extract package information from store path using derivation data
+local function extract_package_info_from_path(store_path, opt)
     local cache = get_nix_cache()
     local memory_cache = get_memory_cache()
     
-    -- Check memory cache first
+    -- Check caches first
     local cached = memory_cache:get2(DERIVATION_CACHE, store_path)
-    if cached ~= nil then
+    if cached then
         if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Using session cached derivation for: " .. store_path)
+            print("Nix: Using session cached derivation info for: " .. store_path)
         end
-        return cached
+        return cached.name, cached.version, cached.outputs, cached.pname
     end
     
-    -- Check persistent cache
     cached = cache:get2(DERIVATION_CACHE, store_path)
-    if cached ~= nil then
+    if cached then
         if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Using persistent cached derivation for: " .. store_path)
+            print("Nix: Using persistent cached derivation info for: " .. store_path)
         end
         memory_cache:set2(DERIVATION_CACHE, store_path, cached)
-        return cached
+        return cached.name, cached.version, cached.outputs, cached.pname
     end
     
-    -- Get derivation path
+    -- Find required tools
     local nix_store = find_tool("nix-store")
-    if not nix_store then
-        local empty = {}
-        cache:set2(DERIVATION_CACHE, store_path, empty)
-        memory_cache:set2(DERIVATION_CACHE, store_path, empty)
-        return empty
-    end
-    
-    local drv_path = try {function()
-        return os.iorunv(nix_store.program, {"-q", store_path, "--deriver"}):trim()
+    local nix = find_tool("nix")
+    -- Get the derivation path
+    local drv_output = try {function()
+        return os.iorunv(nix_store.program, {"--query", "--valid-derivers", store_path}):trim() -- not "--deriver" because:
+        -- The returned deriver is not guaranteed to exist in the local store, for example when paths were substituted from a binary cache.
+        -- Ref: https://nix.dev/manual/nix/latest/command-ref/nix-store/query.html
     end}
     
-    if not drv_path or drv_path == "" then
-        local empty = {}
-        cache:set2(DERIVATION_CACHE, store_path, empty)
-        memory_cache:set2(DERIVATION_CACHE, store_path, empty)
-        return empty
+    if not drv_output or drv_output == "" then
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: Could not get derivation for: " .. store_path)
+        end
+        return nil
     end
-    
-    -- Get derivation info using nix derivation show
-    local nix = find_tool("nix")
-    if not nix then
-        local empty = {}
-        cache:set2(DERIVATION_CACHE, store_path, empty)
-        memory_cache:set2(DERIVATION_CACHE, store_path, empty)
-        return empty
-    end
-    
-    local drv_json = try {function()
+
+    -- drv_output is a list of derivations, cycle through? do all? For now, just take the first one.
+    drv_output = drv_output:match("(%S+)")
+
+    -- Show the derivation with experimental features
+    local derivation_json = try {function()
         return os.iorunv(nix.program, {
             "derivation", "show", 
-            "--extra-experimental-features", "nix-command flakes",
-            drv_path
+            drv_output,
+            "--extra-experimental-features", "nix-command flakes"
         }):trim()
     end}
     
-    if not drv_json or drv_json == "" then
-        local empty = {}
-        cache:set2(DERIVATION_CACHE, store_path, empty)
-        memory_cache:set2(DERIVATION_CACHE, store_path, empty)
-        return empty
-    end
-    
-    -- Parse the JSON using xmake's JSON parser
-    local drv_data, parse_error = json.decode(drv_json)
-    if not drv_data or parse_error then
+    if not derivation_json or derivation_json == "" then
         if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Failed to parse derivation JSON for " .. store_path .. ": " .. (parse_error or "unknown error"))
+            print("Nix: Could not show derivation for: " .. drv_output)
         end
-        local empty = {}
-        cache:set2(DERIVATION_CACHE, store_path, empty)
-        memory_cache:set2(DERIVATION_CACHE, store_path, empty)
-        return empty
+        return nil
     end
     
-    -- Extract the first (and usually only) derivation
+    -- Parse the JSON output
+    local derivation_data, parse_error = json.decode(derivation_json)
+    if not derivation_data or parse_error then
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: Failed to parse derivation JSON: " .. (parse_error or "unknown error"))
+        end
+        return nil
+    end
+    
+    -- Extract the derivation info (should be a single key-value pair)
     local drv_info = nil
-    for _, info in pairs(drv_data) do
+    for _, info in pairs(derivation_data) do
         drv_info = info
         break
     end
     
-    if not drv_info or type(drv_info) ~= "table" or not drv_info.env then
-        local empty = {}
-        cache:set2(DERIVATION_CACHE, store_path, empty)
-        memory_cache:set2(DERIVATION_CACHE, store_path, empty)
-        return empty
+    if not drv_info then
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: No derivation info found in JSON")
+        end
     end
     
-    -- Extract relevant information
-    local result = {
-        name = drv_info.env.pname or drv_info.env.name or "",
-        version = drv_info.env.version or "",
-        outputs = drv_info.outputs or {},
-        env = drv_info.env or {}
-    }
+    -- Extract package information
+    -- structureAttrs vs env:
+    -- not every nix package has structureAttrs, so we fallback to env
+    -- Ref: https://nix.dev/manual/nix/latest/language/advanced-attributes.html
+    local package_name = (drv_info.structuredAttrs and drv_info.structuredAttrs.pname) or (drv_info.env and drv_info.env.pname) or nil 
+    -- not just "name" as that includes version
+    local version = (drv_info.structuredAttrs and drv_info.structuredAttrs.version) or (drv_info.env and drv_info.env.version) or nil 
+    local outputs = drv_info.outputs or {}
+    
+    if not package_name then
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: No pname found in derivation: " .. drv_output)
+        end
+        return nil
+    end
+    
+    -- Create outputs map (output_name -> store_path)
+    local output_paths = {}
+    for output_name, output_info in pairs(outputs) do
+        if output_info.path then
+            output_paths[output_name] = output_info.path
+        end
+    end
+    
+    -- Determine which output this store_path represents
+    local current_output = nil
+    for output_name, output_path in pairs(output_paths) do
+        if output_path == store_path then
+            current_output = output_name
+            break
+        end
+    end
     
     -- Cache the result
+    local result = {
+        name = package_name,
+        version = version,
+        outputs = output_paths,
+        current_output = current_output
+    }
+    
     cache:set2(DERIVATION_CACHE, store_path, result)
     memory_cache:set2(DERIVATION_CACHE, store_path, result)
-    cache:save()
     
     if opt and (opt.verbose or option.get("verbose")) then
-        print("Nix: Cached derivation info for: " .. store_path .. " (name=" .. result.name .. ", version=" .. result.version .. ")")
+        print("Nix: Extracted derivation info for " .. package_name .. " (version: " .. (version or "unknown") .. ")")
     end
     
-    return result
-end
-
--- parse store basename to extract name, version, and output (fallback method)
-local function parse_store_basename(path_name)
-    -- parse "<hash>-<name>-<version>" or "<hash>-<name>-<version>-<output>"
-    -- remove leading hash (up to first '-')
-    local first_dash = path_name:find("-", 1, true)
-    if not first_dash then
-        return nil, nil, nil
-    end
-    local rest = path_name:sub(first_dash + 1)
-    
-    -- find last dash and second-last dash in rest
-    local last_dash = nil
-    for i = #rest, 1, -1 do
-        if rest:sub(i, i) == "-" then
-            last_dash = i
-            break
-        end
-    end
-    if not last_dash then
-        return rest, nil, nil  -- Just name, no version
-    end
-    
-    -- try to find second-last dash
-    local second_last = nil
-    for i = last_dash - 1, 1, -1 do
-        if rest:sub(i, i) == "-" then
-            second_last = i
-            break
-        end
-    end
-    
-    if second_last then
-        -- form: name (may have dashes) = rest[1..second_last-1], version = rest[second_last+1..last_dash-1], output = rest[last_dash+1..]
-        local name = rest:sub(1, second_last - 1)
-        local version = rest:sub(second_last + 1, last_dash - 1)
-        local output = rest:sub(last_dash + 1)
-        return name, version, output
-    else
-        -- form: name = rest[1..last_dash-1], version = rest[last_dash+1..]
-        local name = rest:sub(1, last_dash - 1)
-        local version = rest:sub(last_dash + 1)
-        return name, version, nil
-    end
+    return package_name, version, output_paths, current_output
 end
 
 -- remove duplicates from array
@@ -251,30 +222,33 @@ local function remove_duplicates(arr)
     return clean
 end
 
--- PackageInfo class
+-- PackageInfo data
 local PackageInfo = {}
 PackageInfo.__index = PackageInfo
 
 function PackageInfo:new(package_name)
     local o = {
-        name = package_name,
+        name = package_name, -- "pname" in nix terms
         includedirs = {},
         bindirs = {},
         linkdirs = {},
         links = {},
         libfiles = {},
         store_paths = {},
+        outputs = {}, -- output_name -> store_path mapping
         version = nil,
-        pkgconfig_available = false,
-        outputs = {}
+        pkgconfig_available = false
     }
 
     table.inherit2(o, self)
     return o
 end
 
-function PackageInfo:add_store_path(p)
+function PackageInfo:add_store_path(p, output_name)
     table.insert(self.store_paths, p)
+    if output_name then
+        self.outputs[output_name] = p
+    end
 end
 
 function PackageInfo:add_includedir(d)
@@ -298,20 +272,8 @@ function PackageInfo:add_libfile(f)
 end
 
 function PackageInfo:set_version(v)
-    if not self.version and v and v ~= "" then
+    if not self.version and v then
         self.version = v
-    end
-end
-
-function PackageInfo:set_pname(p)
-    if not self.name and p and p ~= "" then
-        self.name = p
-    end
-end
-
-function PackageInfo:set_outputs(o)
-    if o and type(o) == "table" then
-        self.outputs = o
     end
 end
 
@@ -337,8 +299,8 @@ function PackageInfo:finalize()
         links = self.links,
         libfiles = self.libfiles,
         store_paths = self.store_paths,
-        version = self.version,
         outputs = self.outputs,
+        version = self.version,
         pkgconfig_available = self.pkgconfig_available
     }
 end
@@ -504,7 +466,7 @@ local function parse_store_paths_from_env(env_vars, opt)
     return paths
 end
 
--- STORE PATH EXTRACTION FUNCTIONS (same as before)
+-- STORE PATH EXTRACTION FUNCTIONS
 
 -- extract store paths from nix shell
 local function get_store_paths_nix_shell(opt)
@@ -522,7 +484,15 @@ local function get_store_paths_nix_shell(opt)
     return parse_store_paths_from_env(build_env_vars, opt)
 end
 
--- extract store paths from nix profile
+-- Find package from current user's nix profile, includes nix-env installed packages
+-- Note: nix-env only lists one output in the profile list
+-- $ nix-env -iA nixpkgs.<package> # installs multiple outputs, but only one is listed in the profile
+-- this can cause issues if the main output does not contain the necessary files
+-- Example: zlib.dev contains the headers, but zlib only contains the library
+-- there does not seem to be an straight-forward way to find all outputs...
+-- It is better to use nix profile like:
+-- $ nix profile install 'nixpkgs#zlib^*'' # installs all outputs
+-- $ nix profile install 'nixpkgs#zlib^dev' # installs only the dev output
 local function get_store_paths_nix_profile(opt)
     local nix = find_tool("nix")
     if not nix then
@@ -536,7 +506,7 @@ local function get_store_paths_nix_profile(opt)
     )
 end
 
--- extract store paths from home-manager (tool version)
+-- Popular nix-community tool to declaratively manage user environments (NixOS and non-NixOS)
 local function get_store_paths_home_manager_tool(opt)
     local home_manager = find_tool("home-manager")
     if not home_manager then
@@ -550,7 +520,7 @@ local function get_store_paths_home_manager_tool(opt)
     )
 end
 
--- extract store paths from home-manager (profile version)
+-- Home manager can be installed as a module in nixos, in which case the home-manager tool is missing.
 local function get_store_paths_home_manager_profile(opt)
     local nix_store = find_tool("nix-store")
     if not nix_store then
@@ -570,7 +540,7 @@ local function get_store_paths_home_manager_profile(opt)
     )
 end
 
--- extract store paths from nixos user packages
+-- nixos-option is not always configured properly, but if it is, we can find user/system packages
 local function get_store_paths_nixos_user_packages(opt)
     local nixos_option = find_tool("nixos-option")
     if not nixos_option then
@@ -615,7 +585,7 @@ local function get_store_paths_nixos_system_packages(opt)
     return {}
 end
 
--- extract store paths from nixos current system
+-- Includes all system/user/home-manager packages
 local function get_store_paths_nixos_current_system(opt)
     local nix_store = find_tool("nix-store")
     if not nix_store then
@@ -694,7 +664,7 @@ local function get_all_store_paths(opt)
     return all_paths
 end
 
--- extract package information from store paths with caching and derivation info
+-- extract package information from store paths with caching
 local function extract_package_info(store_paths, opt)
     opt = opt or {}
     local cache = get_nix_cache()
@@ -734,92 +704,97 @@ local function extract_package_info(store_paths, opt)
 
     local packages = {} -- map: package_name -> PackageInfo
 
+    local function ensure_pkg(name)
+        if not name then
+            name = "<unknown>"
+        end
+        local p = packages[name]
+        if not p then
+            p = PackageInfo:new(name)
+            packages[name] = p
+        end
+        return p
+    end
+
     for _, store_path in ipairs(store_paths) do
         if not store_path or store_path == "" then goto continue end
 
-        -- Get derivation info
-        local drv_info = get_derivation_info(store_path, opt)
-        if not drv_info or not drv_info.name or drv_info.name == "" then
+        -- Use the enhanced derivation-based extraction
+        local parsed_name, parsed_version, output_paths, current_output = 
+            extract_package_info_from_path(store_path, opt)
+
+        if not parsed_name then
             if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Skipping " .. store_path .. " - no derivation info or name available")
+                print("Nix: Could not extract package info from: " .. store_path)
             end
             goto continue
         end
 
-        local pkgname = drv_info.name:lower()
-        
-        -- Only create one package entry per name (first one wins due to prioritized ordering)
-        if not packages[pkgname] then
-            local pkg = PackageInfo:new(pkgname)
-            packages[pkgname] = pkg
-            
-            pkg:add_store_path(store_path)
-            pkg:set_version(drv_info.version)
-            pkg:set_pname(drv_info.name)
-            pkg:set_outputs(drv_info.outputs)
+        local pkg = ensure_pkg(parsed_name, pname)
 
-            if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Added package: " .. drv_info.name .. " " .. (drv_info.version or ""))
+        pkg:add_store_path(store_path, current_output)
+        if parsed_version then
+            pkg:set_version(parsed_version)
+        end
+
+        -- Add all output paths to the package
+        if output_paths then
+            for output_name, output_path in pairs(output_paths) do
+                pkg.outputs[output_name] = output_path
             end
+        end
 
-            -- include directories
-            local includedir = path.join(store_path, "include")
-            if os.isdir(includedir) then
-                pkg:add_includedir(includedir)
-                local subdirs = try { function() return os.dirs(path.join(includedir, "*")) end } or {}
-                for _, subdir in ipairs(subdirs) do
-                    if os.isdir(subdir) then
-                        pkg:add_includedir(subdir)
-                    end
+        -- include directories (and their subdirs)
+        local includedir = path.join(store_path, "include")
+        if os.isdir(includedir) then
+            pkg:add_includedir(includedir)
+            local subdirs = try { function() return os.dirs(path.join(includedir, "*")) end } or {}
+            for _, subdir in ipairs(subdirs) do
+                if os.isdir(subdir) then
+                    pkg:add_includedir(subdir)
                 end
             end
+        end
 
-            -- bin
-            local bindir = path.join(store_path, "bin")
-            if os.isdir(bindir) then
-                pkg:add_bindir(bindir)
-            end
+        -- bin
+        local bindir = path.join(store_path, "bin")
+        if os.isdir(bindir) then
+            pkg:add_bindir(bindir)
+        end
 
-            -- lib
-            local libdir = path.join(store_path, "lib")
-            if os.isdir(libdir) then
-                local libfiles = try { function()
-                    local files = {}
-                    local patterns = {"*.so*", "*.a", "*.dylib*"}
-                    for _, pattern in ipairs(patterns) do
-                        for _, f in ipairs(os.files(path.join(libdir, pattern)) or {}) do
-                            table.insert(files, f)
-                        end
+        -- lib and libs
+        local libdir = path.join(store_path, "lib")
+        if os.isdir(libdir) then
+            local libfiles = try { function()
+                local files = {}
+                local patterns = {"*.so*", "*.a", "*.dylib*"}
+                for _, pattern in ipairs(patterns) do
+                    for _, f in ipairs(os.files(path.join(libdir, pattern)) or {}) do
+                        table.insert(files, f)
                     end
-                    return files
-                end } or {}
+                end
+                return files
+            end } or {}
 
-                if #libfiles > 0 then
+            if #libfiles > 0 then
+                pkg:add_linkdir(libdir)
+                for _, libfile in ipairs(libfiles) do
+                    local filename = path.filename(libfile)
+                    local linkname = filename:match("^lib(.+)%.so") or
+                                     filename:match("^lib(.+)%.a") or
+                                     filename:match("^lib(.+)%.dylib")
+                    if linkname then
+                        pkg:add_link(linkname)
+                        pkg:add_libfile(libfile)
+                    end
+                end
+            else
+                -- if no libs, see if cmake/pkgconfig dirs exist and add linkdir
+                local has_cmake = os.isdir(path.join(libdir, "cmake"))
+                local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
+                if has_cmake or has_pkgconfig then
                     pkg:add_linkdir(libdir)
-                    for _, libfile in ipairs(libfiles) do
-                        local filename = path.filename(libfile)
-                        local linkname = filename:match("^lib(.+)%.so") or
-                                         filename:match("^lib(.+)%.a") or
-                                         filename:match("^lib(.+)%.dylib")
-                        if linkname then
-                            pkg:add_link(linkname)
-                            pkg:add_libfile(libfile)
-                        end
-                    end
-                else
-                    -- if no libs, see if cmake/pkgconfig dirs exist and add linkdir
-                    local has_cmake = os.isdir(path.join(libdir, "cmake"))
-                    local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
-                    if has_cmake or has_pkgconfig then
-                        pkg:add_linkdir(libdir)
-                    end
                 end
-            end
-        else
-            -- Package already exists, just add this store path as additional
-            packages[pkgname]:add_store_path(store_path)
-            if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Added additional store path for " .. pkgname .. ": " .. store_path)
             end
         end
 
@@ -846,11 +821,21 @@ local function extract_package_info(store_paths, opt)
     return result
 end
 
--- check if path matches package name using derivation info
-local function path_matches_package(store_path, package_name, opt)
-    local drv_info = get_derivation_info(store_path, opt)
-    if drv_info and drv_info.name and drv_info.name ~= "" then
-        return drv_info.name:lower() == package_name:lower()
+-- check if path matches package name
+local function path_matches_package(store_path, package_name)
+    local path_name = path.basename(store_path)
+    local package_name_lower = package_name:lower()
+    
+    local package_base = path_name:match("^[^%-]+-([^%-]+)")
+    if package_base then
+        local package_base_lower = package_base:lower()
+        if package_base_lower == package_name_lower then
+            return true
+        end
+        if package_base_lower:find(package_name_lower, 1, true) or 
+           package_name_lower:find(package_base_lower, 1, true) then
+            return true
+        end
     end
     return false
 end
@@ -888,7 +873,7 @@ local function find_with_pkgconfig(package_name, store_paths, opt)
     -- Try matching store paths for this package first
     local matching_paths = {}
     for _, store_path in ipairs(store_paths) do
-        if path_matches_package(store_path, package_name, opt) then
+        if path_matches_package(store_path, package_name) then
             table.insert(matching_paths, store_path)
         end
     end
@@ -943,8 +928,11 @@ local function find_with_pkgconfig(package_name, store_paths, opt)
     return nil
 end
 
+-- find package using the nix package manager
+--
+-- @param name  the package name
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 
--- main entry point
 function main(name, opt)
     opt = opt or {}
 
@@ -957,18 +945,10 @@ function main(name, opt)
         return
     end
     
-    -- Handle nix:: prefix
-    local actual_name = name
-    local force_nix = false
-    if name:startswith("nix::") then
-        actual_name = name:sub(6)
-        force_nix = true
-    end
-    
     -- Get all store paths from all nix environments (cached)
     local store_paths = get_all_store_paths(opt)
     if #store_paths == 0 then
-        if force_nix and opt and (opt.verbose or option.get("verbose")) then
+        if opt and (opt.verbose or option.get("verbose")) then
             print("Nix: No store paths found in any nix environment")
         end
         return nil
@@ -978,23 +958,34 @@ function main(name, opt)
     local packages = extract_package_info(store_paths, opt)
     local _, count = table.keys(packages)
     if not packages or count == 0 then
-        if force_nix and opt and (opt.verbose or option.get("verbose")) then
+        if opt and (opt.verbose or option.get("verbose")) then
             print("Nix: No packages extracted from store paths")
         end
         return nil
     end
     
-    -- Look for exact name match only
-    local actual_name_lower = actual_name:lower()
-    local found_package = packages[actual_name_lower]
+    -- Try to find the package by exact name match first
+    local name_lower = name:lower()
+    local found_package = packages[name_lower]
+    
+    -- If not found by exact match, try partial matches
+    if not found_package then
+        for pkg_name, pkg_info in pairs(packages) do
+            if pkg_name:find(name_lower, 1, true) or 
+               name_lower:find(pkg_name, 1, true) then
+                found_package = pkg_info
+                break
+            end
+        end
+    end
     
     -- Try pkg-config if package found in store paths
     local pkgconfig_result = nil
-    if found_package or force_nix then
-        pkgconfig_result = find_with_pkgconfig(actual_name, store_paths, opt)
+    if found_package then
+        pkgconfig_result = find_with_pkgconfig(name, store_paths, opt)
         if pkgconfig_result then
             if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Found package via pkg-config: " .. actual_name)
+                print("Nix: Found package via pkg-config: " .. name)
             end
             return pkgconfig_result
         end
@@ -1003,7 +994,7 @@ function main(name, opt)
     -- If we found package info directly, return it
     if found_package then
         if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Found package: " .. actual_name .. " (" .. found_package.name .. ")")
+            print("Nix: Found package: " .. name .. " (" .. found_package.name .. ")")
         end
         
         local result = {
@@ -1031,15 +1022,9 @@ function main(name, opt)
         return result
     end
     
-    -- Package not found - alert user
-    if force_nix then
-        print("Nix: Package '" .. actual_name .. "' not found in any nix environment")
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Available packages:")
-            for pkg_name, _ in pairs(packages) do
-                print("  - " .. pkg_name)
-            end
-        end
+    -- Package not found
+    if opt and (opt.verbose or option.get("verbose")) then
+        print("Nix: Package " .. name .. " not found in any nix environment")
     end
     
     return nil
