@@ -339,9 +339,6 @@ function compiler:compflags(opt)
     self:_add_flags_from_compiler(flags, targetkind)
     self:_add_flags_from_toolchains(flags, targetkind, target)
 
-    -- add flags from user configuration
-    self:_add_flags_from_config(flags)
-
     -- add flags from target
     self:_add_flags_from_target(flags, target)
 
@@ -358,6 +355,9 @@ function compiler:compflags(opt)
     if configs then
         self:_add_flags_from_argument(flags, target, configs)
     end
+
+    -- add flags from user configuration
+    self:_add_flags_from_config(flags)
 
     -- preprocess flags
     return self:_preprocess_flags(flags)

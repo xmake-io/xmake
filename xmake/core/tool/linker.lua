@@ -277,9 +277,6 @@ function linker:linkflags(opt)
     self:_add_flags_from_linker(flags)
     self:_add_flags_from_toolchains(flags, targetkind, target)
 
-    -- add flags from user configuration
-    self:_add_flags_from_config(flags)
-
     -- add flags from target
     self:_add_flags_from_target(flags, target)
 
@@ -288,6 +285,9 @@ function linker:linkflags(opt)
     if configs then
         self:_add_flags_from_argument(flags, target, configs)
     end
+
+    -- add flags from user configuration
+    self:_add_flags_from_config(flags)
 
     -- preprocess flags
     return self:_preprocess_flags(flags)
