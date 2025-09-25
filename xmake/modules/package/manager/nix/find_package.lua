@@ -964,20 +964,9 @@ function main(name, opt)
         return nil
     end
     
-    -- Try to find the package by exact name match first
+    -- Try to find the package by name match first
     local name_lower = name:lower()
     local found_package = packages[name_lower]
-    
-    -- If not found by exact match, try partial matches
-    if not found_package then
-        for pkg_name, pkg_info in pairs(packages) do
-            if pkg_name:find(name_lower, 1, true) or 
-               name_lower:find(pkg_name, 1, true) then
-                found_package = pkg_info
-                break
-            end
-        end
-    end
     
     -- Try pkg-config if package found in store paths
     local pkgconfig_result = nil
