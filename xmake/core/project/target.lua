@@ -2683,7 +2683,8 @@ function _instance:has_tool(toolkind, ...)
         target_utils = sandbox_module.import("private.utils.target", {anonymous = true})
         target._target_utils = target_utils
     end
-    return target_utils.has_tool(self, toolkind, ...)
+    local _, toolname = self:tool(toolkind)
+    return target_utils.has_tool(toolname, table.pack(...))
 end
 
 -- has the given c funcs?

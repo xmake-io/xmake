@@ -23,8 +23,7 @@ import("core.base.option")
 import("core.project.project")
 
 -- Is this target has these tools?
-function has_tool(target, toolkind, ...)
-    local _, toolname = target:tool(toolkind)
+function has_tool(toolname, tools)
     if toolname then
         -- We need compatibility with gcc/g++, clang/clang++ for c++ compiler/linker
         -- @see https://github.com/xmake-io/xmake/issues/6852
@@ -33,7 +32,7 @@ function has_tool(target, toolkind, ...)
             toolname = toolname:rtrim("xx")
             trim_xx = true
         end
-        for _, v in ipairs(table.pack(...)) do
+        for _, v in ipairs(tools) do
             if trim_xx then
                 v = v:rtrim("xx")
             end
@@ -42,6 +41,7 @@ function has_tool(target, toolkind, ...)
             end
         end
     end
+    return false
 end
 
 -- does this flag belong to this tool?
@@ -71,7 +71,7 @@ function flag_belong_to_tool(flag, toolinst, extraconf)
             for_this_tool = true
         end
     elseif flagconf and flagconf.tools then
-        for_this_tool = table.contains(table.wrap(flagconf.tools), toolinst:name())
+        for_this_tool = has_tool(toolinst:name(), flagconf.tools)
     end
     if for_this_tool then
         return flag
