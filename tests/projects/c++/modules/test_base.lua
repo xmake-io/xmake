@@ -18,7 +18,7 @@ function _build(check_outdata)
         outdata = os.iorun("xmake -r " ..  flags)
         if outdata then
             if outdata:find(check_outdata.str, 1, true) then
-                raise(check_outdata.format_string, outdata)
+                raise(check_outdata.format_string .. "\n%s", outdata)
             end
         end
     else
@@ -107,7 +107,7 @@ function build_tests(toolchain_name, opt)
     if opt.build then
         opt.build()
     else
-        _build(opt.find_in_outdata)
+        _build(opt.check_outdata)
     end
     if opt.after_build then
         opt.after_build(platform, toolchain_name, runtimes, policies, flags)

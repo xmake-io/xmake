@@ -6,6 +6,7 @@ MSVC_MIN_VER = "14.35"
 
 function main(_)
     local clang_options = {stdmodule = true, compiler = "clang", version = CLANG_MIN_VER}
+    local gcc_options = {stdmodule = true, compiler = "gcc", version = GCC_MIN_VER}
     -- latest mingw gcc 15.1 is broken
     --  error: F:/msys64/mingw64/include/c++/15.1.0/shared_mutex:105:3: error: 'int std::__glibcxx_rwlock_timedrdlock(pthread_rwlock_t*, const timespec*)' exposes TU-local entity 'int pthread_rwlock_timedrdlock(pthread_rwlock_t*, const timespec*)'
     --   105 |   __glibcxx_rwlock_timedrdlock (pthread_rwlock_t *__rwlock,
