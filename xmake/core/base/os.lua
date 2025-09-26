@@ -208,7 +208,6 @@ end
 
 -- notify envs have been changed
 function os._notify_envs_changed(envs)
-    os._ENVS = nil
     if os._SCHED_CHENVS then
         os._SCHED_CHENVS(envs)
     end
@@ -1304,25 +1303,21 @@ end
 -- get all current environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.getenvs()
-    local envs -- = os._ENVS
-    if envs == nil then
-        envs = {}
-        for _, line in ipairs(os._getenvs()) do
-            local p = line:find('=', 1, true)
-            if p then
-                local key = line:sub(1, p - 1):trim()
-                -- only translate Path to PATH on windows
-                -- @see https://github.com/xmake-io/xmake/issues/3752
-                if os.host() == "windows" and key:lower() == "path" then
-                    key = key:upper()
-                end
-                local values = line:sub(p + 1):trim()
-                if #key > 0 then
-                    envs[key] = values
-                end
+    local envs = {}
+    for _, line in ipairs(os._getenvs()) do
+        local p = line:find('=', 1, true)
+        if p then
+            local key = line:sub(1, p - 1):trim()
+            -- only translate Path to PATH on windows
+            -- @see https://github.com/xmake-io/xmake/issues/3752
+            if os.host() == "windows" and key:lower() == "path" then
+                key = key:upper()
+            end
+            local values = line:sub(p + 1):trim()
+            if #key > 0 then
+                envs[key] = values
             end
         end
-        os._ENVS = envs
     end
     return envs
 end
