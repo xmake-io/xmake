@@ -273,18 +273,15 @@ function scheduler:_co_curdir_update(curdir)
         return
     end
 
-    -- save the current directory hash
+    -- save the current directory
     curdir = curdir or os.curdir()
-    local curdir_hash = hash.uuid4(path.absolute(curdir)):sub(1, 8)
-    self._CO_CURDIR_HASH = curdir_hash
-
-    -- save the current directory for each coroutine
     local co_curdirs = self._CO_CURDIRS
     if not co_curdirs then
         co_curdirs = {}
         self._CO_CURDIRS = co_curdirs
     end
-    co_curdirs[running] = {curdir_hash, curdir}
+    co_curdirs[running] = curdir
+    self._CO_CURDIR_CURRENT = curdir
 end
 
 -- update the current environments hash of current coroutine
@@ -296,15 +293,22 @@ function scheduler:_co_curenvs_update(envs)
         return
     end
 
-    -- save the current environments
+    -- save the current directory hash
+    local envs_hash = ""
     envs = envs or os.getenvs()
+    for _, key in ipairs(table.orderkeys(envs)) do
+        envs_hash = envs_hash .. key:upper() .. envs[key]
+    end
+    envs_hash = hash.uuid4(envs_hash):sub(1, 8)
+    self._CO_CURENVS_HASH = envs_hash
+
+    -- save the current directory for each coroutine
     local co_curenvs = self._CO_CURENVS
     if not co_curenvs then
         co_curenvs = {}
         self._CO_CURENVS = co_curenvs
     end
-    co_curenvs[running] = envs
-    self._CO_CURENVS_CURRENT = envs
+    co_curenvs[running] = {envs_hash, envs}
 end
 
 -- resume it's waiting coroutine if all coroutines are dead in group
@@ -437,17 +441,17 @@ function scheduler:co_resume(co, ...)
     if running then
 
         -- has the current directory been changed? restore it
-        local curdir = self._CO_CURDIR_HASH
+        local curdir = self._CO_CURDIR_CURRENT
         local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
-        if olddir and curdir ~= olddir[1] then -- hash changed?
-            os.cd(olddir[2])
+        if olddir and curdir ~= olddir then -- hash changed?
+            os.cd(olddir)
         end
 
         -- has the current environments been changed? restore it
-        local curenvs = self._CO_CURENVS_CURRENT
+        local curenvs = self._CO_CURENVS_HASH
         local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
-        if oldenvs and curenvs ~= oldenvs and running:is_isolated() then -- hash changed?
-            os.setenvs(oldenvs)
+        if oldenvs and curenvs ~= oldenvs[1] and running:is_isolated() then -- hash changed?
+            os.setenvs(oldenvs[2])
         end
     end
 
@@ -462,17 +466,17 @@ function scheduler:co_suspend(...)
 
     -- has the current directory been changed? restore it
     local running = assert(self:co_running())
-    local curdir = self._CO_CURDIR_HASH
+    local curdir = self._CO_CURDIR_CURRENT
     local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
-    if olddir and curdir ~= olddir[1] then -- hash changed?
-        os.cd(olddir[2])
+    if olddir and curdir ~= olddir then -- hash changed?
+        os.cd(olddir)
     end
 
     -- has the current environments been changed? restore it
-    local curenvs = self._CO_CURENVS_CURRENT
+    local curenvs = self._CO_CURENVS_HASH
     local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
-    if oldenvs and curenvs ~= oldenvs and running:is_isolated() then -- hash changed?
-        os.setenvs(oldenvs)
+    if oldenvs and curenvs ~= oldenvs[1] and running:is_isolated() then -- hash changed?
+        os.setenvs(oldenvs[2])
     end
 
     -- return results

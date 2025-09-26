@@ -39,6 +39,7 @@ os._mkdir    = os._mkdir or os.mkdir
 os._rmdir    = os._rmdir or os.rmdir
 os._touch    = os._touch or os.touch
 os._tmpdir   = os._tmpdir or os.tmpdir
+os._curdir   = os._curdir or os.curdir
 os._fscase   = os._fscase or os.fscase
 os._setenv   = os._setenv or os.setenv
 os._getenvs  = os._getenvs or os.getenvs
@@ -195,6 +196,14 @@ end
 -- set on change directory callback for scheduler
 function os._sched_chdir_set(chdir)
     os._SCHED_CHDIR = chdir
+end
+
+-- notify the current directory have been changed
+function os._notify_curdir_changed()
+    os._CURDIR = nil
+    if os._SCHED_CHDIR then
+        os._SCHED_CHDIR(os.curdir())
+    end
 end
 
 -- notify envs have been changed
@@ -606,41 +615,33 @@ function os.cd(dir)
     -- support path instance
     dir = tostring(dir)
 
-    -- the previous directory
-    local oldir = os.curdir()
-
     -- change to the previous directory?
+    local oldir = os.curdir()
     if dir == "-" then
-        -- exists the previous directory?
         if os._PREDIR then
             dir = os._PREDIR
             os._PREDIR = nil
         else
-            -- error
             return nil, string.format("not found the previous directory %s", os.strerror())
         end
     end
 
-    -- is directory?
-    if os.isdir(dir) then
+    -- no changed?
+    if dir == oldir then
+        return oldir
+    end
 
-        -- change to directory
+    -- do change directory
+    if os.isdir(dir) then
         if not os.chdir(dir) then
             return nil, string.format("cannot change directory %s %s", dir, os.strerror())
         end
-
-        -- save the previous directory
         os._PREDIR = oldir
-
-    -- not exists?
     else
         return nil, string.format("cannot change directory %s, not found this directory %s", dir, os.strerror())
     end
 
-    -- do chdir callback for scheduler
-    if os._SCHED_CHDIR then
-        os._SCHED_CHDIR(os.curdir())
-    end
+    os._notify_curdir_changed()
     return oldir
 end
 
@@ -694,6 +695,16 @@ function os.rmdir(dir)
         end
     end
     return true
+end
+
+-- get the current directory
+function os.curdir()
+    local curdir = os._CURDIR
+    if curdir == nil then
+        curdir = os._curdir()
+        os._CURDIR = curdir
+    end
+    return curdir
 end
 
 -- get the temporary directory
@@ -1293,7 +1304,7 @@ end
 -- get all current environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.getenvs()
-    local envs = os._ENVS
+    local envs -- = os._ENVS
     if envs == nil then
         envs = {}
         for _, line in ipairs(os._getenvs()) do
