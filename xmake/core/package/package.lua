@@ -1411,7 +1411,7 @@ function _instance:has_tool(toolkind, ...)
     local target_utils = package._target_utils
     if target_utils == nil then
         target_utils = sandbox_module.import("private.utils.target", {anonymous = true})
-        target._target_utils = target_utils
+        package._target_utils = target_utils
     end
     local _, toolname = self:tool(toolkind)
     return target_utils.has_tool(toolname, table.pack(...))
