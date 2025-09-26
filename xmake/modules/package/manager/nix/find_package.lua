@@ -117,17 +117,39 @@ local function extract_package_info_from_path(store_path, opt)
         return nil
     end
 
-    -- drv_output is a list of derivations, cycle through? do all? For now, just take the first one.
-    drv_output = drv_output:match("(%S+)")
-
-    -- Show the derivation with experimental features
-    local derivation_json = try {function()
-        return os.iorunv(nix.program, {
-            "derivation", "show", 
-            drv_output,
-            "--extra-experimental-features", "nix-command flakes"
-        }):trim()
-    end}
+    -- drv_output is a list of derivations
+    local derivations = {}
+    for drv_path in drv_output:gmatch("(%S+)") do
+        if drv_path:match("%.drv$") then
+            table.insert(derivations, drv_path)
+        end
+    end
+    
+    if #derivations == 0 then
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: No valid derivation paths found for: " .. store_path)
+        end
+        return nil
+    end
+    
+    -- Try each derivation until we find one that works
+    local derivation_json = nil
+    for _, drv_path in ipairs(derivations) do
+        derivation_json = try {function()
+            return os.iorunv(nix.program, {
+                "derivation", "show", 
+                drv_path,
+                "--extra-experimental-features", "nix-command flakes"
+            }):trim()
+        end}
+        
+        if derivation_json and derivation_json ~= "" then
+            if opt and (opt.verbose or option.get("verbose")) then
+                print("Nix: Using derivation: " .. drv_path)
+            end
+            break
+        end
+    end
     
     if not derivation_json or derivation_json == "" then
         if opt and (opt.verbose or option.get("verbose")) then
