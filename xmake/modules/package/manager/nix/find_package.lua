@@ -686,13 +686,32 @@ local function get_all_store_paths(opt)
     return all_paths
 end
 
+-- check if store path has the package name (fuzzy match)
+local function path_matches_package(store_path, package_name)
+    local path_name = path.basename(store_path)
+    local package_name_lower = package_name:lower()
+    
+    local package_base = path_name:match("^[^%-]+-([^%-]+)")
+    if package_base then
+        local package_base_lower = package_base:lower()
+        if package_base_lower == package_name_lower then
+            return true
+        end
+        if package_base_lower:find(package_name_lower, 1, true) or 
+           package_name_lower:find(package_base_lower, 1, true) then
+            return true
+        end
+    end
+    return false
+end
+
 -- extract package information from store paths with caching
-local function extract_package_info(store_paths, opt)
+local function extract_package_info(store_paths, package_name, opt)
     opt = opt or {}
     local cache = get_nix_cache()
     local memory_cache = get_memory_cache()
     local paths_key = table.concat(store_paths or {}, ";")
-    local cache_key = "package_info:" .. paths_key
+    local cache_key = "package_info:" .. (package_name or "all") .. ":" .. paths_key
     
     -- Check memory cache first
     local cached = memory_cache:get2(PACKAGE_INFO_CACHE, cache_key)
@@ -720,8 +739,36 @@ local function extract_package_info(store_paths, opt)
         return empty
     end
 
+    -- Filter store paths if package_name is provided
+    local filtered_paths = store_paths
+    if package_name then
+        filtered_paths = {}
+        local seen = {}
+        
+        -- First, find direct matches
+        for _, store_path in ipairs(store_paths) do
+            if path_matches_package(store_path, package_name) and not seen[store_path] then
+                seen[store_path] = true
+                table.insert(filtered_paths, store_path)
+            end
+        end
+        
+        -- Then find their dependencies
+        local all_deps = follow_propagated_inputs(filtered_paths, opt)
+        for _, dep_path in ipairs(all_deps) do
+            if not seen[dep_path] then
+                seen[dep_path] = true
+                table.insert(filtered_paths, dep_path)
+            end
+        end
+        
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: Filtered to " .. #filtered_paths .. " relevant store paths for package: " .. package_name)
+        end
+    end
+
     if opt and (opt.verbose or option.get("verbose")) then
-        print("Nix: Extracting package info for " .. #store_paths .. " store paths")
+        print("Nix: Extracting package info for " .. #filtered_paths .. " store paths")
     end
 
     local packages = {} -- map: package_name -> PackageInfo
@@ -738,7 +785,7 @@ local function extract_package_info(store_paths, opt)
         return p
     end
 
-    for _, store_path in ipairs(store_paths) do
+    for _, store_path in ipairs(filtered_paths) do
         if not store_path or store_path == "" then goto continue end
 
         -- Use the enhanced derivation-based extraction
@@ -752,7 +799,7 @@ local function extract_package_info(store_paths, opt)
             goto continue
         end
 
-        local pkg = ensure_pkg(parsed_name, pname)
+        local pkg = ensure_pkg(parsed_name)
 
         pkg:add_store_path(store_path, current_output)
         if parsed_version then
@@ -873,8 +920,28 @@ local function find_with_pkgconfig(package_name, store_paths, opt)
         return cached_result or nil
     end
 
-    -- Search all paths (not fully optimal)
+    -- Filter store paths to only relevant ones
+    local filtered_paths = {}
+    local seen = {}
+    
     for _, store_path in ipairs(store_paths) do
+        if path_matches_package(store_path, package_name) and not seen[store_path] then
+            seen[store_path] = true
+            table.insert(filtered_paths, store_path)
+        end
+    end
+    
+    -- Add dependencies of matching packages
+    local all_deps = follow_propagated_inputs(filtered_paths, opt)
+    for _, dep_path in ipairs(all_deps) do
+        if not seen[dep_path] then
+            seen[dep_path] = true
+            table.insert(filtered_paths, dep_path)
+        end
+    end
+
+    -- Search filtered paths
+    for _, store_path in ipairs(filtered_paths) do
         local pkgconfig_dirs = {
             path.join(store_path, "lib", "pkgconfig"),
             path.join(store_path, "share", "pkgconfig")
@@ -928,7 +995,7 @@ function main(name, opt)
     end
     
     -- Extract all package info (cached)
-    local packages = extract_package_info(store_paths, opt)
+    local packages = extract_package_info(store_paths, name, opt)
     local _, count = table.keys(packages)
     if not packages or count == 0 then
         if opt and (opt.verbose or option.get("verbose")) then
