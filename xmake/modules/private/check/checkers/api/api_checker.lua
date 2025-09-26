@@ -143,7 +143,7 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/3594
 function check_flag(target, toolinst, flagkind, flag)
     local extraconf = target:extraconf(flagkind)
-    flag = target_utils.flag_belong_to_tool(target, flag, toolinst, extraconf)
+    flag = target_utils.flag_belong_to_tool(flag, toolinst, extraconf)
     if flag then
         extraconf = extraconf and extraconf[flag]
         if not extraconf or not extraconf.force then

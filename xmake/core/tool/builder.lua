@@ -22,19 +22,21 @@
 local builder = builder or {}
 
 -- load modules
-local io       = require("base/io")
-local path     = require("base/path")
-local utils    = require("base/utils")
-local table    = require("base/table")
-local string   = require("base/string")
-local option   = require("base/option")
-local hashset  = require("base/hashset")
-local graph    = require("base/graph")
-local tool     = require("tool/tool")
-local config   = require("project/config")
-local sandbox  = require("sandbox/sandbox")
-local language = require("language/language")
-local platform = require("platform/platform")
+local io             = require("base/io")
+local path           = require("base/path")
+local utils          = require("base/utils")
+local table          = require("base/table")
+local string         = require("base/string")
+local option         = require("base/option")
+local hashset        = require("base/hashset")
+local graph          = require("base/graph")
+local tool           = require("tool/tool")
+local config         = require("project/config")
+local sandbox        = require("sandbox/sandbox")
+local language       = require("language/language")
+local platform       = require("platform/platform")
+local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
+local target_utils   = nil -- lazy import("private.utils.target")
 
 -- get the tool of builder
 function builder:_tool()
@@ -157,32 +159,14 @@ end
 
 -- add flags from the flagkind
 function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
+    if target_utils == nil then
+        target_utils = sandbox_module.import("private.utils.target", {anonymous = true})
+    end
     local targetflags = target:get(flagkind, opt)
     local extraconf   = target:extraconf(flagkind)
     for _, flag in ipairs(table.wrap(targetflags)) do
-        -- does this flag belong to this tool?
-        -- @see https://github.com/xmake-io/xmake/issues/3022
-        --
-        -- e.g.
-        -- for all: add_cxxflags("-g")
-        -- only for clang: add_cxxflags("clang::-stdlib=libc++")
-        -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
-        --
-        local for_this_tool = true
-        local flagconf = extraconf and extraconf[flag]
-        if type(flag) == "string" and flag:find("::", 1, true) then
-            for_this_tool = false
-            local splitinfo = flag:split("::", {plain = true})
-            local toolname = splitinfo[1]
-            if toolname == self:name() then
-                flag = splitinfo[2]
-                for_this_tool = true
-            end
-        elseif flagconf and flagconf.tools then
-            for_this_tool = table.contains(table.wrap(flagconf.tools), self:name())
-        end
-
-        if for_this_tool then
+        flag = target_utils.flag_belong_to_tool(flag, self, extraconf)
+        if flag then
             if extraconf then
                 -- @note we need join the single flag with shallow mode, aboid expand table values
                 -- e.g. add_cflags({"-I", "/tmp/xxx foo"}, {force = true, expand = false})

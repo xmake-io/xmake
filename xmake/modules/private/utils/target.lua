@@ -22,6 +22,28 @@
 import("core.base.option")
 import("core.project.project")
 
+-- Is this target has these tools?
+function has_tool(toolname, tools)
+    if toolname then
+        -- We need compatibility with gcc/g++, clang/clang++ for c++ compiler/linker
+        -- @see https://github.com/xmake-io/xmake/issues/6852
+        local trim_xx = false
+        if toolname == "clangxx" or toolname == "gxx" then
+            toolname = toolname:rtrim("xx")
+            trim_xx = true
+        end
+        for _, v in ipairs(tools) do
+            if trim_xx then
+                v = v:rtrim("xx")
+            end
+            if v and toolname:find("^" .. v:gsub("%-", "%%-") .. "$") then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 -- does this flag belong to this tool?
 -- @see https://github.com/xmake-io/xmake/issues/3022
 --
@@ -30,19 +52,26 @@ import("core.project.project")
 -- only for clang: add_cxxflags("clang::-stdlib=libc++")
 -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
 --
-function flag_belong_to_tool(target, flag, toolinst, extraconf)
+function flag_belong_to_tool(flag, toolinst, extraconf)
     local for_this_tool = true
     local flagconf = extraconf and extraconf[flag]
     if type(flag) == "string" and flag:find("::", 1, true) then
         for_this_tool = false
         local splitinfo = flag:split("::", {plain = true})
         local toolname = splitinfo[1]
-        if toolname == toolinst:name() then
+        local realname = toolinst:name()
+        -- We need compatibility with gcc/g++, clang/clang++ for c++ compiler/linker
+        -- @see https://github.com/xmake-io/xmake/issues/6852
+        if realname == "clangxx" or realname == "gxx" then
+            toolname = toolname:rtrim("xx")
+            realname = realname:rtrim("xx")
+        end
+        if toolname == realname then
             flag = splitinfo[2]
             for_this_tool = true
         end
     elseif flagconf and flagconf.tools then
-        for_this_tool = table.contains(table.wrap(flagconf.tools), toolinst:name())
+        for_this_tool = has_tool(toolinst:name(), flagconf.tools)
     end
     if for_this_tool then
         return flag
@@ -79,7 +108,7 @@ function translate_flags_in_tool(target, flagkind, flags)
     --
     local result = {}
     for _, flag in ipairs(flags) do
-        flag = flag_belong_to_tool(target, flag, toolinst, extraconf)
+        flag = flag_belong_to_tool(flag, toolinst, extraconf)
         if flag then
             table.insert(result, flag)
         end

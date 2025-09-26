@@ -1408,14 +1408,13 @@ end
 --    ...
 -- end
 function _instance:has_tool(toolkind, ...)
-    local _, toolname = self:tool(toolkind)
-    if toolname then
-        for _, v in ipairs(table.join(...)) do
-            if v and toolname:find("^" .. v:gsub("%-", "%%-") .. "$") then
-                return true
-            end
-        end
+    local target_utils = package._target_utils
+    if target_utils == nil then
+        target_utils = sandbox_module.import("private.utils.target", {anonymous = true})
+        package._target_utils = target_utils
     end
+    local _, toolname = self:tool(toolkind)
+    return target_utils.has_tool(toolname, table.pack(...))
 end
 
 -- get the user private data
