@@ -843,25 +843,6 @@ local function extract_package_info(store_paths, opt)
     return result
 end
 
--- check if path matches package name
-local function path_matches_package(store_path, package_name)
-    local path_name = path.basename(store_path)
-    local package_name_lower = package_name:lower()
-    
-    local package_base = path_name:match("^[^%-]+-([^%-]+)")
-    if package_base then
-        local package_base_lower = package_base:lower()
-        if package_base_lower == package_name_lower then
-            return true
-        end
-        if package_base_lower:find(package_name_lower, 1, true) or 
-           package_name_lower:find(package_base_lower, 1, true) then
-            return true
-        end
-    end
-    return false
-end
-
 -- find package with pkg-config with caching
 local function find_with_pkgconfig(package_name, store_paths, opt)
     local cache = get_nix_cache()
@@ -892,16 +873,8 @@ local function find_with_pkgconfig(package_name, store_paths, opt)
         return cached_result or nil
     end
 
-    -- Try matching store paths for this package first
-    local matching_paths = {}
+    -- Search all paths (not fully optimal)
     for _, store_path in ipairs(store_paths) do
-        if path_matches_package(store_path, package_name) then
-            table.insert(matching_paths, store_path)
-        end
-    end
-
-    -- Search matching paths first
-    for _, store_path in ipairs(matching_paths) do
         local pkgconfig_dirs = {
             path.join(store_path, "lib", "pkgconfig"),
             path.join(store_path, "share", "pkgconfig")
@@ -909,33 +882,11 @@ local function find_with_pkgconfig(package_name, store_paths, opt)
 
         for _, pcdir in ipairs(pkgconfig_dirs) do
             if os.isdir(pcdir) then
-                if opt and (opt.verbose or option.get("verbose")) then
-                    print("Nix: Attempting pkg-config lookup: " .. package_name .. " (configdirs=" .. pcdir .. ")")
-                end
                 local result = find_package_from_pkgconfig(package_name, {configdirs = pcdir})
                 if result then
                     if opt and (opt.verbose or option.get("verbose")) then
                         print("Nix: Found package via pkg-config: " .. package_name)
                     end
-                    memory_cache:set2(PKGCONFIG_CACHE, cache_key, result)
-                    cache:set2(PKGCONFIG_CACHE, cache_key, result)
-                    return result
-                end
-            end
-        end
-    end
-
-    -- If no matches found, search all paths
-    for _, store_path in ipairs(store_paths) do
-        local pkgconfig_dirs = {
-            path.join(store_path, "lib", "pkgconfig"),
-            path.join(store_path, "share", "pkgconfig")
-        }
-
-        for _, pcdir in ipairs(pkgconfig_dirs) do
-            if os.isdir(pcdir) then
-                local result = find_package_from_pkgconfig(package_name, {configdirs = pcdir})
-                if result then
                     memory_cache:set2(PKGCONFIG_CACHE, cache_key, result)
                     cache:set2(PKGCONFIG_CACHE, cache_key, result)
                     return result
