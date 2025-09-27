@@ -63,7 +63,7 @@ end
 
 function main(opt)
     opt = opt or {}
-    local target = opt.target
+    local target = opt.instance
     if target then
         _check_licenses_for_target(target, opt)
     else
