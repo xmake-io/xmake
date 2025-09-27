@@ -26,6 +26,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.language.language")
 import("core.project.policy")
+import("private.cache.build_cache")
 import("utils.progress")
 
 -- get implib file
@@ -404,8 +405,15 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
             -- do compile
             local program, argv = compargv(self, sourcefile, objectfile, compflags)
-            local outdata, errdata = os.iorunv(program, argv, {envs = self:runenvs()})
-            return (outdata or "") .. (errdata or "")
+            if build_cache.is_enabled(opt.target) then
+                local program_, origin_flags = compargv(self, sourcefile, objectfile, flags)
+                local info = build_cache.build(program, argv, {envs = self:runenvs(),
+                    origin_flags = origin_flags, outputfile = objectfile, target = opt.target, tool = self})
+                return (info.outdata or "") .. (info.errdata or "")
+            else
+                local outdata, errdata = os.iorunv(program, argv, {envs = self:runenvs()})
+                return (outdata or "") .. (errdata or "")
+            end
         end,
         catch
         {
