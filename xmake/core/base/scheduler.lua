@@ -273,18 +273,15 @@ function scheduler:_co_curdir_update(curdir)
         return
     end
 
-    -- save the current directory hash
+    -- save the current directory
     curdir = curdir or os.curdir()
-    local curdir_hash = hash.uuid4(path.absolute(curdir)):sub(1, 8)
-    self._CO_CURDIR_HASH = curdir_hash
-
-    -- save the current directory for each coroutine
     local co_curdirs = self._CO_CURDIRS
     if not co_curdirs then
         co_curdirs = {}
         self._CO_CURDIRS = co_curdirs
     end
-    co_curdirs[running] = {curdir_hash, curdir}
+    co_curdirs[running] = curdir
+    self._CO_CURDIR_CURRENT = curdir
 end
 
 -- update the current environments hash of current coroutine
@@ -444,10 +441,10 @@ function scheduler:co_resume(co, ...)
     if running then
 
         -- has the current directory been changed? restore it
-        local curdir = self._CO_CURDIR_HASH
+        local curdir = self._CO_CURDIR_CURRENT
         local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
-        if olddir and curdir ~= olddir[1] then -- hash changed?
-            os.cd(olddir[2])
+        if olddir and curdir ~= olddir then -- hash changed?
+            os.cd(olddir)
         end
 
         -- has the current environments been changed? restore it
@@ -469,10 +466,10 @@ function scheduler:co_suspend(...)
 
     -- has the current directory been changed? restore it
     local running = assert(self:co_running())
-    local curdir = self._CO_CURDIR_HASH
+    local curdir = self._CO_CURDIR_CURRENT
     local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
-    if olddir and curdir ~= olddir[1] then -- hash changed?
-        os.cd(olddir[2])
+    if olddir and curdir ~= olddir then -- hash changed?
+        os.cd(olddir)
     end
 
     -- has the current environments been changed? restore it
