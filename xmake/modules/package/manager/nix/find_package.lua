@@ -88,7 +88,7 @@ local function extract_package_info_from_path(store_path, opt)
         if opt and (opt.verbose or option.get("verbose")) then
             print("Nix: Using session cached derivation info for: " .. store_path)
         end
-        return cached.name, cached.version, cached.outputs, cached.pname
+        return cached.name, cached.version, cached.outputs, cached.current_output
     end
     
     cached = cache:get2(DERIVATION_CACHE, store_path)
@@ -97,12 +97,23 @@ local function extract_package_info_from_path(store_path, opt)
             print("Nix: Using persistent cached derivation info for: " .. store_path)
         end
         memory_cache:set2(DERIVATION_CACHE, store_path, cached)
-        return cached.name, cached.version, cached.outputs, cached.pname
+        return cached.name, cached.version, cached.outputs, cached.current_output
     end
     
     -- Find required tools
     local nix_store = find_tool("nix-store")
     local nix = find_tool("nix")
+
+    if not nix_store or not nix then
+        if opt and (opt.verbose or option.get("verbose")) then
+            local missing = {}
+            if not nix_store then table.insert(missing, "nix-store") end
+            if not nix then table.insert(missing, "nix") end
+            print("Nix: Required tools not found: " .. table.concat(missing, ", "))
+        end
+        return nil
+    end
+
     -- Get the derivation path
     local drv_output = try {function()
         return os.iorunv(nix_store.program, {"--query", "--valid-derivers", store_path}):trim() -- not "--deriver" because:
@@ -686,23 +697,12 @@ local function get_all_store_paths(opt)
     return all_paths
 end
 
--- check if store path has the package name (fuzzy match)
+-- check if store path has the package name (substring search)
 local function path_matches_package(store_path, package_name)
-    local path_name = path.basename(store_path)
+    local path_name_lower = path.basename(store_path):lower()
     local package_name_lower = package_name:lower()
     
-    local package_base = path_name:match("^[^%-]+-([^%-]+)")
-    if package_base then
-        local package_base_lower = package_base:lower()
-        if package_base_lower == package_name_lower then
-            return true
-        end
-        if package_base_lower:find(package_name_lower, 1, true) or 
-           package_name_lower:find(package_base_lower, 1, true) then
-            return true
-        end
-    end
-    return false
+    return path_name_lower:find(package_name_lower, 1, true) ~= nil
 end
 
 -- extract package information from store paths with caching
@@ -883,8 +883,8 @@ local function extract_package_info(store_paths, package_name, opt)
     cache:save()
 
     if opt and (opt.verbose or option.get("verbose")) then
-        local _, count = table.keys(result)
-        print("Nix: Extracted " .. count .. " packages from store paths")
+        local keys = table.keys(result)
+        print("Nix: Extracted " .. #keys .. " packages from store paths")
     end
 
     return result
@@ -996,8 +996,8 @@ function main(name, opt)
     
     -- Extract all package info (cached)
     local packages = extract_package_info(store_paths, name, opt)
-    local _, count = table.keys(packages)
-    if not packages or count == 0 then
+    local keys = table.keys(packages)
+    if not packages or #keys == 0 then
         if opt and (opt.verbose or option.get("verbose")) then
             print("Nix: No packages extracted from store paths")
         end
@@ -1031,21 +1031,12 @@ function main(name, opt)
             version = found_package.version
         }
         
+        local fields_to_copy = {"includedirs", "linkdirs", "links", "libfiles", "bindirs"}
         -- Add directories and links if they exist
-        if found_package.includedirs and #found_package.includedirs > 0 then
-            result.includedirs = found_package.includedirs
-        end
-        if found_package.linkdirs and #found_package.linkdirs > 0 then
-            result.linkdirs = found_package.linkdirs
-        end
-        if found_package.links and #found_package.links > 0 then
-            result.links = found_package.links
-        end
-        if found_package.libfiles and #found_package.libfiles > 0 then
-            result.libfiles = found_package.libfiles
-        end
-        if found_package.bindirs and #found_package.bindirs > 0 then
-            result.bindirs = found_package.bindirs
+        for _, field in ipairs(fields_to_copy) do
+            if found_package[field] and #found_package[field] > 0 then
+                result[field] = found_package[field]
+            end
         end
         
         return result
