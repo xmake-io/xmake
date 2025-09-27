@@ -70,10 +70,9 @@ local function generate_env_cache_key()
     
     -- Create a hash-like key from the environment
     local key_parts = {}
-    for k, v in pairs(env_data) do
+    for k, v in table.orderpairs(env_data) do
         table.insert(key_parts, k .. "=" .. v)
     end
-    table.sort(key_parts)
     return table.concat(key_parts, "|")
 end
 
@@ -109,7 +108,7 @@ local function extract_package_info_from_path(store_path, opt)
             local missing = {}
             if not nix_store then table.insert(missing, "nix-store") end
             if not nix then table.insert(missing, "nix") end
-            print("Nix: Required tools not found: " .. table.concat(missing, ", "))
+            wprint("Nix: Required tools not found: " .. table.concat(missing, ", "))
         end
         return nil
     end
