@@ -190,9 +190,14 @@ function main()
             end
         end
     else
+        -- Default source file filter when not specifying "--files" option
+        -- **.c, **.cc, **.cxx, **.cpp
+        local source_filepatterns = _get_file_patterns("**.c" .. path.envsep() .. "**.cc" .. path.envsep() .. "**.cxx" .. path.envsep() .. "**.cpp")
         for _, target in ipairs(targets) do
             for _, source in ipairs(target:sourcefiles()) do
-                table.insert(argv, path.join(projectdir, source))
+                if _match_sourcefiles(source, source_filepatterns) then
+                    table.insert(argv, path.join(projectdir, source))
+                end
             end
             for _, header in ipairs(target:headerfiles()) do
                 table.insert(argv, path.join(projectdir, header))
