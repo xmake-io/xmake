@@ -541,6 +541,7 @@ function _get_configs_for_appleos(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM   = "NEVER"
     -- avoid install bundle targets
     envs.CMAKE_MACOSX_BUNDLE       = "NO"
+    _insert_configs_from_envs(configs, envs, opt)
     _get_configs_for_generic(package, configs, opt)
 end
 
@@ -581,6 +582,7 @@ function _get_configs_for_mingw(package, configs, opt)
         envs.CMAKE_MAKE_PROGRAM = _get_mingw32_make(package)
     end
     _fix_cxx_compiler_cmake(package, envs)
+    _insert_configs_from_envs(configs, envs, opt)
     _get_configs_for_generic(package, configs, opt)
 end
 
@@ -609,6 +611,7 @@ function _get_configs_for_wasm(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
+    _insert_configs_from_envs(configs, envs, opt)
     _get_configs_for_generic(package, configs, opt)
 end
 
@@ -669,6 +672,7 @@ function _get_configs_for_cross(package, configs, opt)
     -- avoids finding host include/library path
     envs.CMAKE_FIND_USE_CMAKE_SYSTEM_PATH = "0"
     envs.CMAKE_FIND_USE_INSTALL_PREFIX = "0"
+    _insert_configs_from_envs(configs, envs, opt)
     _get_configs_for_generic(package, configs, opt)
 end
 
@@ -699,6 +703,7 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     if package:is_cross() then
         envs.CMAKE_SYSTEM_NAME     = "Linux"
     end
+    _insert_configs_from_envs(configs, envs, opt)
     _get_configs_for_generic(package, configs, opt)
 end
 
