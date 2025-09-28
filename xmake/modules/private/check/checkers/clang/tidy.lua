@@ -33,7 +33,6 @@ import("private.action.require.impl.install_packages")
 -- the clang.tidy options
 local options = {
     {"l", "list",       "k",  nil,  "Show the clang-tidy checks list."},
-    {"v", "verbose",    "k",  nil,  "Show verbose output."},
     {"j", "jobs",       "kv", tostring(os.default_njob()),
                                     "Set the number of parallel check jobs."},
     {"q", "quiet",      "k",  nil,  "Run clang-tidy in quiet mode."},
@@ -112,24 +111,16 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
         table.insert(argv, "--quiet")
     end
 
-    local sourcefiles_jobs = {}
-    for _, sourcefile in ipairs(sourcefiles) do
-        if not path.is_absolute(sourcefile) then
-            sourcefile = path.absolute(sourcefile, projectdir)
-        end
-        local source_files_argv = table.join(argv, {sourcefile})
-        table.insert(sourcefiles_jobs, {sourcefile, source_files_argv})
-    end
-
     local analyze_time = os.mclock()
     -- run clang-tidy
     runjobs("checker.tidy", function (index, total, opt)
-        local sourcefile, tidy_argv = table.unpack(sourcefiles_jobs[index])
+        local sourcefile = sourcefiles[index]
+        local tidy_argv = table.join(argv, {sourcefile})
         progress.show(index * 100 / total, "clang-tidy.analyzing %s", sourcefile)
         os.execv(clang_tidy.program, tidy_argv, {curdir = projectdir})
-    end, {total = #sourcefiles_jobs, comax = opt.jobs or os.default_njob()})
+    end, {total = #sourcefiles, comax = opt.jobs or os.default_njob()})
     analyze_time = os.mclock() - analyze_time
-    progress.show(100, "${color.success}clang-tidy.analyzed %d files, spent %.3fs", #sourcefiles_jobs, analyze_time / 1000)
+    progress.show(100, "${color.success}clang-tidy analyzed %d files, spent %.3fs", #sourcefiles, analyze_time / 1000)
 end
 
 -- do check
