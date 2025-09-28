@@ -26,6 +26,7 @@ import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkg
 import("core.cache.globalcache")
 import("core.cache.memcache")
 import("core.base.json")
+import("core.base.object")
 
 -- cache keys
 local STORE_PATHS_CACHE = "nix_store_paths"
@@ -115,9 +116,13 @@ local function extract_package_info_from_path(store_path, opt)
 
     -- Get the derivation path
     local drv_output = try {function()
-        return os.iorunv(nix_store.program, {"--query", "--valid-derivers", store_path}):trim() -- not "--deriver" because:
+        local outdata = os.iorunv(nix_store.program, {"--query", "--valid-derivers", store_path}) -- not "--deriver" because:
         -- The returned deriver is not guaranteed to exist in the local store, for example when paths were substituted from a binary cache.
         -- Ref: https://nix.dev/manual/nix/latest/command-ref/nix-store/query.html
+        if outdata then
+            return outdata:trim()
+        end
+        return outdata
     end}
     
     if not drv_output or drv_output == "" then
@@ -146,11 +151,15 @@ local function extract_package_info_from_path(store_path, opt)
     local derivation_json = nil
     for _, drv_path in ipairs(derivations) do
         derivation_json = try {function()
-            return os.iorunv(nix.program, {
+            local outdata = os.iorunv(nix.program, {
                 "derivation", "show", 
                 drv_path,
                 "--extra-experimental-features", "nix-command flakes"
-            }):trim()
+            })
+            if outdata then
+                return outdata:trim()
+            end
+            return outdata
         end}
         
         if derivation_json and derivation_json ~= "" then
@@ -169,10 +178,10 @@ local function extract_package_info_from_path(store_path, opt)
     end
     
     -- Parse the JSON output
-    local derivation_data, parse_error = json.decode(derivation_json)
-    if not derivation_data or parse_error then
+    local derivation_data = json.decode(derivation_json)
+    if not derivation_data then
         if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Failed to parse derivation JSON: " .. (parse_error or "unknown error"))
+            print("Nix: Failed to parse derivation JSON")
         end
         return nil
     end
@@ -241,116 +250,91 @@ local function extract_package_info_from_path(store_path, opt)
     return package_name, version, output_paths, current_output
 end
 
--- remove duplicates from array
-local function remove_duplicates(arr)
-    local seen = {}
-    local clean = {}
-    for _, item in ipairs(arr) do
-        if not seen[item] then
-            seen[item] = true
-            table.insert(clean, item)
-        end
-    end
-    return clean
+-- package info data
+local package_info = object {_init = {"package_name"}}
+
+function package_info:new(name)
+    self._name = name
+    self._includedirs = {}
+    self._bindirs = {}
+    self._linkdirs = {}
+    self._links = {}
+    self._libfiles = {}
+    self._store_paths = {}
+    self._outputs = {}
+    self._version = nil
+    self._pkgconfig_available = false
+    return package_info {self, name}
 end
 
--- PackageInfo data
-local PackageInfo = {}
-PackageInfo.__index = PackageInfo
-
-function PackageInfo:new(package_name)
-    local o = {
-        name = package_name, -- "pname" in nix terms
-        includedirs = {},
-        bindirs = {},
-        linkdirs = {},
-        links = {},
-        libfiles = {},
-        store_paths = {},
-        outputs = {}, -- output_name -> store_path mapping
-        version = nil,
-        pkgconfig_available = false
-    }
-
-    table.inherit2(o, self)
-    return o
-end
-
-function PackageInfo:add_store_path(p, output_name)
-    table.insert(self.store_paths, p)
+function package_info:add_store_path(p, output_name)
+    table.insert(self._store_paths, p)
     if output_name then
-        self.outputs[output_name] = p
+        self._outputs[output_name] = p
     end
 end
 
-function PackageInfo:add_includedir(d)
-    table.insert(self.includedirs, d)
+function package_info:add_includedir(d)
+    table.insert(self._includedirs, d)
 end
 
-function PackageInfo:add_bindir(d)
-    table.insert(self.bindirs, d)
+function package_info:add_bindir(d)
+    table.insert(self._bindirs, d)
 end
 
-function PackageInfo:add_linkdir(d)
-    table.insert(self.linkdirs, d)
+function package_info:add_linkdir(d)
+    table.insert(self._linkdirs, d)
 end
 
-function PackageInfo:add_link(l)
-    table.insert(self.links, l)
+function package_info:add_link(l)
+    table.insert(self._links, l)
 end
 
-function PackageInfo:add_libfile(f)
-    table.insert(self.libfiles, f)
+function package_info:add_libfile(f)
+    table.insert(self._libfiles, f)
 end
 
-function PackageInfo:set_version(v)
-    if not self.version and v then
-        self.version = v
+function package_info:set_version(v)
+    if not self._version and v then
+        self._version = v
     end
 end
 
-function PackageInfo:set_pkgconfig_available()
-    self.pkgconfig_available = true
+function package_info:set_pkgconfig_available()
+    self._pkgconfig_available = true
 end
 
-function PackageInfo:finalize()
+function package_info:finalize()
     -- remove duplicates
-    self.includedirs = remove_duplicates(self.includedirs)
-    self.bindirs = remove_duplicates(self.bindirs)
-    self.linkdirs = remove_duplicates(self.linkdirs)
-    self.links = remove_duplicates(self.links)
-    self.libfiles = remove_duplicates(self.libfiles)
-    self.store_paths = remove_duplicates(self.store_paths)
-    
+    self._includedirs = table.unique(self._includedirs)
+    self._bindirs = table.unique(self._bindirs)
+    self._linkdirs = table.unique(self._linkdirs)
+    self._links = table.unique(self._links)
+    self._libfiles = table.unique(self._libfiles)
+    self._store_paths = table.unique(self._store_paths)
+   
     -- return plain table (so cache stores normal table)
     return {
-        name = self.name,
-        includedirs = self.includedirs,
-        bindirs = self.bindirs,
-        linkdirs = self.linkdirs,
-        links = self.links,
-        libfiles = self.libfiles,
-        store_paths = self.store_paths,
-        outputs = self.outputs,
-        version = self.version,
-        pkgconfig_available = self.pkgconfig_available
+        name = self._name,
+        includedirs = self._includedirs,
+        bindirs = self._bindirs,
+        linkdirs = self._linkdirs,
+        links = self._links,
+        libfiles = self._libfiles,
+        store_paths = self._store_paths,
+        outputs = self._outputs,
+        version = self._version,
+        pkgconfig_available = self._pkgconfig_available
     }
 end
 
 -- follow propagated build inputs recursively with caching
 local function follow_propagated_inputs(store_paths, opt)
     local cache = get_nix_cache()
-    local all_paths = {}
-    local seen = {}
     local visited = {}
     
     -- Add initial paths
-    for _, store_path in ipairs(store_paths) do
-        if not seen[store_path] then
-            seen[store_path] = true
-            table.insert(all_paths, store_path)
-        end
-    end
+    local all_paths = table.unique(store_paths)
     
     local i = 1
     while i <= #all_paths do
@@ -393,25 +377,26 @@ local function follow_propagated_inputs(store_paths, opt)
             
             -- Add new paths
             for _, prop_path in ipairs(prop_paths) do
-                if not seen[prop_path] then
-                    seen[prop_path] = true
-                    table.insert(all_paths, prop_path)
-                    if opt and (opt.verbose or option.get("verbose")) then
-                        print("Nix: Added propagated: " .. prop_path)
-                    end
+                table.insert(all_paths, prop_path)
+                if opt and (opt.verbose or option.get("verbose")) then
+                    print("Nix: Added propagated: " .. prop_path)
                 end
             end
         end
         i = i + 1
     end
     
-    return all_paths
+    return table.unique(all_paths)
 end
 
 -- get store paths from nix command output
 local function get_store_paths_from_command(command, args, opt)
     local output = try {function()
-        return os.iorunv(command, args):trim()
+        local outdata = os.iorunv(command, args)
+        if outdata then
+            return outdata:trim()
+        end
+        return outdata
     end}
     
     if not output then
@@ -581,7 +566,11 @@ local function get_store_paths_nixos_user_packages(opt)
     
     local user = os.getenv("USER") or "unknown"
     local output = try {function()
-        return os.iorunv(nixos_option.program, {"users.users." .. user .. ".packages"}):trim()
+        local outdata = os.iorunv(nixos_option.program, {"users.users." .. user .. ".packages"})
+        if outdata then
+            return outdata:trim()
+        end
+        return outdata
     end}
     
     if output then
@@ -603,7 +592,11 @@ local function get_store_paths_nixos_system_packages(opt)
     end
     
     local output = try {function()
-        return os.iorunv(nixos_option.program, {"environment.systemPackages"}):trim()
+        local outdata = os.iorunv(nixos_option.program, {"environment.systemPackages"})
+        if outdata then
+            return outdata:trim()
+        end
+        return outdata
     end}
     
     if output then
@@ -754,12 +747,7 @@ local function extract_package_info(store_paths, package_name, opt)
         
         -- Then find their dependencies
         local all_deps = follow_propagated_inputs(filtered_paths, opt)
-        for _, dep_path in ipairs(all_deps) do
-            if not seen[dep_path] then
-                seen[dep_path] = true
-                table.insert(filtered_paths, dep_path)
-            end
-        end
+        filtered_paths = table.unique(all_deps)
         
         if opt and (opt.verbose or option.get("verbose")) then
             print("Nix: Filtered to " .. #filtered_paths .. " relevant store paths for package: " .. package_name)
@@ -770,7 +758,7 @@ local function extract_package_info(store_paths, package_name, opt)
         print("Nix: Extracting package info for " .. #filtered_paths .. " store paths")
     end
 
-    local packages = {} -- map: package_name -> PackageInfo
+    local packages = {} -- map: package_name -> package_info
 
     local function ensure_pkg(name)
         if not name then
@@ -778,7 +766,8 @@ local function extract_package_info(store_paths, package_name, opt)
         end
         local p = packages[name]
         if not p then
-            p = PackageInfo:new(name)
+            -- Create the package_info object
+            p = package_info:new(name)
             packages[name] = p
         end
         return p
@@ -808,7 +797,7 @@ local function extract_package_info(store_paths, package_name, opt)
         -- Add all output paths to the package
         if output_paths then
             for output_name, output_path in pairs(output_paths) do
-                pkg.outputs[output_name] = output_path
+                pkg._outputs[output_name] = output_path
             end
         end
 
@@ -869,7 +858,7 @@ local function extract_package_info(store_paths, package_name, opt)
         ::continue::
     end
 
-    -- finalize all PackageInfo instances into plain tables
+    -- finalize all package_info instances into plain tables
     local result = {}
     for name, pkgobj in pairs(packages) do
         local plain = pkgobj:finalize()
