@@ -106,6 +106,13 @@ function _get_targets(targetname, group_pattern)
     return targets
 end
 
+-- tell if the source batch is a c/c++/objc/objc++/cuda source batch
+function _source_batch_should_format(sourcebatch)
+    local rulename = sourcebatch.rulename
+    local matched_rules = {"c.build", "c++.build", "cuda.build", "objc.build", "objc++.build"}
+    return table.contains(matched_rules, rulename)
+end
+
 -- main
 function main()
 
@@ -191,8 +198,12 @@ function main()
         end
     else
         for _, target in ipairs(targets) do
-            for _, source in ipairs(target:sourcefiles()) do
-                table.insert(argv, path.join(projectdir, source))
+            for _, sourcebatch in pairs(target:sourcebatches()) do
+                if _source_batch_should_format(sourcebatch) then
+                    for _, source in ipairs(sourcebatch.sourcefiles) do
+                        table.insert(argv, path.join(projectdir, source))
+                    end
+                end
             end
             for _, header in ipairs(target:headerfiles()) do
                 table.insert(argv, path.join(projectdir, header))

@@ -40,7 +40,7 @@ task("format")
                                                   "e.g.",
                                                   "    - xmake format --files=src/main.c",
                                                   "    - xmake format --files='src/*.c' [target]",
-                                                  "    - xmake format --files='src/**.c|excluded_file.c",
+                                                  "    - xmake format --files='src/**.c|excluded_file.c'",
                                                   "    - xmake format --files='src/main.c" .. path.envsep() .. "src/test.c'" },
                                                   {},
                     {nil, "target",  "v",  nil,   "The target name. It will format all default targets if this parameter is not specified."
