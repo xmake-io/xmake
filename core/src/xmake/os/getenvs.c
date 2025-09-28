@@ -61,8 +61,8 @@ static tb_void_t xm_os_getenvs_trim(tb_char_t** sstr, tb_char_t** estr)
     // check
     tb_assert(sstr && estr && *sstr && *estr);
 
-    tb_char_t* p = *sstr;
-    tb_char_t* e = *estr;
+    tb_char_t const* p = *sstr;
+    tb_char_t const* e = *estr;
 
     // trim left
     while (p < e && tb_isspace(*p))
@@ -121,10 +121,7 @@ static tb_void_t xm_os_getenvs_process_line(lua_State* lua, tb_char_t const* lin
 
     // set key-value pair in Lua table using pushlstring to avoid length limits
     lua_pushlstring(lua, final_key_start, final_key_len);
-    if (value_len > 0)
-        lua_pushlstring(lua, value_start, value_len);
-    else
-        lua_pushliteral(lua, "");
+    lua_pushlstring(lua, value_start, value_len);
     lua_rawset(lua, -3);
 }
 
