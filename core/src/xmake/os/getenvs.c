@@ -56,7 +56,7 @@ extern tb_char_t** environ;
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-static tb_void_t xm_os_getenvs_trim(tb_char_t** sstr, tb_char_t** estr)
+static tb_void_t xm_os_getenvs_trim(tb_char_t const** sstr, tb_char_t const** estr)
 {
     // check
     tb_assert(sstr && estr && *sstr && *estr);
@@ -96,16 +96,16 @@ static tb_void_t xm_os_getenvs_process_line(lua_State* lua, tb_char_t const* lin
     tb_char_t const* value_end = line + n;
 
     // trim key
-    xm_os_getenvs_trim((tb_char_t**)&key_start, (tb_char_t**)&key_end);
+    xm_os_getenvs_trim(&key_start, &key_end);
     if (key_start >= key_end) return;
 
     // trim value
-    xm_os_getenvs_trim((tb_char_t**)&value_start, (tb_char_t**)&value_end);
+    xm_os_getenvs_trim(&value_start, &value_end);
 
     // get key and value lengths
     tb_size_t key_len = key_end - key_start;
     tb_size_t value_len = value_end > value_start ? value_end - value_start : 0;
-    
+
     // handle Windows-specific PATH conversion
     tb_char_t const* final_key_start = key_start;
     tb_size_t final_key_len = key_len;
