@@ -82,7 +82,7 @@ static tb_void_t xm_os_getenvs_process_line(lua_State* lua, tb_char_t const* lin
     // check
     tb_assert_and_check_return(lua && line);
 
-    tb_int_t n = tb_strlen(line);
+    tb_size_t n = tb_strlen(line);
     tb_check_return(n > 0);
 
     // find '=' separator
