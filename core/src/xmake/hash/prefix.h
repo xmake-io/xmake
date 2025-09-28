@@ -26,6 +26,25 @@
  */
 #include "../prefix.h"
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * helper implementation
+ */
+
+static __tb_inline__ tb_void_t xm_hash_make_cstr(tb_char_t hash[256], tb_byte_t const* data, tb_size_t size)
+{
+    static tb_char_t const* digits_table = "0123456789abcdef";
+    tb_size_t i = 0;
+    tb_byte_t value;
+    tb_char_t* s = hash;
+    for (i = 0; i < size; ++i)
+    {
+        value = data[i];
+        s[0] = digits_table[(value >> 4) & 15];
+        s[1] = digits_table[value & 15];
+        s += 2;
+    }
+    *s = '\0';
+}
 
 #endif
 
