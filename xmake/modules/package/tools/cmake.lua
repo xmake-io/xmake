@@ -541,7 +541,7 @@ function _get_configs_for_appleos(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM   = "NEVER"
     -- avoid install bundle targets
     envs.CMAKE_MACOSX_BUNDLE       = "NO"
-    _insert_configs_from_envs(configs, envs, opt)
+    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for mingw
@@ -581,7 +581,7 @@ function _get_configs_for_mingw(package, configs, opt)
         envs.CMAKE_MAKE_PROGRAM = _get_mingw32_make(package)
     end
     _fix_cxx_compiler_cmake(package, envs)
-    _insert_configs_from_envs(configs, envs, opt)
+    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for wasm
@@ -610,7 +610,6 @@ function _get_configs_for_wasm(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
     _get_configs_for_generic(package, configs, opt)
-    _insert_configs_from_envs(configs, envs, opt)
 end
 
 -- get configs for cross
@@ -618,8 +617,6 @@ function _get_configs_for_cross(package, configs, opt)
     opt = opt or {}
     opt.cross                      = true
     local envs                     = {}
-    envs.CMAKE_BUILD_TYPE          = package:is_debug() and "Debug" or "Release"
-    envs.BUILD_SHARED_LIBS         = package:config("shared") and "ON" or "OFF"
     local sdkdir                   = _translate_paths(package:build_getenv("sdk"))
     envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
     envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
@@ -655,9 +652,6 @@ function _get_configs_for_cross(package, configs, opt)
         envs.CMAKE_SYSTEM_NAME = system_name
         envs.CMAKE_SYSTEM_PROCESSOR = _get_cmake_system_processor(package)
     end
-    if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
-        table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
-    end
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
     -- https://github.com/xmake-io/xmake/issues/6660
@@ -675,7 +669,7 @@ function _get_configs_for_cross(package, configs, opt)
     -- avoids finding host include/library path
     envs.CMAKE_FIND_USE_CMAKE_SYSTEM_PATH = "0"
     envs.CMAKE_FIND_USE_INSTALL_PREFIX = "0"
-    _insert_configs_from_envs(configs, envs, opt)
+    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for host toolchain
@@ -705,10 +699,7 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     if package:is_cross() then
         envs.CMAKE_SYSTEM_NAME     = "Linux"
     end
-    if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
-        table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
-    end
-    _insert_configs_from_envs(configs, envs, opt)
+    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get cmake generator for msvc
