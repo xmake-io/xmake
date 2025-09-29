@@ -21,9 +21,27 @@
 -- imports
 import("core.base.option")
 import("core.base.hashset")
+import("core.package.package")
 import("core.project.project")
 import("private.check.checker")
 import("private.utils.target", {alias = "target_utils"})
+
+function _get_project_packages()
+    local project_packages = _g.project_packages
+    if not project_packages then
+        project_packages = {}
+        for name, _ in pairs(project.required_packages()) do
+            local pkg, errors = package.load_from_project(name)
+            if pkg then
+                table.insert(project_packages, pkg)
+            elseif errors then
+                raise(errors)
+            end
+        end
+        _g.project_packages = project_packages
+    end
+    return project_packages
+end
 
 -- get the most probable value
 function _get_most_probable_value(value, valueset)
@@ -59,7 +77,7 @@ function _do_show(str, opt)
 end
 
 -- show result
-function _show(apiname, value, target, opt)
+function _show(apiname, value, instance, opt)
     opt = opt or {}
 
     -- match level? verbose: note/warning/error, default: warning/error
@@ -69,13 +87,13 @@ function _show(apiname, value, target, opt)
     end
 
     -- get source information
-    local sourceinfo = target:sourceinfo(apiname, value) or {}
+    local sourceinfo = instance:sourceinfo(apiname, value) or {}
     local sourcetips = sourceinfo.file or ""
     if sourceinfo.line then
         sourcetips = sourcetips .. ":" .. (sourceinfo.line or -1)
     end
     if #sourcetips == 0 then
-        sourcetips = string.format("target(%s)", target:name())
+        sourcetips = string.format("%s(%s)", instance:type(), instance:name())
     end
 
     -- get level tips
@@ -105,21 +123,21 @@ function _show(apiname, value, target, opt)
         probable_value = probable_value})
 end
 
--- check target
-function _check_target(target, apiname, valueset, level, opt)
-    local target_valueset = valueset
+-- check instance
+function _check_instance(instance, apiname, valueset, level, opt)
+    local instance_valueset = valueset
     if type(opt.values) == "function" then
-        local target_values = opt.values(target)
-        if target_values then
-            target_valueset = hashset.from(target_values)
+        local instance_values = opt.values(instance)
+        if instance_values then
+            instance_valueset = hashset.from(instance_values)
         end
     end
-    local values = target:get(apiname)
+    local values = instance:get(apiname)
     for _, value in ipairs(values) do
         if opt.check then
-            local ok, errors = opt.check(target, value)
+            local ok, errors = opt.check(instance, value)
             if not ok then
-                local reported = _show(apiname, value, target, {
+                local reported = _show(apiname, value, instance, {
                     show = opt.show,
                     showstr = errors,
                     level = level})
@@ -127,14 +145,32 @@ function _check_target(target, apiname, valueset, level, opt)
                     checker.update_stats(level)
                 end
             end
-        elseif not target_valueset:has(value) then
-            local reported = _show(apiname, value, target, {
+        elseif not instance_valueset:has(value) then
+            local reported = _show(apiname, value, instance, {
                 show = opt.show,
-                valueset = target_valueset,
+                valueset = instance_valueset,
                 level = level})
             if reported then
                 checker.update_stats(level)
             end
+        end
+    end
+end
+
+-- check api configuration in instances
+function _check_instances(apiname, instance, instances_func, opt)
+    local level = opt.level or "warning"
+    local valueset
+    if opt.values and type(opt.values) ~= "function" then
+        valueset = hashset.from(opt.values)
+    else
+        valueset = hashset.new()
+    end
+    if instance then
+        _check_instance(instance, apiname, valueset, level, opt)
+    else
+        for _, instance in pairs(instances_func()) do
+            _check_instance(instance, apiname, valueset, level, opt)
         end
     end
 end
@@ -156,18 +192,11 @@ end
 -- check api configuration in targets
 function check_targets(apiname, opt)
     opt = opt or {}
-    local level = opt.level or "warning"
-    local valueset
-    if opt.values and type(opt.values) ~= "function" then
-        valueset = hashset.from(opt.values)
-    else
-        valueset = hashset.new()
-    end
-    if opt.target then
-        _check_target(opt.target, apiname, valueset, level, opt)
-    else
-        for _, target in pairs(project.targets()) do
-            _check_target(target, apiname, valueset, level, opt)
-        end
-    end
+    _check_instances(apiname, opt.target, project.targets, opt)
+end
+
+-- check api configuration in packages
+function check_packages(apiname, opt)
+    opt = opt or {}
+    _check_instances(apiname, opt.package, _get_project_packages, opt)
 end

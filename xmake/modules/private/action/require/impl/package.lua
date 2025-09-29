@@ -31,6 +31,7 @@ import("core.tool.toolchain")
 import("core.platform.platform")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
+import("private.action.require.impl.check_api")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.search_packages")
 import("private.action.require.impl.utils.requirekey", {alias = "_get_requirekey"})
@@ -1127,6 +1128,8 @@ function _load_package(packagename, requireinfo, opt)
 
     -- load environments from the manifest to enable the environments of on_install()
     package:envs_load()
+
+    check_api(package)
 
     -- save this package package to cache
     _memcache():set2("packages", packagekey, package)

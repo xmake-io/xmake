@@ -22,27 +22,7 @@
 import("core.base.option")
 import("core.project.project")
 import("private.check.checker")
-
-function _show(str, opt)
-    opt = opt or {}
-    _g.showed = _g.showed or {}
-    local showed = _g.showed
-    local infostr
-    if str and opt.sourcetips then
-        infostr = string.format("%s${clear}: %s", opt.sourcetips, str)
-    elseif opt.sourcetips and opt.apiname and opt.value ~= nil then
-        infostr = string.format("%s${clear}: unknown %s value '%s'", opt.sourcetips, opt.apiname, opt.value)
-    elseif str then
-        infostr = string.format("${clear}: %s", str)
-    end
-    if opt.probable_value then
-        infostr = string.format("%s, it may be '%s'", infostr, opt.probable_value)
-    end
-    if not showed[infostr] then
-        wprint(infostr)
-        showed[infostr] = true
-    end
-end
+import("private.check.show")
 
 function main(targetnames, opt)
     opt = opt or {}
@@ -70,7 +50,7 @@ function main(targetnames, opt)
         if (info.build and opt.build) or (info.build_failure and opt.build_failure) then
             local check = import("private.check.checkers." .. name, {anonymous = true})
             for _, target in ipairs(targets) do
-                check({target = target, show = _show})
+                check({target = target, show = show.wshow})
             end
         end
     end
