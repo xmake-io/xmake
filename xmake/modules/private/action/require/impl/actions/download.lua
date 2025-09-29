@@ -27,6 +27,7 @@ import("core.project.config")
 import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_file")
 import("lib.detect.find_directory")
+import("private.action.require.impl.check_api")
 import("private.action.require.impl.utils.filter")
 import("private.action.require.impl.utils.url_filename")
 import("net.http")
@@ -405,6 +406,8 @@ function main(package, opt)
             catch
             {
                 function (errors)
+
+                    check_api(package, {download_failure = true})
 
                     -- show or save the last errors
                     if errors then

@@ -1129,7 +1129,7 @@ function _load_package(packagename, requireinfo, opt)
     -- load environments from the manifest to enable the environments of on_install()
     package:envs_load()
 
-    check_api(package)
+    check_api(package, {load = true})
 
     -- save this package package to cache
     _memcache():set2("packages", packagekey, package)

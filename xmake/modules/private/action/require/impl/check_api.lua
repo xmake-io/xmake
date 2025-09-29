@@ -21,10 +21,12 @@
 import("private.check.checker")
 import("private.check.show")
 
-function main(package)
+function main(package, opt)
+    opt = opt or {}
+
     local checkers = checker.checkers()
     for name, info in table.orderpairs(checkers) do
-        if info.load then
+        if (info.load and opt.load) or (info.download_failure and opt.download_failure) then
             local check = import("private.check.checkers." .. name, {anonymous = true})
             check({package = package, show = show.wshow})
         end
