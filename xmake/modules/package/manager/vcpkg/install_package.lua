@@ -106,7 +106,7 @@ function _install_for_manifest(vcpkg, name, opt)
     end
 
     -- generate manifest, vcpkg.json
-    local baseline = configs.baseline or "44d94c2edbd44f0c01d66c2ad95eb6982a9a61bc" -- 2021.04.30
+    local baseline = configs.baseline or "2e6fcc44573d091af0321f99c89b212997a76f1f" -- 2025.09.27
     local manifest = {
         name = "stub",
         version = "1.0",
