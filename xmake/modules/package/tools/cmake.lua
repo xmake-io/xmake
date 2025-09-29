@@ -472,8 +472,6 @@ function _get_configs_for_windows(package, configs, opt)
 
     if package:is_cross() then
         _get_configs_for_cross(package, configs, opt)
-    else
-        _get_configs_for_generic(package, configs, opt)
     end
 end
 
@@ -510,7 +508,6 @@ function _get_configs_for_android(package, configs, opt)
         table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH")
         table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER")
     end
-    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for appleos
@@ -542,7 +539,6 @@ function _get_configs_for_appleos(package, configs, opt)
     -- avoid install bundle targets
     envs.CMAKE_MACOSX_BUNDLE       = "NO"
     _insert_configs_from_envs(configs, envs, opt)
-    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for mingw
@@ -583,7 +579,6 @@ function _get_configs_for_mingw(package, configs, opt)
     end
     _fix_cxx_compiler_cmake(package, envs)
     _insert_configs_from_envs(configs, envs, opt)
-    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for wasm
@@ -612,7 +607,6 @@ function _get_configs_for_wasm(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
     _insert_configs_from_envs(configs, envs, opt)
-    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for cross
@@ -673,7 +667,6 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_FIND_USE_CMAKE_SYSTEM_PATH = "0"
     envs.CMAKE_FIND_USE_INSTALL_PREFIX = "0"
     _insert_configs_from_envs(configs, envs, opt)
-    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for host toolchain
@@ -704,7 +697,6 @@ function _get_configs_for_host_toolchain(package, configs, opt)
         envs.CMAKE_SYSTEM_NAME     = "Linux"
     end
     _insert_configs_from_envs(configs, envs, opt)
-    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get cmake generator for msvc
@@ -909,6 +901,8 @@ function _get_configs(package, configs, opt)
     opt._configs_str = string.serialize(configs, {indent = false, strip = true})
     _get_configs_for_install(package, configs, opt)
     _get_configs_for_generator(package, configs, opt)
+    _get_configs_for_generic(package, configs, opt)
+
     if package:is_plat("windows") then
         _get_configs_for_windows(package, configs, opt)
     elseif package:is_plat("android") then
@@ -931,8 +925,6 @@ function _get_configs(package, configs, opt)
         else
             _get_configs_for_cross(package, configs, opt)
         end
-    else
-        _get_configs_for_generic(package, configs, opt)
     end
 
     -- fix error for cmake 4.x
