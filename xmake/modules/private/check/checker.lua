@@ -28,6 +28,7 @@ function checkers()
         checkers = {
             -- package api checkers
             ["api.package.kind"]         = {description = "Check kind configuration in package.", load = true},
+            ["api.package.versionfiles"] = {description = "Check versionfiles configuration in package.", download_failure = true},
             -- target api checkers
             ["api.target.version"]       = {description = "Check version configuration in target."},
             ["api.target.kind"]          = {description = "Check kind configuration in target.", build = true},
