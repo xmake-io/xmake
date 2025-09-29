@@ -920,13 +920,7 @@ local function find_with_pkgconfig(package_name, store_paths, opt)
     end
     
     -- Add dependencies of matching packages
-    local all_deps = follow_propagated_inputs(filtered_paths, opt)
-    for _, dep_path in ipairs(all_deps) do
-        if not seen[dep_path] then
-            seen[dep_path] = true
-            table.insert(filtered_paths, dep_path)
-        end
-    end
+    filtered_paths = follow_propagated_inputs(filtered_paths, opt)
 
     -- Search filtered paths
     for _, store_path in ipairs(filtered_paths) do
