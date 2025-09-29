@@ -30,7 +30,7 @@
  * helper implementation
  */
 
-static __tb_inline__ tb_void_t xm_hash_make_cstr(tb_char_t hash[256], tb_byte_t const* data, tb_size_t size)
+static __tb_inline__ tb_size_t xm_hash_make_cstr(tb_char_t hash[256], tb_byte_t const* data, tb_size_t size)
 {
     static tb_char_t const* digits_table = "0123456789abcdef";
     tb_size_t i = 0;
@@ -44,6 +44,7 @@ static __tb_inline__ tb_void_t xm_hash_make_cstr(tb_char_t hash[256], tb_byte_t 
         s += 2;
     }
     *s = '\0';
+    return s - hash;
 }
 
 #endif

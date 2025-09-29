@@ -62,13 +62,12 @@ tb_int_t xm_hash_sha(lua_State* lua)
         tb_sha_exit(&sha, buffer, sizeof(buffer));
 
         // make sha string
-        tb_size_t i = 0;
+        tb_char_t s[256];
         tb_size_t n = sha.digest_len << 2;
-        tb_char_t s[256] = {0};
-        for (i = 0; i < n; ++i) tb_snprintf(s + (i << 1), 3, "%02x", buffer[i]);
+        tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
         // save result
-        lua_pushstring(lua, s);
+        lua_pushlstring(lua, s, len);
         return 1;
     }
 
@@ -118,10 +117,10 @@ tb_int_t xm_hash_sha(lua_State* lua)
             // make sha string
             tb_char_t s[256];
             tb_size_t n = sha.digest_len << 2;
-            xm_hash_make_cstr(s, buffer, n);
+            tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
             // save result
-	        lua_pushstring(lua, s);
+	        lua_pushlstring(lua, s, len);
             ok = tb_true;
         }
 

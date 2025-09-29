@@ -88,10 +88,10 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
         // make xxhash string
         tb_char_t s[256];
         tb_size_t n = mode >> 3;
-        xm_hash_make_cstr(s, buffer, n);
+        tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
         // save result
-        lua_pushstring(lua, s);
+        lua_pushlstring(lua, s, len);
         return 1;
     }
 
@@ -157,10 +157,10 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
             // make xxhash string
             tb_char_t s[256];
             tb_size_t n = mode >> 3;
-            xm_hash_make_cstr(s, buffer, n);
+            tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
             // save result
-	        lua_pushstring(lua, s);
+	        lua_pushlstring(lua, s, len);
             ok = tb_true;
         }
 

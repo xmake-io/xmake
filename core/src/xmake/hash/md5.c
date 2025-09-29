@@ -57,10 +57,10 @@ tb_int_t xm_hash_md5(lua_State* lua)
 
         // make md5 string
         tb_char_t s[256];
-        xm_hash_make_cstr(s, buffer, 16);
+        tb_size_t n = xm_hash_make_cstr(s, buffer, 16);
 
         // save result
-        lua_pushstring(lua, s);
+        lua_pushlstring(lua, s, n);
         return 1;
     }
 
@@ -109,12 +109,10 @@ tb_int_t xm_hash_md5(lua_State* lua)
 
             // make md5 string
             tb_char_t s[256];
-            xm_hash_make_cstr(s, buffer, 16);
+            tb_size_t n = xm_hash_make_cstr(s, buffer, 16);
 
             // save result
-	        lua_pushstring(lua, s);
-
-            // ok
+	        lua_pushlstring(lua, s, n);
             ok = tb_true;
         }
 
