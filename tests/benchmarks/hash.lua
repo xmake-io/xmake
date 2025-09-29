@@ -1,33 +1,41 @@
+import("core.base.bytes")
+
 local COUNT = 1000000
 
 function test_md5(data)
+    data = bytes(data)
     local h
+    local n = COUNT / 10000
     local t = os.mclock()
-    for i = 1, COUNT do
+    for i = 1, n do
         h = hash.md5(data)
     end
     t = os.mclock() - t
-    print("md5(%d): %d ms, hash: %s", COUNT, t, h)
+    print("md5(%d): %d ms, hash: %s", COUNT, t * 10000, h)
 end
 
 function test_sha1(data)
+    data = bytes(data)
     local h
+    local n = COUNT / 10000
     local t = os.mclock()
-    for i = 1, COUNT do
+    for i = 1, n do
         h = hash.sha1(data)
     end
     t = os.mclock() - t
-    print("sha1(%d): %d ms, hash: %s", COUNT, t, h)
+    print("sha1(%d): %d ms, hash: %s", COUNT, t * 10000, h)
 end
 
 function test_sha256(data)
+    data = bytes(data)
     local h
+    local n = COUNT / 10000
     local t = os.mclock()
-    for i = 1, COUNT do
+    for i = 1, n do
         h = hash.sha256(data)
     end
     t = os.mclock() - t
-    print("sha256(%d): %d ms, hash: %s", COUNT, t, h)
+    print("sha256(%d): %d ms, hash: %s", COUNT, t * 10000, h)
 end
 
 function test_uuid(data)
@@ -48,6 +56,30 @@ function test_uuid4(data)
     end
     t = os.mclock() - t
     print("uuid4(%d): %d ms, hash: %s", COUNT, t, h)
+end
+
+function test_xxhash64(data)
+    data = bytes(data)
+    local h
+    local n = COUNT / 10
+    local t = os.mclock()
+    for i = 1, n do
+        h = hash.xxhash64(data)
+    end
+    t = os.mclock() - t
+    print("xxhash64(%d): %d ms, hash: %s", COUNT, t * 10, h)
+end
+
+function test_xxhash128(data)
+    data = bytes(data)
+    local h
+    local n = COUNT / 10
+    local t = os.mclock()
+    for i = 1, n do
+        h = hash.xxhash128(data)
+    end
+    t = os.mclock() - t
+    print("xxhash128(%d): %d ms, hash: %s", COUNT, t * 10, h)
 end
 
 function test_strhash32(data)
@@ -72,11 +104,13 @@ end
 
 function main()
     local data = io.readfile(os.programfile())
-    --test_md5(data)
-    --test_sha1(data)
-    --test_sha256(data)
+    test_md5(data)
+    test_sha1(data)
+    test_sha256(data)
     test_uuid(data)
     test_uuid4(data)
+    test_xxhash64(data)
+    test_xxhash128(data)
     test_strhash32(data)
     test_strhash128(data)
 end

@@ -47,7 +47,7 @@ end
 function sandbox_hash.sha1(file_or_data)
     local sha1, errors = hash.sha1(file_or_data)
     if not sha1 then
-        raise("cannot generate sha1 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate sha1, %s", errors or "unknown errors")
     end
     return sha1
 end
@@ -56,7 +56,7 @@ end
 function sandbox_hash.sha256(file_or_data)
     local sha256, errors = hash.sha256(file_or_data)
     if not sha256 then
-        raise("cannot generate sha256 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate sha256, %s", errors or "unknown errors")
     end
     return sha256
 end
@@ -65,7 +65,7 @@ end
 function sandbox_hash.md5(file_or_data)
     local md5, errors = hash.md5(file_or_data)
     if not md5 then
-        raise("cannot generate md5 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate md5, %s", errors or "unknown errors")
     end
     return md5
 end
@@ -74,7 +74,7 @@ end
 function sandbox_hash.xxhash64(file_or_data)
     local xxhash64, errors = hash.xxhash64(file_or_data)
     if not xxhash64 then
-        raise("cannot generate xxhash64 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate xxhash64, %s", errors or "unknown errors")
     end
     return xxhash64
 end
@@ -83,7 +83,7 @@ end
 function sandbox_hash.xxhash128(file_or_data)
     local xxhash128, errors = hash.xxhash128(file_or_data)
     if not xxhash128 then
-        raise("cannot generate xxhash128 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate xxhash128, %s", errors or "unknown errors")
     end
     return xxhash128
 end
