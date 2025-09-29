@@ -472,8 +472,6 @@ function _get_configs_for_windows(package, configs, opt)
 
     if package:is_cross() then
         _get_configs_for_cross(package, configs, opt)
-    else
-        _get_configs_for_generic(package, configs, opt)
     end
 end
 
@@ -510,7 +508,6 @@ function _get_configs_for_android(package, configs, opt)
         table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH")
         table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER")
     end
-    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for appleos
@@ -609,7 +606,6 @@ function _get_configs_for_wasm(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
-    _get_configs_for_generic(package, configs, opt)
     _insert_configs_from_envs(configs, envs, opt)
 end
 
@@ -618,8 +614,6 @@ function _get_configs_for_cross(package, configs, opt)
     opt = opt or {}
     opt.cross                      = true
     local envs                     = {}
-    envs.CMAKE_BUILD_TYPE          = package:is_debug() and "Debug" or "Release"
-    envs.BUILD_SHARED_LIBS         = package:config("shared") and "ON" or "OFF"
     local sdkdir                   = _translate_paths(package:build_getenv("sdk"))
     envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
     envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
@@ -654,9 +648,6 @@ function _get_configs_for_cross(package, configs, opt)
         end
         envs.CMAKE_SYSTEM_NAME = system_name
         envs.CMAKE_SYSTEM_PROCESSOR = _get_cmake_system_processor(package)
-    end
-    if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
-        table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
     end
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
@@ -704,9 +695,6 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     -- https://github.com/xmake-io/xmake/issues/2170
     if package:is_cross() then
         envs.CMAKE_SYSTEM_NAME     = "Linux"
-    end
-    if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
-        table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
     end
     _insert_configs_from_envs(configs, envs, opt)
 end
@@ -913,6 +901,8 @@ function _get_configs(package, configs, opt)
     opt._configs_str = string.serialize(configs, {indent = false, strip = true})
     _get_configs_for_install(package, configs, opt)
     _get_configs_for_generator(package, configs, opt)
+    _get_configs_for_generic(package, configs, opt)
+
     if package:is_plat("windows") then
         _get_configs_for_windows(package, configs, opt)
     elseif package:is_plat("android") then
@@ -935,8 +925,6 @@ function _get_configs(package, configs, opt)
         else
             _get_configs_for_cross(package, configs, opt)
         end
-    else
-        _get_configs_for_generic(package, configs, opt)
     end
 
     -- fix error for cmake 4.x
