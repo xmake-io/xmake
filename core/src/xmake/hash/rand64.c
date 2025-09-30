@@ -40,7 +40,7 @@ tb_int_t xm_hash_rand64(lua_State* lua)
 
     static union { tb_byte_t b[8]; tb_uint64_t word; } s_seed = {0};
     if (!s_seed.word)
-        s_seed.word = (tb_uint64_t)tb_mclock();
+        s_seed.word = (tb_uint64_t)tb_uclock();
     s_seed.word = xm_hash_xorshift64(s_seed.word);
 
     tb_char_t s[256];
