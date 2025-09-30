@@ -104,14 +104,14 @@ end
 
 -- generate hash32 from string, e.g. "91e8ecf1"
 function hash.strhash32(str)
-    local data = libc.dataptr(str)
+    local data = libc.ptraddr(libc.dataptr(str))
     local size = #str
     return hash._xxhash(64, data, size):sub(1, 8)
 end
 
 -- generate hash128 from string, e.g. "91e8ecf1417f4edfa574e22d7d8d204a"
 function hash.strhash128(str)
-    local data = libc.dataptr(str)
+    local data = libc.ptraddr(libc.dataptr(str))
     local size = #str
     return hash._xxhash(128, data, size)
 end
