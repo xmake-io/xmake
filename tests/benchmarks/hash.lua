@@ -120,13 +120,13 @@ end
 
 function test_random_uuid()
     local h
-    local n = COUNT / 10
+    local n = COUNT / 1000
     local t = os.mclock()
     for i = 1, n do
         h = hash.uuid()
     end
     t = os.mclock() - t
-    print("uuid(%d): %d ms, hash: %s", COUNT, t * 10, h)
+    print("uuid(%d): %d ms, hash: %s", COUNT, t * 1000, h)
 end
 
 function test_random32()
