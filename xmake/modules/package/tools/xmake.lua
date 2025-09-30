@@ -485,7 +485,7 @@ function install(package, configs, opt)
 
     -- copy the ported xmake.lua in the default position if it's missing
     local xmakefile = path.join(opt.curdir or os.curdir(), "xmake.lua")
-    if not os.isfile(xmakefile) then
+    if not os.isfile(xmakefile) and package:repo() ~= nil then
         local xmakefile_port = path.join(package:scriptdir(), "port", "xmake.lua")
         if os.isfile(xmakefile_port) then
             os.cp(xmakefile_port, xmakefile)
