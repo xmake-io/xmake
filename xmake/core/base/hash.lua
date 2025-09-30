@@ -104,12 +104,12 @@ end
 -- TODO, we should optimize it
 -- generate hash32 from string, e.g. "91e8ecf1"
 function hash.strhash32(str)
-    return hash.uuid4(str):split("-", {plain = true})[1]:lower()
+    return hash.xxhash64(bytes(str)):sub(1, 8)
 end
 
 -- generate hash128 from string, e.g. "91e8ecf1417f4edfa574e22d7d8d204a"
 function hash.strhash128(str)
-    return hash.uuid4(str):replace("-", "", {plain = true}):lower()
+    return hash.xxhash128(bytes(str))
 end
 
 -- return module: hash

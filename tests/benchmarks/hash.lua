@@ -75,24 +75,24 @@ end
 
 function test_strhash32(data)
     local h
-    local n = COUNT / 10000
+    local n = COUNT / 10
     local t = os.mclock()
     for i = 1, n do
         h = hash.strhash32(data)
     end
     t = os.mclock() - t
-    print("strhash32(%d): %d ms, hash: %s", COUNT, t * 10000, h)
+    print("strhash32(%d): %d ms, hash: %s", COUNT, t * 10, h)
 end
 
 function test_strhash128(data)
     local h
-    local n = COUNT / 10000
+    local n = COUNT / 10
     local t = os.mclock()
     for i = 1, n do
         h = hash.strhash128(data)
     end
     t = os.mclock() - t
-    print("strhash128(%d): %d ms, hash: %s", COUNT, t * 10000, h)
+    print("strhash128(%d): %d ms, hash: %s", COUNT, t * 10, h)
 end
 
 function test_longstr()
@@ -113,6 +113,7 @@ end
 
 function test_shortstr()
     print("========================================== test short string ==========================================")
+    COUNT = COUNT * 100
     local data = ""
     for i = 1, 10 do
         data = data .. "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
