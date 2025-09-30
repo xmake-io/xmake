@@ -208,7 +208,7 @@ function test_random()
 end
 
 function main()
---    test_longstr()
---    test_shortstr()
+    test_longstr()
+    test_shortstr()
     test_random()
 end
