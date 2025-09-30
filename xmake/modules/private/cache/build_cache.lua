@@ -128,7 +128,7 @@ function cachekey(program, cppinfo, envs)
             end
         end
     end
-    return hash.xxhash128(bytes(table.concat(items, "")))
+    return hash.strhash128(table.concat(items, ""))
 end
 
 -- get cache root directory

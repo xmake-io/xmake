@@ -25,6 +25,7 @@ local hash  = hash or {}
 local io    = require("base/io")
 local utils = require("base/utils")
 local bytes = require("base/bytes")
+local libc  = require("base/libc")
 
 -- save metatable and builtin functions
 hash._md5 = hash._md5 or hash.md5
@@ -101,15 +102,18 @@ function hash.uuid(str)
     return hash.uuid4(str)
 end
 
--- TODO, we should optimize it
 -- generate hash32 from string, e.g. "91e8ecf1"
 function hash.strhash32(str)
-    return hash.xxhash64(bytes(str)):sub(1, 8)
+    local data = libc.dataptr(str)
+    local size = #str
+    return hash._xxhash(64, data, size):sub(1, 8)
 end
 
 -- generate hash128 from string, e.g. "91e8ecf1417f4edfa574e22d7d8d204a"
 function hash.strhash128(str)
-    return hash.xxhash128(bytes(str))
+    local data = libc.dataptr(str)
+    local size = #str
+    return hash._xxhash(128, data, size)
 end
 
 -- return module: hash
