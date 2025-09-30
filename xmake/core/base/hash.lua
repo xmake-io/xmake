@@ -71,6 +71,20 @@ function hash.sha256(file_or_data)
     return hashstr, errors
 end
 
+-- generate uuid, e.g "91E8ECF1-417F-4EDF-A574-E22D7D8D204A"
+function hash.uuid(str)
+    return hash.uuid4(str)
+end
+
+-- generate xxhash32 from the given file or data
+function hash.xxhash32(file_or_data)
+    local result, errors = hash.xxhash64(file_or_data)
+    if result then
+        result = result:sub(1, 8)
+    end
+    return result, errors
+end
+
 -- generate xxhash64 from the given file or data
 function hash.xxhash64(file_or_data)
     local hashstr, errors
@@ -97,16 +111,22 @@ function hash.xxhash128(file_or_data)
     return hashstr, errors
 end
 
--- generate uuid, e.g "91E8ECF1-417F-4EDF-A574-E22D7D8D204A"
-function hash.uuid(str)
-    return hash.uuid4(str)
-end
-
 -- generate hash32 from string, e.g. "91e8ecf1"
 function hash.strhash32(str)
     local data = libc.ptraddr(libc.dataptr(str))
     local size = #str
-    return hash._xxhash(64, data, size):sub(1, 8)
+    local result, errors = hash._xxhash(64, data, size)
+    if result then
+        result = result:sub(1, 8)
+    end
+    return result, errors
+end
+
+-- generate hash64 from string, e.g. "91e8ecf191e8ecf1"
+function hash.strhash64(str)
+    local data = libc.ptraddr(libc.dataptr(str))
+    local size = #str
+    return hash._xxhash(64, data, size)
 end
 
 -- generate hash128 from string, e.g. "91e8ecf1417f4edfa574e22d7d8d204a"
@@ -115,6 +135,32 @@ function hash.strhash128(str)
     local size = #str
     return hash._xxhash(128, data, size)
 end
+
+-- init random seed
+function hash._init_random_seed()
+    if hash._INIT_RANDOM_SEED == nil then
+        math.randomseed(os.time())
+        hash._INIT_RANDOM_SEED = true
+    end
+end
+
+-- generate random32 hash
+function hash.random32()
+    return hash.strhash32(tostring(math.random()))
+end
+
+-- generate random64 hash
+function hash.random64()
+    return hash.strhash64(tostring(math.random()))
+end
+
+-- generate random128 hash
+function hash.random128()
+    return hash.strhash128(tostring(math.random()))
+end
+
+-- init random seed first
+hash._init_random_seed()
 
 -- return module: hash
 return hash

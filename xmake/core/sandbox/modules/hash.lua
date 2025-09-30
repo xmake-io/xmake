@@ -70,40 +70,85 @@ function sandbox_hash.md5(file_or_data)
     return md5
 end
 
+-- generate xxhash32 from the given file or data
+function sandbox_hash.xxhash32(file_or_data)
+    local result, errors = hash.xxhash32(file_or_data)
+    if not result then
+        raise("cannot generate xxhash32, %s", errors or "unknown errors")
+    end
+    return result
+end
+
 -- generate xxhash64 from the given file or data
 function sandbox_hash.xxhash64(file_or_data)
-    local xxhash64, errors = hash.xxhash64(file_or_data)
-    if not xxhash64 then
+    local result, errors = hash.xxhash64(file_or_data)
+    if not result then
         raise("cannot generate xxhash64, %s", errors or "unknown errors")
     end
-    return xxhash64
+    return result
 end
 
 -- generate xxhash128 from the given file or data
 function sandbox_hash.xxhash128(file_or_data)
-    local xxhash128, errors = hash.xxhash128(file_or_data)
-    if not xxhash128 then
+    local result, errors = hash.xxhash128(file_or_data)
+    if not result then
         raise("cannot generate xxhash128, %s", errors or "unknown errors")
     end
-    return xxhash128
+    return result
 end
 
 -- generate hash32 from string
 function sandbox_hash.strhash32(str)
-    local hash32, errors = hash.strhash32(str)
-    if not hash32 then
+    local result, errors = hash.strhash32(str)
+    if not result then
         raise("cannot generate hash32 for %s, %s", str, errors or "unknown errors")
     end
-    return hash32
+    return result
+end
+
+-- generate hash64 from string
+function sandbox_hash.strhash64(str)
+    local result, errors = hash.strhash64(str)
+    if not result then
+        raise("cannot generate hash32 for %s, %s", str, errors or "unknown errors")
+    end
+    return result
 end
 
 -- generate hash128 from string
 function sandbox_hash.strhash128(str)
-    local hash128, errors = hash.strhash128(str)
-    if not hash128 then
+    local result, errors = hash.strhash128(str)
+    if not result then
         raise("cannot generate hash128 for %s, %s", str, errors or "unknown errors")
     end
-    return hash128
+    return result
+end
+
+-- generate random32
+function sandbox_hash.random32()
+    local result, errors = hash.random32()
+    if not result then
+        raise("cannot generate random32, %s", errors or "unknown errors")
+    end
+    return result
+end
+
+-- generate random64
+function sandbox_hash.random64()
+    local result, errors = hash.random64()
+    if not result then
+        raise("cannot generate random64, %s", errors or "unknown errors")
+    end
+    return result
+end
+
+-- generate random128
+function sandbox_hash.random128()
+    local result, errors = hash.random128()
+    if not result then
+        raise("cannot generate random128, %s", errors or "unknown errors")
+    end
+    return result
 end
 
 -- return module
