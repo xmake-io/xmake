@@ -929,9 +929,13 @@ end
 function _instance:rulesdir()
     local rulesdir = self._RULESDIR
     if rulesdir == nil then
-        rulesdir = path.join(self:scriptdir(), "rules")
-        if not os.isdir(rulesdir) and self:base() then
+        if self:repo() == nil and self:base() then
             rulesdir = self:base():rulesdir()
+        else
+            rulesdir = path.join(self:scriptdir(), "rules")
+            if not os.isdir(rulesdir) and self:base() then
+                rulesdir = self:base():rulesdir()
+            end
         end
         if rulesdir == nil or not os.isdir(rulesdir) then
             rulesdir = false
@@ -3063,7 +3067,7 @@ function package.load_from_project(packagename, project)
     end
 
     -- new an instance
-    instance = _instance.new(packagename, packageinfo)
+    instance = _instance.new(packagename, packageinfo, {scriptdir = os.projectdir()})
     package._memcache():set2("packages", instance)
     return instance
 end
