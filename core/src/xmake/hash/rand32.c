@@ -43,7 +43,7 @@ tb_int_t xm_hash_rand32(lua_State* lua)
         s_seed.word = (tb_uint32_t)tb_uclock();
     s_seed.word = xm_hash_xorshift32(s_seed.word);
 
-    tb_char_t s[64];
+    tb_char_t s[256];
     tb_size_t n = xm_hash_make_cstr(s, s_seed.b, 4);
 
     lua_pushlstring(lua, s, n);
