@@ -40,22 +40,13 @@ end
 
 function test_uuid(data)
     local h
+    local n = COUNT / 10000
     local t = os.mclock()
-    for i = 1, COUNT do
+    for i = 1, n do
         h = hash.uuid(data)
     end
     t = os.mclock() - t
-    print("uuid(%d): %d ms, hash: %s", COUNT, t, h)
-end
-
-function test_uuid4(data)
-    local h
-    local t = os.mclock()
-    for i = 1, COUNT do
-        h = hash.uuid4(data)
-    end
-    t = os.mclock() - t
-    print("uuid4(%d): %d ms, hash: %s", COUNT, t, h)
+    print("uuid(%d): %d ms, hash: %s", COUNT, t * 10000, h)
 end
 
 function test_xxhash64(data)
@@ -84,33 +75,59 @@ end
 
 function test_strhash32(data)
     local h
+    local n = COUNT / 10000
     local t = os.mclock()
-    for i = 1, COUNT do
+    for i = 1, n do
         h = hash.strhash32(data)
     end
     t = os.mclock() - t
-    print("strhash32(%d): %d ms, hash: %s", COUNT, t, h)
+    print("strhash32(%d): %d ms, hash: %s", COUNT, t * 10000, h)
 end
 
 function test_strhash128(data)
     local h
+    local n = COUNT / 10000
     local t = os.mclock()
-    for i = 1, COUNT do
+    for i = 1, n do
         h = hash.strhash128(data)
     end
     t = os.mclock() - t
-    print("strhash128(%d): %d ms, hash: %s", COUNT, t, h)
+    print("strhash128(%d): %d ms, hash: %s", COUNT, t * 10000, h)
 end
 
-function main()
-    local data = io.readfile(os.programfile())
+function test_longstr()
+    print("========================================== test long string ==========================================")
+    local data = ""
+    for i = 1, 10000 do
+        data = data .. "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    end
     test_md5(data)
     test_sha1(data)
     test_sha256(data)
     test_uuid(data)
-    test_uuid4(data)
     test_xxhash64(data)
     test_xxhash128(data)
     test_strhash32(data)
     test_strhash128(data)
+end
+
+function test_shortstr()
+    print("========================================== test short string ==========================================")
+    local data = ""
+    for i = 1, 10 do
+        data = data .. "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    end
+    test_md5(data)
+    test_sha1(data)
+    test_sha256(data)
+    test_uuid(data)
+    test_xxhash64(data)
+    test_xxhash128(data)
+    test_strhash32(data)
+    test_strhash128(data)
+end
+
+function main()
+    test_longstr()
+    test_shortstr()
 end
