@@ -1381,7 +1381,7 @@ function project.tmpfile(opt_or_key)
         key = opt_or_key.key
         opt = opt_or_key
     end
-    local filename = "_" .. (key and hash.strhash128(key) or (hash.random128()))
+    local filename = "_" .. (key and hash.strhash128(key) or (hash.rand128()))
     return path.join(project.tmpdir(opt), "_" .. filename)
 end
 

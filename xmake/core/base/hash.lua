@@ -136,31 +136,5 @@ function hash.strhash128(str)
     return hash._xxhash(128, data, size)
 end
 
--- init random seed
-function hash._init_random_seed()
-    if hash._INIT_RANDOM_SEED == nil then
-        math.randomseed(os.time())
-        hash._INIT_RANDOM_SEED = true
-    end
-end
-
--- generate random32 hash
-function hash.random32()
-    return hash.strhash32(tostring(math.random()))
-end
-
--- generate random64 hash
-function hash.random64()
-    return hash.strhash64(tostring(math.random()))
-end
-
--- generate random128 hash
-function hash.random128()
-    return hash.strhash128(tostring(math.random()))
-end
-
--- init random seed first
-hash._init_random_seed()
-
 -- return module: hash
 return hash

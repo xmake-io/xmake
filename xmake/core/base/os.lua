@@ -761,7 +761,7 @@ function os.tmpfile(opt_or_key)
         key = opt_or_key.key
         opt = opt_or_key
     end
-    local filename = "_" .. (key and hash.strhash128(key) or (hash.random128()))
+    local filename = "_" .. (key and hash.strhash128(key) or (hash.rand128()))
     return path.join(os.tmpdir(opt), filename)
 end
 

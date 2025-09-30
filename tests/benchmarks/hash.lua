@@ -129,37 +129,37 @@ function test_random_uuid()
     print("uuid(%d): %d ms, hash: %s", COUNT, t * 1000, h)
 end
 
-function test_random32()
+function test_rand32()
     local h
     local n = COUNT / 10
     local t = os.mclock()
     for i = 1, n do
-        h = hash.random32()
+        h = hash.rand32()
     end
     t = os.mclock() - t
-    print("random32(%d): %d ms, hash: %s", COUNT, t * 10, h)
+    print("rand32(%d): %d ms, hash: %s", COUNT, t * 10, h)
 end
 
-function test_random64()
+function test_rand64()
     local h
     local n = COUNT / 10
     local t = os.mclock()
     for i = 1, n do
-        h = hash.random64()
+        h = hash.rand64()
     end
     t = os.mclock() - t
-    print("random64(%d): %d ms, hash: %s", COUNT, t * 10, h)
+    print("rand64(%d): %d ms, hash: %s", COUNT, t * 10, h)
 end
 
-function test_random128()
+function test_rand128()
     local h
     local n = COUNT / 10
     local t = os.mclock()
     for i = 1, n do
-        h = hash.random128()
+        h = hash.rand128()
     end
     t = os.mclock() - t
-    print("random128(%d): %d ms, hash: %s", COUNT, t * 10, h)
+    print("rand128(%d): %d ms, hash: %s", COUNT, t * 10, h)
 end
 
 function test_longstr()
@@ -202,9 +202,9 @@ end
 function test_random()
     print("========================================== test random ==========================================")
     test_random_uuid()
-    test_random32()
-    test_random64()
-    test_random128()
+    test_rand32()
+    test_rand64()
+    test_rand128()
 end
 
 function main()

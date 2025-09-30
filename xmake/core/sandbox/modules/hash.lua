@@ -125,8 +125,8 @@ function sandbox_hash.strhash128(str)
 end
 
 -- generate random32
-function sandbox_hash.random32()
-    local result, errors = hash.random32()
+function sandbox_hash.rand32()
+    local result, errors = hash.rand32()
     if not result then
         raise("cannot generate random32, %s", errors or "unknown errors")
     end
@@ -134,8 +134,8 @@ function sandbox_hash.random32()
 end
 
 -- generate random64
-function sandbox_hash.random64()
-    local result, errors = hash.random64()
+function sandbox_hash.rand64()
+    local result, errors = hash.rand64()
     if not result then
         raise("cannot generate random64, %s", errors or "unknown errors")
     end
@@ -143,8 +143,8 @@ function sandbox_hash.random64()
 end
 
 -- generate random128
-function sandbox_hash.random128()
-    local result, errors = hash.random128()
+function sandbox_hash.rand128()
+    local result, errors = hash.rand128()
     if not result then
         raise("cannot generate random128, %s", errors or "unknown errors")
     end
