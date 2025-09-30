@@ -336,7 +336,7 @@ function modules_cachedir(target, opt)
         moduletype = "interfaces"
     elseif opt.scan then
         moduletype = "scans"
-    else 
+    else
         moduletype = "implementation"
     end
     local cachedir = path.join(target:autogendir(), "rules", "bmi", "cache", moduletype)
@@ -347,7 +347,7 @@ function modules_cachedir(target, opt)
 end
 
 function get_modulehash(sourcefile)
-    return hash.uuid(sourcefile):split("-", {plain = true})[1]:lower()
+    return hash.strhash32(sourcefile)
 end
 
 function get_metafile(target, module)
