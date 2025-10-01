@@ -1458,7 +1458,7 @@ function _instance:_versions_list()
                 if not path.is_absolute(versionfile) then
                     local subpath = versionfile
                     versionfile = path.join(self:scriptdir(), subpath)
-                    if not os.isfile(versionfile) then
+                    if not os.isfile(versionfile) and self:base() then
                         versionfile = path.join(self:base():scriptdir(), subpath)
                     end
                 end

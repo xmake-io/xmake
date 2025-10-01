@@ -15,20 +15,25 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      Shiffted
--- @file        check_api.lua
+-- @file        versionfiles.lua
 --
 
-import("private.check.checker")
-import("private.check.show")
+import(".api_checker")
 
-function main(package, opt)
+function main(opt)
     opt = opt or {}
-
-    local checkers = checker.checkers()
-    for name, info in table.orderpairs(checkers) do
-        if (info.load and opt.load) or (info.download_failure and opt.download_failure) then
-            local check = import("private.check.checkers." .. name, {anonymous = true})
-            check({package = package, show = show.wshow})
+    api_checker.check_packages("versionfiles", table.join(opt, {check = function(package, value)
+        local versionfile_path = value
+        if not path.is_absolute(versionfile_path) then
+            local subpath = versionfile_path
+            versionfile_path = path.join(package:scriptdir(), subpath)
+            if not os.isfile(versionfile_path) and package:base() then
+                versionfile_path = path.join(package:base():scriptdir(), subpath)
+            end
         end
-    end
+        if not os.isfile(versionfile_path) then
+            return false, string.format("versionfile '%s' not found", value)
+        end
+        return true
+    end}))
 end
