@@ -31,6 +31,9 @@ local libc  = require("base/libc")
 hash._md5 = hash._md5 or hash.md5
 hash._sha = hash._sha or hash.sha
 hash._xxhash = hash._xxhash or hash.xxhash
+hash._rand32 = hash._rand32 or hash.rand32
+hash._rand64 = hash._rand64 or hash.rand64
+hash._rand128 = hash._rand128 or hash.rand128
 
 -- generate md5 from the given file or data
 function hash.md5(file_or_data)
@@ -134,6 +137,33 @@ function hash.strhash128(str)
     local data = libc.ptraddr(libc.dataptr(str))
     local size = #str
     return hash._xxhash(128, data, size)
+end
+
+-- generate random32 hash
+function hash.rand32()
+    if hash._rand32 then
+        return hash._rand32()
+    else
+        return hash.strhash32(tostring(math.random()))
+    end
+end
+
+-- generate random64 hash
+function hash.rand64()
+    if hash._rand64 then
+        return hash._rand64()
+    else
+        return hash.strhash64(tostring(math.random()))
+    end
+end
+
+-- generate random128 hash
+function hash.rand128()
+    if hash._rand128 then
+        return hash._rand128()
+    else
+        return hash.strhash128(tostring(math.random()))
+    end
 end
 
 -- return module: hash
