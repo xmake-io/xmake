@@ -44,7 +44,7 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
 
     // get mode
     tb_size_t mode = (tb_size_t)lua_tointeger(lua, 1);
-    if (mode != 64 && mode != 128)
+    if (mode != 32 && mode != 64 && mode != 128)
     {
         lua_pushnil(lua);
         lua_pushfstring(lua, "invalid mode(%d)!", (tb_int_t)mode);
@@ -66,17 +66,24 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
 
         // compuate hash
         tb_byte_t const* buffer = tb_null;
+        tb_uint32_t value32;
         XXH64_hash_t value64;
         XXH128_hash_t value128;
-        if (mode == 64)
+        if (mode == 128)
+        {
+            value128 = XM_XXH3_128bits(data, size);
+            buffer = (tb_byte_t const*)&value128;
+        }
+        else if (mode == 64)
         {
             value64 = XM_XXH3_64bits(data, size);
             buffer = (tb_byte_t const*)&value64;
         }
-        else if (mode == 128)
+        else if (mode == 32)
         {
-            value128 = XM_XXH3_128bits(data, size);
-            buffer = (tb_byte_t const*)&value128;
+            value64 = XM_XXH3_64bits(data, size);
+            value32 = (value64 >> 32) ^ (value64 & 0xffffffff);
+            buffer = (tb_byte_t const*)&value32;
         }
         if (!buffer)
         {
@@ -88,10 +95,10 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
         // make xxhash string
         tb_char_t s[256];
         tb_size_t n = mode >> 3;
-        xm_hash_make_cstr(s, buffer, n);
+        tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
         // save result
-        lua_pushstring(lua, s);
+        lua_pushlstring(lua, s, len);
         return 1;
     }
 
@@ -109,7 +116,7 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
         if (tb_stream_open(stream) && state)
         {
             // reset xxhash
-            if (mode == 64) XM_XXH3_64bits_reset(state);
+            if (mode == 32 || mode == 64) XM_XXH3_64bits_reset(state);
             else XM_XXH3_128bits_reset(state);
 
             // read data and update xxhash
@@ -122,7 +129,7 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
                 // ok?
                 if (real > 0)
                 {
-                    if (mode == 64) XM_XXH3_64bits_update(state, data, real);
+                    if (mode == 32 || mode == 64) XM_XXH3_64bits_update(state, data, real);
                     else XM_XXH3_128bits_update(state, data, real);
                 }
                 // no data? continue it
@@ -141,26 +148,33 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
 
             // compuate hash
             tb_byte_t const* buffer;
+            tb_uint32_t value32;
             XXH64_hash_t value64;
             XXH128_hash_t value128;
-            if (mode == 64)
+            if (mode == 128)
+            {
+                value128 = XM_XXH3_128bits_digest(state);
+                buffer = (tb_byte_t const*)&value128;
+            }
+            else if (mode == 64)
             {
                 value64 = XM_XXH3_64bits_digest(state);
                 buffer = (tb_byte_t const*)&value64;
             }
-            else
+            else if (mode == 32)
             {
-                value128 = XM_XXH3_128bits_digest(state);
-                buffer = (tb_byte_t const*)&value128;
+                value64 = XM_XXH3_64bits_digest(state);
+                value32 = (value64 >> 32) ^ (value64 & 0xffffffff);
+                buffer = (tb_byte_t const*)&value32;
             }
 
             // make xxhash string
             tb_char_t s[256];
             tb_size_t n = mode >> 3;
-            xm_hash_make_cstr(s, buffer, n);
+            tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
             // save result
-	        lua_pushstring(lua, s);
+	        lua_pushlstring(lua, s, len);
             ok = tb_true;
         }
 

@@ -1691,6 +1691,12 @@ function _instance:_compute_buildhash()
     self:buildhash()
 end
 
+-- hash.strhash128 has been switched to xxhash.
+-- For compatibility, the old hash algorithm is still used here.
+function _instance:_strhash128(str)
+    return hash.uuid4(str):replace("-", "", {plain = true}):lower()
+end
+
 -- get the build hash
 function _instance:buildhash()
     local buildhash = self._BUILDHASH
@@ -1752,7 +1758,7 @@ function _instance:buildhash()
                 table.sort(toolchains)
                 str = str .. "_" .. table.concat(toolchains, "_")
             end
-            return hash.strhash128(str)
+            return self:_strhash128(str)
         end
         local function _get_installdir(...)
             local name = self:name():lower():gsub("::", "_")

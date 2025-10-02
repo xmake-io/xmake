@@ -25,6 +25,7 @@ local project = project or {}
 local os                    = require("base/os")
 local io                    = require("base/io")
 local path                  = require("base/path")
+local hash                  = require("base/hash")
 local task                  = require("base/task")
 local utils                 = require("base/utils")
 local table                 = require("base/table")
@@ -1380,7 +1381,8 @@ function project.tmpfile(opt_or_key)
         key = opt_or_key.key
         opt = opt_or_key
     end
-    return path.join(project.tmpdir(opt), "_" .. (hash.uuid4(key):gsub("-", "")))
+    local filename = "_" .. (key and hash.strhash128(key) or (hash.rand128()))
+    return path.join(project.tmpdir(opt), "_" .. filename)
 end
 
 -- get all modes
