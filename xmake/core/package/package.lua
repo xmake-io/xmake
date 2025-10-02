@@ -995,16 +995,8 @@ function _instance:manifest_save()
     manifest.configs     = self:configs()
     manifest.envs        = self:_rawenvs()
 
-    -- ensure pathenvs are written deterministically: use ordered iteration
-    do
-        local arr = {}
-        for name in self:_pathenvs():orderitems() do
-            if name ~= nil then
-                table.insert(arr, name)
-            end
-        end
-        manifest.pathenvs = arr
-    end
+    -- ensure pathenvs are written deterministically
+    manifest.pathenvs = table.to_array(self:_pathenvs():orderitems())
 
     -- save enabled library deps
     if self:librarydeps() then
