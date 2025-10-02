@@ -994,7 +994,9 @@ function _instance:manifest_save()
     manifest.mode        = self:mode()
     manifest.configs     = self:configs()
     manifest.envs        = self:_rawenvs()
-    manifest.pathenvs    = self:_pathenvs():to_array()
+
+    -- ensure pathenvs are written deterministically
+    manifest.pathenvs = table.to_array(self:_pathenvs():orderitems())
 
     -- save enabled library deps
     if self:librarydeps() then
