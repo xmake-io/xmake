@@ -81,11 +81,15 @@ end
 
 -- generate xxhash32 from the given file or data
 function hash.xxhash32(file_or_data)
-    local result, errors = hash.xxhash64(file_or_data)
-    if result then
-        result = result:sub(1, 8)
+    local hashstr, errors
+    if bytes.instance_of(file_or_data) then
+        local datasize = file_or_data:size()
+        local dataaddr = file_or_data:caddr()
+        hashstr, errors = hash._xxhash(32, dataaddr, datasize)
+    else
+        hashstr, errors = hash._xxhash(32, file_or_data)
     end
-    return result, errors
+    return hashstr, errors
 end
 
 -- generate xxhash64 from the given file or data
@@ -118,11 +122,7 @@ end
 function hash.strhash32(str)
     local data = libc.ptraddr(libc.dataptr(str))
     local size = #str
-    local result, errors = hash._xxhash(64, data, size)
-    if result then
-        result = result:sub(1, 8)
-    end
-    return result, errors
+    return hash._xxhash(32, data, size)
 end
 
 -- generate hash64 from string, e.g. "91e8ecf191e8ecf1"

@@ -30,14 +30,6 @@
  * helper implementation
  */
 
-static __tb_inline__ tb_uint32_t xm_hash_xorshift32(tb_uint32_t x)
-{
-    x ^= x << 13;
-    x ^= x >> 7;
-    x ^= x << 17;
-    return x;
-}
-
 static __tb_inline__ tb_uint64_t xm_hash_xorshift64(tb_uint64_t x)
 {
     x ^= x << 13;
