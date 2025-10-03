@@ -115,7 +115,6 @@ function cachekey(program, cppinfo, envs)
             table.insert(items, cppflag)
         end
     end
-    table.sort(items)
     table.insert(items, hash.xxhash128(cppfile))
     if envs then
         local basename = path.basename(program)
