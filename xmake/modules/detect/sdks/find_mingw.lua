@@ -27,9 +27,7 @@ import("core.cache.detectcache")
 import("detect.sdks.find_cross_toolchain")
 
 -- find mingw directory
-function _find_mingwdir(sdkdir)
-
-    -- get mingw directory
+function _find_mingwdir(sdkdir, msystem)
     if not sdkdir then
         if is_host("macosx", "linux") and os.isdir("/opt/llvm-mingw") then
             sdkdir = "/opt/llvm-mingw"
@@ -65,6 +63,10 @@ function _find_mingwdir(sdkdir)
         end
     end
 
+    if is_subhost("msys") and sdkdir and msystem and not sdkdir:find(msystem, 1, true) then
+        sdkdir = path.unix(path.join(path.directory(sdkdir), msystem))
+    end
+
     -- attempt to find mingw directory from the qt sdk
     local qt = config.get("qt")
     if not sdkdir and qt then
@@ -78,10 +80,10 @@ function _find_mingwdir(sdkdir)
 end
 
 -- find the mingw toolchain
-function _find_mingw(sdkdir, bindir, cross)
+function _find_mingw(sdkdir, bindir, cross, msystem)
 
     -- find mingw root directory
-    sdkdir = _find_mingwdir(sdkdir)
+    sdkdir = _find_mingwdir(sdkdir, msystem)
     if not sdkdir then
         return
     end
@@ -105,7 +107,7 @@ function _find_mingw(sdkdir, bindir, cross)
         toolchain = find_cross_toolchain(sdkdir or bindir, {bindir = bindir})
     end
     if toolchain then
-        return {sdkdir = toolchain.sdkdir, bindir = toolchain.bindir, cross = toolchain.cross}
+        return {sdkdir = toolchain.sdkdir, bindir = toolchain.bindir, cross = toolchain.cross, msystem = msystem}
     end
 end
 
@@ -132,12 +134,17 @@ function main(sdkdir, opt)
     -- attempt to load cache first
     local key = "detect.sdks.find_mingw"
     local cacheinfo = detectcache:get(key) or {}
-    if not opt.force and cacheinfo.mingw and cacheinfo.mingw.sdkdir and os.isdir(cacheinfo.mingw.sdkdir) then
+    if not opt.force and cacheinfo.mingw and cacheinfo.mingw.sdkdir and os.isdir(cacheinfo.mingw.sdkdir) and cacheinfo.msystem == opt.msystem then
         return cacheinfo.mingw
     end
 
     -- find mingw
-    local mingw = _find_mingw(sdkdir or config.get("mingw") or global.get("mingw") or config.get("sdk"), opt.bindir or config.get("bin"), opt.cross or config.get("cross"))
+    local mingw = _find_mingw(
+        sdkdir or config.get("mingw") or global.get("mingw") or config.get("sdk"),
+        opt.bindir or config.get("bin"),
+        opt.cross or config.get("cross"),
+        opt.msystem
+    )
     if mingw and mingw.sdkdir then
 
         -- save to config
