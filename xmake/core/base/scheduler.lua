@@ -21,6 +21,7 @@
 -- define module: scheduler
 local scheduler  = scheduler or {}
 local _coroutine = _coroutine or {}
+local _semaphore = _semaphore or {}
 
 -- load modules
 local table     = require("base/table")
@@ -32,6 +33,42 @@ local timer     = require("base/timer")
 local hashset   = require("base/hashset")
 local coroutine = require("base/coroutine")
 local bit       = require("base/bit")
+
+-- new a semaphore instance
+function _semaphore.new(name, value)
+    local instance   = table.inherit(_semaphore)
+    instance._NAME   = name
+    instance._VALUE  = value or 0
+    setmetatable(instance, _semaphore)
+    return instance
+end
+
+-- get the semaphore name
+function _semaphore:name()
+    return self._NAME or "none"
+end
+
+-- get the semaphore value
+function _semaphore:value()
+    return self._VALUE or 0
+end
+
+-- post the semaphore value
+function _semaphore:post(value)
+    value = self._VALUE + value
+    self._VALUE = value
+    return value
+end
+
+-- wait the semaphore
+function _semaphore:wait(timeout)
+    return 0
+end
+
+-- tostring(semaphore)
+function _semaphore:__tostring()
+    return string.format("<sem: %s/%d>", self:name(), self:value())
+end
 
 -- new a coroutine instance
 function _coroutine.new(name, thread)
@@ -724,6 +761,11 @@ end
 -- get all coroutine count
 function scheduler:co_count()
     return self._CO_COUNT or 0
+end
+
+-- new a coroutine semaphore
+function scheduler:co_semaphore(name, value)
+    return _semaphore.new(name, value)
 end
 
 -- wait poller object io events, only for socket and pipe object
