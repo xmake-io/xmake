@@ -31,15 +31,14 @@ rule("utils.merge.archive")
                     dep:data_set("inherit.links.deplink", false)
                 end
             end
-        end
-        local sourcefiles
-        local sourcebatch = target:sourcebatches()["utils.merge.archive"]
-        if sourcebatch and sourcebatch.sourcefiles then
-            sourcefiles = sourcebatch.sourcefiles
-            target:data_set("merge_archive.sourcefiles", sourcefiles)
-        end
-        if not (target:is_static() and (target:policy("build.merge_archive") or sourcefiles)) then
+        else
             target:rule_enable("utils.merge.archive", false)
+        end
+    end)
+
+    on_build_files(function (target, sourcebatch, opt)
+        if sourcebatch.sourcefiles then
+            target:data_set("merge_archive.sourcefiles", sourcebatch.sourcefiles)
         end
     end)
 
