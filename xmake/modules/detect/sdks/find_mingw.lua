@@ -134,7 +134,7 @@ function main(sdkdir, opt)
     -- attempt to load cache first
     local key = "detect.sdks.find_mingw"
     local cacheinfo = detectcache:get(key) or {}
-    if not opt.force and cacheinfo.mingw and cacheinfo.mingw.sdkdir and os.isdir(cacheinfo.mingw.sdkdir) and cacheinfo.msystem == opt.msystem then
+    if not opt.force and cacheinfo.mingw and cacheinfo.mingw.sdkdir and os.isdir(cacheinfo.mingw.sdkdir) and cacheinfo.mingw.msystem == opt.msystem then
         return cacheinfo.mingw
     end
 
