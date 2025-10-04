@@ -119,6 +119,7 @@ function _semaphore:wait(timeout)
             break
         end
     end
+    self._WAITING:remove(running)
     return 0
 end
 
