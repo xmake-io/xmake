@@ -51,21 +51,23 @@ end
 
 -- post the semaphore value
 function _semaphore:post(value)
-    value = self._VALUE + value
-    self._VALUE = value
-    if value > 0 then
+    local new_value = self._VALUE + value
+    self._VALUE = new_value
+    if new_value > 0 then
         local pending = {}
         local waiting = self._WAITING
         for item in waiting:items() do
-            if #pending < value then
+            if #pending < new_value then
                 table.insert(pending, item)
+            else
+                break
             end
         end
         for _, item in ipairs(pending) do
             scheduler:co_resume(item)
         end
     end
-    return value
+    return new_value
 end
 
 -- wait the semaphore

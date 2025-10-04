@@ -7,7 +7,6 @@ function _loop(semaphore, id)
         local value = semaphore:wait(-1)
         print("[%d]:   -> triggered, value: %d ..", id, value)
     end
-    print("[%d]: end", id)
 end
 
 function _input(semaphore)
