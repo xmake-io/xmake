@@ -35,7 +35,12 @@ function main(toolchain)
         end
     end
     if not mingw then
-        mingw = find_mingw(toolchain:config("mingw") or config.get("mingw"), {verbose = true, bindir = toolchain:bindir(), cross = toolchain:cross()})
+        mingw = find_mingw(toolchain:config("mingw") or config.get("mingw"), {
+            verbose = true,
+            bindir = toolchain:bindir(),
+            cross = toolchain:cross(),
+            msystem = toolchain:config("msystem"),
+        })
     end
     if mingw then
         toolchain:config_set("mingw", mingw.sdkdir)
