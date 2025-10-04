@@ -38,12 +38,18 @@ end
 
 -- get the builtin variables
 function _get_builtinvars(target, installdir)
+    local target_ptrbytes
+    if target:is_plat("wasm") then
+        target_ptrbytes = target:is_arch("armeabi", "armeabi-v7a", "x86", "mips", "i386", "armv7", "armv7s", "mipsel", "wasm32") and "4" or "8"
+    else
+        target_ptrbytes = target:check_sizeof("void*")
+    end
     return {TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
             TARGETFILENAME  = target:targetfile() and _get_libfile(target, installdir),
             TARGETKIND      = target:is_headeronly() and "INTERFACE" or (target:is_shared() and "SHARED" or "STATIC"),
             PACKAGE_VERSION = target:get("version") or "1.0.0",
-            TARGET_PTRBYTES = target:check_sizeof("void*")}
+            TARGET_PTRBYTES = target_ptrbytes}
 end
 
 -- install cmake config file
