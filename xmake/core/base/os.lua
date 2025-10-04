@@ -1305,6 +1305,7 @@ end
 function os.getenvs()
     local envs = os._getenvs()
     if envs then
+        -- we need to be compatible with the old binary core, if it's array (<= v3.0.3)
         if envs[1] ~= nil then
             local result = {}
             for _, line in ipairs(envs) do
