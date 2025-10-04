@@ -4,8 +4,8 @@ function _loop(semaphore, id)
     print("[%d]: start", id)
     while true do
         print("[%d]: wait ..", id)
-        --semaphore:wait(-1)
-        os.sleep(1000)
+        local value = semaphore:wait(-1)
+        print("[%d]:   -> triggered, value: %d ..", id, value)
     end
     print("[%d]: end", id)
 end
