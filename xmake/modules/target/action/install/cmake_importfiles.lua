@@ -40,7 +40,7 @@ end
 function _get_builtinvars(target, installdir)
     local target_ptrbytes
     if target:is_plat("wasm") then
-        target_ptrbytes = target:is_arch64() and "8" or "4"
+        target_ptrbytes = is_arch("wasm32") and "4" or "8"
     else
         target_ptrbytes = target:check_sizeof("void*")
     end
