@@ -42,6 +42,7 @@ os._tmpdir   = os._tmpdir or os.tmpdir
 os._curdir   = os._curdir or os.curdir
 os._fscase   = os._fscase or os.fscase
 os._setenv   = os._setenv or os.setenv
+os._getenvs  = os._getenvs or os.getenvs
 os._cpuinfo  = os._cpuinfo or os.cpuinfo
 os._meminfo  = os._meminfo or os.meminfo
 os._readlink = os._readlink or os.readlink
@@ -1298,6 +1299,33 @@ end
 -- get term
 function os.term()
     return require("base/tty").term()
+end
+
+-- get all current environments variables
+function os.getenvs()
+    local envs = os._getenvs()
+    if envs then
+        if envs[1] ~= nil then
+            local result = {}
+            for _, line in ipairs(envs) do
+                local p = line:find('=', 1, true)
+                if p then
+                    local key = line:sub(1, p - 1):trim()
+                    -- only translate Path to PATH on windows
+                    -- @see https://github.com/xmake-io/xmake/issues/3752
+                    if os.host() == "windows" and key:lower() == "path" then
+                        key = key:upper()
+                    end
+                    local values = line:sub(p + 1):trim()
+                    if #key > 0 then
+                        result[key] = values
+                    end
+                end
+            end
+            envs = result
+        end
+    end
+    return envs
 end
 
 -- set all current environment variables
