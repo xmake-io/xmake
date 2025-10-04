@@ -31,6 +31,8 @@ rule("utils.merge.archive")
                     dep:data_set("inherit.links.deplink", false)
                 end
             end
+        else
+            target:rule_enable("utils.merge.archive", false)
         end
     end)
     on_build_files(function (target, sourcebatch, opt)

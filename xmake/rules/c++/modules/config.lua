@@ -86,6 +86,9 @@ function main(target)
                 end
             end
         end
+    else
+        target:rule_enable("c++.build.modules.scanner", false)
+        target:rule_enable("c++.build.modules.builder", false)
     end
 end
 
