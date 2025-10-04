@@ -147,11 +147,6 @@ function _instance:kind()
     return self:get("kind") or "target"
 end
 
--- is enabled?
-function _instance:is_enabled()
-    return self:get("enabled") ~= false
-end
-
 -- get the given dependent rule
 function _instance:dep(name)
     local deps = self:deps()
@@ -293,7 +288,6 @@ function rule.apis()
             "rule.set_extensions"
         ,   "rule.set_sourcekinds"
         ,   "rule.set_kind"
-        ,   "rule.set_enabled"
             -- rule.add_xxx
         ,   "rule.add_deps"
         ,   "rule.add_imports"
