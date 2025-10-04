@@ -120,9 +120,14 @@ end
 
 -- generate hash32 from string, e.g. "91e8ecf1"
 function hash.strhash32(str)
-    local data = libc.ptraddr(libc.dataptr(str))
-    local size = #str
-    return hash._xxhash(32, data, size)
+    if hash._rand32 then
+        local data = libc.ptraddr(libc.dataptr(str))
+        local size = #str
+        return hash._xxhash(32, data, size)
+    else
+        -- we need to be compatible with the old binary core (<= v3.0.3)
+        return hash.uuid4(str):split("-", {plain = true})[1]:lower()
+    end
 end
 
 -- generate hash64 from string, e.g. "91e8ecf191e8ecf1"
