@@ -20,8 +20,7 @@
 
 -- define rule: utils.symbols.extract
 rule("utils.symbols.extract")
-    before_link(function(target)
-        import("core.platform.platform")
+    after_config(function(target)
 
         -- need generate symbols?
         local strip = target:get("strip")
@@ -32,6 +31,8 @@ rule("utils.symbols.extract")
             target:data_set("utils.symbols.extract", true)
             target:set("strip", "none") -- disable strip in link stage, because we need to run separate strip commands
             target:data_set("strip.origin", strip)
+        else
+            target:rule_enable("utils.symbols.extract", false)
         end
     end)
     after_link(function (target, opt)

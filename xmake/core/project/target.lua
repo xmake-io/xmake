@@ -1184,6 +1184,22 @@ function _instance:rule_add(r)
     self._ORDERULES = nil
 end
 
+-- enable or disable rule
+function _instance:rule_enable(name, enabled)
+    local ruleinst = self:rule(name)
+    if ruleinst then
+        self:data_set("__rule_enabled." .. name, enabled)
+    else
+        utils.warning("target(%s): rule(%s) not found", self:name(), name)
+    end
+end
+
+-- the given rule is enabled or disabled?
+function _instance:rule_is_enabled(name)
+    local enabled = self:data("__rule_enabled." .. name)
+    return enabled ~= false
+end
+
 -- is phony target?
 function _instance:is_phony()
     local targetkind = self:kind()

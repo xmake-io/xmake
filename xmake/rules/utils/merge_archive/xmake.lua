@@ -31,13 +31,17 @@ rule("utils.merge.archive")
                     dep:data_set("inherit.links.deplink", false)
                 end
             end
+        else
+            target:rule_enable("utils.merge.archive", false)
         end
     end)
+
     on_build_files(function (target, sourcebatch, opt)
         if sourcebatch.sourcefiles then
             target:data_set("merge_archive.sourcefiles", sourcebatch.sourcefiles)
         end
     end)
+
     after_link(function (target, opt)
         if not target:is_static() then
             return

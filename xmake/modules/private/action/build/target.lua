@@ -235,7 +235,7 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
     local instances = {target}
     for _, ruleinst in ipairs(target:orderules()) do
         -- we only ignore some builtin rules, so we need not to use fullname.
-        if not ignored_rules or not ignored_rules:has(ruleinst:name()) then
+        if target:rule_is_enabled(ruleinst:fullname()) and (not ignored_rules or not ignored_rules:has(ruleinst:name())) then
             table.insert(instances, ruleinst)
         end
     end
@@ -262,6 +262,7 @@ function add_targetjobs_with_stage(jobgraph, target, stage, opt)
                     has_script = true
                 end
             end)
+
             -- if custom target.on_build/prepare exists, we need to ignore all scripts in rules
             if has_script and instance == target and stage == "" then
                 break
@@ -571,7 +572,7 @@ function add_filejobs_with_stage(jobgraph, target, sourcebatches, stage, opt)
         if rulename then
             -- we only ignore some builtin rules, so we need not to use fullname.
             local ruleinst = rule_utils.get_rule(target, rulename)
-            if not ignored_rules or not ignored_rules:has(ruleinst:name()) then
+            if target:rule_is_enabled(ruleinst:fullname()) and (not ignored_rules or not ignored_rules:has(ruleinst:name())) then
                 sourcebatches_map[ruleinst] = sourcebatch
                 -- avoid duplicate scripts being called twice in the target,
                 -- we just build sourcebatch with on_build_files scripts
