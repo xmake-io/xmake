@@ -182,7 +182,5 @@ tb_int_t xm_os_getenvs(lua_State* lua)
         }
     }
 #endif
-
-    // ok
     return 1;
 }
