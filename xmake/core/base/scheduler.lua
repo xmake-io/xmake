@@ -125,7 +125,7 @@ end
 
 -- tostring(semaphore)
 function _semaphore:__tostring()
-    return string.format("<sem: %s/%d>", self:name(), self:value())
+    return string.format("<co_semaphore: %s/%d>", self:name(), self._VALUE)
 end
 
 -- new a coroutine instance
