@@ -34,6 +34,9 @@ end
 
 -- init progress
 function _init_progress(state, opt)
+    opt = opt or {}
+
+    -- init progress helper
     -- we need to hide wait characters if is not a tty
     state.show_progress = io.isatty() and (opt.progress or opt.showtips)
     state.backnum = 0
@@ -44,6 +47,31 @@ function _init_progress(state, opt)
         end
         state.progress_helper = progress.new(nil, progress_opt)
     end
+
+    -- init progress wrapper
+    state.count = 0
+    state.progress_factor = opt.progress_factor or 1.0
+    local progress_wrapper = {}
+    progress_wrapper.current = function ()
+        return state.count
+    end
+    progress_wrapper.total = function ()
+        return state.total
+    end
+    progress_wrapper.percent = function ()
+        local total = state.total
+        if total and total > 0 then
+            return math.floor((state.count * state.progress_factor * 100) / total)
+        else
+            return 0
+        end
+    end
+    debug.setmetatable(progress_wrapper, {
+        __tostring = function ()
+            return string.format("%d%%", progress_wrapper.percent())
+        end
+    })
+    state.progress_wrapper = progress_wrapper
 end
 
 -- the timer loop
@@ -181,32 +209,9 @@ function main(name, jobs, opt)
 
     -- run jobs
     local index = 0
-    local count = 0
     local abort = false
     local abort_errors
-    local progress_wrapper = {}
     local job_pending
-    local progress_factor = opt.progress_factor or 1.0
-    progress_wrapper.current = function ()
-        return count
-    end
-    progress_wrapper.total = function ()
-        return state.total
-    end
-    progress_wrapper.percent = function ()
-        local total = state.total
-        if total and total > 0 then
-            return math.floor((count * progress_factor * 100) / total)
-        else
-            return 0
-        end
-    end
-    debug.setmetatable(progress_wrapper, {
-        __tostring = function ()
-            return string.format("%d%%", progress_wrapper.percent())
-        end
-    })
-
     local total = state.total
     local comax = state.comax
     local distcc = state.distcc
@@ -274,8 +279,8 @@ function main(name, jobs, opt)
                                 if opt.curdir then
                                     os.cd(opt.curdir)
                                 end
-                                count = count + 1
-                                jobfunc(i, total, {progress = progress_wrapper})
+                                state.count = state.count + 1
+                                jobfunc(i, total, {progress = state.progress_wrapper})
                             end
                             state.running_jobs_indices[i] = nil
                         end,
