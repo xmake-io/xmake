@@ -134,13 +134,14 @@ function _progress_loop(state)
     end
 end
 
--- comsume jobs
+-- consume jobs
 -- TODO distcc
-function _comsume_jobs_loop(state)
+function _consume_jobs_loop(state)
     local jobs = state.jobs
     local jobs_cb = state.jobs_cb
     local total = state.total
     local curdir = state.curdir
+    local semaphore = state.semaphore
     while state.finished_count < total and not state.stop do
 
         -- get free job
@@ -150,6 +151,17 @@ function _comsume_jobs_loop(state)
             job = jobs:getfree()
             if job then
                 job_func = job.run
+                -- notify other coroutines to consume jobs
+                if state.waiting_count > 0 then
+                    local left_count = total - state.finished_count
+                    local post_count = math.min(left_count, state.waiting_count)
+                    semaphore:post(post_count)
+                end
+            elseif state.finished_count < total then
+                -- no free jobs now, wait other coroutines
+                state.waiting_count = state.waiting_count + 1
+                semaphore:wait(-1)
+                state.waiting_count = state.waiting_count - 1
             else
                 break
             end
@@ -209,6 +221,11 @@ function _comsume_jobs_loop(state)
                 end
             }
         }
+    end
+
+    -- notify left waiting coroutines
+    if state.waiting_count > 0 then
+        semaphore:post(state.waiting_count)
     end
 end
 
@@ -284,11 +301,13 @@ function main(name, jobs, opt)
     -- run jobs
     state.abort = false
     state.abort_errors = nil
+    state.waiting_count = 0
     state.finished_count = 0
     state.curdir = opt.curdir
+    state.semaphore = scheduler.co_semaphore(state.group_name, 0)
     scheduler.co_group_begin(state.group_name, function (co_group)
         for id = 1, math.min(state.total, state.comax) do
-            scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _comsume_jobs_loop, state)
+            scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state)
         end
     end)
 
