@@ -32,6 +32,84 @@ function _print_backchars(backnum)
     end
 end
 
+-- init progress
+function _init_progress(state, opt)
+    -- we need to hide wait characters if is not a tty
+    state.show_progress = io.isatty() and (opt.progress or opt.showtips)
+    state.backnum = 0
+    if state.show_progress then
+        local progress_opt = nil
+        if type(state.show_progress) == "table" then
+            progress_opt = state.show_progress
+        end
+        state.progress_helper = progress.new(nil, progress_opt)
+    end
+end
+
+-- the timer loop
+function _timer_loop(state)
+    local timeout = state.timeout
+    while not state.stop do
+        os.sleep(timeout)
+        if not state.stop then
+            local indices
+            if state.running_jobs_indices then
+                indices = table.keys(state.running_jobs_indices)
+            end
+            state.on_timer(indices)
+        end
+    end
+end
+
+-- the progress loop
+function _progress_loop(state)
+    local timeout = state.timeout
+    local progress_helper = state.progress_helper
+    while not state.stop do
+        os.sleep(timeout)
+        if not state.stop then
+
+            -- show waitchars
+            local tips = nil
+            local waitobjs = scheduler.co_group_waitobjs(state.group_name)
+            if waitobjs:size() > 0 then
+                local names = {}
+                for _, obj in waitobjs:keys() do
+                    if obj:otype() == scheduler.OT_PROC then
+                        table.insert(names, obj:name())
+                    elseif obj:otype() == scheduler.OT_SOCK then
+                        table.insert(names, "sock")
+                    elseif obj:otype() == scheduler.OT_PIPE then
+                        table.insert(names, "pipe")
+                    end
+                end
+                names = table.unique(names)
+                if #names > 0 then
+                    names = table.concat(names, ",")
+                    if #names > 16 then
+                        names = names:sub(1, 16) .. ".."
+                    end
+                    tips = string.format("(%d/%s)", waitobjs:size(), names)
+                end
+            end
+
+            -- print back characters
+            progress_helper:clear()
+            _print_backchars(state.backnum)
+
+            if tips then
+                cprintf("${dim}%s${clear} ", tips)
+                state.backnum = #tips + 1
+            end
+            progress_helper:write()
+        end
+    end
+end
+
+-- comsume jobs
+function _comsume_jobs_loop()
+end
+
 -- asynchronous run jobs
 --
 -- e.g.
@@ -54,32 +132,27 @@ end
 -- runjobs("test", jobs, {comax = 6, distcc = distcc_build_client.singleton()}
 --
 function main(name, jobs, opt)
-
-    -- init options
     opt = opt or {}
-    local total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
-    local comax = opt.comax or math.min(total, 4)
-    local distcc = opt.distcc
-    local timeout = opt.timeout or 500
-    local group_name = name
-    local jobs_cb = type(jobs) == "function" and jobs or nil
-    assert(timeout < 60000, "runjobs: invalid timeout!")
+
+    -- init state
+    local state = {}
+    state.total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
+    state.comax = opt.comax or math.min(state.total, 4)
+    state.distcc = opt.distcc
+    state.timeout = opt.timeout or 500
+    state.group_name = name
+    state.jobs_cb = type(jobs) == "function" and jobs or nil
+    assert(state.timeout < 60000, "runjobs: invalid timeout!")
 
     -- build jobs queue
     if type(jobs) == "table" and jobs.build then
         jobs = jobs:build()
     end
     assert(jobs, "runjobs: no jobs!")
+    state.jobs = jobs
 
     -- show waiting tips?
-    local showprogress = io.isatty() and (opt.progress or opt.showtips) -- we need to hide wait characters if is not a tty
-    local progress_helper
-    local backnum = 0
-    if showprogress then
-        local opt = nil
-        if type(showprogress) == 'table' then opt = showprogress end
-        progress_helper = progress.new(nil, opt)
-    end
+    _init_progress(state, opt)
 
     -- isolate environments
     local is_isolated = false
@@ -90,69 +163,19 @@ function main(name, jobs, opt)
     end
 
     -- run timer
-    local stop = false
-    local running_jobs_indices = {}
+    state.stop = false
+    state.running_jobs_indices = {}
     local group_timer
     if opt.on_timer then
-        group_timer = group_name .. "/timer"
+        state.on_timer = opt.on_timer
+        group_timer = state.group_name .. "/timer"
         scheduler.co_group_begin(group_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, function ()
-                while not stop do
-                    os.sleep(timeout)
-                    if not stop then
-                        local indices
-                        if running_jobs_indices then
-                            indices = table.keys(running_jobs_indices)
-                        end
-                        opt.on_timer(indices)
-                    end
-                end
-            end)
+            scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, _timer_loop, state)
         end)
-    elseif showprogress then
-        group_timer = group_name .. "/timer"
+    elseif state.show_progress then
+        group_timer = state.group_name .. "/timer"
         scheduler.co_group_begin(group_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, function ()
-                while not stop do
-                    os.sleep(timeout)
-                    if not stop then
-
-                        -- show waitchars
-                        local tips = nil
-                        local waitobjs = scheduler.co_group_waitobjs(group_name)
-                        if waitobjs:size() > 0 then
-                            local names = {}
-                            for _, obj in waitobjs:keys() do
-                                if obj:otype() == scheduler.OT_PROC then
-                                    table.insert(names, obj:name())
-                                elseif obj:otype() == scheduler.OT_SOCK then
-                                    table.insert(names, "sock")
-                                elseif obj:otype() == scheduler.OT_PIPE then
-                                    table.insert(names, "pipe")
-                                end
-                            end
-                            names = table.unique(names)
-                            if #names > 0 then
-                                names = table.concat(names, ",")
-                                if #names > 16 then
-                                    names = names:sub(1, 16) .. ".."
-                                end
-                                tips = string.format("(%d/%s)", waitobjs:size(), names)
-                            end
-                        end
-
-                        -- print back characters
-                        progress_helper:clear()
-                        _print_backchars(backnum)
-
-                        if tips then
-                            cprintf("${dim}%s${clear} ", tips)
-                            backnum = #tips + 1
-                        end
-                        progress_helper:write()
-                    end
-                end
-            end)
+            scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, _progress_loop, state)
         end)
     end
 
@@ -168,9 +191,10 @@ function main(name, jobs, opt)
         return count
     end
     progress_wrapper.total = function ()
-        return total
+        return state.total
     end
     progress_wrapper.percent = function ()
+        local total = state.total
         if total and total > 0 then
             return math.floor((count * progress_factor * 100) / total)
         else
@@ -182,6 +206,13 @@ function main(name, jobs, opt)
             return string.format("%d%%", progress_wrapper.percent())
         end
     })
+
+    local total = state.total
+    local comax = state.comax
+    local distcc = state.distcc
+    local group_name = state.group_name
+    local jobs_cb = state.jobs_cb
+    local jobs = state.jobs
     while index < total do
         scheduler.co_group_begin(group_name, function (co_group)
             local freemax = comax - #co_group
@@ -229,7 +260,7 @@ function main(name, jobs, opt)
                     try
                     {
                         function()
-                            if stop then
+                            if state.stop then
                                 return
                             end
                             if distcc then
@@ -238,7 +269,7 @@ function main(name, jobs, opt)
                                     co_running:data_set("distcc.distccjob", distccjob)
                                 end
                             end
-                            running_jobs_indices[i] = i
+                            state.running_jobs_indices[i] = i
                             if jobfunc then
                                 if opt.curdir then
                                     os.cd(opt.curdir)
@@ -246,19 +277,19 @@ function main(name, jobs, opt)
                                 count = count + 1
                                 jobfunc(i, total, {progress = progress_wrapper})
                             end
-                            running_jobs_indices[i] = nil
+                            state.running_jobs_indices[i] = nil
                         end,
                         catch
                         {
                             function (errors)
 
                                 -- stop timer and disable show waitchars first
-                                stop = true
+                                state.stop = true
 
                                 -- remove wait charactor
-                                if showprogress then
-                                    _print_backchars(backnum)
-                                    progress_helper:stop()
+                                if state.show_progress then
+                                    _print_backchars(state.backnum)
+                                    state.progress_helper:stop()
                                 end
 
                                 -- we need re-throw this errors outside scheduler
@@ -301,7 +332,7 @@ function main(name, jobs, opt)
 
     -- wait timer job exited
     if group_timer then
-        stop = true
+        state.stop = true
         scheduler.co_group_wait(group_timer)
     end
 
@@ -311,9 +342,9 @@ function main(name, jobs, opt)
     end
 
     -- remove wait charactor
-    if showprogress then
-        _print_backchars(backnum)
-        progress_helper:stop()
+    if state.show_progress then
+        _print_backchars(state.backnum)
+        state.progress_helper:stop()
     end
 
     -- do exit callback
