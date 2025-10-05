@@ -159,7 +159,7 @@ function _comsume_jobs_loop(state)
         {
             function ()
                 -- run job
-                local job_index = state.finished_count
+                local job_index = state.finished_count + 1
                 state.running_jobs_indices[job_index] = job_index
                 if job_func then
                     if curdir then
