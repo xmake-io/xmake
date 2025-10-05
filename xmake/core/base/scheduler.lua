@@ -21,6 +21,7 @@
 -- define module: scheduler
 local scheduler  = scheduler or {}
 local _coroutine = _coroutine or {}
+local _semaphore = _semaphore or {}
 
 -- load modules
 local table     = require("base/table")
@@ -32,6 +33,102 @@ local timer     = require("base/timer")
 local hashset   = require("base/hashset")
 local coroutine = require("base/coroutine")
 local bit       = require("base/bit")
+
+-- new a semaphore instance
+function _semaphore.new(name, value)
+    local instance    = table.inherit(_semaphore)
+    instance._NAME    = name
+    instance._VALUE   = value or 0
+    instance._WAITING = hashset.new()
+    setmetatable(instance, _semaphore)
+    return instance
+end
+
+-- get the semaphore name
+function _semaphore:name()
+    return self._NAME or "none"
+end
+
+-- post the semaphore value
+function _semaphore:post(value)
+    local new_value = self._VALUE + value
+    self._VALUE = new_value
+    if new_value > 0 then
+        local pending = {}
+        local waiting = self._WAITING
+        for item in waiting:items() do
+            if #pending < new_value then
+                table.insert(pending, item)
+            else
+                break
+            end
+        end
+        for _, item in ipairs(pending) do
+            scheduler:co_resume(item)
+        end
+    end
+    return new_value
+end
+
+-- wait the semaphore
+function _semaphore:wait(timeout)
+
+    -- get the running coroutine
+    local running = scheduler:co_running()
+    if not running then
+        return -1, "we must call semaphore:wait() in coroutine with scheduler!"
+    end
+
+    -- is stopped?
+    if not scheduler._STARTED then
+        return -1, "the scheduler is stopped!"
+    end
+
+    -- update value
+    local value = self._VALUE
+    if value > 0 then
+        self._VALUE = value - 1
+        return value
+    end
+
+    -- no signal? return immediately if timeout is zero
+    if timeout == 0 then
+        return 0
+    end
+
+    -- wait semaphore
+    self._WAITING:insert(running)
+    if timeout > 0 then
+        scheduler:_timer():post(function (cancel)
+            if running:is_suspended() then
+                return scheduler:co_resume(running, true)
+            end
+            return true
+        end, timeout)
+    end
+
+    while true do
+        local timeout = scheduler:co_suspend()
+
+        local value = self._VALUE
+        if value > 0 then
+            self._VALUE = value - 1
+            self._WAITING:remove(running)
+            return value
+        end
+
+        if timeout then
+            break
+        end
+    end
+    self._WAITING:remove(running)
+    return 0
+end
+
+-- tostring(semaphore)
+function _semaphore:__tostring()
+    return string.format("<co_semaphore: %s/%d>", self:name(), self._VALUE)
+end
 
 -- new a coroutine instance
 function _coroutine.new(name, thread)
@@ -724,6 +821,11 @@ end
 -- get all coroutine count
 function scheduler:co_count()
     return self._CO_COUNT or 0
+end
+
+-- new a coroutine semaphore
+function scheduler:co_semaphore(name, value)
+    return _semaphore.new(name, value)
 end
 
 -- wait poller object io events, only for socket and pipe object
