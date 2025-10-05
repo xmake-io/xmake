@@ -63,8 +63,16 @@ function _semaphore:post(value)
         local waiting = self._WAITING
         local post_count = 0
         while not waiting:empty() do
-            local item = waiting:pop()
-            scheduler:co_resume(item)
+            local cp = waiting:pop()
+            if not cp:is_suspended() then
+                self._POSTING = false
+                return -1, string.format("%s cannot be resumed, status: %s", co, co:status())
+            end
+            local ok, errors = scheduler:co_resume(cp)
+            if not ok then
+                self._POSTING = false
+                return -1, errors
+            end
             post_count = post_count + 1
             if post_count >= new_value then
                 break
