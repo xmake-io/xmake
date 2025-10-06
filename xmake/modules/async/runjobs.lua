@@ -141,6 +141,7 @@ function _consume_jobs_loop(state, run_in_remote)
     local total = state.total
     local curdir = state.curdir
     local semaphore = state.semaphore
+    local distcc_semaphore = state.distcc_semaphore
     local co_running = scheduler.co_running()
     while state.finished_count < total and not state.stop do
 
@@ -156,16 +157,30 @@ function _consume_jobs_loop(state, run_in_remote)
                 end
                 job_func = job.run
                 -- notify other coroutines to consume jobs
-                if state.waiting_count > 0 then
-                    local left_count = total - state.finished_count
-                    local post_count = math.min(left_count, state.waiting_count)
-                    semaphore:post(post_count)
+                if run_in_remote then
+                    if state.distcc_waiting_count > 0 then
+                        local left_count = total - state.finished_count
+                        local post_count = math.min(left_count, state.distcc_waiting_count)
+                        distcc_semaphore:post(post_count)
+                    end
+                else
+                    if state.waiting_count > 0 then
+                        local left_count = total - state.finished_count
+                        local post_count = math.min(left_count, state.waiting_count)
+                        semaphore:post(post_count)
+                    end
                 end
             elseif state.finished_count < total then
                 -- no free jobs now, wait other coroutines
-                state.waiting_count = state.waiting_count + 1
-                semaphore:wait(-1)
-                state.waiting_count = state.waiting_count - 1
+                if run_in_remote then
+                    state.distcc_waiting_count = state.distcc_waiting_count + 1
+                    distcc_semaphore:wait(-1)
+                    state.distcc_waiting_count = state.distcc_waiting_count - 1
+                else
+                    state.waiting_count = state.waiting_count + 1
+                    semaphore:wait(-1)
+                    state.waiting_count = state.waiting_count - 1
+                end
             else
                 break
             end
@@ -234,6 +249,9 @@ function _consume_jobs_loop(state, run_in_remote)
     end
 
     -- notify left waiting coroutines
+    if state.distcc_waiting_count > 0 then
+        distcc_semaphore:post(state.distcc_waiting_count)
+    end
     if state.waiting_count > 0 then
         semaphore:post(state.waiting_count)
     end
@@ -308,23 +326,27 @@ function main(name, jobs, opt)
     end
 
     -- run jobs
+    local distcc = opt.distcc
     state.abort = false
     state.abort_errors = nil
-    state.waiting_count = 0
     state.finished_count = 0
     state.curdir = opt.curdir
-    state.semaphore = scheduler.co_semaphore(state.group_name, 0)
+    state.waiting_count = 0
+    state.distcc_waiting_count = 0
     scheduler.co_group_begin(state.group_name, function (co_group)
+        state.semaphore = scheduler.co_semaphore(state.group_name, 0)
+        if distcc then
+            state.distcc_semaphore = scheduler.co_semaphore(state.group_name .. "/distcc", 0)
+        end
         local local_comax = math.min(state.total, state.comax)
         for id = 1, local_comax do
             scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, false)
         end
-        local distcc = opt.distcc
         if distcc then
             local left_comax = state.total - local_comax
             local remote_comax = math.min(distcc:freejobs(), left_comax)
             for id = 1, remote_comax do
-                scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, true)
+                scheduler.co_start_withopt({name = name .. '/distcc/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, true)
             end
         end
     end)
