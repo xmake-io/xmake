@@ -338,9 +338,13 @@ function main(name, jobs, opt)
         if distcc then
             state.distcc_semaphore = scheduler.co_semaphore(state.group_name .. "/distcc", 0)
         end
-        local local_comax = math.min(state.total, state.comax)
-        for id = 1, local_comax do
-            scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, false)
+        -- @note we can set `remote_only = true` to run all jobs in remote only
+        local local_comax = 0
+        if not opt.remote_only then
+            local_comax = math.min(state.total, state.comax)
+            for id = 1, local_comax do
+                scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, false)
+            end
         end
         if distcc then
             local left_comax = state.total - local_comax

@@ -41,6 +41,9 @@ function _build(targets_root, opt)
     opt.progress_factor = 0.95
     if distcc_build_client.is_connected() then
         opt.distcc = distcc_build_client.singleton()
+        if project.policy("build.distcc.remote_only") then
+            opt.remote_only = true
+        end
     end
     target_buildutils.run_targetjobs(targets_root, opt)
 end

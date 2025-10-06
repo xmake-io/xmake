@@ -788,7 +788,9 @@ function run_targetjobs(targets_root, opt)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, comax = opt.jobs or option.get("jobs") or 1, curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
+        end,
+        comax = opt.jobs or option.get("jobs") or 1, curdir = curdir,
+        distcc = opt.distcc, remote_only = opt.remote_only, progress_factor = opt.progress_factor})
         os.cd(curdir)
         return true
     end
@@ -806,7 +808,9 @@ function run_filejobs(targets_root, opt)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, comax = opt.jobs or option.get("jobs") or 1, curdir = curdir, distcc = opt.distcc, progress_factor = opt.progress_factor})
+        end,
+        comax = opt.jobs or option.get("jobs") or 1, curdir = curdir,
+        distcc = opt.distcc, remote_only = opt.remote_only, progress_factor = opt.progress_factor})
         os.cd(curdir)
         return true
     end

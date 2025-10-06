@@ -115,6 +115,8 @@ function policy.policies()
             ["build.linker.output"]               = {description = "Enable linker output.", type = "boolean"},
             -- Enable build jobgraph
             ["build.jobgraph"]                    = {description = "Enable build jobgraph.", default = true, type = "boolean"},
+            -- Enable build on only remote machines
+            ["build.distcc.remote_only"]          = {description = "Enable build on only remote machines.", default = false, type = "boolean"},
             -- Enable windows UAC and set level, e.g. invoker, admin, highest
             ["windows.manifest.uac"]              = {description = "Enable windows manifest UAC.", type = "string"},
             -- Enable ui access for windows UAC
