@@ -31,6 +31,7 @@ local string    = require("base/string")
 local poller    = require("base/poller")
 local timer     = require("base/timer")
 local hashset   = require("base/hashset")
+local queue     = require("base/queue")
 local coroutine = require("base/coroutine")
 local bit       = require("base/bit")
 
@@ -39,7 +40,8 @@ function _semaphore.new(name, value)
     local instance    = table.inherit(_semaphore)
     instance._NAME    = name
     instance._VALUE   = value or 0
-    instance._WAITING = hashset.new()
+    instance._WAITING = queue.new()
+    instance._POSTING = false
     setmetatable(instance, _semaphore)
     return instance
 end
@@ -51,22 +53,33 @@ end
 
 -- post the semaphore value
 function _semaphore:post(value)
+    if self._POSTING then
+        return self._VALUE
+    end
+    self._POSTING = true
     local new_value = self._VALUE + value
     self._VALUE = new_value
     if new_value > 0 then
-        local pending = {}
         local waiting = self._WAITING
-        for item in waiting:items() do
-            if #pending < new_value then
-                table.insert(pending, item)
-            else
+        local post_count = 0
+        while not waiting:empty() do
+            local cp = waiting:pop()
+            if not cp:is_suspended() then
+                self._POSTING = false
+                return -1, string.format("%s cannot be resumed, status: %s", co, co:status())
+            end
+            local ok, errors = scheduler:co_resume(cp)
+            if not ok then
+                self._POSTING = false
+                return -1, errors
+            end
+            post_count = post_count + 1
+            if post_count >= new_value then
                 break
             end
         end
-        for _, item in ipairs(pending) do
-            scheduler:co_resume(item)
-        end
     end
+    self._POSTING = false
     return new_value
 end
 
@@ -97,7 +110,7 @@ function _semaphore:wait(timeout)
     end
 
     -- wait semaphore
-    self._WAITING:insert(running)
+    self._WAITING:push(running)
     if timeout > 0 then
         scheduler:_timer():post(function (cancel)
             if running:is_suspended() then
@@ -113,15 +126,16 @@ function _semaphore:wait(timeout)
         local value = self._VALUE
         if value > 0 then
             self._VALUE = value - 1
-            self._WAITING:remove(running)
             return value
         end
 
         if timeout then
             break
         end
+
+        -- continue to wait it
+        self._WAITING:push(running)
     end
-    self._WAITING:remove(running)
     return 0
 end
 

@@ -32,6 +32,231 @@ function _print_backchars(backnum)
     end
 end
 
+-- init progress
+function _init_progress(state, opt)
+    opt = opt or {}
+
+    -- init progress helper
+    -- we need to hide wait characters if is not a tty
+    state.show_progress = io.isatty() and (opt.progress or opt.showtips)
+    state.backnum = 0
+    if state.show_progress then
+        local progress_opt = nil
+        if type(state.show_progress) == "table" then
+            progress_opt = state.show_progress
+        end
+        state.progress_helper = progress.new(nil, progress_opt)
+    end
+
+    -- init progress wrapper
+    state.finished_count = 0
+    state.progress_factor = opt.progress_factor or 1.0
+    local progress_wrapper = {}
+    progress_wrapper.current = function ()
+        return state.finished_count
+    end
+    progress_wrapper.total = function ()
+        return state.total
+    end
+    progress_wrapper.percent = function ()
+        local total = state.total
+        if total and total > 0 then
+            return math.floor((state.finished_count * state.progress_factor * 100) / total)
+        else
+            return 0
+        end
+    end
+    debug.setmetatable(progress_wrapper, {
+        __tostring = function ()
+            return string.format("%d%%", progress_wrapper.percent())
+        end
+    })
+    state.progress_wrapper = progress_wrapper
+end
+
+-- the timer loop
+function _timer_loop(state)
+    local timeout = state.timeout
+    while not state.stop do
+        os.sleep(timeout)
+        if not state.stop then
+            local indices
+            if state.running_jobs_indices then
+                indices = table.keys(state.running_jobs_indices)
+            end
+            state.on_timer(indices)
+        end
+    end
+end
+
+-- the progress loop
+function _progress_loop(state)
+    local timeout = state.timeout
+    local progress_helper = state.progress_helper
+    while not state.stop do
+        os.sleep(timeout)
+        if not state.stop then
+
+            -- show waitchars
+            local tips = nil
+            local waitobjs = scheduler.co_group_waitobjs(state.group_name)
+            if waitobjs:size() > 0 then
+                local names = {}
+                for _, obj in waitobjs:keys() do
+                    if obj:otype() == scheduler.OT_PROC then
+                        table.insert(names, obj:name())
+                    elseif obj:otype() == scheduler.OT_SOCK then
+                        table.insert(names, "sock")
+                    elseif obj:otype() == scheduler.OT_PIPE then
+                        table.insert(names, "pipe")
+                    end
+                end
+                names = table.unique(names)
+                if #names > 0 then
+                    names = table.concat(names, ",")
+                    if #names > 16 then
+                        names = names:sub(1, 16) .. ".."
+                    end
+                    tips = string.format("(%d/%s)", waitobjs:size(), names)
+                end
+            end
+
+            -- print back characters
+            progress_helper:clear()
+            _print_backchars(state.backnum)
+
+            if tips then
+                cprintf("${dim}%s${clear} ", tips)
+                state.backnum = #tips + 1
+            end
+            progress_helper:write()
+        end
+    end
+end
+
+-- consume jobs
+function _consume_jobs_loop(state, run_in_remote)
+    local jobs = state.jobs
+    local jobs_cb = state.jobs_cb
+    local total = state.total
+    local curdir = state.curdir
+    local semaphore = state.semaphore
+    local distcc_semaphore = state.distcc_semaphore
+    local co_running = scheduler.co_running()
+    while state.finished_count < total and not state.stop do
+
+        -- get free job
+        local job
+        local job_func = jobs_cb
+        local job_distcc = false
+        if not job_func then
+            job = jobs:getfree()
+            if job then
+                if job.distcc then
+                    job_distcc = true
+                end
+                job_func = job.run
+                -- notify other coroutines to consume jobs
+                if run_in_remote then
+                    if state.distcc_waiting_count > 0 then
+                        local left_count = total - state.finished_count
+                        local post_count = math.min(left_count, state.distcc_waiting_count)
+                        distcc_semaphore:post(post_count)
+                    end
+                else
+                    if state.waiting_count > 0 then
+                        local left_count = total - state.finished_count
+                        local post_count = math.min(left_count, state.waiting_count)
+                        semaphore:post(post_count)
+                    end
+                end
+            elseif state.finished_count < total then
+                -- no free jobs now, wait other coroutines
+                if run_in_remote then
+                    state.distcc_waiting_count = state.distcc_waiting_count + 1
+                    distcc_semaphore:wait(-1)
+                    state.distcc_waiting_count = state.distcc_waiting_count - 1
+                else
+                    state.waiting_count = state.waiting_count + 1
+                    semaphore:wait(-1)
+                    state.waiting_count = state.waiting_count - 1
+                end
+            else
+                break
+            end
+        end
+
+        try
+        {
+            function ()
+
+                -- mark the current coroutine to run remote job
+                if run_in_remote and co_running then
+                    co_running:data_set("distcc.distccjob", job_distcc)
+                end
+
+                -- run job
+                local job_index = state.finished_count + 1
+                state.running_jobs_indices[job_index] = job_index
+                if job_func then
+                    if curdir then
+                        os.cd(curdir)
+                    end
+                    state.finished_count = state.finished_count + 1
+                    job_func(job_index, total, {progress = state.progress_wrapper})
+                end
+                state.running_jobs_indices[job_index] = nil
+            end,
+            catch
+            {
+                function (errors)
+                    -- stop timer and disable show waitchars first
+                    state.stop = true
+
+                    -- remove wait charactor
+                    if state.show_progress then
+                        _print_backchars(state.backnum)
+                        state.progress_helper:stop()
+                    end
+
+                    -- we need re-throw this errors outside scheduler
+                    state.abort = true
+                    if state.abort_errors == nil then
+                        state.abort_errors = errors
+                    end
+
+                    -- kill all waited objects in this group
+                    local waitobjs = scheduler.co_group_waitobjs(state.group_name)
+                    if waitobjs:size() > 0 then
+                        for _, obj in waitobjs:keys() do
+                            -- TODO, kill pipe is not supported now
+                            if obj.kill then
+                                obj:kill()
+                            end
+                        end
+                    end
+                end
+            },
+            finally
+            {
+                function ()
+                    if job then
+                        jobs:remove(job)
+                    end
+                end
+            }
+        }
+    end
+
+    -- notify left waiting coroutines
+    if state.distcc_waiting_count > 0 then
+        distcc_semaphore:post(state.distcc_waiting_count)
+    end
+    if state.waiting_count > 0 then
+        semaphore:post(state.waiting_count)
+    end
+end
+
 -- asynchronous run jobs
 --
 -- e.g.
@@ -54,32 +279,26 @@ end
 -- runjobs("test", jobs, {comax = 6, distcc = distcc_build_client.singleton()}
 --
 function main(name, jobs, opt)
-
-    -- init options
     opt = opt or {}
-    local total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
-    local comax = opt.comax or math.min(total, 4)
-    local distcc = opt.distcc
-    local timeout = opt.timeout or 500
-    local group_name = name
-    local jobs_cb = type(jobs) == "function" and jobs or nil
-    assert(timeout < 60000, "runjobs: invalid timeout!")
+
+    -- init state
+    local state = {}
+    state.total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
+    state.comax = opt.comax and tonumber(opt.comax) or math.min(state.total, 4)
+    state.timeout = opt.timeout or 500
+    state.group_name = name
+    state.jobs_cb = type(jobs) == "function" and jobs or nil
+    assert(state.timeout < 60000, "runjobs: invalid timeout!")
 
     -- build jobs queue
     if type(jobs) == "table" and jobs.build then
         jobs = jobs:build()
     end
     assert(jobs, "runjobs: no jobs!")
+    state.jobs = jobs
 
     -- show waiting tips?
-    local showprogress = io.isatty() and (opt.progress or opt.showtips) -- we need to hide wait characters if is not a tty
-    local progress_helper
-    local backnum = 0
-    if showprogress then
-        local opt = nil
-        if type(showprogress) == 'table' then opt = showprogress end
-        progress_helper = progress.new(nil, opt)
-    end
+    _init_progress(state, opt)
 
     -- isolate environments
     local is_isolated = false
@@ -90,218 +309,58 @@ function main(name, jobs, opt)
     end
 
     -- run timer
-    local stop = false
-    local running_jobs_indices = {}
+    state.stop = false
+    state.running_jobs_indices = {}
     local group_timer
     if opt.on_timer then
-        group_timer = group_name .. "/timer"
+        state.on_timer = opt.on_timer
+        group_timer = state.group_name .. "/timer"
         scheduler.co_group_begin(group_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, function ()
-                while not stop do
-                    os.sleep(timeout)
-                    if not stop then
-                        local indices
-                        if running_jobs_indices then
-                            indices = table.keys(running_jobs_indices)
-                        end
-                        opt.on_timer(indices)
-                    end
-                end
-            end)
+            scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, _timer_loop, state)
         end)
-    elseif showprogress then
-        group_timer = group_name .. "/timer"
+    elseif state.show_progress then
+        group_timer = state.group_name .. "/timer"
         scheduler.co_group_begin(group_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, function ()
-                while not stop do
-                    os.sleep(timeout)
-                    if not stop then
-
-                        -- show waitchars
-                        local tips = nil
-                        local waitobjs = scheduler.co_group_waitobjs(group_name)
-                        if waitobjs:size() > 0 then
-                            local names = {}
-                            for _, obj in waitobjs:keys() do
-                                if obj:otype() == scheduler.OT_PROC then
-                                    table.insert(names, obj:name())
-                                elseif obj:otype() == scheduler.OT_SOCK then
-                                    table.insert(names, "sock")
-                                elseif obj:otype() == scheduler.OT_PIPE then
-                                    table.insert(names, "pipe")
-                                end
-                            end
-                            names = table.unique(names)
-                            if #names > 0 then
-                                names = table.concat(names, ",")
-                                if #names > 16 then
-                                    names = names:sub(1, 16) .. ".."
-                                end
-                                tips = string.format("(%d/%s)", waitobjs:size(), names)
-                            end
-                        end
-
-                        -- print back characters
-                        progress_helper:clear()
-                        _print_backchars(backnum)
-
-                        if tips then
-                            cprintf("${dim}%s${clear} ", tips)
-                            backnum = #tips + 1
-                        end
-                        progress_helper:write()
-                    end
-                end
-            end)
+            scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, _progress_loop, state)
         end)
     end
 
     -- run jobs
-    local index = 0
-    local count = 0
-    local abort = false
-    local abort_errors
-    local progress_wrapper = {}
-    local job_pending
-    local progress_factor = opt.progress_factor or 1.0
-    progress_wrapper.current = function ()
-        return count
-    end
-    progress_wrapper.total = function ()
-        return total
-    end
-    progress_wrapper.percent = function ()
-        if total and total > 0 then
-            return math.floor((count * progress_factor * 100) / total)
-        else
-            return 0
+    local distcc = opt.distcc
+    state.abort = false
+    state.abort_errors = nil
+    state.finished_count = 0
+    state.curdir = opt.curdir
+    state.waiting_count = 0
+    state.distcc_waiting_count = 0
+    scheduler.co_group_begin(state.group_name, function (co_group)
+        state.semaphore = scheduler.co_semaphore(state.group_name, 0)
+        if distcc then
+            state.distcc_semaphore = scheduler.co_semaphore(state.group_name .. "/distcc", 0)
         end
-    end
-    debug.setmetatable(progress_wrapper, {
-        __tostring = function ()
-            return string.format("%d%%", progress_wrapper.percent())
+        -- @note we can set `remote_only = true` to run all jobs in remote only
+        local local_comax = 0
+        if not opt.remote_only then
+            local_comax = math.min(state.total, state.comax)
+            for id = 1, local_comax do
+                scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, false)
+            end
         end
-    })
-    while index < total do
-        scheduler.co_group_begin(group_name, function (co_group)
-            local freemax = comax - #co_group
-            local local_max = math.min(index + freemax, total)
-            local total_max = local_max
-            if distcc then
-                total_max = math.min(index + freemax + distcc:freejobs(), total)
+        if distcc then
+            local left_comax = state.total - local_comax
+            local remote_comax = math.min(distcc:freejobs(), left_comax)
+            for id = 1, remote_comax do
+                scheduler.co_start_withopt({name = name .. '/distcc/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, true)
             end
-            local jobfunc = jobs_cb
-            while index < total_max do
-
-                -- uses job pool?
-                local job
-                local jobname
-                local distccjob = false
-                if not jobs_cb then
-
-                    -- get free job
-                    job = job_pending and job_pending or jobs:getfree()
-                    if not job then
-                        break
-                    end
-
-                    -- we can only continue to run the job with distcc if local jobs are full
-                    if distcc and index >= local_max then
-                        if job.distcc then
-                            distccjob = true
-                        else
-                            job_pending = job
-                            break
-                        end
-                    end
-
-                    -- get run function
-                    jobfunc = job.run
-                    jobname = job.name
-                    job_pending = nil
-                else
-                    jobname = tostring(index)
-                end
-
-                -- start this job
-                index = index + 1
-                scheduler.co_start_withopt({name = name .. '/' .. jobname, isolate = opt.isolate}, function(i)
-                    try
-                    {
-                        function()
-                            if stop then
-                                return
-                            end
-                            if distcc then
-                                local co_running = scheduler.co_running()
-                                if co_running then
-                                    co_running:data_set("distcc.distccjob", distccjob)
-                                end
-                            end
-                            running_jobs_indices[i] = i
-                            if jobfunc then
-                                if opt.curdir then
-                                    os.cd(opt.curdir)
-                                end
-                                count = count + 1
-                                jobfunc(i, total, {progress = progress_wrapper})
-                            end
-                            running_jobs_indices[i] = nil
-                        end,
-                        catch
-                        {
-                            function (errors)
-
-                                -- stop timer and disable show waitchars first
-                                stop = true
-
-                                -- remove wait charactor
-                                if showprogress then
-                                    _print_backchars(backnum)
-                                    progress_helper:stop()
-                                end
-
-                                -- we need re-throw this errors outside scheduler
-                                abort = true
-                                if abort_errors == nil then
-                                    abort_errors = errors
-                                end
-
-                                -- kill all waited objects in this group
-                                local waitobjs = scheduler.co_group_waitobjs(group_name)
-                                if waitobjs:size() > 0 then
-                                    for _, obj in waitobjs:keys() do
-                                        -- TODO, kill pipe is not supported now
-                                        if obj.kill then
-                                            obj:kill()
-                                        end
-                                    end
-                                end
-                            end
-                        },
-                        finally
-                        {
-                            function ()
-                                if job then
-                                    jobs:remove(job)
-                                end
-                            end
-                        }
-                    }
-                end, index)
-            end
-        end)
-
-        -- wait for free jobs
-        scheduler.co_group_wait(group_name, {limit = 1})
-    end
+        end
+    end)
 
     -- wait all jobs exited
-    scheduler.co_group_wait(group_name)
+    scheduler.co_group_wait(state.group_name)
 
     -- wait timer job exited
     if group_timer then
-        stop = true
+        state.stop = true
         scheduler.co_group_wait(group_timer)
     end
 
@@ -311,14 +370,14 @@ function main(name, jobs, opt)
     end
 
     -- remove wait charactor
-    if showprogress then
-        _print_backchars(backnum)
-        progress_helper:stop()
+    if state.show_progress then
+        _print_backchars(state.backnum)
+        state.progress_helper:stop()
     end
 
     -- do exit callback
     if opt.on_exit then
-        opt.on_exit(abort_errors)
+        opt.on_exit(state.abort_errors)
     end
 
     -- re-throw abort errors
@@ -327,7 +386,7 @@ function main(name, jobs, opt)
     -- because his causes a direct exit from the entire runloop and
     -- a quick escape from nested try-catch blocks and coroutines groups.
     -- so we can not catch runjobs errors, e.g. build fails
-    if abort then
-        raise(abort_errors)
+    if state.abort then
+        raise(state.abort_errors)
     end
 end
