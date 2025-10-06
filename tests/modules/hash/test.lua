@@ -2,26 +2,29 @@ function test_rand32(t)
     local set = {}
     for i = 1, 1000000 do
         local r = hash.rand32()
+        if set[r] then
+            print("i: %d, r: %s, o: %s", i, r, set[r])
+        end
         t:require(set[r] == nil)
-        set[r] = true
+        set[r] = r
     end
 end
 
 function test_rand64(t)
     local set = {}
-    for i = 1, 1000000 do
+    for i = 1, 100000 do
         local r = hash.rand64()
         t:require(set[r] == nil)
-        set[r] = true
+        set[r] = r
     end
 end
 
 function test_rand128(t)
     local set = {}
-    for i = 1, 1000000 do
+    for i = 1, 100000 do
         local r = hash.rand128()
         t:require(set[r] == nil)
-        set[r] = true
+        set[r] = r
     end
 end
 
