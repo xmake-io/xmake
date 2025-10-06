@@ -410,7 +410,7 @@ function scheduler:_co_curenvs_update(envs)
     for _, key in ipairs(table.orderkeys(envs)) do
         envs_hash = envs_hash .. key:upper() .. envs[key]
     end
-    envs_hash = hash.strhash32(envs_hash)
+    envs_hash = hash.strhash64(envs_hash)
     self._CO_CURENVS_HASH = envs_hash
 
     -- save the current directory for each coroutine

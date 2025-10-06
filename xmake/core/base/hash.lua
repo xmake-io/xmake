@@ -147,7 +147,7 @@ end
 -- generate random32 hash
 -- @note it is easy to trigger hash conflicts
 function hash.rand32()
-    if false then --hash._rand32 then
+    if hash._rand32 then
         return hash._rand32()
     else
         return hash.strhash32(tostring(math.random()))

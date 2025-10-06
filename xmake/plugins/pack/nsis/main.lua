@@ -81,11 +81,6 @@ function _get_makensis()
     return makensis, oldenvs
 end
 
--- get unique tag
-function _get_unique_tag(content)
-    return hash.strhash32(content)
-end
-
 -- translate the file path
 function _translate_filepath(package, filepath)
     return filepath:replace(package:install_rootdir(), "$InstDir", {plain = true})

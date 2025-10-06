@@ -273,7 +273,6 @@ function load_moduleinfo(target, sourcefile)
     if os.isfile(dependfile) then
         local data = io.load(dependfile)
         if data then
-            print(dependfile, data)
             moduleinfo = json.decode(data.moduleinfo)
             moduleinfo.sourcefile = sourcefile
         end
@@ -348,7 +347,7 @@ function modules_cachedir(target, opt)
 end
 
 function get_modulehash(sourcefile)
-    return hash.strhash32(sourcefile)
+    return hash.strhash64(sourcefile)
 end
 
 function get_metafile(target, module)
