@@ -347,7 +347,7 @@ function modules_cachedir(target, opt)
 end
 
 function get_modulehash(sourcefile)
-    return hash.strhash32(sourcefile)
+    return hash.strhash64(sourcefile)
 end
 
 function get_metafile(target, module)

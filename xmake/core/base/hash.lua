@@ -145,6 +145,7 @@ function hash.strhash128(str)
 end
 
 -- generate random32 hash
+-- @note it is easy to trigger hash conflicts
 function hash.rand32()
     if hash._rand32 then
         return hash._rand32()
