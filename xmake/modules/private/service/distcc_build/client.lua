@@ -25,6 +25,7 @@ import("core.base.socket")
 import("core.base.option")
 import("core.base.scheduler")
 import("core.project.policy")
+import("core.project.project")
 import("core.project.config", {alias = "project_config"})
 import("lib.detect.find_tool")
 import("private.service.client_config", {alias = "config"})
@@ -262,7 +263,7 @@ function distcc_build_client:compile(program, argv, opt)
         -- do distcc compilation
         if not cached then
             -- we just compile the large preprocessed file in remote
-            if os.filesize(cppinfo.cppfile) > 4096 and not session:is_unreachable() then
+            if (self:remote_only() or os.filesize(cppinfo.cppfile) > 4096) and not session:is_unreachable() then
                 local compile_fallback = opt.compile_fallback
                 if compile_fallback then
                     local ok = try
@@ -389,6 +390,11 @@ end
 -- get working directory
 function distcc_build_client:workdir()
     return self._WORKDIR
+end
+
+-- build on only remote machines
+function distcc_build_client:remote_only()
+    return project.policy("build.distcc.remote_only") == true
 end
 
 -- get free host
