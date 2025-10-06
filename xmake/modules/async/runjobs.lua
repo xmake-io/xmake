@@ -135,21 +135,25 @@ function _progress_loop(state)
 end
 
 -- consume jobs
--- TODO distcc
-function _consume_jobs_loop(state)
+function _consume_jobs_loop(state, run_in_remote)
     local jobs = state.jobs
     local jobs_cb = state.jobs_cb
     local total = state.total
     local curdir = state.curdir
     local semaphore = state.semaphore
+    local co_running = scheduler.co_running()
     while state.finished_count < total and not state.stop do
 
         -- get free job
         local job
         local job_func = jobs_cb
+        local job_distcc = false
         if not job_func then
             job = jobs:getfree()
             if job then
+                if job.distcc then
+                    job_distcc = true
+                end
                 job_func = job.run
                 -- notify other coroutines to consume jobs
                 if state.waiting_count > 0 then
@@ -170,6 +174,12 @@ function _consume_jobs_loop(state)
         try
         {
             function ()
+
+                -- mark the current coroutine to run remote job
+                if run_in_remote and co_running then
+                    co_running:data_set("distcc.distccjob", job_distcc)
+                end
+
                 -- run job
                 local job_index = state.finished_count + 1
                 state.running_jobs_indices[job_index] = job_index
@@ -257,7 +267,6 @@ function main(name, jobs, opt)
     local state = {}
     state.total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
     state.comax = opt.comax and tonumber(opt.comax) or math.min(state.total, 4)
-    state.distcc = opt.distcc
     state.timeout = opt.timeout or 500
     state.group_name = name
     state.jobs_cb = type(jobs) == "function" and jobs or nil
@@ -306,8 +315,17 @@ function main(name, jobs, opt)
     state.curdir = opt.curdir
     state.semaphore = scheduler.co_semaphore(state.group_name, 0)
     scheduler.co_group_begin(state.group_name, function (co_group)
-        for id = 1, math.min(state.total, state.comax) do
-            scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state)
+        local local_comax = math.min(state.total, state.comax)
+        for id = 1, local_comax do
+            scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, false)
+        end
+        local distcc = opt.distcc
+        if distcc then
+            local left_comax = state.total - local_comax
+            local remote_comax = math.min(distcc:freejobs(), left_comax)
+            for id = 1, remote_comax do
+                scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, true)
+            end
         end
     end)
 
