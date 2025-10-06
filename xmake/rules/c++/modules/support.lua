@@ -273,6 +273,7 @@ function load_moduleinfo(target, sourcefile)
     if os.isfile(dependfile) then
         local data = io.load(dependfile)
         if data then
+            print(dependfile, data)
             moduleinfo = json.decode(data.moduleinfo)
             moduleinfo.sourcefile = sourcefile
         end
