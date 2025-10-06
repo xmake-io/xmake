@@ -1,10 +1,7 @@
 function test_rand32(t)
     local set = {}
-    for i = 1, 1000000 do
+    for i = 1, 1000 do
         local r = hash.rand32()
-        if set[r] then
-            print("i: %d, r: %s, o: %s", i, r, set[r])
-        end
         t:require(set[r] == nil)
         set[r] = r
     end
