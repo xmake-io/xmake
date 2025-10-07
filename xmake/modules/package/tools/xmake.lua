@@ -284,7 +284,7 @@ function _get_configs(package, configs, opt)
         table.insert(configs, "--ccachedir=" .. path.join(path.directory(package:cachedir()), "build_cache"))
         table.insert(policies_list, "build.ccache")
     end
-    if policies then
+    if #policies_list > 0 then
         table.insert(configs, "--policies=" .. table.concat(policies_list, ","))
     end
 
