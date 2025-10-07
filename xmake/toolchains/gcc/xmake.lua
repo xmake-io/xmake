@@ -47,6 +47,7 @@ toolchain("gcc" .. suffix)
     end)
 
     on_load(function (toolchain)
+        import("core.base.option")
 
         -- add march flags
         local march
@@ -61,6 +62,36 @@ toolchain("gcc" .. suffix)
             toolchain:add("asflags", march)
             toolchain:add("ldflags", march)
             toolchain:add("shflags", march)
+        end
+
+        local host_arch = os.arch()
+        local target_arch = toolchain:arch()
+
+        if host_arch == target_arch then
+            -- Early exit: prevents further configuration of this toolchain
+            return
+        elseif option.get("verbose") then
+            cprint("${bright yellow}cross compiling from %s to %s", host_arch, target_arch)
+        end
+
+        local target
+        if toolchain:is_arch("x86_64", "x64") then
+            target = "x86_64"
+        elseif toolchain:is_arch("i386", "x86", "i686") then
+            target = "i686"
+        elseif toolchain:is_arch("arm64", "aarch64") then
+            target = "aarch64"
+        elseif toolchain:is_arch("arm") then
+            target = "armv7"
+        end
+
+        -- TODO: Add support for more platforms, such as mingw.
+        if target and toolchain:is_plat("linux") then
+            target = target .. "-linux-gnu-"
+            toolchain:set("toolset", "cc", target .. "gcc" .. suffix)
+            toolchain:set("toolset", "cxx", target .. "g++" .. suffix, "gcc" .. suffix)
+            toolchain:set("toolset", "ld", target .. "g++" .. suffix, "gcc" .. suffix)
+            toolchain:set("toolset", "sh", target .. "g++" .. suffix, "gcc" .. suffix)
         end
     end)
 end

@@ -51,13 +51,46 @@ function _add_vsenv(toolchain, name, curenvs)
 end
 
 function main(toolchain, suffix)
+    import("core.base.option")
+    import("core.project.project")
+
+    if project.policy("build.optimization.lto") then
+        toolchain:set("toolset", "ar",  "llvm-ar" .. suffix)
+        toolchain:set("toolset", "ranlib",  "llvm-ranlib" .. suffix)
+    end
+
+    local march
+    if toolchain:is_arch("x86_64", "x64", "arm64") then
+        march = "-m64"
+    elseif toolchain:is_arch("i386", "x86", "i686") then
+        march = "-m32"
+    end
+    if march then
+        toolchain:add("cxflags", march)
+        toolchain:add("mxflags", march)
+        toolchain:add("asflags", march)
+        toolchain:add("ldflags", march)
+        toolchain:add("shflags", march)
+    end
+    if toolchain:is_plat("windows") then
+        toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
+    end
+
+    local host_arch = os.arch()
+    local target_arch = toolchain:arch()
+
+    if host_arch == target_arch then
+        -- Early exit: prevents further configuration of this toolchain
+        return
+    elseif option.get("verbose") then
+        cprint("${bright yellow}cross compiling from %s to %s", host_arch, target_arch)
+    end
+
     local target
     if toolchain:is_arch("x86_64", "x64") then
         target = "x86_64"
-        march = "-m64"
     elseif toolchain:is_arch("i386", "x86", "i686") then
         target = "i686"
-        march = "-m32"
     elseif toolchain:is_arch("arm64", "aarch64") then
         target = "aarch64"
     elseif toolchain:is_arch("arm") then
