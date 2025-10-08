@@ -22,7 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
-imports("private.utils.toolchain", {alias = "toolchain_utils"})
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 function _check_clang_cl(toolchain, vcvars)
     local paths

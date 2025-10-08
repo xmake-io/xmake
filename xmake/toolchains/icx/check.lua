@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_icxenv")
 import("lib.detect.find_tool")
-imports("private.utils.toolchain", {alias = "toolchain_utils"})
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 function _check_cl(toolchain, vcvars)
     return find_tool("cl.exe", {force = true, envs = vcvars})
