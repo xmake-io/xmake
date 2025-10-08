@@ -17,10 +17,42 @@
 -- @author      ruki
 -- @file        toolchain.lua
 --
+
+-- imports
+import("core.base.option")
+import("core.project.config")
 import("core.base.semver")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
+import("lib.detect.find_tool")
+import("detect.sdks.find_vstudio")
+
+-- check vc build tools sdk
+function check_vc_build_tools(toolchain, sdkdir, check)
+    local opt = {}
+    opt.sdkdir = sdkdir
+    opt.vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
+    opt.vs_sdkver = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
+
+    local vcvarsall = find_vstudio.find_build_tools(opt)
+    if not vcvarsall then
+        return
+    end
+
+    local vcvars = vcvarsall[toolchain:arch()]
+    if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
+        toolchain:config_set("vcvars", vcvars)
+        toolchain:config_set("vcarchs", table.orderkeys(vcvarsall))
+        toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
+        toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
+
+        if check then
+            check(vcvars)
+        end
+        return vcvars
+    end
+end
 
 -- is the compatible with the host?
 function is_compatible_with_host(name)
