@@ -32,7 +32,7 @@ function _check_clang_cl(toolchain, vcvars)
     end
     local result = find_tool("clang-cl", {force = true, paths = paths, envs = vcvars})
     if result then
-        cprint("checking for LLVM Clang C/C++ Compiler (%s) ... ${color.success}", toolchain:arch())
+        cprint("checking for LLVM Clang C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
     end
     return result
 end

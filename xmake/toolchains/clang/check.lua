@@ -31,7 +31,7 @@ function _check_clang(toolchain, vcvars, suffix)
     end
     local result = find_tool("clang" .. suffix, {force = true, paths = paths, envs = vcvars})
     if result then
-        cprint("checking for LLVM Clang C/C++ Compiler (%s) ... ${color.success}", toolchain:arch())
+        cprint("checking for LLVM Clang C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
     end
     return result
 end

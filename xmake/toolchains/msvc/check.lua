@@ -27,7 +27,7 @@ import("private.utils.toolchain", {alias = "toolchain_utils"})
 function _check_cl(toolchain, vcvars)
     local cl = find_tool("cl.exe", {force = true, envs = vcvars})
     if cl then
-        cprint("checking for Microsoft C/C++ Compiler (%s) ... ${color.success}", toolchain:arch())
+        cprint("checking for Microsoft C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
     end
     return cl
 end
