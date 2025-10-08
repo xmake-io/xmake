@@ -149,6 +149,11 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
         if implibfile then
             table.insert(argv, "/implib:" .. implibfile)
         end
+    elseif targetkind == "binary" then
+        local implibfile = _get_implibfile(self, opt)
+        if implibfile then
+            table.insert(argv, "/implib:" .. implibfile)
+        end
     end
     return self:program(), argv
 end

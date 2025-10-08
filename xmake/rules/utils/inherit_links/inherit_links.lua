@@ -66,7 +66,7 @@ function main(target)
     end
 
     -- export target links and linkdirs
-    if target:is_shared() or target:is_static() then
+    if target:is_shared() or target:is_static() or target:is_binary() then
         local targetfile = target:targetfile()
 
         -- rust maybe will disable inherit links, only inherit linkdirs

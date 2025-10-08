@@ -22,7 +22,7 @@
 rule("platform.windows.def")
     set_extensions(".def")
     on_config("windows", "mingw", function (target)
-        if not target:is_shared() then
+        if not target:is_shared() and not target:is_binary() then
             return
         end
 
@@ -41,7 +41,7 @@ rule("platform.windows.def")
                     end
                 end
                 -- https://github.com/xmake-io/xmake/pull/4901
-                target:add("shflags", flag, {force = true})
+                target:add("ldflags", flag, {force = true})
                 target:data_add("linkdepfiles", sourcefile)
                 break;
             end

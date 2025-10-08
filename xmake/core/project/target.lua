@@ -1662,7 +1662,7 @@ end
 --
 function _instance:artifactfile(kind)
     if kind == "implib" then
-        if self:is_shared() and self:is_plat("windows", "mingw") then
+        if (self:is_shared() or self:is_binary()) and self:is_plat("windows", "mingw") then
             return path.join(self:_artifactdir("libdir"), path.basename(self:filename()) .. (self:is_plat("mingw") and ".dll.a" or ".lib"))
         end
     end
@@ -1695,7 +1695,7 @@ end
 
 -- get the link name only for static/shared library
 function _instance:linkname()
-    if self:is_static() or self:is_shared() then
+    if self:is_static() or self:is_shared() or self:is_binary() then
         local filename = self:get("filename")
         if filename then
             return target.linkname(filename)
