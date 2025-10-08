@@ -764,7 +764,8 @@ function _install_packages(requires, opt)
             table.insert(packages_unsupported_maps[key], instance)
         end
         for key, instances in pairs(packages_unsupported_maps) do
-            cprint("${bright color.warning}note: ${clear}the following packages are unsupported on %s:", key)
+            cprint("${bright color.warning}note: ${clear}the following packages are unsupported on %s,", key)
+            cprint("${clear}you can try running ${bright}`xrepo update-repo`${clear} to update repositories or open a pr to improve these packages:")
             for _, instance in ipairs(instances) do
                 cprint("  ${yellow}->${clear} %s %s ${dim}%s",
                     instance:displayname(), instance:version_str() or "", package.get_configs_str(instance))
