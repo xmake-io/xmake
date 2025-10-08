@@ -20,7 +20,21 @@
 
 -- imports
 import("core.project.config")
+import("lib.detect.find_tool")
 imports("private.utils.toolchain", {alias = "toolchain_utils"})
+
+function _check_clang(toolchain, vcvars, suffix)
+    local paths
+    local pathenv = os.getenv("PATH")
+    if pathenv then
+        paths = path.splitenv(pathenv)
+    end
+    local result = find_tool("clang" .. suffix, {force = true, paths = paths, envs = vcvars})
+    if result then
+        cprint("checking for LLVM Clang C/C++ Compiler (%s) ... ${color.success}", toolchain:arch())
+    end
+    return result
+end
 
 function main(toolchain, suffix)
 
@@ -29,19 +43,28 @@ function main(toolchain, suffix)
         return
     end
 
-    local sdkdir = toolchain:sdkdir()
-    if sdkdir then
-        local check = function (vcvars)
-            local paths
-            local pathenv = os.getenv("PATH")
-            if pathenv then
-                paths = path.splitenv(pathenv)
-            end
-            local clang = find_tool("clang" .. suffix, {version = true, force = true, paths = paths, envs = vcvars})
-            if clang and clang.version then
-                cprint("checking for LLVM Clang C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), clang.version)
-            end
+    -- @see https://github.com/xmake-io/xmake/pull/679
+    local cc  = path.basename(config.get("cc") or "clang"):lower()
+    local cxx = path.basename(config.get("cxx") or "clang++"):lower()
+    if cc == "clang" or cxx == "clang" or cxx == "clang++" then
+        local check = function (toolchain, vcvars)
+            return _check_clang(toolchain, vcvars, suffix)
         end
-        return toolchain_utils.check_vc_build_tools(toolchain, sdkdir, check)
+        local sdkdir = toolchain:sdkdir()
+        if sdkdir then
+            return toolchain_utils.check_vc_build_tools(toolchain, sdkdir, _check_clang)
+        else
+            for _, package in ipairs(toolchain:packages()) do
+                local installdir = package:installdir()
+                if installdir and os.isdir(installdir) then
+                    local result = toolchain_utils.check_vc_build_tools(toolchain, installdir, _check_clang)
+                    if result then
+                        return result
+                    end
+                end
+            end
+            return toolchain_utils.check_vstudio(toolchain, _check_clang)
+        end
     end
 end
+

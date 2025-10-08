@@ -21,92 +21,20 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
-import("detect.sdks.find_vstudio")
 import("lib.detect.find_tool")
 imports("private.utils.toolchain", {alias = "toolchain_utils"})
 
-function _find_clang_cl(vcvars)
+function _check_clang_cl(toolchain, vcvars)
     local paths
     local pathenv = os.getenv("PATH")
     if pathenv then
         paths = path.splitenv(pathenv)
     end
-    return find_tool("clang-cl", {version = true, force = true, paths = paths, envs = vcvars})
-end
-
--- attempt to check vs environment
-function _check_vsenv(toolchain)
-
-    -- has been checked?
-    local vs = toolchain:config("vs") or config.get("vs")
-    if vs then
-        vs = tostring(vs)
+    local result = find_tool("clang-cl", {force = true, paths = paths, envs = vcvars})
+    if result then
+        cprint("checking for LLVM Clang C/C++ Compiler (%s) ... ${color.success}", toolchain:arch())
     end
-    local vcvars = toolchain:config("vcvars")
-    if vs and vcvars then
-        return vs
-    end
-
-    -- find vstudio
-    local vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
-    local vs_sdkver  = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
-    local vstudio = find_vstudio({toolset = vs_toolset, sdkver = vs_sdkver})
-    if vstudio then
-
-        -- make order vsver
-        local vsvers = {}
-        for vsver, _ in pairs(vstudio) do
-            if not vs or vs ~= vsver then
-                table.insert(vsvers, vsver)
-            end
-        end
-        table.sort(vsvers, function (a, b) return tonumber(a) > tonumber(b) end)
-        if vs then
-            table.insert(vsvers, 1, vs)
-        end
-
-        -- get vcvarsall
-        for _, vsver in ipairs(vsvers) do
-            local vcvarsall = (vstudio[vsver] or {}).vcvarsall or {}
-            local vcvars = vcvarsall[toolchain:arch()]
-            if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
-
-                -- save vcvars
-                toolchain:config_set("vcvars", vcvars)
-                toolchain:config_set("vcarchs", table.orderkeys(vcvarsall))
-                toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
-                toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
-
-                -- check compiler
-                local program
-                local tool = _find_clang_cl(vcvars)
-                if tool then
-                    program = tool.program
-                end
-                if program then
-                    return vsver, tool
-                end
-            end
-        end
-    end
-end
-
--- check the visual studio
-function _check_vstudio(toolchain)
-    local vs, clang_cl = _check_vsenv(toolchain)
-    if vs then
-        if toolchain:is_global() then
-            config.set("vs", vs, {force = true, readonly = true})
-        end
-        toolchain:config_set("vs", vs)
-        cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
-        if clang_cl and clang_cl.version then
-            cprint("checking for LLVM Clang C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), clang_cl.version)
-        end
-    else
-        cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
-    end
-    return vs
+    return result
 end
 
 function main(toolchain)
@@ -121,29 +49,20 @@ function main(toolchain)
     local cxx = path.basename(config.get("cxx") or "clang-cl"):lower()
     local mrc = path.basename(config.get("mrc") or "rc"):lower()
     if cc == "clang-cl" or cxx == "clang-cl" or mrc == "rc" then
-        local check = function (vcvars)
-            local clang_cl = _find_clang_cl(vcvars)
-            if clang_cl and clang_cl.version then
-                cprint("checking for LLVM Clang C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), clang_cl.version)
-            end
-        end
         local sdkdir = toolchain:sdkdir()
         if sdkdir then
-            return toolchain_utils.check_vc_build_tools(toolchain, sdkdir, check)
+            return toolchain_utils.check_vc_build_tools(toolchain, sdkdir, _check_clang_cl)
         else
-            -- find it from packages
             for _, package in ipairs(toolchain:packages()) do
                 local installdir = package:installdir()
                 if installdir and os.isdir(installdir) then
-                    local result = toolchain_utils.check_vc_build_tools(toolchain, installdir, check)
+                    local result = toolchain_utils.check_vc_build_tools(toolchain, installdir, _check_clang_cl)
                     if result then
                         return result
                     end
                 end
             end
-
-            -- find it from system
-            return _check_vstudio(toolchain)
+            return toolchain_utils.check_vstudio(toolchain, _check_clang_cl)
         end
     end
 end
