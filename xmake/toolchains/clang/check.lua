@@ -52,18 +52,18 @@ function main(toolchain, suffix)
         end
         local sdkdir = toolchain:sdkdir()
         if sdkdir then
-            return toolchain_utils.check_vc_build_tools(toolchain, sdkdir, _check_clang)
+            return toolchain_utils.check_vc_build_tools(toolchain, sdkdir, check)
         else
             for _, package in ipairs(toolchain:packages()) do
                 local installdir = package:installdir()
                 if installdir and os.isdir(installdir) then
-                    local result = toolchain_utils.check_vc_build_tools(toolchain, installdir, _check_clang)
+                    local result = toolchain_utils.check_vc_build_tools(toolchain, installdir, check)
                     if result then
                         return result
                     end
                 end
             end
-            return toolchain_utils.check_vstudio(toolchain, _check_clang)
+            return toolchain_utils.check_vstudio(toolchain, check)
         end
     end
 end
