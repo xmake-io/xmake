@@ -22,84 +22,11 @@
 import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_ifortenv")
-import("detect.sdks.find_vstudio")
 import("lib.detect.find_tool")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
--- attempt to check vs environment
-function _check_vsenv(toolchain)
-
-    -- has been checked?
-    local vs = toolchain:config("vs") or config.get("vs")
-    if vs then
-        vs = tostring(vs)
-    end
-    local vcvars = toolchain:config("vcvars")
-    if vs and vcvars then
-        return vs
-    end
-
-    -- find vstudio
-    local vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
-    local vs_sdkver  = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
-    local vstudio = find_vstudio({toolset = vs_toolset, sdkver = vs_sdkver})
-    if vstudio then
-
-        -- make order vsver
-        local vsvers = {}
-        for vsver, _ in pairs(vstudio) do
-            if not vs or vs ~= vsver then
-                table.insert(vsvers, vsver)
-            end
-        end
-        table.sort(vsvers, function (a, b) return tonumber(a) > tonumber(b) end)
-        if vs then
-            table.insert(vsvers, 1, vs)
-        end
-
-        -- get vcvarsall
-        for _, vsver in ipairs(vsvers) do
-            local vcvarsall = (vstudio[vsver] or {}).vcvarsall or {}
-            local vcvars = vcvarsall[toolchain:arch()]
-            if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
-
-                -- save vcvars
-                toolchain:config_set("vcvars", vcvars)
-                toolchain:config_set("vcarchs", table.orderkeys(vcvarsall))
-                toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
-                toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
-
-                -- check compiler
-                local program
-                local paths
-                local pathenv = os.getenv("PATH")
-                if pathenv then
-                    paths = path.splitenv(pathenv)
-                end
-                local tool = find_tool("cl.exe", {force = true, paths = paths, envs = vcvars})
-                if tool then
-                    program = tool.program
-                end
-                if program then
-                    return vsver
-                end
-            end
-        end
-    end
-end
-
--- check the visual studio
-function _check_vstudio(toolchain)
-    local vs = _check_vsenv(toolchain)
-    if vs then
-        if toolchain:is_global() then
-            config.set("vs", vs, {force = true, readonly = true})
-        end
-        toolchain:config_set("vs", vs)
-        cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
-    else
-        cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
-    end
-    return vs
+function _check_cl(toolchain, vcvars)
+    return find_tool("cl.exe", {force = true, envs = vcvars})
 end
 
 -- check intel on windows
@@ -121,7 +48,7 @@ function _check_intel_on_windows(toolchain)
             if tool then
                 cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
                 toolchain:config_set("varsall", ifortvarsall)
-                return _check_vstudio(toolchain)
+                return toolchain_utils.check_vstudio(toolchain, _check_cl)
             end
         end
     end

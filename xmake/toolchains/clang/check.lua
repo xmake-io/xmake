@@ -18,41 +18,22 @@
 -- @file        xmake.lua
 --
 
-import("detect.sdks.find_vstudio")
-import("lib.detect.find_tool")
+-- imports
 import("core.project.config")
+import("lib.detect.find_tool")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
-function _check_vc_build_tools(toolchain, sdkdir, suffix)
-    local opt = {}
-    opt.sdkdir = sdkdir
-    opt.vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
-    opt.vs_sdkver = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
-
-    local vcvarsall = find_vstudio.find_build_tools(opt)
-    if not vcvarsall then
-        return
+function _check_clang(toolchain, vcvars, suffix)
+    local paths
+    local pathenv = os.getenv("PATH")
+    if pathenv then
+        paths = path.splitenv(pathenv)
     end
-
-    local vcvars = vcvarsall[toolchain:arch()]
-    if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
-        -- save vcvars
-        toolchain:config_set("vcvars", vcvars)
-        toolchain:config_set("vcarchs", table.orderkeys(vcvarsall))
-        toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
-        toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
-
-        -- check compiler
-        local paths
-        local pathenv = os.getenv("PATH")
-        if pathenv then
-            paths = path.splitenv(pathenv)
-        end
-        local clang = find_tool("clang" .. suffix, {version = true, force = true, paths = paths, envs = vcvars})
-        if clang and clang.version then
-            cprint("checking for LLVM Clang C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), clang.version)
-        end
-        return vcvars
+    local result = find_tool("clang" .. suffix, {force = true, paths = paths, envs = vcvars})
+    if result then
+        cprint("checking for LLVM Clang C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
     end
+    return result
 end
 
 function main(toolchain, suffix)
@@ -62,8 +43,28 @@ function main(toolchain, suffix)
         return
     end
 
-    local sdkdir = toolchain:sdkdir()
-    if sdkdir then
-        return _check_vc_build_tools(toolchain, sdkdir, suffix)
+    -- @see https://github.com/xmake-io/xmake/pull/679
+    local cc  = path.basename(config.get("cc") or "clang"):lower()
+    local cxx = path.basename(config.get("cxx") or "clang++"):lower()
+    if cc == "clang" or cxx == "clang" or cxx == "clang++" then
+        local check = function (toolchain, vcvars)
+            return _check_clang(toolchain, vcvars, suffix)
+        end
+        local sdkdir = toolchain:sdkdir()
+        if sdkdir then
+            return toolchain_utils.check_vc_build_tools(toolchain, sdkdir, check)
+        else
+            for _, package in ipairs(toolchain:packages()) do
+                local installdir = package:installdir()
+                if installdir and os.isdir(installdir) then
+                    local result = toolchain_utils.check_vc_build_tools(toolchain, installdir, check)
+                    if result then
+                        return result
+                    end
+                end
+            end
+            return toolchain_utils.check_vstudio(toolchain, check)
+        end
     end
 end
+

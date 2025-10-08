@@ -17,10 +17,103 @@
 -- @author      ruki
 -- @file        toolchain.lua
 --
+
+-- imports
+import("core.base.option")
+import("core.project.config")
 import("core.base.semver")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
+import("lib.detect.find_tool")
+import("detect.sdks.find_vstudio")
+
+-- attempt to check vs environment
+function _check_vsenv(toolchain, check)
+
+    -- have been checked?
+    local vs = toolchain:config("vs") or config.get("vs")
+    if vs then
+        vs = tostring(vs)
+    end
+    local vcvars = toolchain:config("vcvars")
+    if vs and vcvars then
+        return vs
+    end
+
+    -- find vstudio
+    local vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
+    local vs_sdkver  = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
+    local vstudio = find_vstudio({toolset = vs_toolset, sdkver = vs_sdkver})
+    if vstudio then
+
+        -- make order vsver
+        local vsvers = {}
+        for vsver, _ in pairs(vstudio) do
+            if not vs or vs ~= vsver then
+                table.insert(vsvers, vsver)
+            end
+        end
+        table.sort(vsvers, function (a, b) return tonumber(a) > tonumber(b) end)
+        if vs then
+            table.insert(vsvers, 1, vs)
+        end
+
+        -- get vcvarsall
+        for _, vsver in ipairs(vsvers) do
+            local vcvarsall = (vstudio[vsver] or {}).vcvarsall or {}
+            local vcvars = vcvarsall[toolchain:arch()]
+            if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
+                toolchain:config_set("vcvars", vcvars)
+                toolchain:config_set("vcarchs", table.orderkeys(vcvarsall))
+                toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
+                toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
+                if check and check(toolchain, vcvars) then
+                    return vsver
+                end
+            end
+        end
+    end
+end
+
+-- check the visual studio
+function check_vstudio(toolchain, check)
+    local vs = _check_vsenv(toolchain, check)
+    if vs then
+        if toolchain:is_global() then
+            config.set("vs", vs, {force = true, readonly = true})
+        end
+        toolchain:config_set("vs", vs)
+        cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
+    else
+        cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
+    end
+    return vs
+end
+
+-- check vc build tools sdk
+function check_vc_build_tools(toolchain, sdkdir, check)
+    local opt = {}
+    opt.sdkdir = sdkdir
+    opt.vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
+    opt.vs_sdkver = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
+
+    local vcvarsall = find_vstudio.find_build_tools(opt)
+    if not vcvarsall then
+        return
+    end
+
+    local vcvars = vcvarsall[toolchain:arch()]
+    if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
+        toolchain:config_set("vcvars", vcvars)
+        toolchain:config_set("vcarchs", table.orderkeys(vcvarsall))
+        toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
+        toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
+        if check and check(toolchain, vcvars) then
+            return vcvars
+        end
+    end
+end
 
 -- is the compatible with the host?
 function is_compatible_with_host(name)
