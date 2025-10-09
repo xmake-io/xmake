@@ -830,9 +830,9 @@ function _instance:builddir()
         if self:is_local() then
             local name = self:name():lower():gsub("::", "_")
             local rootdir = path.join(config.builddir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, self:version_str())
-            builddir = path.join(rootdir, "cache", "build_" .. self:buildhash():sub(1, 8))
+            builddir = path.join(rootdir, "cache", "build_" .. hash.rand64())
         else
-            builddir = "build_" .. self:buildhash():sub(1, 8)
+            builddir = "build_" .. hash.rand64()
         end
         self._BUILDDIR = builddir
     end
