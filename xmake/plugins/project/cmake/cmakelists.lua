@@ -1074,7 +1074,7 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
 
 
     local has_links = #target:objectfiles() > objectfiles_set:size()
-    local key = target:name() .. "_" .. hash.rand64()
+    local key = target:name() .. "_" .. hash.rand32()
     if has_links then
         cmakelists:print("add_library(target_objectfiles_%s OBJECT IMPORTED GLOBAL)", key)
         cmakelists:print("set_property(TARGET target_objectfiles_%s PROPERTY IMPORTED_OBJECTS", key)
@@ -1244,7 +1244,7 @@ function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir
         --
         -- @see https://gitlab.kitware.com/cmake/cmake/-/issues/17802
         --
-        local key = target:name() .. "_" .. hash.rand64()
+        local key = target:name() .. "_" .. hash.rand32()
         cmakelists:print("add_custom_command(OUTPUT output_%s", key)
         for _, cmd in ipairs(cmds) do
             local command = _get_command_string(cmd, outputdir)
