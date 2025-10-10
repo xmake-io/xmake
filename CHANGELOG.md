@@ -20,7 +20,6 @@
 * [#6849](https://github.com/xmake-io/xmake/pull/6849): Improve jobgraph
 * [#6859](https://github.com/xmake-io/xmake/pull/6859): Improve to check target flags
 * [#6858](https://github.com/xmake-io/xmake/pull/6858): Modify config flags order
-* [#6862](https://github.com/xmake-io/xmake/pull/6862): docs: Keep redirecting to the Chinese page
 * [#6854](https://github.com/xmake-io/xmake/pull/6854): Improve os.curdir/os.cd
 * [#6866](https://github.com/xmake-io/xmake/pull/6866): Improve os.getenvs
 * [#6867](https://github.com/xmake-io/xmake/pull/6867): Make sure generic options are always inserted
@@ -32,7 +31,6 @@
 * [#6892](https://github.com/xmake-io/xmake/pull/6892): Improve runjobs to reduce the time spent on coroutine scheduling
 * [#6896](https://github.com/xmake-io/xmake/pull/6896): Add hash test
 * [#6904](https://github.com/xmake-io/xmake/pull/6904): Improve clang to support for msvc envs
-* [#6908](https://github.com/xmake-io/xmake/pull/6908): Reuse rand32
 * [#6915](https://github.com/xmake-io/xmake/pull/6915): Improve to export def rules for binary
 
 ### Bugs fixed
@@ -2147,7 +2145,6 @@
 * [#6849](https://github.com/xmake-io/xmake/pull/6849): 改进 jobgraph
 * [#6859](https://github.com/xmake-io/xmake/pull/6859): 改进检查目标标志
 * [#6858](https://github.com/xmake-io/xmake/pull/6858): 修改配置标志顺序
-* [#6862](https://github.com/xmake-io/xmake/pull/6862): docs: 保持重定向到中文页面
 * [#6854](https://github.com/xmake-io/xmake/pull/6854): 改进 os.curdir/os.cd
 * [#6866](https://github.com/xmake-io/xmake/pull/6866): 改进 os.getenvs
 * [#6867](https://github.com/xmake-io/xmake/pull/6867): 确保通用选项总是被插入
@@ -2159,7 +2156,6 @@
 * [#6892](https://github.com/xmake-io/xmake/pull/6892): 改进 runjobs 以减少协程调度所花费的时间
 * [#6896](https://github.com/xmake-io/xmake/pull/6896): 添加哈希测试
 * [#6904](https://github.com/xmake-io/xmake/pull/6904): 改进 clang 以支持 msvc 环境
-* [#6908](https://github.com/xmake-io/xmake/pull/6908): 复用 rand32
 * [#6915](https://github.com/xmake-io/xmake/pull/6915): 改进为二进制文件导出 def 规则
 
 ### Bugs 修复
