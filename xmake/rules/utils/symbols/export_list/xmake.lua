@@ -96,9 +96,10 @@ rule("utils.symbols.export_list")
             target:add("shflags", "--version-script=" .. exportfile, {force = true})
         end
         if exportfile and exportkind then
-            target:data_add("linkdepfiles", exportfile)
+            local exportfile_tmp = os.tmpfile(exportfile)
+            os.tryrm(exportfile_tmp)
             if exportkind == "ver" then
-                io.writefile(exportfile, ([[{
+                io.writefile(exportfile_tmp, ([[{
     global:
         %s
 
@@ -106,7 +107,7 @@ rule("utils.symbols.export_list")
         *;
 };]]):format(table.concat(exportsymbols, ";\n        ") .. ";"))
             elseif exportkind == "apple" then
-                local file = io.open(exportfile, 'w')
+                local file = io.open(exportfile_tmp, 'w')
                 for _, symbol in ipairs(exportsymbols) do
                     if not symbol:startswith("_") then
                         symbol = "_" .. symbol
@@ -115,13 +116,26 @@ rule("utils.symbols.export_list")
                 end
                 file:close()
             elseif exportkind == "def" then
-                local file = io.open(exportfile, 'w')
+                local file = io.open(exportfile_tmp, 'w')
                 file:print("EXPORTS")
                 for _, symbol in ipairs(exportsymbols) do
                     file:print("%s", symbol)
                 end
                 file:close()
             end
+
+            -- update file if the content is changed
+            target:data_add("linkdepfiles", exportfile)
+            if os.isfile(exportfile_tmp) then
+                if os.isfile(exportfile) then
+                    if io.readfile(exportfile_tmp) ~= io.readfile(exportfile) then
+                        os.cp(exportfile_tmp, exportfile)
+                    end
+                else
+                    os.cp(exportfile_tmp, exportfile)
+                end
+            end
+            target:data_add("linkdepfiles", exportfile)
         end
     end)
 

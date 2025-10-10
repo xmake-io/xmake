@@ -141,10 +141,16 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
         argv = winos.cmdargv(argv)
     end
     -- @note we cannot put -lib/-dll to @args.txt
+    local implib = false
     if targetkind == "static" then
         table.insert(argv, 1, "-lib")
     elseif targetkind == "shared" then
         table.insert(argv, 1, "-dll")
+        implib = true
+    elseif targetkind == "binary" then
+        implib = true
+    end
+    if implib then
         local implibfile = _get_implibfile(self, opt)
         if implibfile then
             table.insert(argv, "/implib:" .. implibfile)
