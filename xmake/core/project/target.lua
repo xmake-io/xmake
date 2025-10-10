@@ -1656,13 +1656,13 @@ end
 -- get the extra build artifact file
 --
 -- supported artifact kinds:
---    1. implib: windows DLL/EXE implib(.lib, .dll.a)
+--    1. implib: windows DLL implib(.lib, .dll.a)
 --
 -- otherwise returns nil
 --
 function _instance:artifactfile(kind)
     if kind == "implib" then
-        if (self:is_shared() or self:is_binary()) and self:is_plat("windows", "mingw") then
+        if self:is_shared() and self:is_plat("windows", "mingw") then
             return path.join(self:_artifactdir("libdir"), path.basename(self:filename()) .. (self:is_plat("mingw") and ".dll.a" or ".lib"))
         end
     end
