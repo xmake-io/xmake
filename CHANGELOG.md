@@ -2,6 +2,52 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#6864](https://github.com/xmake-io/xmake/pull/6864): Add default file filter for `format` task
+* [#6843](https://github.com/xmake-io/xmake/pull/6843): Improve clang-tidy support
+* [#6861](https://github.com/xmake-io/xmake/pull/6861): Rewrite of Nix Package Manager Support
+* [#6850](https://github.com/xmake-io/xmake/pull/6850): Add package api checking
+* [#6874](https://github.com/xmake-io/xmake/pull/6874): Add scriptdir to project packages
+* [#6876](https://github.com/xmake-io/xmake/pull/6876): Add versionfiles checker
+* [#6884](https://github.com/xmake-io/xmake/pull/6884): Add msystem support on msys2
+* [#6891](https://github.com/xmake-io/xmake/pull/6891): Add coroutine semaphore
+* [#6894](https://github.com/xmake-io/xmake/pull/6894): Add llvm-nm for clang toolchain
+
+### Changes
+
+* [#6846](https://github.com/xmake-io/xmake/pull/6846): Improve cmake default flags
+* [#6849](https://github.com/xmake-io/xmake/pull/6849): Improve jobgraph
+* [#6859](https://github.com/xmake-io/xmake/pull/6859): Improve to check target flags
+* [#6858](https://github.com/xmake-io/xmake/pull/6858): Modify config flags order
+* [#6862](https://github.com/xmake-io/xmake/pull/6862): docs: Keep redirecting to the Chinese page
+* [#6854](https://github.com/xmake-io/xmake/pull/6854): Improve os.curdir/os.cd
+* [#6866](https://github.com/xmake-io/xmake/pull/6866): Improve os.getenvs
+* [#6867](https://github.com/xmake-io/xmake/pull/6867): Make sure generic options are always inserted
+* [#6870](https://github.com/xmake-io/xmake/pull/6870): chore(vcpkg): bump default baseline hash of vcpkg
+* [#6880](https://github.com/xmake-io/xmake/pull/6880): Update cmake_importfiles.lua
+* [#6872](https://github.com/xmake-io/xmake/pull/6872): Improve hash
+* [#6886](https://github.com/xmake-io/xmake/pull/6886): Decrease jobs count in jobgraph
+* [#6890](https://github.com/xmake-io/xmake/pull/6890): Update cmake_importfiles.lua
+* [#6892](https://github.com/xmake-io/xmake/pull/6892): Improve runjobs to reduce the time spent on coroutine scheduling
+* [#6896](https://github.com/xmake-io/xmake/pull/6896): Add hash test
+* [#6904](https://github.com/xmake-io/xmake/pull/6904): Improve clang to support for msvc envs
+* [#6908](https://github.com/xmake-io/xmake/pull/6908): Reuse rand32
+* [#6915](https://github.com/xmake-io/xmake/pull/6915): Improve to export def rules for binary
+
+### Bugs fixed
+
+* [#6844](https://github.com/xmake-io/xmake/pull/6844): Fix version in auto-generated .pc.
+* [#6851](https://github.com/xmake-io/xmake/pull/6851): Fix finding clang-scan-deps
+* [#6857](https://github.com/xmake-io/xmake/pull/6857): Fix rc compiler with cmake in cross-compilation
+* [#6809](https://github.com/xmake-io/xmake/pull/6809): fix(C++ modules) fix stdmodule priority
+* [#6882](https://github.com/xmake-io/xmake/pull/6882): Fix: write package manifest.pathenvs in deterministic order
+* [#6888](https://github.com/xmake-io/xmake/pull/6888): Fix clang toolchain package
+* [#6889](https://github.com/xmake-io/xmake/pull/6889): Fix os.getenvs compat
+* [#6900](https://github.com/xmake-io/xmake/pull/6900): package.tools.xmake: fix policies not being passed
+* [#6901](https://github.com/xmake-io/xmake/pull/6901): package download: don't get submodules if disabled
+* [#6907](https://github.com/xmake-io/xmake/pull/6907): package download: don't get submodules if disabled (branch version)
+
 ## v3.0.3
 
 ### New features
@@ -2082,6 +2128,52 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#6864](https://github.com/xmake-io/xmake/pull/6864): 为 `format` 任务添加默认文件过滤器
+* [#6843](https://github.com/xmake-io/xmake/pull/6843): 改进 clang-tidy 支持
+* [#6861](https://github.com/xmake-io/xmake/pull/6861): 重写 Nix 包管理器支持
+* [#6850](https://github.com/xmake-io/xmake/pull/6850): 添加包 API 检查
+* [#6874](https://github.com/xmake-io/xmake/pull/6874): 为项目包添加 scriptdir
+* [#6876](https://github.com/xmake-io/xmake/pull/6876): 添加 versionfiles 检查器
+* [#6884](https://github.com/xmake-io/xmake/pull/6884): 在 msys2 上添加 msystem 支持
+* [#6891](https://github.com/xmake-io/xmake/pull/6891): 添加协程信号量
+* [#6894](https://github.com/xmake-io/xmake/pull/6894): 为 clang 工具链添加 llvm-nm
+
+### 改进
+
+* [#6846](https://github.com/xmake-io/xmake/pull/6846): 改进 cmake 默认标志
+* [#6849](https://github.com/xmake-io/xmake/pull/6849): 改进 jobgraph
+* [#6859](https://github.com/xmake-io/xmake/pull/6859): 改进检查目标标志
+* [#6858](https://github.com/xmake-io/xmake/pull/6858): 修改配置标志顺序
+* [#6862](https://github.com/xmake-io/xmake/pull/6862): docs: 保持重定向到中文页面
+* [#6854](https://github.com/xmake-io/xmake/pull/6854): 改进 os.curdir/os.cd
+* [#6866](https://github.com/xmake-io/xmake/pull/6866): 改进 os.getenvs
+* [#6867](https://github.com/xmake-io/xmake/pull/6867): 确保通用选项总是被插入
+* [#6870](https://github.com/xmake-io/xmake/pull/6870): chore(vcpkg): 提升 vcpkg 的默认基线哈希
+* [#6880](https://github.com/xmake-io/xmake/pull/6880): 更新 cmake_importfiles.lua
+* [#6872](https://github.com/xmake-io/xmake/pull/6872): 改进哈希
+* [#6886](https://github.com/xmake-io/xmake/pull/6886): 减少 jobgraph 中的作业计数
+* [#6890](https://github.com/xmake-io/xmake/pull/6890): 更新 cmake_importfiles.lua
+* [#6892](https://github.com/xmake-io/xmake/pull/6892): 改进 runjobs 以减少协程调度所花费的时间
+* [#6896](https://github.com/xmake-io/xmake/pull/6896): 添加哈希测试
+* [#6904](https://github.com/xmake-io/xmake/pull/6904): 改进 clang 以支持 msvc 环境
+* [#6908](https://github.com/xmake-io/xmake/pull/6908): 复用 rand32
+* [#6915](https://github.com/xmake-io/xmake/pull/6915): 改进为二进制文件导出 def 规则
+
+### Bugs 修复
+
+* [#6844](https://github.com/xmake-io/xmake/pull/6844): 修复自动生成的 .pc 文件中的版本
+* [#6851](https://github.com/xmake-io/xmake/pull/6851): 修复查找 clang-scan-deps
+* [#6857](https://github.com/xmake-io/xmake/pull/6857): 修复在交叉编译中使用 cmake 的 rc 编译器
+* [#6809](https://github.com/xmake-io/xmake/pull/6809): fix(C++ modules) 修复 stdmodule 优先级
+* [#6882](https://github.com/xmake-io/xmake/pull/6882): 修复：以确定性顺序写入包清单 manifest.pathenvs
+* [#6888](https://github.com/xmake-io/xmake/pull/6888): 修复 clang 工具链包
+* [#6889](https://github.com/xmake-io/xmake/pull/6889): 修复 os.getenvs 兼容性
+* [#6900](https://github.com/xmake-io/xmake/pull/6900): package.tools.xmake: 修复策略未被传递的问题
+* [#6901](https://github.com/xmake-io/xmake/pull/6901): package download: 如果禁用，则不获取子模块
+* [#6907](https://github.com/xmake-io/xmake/pull/6907): package download: 如果禁用，则不获取子模块 (分支版本)
 
 ## v3.0.3
 
