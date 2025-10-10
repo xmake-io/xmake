@@ -22,28 +22,27 @@
 rule("platform.windows.def")
     set_extensions(".def")
     on_config("windows", "mingw", function (target)
-        if not target:is_shared() then
-            return
-        end
-
-        if target:is_plat("windows") and (not target:has_tool("sh", "link", "clangxx")) then
-            return
-        end
-
-        local sourcebatch = target:sourcebatches()["platform.windows.def"]
-        if sourcebatch then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local flag = path.translate(sourcefile)
-                if target:is_plat("windows") then
-                    flag = "/def:" .. flag
-                    if target:has_tool("sh", "clangxx") then
-                        flag = "-Wl," .. flag
-                    end
-                end
+        if target:is_plat("windows") and (target:is_shared() or target:is_binary()) then
+            local sourcebatch = target:sourcebatches()["platform.windows.def"]
+            if sourcebatch then
                 -- https://github.com/xmake-io/xmake/pull/4901
-                target:add("shflags", flag, {force = true})
-                target:data_add("linkdepfiles", sourcefile)
-                break;
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    local matched = false
+                    local flag = path.translate(sourcefile)
+                    if target:has_tool("ld", "link") then
+                        flag = "/def:" .. flag
+                        matched = true
+                    elseif target:has_tool("ld", "clangxx") then
+                        flag = "-Wl,/def:" .. flag
+                        matched = true
+                    end
+                    if matched then
+                        target:add("shflags", flag, {force = true})
+                        target:add("ldflags", flag, {force = true})
+                        target:data_add("linkdepfiles", sourcefile)
+                    end
+                    break
+                end
             end
         end
     end)
