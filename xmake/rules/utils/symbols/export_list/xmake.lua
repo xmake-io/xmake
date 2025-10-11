@@ -129,7 +129,6 @@ rule("utils.symbols.export_list")
             if os.isfile(exportfile_tmp) then
                 os.cp(exportfile_tmp, exportfile, {copy_if_different = true})
             end
-            target:data_add("linkdepfiles", exportfile)
         end
     end)
 
