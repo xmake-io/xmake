@@ -284,11 +284,9 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets, preprocessors
     end
 
     -- only copy it?
-    local generated = false
     if fileinfo.onlycopy then
         if os.mtime(srcfile) > os.mtime(dstfile) then
             os.cp(srcfile, dstfile)
-            generated = true
         end
     else
         -- generate to the temporary file first
@@ -359,26 +357,12 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets, preprocessors
 
         -- update file if the content is changed
         if os.isfile(dstfile_tmp) then
-            if os.isfile(dstfile) then
-                if io.readfile(dstfile_tmp) ~= io.readfile(dstfile) then
-                    os.cp(dstfile_tmp, dstfile)
-                    generated = true
-                else
-                    -- I forget why I added it here, but if we switch the option, mode,
-                    -- this will cause the whole project to be rebuilt,
-                    -- even if nothing in config.h has been changed.
-                    --
-                    --os.touch(dstfile, {mtime = os.time()})
-                end
-            else
-                os.cp(dstfile_tmp, dstfile)
-                generated = true
-            end
+            os.cp(dstfile_tmp, dstfile, {copy_if_different = true})
         end
     end
 
     -- trace
-    cprint("generating %s ... %s", srcfile, generated and "${color.success}${text.success}" or "${color.success}cache")
+    cprint("generating %s ... ${color.success}${text.success}", srcfile)
 end
 
 -- the main entry function

@@ -53,6 +53,10 @@ tb_int_t xm_os_cpfile(lua_State* lua)
     if (is_writeable)
         flags |= TB_FILE_COPY_WRITEABLE;
 
+    tb_bool_t copy_if_different = lua_toboolean(lua, 5);
+    if (copy_if_different)
+        flags |= TB_FILE_COPY_IF_DIFFERENT;
+
     // do copy
     lua_pushboolean(lua, tb_file_copy(src, dst, flags));
     return 1;

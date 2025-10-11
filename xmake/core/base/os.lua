@@ -72,6 +72,7 @@ function os._cp(src, dst, rootdir, opt)
     -- is file or link?
     local symlink = opt.symlink
     local writeable = opt.writeable
+    local copy_if_different = opt.copy_if_different
     if os.isfile(src) or (symlink and os.islink(src)) then
 
         -- the destination is directory? append the filename
@@ -87,7 +88,7 @@ function os._cp(src, dst, rootdir, opt)
         if opt.force and os.isfile(dst) then
             os.rmfile(dst)
         end
-        if not os.cpfile(src, dst, symlink, writeable) then
+        if not os.cpfile(src, dst, symlink, writeable, copy_if_different) then
             local errors = os.strerror()
             if symlink and os.islink(src) then
                 local reallink = os.readlink(src)
@@ -109,7 +110,7 @@ function os._cp(src, dst, rootdir, opt)
         end
 
         -- copy directory
-        if not os.cpdir(src, dst, symlink) then
+        if not os.cpdir(src, dst, symlink, copy_if_different) then
             return false, string.format("cannot copy directory %s to %s,  %s", src, dst, os.strerror())
         end
     else
@@ -497,6 +498,11 @@ function os.filedirs(pattern, callback)
 end
 
 -- copy files or directories and we can reserve the source directory structure
+--
+-- @param srcpath   the source file path
+-- @param dstpath   the destination file path
+-- @param opt       the copy option. e.g. {rootdir, symlink, writeable, force, copy_if_different}
+--
 -- e.g. os.cp("src/**.h", "/tmp/", {rootdir = "src", symlink = true})
 function os.cp(srcpath, dstpath, opt)
 

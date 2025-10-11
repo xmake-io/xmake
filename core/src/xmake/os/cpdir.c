@@ -49,6 +49,10 @@ tb_int_t xm_os_cpdir(lua_State* lua)
     if (is_symlink)
         flags |= TB_FILE_COPY_LINK;
 
+    tb_bool_t copy_if_different = lua_toboolean(lua, 4);
+    if (copy_if_different)
+        flags |= TB_FILE_COPY_IF_DIFFERENT;
+
     // do copy
     lua_pushboolean(lua, tb_directory_copy(src, dst, flags));
     return 1;
