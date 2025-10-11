@@ -127,13 +127,7 @@ rule("utils.symbols.export_list")
             -- update file if the content is changed
             target:data_add("linkdepfiles", exportfile)
             if os.isfile(exportfile_tmp) then
-                if os.isfile(exportfile) then
-                    if io.readfile(exportfile_tmp) ~= io.readfile(exportfile) then
-                        os.cp(exportfile_tmp, exportfile)
-                    end
-                else
-                    os.cp(exportfile_tmp, exportfile)
-                end
+                os.cp(exportfile_tmp, exportfile, {copy_if_different = true})
             end
             target:data_add("linkdepfiles", exportfile)
         end
