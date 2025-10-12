@@ -13,6 +13,7 @@
 * [#6884](https://github.com/xmake-io/xmake/pull/6884): Add msystem support on msys2
 * [#6891](https://github.com/xmake-io/xmake/pull/6891): Add coroutine semaphore
 * [#6894](https://github.com/xmake-io/xmake/pull/6894): Add llvm-nm for clang toolchain
+* [#6918](https://github.com/xmake-io/xmake/pull/6918): Add copy_if_different in os.cp
 
 ### Changes
 
@@ -2138,6 +2139,7 @@
 * [#6884](https://github.com/xmake-io/xmake/pull/6884): 在 msys2 上添加 msystem 支持
 * [#6891](https://github.com/xmake-io/xmake/pull/6891): 添加协程信号量
 * [#6894](https://github.com/xmake-io/xmake/pull/6894): 为 clang 工具链添加 llvm-nm
+* [#6918](https://github.com/xmake-io/xmake/pull/6918): 为 os.cp 添加 copy_if_different 支持
 
 ### 改进
 
