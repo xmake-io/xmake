@@ -2150,10 +2150,10 @@
 * [#6854](https://github.com/xmake-io/xmake/pull/6854): 改进 os.curdir/os.cd
 * [#6866](https://github.com/xmake-io/xmake/pull/6866): 改进 os.getenvs
 * [#6867](https://github.com/xmake-io/xmake/pull/6867): 确保通用选项总是被插入
-* [#6870](https://github.com/xmake-io/xmake/pull/6870): chore(vcpkg): 提升 vcpkg 的默认基线哈希
+* [#6870](https://github.com/xmake-io/xmake/pull/6870): chore(vcpkg): 提升 vcpkg 的默认 baseline
 * [#6880](https://github.com/xmake-io/xmake/pull/6880): 更新 cmake_importfiles.lua
 * [#6872](https://github.com/xmake-io/xmake/pull/6872): 改进哈希
-* [#6886](https://github.com/xmake-io/xmake/pull/6886): 减少 jobgraph 中的作业计数
+* [#6886](https://github.com/xmake-io/xmake/pull/6886): 减少 jobgraph 中的任务数
 * [#6890](https://github.com/xmake-io/xmake/pull/6890): 更新 cmake_importfiles.lua
 * [#6892](https://github.com/xmake-io/xmake/pull/6892): 改进 runjobs 以减少协程调度所花费的时间
 * [#6896](https://github.com/xmake-io/xmake/pull/6896): 添加哈希测试
