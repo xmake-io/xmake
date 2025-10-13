@@ -31,14 +31,14 @@ function probe_include_note_from_cl()
     local key = "cldeps.parse_include.note"
     local note = detectcache:get(key)
     if not note then
-        local cl = find_tool("cl")
+        local runenvs = toolchain.load("msvc"):runenvs()
+        local cl = find_tool("cl", {envs = runenvs})
         if cl then
             local projectdir = os.tmpfile() .. ".cldeps"
             local sourcefile = path.join(projectdir, "main.c")
             local headerfile = path.join(projectdir, "foo.h")
             local objectfile = sourcefile .. ".obj"
             local outdata = try { function()
-                local runenvs = toolchain.load("msvc"):runenvs()
                 local argv = {"-nologo", "-showIncludes", "-c", "-Fo" .. objectfile, sourcefile}
                 io.writefile(headerfile, "\n")
                 io.writefile(sourcefile, [[
