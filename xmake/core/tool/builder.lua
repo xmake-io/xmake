@@ -168,6 +168,7 @@ function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
         flag = target_utils.flag_belong_to_tool(flag, self, extraconf)
         if flag then
             if extraconf then
+                local flagconf = extraconf[flag]
                 -- @note we need join the single flag with shallow mode, aboid expand table values
                 -- e.g. add_cflags({"-I", "/tmp/xxx foo"}, {force = true, expand = false})
                 if flagconf and flagconf.force then
