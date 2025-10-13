@@ -72,7 +72,7 @@ function _check_try_running(flags, opt)
     -- compile the source file
     local objectfile = os.tmpfile() .. ".obj"
     local binaryfile = os.tmpfile() .. ".exe"
-    local cl = find_tool("cl")
+    local cl = find_tool("cl", {envs = opt.envs})
     if cl then
         os.runv(cl.program, {"-c", "-nologo", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
     end
