@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v3.0.4
+
 ### New features
 
 * [#6864](https://github.com/xmake-io/xmake/pull/6864): Add default file filter for `format` task
@@ -2127,6 +2129,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v3.0.4
 
 ### 新特性
 
