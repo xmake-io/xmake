@@ -592,10 +592,18 @@ function toolchain._cachekey(name, opt)
     return cachekey
 end
 
--- parse toolchain and package name
+-- parse toolchain, configs and package name
 --
--- format: toolchain@package
+-- formats:
+--
+-- 1. only toolchain name
+-- e.g. clang, gcc
+--
+-- 2. toolchain@package
 -- e.g. "clang@llvm-10", "@muslcc", zig
+--
+-- 3. toolchain[configs]@package
+-- e.g. "mingw[clang]@llvm-mingw", "msvc[vs=2025,..]"
 --
 function toolchain.parsename(name)
     local splitinfo = name:split('@', {plain = true, strict = true})
@@ -607,7 +615,33 @@ function toolchain.parsename(name)
     if packages == "" then
         packages = nil
     end
-    return toolchain_name or packages, packages
+    local configs
+    if toolchain_name then
+        local toolchain_name_raw, configs_str = toolchain_name:match("(.-)%[(.*)%]")
+        if toolchain_name_raw and configs_str then
+            configs_str = configs_str:gsub("%[(.*)%]", function (w)
+                return w:replace(",", ":")
+            end)
+            toolchain_name = toolchain_name_raw
+            local splitinfo = configs_str:split(",", {plain = true})
+            for _, v in ipairs(splitinfo) do
+                local parts = v:split("=", {plain = true})
+                local k = parts[1]
+                v = parts[2]
+                configs = configs or {}
+                if v then
+                    if v:find(":", 1 ,true) then
+                        configs[k] = v:split(":", {plain = true})
+                    else
+                        configs[k] = option.boolean(v)
+                    end
+                else
+                    configs[k] = true
+                end
+            end
+        end
+    end
+    return toolchain_name or packages, packages, configs
 end
 
 -- get toolchain apis
@@ -666,15 +700,19 @@ function toolchain.load(name, opt)
 
     -- get toolchain name and packages
     opt = opt or {}
-    local packages
-    name, packages = toolchain.parsename(name)
-    opt.packages = opt.packages or packages
+    local packages, configs
+    name, packages, configs = toolchain.parsename(name)
+
+    -- init configs
+    configs = configs or {}
+    table.join2(configs, opt)
+    configs.packages = opt.packages or packages
+    configs.plat = opt.plat or config.get("plat") or os.host()
+    configs.arch = opt.arch or config.get("arch") or os.arch()
 
     -- get cache
-    opt.plat = opt.plat or config.get("plat") or os.host()
-    opt.arch = opt.arch or config.get("arch") or os.arch()
     local cache = toolchain._memcache()
-    local cachekey = toolchain._cachekey(name, opt)
+    local cachekey = toolchain._cachekey(name, configs)
 
     -- get it directly from cache dirst
     local instance = cache:get(cachekey)
@@ -716,7 +754,7 @@ function toolchain.load(name, opt)
     end
 
     -- save instance to the cache
-    instance = _instance.new(name, result, cachekey, true, opt)
+    instance = _instance.new(name, result, cachekey, true, configs)
     cache:set(cachekey, instance)
     return instance
 end
@@ -726,15 +764,19 @@ function toolchain.load_withinfo(name, info, opt)
 
     -- get toolchain name and packages
     opt = opt or {}
-    local packages
-    name, packages = toolchain.parsename(name)
-    opt.packages = opt.packages or packages
+    local packages, configs
+    name, packages, configs = toolchain.parsename(name)
+
+    -- init configs
+    configs = configs or {}
+    table.join2(configs, opt)
+    configs.packages = opt.packages or packages
+    configs.plat = opt.plat or config.get("plat") or os.host()
+    configs.arch = opt.arch or config.get("arch") or os.arch()
 
     -- get cache key
-    opt.plat = opt.plat or config.get("plat") or os.host()
-    opt.arch = opt.arch or config.get("arch") or os.arch()
     local cache = toolchain._memcache()
-    local cachekey = toolchain._cachekey(name, opt)
+    local cachekey = toolchain._cachekey(name, configs)
 
     -- get it directly from cache dirst
     local instance = cache:get(cachekey)
@@ -743,7 +785,7 @@ function toolchain.load_withinfo(name, info, opt)
     end
 
     -- save instance to the cache
-    instance = _instance.new(name, info, cachekey, false, opt)
+    instance = _instance.new(name, info, cachekey, false, configs)
     cache:set(cachekey, instance)
     return instance
 end
