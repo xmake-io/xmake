@@ -1423,6 +1423,71 @@ static tb_void_t xm_engine_bind_to_lua(lua_State* lua, xm_engine_t* engine)
     lua_setglobal(lua, "__global_engine");
 }
 
+// load and execute the main script
+static tb_bool_t xm_engine_load_main_script(xm_engine_t* engine, tb_char_t const* mainfile)
+{
+#ifdef TB_CONFIG_OS_WINDOWS
+    // use tb_file_init to support unicode file path on windows
+    tb_bool_t ok = tb_false;
+    tb_file_ref_t file = tb_null;
+    tb_byte_t* data = tb_null;
+
+    do
+    {
+        // open file
+        file = tb_file_init(mainfile, TB_FILE_MODE_RO);
+        if (!file)
+        {
+            tb_printf("error: cannot open file: %s\n", mainfile);
+            break;
+        }
+
+        // get file size
+        tb_hong_t size = tb_file_size(file);
+        tb_assert_and_check_break(size > 0);
+
+        // allocate buffer
+        data = (tb_byte_t*)tb_malloc((tb_size_t)size);
+        tb_assert_and_check_break(data);
+
+        // read file content
+        if (!tb_file_read(file, data, (tb_size_t)size))
+        {
+            tb_printf("error: cannot read file: %s\n", mainfile);
+            break;
+        }
+
+        // load lua buffer
+        if (luaL_loadbuffer(engine->lua, (tb_char_t const*)data, (tb_size_t)size, mainfile))
+        {
+            tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
+            break;
+        }
+
+        // execute lua script
+        if (lua_pcall(engine->lua, 0, LUA_MULTRET, 0))
+        {
+            tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
+            break;
+        }
+
+        ok = tb_true;
+
+    } while (0);
+
+    if (data) tb_free(data);
+    if (file) tb_file_exit(file);
+    return ok;
+#else
+    if (luaL_dofile(engine->lua, mainfile))
+    {
+        tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
+        return tb_false;
+    }
+    return tb_true;
+#endif
+}
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
@@ -1671,11 +1736,8 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     tb_trace_d("main: %s", path);
 
     // load and execute the main script
-    if (luaL_dofile(engine->lua, path))
-    {
-        tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
+    if (!xm_engine_load_main_script(engine, path))
         return -1;
-    }
 
     // set the error function
     lua_getglobal(engine->lua, "debug");
