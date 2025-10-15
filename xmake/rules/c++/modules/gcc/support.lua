@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.json")
+import("core.tool.toolchain")
 import("core.base.semver")
 import("core.project.config")
 import("lib.detect.find_tool")
@@ -134,7 +135,17 @@ function get_target_module_mapperpath(target)
 end
 
 function _get_std_module_manifest_path(target)
+    local _, toolname = target:tool("cxx")
     local compinst = target:compiler("cxx")
+    if toolname ~= "gcc" and toolname ~= "gxx" then
+        local gcc_toolchain = toolchain.load("gcc", {plat = target:plat(), arch = target:arch()})
+        if gcc_toolchain and gcc_toolchain:check() then
+            compinst = { program = function()  return gcc_toolchain:tool("cxx") end, runenvs = function() gcc_toolchain:runenvs() end }
+        end
+        if not compinst then
+            return
+        end
+    end
     local modules_json_path, _ = try {
         function()
             return os.iorunv(compinst:program(), {"-print-file-name=libstdc++.modules.json"}, {envs = compinst:runenvs()})
