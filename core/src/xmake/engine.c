@@ -1443,22 +1443,22 @@ static tb_bool_t xm_engine_load_main_script(xm_engine_t* engine, tb_char_t const
         }
 
         // get file size
-        tb_hong_t size = tb_file_size(file);
-        tb_assert_and_check_break(size > 0);
+        tb_size_t size = (tb_size_t)tb_file_size(file);
+        tb_assert_and_check_break(size);
 
         // allocate buffer
-        data = (tb_byte_t*)tb_malloc((tb_size_t)size);
+        data = (tb_byte_t*)tb_malloc(size);
         tb_assert_and_check_break(data);
 
         // read file content
-        if (!tb_file_read(file, data, (tb_size_t)size))
+        if (!tb_file_read(file, data, size))
         {
             tb_printf("error: cannot read file: %s\n", mainfile);
             break;
         }
 
         // load lua buffer
-        if (luaL_loadbuffer(engine->lua, (tb_char_t const*)data, (tb_size_t)size, mainfile))
+        if (luaL_loadbuffer(engine->lua, (tb_char_t const*)data, size, mainfile))
         {
             tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
             break;
