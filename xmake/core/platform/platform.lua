@@ -281,7 +281,7 @@ function _instance:check()
                 standalone = true
             end
             idx = idx + 1
-            table.insert(toolchains_valid, toolchain:name())
+            table.insert(toolchains_valid, toolchain:fullname())
         end
     end
     if #toolchains == 0 then
