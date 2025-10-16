@@ -43,6 +43,7 @@ function _check_ndk(toolchain)
         ndk = find_ndk(toolchain:config("ndk") or config.get("ndk"), {force = true, verbose = true,
                                                                       plat = toolchain:plat(),
                                                                       arch = toolchain:arch(),
+                                                                      compiler = toolchain:config("gcc") and "gcc" or "clang",
                                                                       sdkver = toolchain:config("sdkver")})
     end
     if ndk then

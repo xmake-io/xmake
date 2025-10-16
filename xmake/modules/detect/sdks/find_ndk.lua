@@ -158,7 +158,13 @@ function _find_ndk_sysroot(sdkdir)
 end
 
 -- find the ndk toolchain
-function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
+function _find_ndk(opt)
+    opt = opt or {}
+    local arch = opt.arch
+    local sdkdir = opt.sdkdir
+    local ndk_sdkver = opt.ndk_sdkver
+    local ndk_toolchains_ver = opt.ndk_toolchains_ver
+    local compiler = opt.compiler
 
     -- find ndk root directory
     sdkdir = _find_ndkdir(sdkdir)
@@ -204,7 +210,7 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     local llvm_toolchain
     local prebuilt = (is_host("macosx") and "darwin" or os.host()) .. "-x86_64"
     local bindir = find_directory("bin", path.join(sdkdir, "toolchains", "llvm", "prebuilt", prebuilt)) -- larger than ndk r16
-    if bindir then
+    if bindir and compiler ~= "gcc" then
         llvm_toolchain = path.directory(bindir)
     else
         bindir = find_directory("bin", path.join(sdkdir, "toolchains", gcc_toolchain_subdir, "prebuilt", "*"))
@@ -285,7 +291,11 @@ function main(sdkdir, opt)
     local arch = opt.arch or config.get("arch") or "armeabi-v7a"
 
     -- find ndk
-    local ndk = _find_ndk(sdkdir or config.get("ndk") or global.get("ndk"), arch, opt.sdkver or config.get("ndk_sdkver"), opt.toolchains_ver or config.get("ndk_toolchains_ver"))
+    local ndk = _find_ndk({sdkdir = sdkdir or config.get("ndk") or global.get("ndk"),
+            arch = arch,
+            ndk_sdkver = opt.sdkver or config.get("ndk_sdkver"),
+            ndk_toolchains_ver = opt.toolchains_ver or config.get("ndk_toolchains_ver"),
+            compiler = opt.compiler})
     if ndk and ndk.sdkdir then
         config.set("ndk", ndk.sdkdir, {force = true, readonly = true})
         config.set("ndkver", ndk.ndkver, {force = true, readonly = true})

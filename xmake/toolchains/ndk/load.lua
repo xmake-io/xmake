@@ -85,16 +85,25 @@ function main(toolchain)
     local ndk_sdkver = toolchain:config("ndk_sdkver")
 
     -- set toolset
-    toolchain:set("toolset", "cc", "clang", cross .. "gcc")
-    toolchain:set("toolset", "cxx", "clang++", cross .. "g++")
-    toolchain:set("toolset", "cpp", "clang -E", cross .. "gcc -E")
-    toolchain:set("toolset", "as", "clang", cross .. "gcc")
-    toolchain:set("toolset", "ld", "clang++", "clang", cross .. "g++", cross .. "gcc")
-    toolchain:set("toolset", "sh", "clang++", "clang", cross .. "g++", cross .. "gcc")
+    local use_gcc = toolchain:config("gcc")
+    if use_gcc then
+        toolchain:set("toolset", "cc", cross .. "gcc")
+        toolchain:set("toolset", "cxx", cross .. "g++")
+        toolchain:set("toolset", "cpp", cross .. "gcc -E")
+        toolchain:set("toolset", "as", cross .. "gcc")
+        toolchain:set("toolset", "ld", cross .. "g++", cross .. "gcc")
+        toolchain:set("toolset", "sh", cross .. "g++", cross .. "gcc")
+    else
+        toolchain:set("toolset", "cc", "clang", cross .. "gcc")
+        toolchain:set("toolset", "cxx", "clang++", cross .. "g++")
+        toolchain:set("toolset", "cpp", "clang -E", cross .. "gcc -E")
+        toolchain:set("toolset", "as", "clang", cross .. "gcc")
+        toolchain:set("toolset", "ld", "clang++", "clang", cross .. "g++", cross .. "gcc")
+        toolchain:set("toolset", "sh", "clang++", "clang", cross .. "g++", cross .. "gcc")
+    end
     toolchain:set("toolset", "ar", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ar") or (cross .. "ar"), "llvm-ar")
     toolchain:set("toolset", "ranlib", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ranlib") or (cross .. "ranlib"))
     toolchain:set("toolset", "strip", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "strip") or (cross .. "strip"), "llvm-strip")
-
     -- gnustl and stlport have been removed in ndk r18 (deprecated in ndk r17)
     -- https://github.com/android/ndk/wiki/Changelog-r18
     local old_runtimes = {"gnustl_static", "gnustl_shared", "stlport_static", "stlport_shared"}
