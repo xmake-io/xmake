@@ -58,33 +58,8 @@ toolchain("clang" .. suffix)
     end)
 
     on_load(function (toolchain)
-        import("core.project.project")
-
-        if project.policy("build.optimization.lto") then
-            toolchain:set("toolset", "ar",  "llvm-ar" .. suffix)
-            toolchain:set("toolset", "ranlib",  "llvm-ranlib" .. suffix)
-        end
-
-        local march
-        if toolchain:is_arch("x86_64", "x64") then
-            march = "-m64"
-        elseif toolchain:is_arch("i386", "x86") then
-            march = "-m32"
-        end
-        if march then
-            toolchain:add("cxflags", march)
-            toolchain:add("mxflags", march)
-            toolchain:add("asflags", march)
-            toolchain:add("ldflags", march)
-            toolchain:add("shflags", march)
-        end
-        if toolchain:is_plat("windows") then
-            toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
-        end
-        if toolchain:is_plat("windows", "mingw") then
-            local rootdir = path.join(path.directory(os.scriptdir()), "clang")
-            import("load", {rootdir = rootdir})(toolchain, suffix)
-        end
+        local rootdir = path.join(path.directory(os.scriptdir()), "clang")
+        import("load", {rootdir = rootdir})(toolchain, suffix)
     end)
 end
 toolchain_clang()
