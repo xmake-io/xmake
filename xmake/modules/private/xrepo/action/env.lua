@@ -399,7 +399,7 @@ function _run_shell(envs)
     if shell == "pwsh" or shell == "powershell" then
         os.execv("pwsh", args, {envs = envs})
     elseif shell == "nu" then
-        if #args ~=0 then
+        if #args ~= 0 then
             table.insert(args, 1, "-c")
         end
         os.execv("nu", args, {envs = envs})
