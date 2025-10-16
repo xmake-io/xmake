@@ -228,6 +228,10 @@ function get_clang_scan_deps(target)
                 program = path.join(dir, program)
             end
             local result = find_tool("clang-scan-deps", {program = program, version = true})
+            if not result then
+                -- find a system wide alternative
+                result = find_tool("clang-scan-deps", {version = true})
+            end
             if result then
                 clang_scan_deps = result.program
             end
