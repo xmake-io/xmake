@@ -1,3 +1,3 @@
-includes(path.join(os.scriptdir(), "../clang/xmake.lua"))
+includes(path.join(os.scriptdir(), "../clang/toolchain_clang.lua"))
 
 toolchain_clang("14")
