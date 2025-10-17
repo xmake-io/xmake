@@ -461,19 +461,19 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 wprint("%s.%s: the batch mode is deprecated, please use jobgraph mode instead of it, or disable `build.jobgraph` policy to use it.",
                     instance:fullname(), script_file_name)
             else
-                -- call custom script directly
+                -- call custom script to process sourcefiles in parallel directly
                 -- e.g.
                 --
                 -- target("test")
                 --     on_build_file(function (target, sourcefile, opt)
                 --     end)
-                local jobname = string.format("%s/%s", job_prefix, script_file_name)
-                jobgraph:add(jobname, function (index, total, opt)
-                    local sourcekind = sourcebatch.sourcekind
-                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local sourcekind = sourcebatch.sourcekind
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    local jobname = string.format("%s/%s/%s", job_prefix, script_file_name, sourcefile)
+                    jobgraph:add(jobname, function (index, total, opt)
                         script_file(target, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
-                    end
-                end)
+                    end)
+                end
             end
             has_script = true
         end
@@ -516,23 +516,27 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
         local scriptcmd_file = instance:script(scriptcmd_file_name)
         if scriptcmd_file then
             local distcc = instance:extraconf(scriptcmd_file_name, "distcc")
-            local jobname = string.format("%s/%s", job_prefix, scriptcmd_file_name)
-            jobgraph:add(jobname, function (index, total, opt)
+            if buildcmds then
                 -- only generate cmds and do not run them, use cases: e.g. project generator
-                if buildcmds then
+                local jobname = string.format("%s/%s", job_prefix, scriptcmd_file_name)
+                jobgraph:add(jobname, function (index, total, opt)
                     local sourcekind = sourcebatch.sourcekind
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                         scriptcmd_file(target, buildcmds, sourcefile, {progress = opt.progress, sourcekind = sourcekind})
                     end
-                else
-                    local sourcekind = sourcebatch.sourcekind
-                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                end)
+            else
+                -- fall back to using batchcmd to process sourcefiles in parallel
+                local sourcekind = sourcebatch.sourcekind
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    local jobname = string.format("%s/%s/%s", job_prefix, scriptcmd_file_name, sourcefile)
+                    jobgraph:add(jobname, function (index, total, opt)
                         local batchcmds_ = batchcmds.new({target = target})
                         scriptcmd_file(target, batchcmds_, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
                         batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
-                    end
+                    end)
                 end
-            end)
+            end
             has_script = true
         end
     end
