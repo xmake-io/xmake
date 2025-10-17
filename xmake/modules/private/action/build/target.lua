@@ -452,8 +452,8 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
             --     on_build_file(function (target, jobgraph, sourcefile, opt)
             --     end, {jobgraph = true})
             local distcc = instance:extraconf(script_file_name, "distcc")
+            local sourcekind = sourcebatch.sourcekind
             if instance:extraconf(script_file_name, "jobgraph") then
-                local sourcekind = sourcebatch.sourcekind
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     script_file(target, jobgraph, sourcefile, {sourcekind = sourcekind, distcc = distcc})
                 end
@@ -467,7 +467,6 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 -- target("test")
                 --     on_build_file(function (target, sourcefile, opt)
                 --     end)
-                local sourcekind = sourcebatch.sourcekind
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local jobname = string.format("%s/%s/%s", job_prefix, script_file_name, sourcefile)
                     jobgraph:add(jobname, function (index, total, opt)
@@ -515,19 +514,18 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
         local scriptcmd_file_name = opt.scriptcmd_file_name
         local scriptcmd_file = instance:script(scriptcmd_file_name)
         if scriptcmd_file then
+            local sourcekind = sourcebatch.sourcekind
             local distcc = instance:extraconf(scriptcmd_file_name, "distcc")
             if buildcmds then
                 -- only generate cmds and do not run them, use cases: e.g. project generator
                 local jobname = string.format("%s/%s", job_prefix, scriptcmd_file_name)
                 jobgraph:add(jobname, function (index, total, opt)
-                    local sourcekind = sourcebatch.sourcekind
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                         scriptcmd_file(target, buildcmds, sourcefile, {progress = opt.progress, sourcekind = sourcekind})
                     end
                 end)
             else
                 -- fall back to using batchcmd to process sourcefiles in parallel
-                local sourcekind = sourcebatch.sourcekind
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local jobname = string.format("%s/%s/%s", job_prefix, scriptcmd_file_name, sourcefile)
                     jobgraph:add(jobname, function (index, total, opt)
