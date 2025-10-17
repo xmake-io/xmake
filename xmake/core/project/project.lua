@@ -1207,9 +1207,14 @@ end
 -- get the given toolchain
 function project.toolchain(name, opt)
     opt = opt or {}
-    local toolchain_name = toolchain.parsename(name) -- we need to ignore `@packagename`
+    local parseinfo = toolchain.parsename(name) -- we need to ignore `@packagename`
+    local toolchain_name = parseinfo.name
     local info = project._toolchains()[toolchain_name]
     if info == nil and opt.namespace then
+        local requirestr = parseinfo.requirestr
+        if requirestr then
+            toolchain_name = toolchain_name .. "[" .. requirestr .. "]"
+        end
         info = project._toolchains()[opt.namespace .. "::" .. toolchain_name]
     end
     if info then

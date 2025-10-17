@@ -26,7 +26,9 @@ toolchain("mingw")
 
     on_check("check")
     on_load(function (toolchain)
-        import("core.project.config")
+
+        -- use clang for llvm-mingw?
+        local use_clang = toolchain:config("clang")
 
         -- get cross
         local cross
@@ -49,34 +51,38 @@ toolchain("mingw")
         end
 
         -- set toolset
+        local cc = use_clang and "clang" or "gcc"
+        local cxx = use_clang and "clang++" or "g++"
+        local ar = use_clang and "llvm-ar" or "ar"
+        local ranlib = use_clang and "llvm-ranlib" or "ranlib"
         if is_host("windows") and bindir then
             -- @note we uses bin/ar.exe instead of bin/cross-gcc-ar.exe, @see https://github.com/xmake-io/xmake/issues/807#issuecomment-635779210
-            toolchain:add("toolset", "ar", path.join(bindir, "ar"))
+            toolchain:add("toolset", "ar", path.join(bindir, ar))
             toolchain:add("toolset", "strip", path.join(bindir, "strip"))
-            toolchain:add("toolset", "ranlib", path.join(bindir, "ranlib"))
+            toolchain:add("toolset", "ranlib", path.join(bindir, ranlib))
             toolchain:add("toolset", "objcopy", path.join(bindir, "objcopy"))
         end
-        toolchain:add("toolset", "cc", cross .. "gcc")
-        toolchain:add("toolset", "cxx", cross .. "g++", cross .. "gcc")
-        toolchain:add("toolset", "cpp", cross .. "gcc -E")
-        toolchain:add("toolset", "as", cross .. "gcc")
-        toolchain:add("toolset", "ld", cross .. "g++", cross .. "gcc")
-        toolchain:add("toolset", "sh", cross .. "g++", cross .. "gcc")
-        toolchain:add("toolset", "ar", cross .. "ar")
+        toolchain:add("toolset", "cc", cross .. cc)
+        toolchain:add("toolset", "cxx", cross .. cxx, cross .. cc)
+        toolchain:add("toolset", "cpp", cross .. cc .. " -E")
+        toolchain:add("toolset", "as", cross .. cc)
+        toolchain:add("toolset", "ld", cross .. cxx, cross .. cc)
+        toolchain:add("toolset", "sh", cross .. cxx, cross .. cc)
+        toolchain:add("toolset", "ar", cross .. ar)
         toolchain:add("toolset", "strip", cross .. "strip")
-        toolchain:add("toolset", "ranlib", cross .. "ranlib")
+        toolchain:add("toolset", "ranlib", cross .. ranlib)
         toolchain:add("toolset", "objcopy", cross .. "objcopy")
         toolchain:add("toolset", "mrc", cross .. "windres")
         toolchain:add("toolset", "dlltool", cross .. "dlltool")
         if is_host("windows") and bindir then
             -- we use bin/gcc.exe if cross not found
             -- @see https://github.com/xmake-io/xmake/issues/977#issuecomment-704863677
-            toolchain:add("toolset", "cc", path.join(bindir, "gcc"))
-            toolchain:add("toolset", "cxx", path.join(bindir, "g++"), path.join(bindir, "gcc"))
-            toolchain:add("toolset", "cpp", path.join(bindir, "gcc -E"))
-            toolchain:add("toolset", "as", path.join(bindir, "gcc"))
-            toolchain:add("toolset", "ld", path.join(bindir, "g++"), path.join(bindir, "gcc"))
-            toolchain:add("toolset", "sh", path.join(bindir, "g++"), path.join(bindir, "gcc"))
+            toolchain:add("toolset", "cc", path.join(bindir, cc))
+            toolchain:add("toolset", "cxx", path.join(bindir, cxx), path.join(bindir, cc))
+            toolchain:add("toolset", "cpp", path.join(bindir, cc .. " -E"))
+            toolchain:add("toolset", "as", path.join(bindir, cc))
+            toolchain:add("toolset", "ld", path.join(bindir, cxx), path.join(bindir, cc))
+            toolchain:add("toolset", "sh", path.join(bindir, cxx), path.join(bindir, cc))
             toolchain:add("toolset", "mrc", path.join(bindir, "windres"))
             toolchain:add("toolset", "dlltool", path.join(bindir, "dlltool"))
         end
