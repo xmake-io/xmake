@@ -29,6 +29,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
+#define XM_IO_BLOCK_MAXN                  (TB_STREAM_BLOCK_MAXN * 10)
+
 #define xm_io_file_is_file(file)          ((file)->type == XM_IO_FILE_TYPE_FILE)
 #define xm_io_file_is_std(file)           ((file)->type != XM_IO_FILE_TYPE_FILE)
 #define xm_io_file_is_tty(file)           (!!((file)->type & XM_IO_FILE_FLAG_TTY))
