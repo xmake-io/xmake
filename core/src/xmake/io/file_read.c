@@ -185,7 +185,11 @@ static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
         xm_io_return_error(lua, "init buffer failed!");
 
     tb_byte_t* data = tb_buffer_resize(&file->rcache, XM_IO_BLOCK_MAXN);
-    tb_assert(data);
+    if (!data)
+    {
+        tb_buffer_exit(&buf);
+        xm_io_return_error(lua, "out of memory: failed to resize read cache");
+    }
 
     // read all
     tb_stream_ref_t stream = file->u.file_ref;
