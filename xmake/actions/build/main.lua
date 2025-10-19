@@ -37,6 +37,7 @@ import("check", {alias = "check_targets"})
 import("private.cache.build_cache")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("private.utils.statistics")
+import("private.action.utils", {alias = "action_utils"})
 
 -- try building it
 function _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname)
@@ -194,13 +195,7 @@ function main(opt)
     project.lock()
 
     -- config it first
-    local targetname
-    local group_pattern = option.get("group")
-    if group_pattern then
-        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
-    else
-        targetname = option.get("target")
-    end
+    local targetname, group_pattern = action_utils.get_target_and_group()
     task.run("config", {}, {disable_dump = true})
 
     -- enter project directory

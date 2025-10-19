@@ -31,6 +31,7 @@ import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("private.detect.check_targetname")
 import("lib.detect.find_tool")
+import("private.action.utils", {alias = "action_utils"})
 
 -- run target
 function _do_run_target(target)
@@ -203,13 +204,7 @@ function main()
     end
 
     -- check targets first
-    local targetname
-    local group_pattern = option.get("group")
-    if group_pattern then
-        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
-    else
-        targetname = option.get("target")
-    end
+    local targetname, group_pattern = action_utils.get_target_and_group()
     _check_targets(targetname, group_pattern)
 
     -- enter project directory

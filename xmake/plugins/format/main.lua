@@ -26,6 +26,7 @@ import("core.project.project")
 import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
+import("private.action.utils", {alias = "action_utils"})
 
 -- match source files
 function _match_sourcefiles(sourcefile, filepatterns)
@@ -173,14 +174,7 @@ function main()
         table.insert(argv, "--verbose")
     end
 
-    local targetname
-    local group_pattern = option.get("group")
-    if group_pattern then
-        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
-    else
-        targetname = option.get("target")
-    end
-
+    local targetname, group_pattern = action_utils.get_target_and_group()
     local targets = _get_targets(targetname, group_pattern)
     if option.get("files") then
         local filepatterns = _get_file_patterns(option.get("files"))

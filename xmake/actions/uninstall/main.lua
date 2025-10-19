@@ -25,14 +25,15 @@ import("core.platform.platform")
 import("core.base.privilege")
 import("privilege.sudo")
 import("uninstall")
+import("private.action.utils", {alias = "action_utils"})
 
 function main()
 
     -- load config first
     task.run("config", {require = false}, {disable_dump = true})
 
-    -- attempt to uninstall directly
-    local targetname = option.get("target")
+    -- attempt to uninstall directly, TODO group_pattern
+    local targetname, group_pattern = action_utils.get_target_and_group()
     try
     {
         function ()

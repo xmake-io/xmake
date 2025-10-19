@@ -22,7 +22,7 @@ task("test")
     set_category("action")
     on_run("main")
     set_menu {
-        usage = "xmake test [options] [target] [arguments]",
+        usage = "xmake test [options] [tests]",
         description = "Run the project tests.",
         options = {
             {'g', "group",      "kv",  nil  , "Run all tests of the given group. It support path pattern matching.",

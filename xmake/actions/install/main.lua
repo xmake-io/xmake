@@ -27,6 +27,7 @@ import("core.platform.platform")
 import("core.base.privilege")
 import("privilege.sudo")
 import("install")
+import("private.action.utils", {alias = "action_utils"})
 
 -- check targets
 function _check_targets(targetname, group_pattern)
@@ -68,13 +69,7 @@ function main()
     task.run("config", {require = false}, {disable_dump = true})
 
     -- check targets first
-    local targetname
-    local group_pattern = option.get("group")
-    if group_pattern then
-        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
-    else
-        targetname = option.get("target")
-    end
+    local targetname, group_pattern = action_utils.get_target_and_group()
     _check_targets(targetname, group_pattern)
 
     -- attempt to install directly

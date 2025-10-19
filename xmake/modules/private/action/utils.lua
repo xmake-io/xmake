@@ -15,31 +15,20 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
--- @file        targets.lua
+-- @file        utils.lua
 --
 
 -- imports
 import("core.base.option")
-import("core.project.config")
-import("core.project.project")
-import("core.platform.platform")
-import(".showlist")
 
--- show all targets (optionally filtered by group)
-function main()
-    config.load()
-
-    local targets = {}
+-- get target name and group pattern from option
+function get_target_and_group()
+    local targetname
     local group_pattern = option.get("group")
     if group_pattern then
         group_pattern = "^" .. path.pattern(group_pattern) .. "$"
+    else
+        targetname = option.get("target")
     end
-    for name, target in pairs(project.targets()) do
-        local group = target:get("group")
-        if (target:is_default() and not group_pattern) or (group_pattern and group and group:match(group_pattern)) then
-            table.insert(targets, name)
-        end
-    end
-
-    showlist(targets)
+    return targetname, group_pattern
 end
