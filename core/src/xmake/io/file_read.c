@@ -57,7 +57,7 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     tb_hong_t   size = tb_stream_size(stream);
     while (size < 0 || (offset = tb_stream_offset(stream)) < size)
     {
-        tb_long_t real = tb_stream_peek(stream, &data, TB_STREAM_BLOCK_MAXN);
+        tb_long_t real = tb_stream_peek(stream, &data, XM_IO_BLOCK_MAXN);
         if (real > 0)
         {
             tb_char_t const* e = tb_strnchr((tb_char_t const*)data, real, '\n');
@@ -184,12 +184,18 @@ static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
     if (!tb_buffer_init(&buf))
         xm_io_return_error(lua, "init buffer failed!");
 
+    tb_byte_t* data = tb_buffer_resize(&file->rcache, XM_IO_BLOCK_MAXN);
+    if (!data)
+    {
+        tb_buffer_exit(&buf);
+        xm_io_return_error(lua, "out of memory: failed to resize read cache");
+    }
+
     // read all
-    tb_byte_t           data[TB_STREAM_BLOCK_MAXN];
-    tb_stream_ref_t     stream = file->u.file_ref;
+    tb_stream_ref_t stream = file->u.file_ref;
     while (!tb_stream_beof(stream))
     {
-        tb_long_t real = tb_stream_read(stream, data, sizeof(data));
+        tb_long_t real = tb_stream_read(stream, data, XM_IO_BLOCK_MAXN);
         if (real > 0)
             tb_buffer_memncat(&buf, data, real);
         else if (!real)
