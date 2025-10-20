@@ -51,6 +51,8 @@ function _add_vsenv(toolchain, name, curenvs)
 end
 
 function main(toolchain, suffix)
+    import("core.project.project")
+
     local target
     if toolchain:is_arch("x86_64", "x64") then
         target = "x86_64"
@@ -79,7 +81,7 @@ function main(toolchain, suffix)
             end
         end
 
-        if is_host("linux") then
+        if is_host("linux") or project.policy("build.optimization.lto") then
             toolchain:add("ldflags", "-fuse-ld=lld-link" .. suffix)
             toolchain:add("shflags", "-fuse-ld=lld-link" .. suffix)
         end
