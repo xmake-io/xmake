@@ -28,6 +28,7 @@ import("core.platform.platform")
 import("core.theme.theme")
 import("async.runjobs")
 import("private.action.run.runenvs")
+import("private.action.utils", {alias = "action_utils"})
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
 import("utils.progress")
@@ -459,10 +460,7 @@ end
 -- get tests, export this for the `project` plugin
 function get_tests()
     local tests = {}
-    local group_pattern = option.get("group")
-    if group_pattern then
-        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
-    end
+    local _, group_pattern = action_utils.get_target_and_group()
     for _, target in ipairs(project.ordertargets()) do
         for _, name in ipairs(target:get("tests")) do
             local extra = target:extraconf("tests", name)
@@ -513,7 +511,7 @@ function get_tests()
             end
 
             local group = testinfo.group
-            if (not group_pattern) or (group_pattern and group and group:match(group_pattern)) then
+            if (not group_pattern) or (group_pattern and group and action_utils.any_match(group_pattern, group)) then
                 tests[testname] = testinfo
             end
         end

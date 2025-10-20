@@ -40,7 +40,7 @@ function _check_targets(targetname, group_pattern)
         -- install default or all targets
         for _, target in pairs(project.targets()) do
             local group = target:get("group")
-            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
+            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and action_utils.any_match(group_pattern, group)) then
                 table.insert(targets, target)
             end
         end
@@ -108,10 +108,12 @@ function main()
                 if sudo.has() and option.get("admin") then
 
                     -- install target with administrator permission
-                    sudo.execl(path.join(os.scriptdir(), "install_admin.lua"), {
-                        targetname or (option.get("all") and "__all" or "__def"),
-                        group_pattern or "", option.get("installdir") or "",
-                        option.get("prefix")})
+                    for _, pattern in ipairs(group_pattern or {""}) do
+                        sudo.execl(path.join(os.scriptdir(), "install_admin.lua"), {
+                            targetname or (option.get("all") and "__all" or "__def"),
+                            pattern, option.get("installdir") or "",
+                            option.get("prefix")})
+                    end
                     cprint("${color.success}install ok!")
                     ok = true
                 end

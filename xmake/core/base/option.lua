@@ -183,7 +183,19 @@ function option.parse(argv, options, opt)
 
             -- save option
             if match_opt and ((arg.type == "option" and match_opt[3] ~= "k") or (arg.type == "flag" and match_opt[3] == "k")) then
-                results[match_opt[2] or match_opt[1]] = option.boolean(arg.value)
+                local name = match_opt[2] or match_opt[1]
+                if match_opt[3] == "kvs" then
+                    local o = results[name]
+                    if not o then
+                        results[name] = {}
+                        o = results[name]
+                    end
+                    table.insert(o, arg.value)
+                elseif results[name] then
+                    return nil, string.format("Duplicate %s: %s", arg.type, arg)
+                else
+                    results[name] = option.boolean(arg.value)
+                end
             else
                 if opt.allow_unknown then
                     results[arg.key] = option.boolean(arg.value)
@@ -697,10 +709,14 @@ function option.show_options(options, taskname)
             local mode      = opt[3]
             local default   = opt[4]
 
-            local title1, title2
-            local kvplaceholder = mode == "kv" and ((type(default) == "boolean") and "[y|n]" or(name and name:upper() or "XXX"))
+            local title1, title2, kvplaceholder
+            if mode == "kv" and (type(default) == "boolean") then
+                kvplaceholder = "[y|n]"
+            else
+                kvplaceholder = name and name:upper() or "XXX"
+            end
             if shortname then
-                if mode == "kv" then
+                if mode == "kv" or mode == "kvs" then
                     title1 = "-" .. shortname .. " " .. kvplaceholder
                 else
                     title1 = "-" .. shortname
@@ -715,6 +731,8 @@ function option.show_options(options, taskname)
                     kv = name
                 elseif mode == "kv" then
                     kv = name .. "=" .. kvplaceholder
+                elseif mode == "kvs" then
+                    kv = name .. "=" .. kvplaceholder .. " ..."
                 elseif mode == "vs" then
                     kv = name .. " ..."
                 else

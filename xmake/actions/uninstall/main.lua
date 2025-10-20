@@ -34,10 +34,11 @@ function main()
 
     -- attempt to uninstall directly, TODO group_pattern
     local targetname, group_pattern = action_utils.get_target_and_group()
+
     try
     {
         function ()
-            uninstall(targetname)
+            uninstall(targetname, group_pattern)
             cprint("${color.success}uninstall ok!")
         end,
 
@@ -51,7 +52,7 @@ function main()
                     local ok = try
                     {
                         function ()
-                            uninstall(targetname)
+                            uninstall(targetname, group_pattern)
                             cprint("${color.success}uninstall ok!")
                             return true
                         end
@@ -69,10 +70,12 @@ function main()
                 if sudo.has() and option.get("admin") then
 
                     -- uninstall target with administrator permission
-                    sudo.execl(path.join(os.scriptdir(), "uninstall_admin.lua"), {
-                        targetname or "__all",
-                        option.get("installdir") or "",
-                        option.get("prefix")})
+                    for _, pattern in ipairs(group_pattern or {""}) do
+                        sudo.execl(path.join(os.scriptdir(), "uninstall_admin.lua"), {
+                            targetname or "__all", pattern,
+                            option.get("installdir") or "",
+                            option.get("prefix")})
+                    end
 
                     -- trace
                     cprint("${color.success}uninstall ok!")

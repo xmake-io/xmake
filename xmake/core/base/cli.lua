@@ -80,7 +80,7 @@ function cli.parsev(argv, flags)
     while index <= #argv do
         value = argv[index]
         if raw or not value:startswith("-") or #value < 2 then
-            -- all args after "--" or first arg, args don"t start with "-", and short args (include a single char "-")
+            -- all args after "--" or first arg, args don't start with "-", and short args (include a single char "-")
             raw = true
             table.insert(parsed, cli._make_arg(value, argv, index))
         elseif value == "--" then

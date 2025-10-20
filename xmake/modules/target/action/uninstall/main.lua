@@ -214,7 +214,7 @@ function main(target, opt)
         wprint("please use `xmake install -o installdir` or `set_installdir` to set install directory.")
         return
     end
-    print("uninstalling %s to %s ..", target:name(), installdir)
+    print("uninstalling %s from %s ..", target:name(), installdir)
 
     if target:is_binary() then
         _uninstall_binary(target, opt)

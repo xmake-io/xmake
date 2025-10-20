@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.project.rule")
 import("core.project.project")
 import("target.action.install", {alias = "_do_install_target"})
+import("private.action.utils", {alias = "action_utils"})
 
 -- on install target
 function _on_install_target(target)
@@ -119,7 +120,7 @@ function main(targetname, group_pattern)
     else
         for _, target in ipairs(project.ordertargets()) do
             local group = target:get("group")
-            if (target:is_default() and not group_pattern) or targetname == "__all" or (group_pattern and group and group:match(group_pattern)) then
+            if (target:is_default() and not group_pattern) or targetname == "__all" or (group_pattern and group and action_utils.any_match(group_pattern, group)) then
                 table.insert(targets, target)
             end
         end

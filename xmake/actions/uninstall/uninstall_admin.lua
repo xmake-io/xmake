@@ -25,8 +25,11 @@ import("core.project.project")
 import("core.platform.platform")
 import("uninstall")
 
-function main(targetname, installdir, prefix)
+function main(targetname, group_pattern, installdir, prefix)
     local verbose = option.get("verbose")
+    if group_pattern and #group_pattern == 0 then
+        group_pattern = nil
+    end
     if installdir and #installdir == 0 then
         installdir = nil
     end
@@ -46,6 +49,6 @@ function main(targetname, installdir, prefix)
     end
 
     -- uninstall target
-    uninstall(targetname ~= "__all" and targetname or nil)
+    uninstall(targetname ~= "__all" and targetname or nil, group_pattern)
     option.restore()
 end

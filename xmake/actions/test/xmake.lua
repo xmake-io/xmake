@@ -25,10 +25,10 @@ task("test")
         usage = "xmake test [options] [tests]",
         description = "Run the project tests.",
         options = {
-            {'g', "group",      "kv",  nil  , "Run all tests of the given group. It support path pattern matching.",
+            {'g', "group",      "kvs", nil  , "Run all tests of the given group. It support multiple arguments and path pattern matching.",
                                               "e.g.",
                                               "    xmake test -g test",
-                                              "    xmake test -g test_*",
+                                              "    xmake test -g test_* -g bar_*",
                                               "    xmake test --group=benchmark/*"                                  },
             {'w', "workdir",    "kv",  nil  , "Work directory of running targets, default is folder of targetfile",
                                               "e.g.",

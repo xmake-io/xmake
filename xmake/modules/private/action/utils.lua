@@ -24,11 +24,24 @@ import("core.base.option")
 -- get target name and group pattern from option
 function get_target_and_group()
     local targetname
-    local group_pattern = option.get("group")
-    if group_pattern then
-        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
+    local group_pattern
+    if option.get("group") then
+        group_pattern = {}
+        for _, elem in ipairs(option.get("group")) do
+            table.insert(group_pattern, "^" .. path.pattern(elem) .. "$")
+        end
     else
         targetname = option.get("target")
     end
     return targetname, group_pattern
+end
+
+-- determine if any of the pattern matches the name
+function any_match(group_pattern, group)
+    for _, pattern in ipairs(group_pattern) do
+        if group:match(pattern) then
+            return true
+        end
+    end
+    return false
 end

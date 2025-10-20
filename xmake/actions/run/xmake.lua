@@ -43,10 +43,10 @@ task("run")
                 {
                     {'d', "debug",      "k",   nil  , "Run and debug the given target."                                    }
                 ,   {'a', "all",        "k",   nil  , "Run all targets."                                                   }
-                ,   {'g', "group",      "kv",  nil  , "Run all targets of the given group. It support path pattern matching.",
+                ,   {'g', "group",      "kvs", nil  , "Run all targets of the given group. It support multiple arguments and path pattern matching.",
                                                       "e.g.",
                                                       "    xmake run -g test",
-                                                      "    xmake run -g test_*",
+                                                      "    xmake run -g test_* -g bar_*",
                                                       "    xmake run --group=benchmark/*"                                  }
                 ,   {'w', "workdir",    "kv",  nil  , "Work directory of running targets, default is folder of targetfile",
                                                       "e.g.",
