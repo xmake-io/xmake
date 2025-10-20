@@ -81,12 +81,7 @@ function main(toolchain, suffix)
             end
         end
 
-        if project.policy("build.optimization.lto") then
-            toolchain:add("ldflags", "-fuse-ld=lld-link")
-            toolchain:add("shflags", "-fuse-ld=lld-link")
-        end
-
-        if is_host("linux") then
+        if is_host("linux") or project.policy("build.optimization.lto") then
             toolchain:add("ldflags", "-fuse-ld=lld-link" .. suffix)
             toolchain:add("shflags", "-fuse-ld=lld-link" .. suffix)
         end
