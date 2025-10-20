@@ -57,7 +57,7 @@ function _do_test_target(target, opt)
     local errors
     local rundir = opt.rundir or target:rundir()
     local targetfile = path.absolute(target:targetfile())
-    local runargs = table.wrap(opt.runargs or target:get("runargs"))
+    local runargs = table.wrap(option.get("args") or opt.runargs or target:get("runargs"))
     local autogendir = path.join(target:autogendir(), "tests")
     local logname = opt.name:gsub("[/\\>=<|%*]", "_")
     local outfile = path.absolute(path.join(autogendir, logname .. ".out"))
