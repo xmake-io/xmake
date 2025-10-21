@@ -61,23 +61,28 @@ function _do_test_target(target, opt)
     local logname = opt.name:gsub("[/\\>=<|%*]", "_")
     local outfile = path.absolute(path.join(autogendir, logname .. ".out"))
     local errfile = path.absolute(path.join(autogendir, logname .. ".err"))
-    os.tryrm(outfile)
-    os.tryrm(errfile)
+    if opt.realtime_output then
+        outfile = nil
+        errfile = nil
+        assert(not opt.pass_outputs and not opt.fail_outputs, "add_tests(%s): we cannot check pass_outputs/fail_outputs in real output mode", opt.name)
+    else
+        os.tryrm(outfile)
+        os.tryrm(errfile)
+    end
     os.mkdir(autogendir)
-
     local should_fail = opt.should_fail or false
     local run_timeout = opt.run_timeout
     local ok, syserrors = os.execv(targetfile, runargs, {try = true, timeout = run_timeout,
         curdir = rundir, envs = envs, stdout = outfile, stderr = errfile})
-    local outdata = os.isfile(outfile) and io.readfile(outfile) or ""
-    local errdata = os.isfile(errfile) and io.readfile(errfile) or ""
+    local outdata = (outfile and os.isfile(outfile)) and io.readfile(outfile) or ""
+    local errdata = (errfile and os.isfile(errfile)) and io.readfile(errfile) or ""
     if outdata and #outdata > 0 then
         opt.stdout = outdata
     end
     if errdata and #errdata > 0 then
         opt.stderr = errdata
     end
-    if opt.trim_output then
+    if opt.trim_output and outdata then
         outdata = outdata:trim()
     end
     if ok ~= 0 then
@@ -93,8 +98,12 @@ function _do_test_target(target, opt)
             end
         end
     end
-    os.tryrm(outfile)
-    os.tryrm(errfile)
+    if outfile then
+        os.tryrm(outfile)
+    end
+    if errfile then
+        os.tryrm(errfile)
+    end
 
     local passed
     if ok == 0 then
