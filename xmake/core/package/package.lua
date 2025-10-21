@@ -1485,8 +1485,10 @@ end
 -- get versions
 function _instance:versions()
     if self._VERSIONS == nil then
+        -- we need to sort the build number in semver list
+        -- https://github.com/xmake-io/xmake/issues/6953
         local versions = {}
-        for version, _ in pairs(self:_versions_list()) do
+        for version, _ in table.orderpairs(self:_versions_list()) do
             -- remove the url alias prefix if exists
             local pos = version:find(':', 1, true)
             if pos then
