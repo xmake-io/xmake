@@ -125,3 +125,41 @@ function get_project_targets()
     end
     return project.targets()
 end
+
+-- check target toolchains
+function check_target_toolchains()
+    -- check toolchains configuration for all target in the current project
+    -- @note we must check targets after loading options
+    for _, target in pairs(project.targets()) do
+        if target:is_enabled() and (target:get("toolchains") or
+                                    not target:is_plat(config.get("plat")) or
+                                    not target:is_arch(config.get("arch"))) then
+
+            -- check platform toolchains first
+            -- `target/set_plat()` and target:toolchains() need it
+            target:platform():check()
+
+            -- check target toolchains next
+            local target_toolchains = target:get("toolchains")
+            if target_toolchains then
+                target_toolchains = hashset.from(table.wrap(target_toolchains))
+                for _, toolchain_inst in pairs(target:toolchains()) do
+                    -- check toolchains for `target/set_toolchains()`
+                    if not toolchain_inst:check() and target_toolchains:has(toolchain_inst:name()) then
+                        raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
+                    end
+                end
+            end
+        elseif not target:get("toolset") then
+            -- we only abort it when we know that toolchains of platform and target do not found
+            local toolchain_found
+            for _, toolchain_inst in pairs(target:toolchains()) do
+                if toolchain_inst:is_standalone() then
+                    toolchain_found = true
+                end
+            end
+            assert(toolchain_found, "target(%s): toolchain not found!", target:name())
+        end
+    end
+end
+
