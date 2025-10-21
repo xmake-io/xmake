@@ -479,6 +479,9 @@ function main(outputdir, vsinfo)
             -- install and update requires
             install_requires()
 
+            -- check target toolchains
+            target_utils.check_target_toolchains()
+
             -- load targets
             project.load_targets()
 
