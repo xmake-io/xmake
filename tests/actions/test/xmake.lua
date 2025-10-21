@@ -41,7 +41,7 @@ target("test_15")
     set_kind("binary")
     set_default(false)
     add_files("src/test_1.cpp")
-    add_tests("stub_n", {files = "tests/stub_n*.cpp", defines = "STUB_N"})
+    add_tests("stub_n", {realtime_output = true, files = "tests/stub_n*.cpp", defines = "STUB_N"})
 
 target("test_timeout")
     set_kind("binary")
