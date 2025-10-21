@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.hashset")
+import("core.project.config")
 import("core.project.project")
 
 -- Is this target has these tools?
