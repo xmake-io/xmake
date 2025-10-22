@@ -392,6 +392,14 @@ function _fix_cxx_compiler_cmake(package, envs)
     end
 end
 
+-- @see https://github.com/ziglang/zig/issues/22213
+function _fix_zigcc_linker_cmake(package, envs)
+    if package:has_tool("cc", "zig_cc") then
+        envs.CMAKE_C_LINKER_DEPFILE_SUPPORTED = "FALSE"
+        envs.CMAKE_CXX_LINKER_DEPFILE_SUPPORTED = "FALSE"
+    end
+end
+
 -- insert configs from envs
 function _insert_configs_from_envs(configs, envs, opt)
     opt = opt or {}
@@ -418,6 +426,7 @@ function _get_configs_for_generic(package, configs, opt)
     if package:is_library() then
         envs.BUILD_SHARED_LIBS = package:config("shared") and "ON" or "OFF"
     end
+    _fix_zigcc_linker_cmake(package, envs)
     _insert_configs_from_envs(configs, envs, opt)
 end
 
