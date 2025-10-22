@@ -54,6 +54,11 @@ toolchain("zig")
                 table.join2(paths, envs.PATH)
             end
         end
+        local sdkdir = toolchain:sdkdir()
+        if sdkdir then
+            table.insert(paths, sdkdir)
+        end
+
         local zig = get_config("zc")
         local zig_version
         if not zig then
