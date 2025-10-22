@@ -30,7 +30,7 @@ toolchain("zig")
         -- @see https://github.com/xmake-io/xmake/issues/5610
         function _setup_zigcc_wrapper(zig)
             local script_suffix = is_host("windows") and ".cmd" or ""
-            for _, tool in ipairs({"cc", "c++", "ar", "ranlib", "objcopy", "dlltool"}) do
+            for _, tool in ipairs({"cc", "c++", "ar", "ranlib", "lib", "ld.lld", "lld-link", "wasm-ld", "objcopy", "dlltool", "rc"}) do
                 local wrapper_path = path.join(os.tmpdir(), "zigcc", tool) .. script_suffix
                 if not os.isfile(wrapper_path) then
                     if is_host("windows") then
@@ -86,15 +86,20 @@ toolchain("zig")
         if toolchain:config("zigcc") ~= false then
             -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
             -- @see https://github.com/xmake-io/xmake/issues/3251
-            toolchain:set("toolset", "cc",      toolchain:config("toolset_cc"))
-            toolchain:set("toolset", "cxx",     toolchain:config("toolset_c++"))
-            toolchain:set("toolset", "ld",      toolchain:config("toolset_c++"))
-            toolchain:set("toolset", "sh",      toolchain:config("toolset_c++"))
-            toolchain:set("toolset", "ar",      toolchain:config("toolset_ar"))
-            toolchain:set("toolset", "ranlib",  toolchain:config("toolset_ranlib"))
-            toolchain:set("toolset", "objcopy", toolchain:config("toolset_objcopy"))
-            toolchain:set("toolset", "as",      toolchain:config("toolset_cc"))
-            toolchain:set("toolset", "dlltool", toolchain:config("toolset_dlltool"))
+            toolchain:set("toolset", "cc",       toolchain:config("toolset_cc"))
+            toolchain:set("toolset", "cxx",      toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "ld",       toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "sh",       toolchain:config("toolset_c++"))
+            toolchain:set("toolset", "ar",       toolchain:config("toolset_ar"))
+            toolchain:set("toolset", "ranlib",   toolchain:config("toolset_ranlib"))
+            toolchain:set("toolset", "lib",      toolchain:config("toolset_lib"))
+            toolchain:set("toolset", "ld.lld",   toolchain:config("toolset_ld.lld"))
+            toolchain:set("toolset", "lld-link", toolchain:config("toolset_lld-link"))
+            toolchain:set("toolset", "wasm-ld",  toolchain:config("toolset_wasm-ld"))
+            toolchain:set("toolset", "objcopy",  toolchain:config("toolset_objcopy"))
+            toolchain:set("toolset", "as",       toolchain:config("toolset_cc"))
+            toolchain:set("toolset", "dlltool",  toolchain:config("toolset_dlltool"))
+            toolchain:set("toolset", "rc",       toolchain:config("toolset_rc"))
         end
         toolchain:set("toolset", "zc",   zig)
         toolchain:set("toolset", "zcar", zig)

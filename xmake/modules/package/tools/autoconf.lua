@@ -458,6 +458,9 @@ function buildenvs(package, opt)
                 end
             end
         end
+        if ld and package:has_tool("ld", "zig_cc") then
+            envs.LD = package:build_getenv("ld.lld")
+        end
         -- we need use clang++ as cxx, autoconf will use it as linker
         -- https://github.com/xmake-io/xmake/issues/2170
         local cxx = envs.CXX
