@@ -99,7 +99,7 @@ toolchain("zig")
             toolchain:set("toolset", "objcopy",  toolchain:config("toolset_objcopy"))
             toolchain:set("toolset", "as",       toolchain:config("toolset_cc"))
             toolchain:set("toolset", "dlltool",  toolchain:config("toolset_dlltool"))
-            toolchain:set("toolset", "rc",       toolchain:config("toolset_rc"))
+            toolchain:set("toolset", "mrc",      toolchain:config("toolset_rc"))
         end
         toolchain:set("toolset", "zc",   zig)
         toolchain:set("toolset", "zcar", zig)
