@@ -131,7 +131,7 @@ function _find_cuda(sdkdir, sdkver)
     local includedirs = {path.join(sdkdir, "include")}
 
     -- get version
-    local version = find_programver(path.join(bindir, "nvcc"), {parse = "release (%d+%.%d+),"})
+    local sdkver = find_programver(path.join(bindir, "nvcc"), {parse = "release (%d+%.%d+),"})
 
     -- find msbuildextensionsdir on windows
     local msbuildextensionsdir
@@ -140,7 +140,7 @@ function _find_cuda(sdkdir, sdkver)
     end
 
     -- get toolchains
-    return {sdkdir = sdkdir, bindir = bindir, version = version, linkdirs = linkdirs, includedirs = includedirs, msbuildextensionsdir = msbuildextensionsdir}
+    return {sdkdir = sdkdir, bindir = bindir, sdkver = sdkver, linkdirs = linkdirs, includedirs = includedirs, msbuildextensionsdir = msbuildextensionsdir}
 end
 
 -- find cuda sdk toolchains
