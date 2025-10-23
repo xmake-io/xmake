@@ -27,11 +27,21 @@ import("core.project.config")
 import("core.cache.detectcache")
 
 -- find cuda sdk directory
-function _find_sdkdir(version)
+function _find_sdkdir(version, sdkdir)
 
     -- init the search directories
     local paths = {}
-    if version then
+    if sdkdir then
+        version = version or "*"
+        table.insert(paths, path.join(sdkdir, "bin"))
+        if is_host("macosx") then
+            table.insert(paths, path.join(sdkdir, format("CUDA-%s/bin", version)))
+        elseif is_host("windows") then
+            table.insert(paths, path.join(sdkdir, format("v%s\\bin", version)))
+        else
+            table.insert(paths, path.join(sdkdir, format("cuda-%s/bin", version)))
+        end
+    elseif version then
         if is_host("macosx") then
             table.insert(paths, format("/Developer/NVIDIA/CUDA-%s/bin", version))
         elseif is_host("windows") then
@@ -71,22 +81,28 @@ function _find_msbuildextensionsdir(sdkdir)
 end
 
 -- find cuda sdk toolchains
-function _find_cuda(sdkdir)
+function _find_cuda(sdkdir, sdkver)
+
+    -- handle sdkdir as version
+    if sdkdir and sdkdir:match("^[%d*]+%.[%d*]+$") then
+        sdkver = sdkdir
+        sdkdir = nil
+    end
 
     -- check sdkdir
-    if sdkdir and not os.isdir(sdkdir) and not sdkdir:match("^[%d*]+%.[%d*]+$") then
-        raise("invalid cuda version/location: " .. sdkdir)
+    if sdkdir and not os.isdir(sdkdir) then
+        raise("invalid cuda location: " .. sdkdir)
+    end
+
+    -- check sdkver
+    if sdkver and not sdkver:match("^[%d*]+%.[%d*]+$") then
+        raise("invalid cuda version: " .. sdkver)
     end
 
     -- find cuda directory
-    if not sdkdir then
-        sdkdir = _find_sdkdir()
-    elseif sdkdir:match("^[%d*]+%.[%d*]+$") then
-        local cudaversion = sdkdir
-        sdkdir = _find_sdkdir(cudaversion)
-        if not sdkdir then
-            raise("cuda version %s not found!", cudaversion)
-        end
+    sdkdir = _find_sdkdir(sdkver, sdkdir)
+    if not sdkdir and sdkver then
+        raise("cuda version %s not found!", sdkver)
     end
 
     -- not found?
@@ -155,11 +171,12 @@ function main(sdkdir, opt)
     end
 
     -- find cuda
-    local cuda = _find_cuda(sdkdir or config.get("cuda") or global.get("cuda") or config.get("sdk"))
+    local cuda = _find_cuda(sdkdir or config.get("cuda") or global.get("cuda") or config.get("sdk"), opt.version or config.get("cuda_sdkver"))
     if cuda then
 
         -- save to config
         config.set("cuda", cuda.sdkdir, {force = true, readonly = true})
+        config.set("cuda_sdkver", cuda.sdkver, {force = true, readonly = true})
 
         -- trace
         if opt.verbose or option.get("verbose") then
