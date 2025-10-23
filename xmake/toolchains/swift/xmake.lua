@@ -33,6 +33,16 @@ toolchain("swift")
 
     -- on load
     on_load(function (toolchain)
-        toolchain:set("scshflags", "")
-        toolchain:set("scldflags", "")
+        if toolchain:is_plat("macosx") then
+            if not toolchain:config("xcode_sysroot") then
+                local xcode_dir     = get_config("xcode")
+                local xcode_sdkver  = toolchain:config("xcode_sdkver")
+                local xcode_sdkdir  = path.join(xcode_dir, "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk")
+                if os.isdir(xcode_sdkdir) then
+                    toolchain:config_set("xcode_sysroot", xcode_sdkdir)
+                end
+            end
+            -- load configurations
+            import(".xcode.load_" .. toolchain:plat())(toolchain)
+        end
     end)
