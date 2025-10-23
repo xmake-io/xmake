@@ -35,24 +35,25 @@ platform("windows")
                 config =
                 {
                     {category = "Visual Studio SDK Configuration"                                   }
-                ,   {nil, "vs",         "kv", "auto", "The Microsoft Visual Studio"
+                ,   {nil, "vs",          "kv", "auto", "The Microsoft Visual Studio"
                                                     , "  e.g. --vs=2017"                            }
-                ,   {nil, "vs_toolset", "kv", nil,    "The Microsoft Visual Studio Toolset Version"
+                ,   {nil, "vs_toolset",  "kv", nil,    "The Microsoft Visual Studio Toolset Version"
                                                     , "  e.g. --vs_toolset=14.0"                    }
-                ,   {nil, "vs_sdkver",  "kv", nil,    "The Windows SDK Version of Visual Studio"
+                ,   {nil, "vs_sdkver",   "kv", nil,    "The Windows SDK Version of Visual Studio"
                                                     , "  e.g. --vs_sdkver=10.0.15063.0"             }
-                ,   {nil, "vs_runtime", "kv", nil,    "The Runtime library of Visual Studio (deprecated, please use --runtimes)"
+                ,   {nil, "vs_runtime",  "kv", nil,    "The Runtime library of Visual Studio (deprecated, please use --runtimes)"
                                                     , values = {"MT", "MTd", "MD", "MDd"}           }
                 ,   {category = "Cuda SDK Configuration"                                            }
-                ,   {nil, "cuda",       "kv", "auto", "The Cuda SDK Directory"                      }
+                ,   {nil, "cuda",        "kv", "auto", "The Cuda SDK Directory"                     }
+                ,   {nil, "cuda_sdkver", "kv", "auto", "The Cuda SDK Version"                       }
                 ,   {category = "Qt SDK Configuration"                                              }
-                ,   {nil, "qt",         "kv", "auto", "The Qt SDK Directory"                        }
-                ,   {nil, "qt_host",    "kv", "auto", "The Qt Host SDK Directory"                   }
-                ,   {nil, "qt_sdkver",  "kv", "auto", "The Qt SDK Version"                          }
+                ,   {nil, "qt",          "kv", "auto", "The Qt SDK Directory"                       }
+                ,   {nil, "qt_host",     "kv", "auto", "The Qt Host SDK Directory"                  }
+                ,   {nil, "qt_sdkver",   "kv", "auto", "The Qt SDK Version"                         }
                 ,   {category = "WDK Configuration"                                                 }
-                ,   {nil, "wdk",        "kv", "auto", "The WDK Directory"                           }
-                ,   {nil, "wdk_sdkver", "kv", "auto", "The WDK Version"                             }
-                ,   {nil, "wdk_winver", "kv", "auto", "The WDK Windows Version"
+                ,   {nil, "wdk",         "kv", "auto", "The WDK Directory"                          }
+                ,   {nil, "wdk_sdkver",  "kv", "auto", "The WDK Version"                            }
+                ,   {nil, "wdk_winver",  "kv", "auto", "The WDK Windows Version"
                                                     , values = function (complete)
                                                         if complete then
                                                             return {"win10_rs3", "win10", "win81", "win8", "win7_sp3", "win7_sp2", "win7_sp1", "win7"}
@@ -61,22 +62,22 @@ platform("windows")
                                                         end
                                                     end                                             }
                 ,   {category = "Vcpkg Configuration"                                               }
-                ,   {nil, "vcpkg",      "kv", "auto", "The Vcpkg Directory"                         }
+                ,   {nil, "vcpkg",       "kv", "auto", "The Vcpkg Directory"                        }
                 }
 
             ,   global =
                 {
                     {category = "Visual Studio SDK Configuration"                                   }
-                ,   {nil, "vs",         "kv", "auto", "The Microsoft Visual Studio"                 }
+                ,   {nil, "vs",          "kv", "auto", "The Microsoft Visual Studio"                }
                 ,   {category = "Cuda SDK Configuration"                                            }
-                ,   {nil, "cuda",       "kv", "auto", "The Cuda SDK Directory"                      }
+                ,   {nil, "cuda",        "kv", "auto", "The Cuda SDK Directory"                     }
                 ,   {category = "Qt SDK Configuration"                                              }
-                ,   {nil, "qt",         "kv", "auto", "The Qt SDK Directory"                        }
-                ,   {nil, "qt_host",    "kv", "auto", "The Qt Host SDK Directory"                   }
+                ,   {nil, "qt",          "kv", "auto", "The Qt SDK Directory"                       }
+                ,   {nil, "qt_host",     "kv", "auto", "The Qt Host SDK Directory"                  }
                 ,   {category = "WDK Configuration"                                                 }
-                ,   {nil, "wdk",        "kv", "auto", "The WDK Directory"                           }
+                ,   {nil, "wdk",         "kv", "auto", "The WDK Directory"                          }
                 ,   {category = "Vcpkg Configuration"                                               }
-                ,   {nil, "vcpkg",      "kv", "auto", "The Vcpkg Directory"                         }
+                ,   {nil, "vcpkg",       "kv", "auto", "The Vcpkg Directory"                        }
                 }
             }
 

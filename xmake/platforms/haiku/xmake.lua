@@ -35,6 +35,7 @@ platform("haiku")
                 {
                     {category = "Cuda SDK Configuration"                                            }
                 ,   {nil, "cuda",           "kv", "auto",       "The Cuda SDK Directory"            }
+                ,   {nil, "cuda_sdkver",    "kv", "auto",       "The Cuda SDK Version"              }
                 ,   {category = "Qt SDK Configuration"                                              }
                 ,   {nil, "qt",             "kv", "auto",       "The Qt SDK Directory"              }
                 ,   {nil, "qt_host",        "kv", "auto",       "The Qt Host SDK Directory"         }
