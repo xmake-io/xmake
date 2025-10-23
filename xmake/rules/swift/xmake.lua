@@ -90,7 +90,8 @@ rule("swift.interop", function()
                     or language:startswith("cxx")
                     or language:startswith("gnu++")
                     or language:startswith("gnuxx") then
-                    local v = compinst:languageflags(language)
+                    -- c++26 currently prevent compilation of swift modules
+                    local v = compinst:languageflags(language:gsub("26", "23"):gsub("latest", "23"))
                     if v then return v end
                 end
             end
