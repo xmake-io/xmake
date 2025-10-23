@@ -49,6 +49,7 @@ function main(toolchain)
     toolchain:add("scflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
     toolchain:add("scshflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
     toolchain:add("scldflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
+    toolchain:add("scarflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
 
     toolchain:add("scshflags", "-emit-library")
     toolchain:add("scarflags", "-emit-library", "-static")

@@ -1,0 +1,8 @@
+target("cxx_interop")
+    set_kind("binary")
+    set_languages("cxx20")
+    add_files("lib/**.swift", {public = true})
+    add_files("src/**.cpp")
+    set_values("swift.modulename", "SwiftFibonacci")
+    set_values("swift.interop", "cxx")
+    set_values("swift.interop.headername", "fibonacci-Swift.h")

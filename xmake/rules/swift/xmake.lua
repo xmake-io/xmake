@@ -18,6 +18,165 @@
 -- @file        xmake.lua
 --
 
+rule("swift.interop", function()
+    set_sourcekinds("sc")
+    add_orders("swift.interop", "swift.build")
+    add_orders("swift.interop", "c++")
+    on_config(function(target)
+
+        import("core.base.json")
+
+        if not target:values("swift.interop") then
+            return
+        end
+
+        local sourcebatches = target:sourcebatches()
+        local sourcebatch = sourcebatches and sourcebatches["swift.build"]
+        local sourcefiles = sourcebatch and sourcebatch.sourcefiles
+        local enabled = false
+        for _, sourcefile in ipairs(sourcefiles) do
+            local fileconfig = target:fileconfig(sourcefile)
+            if fileconfig and fileconfig.public then
+                enabled = true
+                break
+            end
+        end
+        if not enabled then
+            return
+        end
+
+        local sc = target:tool("sc")
+        assert(sc, "No swift compiler found!")
+        local outdata, errdata = os.iorunv(sc, {"-print-target-info"})
+        assert(outdata, errdata)
+
+        local target_info = json.decode(outdata)
+        assert(target_info and target_info.paths and target_info.paths.runtimeResourcePath, "Failed to get swift resource path")
+        target:add("includedirs", target_info.runtimeResourcePath, {public = true})
+
+        local outdir = target:autogendir("swift")
+        target:add("includedirs", outdir, {public = true})
+
+        local mode = (type(target:values("swift.interop")) == "string") and target:values("swift.interop") or "objc"
+        if mode == "cxx" then
+            target:add("scflags", "-cxx-interoperability-mode=default")
+        end
+
+        local headername = (target:values("swift.interop.headername") or (target:name() .. "-Swift")) .. ".h"
+        local header = path.join(outdir, headername)
+        target:add("headerfiles", header)
+
+        target:data_set("swift.interop", mode)
+        target:data_set("swift.interop.outdir", outdir)
+    end)
+
+    on_prepare(function(target, jobgraph, opt)
+
+        if not target:data("swift.interop") then
+            return
+        end
+
+        import("utils.progress")
+        import("core.base.option")
+        import("core.language.language")
+        import("core.project.depend")
+
+        local function _get_target_cppversion()
+            local compinst = target:compiler("cxx")
+            local languages = target:get("languages")
+            for _, language in ipairs(languages) do
+                if language:startswith("c++")
+                    or language:startswith("cxx")
+                    or language:startswith("gnu++")
+                    or language:startswith("gnuxx") then
+                    local v = compinst:languageflags(language)
+                    if v then return v end
+                end
+            end
+        end
+
+        local mode = target:data("swift.interop")
+        local sc = target:tool("sc")
+        assert(sc, "No swift compiler found!")
+        local outdir = target:data("swift.interop.outdir")
+        if not os.isdir(outdir) then os.mkdir(outdir) end
+        assert(outdir)
+
+        local sourcebatches = target:sourcebatches()
+        local sourcebatch = sourcebatches and sourcebatches["swift.build"]
+        local sourcefiles = sourcebatch and sourcebatch.sourcefiles
+        local public_sourcefiles
+        for _, sourcefile in ipairs(sourcefiles) do
+            local fileconfig = target:fileconfig(sourcefile)
+            if fileconfig and fileconfig.public then
+                public_sourcefiles = public_sourcefiles or {}
+                table.insert(public_sourcefiles, sourcefile)
+            end
+        end
+
+        if public_sourcefiles then
+            local modulename = target:values("swift.modulename") or target:name()
+            local headername = (target:values("swift.interop.headername") or (target:name() .. "-Swift")) .. ".h"
+            local header = path.join(outdir, headername)
+
+            depend.on_changed(function()
+                jobgraph:add(target:fullname() .. "/gen_swift_header", function(index, total, opt)
+                    local stdflag
+                    if mode == "cxx" then
+                        local cxxstandard = _get_target_cppversion()
+                        if cxxstandard then
+                            stdflag = {"-Xcc", cxxstandard}
+                        end
+                    end
+
+                    if opt.progress then
+                        progress.show(
+                            opt.progress,
+                            "${clear}${color.build.target}<%s> generating.swift.header %s",
+                            target:fullname(),
+                            headername
+                        )
+                    end
+
+                    local compinst = import("core.tool.compiler").load("sc")
+                    local _scflags = compinst:compflags({target = target, sourcekind = "sc"})
+                    local scflags
+                    if target:has_tool("sc", "swift_frontend") then
+                        for _, scflag in ipairs(_scflags) do
+                            scflags = scflags or {}
+                            if not os.isfile(scflag) then
+                                table.insert(scflags, scflag)
+                            end
+                        end
+                    else
+                        scflags = _scflags
+                    end
+
+
+                    local emit_flag = mode == "cxx" and "-emit-clang-header-path" or "-emit-objc-header-path"
+
+                    local flags = table.join({
+                        "-frontend",
+                        "-typecheck",
+                        emit_flag,
+                        header,
+                        },
+                        scflags or {},
+                        stdflag or {},
+                        public_sourcefiles)
+                    if option.get("verbose") then print(os.args(table.join(sc, flags))) end
+
+                    local outdata, errdata = os.iorunv(sc, flags)
+                    assert(outdata, errdata)
+                end)
+            end, {
+                files = public_sourcefiles,
+                changed = target:is_rebuilt() or not os.isfile(header),
+            })
+        end
+    end, { jobgraph = true })
+end)
+
 -- define rule: swift.build
 rule("swift.build")
     set_sourcekinds("sc")
@@ -27,10 +186,11 @@ rule("swift.build")
             target:add("scflags", "-parse-as-library")
         end
 
+        local modulename = target:values("swift.modulename") or target:name()
+        target:add("scflags", "-module-name", modulename, {force = true})
         -- we use swift-frontend to support multiple modules
         -- @see https://github.com/xmake-io/xmake/issues/3916
         if target:has_tool("sc", "swift_frontend") then
-            target:add("scflags", "-module-name", target:name(), {force = true})
             local sourcebatch = target:sourcebatches()["swift.build"]
             if sourcebatch then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -42,6 +202,9 @@ rule("swift.build")
 
 -- define rule: swift
 rule("swift")
+
+    -- add interop rules
+    add_deps("swift.interop")
 
     -- add build rules
     add_deps("swift.build")
