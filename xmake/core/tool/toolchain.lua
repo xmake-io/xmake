@@ -442,6 +442,7 @@ function _instance:_description(toolkind)
             sc         = "the swift compiler",
             scld       = "the swift linker",
             scsh       = "the swift shared library linker",
+            scar       = "the swift static library archiver",
             gc         = "the golang compiler",
             gcld       = "the golang linker",
             gcar       = "the golang static library archiver",

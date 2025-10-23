@@ -22,8 +22,8 @@ language("swift")
     add_rules("swift")
     set_sourcekinds {sc = ".swift"}
     set_sourceflags {sc = "scflags"}
-    set_targetkinds {binary = "scld", static = "ar", shared = "scsh"}
-    set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
+    set_targetkinds {binary = "scld", static = "scar", shared = "scsh"}
+    set_targetflags {binary = "ldflags", static = "scarflags", shared = "shflags"}
     set_langkinds   {swift = "sc"}
     set_mixingkinds("sc", "mm", "mxx", "cc", "cxx")
 
@@ -105,6 +105,7 @@ language("swift")
                 ,   {category = "Cross Complation Configuration/Linker Configuration"                                }
                 ,   { nil, "scld",         "kv", nil,          "The Swift Linker"                                   }
                 ,   { nil, "scsh",         "kv", nil,          "The Swift Shared Library Linker"                    }
+                ,   { nil, "scar",         "kv", nil,          "The Swift Static Library Archiver"                  }
 
                 ,   { category = "Cross Complation Configuration/Builtin Flags Configuration"                        }
                 ,   { nil, "links",         "kv", nil,          "The Link Libraries"                                 }

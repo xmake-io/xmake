@@ -27,8 +27,9 @@ toolchain("swift")
 
     -- set toolset
     set_toolset("sc",   "$(env SC)", "swift-frontend", "swiftc")
-    set_toolset("scld", "$(env SC)", "swiftc")
     set_toolset("scsh", "$(env SC)", "swiftc")
+    set_toolset("scar", "$(env SC)", "swiftc")
+    set_toolset("scld", "$(env SC)", "swiftc")
 
     -- on load
     on_load(function (toolchain)
