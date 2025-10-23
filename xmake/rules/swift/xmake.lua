@@ -21,7 +21,7 @@
 rule("swift.interop", function()
     set_sourcekinds("sc")
     add_orders("swift.interop", "swift.build")
-    add_orders("swift.interop", "c++")
+    add_orders("swift.interop", "c++.build")
     on_config(function(target)
 
         import("core.base.json")
@@ -31,8 +31,9 @@ rule("swift.interop", function()
         end
 
         local sourcebatches = target:sourcebatches()
-        local sourcebatch = sourcebatches and sourcebatches["swift.build"]
+        local sourcebatch = sourcebatches and sourcebatches["swift.interop"]
         local sourcefiles = sourcebatch and sourcebatch.sourcefiles
+        sourcefiles = sourcefiles or {}
         local enabled = false
         for _, sourcefile in ipairs(sourcefiles) do
             local fileconfig = target:fileconfig(sourcefile)
@@ -52,9 +53,9 @@ rule("swift.interop", function()
 
         local target_info = json.decode(outdata)
         assert(target_info and target_info.paths and target_info.paths.runtimeResourcePath, "Failed to get swift resource path")
-        target:add("includedirs", target_info.runtimeResourcePath, {public = true})
+        target:add("includedirs", target_info.paths.runtimeResourcePath, {public = true})
 
-        local outdir = target:autogendir("swift")
+        local outdir = target:autogendir("swift.interop")
         target:add("includedirs", outdir, {public = true})
 
         local mode = (type(target:values("swift.interop")) == "string") and target:values("swift.interop") or "objc"
@@ -62,7 +63,7 @@ rule("swift.interop", function()
             target:add("scflags", "-cxx-interoperability-mode=default")
         end
 
-        local headername = (target:values("swift.interop.headername") or (target:name() .. "-Swift")) .. ".h"
+        local headername = (target:values("swift.interop.headername") or (target:name() .. "-Swift.h"))
         local header = path.join(outdir, headername)
         target:add("headerfiles", header)
 
@@ -70,7 +71,7 @@ rule("swift.interop", function()
         target:data_set("swift.interop.outdir", outdir)
     end)
 
-    on_prepare(function(target, jobgraph, opt)
+    on_prepare_files(function(target, jobgraph, sourcebatch, opt)
 
         if not target:data("swift.interop") then
             return
@@ -102,9 +103,7 @@ rule("swift.interop", function()
         if not os.isdir(outdir) then os.mkdir(outdir) end
         assert(outdir)
 
-        local sourcebatches = target:sourcebatches()
-        local sourcebatch = sourcebatches and sourcebatches["swift.build"]
-        local sourcefiles = sourcebatch and sourcebatch.sourcefiles
+        local sourcefiles = sourcebatch.sourcefiles
         local public_sourcefiles
         for _, sourcefile in ipairs(sourcefiles) do
             local fileconfig = target:fileconfig(sourcefile)
@@ -116,7 +115,7 @@ rule("swift.interop", function()
 
         if public_sourcefiles then
             local modulename = target:values("swift.modulename") or target:name()
-            local headername = (target:values("swift.interop.headername") or (target:name() .. "-Swift")) .. ".h"
+            local headername = (target:values("swift.interop.headername") or (target:name() .. "-Swift.h"))
             local header = path.join(outdir, headername)
 
             depend.on_changed(function()
@@ -152,7 +151,6 @@ rule("swift.interop", function()
                         scflags = _scflags
                     end
 
-
                     local emit_flag = mode == "cxx" and "-emit-clang-header-path" or "-emit-objc-header-path"
 
                     local flags = table.join({
@@ -182,7 +180,7 @@ rule("swift.build")
     set_sourcekinds("sc")
     on_build_files("private.action.build.object", {jobgraph = true, batch = true})
     on_config(function (target)
-        if target:is_library() then
+        if target:is_library() or target:values("swift.interop") then
             target:add("scflags", "-parse-as-library")
         end
 
@@ -202,8 +200,7 @@ rule("swift.build")
 
 -- define rule: swift
 rule("swift")
-
-    -- add interop rules
+    -- add build rules
     add_deps("swift.interop")
 
     -- add build rules
