@@ -276,6 +276,33 @@ function _get_ldflags_from_packagedeps(package, opt)
     return result
 end
 
+-- @see https://github.com/xmake-io/xmake-repo/pull/8165#issuecomment-3354492014
+function _apply_libtool_patch_for_cross(package, opt)
+    if package:is_cross() and os.isfile("libtool") then
+        io.replace("libtool", "--sysroot=*|", "--sysroot=*|--target=*|", {plain = true})
+        io.replace("libtool", "-Z*)", [[
+            -target)
+              func_append compile_command " $arg"
+              func_append finalize_command " $arg"
+              func_append compiler_flags " $arg"
+              prev=target
+              continue
+              ;;
+            -Z*)
+        ]], {plain = true})
+        io.replace("libtool", "xcclinker)", [[
+            target)
+              func_append compile_command " $arg"
+              func_append finalize_command " $arg"
+              func_append compiler_flags " $arg"
+              prev=
+              continue
+	          ;;
+	        xcclinker)
+        ]], {plain = true})
+    end
+end
+
 -- get the build environments
 function buildenvs(package, opt)
     opt = opt or {}
@@ -584,6 +611,8 @@ function configure(package, configs, opt)
 
     -- do configure
     os.vrunv("./configure", argv, {shell = true, envs = envs})
+
+    _apply_libtool_patch_for_cross(package, opt)
 end
 
 -- do make
