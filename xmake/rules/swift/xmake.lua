@@ -23,6 +23,10 @@ rule("swift.build")
     set_sourcekinds("sc")
     on_build_files("private.action.build.object", {jobgraph = true, batch = true})
     on_config(function (target)
+        if target:is_library() then
+            target:add("scflags", "-parse-as-library")
+        end
+
         -- we use swift-frontend to support multiple modules
         -- @see https://github.com/xmake-io/xmake/issues/3916
         if target:has_tool("sc", "swift_frontend") then
@@ -42,6 +46,14 @@ rule("swift")
     -- add build rules
     add_deps("swift.build")
 
+    -- set compiler runtime, e.g. vs runtime
+    add_deps("utils.compiler.runtime")
+
+    -- inherit links and linkdirs of all dependent targets by default
+    add_deps("utils.inherit.links")
+
     -- support `add_files("src/*.o")` to merge object files to target
     add_deps("utils.merge.object")
 
+    -- add linker rules
+    add_deps("linker")

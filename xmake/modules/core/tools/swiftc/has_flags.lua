@@ -73,6 +73,10 @@ function _check_try_running(flags, opt)
     -- check it
     local objectfile = os.tmpfile() .. ".o"
     local ok, errors = _try_running(opt.program, table.join(flags, "-o", objectfile, sourcefile))
+    if errors and errors:match("no frontend action") then
+        ok = true
+        errors = nil
+    end
 
     -- remove files
     os.tryrm(objectfile)
