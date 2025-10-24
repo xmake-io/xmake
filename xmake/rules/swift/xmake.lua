@@ -165,6 +165,9 @@ rule("swift.interop", function()
                         public_sourcefiles)
                     if option.get("verbose") then print(os.args(table.join(sc, flags))) end
 
+                    if os.isfile(header) then
+                        os.rm(header)
+                    end
                     local outdata, errdata = os.iorunv(sc, flags)
                     assert(outdata, errdata)
                 end)
