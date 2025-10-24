@@ -91,14 +91,25 @@ toolchain("llvm")
             if not toolchain:config("xcode_sysroot") then
                 local xcode_dir     = get_config("xcode")
                 local xcode_sdkver  = toolchain:config("xcode_sdkver")
-                local xcode_sdkdir  = path.join(xcode_dir, "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk")
+                local xcode_sdkdir
+                if xcode_dir and xcode_sdkver then
+                    local macsdk = path.join(xcode_dir, "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk")
+                    if os.isdir(macsdk) then
+                        xcode_sdkdir = macsdk
+                    end
+                else
+                    -- @see https://github.com/xmake-io/xmake/issues/1179
+                    local macsdk = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+                    if os.isdir(macsdk) then
+                        xcode_sdkdir = macsdk
+                    end
+                end
                 if os.isdir(xcode_sdkdir) then
                     toolchain:config_set("xcode_sysroot", xcode_sdkdir)
                 end
             end
             -- load configurations
             import(".xcode.load_" .. toolchain:plat())(toolchain)
-            toolchain:add("mxflags", "-fobjc-arc")
         elseif toolchain:is_plat("cross") then
             local sysroot
             local sdkdir = toolchain:sdkdir()
