@@ -59,9 +59,6 @@ rule("swift.interop", function()
         target:add("includedirs", outdir, {public = true})
 
         local mode = (type(target:values("swift.interop")) == "string") and target:values("swift.interop") or "objc"
-        if mode == "cxx" then
-            target:add("scflags", "-cxx-interoperability-mode=default")
-        end
 
         local headername = (target:values("swift.interop.headername") or (target:name() .. "-Swift.h"))
         local header = path.join(outdir, headername)
@@ -184,10 +181,14 @@ rule("swift.build")
     set_sourcekinds("sc")
     on_build_files("private.action.build.object", {jobgraph = true, batch = true})
     on_config(function (target)
-        if target:is_library() then
-            target:add("scflags", "-parse-as-library")
+        local mode = (type(target:values("swift.interop")) == "string") and target:values("swift.interop") or "objc"
+        if mode == "cxx" then
+            target:add("scflags", "-cxx-interoperability-mode=default")
         end
 
+        if target:is_library() or target:values("swift.interop.cxxmain") then
+            target:add("scflags", "-parse-as-library")
+        end
         local modulename = target:values("swift.modulename") or target:name()
         target:add("scflags", "-module-name", modulename, {force = true})
         -- we use swift-frontend to support multiple modules
