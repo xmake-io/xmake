@@ -168,6 +168,7 @@ test_tools() {
 
 install_tools() {
     { apt --version >/dev/null 2>&1 && $sudoprefix apt install -y git build-essential libreadline-dev; } ||
+    { dnf --version >/dev/null 2>&1 && $sudoprefix dnf install -y git readline-devel bzip2 @development-tools; } ||
     { yum --version >/dev/null 2>&1 && $sudoprefix yum install -y git readline-devel bzip2 && $sudoprefix yum groupinstall -y 'Development Tools'; } ||
     { zypper --version >/dev/null 2>&1 && $sudoprefix zypper --non-interactive install git readline-devel && $sudoprefix zypper --non-interactive install -t pattern devel_C_C++; } ||
     { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm --needed git base-devel ncurses readline; } ||
@@ -179,7 +180,7 @@ install_tools() {
     { xbps-install --version >/dev/null 2>&1 && $sudoprefix xbps-install -Sy git base-devel; } #void
 
 }
-test_tools || { install_tools && test_tools; } || raise "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\n\t* portage\n\t* xbps\n Please install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)')" 1
+test_tools || { install_tools && test_tools; } || raise "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* dnf\n\t* yum\n\t* zypper\n\t* pacman\n\t* portage\n\t* xbps\n Please install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)')" 1
 
 #-----------------------------------------------------------------------------
 # install xmake
