@@ -181,7 +181,7 @@ rule("swift.build")
     set_sourcekinds("sc")
     on_build_files("private.action.build.object", {jobgraph = true, batch = true})
     on_config(function (target)
-        if target:is_library() or target:values("swift.interop") then
+        if target:is_library() then
             target:add("scflags", "-parse-as-library")
         end
 
