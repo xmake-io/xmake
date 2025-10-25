@@ -39,6 +39,11 @@ toolchain("llvm")
     set_toolset("mrc",     "llvm-rc")
     set_toolset("dlltool", "llvm-dlltool")
 
+    set_toolset("sc",   "$(env SC)", "swift-frontend", "swiftc")
+    set_toolset("scsh", "$(env SC)", "swiftc")
+    set_toolset("scar", "$(env SC)", "swiftc")
+    set_toolset("scld", "$(env SC)", "swiftc")
+
     on_check("check")
 
     on_load(function (toolchain)
@@ -55,16 +60,6 @@ toolchain("llvm")
                 target = "i386-pc-windows-msvc"
             else
                 target = "x86_64-pc-windows-msvc"
-            end
-        elseif toolchain:is_plat("macosx") then
-            local arch          = toolchain:arch()
-            local target_minver = toolchain:config("target_minver")
-            local appledev      = toolchain:config("appledev")
-            if target_minver then
-                target = ("%s-apple-macos%s"):format(arch, target_minver)
-                if appledev == "catalyst" then
-                    target = ("%s-apple-ios%s-macabi"):format(arch, target_minver)
-                end
             end
         elseif toolchain:is_plat("cross") then
             target = toolchain:cross():gsub("(.*)%-$", "%1")
@@ -83,6 +78,9 @@ toolchain("llvm")
             toolchain:add("asflags", target_flags)
             toolchain:add("ldflags", target_flags)
             toolchain:add("shflags", target_flags)
+            toolchain:add("scasflags", "--target=" .. target_flags)
+            toolchain:add("scldflags", "--target=" .. target_flags)
+            toolchain:add("scshflags", "--target=" .. target_flags)
         end
 
         -- init flags for platform
@@ -90,26 +88,28 @@ toolchain("llvm")
             toolchain:add("ldflags", "-fuse-ld=lld")
             toolchain:add("shflags", "-fuse-ld=lld")
         elseif toolchain:is_plat("macosx") then
-            local xcode_dir     = get_config("xcode")
-            local xcode_sdkver  = toolchain:config("xcode_sdkver")
-            local xcode_sdkdir  = nil
-            if xcode_dir and xcode_sdkver then
-                xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
-                toolchain:add("cxflags", {"-isysroot", xcode_sdkdir})
-                toolchain:add("mxflags", {"-isysroot", xcode_sdkdir})
-                toolchain:add("ldflags", {"-isysroot", xcode_sdkdir})
-                toolchain:add("shflags", {"-isysroot", xcode_sdkdir})
-            else
-                -- @see https://github.com/xmake-io/xmake/issues/1179
-                local macsdk = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
-                if os.exists(macsdk) then
-                    toolchain:add("cxflags", {"-isysroot", macsdk})
-                    toolchain:add("mxflags", {"-isysroot", macsdk})
-                    toolchain:add("ldflags", {"-isysroot", macsdk})
-                    toolchain:add("shflags", {"-isysroot", macsdk})
+            if not toolchain:config("xcode_sysroot") then
+                local xcode_dir     = get_config("xcode")
+                local xcode_sdkver  = toolchain:config("xcode_sdkver")
+                local xcode_sdkdir
+                if xcode_dir and xcode_sdkver then
+                    local macsdk = path.join(xcode_dir, "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk")
+                    if os.isdir(macsdk) then
+                        xcode_sdkdir = macsdk
+                    end
+                else
+                    -- @see https://github.com/xmake-io/xmake/issues/1179
+                    local macsdk = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+                    if os.isdir(macsdk) then
+                        xcode_sdkdir = macsdk
+                    end
+                end
+                if os.isdir(xcode_sdkdir) then
+                    toolchain:config_set("xcode_sysroot", xcode_sdkdir)
                 end
             end
-            toolchain:add("mxflags", "-fobjc-arc")
+            -- load configurations
+            import(".xcode.load_" .. toolchain:plat())(toolchain)
         elseif toolchain:is_plat("cross") then
             local sysroot
             local sdkdir = toolchain:sdkdir()

@@ -37,6 +37,7 @@ function main(toolchain)
         toolchain:add("scflags", "-target", target)
         toolchain:add("scldflags", "-target", target)
         toolchain:add("scshflags", "-target", target)
+        toolchain:add("scarflags", "-target", target)
     end
 
     -- init flags for c/c++
@@ -52,9 +53,10 @@ function main(toolchain)
     -- init flags for asm
     toolchain:add("asflags", "-isysroot", xcode_sysroot)
 
-    -- init flags for swift (with toolchain:add("ldflags and toolchain:add("shflags)
+    -- init flags for swift (with toolchain:add("ldflags") and toolchain:add("shflags") and toolchain:add("arflags"))
     toolchain:add("scflags", "-sdk " .. xcode_sysroot)
-    toolchain:add("scshflags", "-sdk " .. xcode_sysroot)
-    toolchain:add("scldflags", "-sdk " .. xcode_sysroot)
+    toolchain:add("scshflags", "-sdk " .. xcode_sysroot, "-emit-library")
+    toolchain:add("scarflags", "-sdk " .. xcode_sysroot, "-emit-library", "-static")
+    toolchain:add("scldflags", "-sdk " .. xcode_sysroot, "-emit-executable")
 end
 

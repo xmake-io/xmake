@@ -51,6 +51,7 @@ toolchain("xcode")
         toolchain:set("toolset", "sc", xc_swift_frontend, "swift_frontend", xc_swiftc, "swiftc")
         toolchain:set("toolset", "scld", xc_swiftc, "swiftc")
         toolchain:set("toolset", "scsh", xc_swiftc, "swiftc")
+        toolchain:set("toolset", "scar", xc_swiftc, "swiftc")
         if arch then
             toolchain:set("toolset", "cpp", xc_clang .. " -arch " .. arch .. " -E")
         end

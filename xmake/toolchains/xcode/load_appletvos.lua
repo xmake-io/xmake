@@ -48,6 +48,11 @@ function main(toolchain)
     -- init flags for swift (with toolchain:add("ldflags and toolchain:add("shflags)
     toolchain:add("scflags", format("-target %s-apple-tvos%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
     toolchain:add("scshflags", format("-target %s-apple-tvos%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
+    toolchain:add("scarflags", format("-target %s-apple-tvos%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
     toolchain:add("scldflags", format("-target %s-apple-tvos%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
+
+    toolchain:add("scshflags", "-sdk " .. xcode_sysroot, "-emit-library")
+    toolchain:add("scarflags", "-sdk " .. xcode_sysroot, "-emit-library", "-static")
+    toolchain:add("scldflags", "-sdk " .. xcode_sysroot, "-emit-executable")
 end
 
