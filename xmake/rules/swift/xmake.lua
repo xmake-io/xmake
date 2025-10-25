@@ -27,6 +27,7 @@ rule("swift.interop", function()
         import("core.base.json")
 
         if not target:values("swift.interop") then
+            target:rule_enable("swift.interop", false)
             return
         end
 
@@ -43,6 +44,7 @@ rule("swift.interop", function()
             end
         end
         if not enabled then
+            target:rule_enable("swift.interop", false)
             return
         end
 
@@ -69,11 +71,6 @@ rule("swift.interop", function()
     end)
 
     on_prepare_files(function(target, jobgraph, sourcebatch, opt)
-
-        if not target:data("swift.interop") then
-            return
-        end
-
         import("utils.progress")
         import("core.base.option")
         import("core.language.language")
