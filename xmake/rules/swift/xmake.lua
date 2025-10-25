@@ -116,8 +116,8 @@ rule("swift.interop", function()
             local headername = (target:values("swift.interop.headername") or (target:name() .. "-Swift.h"))
             local header = path.join(outdir, headername)
 
-            depend.on_changed(function()
-                jobgraph:add(target:fullname() .. "/gen_swift_header", function(index, total, opt)
+            jobgraph:add(target:fullname() .. "/gen_swift_header", function(index, total, opt)
+                depend.on_changed(function()
                     local stdflag
                     if mode == "cxx" then
                         local cxxstandard = _get_target_cppversion()
@@ -167,11 +167,11 @@ rule("swift.interop", function()
                     end
                     local outdata, errdata = os.iorunv(sc, flags)
                     assert(outdata, errdata)
-                end)
-            end, {
-                files = public_sourcefiles,
-                changed = target:is_rebuilt() or not os.isfile(header),
-            })
+                end, {
+                    files = public_sourcefiles,
+                    changed = target:is_rebuilt() or not os.isfile(header),
+                })
+            end)
         end
     end, { jobgraph = true })
 end)
