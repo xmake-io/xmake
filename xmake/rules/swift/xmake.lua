@@ -23,7 +23,6 @@ rule("swift.interop", function()
     add_orders("swift.interop", "swift.build")
     add_orders("swift.interop", "c++.build")
     on_config(function(target)
-
         import("core.base.json")
 
         if not target:values("swift.interop") then
@@ -157,7 +156,9 @@ rule("swift.interop", function()
                         scflags or {},
                         stdflag or {},
                         public_sourcefiles)
-                    if option.get("verbose") then print(os.args(table.join(sc, flags))) end
+                    if option.get("verbose") then
+                        print(os.args(table.join(sc, flags)))
+                    end
 
                     if os.isfile(header) then
                         os.rm(header)
