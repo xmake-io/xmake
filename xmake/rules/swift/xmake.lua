@@ -72,22 +72,28 @@ rule("swift.interop", function()
     on_prepare_files(function(target, jobgraph, sourcebatch, opt)
         import("utils.progress")
         import("core.base.option")
+        import("core.tool.compiler")
         import("core.language.language")
         import("core.project.depend")
+        import("core.cache.localcache")
 
-        local function _get_target_cppversion()
-            local compinst = target:compiler("cxx")
-            local languages = target:get("languages")
-            for _, language in ipairs(languages) do
-                if language:startswith("c++")
-                    or language:startswith("cxx")
-                    or language:startswith("gnu++")
-                    or language:startswith("gnuxx") then
-                    -- c++26 currently prevent compilation of swift modules
-                    local v = compinst:languageflags(language:gsub("26", "23"):gsub("latest", "23"))
-                    if v then return v end
+        local function _get_target_cpp_langflags()
+            local cpp_langflags = _g.cpp_langflags
+            if cpp_langflags == nil then
+                local languages = target:get("languages")
+                for _, language in ipairs(languages) do
+                    if language:startswith("c++")
+                        or language:startswith("cxx")
+                        or language:startswith("gnu++")
+                        or language:startswith("gnuxx") then
+                        -- c++26 currently prevent compilation of swift modules
+                        language = language:gsub("26", "23"):gsub("latest", "23")
+                        cpp_langflags = compiler.map_flags("cxx", "language", language, {target = target})
+                        _g.cpp_langflags = cpp_langflags or false
+                    end
                 end
             end
+            return cpp_langflags or nil
         end
 
         local mode = target:data("swift.interop")
@@ -116,9 +122,12 @@ rule("swift.interop", function()
                 depend.on_changed(function()
                     local stdflag
                     if mode == "cxx" then
-                        local cxxstandard = _get_target_cppversion()
-                        if cxxstandard then
-                            stdflag = {"-Xcc", cxxstandard}
+                        local cpp_langflags = _get_target_cpp_langflags()
+                        if cpp_langflags then
+                            for _, flag in ipairs(cpp_langflags) do
+                                stdflag = stdflag or {}
+                                table.join2(stdflag, {"-Xcc", flag})
+                            end
                         end
                     end
 

@@ -363,12 +363,5 @@ function compiler:compflags(opt)
     return self:_preprocess_flags(flags)
 end
 
--- get the tool language flags
---
--- @return      flags list
-function compiler:languageflags(lang)
-    return self:_tool():nf_language(lang)
-end
-
 -- return module
 return compiler
