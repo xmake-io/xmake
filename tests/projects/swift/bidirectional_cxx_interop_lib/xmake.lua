@@ -6,7 +6,7 @@ target("fibonacci")
     set_values("swift.modulename", "SwiftFibonacci")
     set_values("swift.interop", "cxx")
     -- for automatic clang modulemap
-    add_scflags("-Iinclude/fibonacci", {public = true})
+    add_includedirs("include/fibonacci", {public = true})
     add_includedirs("include")
     add_headerfiles("include/**.h")
 

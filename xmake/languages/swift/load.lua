@@ -51,9 +51,13 @@ function _get_apis()
     }
     apis.paths = {
         -- target.add_xxx
-        "target.add_linkdirs"
+        "target.add_includedirs"
+    ,   "target.add_sysincludedirs"
+    ,   "target.add_linkdirs"
     ,   "target.add_frameworkdirs"
         -- option.add_xxx
+    ,   "option.add_includedirs"
+    ,   "option.add_sysincludedirs"
     ,   "option.add_linkdirs"
     ,   "option.add_frameworkdirs"
     }
