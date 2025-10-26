@@ -169,9 +169,7 @@ rule("swift.interop", function()
                         print(os.args(table.join(sc, flags)))
                     end
 
-                    if os.isfile(header) then
-                        os.rm(header)
-                    end
+                    os.tryrm(header)
                     local outdata, errdata = os.iorunv(sc, flags)
                     assert(outdata, errdata)
                 end, {
