@@ -117,11 +117,11 @@ function main()
     tty.cursor_move_up(2)
     tty.cr()
     tty.erase_line()
-    io.write("Line 2: Updated content! ✓")
+    io.write("Line 2: Updated content! ✓\n")
     io.flush()
     
     -- Move cursor to end
-    tty.cursor_move_down(2)
+    tty.cursor_move_down(1)
     print("\n\nAll demos completed!")
     print("\nKey features demonstrated:")
     print("  - cursor_move_up/down/left/right: Move cursor relatively")
