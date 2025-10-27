@@ -20,10 +20,12 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.project.config")
 import("core.tool.toolchain")
 import("core.cache.memcache")
 import("lib.detect.find_tool")
+import("lib.detect.find_programver")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- translate paths
@@ -276,30 +278,94 @@ function _get_ldflags_from_packagedeps(package, opt)
     return result
 end
 
--- @see https://github.com/xmake-io/xmake-repo/pull/8165#issuecomment-3354492014
+-- @see https://github.com/xmake-io/xmake/pull/6963
 function _apply_libtool_patch_for_cross(package, opt)
-    if package:is_cross() and os.isfile("libtool") then
-        io.replace("libtool", "--sysroot=*|", "--sysroot=*|--target=*|", {plain = true})
-        io.replace("libtool", "-Z*)", [[
-            -target)
-              func_append compile_command " $arg"
-              func_append finalize_command " $arg"
-              func_append compiler_flags " $arg"
-              prev=target
-              continue
-              ;;
-            -Z*)
-        ]], {plain = true})
-        io.replace("libtool", "xcclinker)", [[
-            target)
-              func_append compile_command " $arg"
-              func_append finalize_command " $arg"
-              func_append compiler_flags " $arg"
-              prev=
-              continue
-	          ;;
-	        xcclinker)
-        ]], {plain = true})
+    if not package:is_cross() or not os.isfile("libtool") then
+        return
+    end
+
+    -- detect the version of generated libtool script
+    local libtool_version = find_programver("./libtool", {nocache = true})
+    if option.get("verbose") then
+        if libtool_version then
+            cprint("${dim}> checking for generated libtool version ... ${color.success} %s", libtool_version)
+        else
+            cprint("${color.warning}warning: the generated libtool version cannot be detected, the patch for cross-compilation cannot be applied.")
+        end
+    end
+    if libtool_version then
+        libtool_version = semver.new(libtool_version)
+    else
+        return
+    end
+
+    -- load and parse patch list
+    local patch_dir = path.join(os.programdir(), "scripts", "patches", "libtool")
+    local loaded_patch_versions = {}
+    for _, patch_file in ipairs(os.files(path.join(patch_dir, "*.patch"))) do
+        local patch_version = path.filename(patch_file):rtrim(".patch")
+        table.insert(loaded_patch_versions, semver.new(patch_version))
+    end
+    table.sort(loaded_patch_versions)
+
+    -- select the suitable patch
+    local suitable_patch_versions = {}
+    local last_patch_version = nil
+    for _, patch_version in ipairs(loaded_patch_versions) do
+        if last_patch_version then
+            if libtool_version:at(last_patch_version, patch_version) then
+                -- some distributions (such as archlinux) may package the dev
+                -- version of libtool, in which case the next version of the 
+                -- patch may be applicable.
+                table.insert(suitable_patch_versions, last_patch_version)
+                table.insert(suitable_patch_versions, patch_version)
+                break
+            end
+        else
+            if #loaded_patch_versions == 1 then
+                if libtool_version:satisfies(">=" .. patch_version:shortstr()) then
+                    table.insert(suitable_patch_versions, patch_version)
+                end
+            end
+        end
+        last_patch_version = patch_version
+    end
+
+    if #suitable_patch_versions == 0 then
+        if option.get("verbose") then
+            cprint("${color.warning}warning: no suitable cross-compilation patch was found for libtool for this project.")
+        end
+        return
+     end
+
+    -- try to apply the suitable patch
+    local succeed = false
+    for _, patch_version in ipairs(suitable_patch_versions) do
+        if option.get("verbose") then
+            cprint("${dim}> try applying the patch ... ${color.success} %s", patch_version)
+        end
+        local patch_file = path.join(patch_dir, patch_version:shortstr() .. ".patch")
+        local result = try {
+            function ()
+                import("devel.git")
+                os.cp("libtool", "__xmake_patched_libtool")
+                git.apply(patch_file)
+                os.mv("__xmake_patched_libtool", "libtool")
+                return true
+            end
+        }
+        if result then
+            succeed = true
+            break
+        end
+    end
+
+    if option.get("verbose") then
+        if succeed then
+            cprint("${dim}> libtool patch for cross-compilation applied successfully")
+        else
+            cprint("${color.warning}warning: unable to apply preset libtool cross-compilation patches, your project files were not modified.")
+        end
     end
 end
 
