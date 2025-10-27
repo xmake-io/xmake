@@ -141,7 +141,9 @@ function tty.cursor_move(row, col)
     if tty.has_vtansi() then
         row = row or 1
         col = col or 1
-        tty._iowrite(string.format("\x1b[%d;%dH", row, col))
+        if row > 0 and col > 0 then
+            tty._iowrite(string.format("\x1b[%d;%dH", row, col))
+        end
     end
     return tty
 end
@@ -150,7 +152,9 @@ end
 function tty.cursor_move_up(n)
     if tty.has_vtansi() then
         n = n or 1
-        tty._iowrite(string.format("\x1b[%dA", n))
+        if n > 0 then
+            tty._iowrite(string.format("\x1b[%dA", n))
+        end
     end
     return tty
 end
@@ -159,7 +163,9 @@ end
 function tty.cursor_move_down(n)
     if tty.has_vtansi() then
         n = n or 1
-        tty._iowrite(string.format("\x1b[%dB", n))
+        if n > 0 then
+            tty._iowrite(string.format("\x1b[%dB", n))
+        end
     end
     return tty
 end
@@ -168,7 +174,9 @@ end
 function tty.cursor_move_right(n)
     if tty.has_vtansi() then
         n = n or 1
-        tty._iowrite(string.format("\x1b[%dC", n))
+        if n > 0 then
+            tty._iowrite(string.format("\x1b[%dC", n))
+        end
     end
     return tty
 end
@@ -177,7 +185,9 @@ end
 function tty.cursor_move_left(n)
     if tty.has_vtansi() then
         n = n or 1
-        tty._iowrite(string.format("\x1b[%dD", n))
+        if n > 0 then
+            tty._iowrite(string.format("\x1b[%dD", n))
+        end
     end
     return tty
 end
@@ -186,7 +196,9 @@ end
 function tty.cursor_move_to_col(col)
     if tty.has_vtansi() then
         col = col or 1
-        tty._iowrite(string.format("\x1b[%dG", col))
+        if col > 0 then
+            tty._iowrite(string.format("\x1b[%dG", col))
+        end
     end
     return tty
 end
