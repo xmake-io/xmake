@@ -25,41 +25,40 @@ function main()
 
     print("=== TTY Cursor Control Demo ===")
     print("This demo shows partial screen refresh using cursor positioning")
-    print("\n")
+    print("")
     
     -- Hide cursor for smoother display
     tty.cursor_hide()
     
-    print("Demo 1: Multiple Progress Bars (Parallel Updates)")
+    print("\nDemo 1: Multiple Progress Bars (Parallel Updates)")
     print("------------------------------------------------")
     
     -- Reserve lines for progress bars
-    print("Task 1: Downloading")
-    print("Task 2: Compiling  ")
-    print("Task 3: Linking    ")
+    io.write("Task 1: Downloading\n")
+    io.write("Task 2: Compiling  \n")
+    io.write("Task 3: Linking    \n")
+    io.flush()
     
     -- Simulate three parallel task progress bars
     for step = 1, 100 do
-        -- Task 1 progress
-        local progress1 = step / 100
-        tty.cursor_save()
+        -- Move to Task 1 line (3 lines up from current position)
         tty.cursor_move_up(3)
+        
+        -- Update Task 1 progress
+        local progress1 = step / 100
         _progress_bar_inline("Task 1: Downloading", progress1)
-        tty.cursor_restore()
+        io.write("\n")
         
-        -- Task 2 progress (starts later, progresses faster)
+        -- Update Task 2 progress (starts later, progresses faster)
         local progress2 = math.max(0, math.min(1.0, (step - 10) / 80))
-        tty.cursor_save()
-        tty.cursor_move_up(2)
         _progress_bar_inline("Task 2: Compiling  ", progress2)
-        tty.cursor_restore()
+        io.write("\n")
         
-        -- Task 3 progress (starts even later)
+        -- Update Task 3 progress (starts even later)
         local progress3 = math.max(0, math.min(1.0, (step - 30) / 60))
-        tty.cursor_save()
-        tty.cursor_move_up(1)
         _progress_bar_inline("Task 3: Linking    ", progress3)
-        tty.cursor_restore()
+        io.write("\n")
+        io.flush()
         
         os.sleep(30)  -- 30ms delay
     end
@@ -68,8 +67,9 @@ function main()
     print("--------------------------------")
     
     -- Print initial status and counter
-    print("Status: Waiting...")
-    print("Counter: 0")
+    io.write("Status: Waiting...\n")
+    io.write("Counter: 0\n")
+    io.flush()
     
     local statuses = {
         "Initializing...",
@@ -82,23 +82,21 @@ function main()
     }
     
     for i, status in ipairs(statuses) do
-        -- Update status line
-        tty.cursor_save()
+        -- Move to status line (2 lines up)
         tty.cursor_move_up(2)
+        
+        -- Update status line
         tty.cr()
         tty.erase_line()
         io.write(string.format("Status: %s", status))
-        io.flush()
-        tty.cursor_restore()
+        io.write("\n")
         
         -- Update counter line
-        tty.cursor_save()
-        tty.cursor_move_up(1)
         tty.cr()
         tty.erase_line()
         io.write(string.format("Counter: %d", i * 100))
+        io.write("\n")
         io.flush()
-        tty.cursor_restore()
         
         os.sleep(500)
     end
@@ -109,20 +107,22 @@ function main()
     print("\n\nDemo 3: Erase and Update Specific Line")
     print("----------------------------------------")
     
-    print("Line 1: This line will stay")
-    print("Line 2: This line will be updated...")
-    print("Line 3: This line will stay too")
+    io.write("Line 1: This line will stay\n")
+    io.write("Line 2: This line will be updated...\n")
+    io.write("Line 3: This line will stay too\n")
+    io.flush()
     
     os.sleep(1000)
     
-    -- Update only the middle line
-    tty.cursor_save()
+    -- Update only the middle line (2 lines up)
     tty.cursor_move_up(2)
     tty.cr()
     tty.erase_line()
     io.write("Line 2: Updated content! ✓")
     io.flush()
-    tty.cursor_restore()
+    
+    -- Move cursor to end
+    tty.cursor_move_down(2)
     print("\n\nAll demos completed!")
     print("\nKey features demonstrated:")
     print("  - cursor_move_up/down/left/right: Move cursor relatively")

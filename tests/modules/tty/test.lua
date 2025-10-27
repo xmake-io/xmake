@@ -7,21 +7,24 @@ function test_cursor_move()
     end
     
     print("\n=== Test: cursor_move ===")
-    print("Line 1")
-    print("Line 2")
-    print("Line 3")
-    print("Line 4")
-    print("Line 5")
+    io.write("Line 1\n")
+    io.write("Line 2\n")
+    io.write("Line 3\n")
+    io.write("Line 4\n")
+    io.write("Line 5\n")
+    io.flush()
     
     os.sleep(1000)
     
     -- Move to line 3 and update content
-    tty.cursor_save()
     tty.cursor_move_up(3)
+    tty.cr()
     tty.erase_line()
-    io.write("Line 3 - UPDATED!")
+    io.write("Line 3 - UPDATED!\n")
     io.flush()
-    tty.cursor_restore()
+    
+    -- Move cursor back to end
+    tty.cursor_move_down(2)
     
     print("\n✓ cursor_move_up test passed")
 end
@@ -35,10 +38,9 @@ function test_cursor_move_directions()
     
     -- Create a small coordinate system
     for i = 1, 5 do
-        print(string.rep(" ", 60))
+        io.write(string.rep(" ", 60) .. "\n")
     end
-    
-    tty.cursor_save()
+    io.flush()
     
     -- Move to starting position
     tty.cursor_move_up(5)
@@ -70,9 +72,12 @@ function test_cursor_move_directions()
     io.write("UP")
     io.flush()
     
-    tty.cursor_restore()
+    -- Move to end
+    tty.cursor_move_down(3)
+    io.write("\n")
+    io.flush()
     
-    print("\n✓ cursor movement directions test passed")
+    print("✓ cursor movement directions test passed")
 end
 
 function test_cursor_hide_show()
@@ -102,27 +107,25 @@ function test_erase_operations()
     
     print("\n=== Test: erase operations ===")
     
-    -- 测试 erase_line_to_end
+    -- Test erase_line_to_end
     io.write("This is a long line that will be partially erased")
     io.flush()
     os.sleep(1000)
     tty.cursor_move_left(30)
     tty.erase_line_to_end()
-    io.write("<- erased to end")
+    io.write("<- erased to end\n")
     io.flush()
-    print("")
     
     os.sleep(1000)
     
-    -- 测试整行擦除
+    -- Test full line erase
     io.write("This entire line will be erased")
     io.flush()
     os.sleep(1000)
     tty.cr()
     tty.erase_line()
-    io.write("Replaced!")
+    io.write("Replaced!\n")
     io.flush()
-    print("")
     
     print("✓ erase operations test passed")
 end
@@ -134,78 +137,69 @@ function test_partial_screen_update()
     
     print("\n=== Test: partial screen update ===")
     
-    -- 创建一个表格
-    print("┌────────────────────────────────┐")
-    print("│ Task         │ Status          │")
-    print("├────────────────────────────────┤")
-    print("│ Compile      │ Pending...      │")
-    print("│ Link         │ Pending...      │")
-    print("│ Package      │ Pending...      │")
-    print("└────────────────────────────────┘")
+    -- Create a table
+    io.write("┌────────────────────────────────┐\n")
+    io.write("│ Task         │ Status          │\n")
+    io.write("├────────────────────────────────┤\n")
+    io.write("│ Compile      │ Pending...      │\n")
+    io.write("│ Link         │ Pending...      │\n")
+    io.write("│ Package      │ Pending...      │\n")
+    io.write("└────────────────────────────────┘\n")
+    io.flush()
     
     os.sleep(1000)
+    tty.cursor_hide()
     
-    -- 更新第一个任务状态
-    tty.cursor_save()
+    -- Update first task status
     tty.cursor_move_up(4)
     tty.cursor_move_to_col(32)
     tty.erase_line_to_end()
-    io.write("│ Running...      │")
+    io.write("│ Running...      │\n")
     io.flush()
-    tty.cursor_restore()
     os.sleep(800)
     
-    tty.cursor_save()
-    tty.cursor_move_up(4)
+    tty.cursor_move_up(1)
     tty.cursor_move_to_col(32)
     tty.erase_line_to_end()
-    io.write("│ Done! ✓         │")
+    io.write("│ Done! ✓         │\n")
     io.flush()
-    tty.cursor_restore()
     os.sleep(500)
     
-    -- 更新第二个任务状态
-    tty.cursor_save()
-    tty.cursor_move_up(3)
+    -- Update second task status
     tty.cursor_move_to_col(32)
     tty.erase_line_to_end()
-    io.write("│ Running...      │")
+    io.write("│ Running...      │\n")
     io.flush()
-    tty.cursor_restore()
     os.sleep(800)
     
-    tty.cursor_save()
-    tty.cursor_move_up(3)
+    tty.cursor_move_up(1)
     tty.cursor_move_to_col(32)
     tty.erase_line_to_end()
-    io.write("│ Done! ✓         │")
+    io.write("│ Done! ✓         │\n")
     io.flush()
-    tty.cursor_restore()
     os.sleep(500)
     
-    -- 更新第三个任务状态
-    tty.cursor_save()
-    tty.cursor_move_up(2)
+    -- Update third task status
     tty.cursor_move_to_col(32)
     tty.erase_line_to_end()
-    io.write("│ Running...      │")
+    io.write("│ Running...      │\n")
     io.flush()
-    tty.cursor_restore()
     os.sleep(800)
     
-    tty.cursor_save()
-    tty.cursor_move_up(2)
+    tty.cursor_move_up(1)
     tty.cursor_move_to_col(32)
     tty.erase_line_to_end()
-    io.write("│ Done! ✓         │")
+    io.write("│ Done! ✓         │\n")
     io.flush()
-    tty.cursor_restore()
+    
+    tty.cursor_show()
+    tty.cursor_move_down(1)
     
     print("\n✓ partial screen update test passed")
 end
 
 function main(...)
-    -- 运行所有测试
+    -- Run all tests
     test_cursor_move()
     test_cursor_move_directions()
     test_cursor_hide_show()

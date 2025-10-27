@@ -35,25 +35,26 @@ function example2_update_previous_line()
         return
     end
     
-    print("Building project...")
-    print("Status: Starting...")
+    io.write("Building project...\n")
+    io.write("Status: Starting...\n")
+    io.flush()
     
     os.sleep(1000)
     
     -- Go back and update the status line
     tty.cursor_move_up(1)
+    tty.cr()
     tty.erase_line()
-    io.write("Status: Compiling files...")
+    io.write("Status: Compiling files...\n")
     io.flush()
-    print("")  -- Move to next line
     
     os.sleep(1000)
     
     tty.cursor_move_up(1)
+    tty.cr()
     tty.erase_line()
-    io.write("Status: Done! ✓")
+    io.write("Status: Done! ✓\n")
     io.flush()
-    print("")
 end
 
 function example3_multi_line_update()
@@ -65,59 +66,55 @@ function example3_multi_line_update()
     end
     
     -- Create a simple status board
-    print("Task 1: Waiting...")
-    print("Task 2: Waiting...")
-    print("Task 3: Waiting...")
+    io.write("Task 1: Waiting...\n")
+    io.write("Task 2: Waiting...\n")
+    io.write("Task 3: Waiting...\n")
+    io.flush()
     
     tty.cursor_hide()
     
-    -- Update Task 1
-    tty.cursor_save()
+    -- Update Task 1 to Running
     tty.cursor_move_up(3)
+    tty.cr()
     tty.erase_line()
-    io.write("Task 1: Running... ")
+    io.write("Task 1: Running... \n")
     io.flush()
-    tty.cursor_restore()
     os.sleep(500)
     
-    tty.cursor_save()
-    tty.cursor_move_up(3)
-    tty.erase_line()
-    io.write("Task 1: Done ✓")
-    io.flush()
-    tty.cursor_restore()
-    
-    -- Update Task 2
-    tty.cursor_save()
-    tty.cursor_move_up(2)
-    tty.erase_line()
-    io.write("Task 2: Running... ")
-    io.flush()
-    tty.cursor_restore()
-    os.sleep(500)
-    
-    tty.cursor_save()
-    tty.cursor_move_up(2)
-    tty.erase_line()
-    io.write("Task 2: Done ✓")
-    io.flush()
-    tty.cursor_restore()
-    
-    -- Update Task 3
-    tty.cursor_save()
+    -- Update Task 1 to Done
     tty.cursor_move_up(1)
+    tty.cr()
     tty.erase_line()
-    io.write("Task 3: Running... ")
+    io.write("Task 1: Done ✓\n")
     io.flush()
-    tty.cursor_restore()
+    
+    -- Update Task 2 to Running
+    tty.cr()
+    tty.erase_line()
+    io.write("Task 2: Running... \n")
+    io.flush()
     os.sleep(500)
     
-    tty.cursor_save()
+    -- Update Task 2 to Done
     tty.cursor_move_up(1)
+    tty.cr()
     tty.erase_line()
-    io.write("Task 3: Done ✓")
+    io.write("Task 2: Done ✓\n")
     io.flush()
-    tty.cursor_restore()
+    
+    -- Update Task 3 to Running
+    tty.cr()
+    tty.erase_line()
+    io.write("Task 3: Running... \n")
+    io.flush()
+    os.sleep(500)
+    
+    -- Update Task 3 to Done
+    tty.cursor_move_up(1)
+    tty.cr()
+    tty.erase_line()
+    io.write("Task 3: Done ✓\n")
+    io.flush()
     
     tty.cursor_show()
 end
