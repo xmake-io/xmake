@@ -1,0 +1,31 @@
+--- a/__xmake_patched_libtool
++++ b/__xmake_patched_libtool
+@@ -4921,6 +4921,13 @@ func_mode_link ()
+       func_append finalize_command " $wl$qarg"
+       continue
+       ;;
++    target)
++      func_append compile_command " $arg"
++      func_append finalize_command " $arg"
++      func_append compiler_flags " $arg"
++      prev=
++      continue
++      ;;
+     *)
+       eval "$prev=\"\$arg\""
+       prev=
+@@ -5328,6 +5335,14 @@ func_mode_link ()
+         continue
+         ;;
+ 
++      -target)
++        func_append compile_command " $arg"
++        func_append finalize_command " $arg"
++        func_append compiler_flags " $arg"
++        prev=target
++        continue
++        ;;
++
+       -Z*)
+         if test os2 = "`expr $host : '.*\(os2\)'`"; then
+           # OS/2 uses -Zxxx to specify OS/2-specific options
