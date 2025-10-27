@@ -135,6 +135,90 @@ function tty.cursor_and_attrs_restore()
     return tty
 end
 
+-- move cursor to absolute position (row, col)
+-- row and col are 1-based (1, 1) is the top-left corner
+function tty.cursor_move(row, col)
+    if tty.has_vtansi() then
+        row = row or 1
+        col = col or 1
+        if row > 0 and col > 0 then
+            tty._iowrite(string.format("\x1b[%d;%dH", row, col))
+        end
+    end
+    return tty
+end
+
+-- move cursor up by n lines
+function tty.cursor_move_up(n)
+    if tty.has_vtansi() then
+        n = n or 1
+        if n > 0 then
+            tty._iowrite(string.format("\x1b[%dA", n))
+        end
+    end
+    return tty
+end
+
+-- move cursor down by n lines
+function tty.cursor_move_down(n)
+    if tty.has_vtansi() then
+        n = n or 1
+        if n > 0 then
+            tty._iowrite(string.format("\x1b[%dB", n))
+        end
+    end
+    return tty
+end
+
+-- move cursor forward (right) by n columns
+function tty.cursor_move_right(n)
+    if tty.has_vtansi() then
+        n = n or 1
+        if n > 0 then
+            tty._iowrite(string.format("\x1b[%dC", n))
+        end
+    end
+    return tty
+end
+
+-- move cursor backward (left) by n columns
+function tty.cursor_move_left(n)
+    if tty.has_vtansi() then
+        n = n or 1
+        if n > 0 then
+            tty._iowrite(string.format("\x1b[%dD", n))
+        end
+    end
+    return tty
+end
+
+-- move cursor to specified column
+function tty.cursor_move_to_col(col)
+    if tty.has_vtansi() then
+        col = col or 1
+        if col > 0 then
+            tty._iowrite(string.format("\x1b[%dG", col))
+        end
+    end
+    return tty
+end
+
+-- hide cursor
+function tty.cursor_hide()
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[?25l")
+    end
+    return tty
+end
+
+-- show cursor
+function tty.cursor_show()
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[?25h")
+    end
+    return tty
+end
+
 -- carriage return
 function tty.cr()
     tty._iowrite("\r")
