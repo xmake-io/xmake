@@ -26,6 +26,7 @@ import("core.tool.toolchain")
 import("core.cache.memcache")
 import("lib.detect.find_tool")
 import("lib.detect.find_programver")
+import("devel.git")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- translate paths
@@ -285,17 +286,18 @@ function _apply_libtool_patch_for_cross(package, opt)
     end
 
     -- this patch is only needed for clang-based toolchains
-    if not package:has_tool("cxx", "clang", "zig_cc") then
+    if not package:has_tool("cxx", "clang", "clangxx", "zig_cc") then
         return
     end
 
     -- detect the version of generated libtool script
-    local libtool_version = find_programver("./libtool", {nocache = true})
+    local libtool = io.readfile("libtool")
+    local libtool_version = libtool:match("macro_version=(%d+%.%d+%.%d+)")
     if option.get("verbose") then
         if libtool_version then
             cprint("${dim}> checking for generated libtool version ... ${color.success} %s", libtool_version)
         else
-            cprint("${color.warning}warning: the generated libtool version cannot be detected, the patch for cross-compilation cannot be applied.")
+            wprint("warning: the generated libtool version cannot be detected, the patch for cross-compilation cannot be applied.")
         end
     end
     if libtool_version then
@@ -338,7 +340,7 @@ function _apply_libtool_patch_for_cross(package, opt)
 
     if #suitable_patch_versions == 0 then
         if option.get("verbose") then
-            cprint("${color.warning}warning: no suitable cross-compilation patch was found for libtool for this project.")
+            wprint("warning: no suitable cross-compilation patch was found for libtool for this project.")
         end
         return
      end
@@ -352,7 +354,6 @@ function _apply_libtool_patch_for_cross(package, opt)
         local patch_file = path.join(patch_dir, patch_version:shortstr() .. ".patch")
         local result = try {
             function ()
-                import("devel.git")
                 os.cp("libtool", "__xmake_patched_libtool")
                 git.apply(patch_file)
                 os.mv("__xmake_patched_libtool", "libtool")
@@ -369,7 +370,7 @@ function _apply_libtool_patch_for_cross(package, opt)
         if succeed then
             cprint("${dim}> libtool patch for cross-compilation applied successfully")
         else
-            cprint("${color.warning}warning: unable to apply preset libtool cross-compilation patches, your project files were not modified.")
+            wprint("warning: unable to apply preset libtool cross-compilation patches, your project files were not modified.")
         end
     end
 end
