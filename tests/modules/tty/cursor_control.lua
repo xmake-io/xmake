@@ -1,5 +1,4 @@
 import("core.base.tty")
-import("core.base.scheduler")
 
 -- Demo TTY cursor position control features
 -- Implement partial screen refresh
