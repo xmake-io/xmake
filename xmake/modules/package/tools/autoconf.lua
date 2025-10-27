@@ -284,6 +284,11 @@ function _apply_libtool_patch_for_cross(package, opt)
         return
     end
 
+    -- this patch is only needed for clang-based toolchains
+    if not package:has_tool("cxx", "clang", "zig_cc") then
+        return
+    end
+
     -- detect the version of generated libtool script
     local libtool_version = find_programver("./libtool", {nocache = true})
     if option.get("verbose") then
@@ -342,7 +347,7 @@ function _apply_libtool_patch_for_cross(package, opt)
     local succeed = false
     for _, patch_version in ipairs(suitable_patch_versions) do
         if option.get("verbose") then
-            cprint("${dim}> try applying the patch ... ${color.success} %s", patch_version)
+            cprint("${dim}> try applying the patch ... ${color.success} >= %s", patch_version)
         end
         local patch_file = path.join(patch_dir, patch_version:shortstr() .. ".patch")
         local result = try {
