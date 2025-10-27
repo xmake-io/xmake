@@ -67,7 +67,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     scheduler.co_lock(lockname)
 
     -- attempt to get result from cache first
-    local result = detectcache:get2(cachekey, program)
+    local result = opt.nocache and nil or detectcache:get2(cachekey, program)
     if result ~= nil and not opt.force then
         scheduler.co_unlock(lockname)
         return result and result or nil
@@ -108,7 +108,9 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     end
 
     -- save result
-    detectcache:set2(cachekey, program, result and result or false)
+    if not opt.nocache then
+        detectcache:set2(cachekey, program, result and result or false)
+    end
     scheduler.co_unlock(lockname)
     return result
 end
