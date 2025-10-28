@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.object")
 import("core.base.colors")
 import("core.base.tty")
+import("core.base.scheduler")
 import("core.theme.theme")
 
 -- define module
@@ -107,16 +108,30 @@ function _is_singlerow_refresh()
     return is_singlerow_refresh
 end
 
+-- get progress line
+function _get_progress_line(progress, format, ...)
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    local msg = vformat(progress_prefix .. format, progress, ...)
+    local msg_plain = colors.translate(msg, {plain = true})
+    local maxwidth = os.getwinsize().width
+    if #msg_plain > maxwidth then
+        -- windows width is too small? strip the partial message in middle
+        local partlen = math.floor(maxwidth / 2) - 3
+        local sep = msg_plain:sub(partlen + 1, #msg_plain - partlen - 1)
+        local split = msg:split(sep, {plain = true, strict = true})
+        msg = table.concat(split, "...")
+    end
+    return msg
+end
+
 -- show progress with verbose information
 function _show_progress_with_verbose(progress, format, ...)
-    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     cprint(progress_prefix .. "${dim}" .. format, progress, ...)
 end
 
 -- show progress with scroll
 function _show_progress_with_scroll(progress, format, ...)
-    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     cprint(progress_prefix .. format, progress, ...)
 end
@@ -124,32 +139,51 @@ end
 -- show progress with multi-row refresh
 -- @see https://github.com/xmake-io/xmake/issues/6805
 function _show_progress_with_multirow_refresh(progress, format, ...)
-    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    local running = scheduler.co_running()
+    if not running then
+        _show_progress_with_scroll(progress, format, ...)
+        return
+    end
 
-    -- TODO
-    print("todo")
+    local is_finished = math.floor(progress) == 100
+    local progress_line = _get_progress_line(progress, format, ...)
+    local progress_lines = _g.progress_lines
+    if progress_lines == nil then
+        progress_lines = {}
+        _g.progress_lines = progress_lines
+    end
+    progress_lines[running] = progress_line
+
+    local previous_line_count = _g.previous_line_count or 0
+    if previous_line_count > 0 then
+        tty.cursor_move_up(previous_line_count)
+    end
+
+    local line_count = 0
+    for _, progress_line in table.orderpairs(progress_lines) do
+        tty.erase_line_to_start().cr()
+        cprint(progress_line)
+        line_count = line_count + 1
+    end
+    if is_finished then
+        print("")
+        _g.showing_without_scroll = false
+        _g.progress_lines = nil
+        _g.previous_line_count = 0
+    else
+        _g.showing_without_scroll = true
+        _g.previous_line_count = line_count
+    end
+    io.flush()
 end
 
 -- show progress with single-row refresh (ninja style)
 function _show_progress_with_singlerow_refresh(progress, format, ...)
-    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-
+    local is_finished = math.floor(progress) == 100
+    local progress_line = _get_progress_line(progress, format, ...)
     tty.erase_line_to_start().cr()
-    local msg = vformat(progress_prefix .. format, progress, ...)
-    local msg_plain = colors.translate(msg, {plain = true})
-    local maxwidth = os.getwinsize().width
-    if #msg_plain <= maxwidth then
-        cprintf(msg)
-    else
-        -- windows width is too small? strip the partial message in middle
-        local partlen = math.floor(maxwidth / 2) - 3
-        local sep = msg_plain:sub(partlen + 1, #msg_plain - partlen - 1)
-        local split = msg:split(sep, {plain = true, strict = true})
-        cprintf(table.concat(split, "..."))
-    end
-    if math.floor(progress) == 100 then
+    cprintf(progress_line)
+    if is_finished then
         print("")
         _g.showing_without_scroll = false
     else
