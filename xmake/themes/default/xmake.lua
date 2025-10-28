@@ -45,6 +45,9 @@ theme("default")
     set_text("build.progress_format", "[%3d%%]")
     set_text("build.progress_style", "multirow_refresh")
     set_color("build.progress", "green bright")
+    -- only for multirow_refresh
+    set_color("build.progress_veryslow", "magenta")
+    set_color("build.progress_slow", "yellow")
 
     -- the building object file
     set_color("build.object", "")

@@ -153,7 +153,6 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     if progress_lineinfos == nil then
         progress_lineinfos = {}
         _g.progress_lineinfos = progress_lineinfos
-        tty.cursor_hide()
         is_first = true
     end
 
@@ -172,11 +171,11 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     local timecolor = ""
     local spent_time = lineinfo.spent_time
     if spent_time > 1000 then
-        timecolor = "${magenta}"
+        timecolor = "${color.build.progress_veryslow}"
     elseif spent_time > 500 then
-        timecolor = "${yellow}"
+        timecolor = "${color.build.progress_slow}"
     end
-    local subprogress_line = _strip_progress_line(vformat("  ${dim}> %s%0.02fs${clear}${dim} ", timecolor, spent_time / 1000) .. progress_msg)
+    local subprogress_line = _strip_progress_line(vformat("  > %s%0.02fs${clear} ", timecolor, spent_time / 1000) .. progress_msg)
     lineinfo.progress_line = subprogress_line
 
     local maxwidth = os.getwinsize().width
@@ -204,7 +203,6 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
         _g.showing_without_scroll = false
         _g.progress_lineinfos = nil
         _g.linecount = 0
-        tty.cursor_show()
     else
         _g.showing_without_scroll = true
     end
