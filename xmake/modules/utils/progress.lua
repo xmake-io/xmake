@@ -68,6 +68,73 @@ function progress:running()
     return self._RUNNING and true or false
 end
 
+-- is scroll output?
+function _is_scroll()
+    local is_scroll = _g.is_scroll
+    if is_scroll == nil then
+        local style = theme.get("text.build.progress_style") or "scroll"
+        if style == "scroll" then
+            is_scroll = true
+        end
+        _g.is_scroll = is_scroll
+    end
+    return is_scroll
+end
+
+-- is single-row refresh output?
+function _is_singlerow_refresh()
+    local is_singlerow_refresh = _g.is_singlerow_refresh
+    if is_singlerow_refresh == nil then
+        local style = theme.get("text.build.progress_style")
+        if style == "singlerow_refresh" then
+            is_singlerow_refresh = true
+        end
+        _g.is_singlerow_refresh = is_singlerow_refresh
+    end
+    return is_singlerow_refresh
+end
+
+-- show progress with verbose information
+function _show_progress_with_verbose(progress, format, ...)
+    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    cprint(progress_prefix .. "${dim}" .. format, progress, ...)
+end
+
+-- show progress with scroll
+function _show_progress_with_scroll(progress, format, ...)
+    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    cprint(progress_prefix .. format, progress, ...)
+end
+
+-- show progress with single-row refresh (ninja style)
+function _show_progress_with_singlerow_refresh(progress, format, ...)
+    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+
+    tty.erase_line_to_start().cr()
+    local msg = vformat(progress_prefix .. format, progress, ...)
+    local msg_plain = colors.translate(msg, {plain = true})
+    local maxwidth = os.getwinsize().width
+    if #msg_plain <= maxwidth then
+        cprintf(msg)
+    else
+        -- windows width is too small? strip the partial message in middle
+        local partlen = math.floor(maxwidth / 2) - 3
+        local sep = msg_plain:sub(partlen + 1, #msg_plain - partlen - 1)
+        local split = msg:split(sep, {plain = true, strict = true})
+        cprintf(table.concat(split, "..."))
+    end
+    if math.floor(progress) == 100 then
+        print("")
+        _g.showing_without_scroll = false
+    else
+        _g.showing_without_scroll = true
+    end
+    io.flush()
+end
+
 -- showing progress line without scroll?
 function showing_without_scroll()
     return _g.showing_without_scroll
@@ -78,37 +145,11 @@ function show(progress, format, ...)
     progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
-        cprint(progress_prefix .. "${dim}" .. format, progress, ...)
-    else
-        local is_scroll = _g.is_scroll
-        if is_scroll == nil then
-            is_scroll = theme.get("text.build.progress_style") == "scroll"
-            _g.is_scroll = is_scroll
-        end
-        if is_scroll then
-            cprint(progress_prefix .. format, progress, ...)
-        else
-            tty.erase_line_to_start().cr()
-            local msg = vformat(progress_prefix .. format, progress, ...)
-            local msg_plain = colors.translate(msg, {plain = true})
-            local maxwidth = os.getwinsize().width
-            if #msg_plain <= maxwidth then
-                cprintf(msg)
-            else
-                -- windows width is too small? strip the partial message in middle
-                local partlen = math.floor(maxwidth / 2) - 3
-                local sep = msg_plain:sub(partlen + 1, #msg_plain - partlen - 1)
-                local split = msg:split(sep, {plain = true, strict = true})
-                cprintf(table.concat(split, "..."))
-            end
-            if math.floor(progress) == 100 then
-                print("")
-                _g.showing_without_scroll = false
-            else
-                _g.showing_without_scroll = true
-            end
-            io.flush()
-        end
+        _show_progress_with_verbose(progress, format, ...)
+    elseif _is_scroll() then
+        _show_progress_with_scroll(progress, format, ...)
+    elseif _is_singlerow_refresh() then
+        _show_progress_with_singlerow_refresh(progress, format, ...)
     end
 end
 
@@ -128,8 +169,6 @@ end
 -- @params opt - options
 --               - chars - an array of chars for progress indicator
 function new(stream, opt)
-
-    -- set default values
     stream = stream or io.stdout
     opt = opt or {}
     if opt.chars == nil or #opt.chars == 0 then
