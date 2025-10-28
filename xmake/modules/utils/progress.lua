@@ -121,7 +121,7 @@ function _get_progress_line(progress, format, ...)
         local split = msg:split(sep, {plain = true, strict = true})
         msg = table.concat(split, "...")
     end
-    return msg
+    return msg, math.min(#msg, maxwidth)
 end
 
 -- show progress with verbose information
@@ -145,34 +145,55 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
         return
     end
 
+    -- get progress line
     local is_finished = math.floor(progress) == 100
-    local progress_line = _get_progress_line(progress, format, ...)
-    local progress_lines = _g.progress_lines
-    if progress_lines == nil then
-        progress_lines = {}
-        _g.progress_lines = progress_lines
-    end
-    progress_lines[running] = progress_line
-
-    local previous_line_count = _g.previous_line_count or 0
-    if previous_line_count > 0 then
-        tty.cursor_move_up(previous_line_count)
+    local progress_line, line_charnum = _get_progress_line(progress, format, ...)
+    local progress_lineinfos = _g.progress_lineinfos
+    if progress_lineinfos == nil then
+        progress_lineinfos = {}
+        _g.progress_lineinfos = progress_lineinfos
+        tty.cursor_hide()
     end
 
-    local line_count = 0
-    for _, progress_line in table.orderpairs(progress_lines) do
+    -- update line count
+    local linecount = _g.linecount
+    if linecount == nil then
+        linecount = 0
+    else
+        linecount = linecount + 1
+    end
+    _g.linecount = linecount
+
+    -- update the progress line
+    local lineinfo = progress_lineinfos[running]
+    if lineinfo == nil then
+        lineinfo = {progress_line = progress_line, line_index = linecount, line_charnum = line_charnum}
+        progress_lineinfos[running] = lineinfo
         tty.erase_line_to_start().cr()
         cprint(progress_line)
-        line_count = line_count + 1
+    else
+        lineinfo.progress_line = progress_line
+        local moveline = lineinfo.line_index
+        local line_charnum = lineinfo.line_charnum
+        if moveline > 0 then
+            tty.cursor_move_up(moveline)
+            if line_charnum > 0 then
+                tty.cursor_move_to_col(line_charnum)
+            end
+            tty.erase_line_to_start().cr()
+            cprintf(progress_line)
+            tty.cursor_move_down(moveline)
+        end
     end
+
     if is_finished then
         print("")
         _g.showing_without_scroll = false
-        _g.progress_lines = nil
-        _g.previous_line_count = 0
+        _g.progress_lineinfos = nil
+        _g.linecount = 0
+        tty.cursor_show()
     else
         _g.showing_without_scroll = true
-        _g.previous_line_count = line_count
     end
     io.flush()
 end
