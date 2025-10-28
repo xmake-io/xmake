@@ -296,12 +296,16 @@ function _apply_libtool_patch_for_cross(package, opt)
         if libtool_version then
             cprint("${dim}> checking for generated libtool version ... ${color.success} %s", libtool_version)
         else
-            wprint("warning: the generated libtool version cannot be detected, the patch for cross-compilation cannot be applied.")
+            wprint("generated libtool version cannot be detected, the patch for cross-compilation cannot be applied.")
         end
     end
     if libtool_version then
         libtool_version = semver.new(libtool_version)
     else
+        return
+    end
+
+    if not libtool_version:at("2.4.3", "2.6.0") then
         return
     end
 
@@ -329,7 +333,7 @@ function _apply_libtool_patch_for_cross(package, opt)
             end
         else
             if #loaded_patch_versions == 1 then
-                if libtool_version:satisfies(">=" .. patch_version:shortstr()) then
+                if libtool_version:ge(patch_version) then
                     table.insert(suitable_patch_versions, patch_version)
                 end
             end
@@ -339,7 +343,7 @@ function _apply_libtool_patch_for_cross(package, opt)
 
     if #suitable_patch_versions == 0 then
         if option.get("verbose") then
-            wprint("warning: no suitable cross-compilation patch was found for libtool for this project.")
+            wprint("no suitable cross-compilation patch was found for libtool for this project.")
         end
         return
      end
@@ -369,7 +373,7 @@ function _apply_libtool_patch_for_cross(package, opt)
         if succeed then
             cprint("${dim}> libtool patch for cross-compilation applied successfully")
         else
-            wprint("warning: unable to apply preset libtool cross-compilation patches, your project files were not modified.")
+            wprint("unable to apply preset libtool cross-compilation patches, your project files were not modified.")
         end
     end
 end
