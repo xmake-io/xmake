@@ -163,14 +163,21 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     local current_time = os.mclock()
     if lineinfo == nil then
         _g.linecount = linecount + 1
-        local subprogress_line = _strip_progress_line("  ${dim}0.00s " .. progress_msg)
-        lineinfo = {progress_line = subprogress_line, running = running, start_time = current_time}
+        lineinfo = {start_time = current_time, spent_time = 0}
         progress_lineinfos[running] = lineinfo
     else
-        local subprogress_line = _strip_progress_line(vformat("  ${dim}%0.02fs ", (current_time - lineinfo.start_time) / 1000) .. progress_msg)
-        lineinfo.progress_line = subprogress_line
+        lineinfo.spent_time = current_time - lineinfo.start_time
         lineinfo.start_time = current_time
     end
+    local timecolor = ""
+    local spent_time = lineinfo.spent_time
+    if spent_time > 1000 then
+        timecolor = "${magenta}"
+    elseif spent_time > 500 then
+        timecolor = "${yellow}"
+    end
+    local subprogress_line = _strip_progress_line(vformat("  ${dim}> %s%0.02fs${clear}${dim} ", timecolor, spent_time / 1000) .. progress_msg)
+    lineinfo.progress_line = subprogress_line
 
     local maxwidth = os.getwinsize().width
     if not is_first and linecount > 0 then
@@ -181,10 +188,15 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     tty.erase_line_to_start().cr()
     cprint(progress_line)
 
-    for _, progress_lineinfo in table.orderpairs(progress_lineinfos) do
+    local lineinfos = {}
+    for _, progress_lineinfo in pairs(progress_lineinfos) do
+        table.insert(lineinfos, progress_lineinfo)
+    end
+    table.sort(lineinfos, function (a, b) return a.spent_time > b.spent_time end)
+    for _, lineinfo in ipairs(lineinfos) do
         tty.cursor_move_to_col(maxwidth)
         tty.erase_line_to_start().cr()
-        cprint(progress_lineinfo.progress_line)
+        cprint(lineinfo.progress_line)
     end
 
     if is_finished then
