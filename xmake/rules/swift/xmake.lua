@@ -75,7 +75,6 @@ rule("swift.interop", function()
         import("core.tool.compiler")
         import("core.language.language")
         import("core.project.depend")
-        import("core.cache.localcache")
 
         local function _get_target_cpp_langflags()
             local cpp_langflags = _g.cpp_langflags
