@@ -28,7 +28,6 @@ import("async.runjobs")
 import("utils.progress")
 import("net.fasturl")
 import("private.action.require.impl.package")
-import("private.action.require.impl.lock_packages")
 import("private.action.require.impl.register_packages")
 import("private.action.require.impl.actions.download", {alias = "action_download"})
 
