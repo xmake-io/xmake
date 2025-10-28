@@ -20,10 +20,12 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.project.config")
 import("core.tool.toolchain")
 import("core.cache.memcache")
 import("lib.detect.find_tool")
+import("devel.git")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- translate paths
@@ -274,6 +276,99 @@ function _get_ldflags_from_packagedeps(package, opt)
         end
     end
     return result
+end
+
+-- @see https://github.com/xmake-io/xmake/pull/6963
+function _apply_libtool_patch_for_cross(package, opt)
+    if not package:is_cross() or not os.isfile("libtool") then
+        return
+    end
+
+    -- this patch is only needed for clang-based toolchains
+    if not package:has_tool("cxx", "clang", "clangxx", "zig_cc") then
+        return
+    end
+
+    -- detect the version of generated libtool script
+    local libtool = io.readfile("libtool")
+    local libtool_version = libtool:match("macro_version=(%d+%.%d+%.%d+)")
+    if option.get("verbose") then
+        if libtool_version then
+            cprint("${dim}> checking for generated libtool version ... ${color.success} %s", libtool_version)
+        else
+            wprint("generated libtool version cannot be detected, the patch for cross-compilation cannot be applied.")
+        end
+    end
+    if libtool_version then
+        libtool_version = semver.new(libtool_version)
+    else
+        return
+    end
+
+    if not libtool_version:at("2.4.3", "2.6.0") then
+        return
+    end
+
+    -- load and parse patch list
+    local patch_dir = path.join(os.programdir(), "scripts", "patches", "libtool")
+    local loaded_patch_versions = {}
+    for _, patch_file in ipairs(os.files(path.join(patch_dir, "*.patch"))) do
+        local patch_version = path.filename(patch_file):rtrim(".patch")
+        table.insert(loaded_patch_versions, semver.new(patch_version))
+    end
+    table.sort(loaded_patch_versions)
+
+    -- select the suitable patch
+    local suitable_patch_versions = {}
+    local last_patch_version = nil
+    for _, patch_version in ipairs(loaded_patch_versions) do
+        if last_patch_version then
+            if libtool_version:at(last_patch_version, patch_version) then
+                -- some distributions (such as archlinux) may package the dev
+                -- version of libtool, in which case the next version of the 
+                -- patch may be applicable.
+                table.insert(suitable_patch_versions, last_patch_version)
+                table.insert(suitable_patch_versions, patch_version)
+                break
+            end
+        else
+            if #loaded_patch_versions == 1 then
+                if libtool_version:ge(patch_version) then
+                    table.insert(suitable_patch_versions, patch_version)
+                end
+            end
+        end
+        last_patch_version = patch_version
+    end
+
+    -- try to apply the suitable patch
+    local succeed = false
+    for _, patch_version in ipairs(suitable_patch_versions) do
+        if option.get("verbose") then
+            cprint("${dim}> try applying the patch ... ${color.success} >= %s", patch_version)
+        end
+        local patch_file = path.join(patch_dir, patch_version:shortstr() .. ".patch")
+        local result = try {
+            function ()
+                os.cp("libtool", "__xmake_patched_libtool")
+                git.apply(patch_file)
+                os.mv("__xmake_patched_libtool", "libtool")
+                return true
+            end
+        }
+        if result then
+            succeed = true
+            break
+        end
+    end
+
+    if option.get("verbose") then
+        if succeed then
+            cprint("${dim}> libtool patch for cross-compilation applied successfully")
+        else
+            wprint("unable to apply libtool cross-compilation patches, your build files were not modified.")
+        end
+    end
 end
 
 -- get the build environments
@@ -584,6 +679,8 @@ function configure(package, configs, opt)
 
     -- do configure
     os.vrunv("./configure", argv, {shell = true, envs = envs})
+
+    _apply_libtool_patch_for_cross(package, opt)
 end
 
 -- do make

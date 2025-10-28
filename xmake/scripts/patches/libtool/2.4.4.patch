@@ -1,0 +1,40 @@
+--- a/__xmake_patched_libtool
++++ b/__xmake_patched_libtool
+@@ -4921,6 +4921,13 @@ func_mode_link ()
+       func_append finalize_command " $wl$qarg"
+       continue
+       ;;
++    target)
++      func_append compile_command " $arg"
++      func_append finalize_command " $arg"
++      func_append compiler_flags " $arg"
++      prev=
++      continue
++      ;;
+     *)
+       eval "$prev=\"\$arg\""
+       prev=
+@@ -5318,7 +5325,7 @@ func_mode_link ()
+       # -O*, -g*, -flto*, -fwhopr*, -fuse-linker-plugin GCC link-time optimization
+       # -stdlib=*            select c++ std lib with clang
+       -64|-mips[0-9]|-r[0-9][0-9]*|-xarch=*|-xtarget=*|+DA*|+DD*|-q*|-m*| \
+-      -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*|--sysroot=*| \
++      -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*|--sysroot=*|--target=*| \
+       -O*|-g*|-flto*|-fwhopr*|-fuse-linker-plugin|-fstack-protector*|-stdlib=*)
+         func_quote_for_eval "$arg"
+     arg=$func_quote_for_eval_result
+@@ -5328,6 +5335,14 @@ func_mode_link ()
+         continue
+         ;;
+ 
++      -target)
++        func_append compile_command " $arg"
++        func_append finalize_command " $arg"
++        func_append compiler_flags " $arg"
++        prev=target
++        continue
++        ;;
++
+       -Z*)
+         if test os2 = "`expr $host : '.*\(os2\)'`"; then
+           # OS/2 uses -Zxxx to specify OS/2-specific options
