@@ -120,6 +120,16 @@ function nf_vectorext(self, extension)
     return maps[extension]
 end
 
+-- make the includedir flag
+function nf_includedir(self, includedir)
+    return "-I" .. includedir
+end
+
+-- make the sysincludedir flag
+function nf_sysincludedir(self, dir)
+    return nf_includedir(self, dir)
+end
+
 -- make the define flag
 function nf_define(self, macro)
     return {"-Xcc", "-D" .. macro}

@@ -1,0 +1,23 @@
+target("fibonacci")
+    set_kind("$(kind)")
+    set_languages("cxx20")
+    add_files("lib/**.swift", {public = true})
+    add_files("lib/**.cpp")
+    set_values("swift.modulename", "SwiftFibonacci")
+    set_values("swift.interop", "cxx")
+    -- for automatic clang modulemap
+    add_includedirs("include/fibonacci", {public = true})
+    add_includedirs("include")
+    add_headerfiles("include/**.h")
+
+target("cxx_interop_lib")
+    set_kind("binary")
+    set_languages("cxx20")
+    add_files("src/**.cpp")
+    add_deps("fibonacci")
+
+target("swift_interop_lib")
+    set_kind("binary")
+    add_files("src/**.swift")
+    add_deps("fibonacci")
+    set_values("swift.interop", "cxx")

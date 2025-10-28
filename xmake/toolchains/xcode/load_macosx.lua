@@ -39,6 +39,7 @@ function main(toolchain)
         toolchain:add("scflags", "-target", target)
         toolchain:add("scldflags", "-target", target)
         toolchain:add("scshflags", "-target", target)
+        toolchain:add("scarflags", "-target", target)
     end
 
     -- add sysroot flags
@@ -50,6 +51,7 @@ function main(toolchain)
         toolchain:add("mxflags", "-isysroot", xcode_sysroot)
         toolchain:add("scflags", "-sdk " .. xcode_sysroot)
         toolchain:add("scshflags", "-sdk " .. xcode_sysroot)
+        toolchain:add("scarflags", "-sdk " .. xcode_sysroot)
         toolchain:add("scldflags", "-sdk " .. xcode_sysroot)
         if appledev == "catalyst" then
             toolchain:add("cxflags", {"-I", path.join(xcode_sysroot, "System/iOSSupport/usr/include")})
@@ -66,6 +68,7 @@ function main(toolchain)
             toolchain:add("mxflags", {"-iframework", path.join(xcode_sysroot, "System/iOSSupport/System/Library/Frameworks")})
             toolchain:add("scflags", {"-iframework", path.join(xcode_sysroot, "System/iOSSupport/System/Library/Frameworks")})
             toolchain:add("scshflags", {"-iframework", path.join(xcode_sysroot, "System/iOSSupport/System/Library/Frameworks")})
+            toolchain:add("scarflags", {"-iframework", path.join(xcode_sysroot, "System/iOSSupport/System/Library/Frameworks")})
             toolchain:add("scldflags", {"-iframework", path.join(xcode_sysroot, "System/iOSSupport/System/Library/Frameworks")})
         end
     end
@@ -77,4 +80,8 @@ function main(toolchain)
     -- init flags for objc/c++ (with ldflags and shflags)
     -- we can use `add_mxflags("-fno-objc-arc")` to override it in xmake.lua
     toolchain:add("mxflags", "-fobjc-arc")
+
+    toolchain:add("scshflags", "-emit-library")
+    toolchain:add("scarflags", "-emit-library", "-static")
+    toolchain:add("scldflags", "-emit-executable")
 end

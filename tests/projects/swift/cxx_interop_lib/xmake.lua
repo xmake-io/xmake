@@ -1,0 +1,12 @@
+target("fibonacci")
+    set_kind("$(kind)")
+    set_languages("cxx20")
+    add_files("lib/**.swift", {public = true})
+    set_values("swift.modulename", "SwiftFibonacci")
+    set_values("swift.interop", "cxx")
+
+target("cxx_interop_lib")
+    set_kind("binary")
+    set_languages("cxx20")
+    add_files("src/**.cpp")
+    add_deps("fibonacci")
