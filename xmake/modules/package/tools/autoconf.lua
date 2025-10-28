@@ -341,13 +341,6 @@ function _apply_libtool_patch_for_cross(package, opt)
         last_patch_version = patch_version
     end
 
-    if #suitable_patch_versions == 0 then
-        if option.get("verbose") then
-            wprint("no suitable cross-compilation patch was found for libtool for this project.")
-        end
-        return
-     end
-
     -- try to apply the suitable patch
     local succeed = false
     for _, patch_version in ipairs(suitable_patch_versions) do
@@ -373,7 +366,7 @@ function _apply_libtool_patch_for_cross(package, opt)
         if succeed then
             cprint("${dim}> libtool patch for cross-compilation applied successfully")
         else
-            wprint("unable to apply preset libtool cross-compilation patches, your project files were not modified.")
+            wprint("unable to apply libtool cross-compilation patches, your build files were not modified.")
         end
     end
 end
