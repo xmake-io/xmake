@@ -108,10 +108,8 @@ function _is_singlerow_refresh()
     return is_singlerow_refresh
 end
 
--- get progress line
-function _get_progress_line(progress, format, ...)
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-    local msg = vformat(progress_prefix .. format, progress, ...)
+-- strip progress line
+function _strip_progress_line(msg)
     local msg_plain = colors.translate(msg, {plain = true})
     local maxwidth = os.getwinsize().width
     if #msg_plain > maxwidth then
@@ -121,7 +119,7 @@ function _get_progress_line(progress, format, ...)
         local split = msg:split(sep, {plain = true, strict = true})
         msg = table.concat(split, "...")
     end
-    return msg, math.min(#msg, maxwidth)
+    return msg
 end
 
 -- show progress with verbose information
@@ -146,44 +144,47 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     end
 
     -- get progress line
+    local is_first = false
     local is_finished = math.floor(progress) == 100
-    local progress_line, line_charnum = _get_progress_line(progress, format, ...)
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    local progress_msg = vformat(format, ...)
+    local progress_line = _strip_progress_line(vformat(progress_prefix, progress) .. progress_msg)
     local progress_lineinfos = _g.progress_lineinfos
     if progress_lineinfos == nil then
         progress_lineinfos = {}
         _g.progress_lineinfos = progress_lineinfos
         tty.cursor_hide()
+        is_first = true
     end
 
-    -- update line count
-    local linecount = _g.linecount
-    if linecount == nil then
-        linecount = 0
-    else
-        linecount = linecount + 1
-    end
-    _g.linecount = linecount
-
-    -- update the progress line
+    -- update the progress info
+    local linecount = _g.linecount or 0
     local lineinfo = progress_lineinfos[running]
+    local current_time = os.mclock()
     if lineinfo == nil then
-        lineinfo = {progress_line = progress_line, line_index = linecount, line_charnum = line_charnum}
+        _g.linecount = linecount + 1
+        local subprogress_line = _strip_progress_line("  ${dim}0.00s " .. progress_msg)
+        lineinfo = {progress_line = subprogress_line, running = running, start_time = current_time}
         progress_lineinfos[running] = lineinfo
-        tty.erase_line_to_start().cr()
-        cprint(progress_line)
     else
-        lineinfo.progress_line = progress_line
-        local moveline = lineinfo.line_index
-        local line_charnum = lineinfo.line_charnum
-        if moveline > 0 then
-            tty.cursor_move_up(moveline)
-            if line_charnum > 0 then
-                tty.cursor_move_to_col(line_charnum)
-            end
-            tty.erase_line_to_start().cr()
-            cprintf(progress_line)
-            tty.cursor_move_down(moveline)
-        end
+        local subprogress_line = _strip_progress_line(vformat("  ${dim}%0.02fs ", (current_time - lineinfo.start_time) / 1000) .. progress_msg)
+        lineinfo.progress_line = subprogress_line
+        lineinfo.start_time = current_time
+    end
+
+    local maxwidth = os.getwinsize().width
+    if not is_first and linecount > 0 then
+        tty.cursor_move_to_col(maxwidth)
+        tty.cursor_move_up(linecount + 1)
+    end
+
+    tty.erase_line_to_start().cr()
+    cprint(progress_line)
+
+    for _, progress_lineinfo in table.orderpairs(progress_lineinfos) do
+        tty.cursor_move_to_col(maxwidth)
+        tty.erase_line_to_start().cr()
+        cprint(progress_lineinfo.progress_line)
     end
 
     if is_finished then
@@ -201,9 +202,9 @@ end
 -- show progress with single-row refresh (ninja style)
 function _show_progress_with_singlerow_refresh(progress, format, ...)
     local is_finished = math.floor(progress) == 100
-    local progress_line = _get_progress_line(progress, format, ...)
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     tty.erase_line_to_start().cr()
-    cprintf(progress_line)
+    cprintf(progress_prefix .. format, progress, ...)
     if is_finished then
         print("")
         _g.showing_without_scroll = false
