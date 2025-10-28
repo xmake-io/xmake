@@ -25,7 +25,6 @@ import("core.project.config")
 import("core.tool.toolchain")
 import("core.cache.memcache")
 import("lib.detect.find_tool")
-import("lib.detect.find_programver")
 import("devel.git")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
