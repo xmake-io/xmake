@@ -90,7 +90,7 @@ function jobgraph:add(name, run, opt)
             end
         end
     else
-        raise("job(%s): has already been added!", name)
+        wprint("job(%s): has already been added!", name)
     end
 end
 
