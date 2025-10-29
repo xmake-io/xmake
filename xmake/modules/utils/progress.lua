@@ -222,12 +222,12 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     end
 
     if is_finished then
-        _g.showing_without_scroll = false
+        _g.is_refreshing = false
         _g.progress_lineinfos = nil
         _g.linecount = 0
         tty.cursor_show()
     else
-        _g.showing_without_scroll = true
+        _g.is_refreshing = true
         _g.linecount = linecount
     end
     io.flush()
@@ -241,9 +241,9 @@ function _show_progress_with_singlerow_refresh(progress, format, ...)
     cprintf(progress_prefix .. format, progress, ...)
     if is_finished then
         print("")
-        _g.showing_without_scroll = false
+        _g.is_refreshing = false
     else
-        _g.showing_without_scroll = true
+        _g.is_refreshing = true
     end
     io.flush()
 end
@@ -268,9 +268,11 @@ end
 -- print additional output logs with colors outside the progress log area, such as warning logs.
 -- it's used when the progress style is multirow/singlerow refresh.
 function show_output(format, ...)
-    if _g.showing_without_scroll then
-        print("")
+    if not _g.is_refreshing then
+        return
     end
+
+    print("")
     cprint(format, ...)
 end
 
