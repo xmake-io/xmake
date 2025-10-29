@@ -248,11 +248,6 @@ function _show_progress_with_singlerow_refresh(progress, format, ...)
     io.flush()
 end
 
--- showing progress line without scroll?
-function showing_without_scroll()
-    return _g.showing_without_scroll
-end
-
 -- show the message with progress
 function show(progress, format, ...)
     progress = type(progress) == "table" and progress:percent() or math.floor(progress)
@@ -268,6 +263,15 @@ function show(progress, format, ...)
     else
         _show_progress_with_scroll(progress, format, ...)
     end
+end
+
+-- print additional output logs with colors outside the progress log area, such as warning logs.
+-- it's used when the progress style is multirow/singlerow refresh.
+function show_output(format, ...)
+    if _g.showing_without_scroll then
+        print("")
+    end
+    cprint(format, ...)
 end
 
 -- get the message text with progress
