@@ -274,7 +274,7 @@ function main(targets_root, opt)
         runjobs("build", batchjobs, {on_exit = function (errors)
             import("utils.progress")
             if errors then
-                progress.show_output(errors)
+                progress.show_output("")
             end
         end, comax = option.get("jobs") or 1, curdir = curdir, distcc = distcc})
         os.cd(curdir)

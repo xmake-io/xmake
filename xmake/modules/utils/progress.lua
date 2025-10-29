@@ -172,40 +172,46 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     tty.erase_line_to_start().cr()
     cprint(progress_line)
 
-    -- update the subprogress infos
+    -- update the current progress info
     local current_time = os.mclock()
-    local lineinfo = progress_lineinfos[running]
-    if lineinfo == nil then
-        lineinfo = {start_time = current_time, spent_time = 0, running = running}
-        progress_lineinfos[running] = lineinfo
-    else
-        lineinfo.spent_time = current_time - lineinfo.start_time
-        lineinfo.start_time = current_time
-    end
-    local timecolor = ""
-    local spent_time = lineinfo.spent_time
-    if spent_time > 1000 then
-        timecolor = "${color.build.progress_veryslow}"
-    elseif spent_time > 500 then
-        timecolor = "${color.build.progress_slow}"
+    local current_lineinfo = progress_lineinfos[running]
+    if current_lineinfo == nil then
+        current_lineinfo = {start_time = current_time, spent_time = 0, running = running}
+        progress_lineinfos[running] = current_lineinfo
     end
     if is_finished then
-        lineinfo.progress_line = nil
+        current_lineinfo.progress_msg = nil
     else
-        local subprogress_line = _strip_progress_line(vformat("  > %s%0.02fs${clear} ", timecolor, spent_time / 1000) .. progress_msg)
-        lineinfo.progress_line = subprogress_line
+        current_lineinfo.progress_msg = progress_msg
     end
 
     -- sort the progress lines by the spent time
-    local lineinfos = {}
+    local order_lineinfos = {}
     for _, progress_lineinfo in pairs(progress_lineinfos) do
-        table.insert(lineinfos, progress_lineinfo)
+        local progress_msg = progress_lineinfo.progress_msg
+        if progress_msg then
+            local timecolor = ""
+            local spent_time = current_time - progress_lineinfo.start_time
+            if spent_time > 1000 then
+                timecolor = "${color.build.progress_veryslow}"
+            elseif spent_time > 500 then
+                timecolor = "${color.build.progress_slow}"
+            end
+            progress_lineinfo.spent_time = spent_time
+            local subprogress_line = _strip_progress_line(vformat("  > %s%0.02fs${clear} ", timecolor, spent_time / 1000) .. progress_msg)
+            progress_lineinfo.progress_line = subprogress_line
+            table.insert(order_lineinfos, progress_lineinfo)
+        else
+            progress_lineinfo.spent_time = 0
+            progress_lineinfo.progress_line = nil
+        end
     end
-    table.sort(lineinfos, function (a, b) return a.spent_time > b.spent_time end)
+    table.sort(order_lineinfos, function (a, b) return a.spent_time > b.spent_time end)
+    current_lineinfo.start_time = current_time
 
     -- show the subprocess lines
     linecount = 0
-    for _, lineinfo in ipairs(lineinfos) do
+    for _, lineinfo in ipairs(order_lineinfos) do
         -- we need not show it if the progress job is idle in runjobs now
         local progress_running = lineinfo.running
         if progress_running and progress_running:data("runjobs.running") == false then
