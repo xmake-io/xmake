@@ -156,13 +156,21 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
         is_first = true
     end
 
-    -- update the progress info
+    -- show the total progress line
     local linecount = _g.linecount or 0
-    local lineinfo = progress_lineinfos[running]
+    local maxwidth = os.getwinsize().width
+    if not is_first and linecount > 0 then
+        tty.cursor_move_to_col(maxwidth)
+        tty.cursor_move_up(linecount + 1)
+    end
+    tty.erase_line_to_start().cr()
+    cprint(progress_line)
+
+    -- update the subprogress infos
     local current_time = os.mclock()
+    local lineinfo = progress_lineinfos[running]
     if lineinfo == nil then
-        _g.linecount = linecount + 1
-        lineinfo = {start_time = current_time, spent_time = 0}
+        lineinfo = {start_time = current_time, spent_time = 0, running = running}
         progress_lineinfos[running] = lineinfo
     else
         lineinfo.spent_time = current_time - lineinfo.start_time
@@ -175,36 +183,45 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     elseif spent_time > 500 then
         timecolor = "${color.build.progress_slow}"
     end
-    local subprogress_line = _strip_progress_line(vformat("  > %s%0.02fs${clear} ", timecolor, spent_time / 1000) .. progress_msg)
-    lineinfo.progress_line = subprogress_line
-
-    local maxwidth = os.getwinsize().width
-    if not is_first and linecount > 0 then
-        tty.cursor_move_to_col(maxwidth)
-        tty.cursor_move_up(linecount + 1)
+    if is_finished then
+        lineinfo.progress_line = nil
+    else
+        local subprogress_line = _strip_progress_line(vformat("  > %s%0.02fs${clear} ", timecolor, spent_time / 1000) .. progress_msg)
+        lineinfo.progress_line = subprogress_line
     end
 
-    tty.erase_line_to_start().cr()
-    cprint(progress_line)
-
+    -- sort the progress lines by the spent time
     local lineinfos = {}
     for _, progress_lineinfo in pairs(progress_lineinfos) do
         table.insert(lineinfos, progress_lineinfo)
     end
     table.sort(lineinfos, function (a, b) return a.spent_time > b.spent_time end)
+
+    -- show the subprocess lines
+    local linecount = 0
     for _, lineinfo in ipairs(lineinfos) do
+        -- we need not show it if the progress job is idle in runjobs now
+        local progress_running = lineinfo.running
+        if progress_running and progress_running:data("runjobs.running") == false then
+            lineinfo.progress_line = nil
+        end
         tty.cursor_move_to_col(maxwidth)
         tty.erase_line_to_start().cr()
-        cprint(lineinfo.progress_line)
+        if lineinfo.progress_line then
+            cprint(lineinfo.progress_line)
+        else
+            print("")
+        end
+        linecount = linecount + 1
     end
 
     if is_finished then
-        print("")
         _g.showing_without_scroll = false
         _g.progress_lineinfos = nil
         _g.linecount = 0
     else
         _g.showing_without_scroll = true
+        _g.linecount = linecount
     end
     io.flush()
 end
