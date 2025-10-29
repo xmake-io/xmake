@@ -204,7 +204,7 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     table.sort(lineinfos, function (a, b) return a.spent_time > b.spent_time end)
 
     -- show the subprocess lines
-    local linecount = 0
+    linecount = 0
     for _, lineinfo in ipairs(lineinfos) do
         -- we need not show it if the progress job is idle in runjobs now
         local progress_running = lineinfo.running
