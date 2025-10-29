@@ -35,48 +35,20 @@ import("utils.binary.rpath", {alias = "rpath_utils"})
 -- define module
 local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPINFO", "_tip"}}
 
--- show text
-function _show(showtext, progress)
-    if option.get("verbose") then
-        cprint(showtext)
-    else
-        local is_scroll = _g.is_scroll
-        if is_scroll == nil then
-            is_scroll = theme.get("text.build.progress_style") == "scroll"
-            _g.is_scroll = is_scroll
-        end
-        if is_scroll then
-            cprint(showtext)
-        else
-            tty.erase_line_to_start().cr()
-            local msg = showtext
-            local msg_plain = colors.translate(msg, {plain = true})
-            local maxwidth = os.getwinsize().width
-            if #msg_plain <= maxwidth then
-                cprintf(msg)
-            else
-                -- windows width is too small? strip the partial message in middle
-                local partlen = math.floor(maxwidth / 2) - 3
-                local sep = msg_plain:sub(partlen + 1, #msg_plain - partlen - 1)
-                local split = msg:split(sep, {plain = true, strict = true})
-                cprintf(table.concat(split, "..."))
-            end
-            if math.floor(progress:percent()) == 100 then
-                print("")
-                _g.showing_without_scroll = false
-            else
-                _g.showing_without_scroll = true
-            end
-            io.flush()
-        end
+-- run command: show
+function _runcmd_show(cmd, opt)
+    local format = cmd.format
+    if format then
+        cprint(showtext, format, table.unpack(cmd.argv))
     end
 end
 
--- run command: show
-function _runcmd_show(cmd, opt)
-    local showtext = cmd.showtext
-    if showtext then
-        _show(showtext, cmd.progress)
+-- run command: show_progress
+function _runcmd_show_progress(cmd, opt)
+    local format = cmd.format
+    local progress = cmd.progress
+    if format and progress then
+        progress_utils.show(progress, format, table.unpack(cmd.argv))
     end
 end
 
@@ -242,24 +214,25 @@ function _runcmd(cmd, opt)
     if not maps then
         maps =
         {
-            show         = _runcmd_show,
-            runv         = _runcmd_runv,
-            vrunv        = _runcmd_vrunv,
-            execv        = _runcmd_execv,
-            vexecv       = _runcmd_vexecv,
-            lua          = _runcmd_lua,
-            vlua         = _runcmd_vlua,
-            mkdir        = _runcmd_mkdir,
-            rmdir        = _runcmd_rmdir,
-            cd           = _runcmd_cd,
-            rm           = _runcmd_rm,
-            cp           = _runcmd_cp,
-            mv           = _runcmd_mv,
-            ln           = _runcmd_ln,
-            clean_rpath  = _runcmd_clean_rpath,
-            insert_rpath = _runcmd_insert_rpath,
-            remove_rpath = _runcmd_remove_rpath,
-            change_rpath = _runcmd_change_rpath
+            show          = _runcmd_show,
+            show_progress = _runcmd_show_progress,
+            runv          = _runcmd_runv,
+            vrunv         = _runcmd_vrunv,
+            execv         = _runcmd_execv,
+            vexecv        = _runcmd_vexecv,
+            lua           = _runcmd_lua,
+            vlua          = _runcmd_vlua,
+            mkdir         = _runcmd_mkdir,
+            rmdir         = _runcmd_rmdir,
+            cd            = _runcmd_cd,
+            rm            = _runcmd_rm,
+            cp            = _runcmd_cp,
+            mv            = _runcmd_mv,
+            ln            = _runcmd_ln,
+            clean_rpath   = _runcmd_clean_rpath,
+            insert_rpath  = _runcmd_insert_rpath,
+            remove_rpath  = _runcmd_remove_rpath,
+            change_rpath  = _runcmd_change_rpath
         }
         _g.maps = maps
     end
@@ -470,8 +443,12 @@ end
 
 -- add command: show
 function batchcmds:show(format, ...)
-    local showtext = string.format(format, ...)
-    table.insert(self:cmds(), {kind = "show", showtext = showtext})
+    table.insert(self:cmds(), {kind = "show", format = format, argv = table.pack(...)})
+end
+
+-- add command: show progress
+function batchcmds:show_progress(progress, format, ...)
+    table.insert(self:cmds(), {kind = "show_progress", progress = progress, format = format, argv = table.pack(...)})
 end
 
 -- add command: clean rpath
@@ -497,14 +474,6 @@ end
 -- add raw command for the specific generator or xpack format
 function batchcmds:rawcmd(kind, rawstr)
     table.insert(self:cmds(), {kind = kind, rawstr = rawstr})
-end
-
--- add command: show progress
-function batchcmds:show_progress(progress, format, ...)
-    if progress then
-        local showtext = progress_utils.text(progress, format, ...)
-        table.insert(self:cmds(), {kind = "show", showtext = showtext, progress = progress})
-    end
 end
 
 -- get depinfo

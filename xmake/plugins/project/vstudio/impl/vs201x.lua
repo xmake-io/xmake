@@ -118,8 +118,9 @@ function _get_command_string(cmd, vcxprojdir)
     elseif kind == "mkdir" then
         local dir = _translate_path(cmd.dir, vcxprojdir)
         return string.format("if not exist \"%s\" mkdir \"%s\"", dir, dir)
-    elseif kind == "show" then
-        return string.format("echo %s", colors.ignore(cmd.showtext))
+    elseif kind == "show" or kind == "show_progress" then
+        local text = string.format(cmd.format, table.unpack(cmd.argv))
+        return string.format("echo %s", colors.ignore(text))
     end
 end
 
