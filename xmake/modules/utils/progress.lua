@@ -155,6 +155,12 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
         _g.progress_lineinfos = progress_lineinfos
         is_first = true
     end
+    if is_first then
+        tty.cursor_hide()
+        os.atexit(function (ok, errors)
+            tty.cursor_show()
+        end)
+    end
 
     -- show the total progress line
     local linecount = _g.linecount or 0
@@ -219,6 +225,7 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
         _g.showing_without_scroll = false
         _g.progress_lineinfos = nil
         _g.linecount = 0
+        tty.cursor_show()
     else
         _g.showing_without_scroll = true
         _g.linecount = linecount
