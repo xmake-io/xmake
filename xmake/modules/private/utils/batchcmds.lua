@@ -39,7 +39,7 @@ local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPINFO",
 function _runcmd_show(cmd, opt)
     local format = cmd.format
     if format then
-        cprint(showtext, format, table.unpack(cmd.argv))
+        cprint(format, table.unpack(cmd.argv))
     end
 end
 
