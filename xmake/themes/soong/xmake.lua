@@ -46,6 +46,7 @@ theme("soong")
     set_text("build.progress_style", "multirow_refresh")
     set_color("build.progress", "green bright")
     -- only for multirow_refresh
+    set_color("build.progress_superslow", "red")
     set_color("build.progress_veryslow", "magenta")
     set_color("build.progress_slow", "yellow")
 

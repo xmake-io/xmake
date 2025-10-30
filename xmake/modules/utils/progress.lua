@@ -192,7 +192,9 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
         if progress_msg then
             local timecolor = ""
             local spent_time = current_time - progress_lineinfo.start_time
-            if spent_time > 1000 then
+            if spent_time > 30000 then
+                timecolor = "${color.build.progress_superslow}"
+            elseif spent_time > 1000 then
                 timecolor = "${color.build.progress_veryslow}"
             elseif spent_time > 500 then
                 timecolor = "${color.build.progress_slow}"
@@ -228,12 +230,12 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     end
 
     if is_finished then
-        _g.is_refreshing = false
+        _g.refresh_mode = nil
         _g.progress_lineinfos = nil
         _g.linecount = 0
         tty.cursor_show()
     else
-        _g.is_refreshing = true
+        _g.refresh_mode = "multirow"
         _g.linecount = linecount
     end
     io.flush()
@@ -247,9 +249,9 @@ function _show_progress_with_singlerow_refresh(progress, format, ...)
     cprintf(progress_prefix .. format, progress, ...)
     if is_finished then
         print("")
-        _g.is_refreshing = false
+        _g.refresh_mode = nil
     else
-        _g.is_refreshing = true
+        _g.refresh_mode = "singlerow"
     end
     io.flush()
 end
@@ -274,12 +276,19 @@ end
 -- print additional output logs with colors outside the progress log area, such as warning logs.
 -- it's used when the progress style is multirow/singlerow refresh.
 function show_output(format, ...)
-    if not _g.is_refreshing then
-        return
+    local refresh_mode = _g.refresh_mode
+    if refresh_mode == "singlerow" then
+        print("")
+        cprint(format, ...)
+    elseif refresh_mode == "multirow" then
+        local linecount = (_g.linecount or 0) + 1
+        for i = 1, linecount do
+            print("")
+        end
+        cprint(format, ...)
+    else
+        cprint(format, ...)
     end
-
-    print("")
-    cprint(format, ...)
 end
 
 -- get the message text with progress
