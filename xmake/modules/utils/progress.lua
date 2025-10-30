@@ -134,15 +134,13 @@ function _show_progress_with_scroll(progress, format, ...)
 end
 
 -- build ordered subprocess line infos from progress_lineinfos (internal helper)
-function _build_ordered_subprocess_lineinfos(maxwidth)
+function _build_ordered_subprocess_lineinfos(maxwidth, current_time)
     local progress_lineinfos = _g.progress_lineinfos
     if not progress_lineinfos then
         return {}
     end
 
-    local current_time = os.mclock()
     local order_lineinfos = {}
-
     for _, progress_lineinfo in pairs(progress_lineinfos) do
         local progress_msg = progress_lineinfo.progress_msg
         if progress_msg then
@@ -172,7 +170,6 @@ end
 -- display subprocess progress lines (internal helper)
 function _display_subprocess_lines(order_lineinfos, maxwidth)
     local linecount = 0
-
     for _, lineinfo in ipairs(order_lineinfos) do
         -- we need not show it if the progress job is idle in runjobs now
         local progress_running = lineinfo.running
@@ -188,7 +185,6 @@ function _display_subprocess_lines(order_lineinfos, maxwidth)
         end
         linecount = linecount + 1
     end
-
     _g.linecount = linecount
 end
 
@@ -199,14 +195,15 @@ function _redraw_multirow_progress(maxwidth)
         return
     end
 
+    local current_time = os.mclock()
+
     -- redraw the total progress line
     tty.erase_line_to_start().cr()
     cprint(last_total_progress)
 
     -- build and display the subprocess lines
-    local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth)
+    local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth, current_time)
     _display_subprocess_lines(order_lineinfos, maxwidth)
-
     io.flush()
 end
 
@@ -268,7 +265,7 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     end
 
     -- build and display the subprocess lines
-    local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth)
+    local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth, current_time)
     current_lineinfo.start_time = current_time
     _display_subprocess_lines(order_lineinfos, maxwidth)
 
