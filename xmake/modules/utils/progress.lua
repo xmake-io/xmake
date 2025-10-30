@@ -168,7 +168,7 @@ function _build_ordered_subprocess_lineinfos(maxwidth, current_time)
 end
 
 -- display subprocess progress lines (internal helper)
-function _display_subprocess_lines(order_lineinfos, maxwidth)
+function _display_subprocess_lines(order_lineinfos)
     local linecount = 0
     for _, lineinfo in ipairs(order_lineinfos) do
         -- we need not show it if the progress job is idle in runjobs now
@@ -194,15 +194,14 @@ function _redraw_multirow_progress(maxwidth)
         return
     end
 
-    local current_time = os.mclock()
-
     -- redraw the total progress line
     tty.erase_line().cr()
     cprint(last_total_progress)
 
     -- build and display the subprocess lines
+    local current_time = os.mclock()
     local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth, current_time)
-    _display_subprocess_lines(order_lineinfos, maxwidth)
+    _display_subprocess_lines(order_lineinfos)
     io.flush()
 end
 
@@ -265,7 +264,7 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     -- build and display the subprocess lines
     local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth, current_time)
     current_lineinfo.start_time = current_time
-    _display_subprocess_lines(order_lineinfos, maxwidth)
+    _display_subprocess_lines(order_lineinfos)
 
     if is_finished then
         _g.refresh_mode = nil
