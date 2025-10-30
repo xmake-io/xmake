@@ -109,9 +109,8 @@ function _is_singlerow_refresh()
 end
 
 -- strip progress line
-function _strip_progress_line(msg)
+function _strip_progress_line(msg, maxwidth)
     local msg_plain = colors.translate(msg, {plain = true})
-    local maxwidth = os.getwinsize().width
     if #msg_plain > maxwidth then
         -- windows width is too small? strip the partial message in middle
         local partlen = math.floor(maxwidth / 2) - 3
@@ -135,7 +134,7 @@ function _show_progress_with_scroll(progress, format, ...)
 end
 
 -- build ordered subprocess line infos from progress_lineinfos (internal helper)
-function _build_ordered_subprocess_lineinfos()
+function _build_ordered_subprocess_lineinfos(maxwidth)
     local progress_lineinfos = _g.progress_lineinfos
     if not progress_lineinfos then
         return {}
@@ -157,7 +156,7 @@ function _build_ordered_subprocess_lineinfos()
                 timecolor = "${color.build.progress_slow}"
             end
             progress_lineinfo.spent_time = spent_time
-            local subprogress_line = _strip_progress_line(vformat("  > %s%0.02fs${clear} ", timecolor, spent_time / 1000) .. progress_msg)
+            local subprogress_line = _strip_progress_line(vformat("  > %s%0.02fs${clear} ", timecolor, spent_time / 1000) .. progress_msg, maxwidth)
             progress_lineinfo.progress_line = subprogress_line
             table.insert(order_lineinfos, progress_lineinfo)
         else
@@ -171,8 +170,7 @@ function _build_ordered_subprocess_lineinfos()
 end
 
 -- display subprocess progress lines (internal helper)
-function _display_subprocess_lines(order_lineinfos)
-    local maxwidth = os.getwinsize().width
+function _display_subprocess_lines(order_lineinfos, maxwidth)
     local linecount = 0
 
     for _, lineinfo in ipairs(order_lineinfos) do
@@ -195,7 +193,7 @@ function _display_subprocess_lines(order_lineinfos)
 end
 
 -- redraw the multirow progress area (internal helper)
-function _redraw_multirow_progress()
+function _redraw_multirow_progress(maxwidth)
     local last_total_progress = _g.last_total_progress
     if not last_total_progress then
         return
@@ -206,8 +204,8 @@ function _redraw_multirow_progress()
     cprint(last_total_progress)
 
     -- build and display the subprocess lines
-    local order_lineinfos = _build_ordered_subprocess_lineinfos()
-    _display_subprocess_lines(order_lineinfos)
+    local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth)
+    _display_subprocess_lines(order_lineinfos, maxwidth)
 
     io.flush()
 end
@@ -221,12 +219,15 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
         return
     end
 
+    -- get window size once
+    local maxwidth = os.getwinsize().width
+
     -- get progress line
     local is_first = false
     local is_finished = math.floor(progress) == 100
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     local progress_msg = vformat(format, ...)
-    local progress_line = _strip_progress_line(vformat(progress_prefix, progress) .. progress_msg)
+    local progress_line = _strip_progress_line(vformat(progress_prefix, progress) .. progress_msg, maxwidth)
     local progress_lineinfos = _g.progress_lineinfos
     if progress_lineinfos == nil then
         progress_lineinfos = {}
@@ -242,7 +243,6 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
 
     -- show the total progress line
     local linecount = _g.linecount or 0
-    local maxwidth = os.getwinsize().width
     if not is_first and linecount > 0 then
         tty.cursor_move_to_col(maxwidth)
         tty.cursor_move_up(linecount + 1)
@@ -268,10 +268,10 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     end
 
     -- build and display the subprocess lines
-    local order_lineinfos = _build_ordered_subprocess_lineinfos()
-    _display_subprocess_lines(order_lineinfos)
-
+    local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth)
     current_lineinfo.start_time = current_time
+    _display_subprocess_lines(order_lineinfos, maxwidth)
+
     if is_finished then
         _g.refresh_mode = nil
         _g.progress_lineinfos = nil
@@ -287,10 +287,11 @@ end
 
 -- show progress with single-row refresh (ninja style)
 function _show_progress_with_singlerow_refresh(progress, format, ...)
+    local maxwidth = os.getwinsize().width
     local is_finished = math.floor(progress) == 100
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     local progress_msg = vformat(format, ...)
-    local progress_line = _strip_progress_line(vformat(progress_prefix, progress) .. progress_msg)
+    local progress_line = _strip_progress_line(vformat(progress_prefix, progress) .. progress_msg, maxwidth)
     tty.erase_line_to_start().cr()
     cprintf(progress_line)
     if is_finished then
@@ -327,10 +328,10 @@ function show_output(format, ...)
         print("")
         cprint(format, ...)
     elseif refresh_mode == "multirow" then
-        -- get the number of fixed progress lines at the bottom
+        -- get window size once and the number of fixed progress lines at the bottom
         -- +1 for the total progress line
-        local linecount = (_g.linecount or 0) + 1
         local maxwidth = os.getwinsize().width
+        local linecount = (_g.linecount or 0) + 1
 
         -- move to the top of progress area and clear to bottom
         tty.cursor_move_to_col(maxwidth)
@@ -347,7 +348,7 @@ function show_output(format, ...)
                 if current_lineinfo and current_lineinfo.progress_msg then
                     local progress_value = _g.last_total_progress_value or 0
                     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-                    local progress_line = _strip_progress_line(vformat(progress_prefix, math.floor(progress_value)) .. current_lineinfo.progress_msg)
+                    local progress_line = _strip_progress_line(vformat(progress_prefix, math.floor(progress_value)) .. current_lineinfo.progress_msg, maxwidth)
                     tty.erase_line_to_end()
                     cprint(progress_line)
                 end
@@ -358,7 +359,7 @@ function show_output(format, ...)
         cprint(format, ...)
 
         -- redraw the progress area immediately
-        _redraw_multirow_progress()
+        _redraw_multirow_progress(maxwidth)
     else
         cprint(format, ...)
     end
