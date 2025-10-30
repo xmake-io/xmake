@@ -289,8 +289,10 @@ end
 function _show_progress_with_singlerow_refresh(progress, format, ...)
     local is_finished = math.floor(progress) == 100
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    local progress_msg = vformat(format, ...)
+    local progress_line = _strip_progress_line(vformat(progress_prefix, progress) .. progress_msg)
     tty.erase_line_to_start().cr()
-    cprintf(progress_prefix .. format, progress, ...)
+    cprintf(progress_line)
     if is_finished then
         print("")
         _g.refresh_mode = nil
