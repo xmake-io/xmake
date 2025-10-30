@@ -29,6 +29,11 @@ import("core.theme.theme")
 -- define module
 local progress = progress or object { _init = { "_RUNNING", "_INDEX", "_STREAM", "_OPT" } }
 
+-- cache color strings
+local COLOR_SUPERSLOW = "${color.build.progress_superslow}"
+local COLOR_VERYSLOW = "${color.build.progress_veryslow}"
+local COLOR_SLOW = "${color.build.progress_slow}"
+
 -- stop the progress indicator, clear written frames
 function progress:stop()
     if self._RUNNING ~= 0 then
@@ -108,6 +113,14 @@ function _is_singlerow_refresh()
     return is_singlerow_refresh
 end
 
+-- get progress prefix
+function _get_progress_prefix()
+    if not _g.progress_prefix then
+        _g.progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    end
+    return _g.progress_prefix
+end
+
 -- strip progress line
 function _strip_progress_line(msg, maxwidth)
     local msg_plain = colors.translate(msg, {plain = true})
@@ -123,14 +136,12 @@ end
 
 -- show progress with verbose information
 function _show_progress_with_verbose(progress, format, ...)
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-    cprint(progress_prefix .. "${dim}" .. format, progress, ...)
+    cprint(_get_progress_prefix() .. "${dim}" .. format, progress, ...)
 end
 
 -- show progress with scroll
 function _show_progress_with_scroll(progress, format, ...)
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-    cprint(progress_prefix .. format, progress, ...)
+    cprint(_get_progress_prefix() .. format, progress, ...)
 end
 
 -- build ordered subprocess line infos from progress_lineinfos (internal helper)
@@ -144,17 +155,25 @@ function _build_ordered_subprocess_lineinfos(maxwidth, current_time)
     for _, progress_lineinfo in pairs(progress_lineinfos) do
         local progress_msg = progress_lineinfo.progress_msg
         if progress_msg then
-            local timecolor = ""
             local spent_time = current_time - progress_lineinfo.start_time
+            local time_seconds = spent_time / 1000
+
+            -- determine color based on time (use cached color constants)
+            local timecolor
             if spent_time > 30000 then
-                timecolor = "${color.build.progress_superslow}"
+                timecolor = COLOR_SUPERSLOW
             elseif spent_time > 1000 then
-                timecolor = "${color.build.progress_veryslow}"
+                timecolor = COLOR_VERYSLOW
             elseif spent_time > 500 then
-                timecolor = "${color.build.progress_slow}"
+                timecolor = COLOR_SLOW
+            else
+                timecolor = ""
             end
+
             progress_lineinfo.spent_time = spent_time
-            local subprogress_line = _strip_progress_line(vformat("  > %s%0.02fs${clear} ", timecolor, spent_time / 1000) .. progress_msg, maxwidth)
+            -- use string.format instead of vformat for better performance
+            local time_str = string.format("%s%0.02fs${clear} ", timecolor, time_seconds)
+            local subprogress_line = _strip_progress_line("  > " .. time_str .. progress_msg, maxwidth)
             progress_lineinfo.progress_line = subprogress_line
             table.insert(order_lineinfos, progress_lineinfo)
         else
@@ -214,15 +233,16 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
         return
     end
 
-    -- get window size once
+    -- get window size and time once
     local maxwidth = os.getwinsize().width
+    local current_time = os.mclock()
 
     -- get progress line
     local is_first = false
     local is_finished = math.floor(progress) == 100
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     local progress_msg = vformat(format, ...)
-    local progress_line = _strip_progress_line(vformat(progress_prefix, progress) .. progress_msg, maxwidth)
+    local progress_line = _strip_progress_line(string.format(_get_progress_prefix(), progress) .. progress_msg, maxwidth)
+
     local progress_lineinfos = _g.progress_lineinfos
     if progress_lineinfos == nil then
         progress_lineinfos = {}
@@ -249,7 +269,6 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     _g.last_total_progress_value = progress
 
     -- update the current progress info
-    local current_time = os.mclock()
     local current_lineinfo = progress_lineinfos[running]
     if current_lineinfo == nil then
         current_lineinfo = {start_time = current_time, spent_time = 0, running = running}
@@ -283,9 +302,8 @@ end
 function _show_progress_with_singlerow_refresh(progress, format, ...)
     local maxwidth = os.getwinsize().width
     local is_finished = math.floor(progress) == 100
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     local progress_msg = vformat(format, ...)
-    local progress_line = _strip_progress_line(vformat(progress_prefix, progress) .. progress_msg, maxwidth)
+    local progress_line = _strip_progress_line(string.format(_get_progress_prefix(), progress) .. progress_msg, maxwidth)
     tty.erase_line().cr()
     cprintf(progress_line)
     if is_finished then
@@ -300,7 +318,6 @@ end
 -- show the message with progress
 function show(progress, format, ...)
     progress = type(progress) == "table" and progress:percent() or math.floor(progress)
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
         _show_progress_with_verbose(progress, format, ...)
     elseif _is_scroll() then
@@ -340,8 +357,7 @@ function show_output(format, ...)
                 local current_lineinfo = progress_lineinfos[running]
                 if current_lineinfo and current_lineinfo.progress_msg then
                     local progress_value = _g.last_total_progress_value or 0
-                    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-                    local progress_line = _strip_progress_line(vformat(progress_prefix, math.floor(progress_value)) .. current_lineinfo.progress_msg, maxwidth)
+                    local progress_line = _strip_progress_line(string.format(_get_progress_prefix(), math.floor(progress_value)) .. current_lineinfo.progress_msg, maxwidth)
                     tty.erase_line_to_end()
                     cprint(progress_line)
                 end
@@ -361,7 +377,7 @@ end
 -- get the message text with progress
 function text(progress, format, ...)
     progress = type(progress) == "table" and progress:percent() or math.floor(progress)
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    local progress_prefix = _get_progress_prefix()
     if option.get("verbose") then
         return string.format(progress_prefix .. "${dim}" .. format, progress, ...)
     else
