@@ -176,8 +176,7 @@ function _display_subprocess_lines(order_lineinfos, maxwidth)
         if progress_running and progress_running:data("runjobs.running") == false then
             lineinfo.progress_line = nil
         end
-        tty.cursor_move_to_col(maxwidth)
-        tty.erase_line_to_start().cr()
+        tty.erase_line().cr()
         if lineinfo.progress_line then
             cprint(lineinfo.progress_line)
         else
@@ -198,7 +197,7 @@ function _redraw_multirow_progress(maxwidth)
     local current_time = os.mclock()
 
     -- redraw the total progress line
-    tty.erase_line_to_start().cr()
+    tty.erase_line().cr()
     cprint(last_total_progress)
 
     -- build and display the subprocess lines
@@ -241,10 +240,9 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     -- show the total progress line
     local linecount = _g.linecount or 0
     if not is_first and linecount > 0 then
-        tty.cursor_move_to_col(maxwidth)
         tty.cursor_move_up(linecount + 1)
     end
-    tty.erase_line_to_start().cr()
+    tty.erase_line().cr()
     cprint(progress_line)
 
     -- save the total progress line and progress value for potential redraw in show_output
@@ -289,7 +287,7 @@ function _show_progress_with_singlerow_refresh(progress, format, ...)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     local progress_msg = vformat(format, ...)
     local progress_line = _strip_progress_line(vformat(progress_prefix, progress) .. progress_msg, maxwidth)
-    tty.erase_line_to_start().cr()
+    tty.erase_line().cr()
     cprintf(progress_line)
     if is_finished then
         print("")
@@ -331,7 +329,6 @@ function show_output(format, ...)
         local linecount = (_g.linecount or 0) + 1
 
         -- move to the top of progress area and clear to bottom
-        tty.cursor_move_to_col(maxwidth)
         tty.cursor_move_up(linecount)
         tty.erase_down()
         tty.cr()
