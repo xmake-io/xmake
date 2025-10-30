@@ -269,9 +269,9 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
 
     -- build and display the subprocess lines
     local order_lineinfos = _build_ordered_subprocess_lineinfos()
-    current_lineinfo.start_time = current_time
     _display_subprocess_lines(order_lineinfos)
 
+    current_lineinfo.start_time = current_time
     if is_finished then
         _g.refresh_mode = nil
         _g.progress_lineinfos = nil
