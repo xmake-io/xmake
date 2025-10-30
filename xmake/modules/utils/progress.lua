@@ -195,13 +195,11 @@ function _display_subprocess_lines(order_lineinfos)
         if progress_running and progress_running:data("runjobs.running") == false then
             lineinfo.progress_line = nil
         end
-        tty.erase_line().cr()
         if lineinfo.progress_line then
+            tty.erase_line().cr()
             cprint(lineinfo.progress_line)
-        else
-            print("")
+            linecount = linecount + 1
         end
-        linecount = linecount + 1
     end
     _g.linecount = linecount
 end
@@ -281,19 +279,23 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     end
 
     -- build and display the subprocess lines
-    local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth, current_time)
-    current_lineinfo.start_time = current_time
-    _display_subprocess_lines(order_lineinfos)
-
-    if is_finished then
+    if not is_finished then
+        local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth, current_time)
+        current_lineinfo.start_time = current_time
+        _display_subprocess_lines(order_lineinfos)
+        _g.refresh_mode = "multirow"
+    else
+        -- when finished, clear all subprocess lines without leaving empty lines
+        local old_linecount = _g.linecount or 0
+        if old_linecount > 0 then
+            tty.erase_down()
+        end
         _g.refresh_mode = nil
         _g.progress_lineinfos = nil
         _g.last_total_progress = nil
         _g.last_total_progress_value = nil
         _g.linecount = 0
         tty.cursor_show()
-    else
-        _g.refresh_mode = "multirow"
     end
     io.flush()
 end
