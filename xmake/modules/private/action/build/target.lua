@@ -787,8 +787,8 @@ function run_targetjobs(targets_root, opt)
         local curdir = os.curdir()
         async_runjobs(job_kind, jobgraph, {on_exit = function (errors)
             import("utils.progress")
-            if errors and progress.showing_without_scroll() then
-                print("")
+            if errors then
+                progress.show_output("")
             end
         end,
         comax = opt.jobs or option.get("jobs") or 1, curdir = curdir,
@@ -807,8 +807,8 @@ function run_filejobs(targets_root, opt)
         local curdir = os.curdir()
         async_runjobs(job_kind, jobgraph, {on_exit = function (errors)
             import("utils.progress")
-            if errors and progress.showing_without_scroll() then
-                print("")
+            if errors then
+                progress.show_output("")
             end
         end,
         comax = opt.jobs or option.get("jobs") or 1, curdir = curdir,

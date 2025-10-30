@@ -1222,8 +1222,9 @@ function _get_command_string(cmd, outputdir)
         return string.format("cd %s", _get_relative_unix_path_to_cmake(cmd.dir, outputdir))
     elseif kind == "mkdir" then
         return string.format("${CMAKE_COMMAND} -E make_directory %s", _get_relative_unix_path_to_cmake(cmd.dir, outputdir))
-    elseif kind == "show" then
-        local text = colors.ignore(cmd.showtext)
+    elseif kind == "show" or kind == "show_progress" then
+        local text = string.format(cmd.format, table.unpack(cmd.argv))
+        text = colors.ignore(text)
         -- we need to translate paths in text
         -- https://github.com/xmake-io/xmake/issues/6553
         if is_host("windows") then

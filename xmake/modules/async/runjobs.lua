@@ -196,6 +196,7 @@ function _consume_jobs_loop(state, run_in_remote)
                 end
 
                 -- run job
+                co_running:data_set("runjobs.running", true)
                 local job_index = state.finished_count + 1
                 state.running_jobs_indices[job_index] = job_index
                 if job_func then
@@ -206,6 +207,7 @@ function _consume_jobs_loop(state, run_in_remote)
                     job_func(job_index, total, {progress = state.progress_wrapper})
                 end
                 state.running_jobs_indices[job_index] = nil
+                co_running:data_set("runjobs.running", false)
             end,
             catch
             {

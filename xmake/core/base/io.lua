@@ -254,6 +254,10 @@ end
 
 -- this file is a tty?
 function _file:isatty()
+    local isatty_cached = self._ISATTY
+    if isatty_cached ~= nil then
+        return isatty_cached
+    end
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -266,6 +270,7 @@ function _file:isatty()
     if ok == nil and errors then
         errors = string.format("%s: %s", self, errors)
     end
+    self._ISATTY = ok
     return ok, errors
 end
 

@@ -273,8 +273,8 @@ function main(targets_root, opt)
         local curdir = os.curdir()
         runjobs("build", batchjobs, {on_exit = function (errors)
             import("utils.progress")
-            if errors and progress.showing_without_scroll() then
-                print("")
+            if errors then
+                progress.show_output("")
             end
         end, comax = option.get("jobs") or 1, curdir = curdir, distcc = distcc})
         os.cd(curdir)

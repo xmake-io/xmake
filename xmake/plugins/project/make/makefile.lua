@@ -267,8 +267,9 @@ function _get_command_string(cmd, outputdir)
         return _get_cmd_cd(_get_relative_unix_path(cmd.dir, outputdir))
     elseif kind == "mkdir" then
         return _get_cmd_mkdir(_get_relative_unix_path(cmd.dir, outputdir))
-    elseif kind == "show" then
-        return _get_cmd_echo(cmd.showtext)
+    elseif kind == "show" or kind == "show_progress" then
+        local text = string.format(cmd.format, table.unpack(cmd.argv))
+        return _get_cmd_echo(text)
     end
 end
 

@@ -234,10 +234,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
                 -- show warnings
                 if warnings and #warnings > 0 and policy.build_warnings(opt) then
-                    if progress.showing_without_scroll() then
-                        print("")
-                    end
-                    cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
+                    progress.show_output("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
 
                 -- generate the dependent includes
