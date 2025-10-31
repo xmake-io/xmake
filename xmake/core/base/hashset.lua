@@ -89,6 +89,20 @@ function hashset:insert(value)
     return result
 end
 
+-- insert the all values in array/hashset
+function hashset:insert_all(values)
+    if type(values) == "table" and values.items then
+        for item in values:items() do
+            self:insert(item)
+        end
+    else
+        for _, item in ipairs(table.wrap(values)) do
+            self:insert(item)
+        end
+    end
+    return self
+end
+
 -- remove value from hashset, returns false if value is not in the hashset
 function hashset:remove(value)
     value = hashset._to_key(value)
