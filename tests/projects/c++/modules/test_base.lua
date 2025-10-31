@@ -103,7 +103,7 @@ function build_tests(toolchain_name, opt)
     end
 
     os.exec("xmake clean -a")
-    os.exec("xmake f" .. platform .. "--toolchain=" .. toolchain_name .. runtimes .. "-cD --yes " .. policies .. flags)
+    os.exec("xmake f" .. platform .. "--toolchain=" .. toolchain_name .. runtimes .. "-c --yes " .. policies .. flags)
     if opt.build then
         opt.build()
     else
