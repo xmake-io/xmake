@@ -25,6 +25,7 @@ import("core.base.colors")
 import("core.base.tty")
 import("core.base.scheduler")
 import("core.theme.theme")
+import("core.project.project")
 
 -- define module
 local progress = progress or object { _init = { "_RUNNING", "_INDEX", "_STREAM", "_OPT" } }
@@ -78,7 +79,7 @@ end
 function _is_scroll()
     local is_scroll = _g.is_scroll
     if is_scroll == nil then
-        local style = theme.get("text.build.progress_style") or "scroll"
+        local style = project.policy("build.progress_style") or theme.get("text.build.progress_style") or "scroll"
         if style == "scroll" then
             is_scroll = true
         end
@@ -91,8 +92,8 @@ end
 function _is_multirow_refresh()
     local is_multirow_refresh = _g.is_multirow_refresh
     if is_multirow_refresh == nil then
-        local style = theme.get("text.build.progress_style")
-        if style == "multirow_refresh" and tty.has_vtansi() and io.isatty() then
+        local style = project.policy("build.progress_style") or theme.get("text.build.progress_style")
+        if style == "multirow" and tty.has_vtansi() and io.isatty() then
             is_multirow_refresh = true
         end
         _g.is_multirow_refresh = is_multirow_refresh
@@ -104,8 +105,8 @@ end
 function _is_singlerow_refresh()
     local is_singlerow_refresh = _g.is_singlerow_refresh
     if is_singlerow_refresh == nil then
-        local style = theme.get("text.build.progress_style")
-        if style == "singlerow_refresh" and tty.has_vtansi() and io.isatty() then
+        local style = project.policy("build.progress_style") or theme.get("text.build.progress_style")
+        if style == "singlerow" and tty.has_vtansi() and io.isatty() then
             is_singlerow_refresh = true
         end
         _g.is_singlerow_refresh = is_singlerow_refresh

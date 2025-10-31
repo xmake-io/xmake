@@ -43,7 +43,7 @@ theme("ninja")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")
-    set_text("build.progress_style", "singlerow_refresh")
+    set_text("build.progress_style", "singlerow")
     set_color("build.progress", "green bright")
 
     -- the building object file

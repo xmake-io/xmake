@@ -43,7 +43,7 @@ theme("soong")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")
-    set_text("build.progress_style", "multirow_refresh")
+    set_text("build.progress_style", "multirow")
     set_color("build.progress", "green bright")
     -- only for multirow_refresh
     set_color("build.progress_superslow", "red")
