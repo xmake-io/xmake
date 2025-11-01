@@ -18,41 +18,9 @@
 -- @file        load_appletvos.lua
 --
 
+import("load_platform")
+
 function main(toolchain)
-
-    -- init architecture
-    local arch = toolchain:arch()
-    local xcode_sdkver  = toolchain:config("xcode_sdkver")
-    local xcode_sysroot = toolchain:config("xcode_sysroot")
-
-    -- is simulator?
-    local simulator = toolchain:config("appledev") == "simulator"
-
-    -- init target minimal version
-    local target_minver = toolchain:config("target_minver")
-    local target_minver_flags = (simulator and "-mappletvsimulator-version-min=" or "-mappletvos-version-min=") .. target_minver
-
-    -- init flags for c/c++
-    toolchain:add("cxflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
-    toolchain:add("ldflags", "-arch", arch, "-ObjC", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
-    toolchain:add("shflags", "-arch", arch, "-ObjC", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
-
-    -- init flags for objc/c++
-    toolchain:add("mxflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
-    -- we can use `add_mxflags("-fno-objc-arc")` to override it in xmake.lua
-    toolchain:add("mxflags", "-fobjc-arc")
-
-    -- init flags for asm
-    toolchain:add("asflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
-
-    -- init flags for swift (with toolchain:add("ldflags and toolchain:add("shflags)
-    toolchain:add("scflags", format("-target %s-apple-tvos%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
-    toolchain:add("scshflags", format("-target %s-apple-tvos%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
-    toolchain:add("scarflags", format("-target %s-apple-tvos%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
-    toolchain:add("scldflags", format("-target %s-apple-tvos%s", arch, target_minver) , "-sdk " .. xcode_sysroot)
-
-    toolchain:add("scshflags", "-sdk " .. xcode_sysroot, "-emit-library")
-    toolchain:add("scarflags", "-sdk " .. xcode_sysroot, "-emit-library", "-static")
-    toolchain:add("scldflags", "-sdk " .. xcode_sysroot, "-emit-executable")
+    load_platform(toolchain, "tvos")
 end
 
