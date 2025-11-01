@@ -18,7 +18,7 @@
 -- @file        xmake.lua
 --
 
-rule("swift.interop", function()
+rule("swift.interop")
     set_sourcekinds("sc")
     add_orders("swift.interop", "swift.build")
     add_orders("swift.interop", "c++.build")
@@ -131,12 +131,7 @@ rule("swift.interop", function()
                     end
 
                     if opt.progress then
-                        progress.show(
-                            opt.progress,
-                            "${clear}${color.build.target}<%s> generating.swift.header %s",
-                            target:fullname(),
-                            headername
-                        )
+                        progress.show(opt.progress, "${clear}${color.build.target}<%s> generating.swift.header %s", target:fullname(), headername)
                     end
 
                     local compinst = import("core.tool.compiler").load("sc")
@@ -178,7 +173,6 @@ rule("swift.interop", function()
             end)
         end
     end, { jobgraph = true })
-end)
 
 -- define rule: swift.build
 rule("swift.build")

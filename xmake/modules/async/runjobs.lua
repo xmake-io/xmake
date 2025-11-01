@@ -215,7 +215,8 @@ function _consume_jobs_loop(state, run_in_remote)
                     -- stop timer and disable show waitchars first
                     state.stop = true
 
-                    -- remove wait charactor
+                    -- stop progress
+                    progress.show_abort()
                     if state.show_progress then
                         _print_backchars(state.backnum)
                         state.progress_helper:stop()
@@ -371,7 +372,8 @@ function main(name, jobs, opt)
         co_running:isolate(is_isolated)
     end
 
-    -- remove wait charactor
+    -- stop progress
+    progress.show_abort()
     if state.show_progress then
         _print_backchars(state.backnum)
         state.progress_helper:stop()

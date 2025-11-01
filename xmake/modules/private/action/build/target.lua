@@ -785,14 +785,9 @@ function run_targetjobs(targets_root, opt)
     local jobgraph = get_targetjobs(targets_root, opt)
     if jobgraph and not jobgraph:empty() then
         local curdir = os.curdir()
-        async_runjobs(job_kind, jobgraph, {on_exit = function (errors)
-            import("utils.progress")
-            if errors then
-                progress.show_output("")
-            end
-        end,
-        comax = opt.jobs or option.get("jobs") or 1, curdir = curdir,
-        distcc = opt.distcc, remote_only = opt.remote_only, progress_factor = opt.progress_factor})
+        async_runjobs(job_kind, jobgraph, {
+            comax = opt.jobs or option.get("jobs") or 1, curdir = curdir,
+            distcc = opt.distcc, remote_only = opt.remote_only, progress_factor = opt.progress_factor})
         os.cd(curdir)
         return true
     end
@@ -805,14 +800,9 @@ function run_filejobs(targets_root, opt)
     local jobgraph = get_filejobs(targets_root, opt)
     if jobgraph and not jobgraph:empty() then
         local curdir = os.curdir()
-        async_runjobs(job_kind, jobgraph, {on_exit = function (errors)
-            import("utils.progress")
-            if errors then
-                progress.show_output("")
-            end
-        end,
-        comax = opt.jobs or option.get("jobs") or 1, curdir = curdir,
-        distcc = opt.distcc, remote_only = opt.remote_only, progress_factor = opt.progress_factor})
+        async_runjobs(job_kind, jobgraph, {
+            comax = opt.jobs or option.get("jobs") or 1, curdir = curdir,
+            distcc = opt.distcc, remote_only = opt.remote_only, progress_factor = opt.progress_factor})
         os.cd(curdir)
         return true
     end

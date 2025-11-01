@@ -318,6 +318,23 @@ function _show_progress_with_singlerow_refresh(progress, format, ...)
     io.flush()
 end
 
+-- show the current coroutine's progress line (internal helper for multirow mode)
+function _show_current_coroutine_progress(maxwidth)
+    local progress_lineinfos = _g.progress_lineinfos
+    if progress_lineinfos then
+        local running = scheduler.co_running()
+        if running then
+            local current_lineinfo = progress_lineinfos[running]
+            if current_lineinfo and current_lineinfo.progress_msg then
+                local progress_value = _g.last_total_progress_value or 0
+                local progress_line = _strip_progress_line(string.format(_get_progress_prefix(), math.floor(progress_value)) .. current_lineinfo.progress_msg, maxwidth)
+                tty.erase_line_to_end()
+                cprint(progress_line)
+            end
+        end
+    end
+end
+
 -- show the message with progress
 function show(progress, format, ...)
     progress = type(progress) == "table" and progress:percent() or math.floor(progress)
@@ -353,19 +370,7 @@ function show_output(format, ...)
         tty.cr()
 
         -- show the current task's progress line before the log output
-        local progress_lineinfos = _g.progress_lineinfos
-        if progress_lineinfos then
-            local running = scheduler.co_running()
-            if running then
-                local current_lineinfo = progress_lineinfos[running]
-                if current_lineinfo and current_lineinfo.progress_msg then
-                    local progress_value = _g.last_total_progress_value or 0
-                    local progress_line = _strip_progress_line(string.format(_get_progress_prefix(), math.floor(progress_value)) .. current_lineinfo.progress_msg, maxwidth)
-                    tty.erase_line_to_end()
-                    cprint(progress_line)
-                end
-            end
-        end
+        _show_current_coroutine_progress(maxwidth)
 
         -- print the log output, which will scroll naturally
         cprint(format, ...)
@@ -374,6 +379,39 @@ function show_output(format, ...)
         _redraw_multirow_progress(maxwidth)
     else
         cprint(format, ...)
+    end
+end
+
+-- abort the progress display mode, used for error exit or early termination
+-- this function cleans up the progress display area and restores the terminal state
+function show_abort()
+    local refresh_mode = _g.refresh_mode
+    if refresh_mode == "multirow" then
+        -- move to the top of progress area and clear
+        local linecount = (_g.linecount or 0) + 1
+        if linecount > 0 then
+            tty.cursor_move_up(linecount)
+            tty.erase_down()
+            tty.cr()
+        end
+
+        -- show the current coroutine's progress line before abort
+        local maxwidth = os.getwinsize().width
+        _show_current_coroutine_progress(maxwidth)
+        tty.cursor_show()
+
+        -- reset all global states
+        _g.refresh_mode = nil
+        _g.progress_lineinfos = nil
+        _g.last_total_progress = nil
+        _g.last_total_progress_value = nil
+        _g.linecount = 0
+        io.flush()
+    elseif refresh_mode == "singlerow" then
+        -- clear the current progress line and move to next line
+        print("")
+        _g.refresh_mode = nil
+        io.flush()
     end
 end
 
