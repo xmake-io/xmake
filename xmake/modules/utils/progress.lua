@@ -270,19 +270,19 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     -- update the current progress info
     local current_lineinfo = progress_lineinfos[running]
     if current_lineinfo == nil then
-        current_lineinfo = {start_time = current_time, spent_time = 0, running = running}
+        current_lineinfo = {spent_time = 0, running = running}
         progress_lineinfos[running] = current_lineinfo
     end
     if is_finished then
         current_lineinfo.progress_msg = nil
     else
         current_lineinfo.progress_msg = progress_msg
+        current_lineinfo.start_time = current_time
     end
 
     -- build and display the subprocess lines
     if not is_finished then
         local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth, current_time)
-        current_lineinfo.start_time = current_time
         _display_subprocess_lines(order_lineinfos)
         _g.refresh_mode = "multirow"
     else
