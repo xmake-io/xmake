@@ -131,6 +131,7 @@ function strippeable_flags()
         "Q",
         "fmodule-file",
         "fPIC",
+        "fsanitize"
     }
     local splitted_strippeable_flags = {
         "I",
