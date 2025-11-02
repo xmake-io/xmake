@@ -54,6 +54,16 @@ os.SYSERR_NOT_PERM    = 1
 os.SYSERR_NOT_FILEDIR = 2
 os.SYSERR_NOT_ACCESS  = 3
 
+-- get the async task
+function os._async_task()
+    local async_task = os._ASYNC_TASK
+    if async_task == nil then
+        async_task = require("base/private/async_task")
+        os._ASYNC_TASK = async_task
+    end
+    return async_task
+end
+
 -- copy single file or directory
 function os._cp(src, dst, rootdir, opt)
     opt = opt or {}
@@ -511,6 +521,11 @@ function os.cp(srcpath, dstpath, opt)
         return false, string.format("invalid arguments!")
     end
 
+    -- do it in the asynchronous task
+    if opt and opt.async then
+        return os._async_task().cp(srcpath, dstpath, {detach = opt.detach})
+    end
+
     -- reserve the source directory structure if opt.rootdir is given
     local rootdir = opt and opt.rootdir
     if rootdir then
@@ -564,14 +579,19 @@ end
 
 -- remove files or directories
 function os.rm(filepath, opt)
+    opt = opt or {}
 
     -- check arguments
     if not filepath then
         return false, string.format("invalid arguments!")
     end
 
+    -- do it in the asynchronous task
+    if opt.async then
+        return os._async_task().rm(filepath, {detach = opt.detach})
+    end
+
     -- remove file or directories
-    opt = opt or {}
     filepath = tostring(filepath)
     local filepathes = os._match_wildcard_pathes(filepath)
     if type(filepathes) == "string" then
@@ -682,11 +702,16 @@ function os.mkdir(dir)
 end
 
 -- remove directories
-function os.rmdir(dir)
+function os.rmdir(dir, opt)
 
     -- check arguments
     if not dir then
         return false, string.format("invalid arguments!")
+    end
+
+    -- do it in the asynchronous task
+    if opt and opt.async then
+        return os._async_task().rmdir(dir, {detach = opt.detach})
     end
 
     -- support path instance

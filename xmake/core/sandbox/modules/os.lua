@@ -225,9 +225,9 @@ function sandbox_os.mkdir(dir)
 end
 
 -- remove directories
-function sandbox_os.rmdir(dir)
+function sandbox_os.rmdir(dir, opt)
     assert(dir)
-    local ok, errors = os.rmdir(vformat(dir))
+    local ok, errors = os.rmdir(vformat(dir), opt)
     if not ok then
         os.raise(errors)
     end
