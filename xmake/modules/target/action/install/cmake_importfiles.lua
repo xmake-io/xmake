@@ -37,14 +37,15 @@ function _get_libfile(target, installdir)
 end
 
 -- get the builtin variables
-function _get_builtinvars(target, installdir)
+function _get_builtinvars(target, installdir, libdir)
     local target_ptrbytes
     if target:is_plat("cross") then
         target_ptrbytes = target:check_sizeof("void*")
     else
         target_ptrbytes = target:is_arch64() and "8" or "4"
     end
-    return {TARGETNAME      = target:name(),
+    return {LIBDIR          = libdir,
+            TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
             TARGETFILENAME  = target:targetfile() and _get_libfile(target, installdir),
             TARGETKIND      = target:is_headeronly() and "INTERFACE" or (target:is_shared() and "SHARED" or "STATIC"),
@@ -56,15 +57,16 @@ end
 function _install_cmake_configfile(target, installdir, filename, opt)
 
     -- get import file path
+    local libdir = opt and opt.libdir or "lib"
     local projectname = project.name() or target:name()
     local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
-    local importfile_dst = path.join(installdir, opt and opt.libdir or "lib", "cmake", projectname, (filename:gsub("xxx", projectname)))
+    local importfile_dst = path.join(installdir, libdir, "cmake", projectname, (filename:gsub("xxx", projectname)))
 
     -- trace
     vprint("generating %s ..", importfile_dst)
 
     -- get the builtin variables
-    local builtinvars = _get_builtinvars(target, installdir)
+    local builtinvars = _get_builtinvars(target, installdir, libdir)
 
     -- copy and replace builtin variables
     local content = io.readfile(importfile_src)
@@ -83,12 +85,13 @@ end
 function _append_cmake_configfile(target, installdir, filename, opt)
 
     -- get import file path
+    local libdir = opt and opt.libdir or "lib"
     local projectname = project.name() or target:name()
     local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
-    local importfile_dst = path.join(installdir, opt and opt.libdir or "lib", "cmake", projectname, (filename:gsub("xxx", projectname)))
+    local importfile_dst = path.join(installdir, libdir, "cmake", projectname, (filename:gsub("xxx", projectname)))
 
     -- get the builtin variables
-    local builtinvars = _get_builtinvars(target, installdir)
+    local builtinvars = _get_builtinvars(target, installdir, libdir)
 
     -- generate the file if not exist / file is outdated
     if target:is_headeronly() or not os.isfile(importfile_dst) or os.mtime(importfile_dst) < os.mtime(target:targetfile()) then
@@ -118,15 +121,16 @@ end
 function _install_cmake_targetfile(target, installdir, filename, opt)
 
     -- get import file path
+    local libdir = opt and opt.libdir or "lib"
     local projectname = project.name() or target:name()
     local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
-    local importfile_dst = path.join(installdir, opt and opt.libdir or "lib", "cmake", projectname, (filename:gsub("xxx", target:name())))
+    local importfile_dst = path.join(installdir, libdir, "cmake", projectname, (filename:gsub("xxx", target:name())))
 
     -- trace
     vprint("generating %s ..", importfile_dst)
 
     -- get the builtin variables
-    local builtinvars = _get_builtinvars(target, installdir)
+    local builtinvars = _get_builtinvars(target, installdir, libdir)
 
     -- copy and replace builtin variables
     local content = io.readfile(importfile_src)
