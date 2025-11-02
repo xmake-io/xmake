@@ -1065,17 +1065,17 @@ end
 
 -- get the target compiler
 function _instance:compiler(sourcekind)
-    local compilerinst = self:_memcache():get("compiler")
+    if not sourcekind then
+        os.raise("please pass sourcekind to the first argument of target:compiler(), e.g. cc, cxx, as")
+    end
+    local compilerinst = self:_memcache():get("compiler_" .. sourcekind)
     if not compilerinst then
-        if not sourcekind then
-            os.raise("please pass sourcekind to the first argument of target:compiler(), e.g. cc, cxx, as")
-        end
         local instance, errors = compiler.load(sourcekind, self)
         if not instance then
             os.raise(errors)
         end
         compilerinst = instance
-        self:_memcache():set("compiler", compilerinst)
+        self:_memcache():set("compiler_" .. sourcekind, compilerinst)
     end
     return compilerinst
 end

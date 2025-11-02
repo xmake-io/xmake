@@ -95,8 +95,7 @@ rule("swift.interop")
         end
 
         local mode = target:data("swift.interop")
-        -- local sc = target:compiler("sc")
-        local sc = import("core.tool.compiler").load("sc")
+        local sc = target:compiler("sc")
         assert(sc, "No swift compiler found!")
         local outdir = target:data("swift.interop.outdir")
         if not os.isdir(outdir) then os.mkdir(outdir) end
