@@ -291,6 +291,7 @@ end
 --  - terminator
 --  - rxvt
 --  - lxterminal
+--  - ghostty
 --  - unknown
 --
 function tty.term()
@@ -305,6 +306,8 @@ function tty.term()
                     term = "vscode"
                 elseif TERM_PROGRAM == "mintty" then
                     term = "mintty" -- git bash
+                elseif TERM_PROGRAM == "ghostty" then
+                    term = "ghostty"
                 end
             end
         end
@@ -313,7 +316,9 @@ function tty.term()
         if term == nil then
             local TERM = os.getenv("TERM")
             if TERM ~= nil then
-                if TERM:find("xterm", 1, true) then
+                if TERM:find("ghostty", 1, true) then
+                    term = "ghostty"
+                elseif TERM:find("xterm", 1, true) then
                     term = "xterm"
                 elseif TERM == "cygwin" then
                     term = "cygwin"
