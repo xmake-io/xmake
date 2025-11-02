@@ -22,7 +22,8 @@
 local async_task = async_task or {}
 
 -- load modules
-local os = require("base/os")
+local os     = require("base/os")
+local utils  = require("base/utils")
 local thread = require("base/thread")
 
 -- the task status
@@ -34,16 +35,18 @@ local task_event = nil
 local task_queue = nil
 
 -- the asynchronous task loop
-function async_task._loop(event, queue)
-    dprint("async_task: started")
-    while not is_stopped do
+function async_task._loop(event, queue, is_stopped)
+    print("started")
+    --utils.dprint("async_task: started")
+    while not is_stopped:get() do
         if event:wait(-1) > 0 then
             while not queue:empty() do
                 print(queue:pop())
             end
         end
     end
-    dprint("async_task: exited")
+    print("exit")
+    --utils.dprint("async_task: exited")
 end
 
 -- start the asynchronous task
@@ -51,16 +54,25 @@ function async_task._start()
     assert(task_queue == nil and task_event == nil)
     task_event = thread.event()
     task_queue = thread.queue()
-    local t = thread.start_named("core.base.async_task", async_task._loop, task_event, task_queue)
-    if not t then
-        return false, string.format("cannot start async_task")
+    local task_is_stopped = thread.sharedata()
+    local task_thread = thread.new(async_task._loop, {name = "core.base.async_task", argv = {task_event, task_queue, task_is_stopped}})
+    local ok, errors = task_thread:start()
+    if not ok then
+        return false, errors
     end
     os.atexit(function (errors)
-        if t then
-            dprint("async_task: wait for exiting ..")
+        if task_thread then
+            utils.dprint("async_task: wait for exiting ..")
             is_stopped = true
+            -- Perhaps the thread hasn't started yet.
+            -- Let's wait a while and let it finish executing the tasks in the current queue.
+            if not task_queue:empty() then
+                task_event:post()
+                os.sleep(300)
+            end
+            task_is_stopped:set(true)
             task_event:post()
-            t:wait(-1)
+            task_thread:wait(-1)
         end
     end)
     return true
