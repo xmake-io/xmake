@@ -90,7 +90,8 @@ function strippeable_flags()
         "fmodule-mapper",
         "fmodules-ts",
         "fmodules",
-        "fPIC"
+        "fPIC",
+        "fsanitize"
     }
     local splitted_strippeable_flags = {
         "I",

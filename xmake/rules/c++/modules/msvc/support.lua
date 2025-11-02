@@ -91,6 +91,7 @@ function strippeable_flags()
         "analyze",
         "?",
         "external",
+        "fsanitize"
     }
     local splitted_strippeable_flags = {
         "Fo",
