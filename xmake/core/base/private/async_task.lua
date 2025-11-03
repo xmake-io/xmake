@@ -34,9 +34,10 @@ local is_started = false
 -- the task event and queue
 local task_event = nil
 local task_queue = nil
+local task_mutex = nil
 
 -- the asynchronous task loop
-function async_task._loop(event, queue, is_stopped, is_diagnosis)
+function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
     local os = require("base/os")
 
     local function dprint(...)
@@ -69,11 +70,21 @@ function async_task._loop(event, queue, is_stopped, is_diagnosis)
     dprint("async_task: started")
     while not is_stopped:get() do
         if event:wait(-1) > 0 then
+            
+            -- fetch all tasks from queue at once
+            local cmds = {}
+            mutex:lock()
             while not queue:empty() do
                 local cmd = queue:pop()
                 if cmd then
-                    _runcmd(cmd)
+                    table.insert(cmds, cmd)
                 end
+            end
+            mutex:unlock()
+
+            -- execute tasks without holding lock
+            for _, cmd in ipairs(cmds) do
+                _runcmd(cmd)
             end
         end
     end
@@ -82,13 +93,14 @@ end
 
 -- start the asynchronous task
 function async_task._start()
-    assert(task_queue == nil and task_event == nil)
+    assert(task_queue == nil and task_event == nil and task_mutex == nil)
     task_event = thread.event()
     task_queue = thread.queue()
+    task_mutex = thread.mutex()
     local task_is_stopped = thread.sharedata()
     local task_thread = thread.new(async_task._loop, {
         name = "core.base.async_task", internal = true,
-        argv = {task_event, task_queue, task_is_stopped, option.get("diagnosis")}})
+        argv = {task_event, task_queue, task_mutex, task_is_stopped, option.get("diagnosis")}})
     local ok, errors = task_thread:start()
     if not ok then
         return false, errors
@@ -99,7 +111,10 @@ function async_task._start()
             is_stopped = true
             -- Perhaps the thread hasn't started yet.
             -- Let's wait a while and let it finish executing the tasks in the current queue.
-            if not task_queue:empty() then
+            task_mutex:lock()
+            local is_empty = task_queue:empty()
+            task_mutex:unlock()
+            if not is_empty then
                 task_event:post()
                 os.sleep(300)
             end
@@ -141,10 +156,13 @@ function async_task.cp(srcpath, dstpath, opt)
     -- post task
     srcpath = path.absolute(tostring(srcpath))
     dstpath = path.absolute(tostring(dstpath))
+    task_mutex:lock()
     task_queue:push({kind = "cp", srcpath = srcpath, dstpath = dstpath})
+    local queue_size = task_queue:size()
+    task_mutex:unlock()
     if opt.detach then
         -- We cache some tasks before executing them to avoid frequent thread switching.
-        if task_queue:size() > 10 then
+        if queue_size > 10 then
             task_event:post()
         end
     else
@@ -166,10 +184,13 @@ function async_task.rm(filepath, opt)
 
     -- post task
     filepath = path.absolute(tostring(filepath))
+    task_mutex:lock()
     task_queue:push({kind = "rm", filepath = filepath})
+    local queue_size = task_queue:size()
+    task_mutex:unlock()
     if opt.detach then
         -- We cache some tasks before executing them to avoid frequent thread switching.
-        if task_queue:size() > 10 then
+        if queue_size > 10 then
             task_event:post()
         end
     else
@@ -191,10 +212,13 @@ function async_task.rmdir(dir, opt)
 
     -- post task
     dir = path.absolute(tostring(dir))
+    task_mutex:lock()
     task_queue:push({kind = "rmdir", dir = dir})
+    local queue_size = task_queue:size()
+    task_mutex:unlock()
     if opt.detach then
         -- We cache some tasks before executing them to avoid frequent thread switching.
-        if task_queue:size() > 10 then
+        if queue_size > 10 then
             task_event:post()
         end
     else
