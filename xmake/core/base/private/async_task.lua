@@ -25,6 +25,7 @@ local async_task = async_task or {}
 local os     = require("base/os")
 local utils  = require("base/utils")
 local thread = require("base/thread")
+local option = require("base/option")
 
 -- the task status
 local is_stopped = false
@@ -35,18 +36,48 @@ local task_event = nil
 local task_queue = nil
 
 -- the asynchronous task loop
-function async_task._loop(event, queue, is_stopped)
-    print("started")
-    --utils.dprint("async_task: started")
+function async_task._loop(event, queue, is_stopped, is_diagnosis)
+    local os = require("base/os")
+
+    local function dprint(...)
+        if is_diagnosis then
+            print(...)
+        end
+    end
+
+    local function _runcmd_cp(cmd)
+        os.cp(cmd.srcpath, cmd.dstpath)
+    end
+    local function _runcmd_rm(cmd)
+        os.rm(cmd.filepath)
+    end
+    local function _runcmd_rmdir(cmd)
+        os.rmdir(cmd.dir)
+    end
+    local runops = {
+        cp    = _runcmd_cp,
+        rm    = _runcmd_rm,
+        rmdir = _runcmd_rmdir
+    }
+    local function _runcmd(cmd)
+        local runop = runops[cmd.kind]
+        if runop then
+            runop(cmd)
+        end
+    end
+
+    dprint("async_task: started")
     while not is_stopped:get() do
         if event:wait(-1) > 0 then
             while not queue:empty() do
-                print(queue:pop())
+                local cmd = queue:pop()
+                if cmd then
+                    _runcmd(cmd)
+                end
             end
         end
     end
-    print("exit")
-    --utils.dprint("async_task: exited")
+    dprint("async_task: exited")
 end
 
 -- start the asynchronous task
@@ -55,7 +86,9 @@ function async_task._start()
     task_event = thread.event()
     task_queue = thread.queue()
     local task_is_stopped = thread.sharedata()
-    local task_thread = thread.new(async_task._loop, {name = "core.base.async_task", argv = {task_event, task_queue, task_is_stopped}})
+    local task_thread = thread.new(async_task._loop, {
+        name = "core.base.async_task", internal = true,
+        argv = {task_event, task_queue, task_is_stopped, option.get("diagnosis")}})
     local ok, errors = task_thread:start()
     if not ok then
         return false, errors
@@ -96,11 +129,14 @@ end
 
 -- copy files or directories
 function async_task.cp(srcpath, dstpath, opt)
+    opt = opt or {}
     local ok, errors = async_task._ensure_started()
     if not ok then
         return false, errors
     end
 
+    srcpath = path.absolute(tostring(srcpath))
+    dstpath = path.absolute(tostring(dstpath))
     task_queue:push({kind = "cp", srcpath = srcpath, dstpath = dstpath})
     task_event:post()
     return true
@@ -108,11 +144,13 @@ end
 
 -- remove files or directories
 function async_task.rm(filepath, opt)
+    opt = opt or {}
     local ok, errors = async_task._ensure_started()
     if not ok then
         return false, errors
     end
 
+    filepath = path.absolute(tostring(filepath))
     task_queue:push({kind = "rm", filepath = filepath})
     task_event:post()
     return true
@@ -120,11 +158,13 @@ end
 
 -- remove directories
 function async_task.rmdir(dir, opt)
+    opt = opt or {}
     local ok, errors = async_task._ensure_started()
     if not ok then
         return false, errors
     end
 
+    dir = path.absolute(tostring(dir))
     task_queue:push({kind = "rmdir", dir = dir})
     task_event:post()
     return true

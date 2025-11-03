@@ -52,6 +52,7 @@ function _thread.new(callback, opt)
     instance._CALLBACK  = callback
     instance._STACKSIZE = opt.stacksize or 0
     instance._STATUS    = thread.STATUS_READY
+    instance._INTERNAL  = opt.internal
     setmetatable(instance, _thread)
     return instance
 end
@@ -129,7 +130,7 @@ function _thread:start()
 
     -- init callback info
     local callback = string._dump(self._CALLBACK)
-    local callinfo = {name = self:name(), argv = argv}
+    local callinfo = {name = self:name(), argv = argv, internal = self._INTERNAL}
 
     -- we need a pipe pair to wait and listen thread exit event
     local rpipe, wpipe = pipe.openpair("AA")
@@ -808,6 +809,7 @@ function thread._run_thread(callback_str, callinfo_str)
     local argv
     local threadname
     local wpipe
+    local is_internal = false
     if callinfo_str then
         local result, errors = string.deserialize(callinfo_str)
         if not result then
@@ -817,6 +819,7 @@ function thread._run_thread(callback_str, callinfo_str)
         if callinfo then
             argv = callinfo.argv
             threadname = callinfo.name
+            is_internal = callinfo.internal
             wpipe = pipe.new(libc.ptraddr(callinfo.wpipe, {ffi = false}))
         end
     end
@@ -848,6 +851,11 @@ function thread._run_thread(callback_str, callinfo_str)
     local sandbox_inst, errors = sandbox.new(callback)
     if not sandbox_inst then
         return false, errors
+    end
+
+    -- if it's an internal thread, we need to bind some additional internal interfaces.
+    if is_internal then
+        sandbox_inst:api_register_builtin("require", require)
     end
 
     -- save the running thread name
