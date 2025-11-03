@@ -39,10 +39,23 @@ local task_mutex = nil
 -- the asynchronous task loop
 function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
     local os = require("base/os")
+    local try = require("sandbox/modules/try")
+    local thread = require("base/thread")
 
     local function dprint(...)
         if is_diagnosis then
             print(...)
+        end
+    end
+
+    -- restore thread objects from serialized format
+    local function _restore_thread_objects(cmd)
+        -- use thread helper to deserialize thread objects from queue data
+        if cmd.event_data then
+            cmd.event = thread._deserialize_object(cmd.event_data)
+        end
+        if cmd.result_data then
+            cmd.result = thread._deserialize_object(cmd.result_data)
         end
     end
 
@@ -61,16 +74,39 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
         rmdir = _runcmd_rmdir
     }
     local function _runcmd(cmd)
+        local ok = true
+        local errors
+
+        -- restore thread objects if needed
+        _restore_thread_objects(cmd)
+
         local runop = runops[cmd.kind]
         if runop then
-            runop(cmd)
+            try
+            {
+                function ()
+                    runop(cmd)
+                end,
+                catch
+                {
+                    function (errs)
+                        ok = false
+                        errors = tostring(errs)
+                    end
+                }
+            }
+        end
+        -- notify completion if event is provided
+        if cmd.event and cmd.result then
+            cmd.result:set({ok = ok, errors = errors})
+            cmd.event:post()
         end
     end
 
     dprint("async_task: started")
     while not is_stopped:get() do
         if event:wait(-1) > 0 then
-            
+
             -- fetch all tasks from queue at once
             local cmds = {}
             mutex:lock()
@@ -150,25 +186,45 @@ function async_task.cp(srcpath, dstpath, opt)
         return false, errors
     end
 
-    -- TODO
-    assert(opt.detach)
-
     -- post task
     srcpath = path.absolute(tostring(srcpath))
     dstpath = path.absolute(tostring(dstpath))
+
+    local cmd = {kind = "cp", srcpath = srcpath, dstpath = dstpath}
+    local cmd_event, cmd_result
+
+    -- create event and result for non-detach mode
+    if not opt.detach then
+        cmd_event = thread.event()
+        cmd_result = thread.sharedata()
+
+        -- serialize thread objects for passing to worker thread
+        cmd.event_data = thread._serialize_object(cmd_event)
+        cmd.result_data = thread._serialize_object(cmd_result)
+    end
+
     task_mutex:lock()
-    task_queue:push({kind = "cp", srcpath = srcpath, dstpath = dstpath})
+    task_queue:push(cmd)
     local queue_size = task_queue:size()
     task_mutex:unlock()
+
     if opt.detach then
         -- We cache some tasks before executing them to avoid frequent thread switching.
         if queue_size > 10 then
             task_event:post()
         end
+        return true
     else
+        -- wait for completion
         task_event:post()
+        cmd_event:wait(-1)
+        local result = cmd_result:get()
+        if result and result.ok then
+            return true
+        else
+            return false, result and result.errors or "unknown error"
+        end
     end
-    return true
 end
 
 -- remove files or directories
@@ -179,24 +235,44 @@ function async_task.rm(filepath, opt)
         return false, errors
     end
 
-    -- TODO
-    assert(opt.detach)
-
     -- post task
     filepath = path.absolute(tostring(filepath))
+
+    local cmd = {kind = "rm", filepath = filepath}
+    local cmd_event, cmd_result
+
+    -- create event and result for non-detach mode
+    if not opt.detach then
+        cmd_event = thread.event()
+        cmd_result = thread.sharedata()
+
+        -- serialize thread objects for passing to worker thread
+        cmd.event_data = thread._serialize_object(cmd_event)
+        cmd.result_data = thread._serialize_object(cmd_result)
+    end
+
     task_mutex:lock()
-    task_queue:push({kind = "rm", filepath = filepath})
+    task_queue:push(cmd)
     local queue_size = task_queue:size()
     task_mutex:unlock()
+
     if opt.detach then
         -- We cache some tasks before executing them to avoid frequent thread switching.
         if queue_size > 10 then
             task_event:post()
         end
+        return true
     else
+        -- wait for completion
         task_event:post()
+        cmd_event:wait(-1)
+        local result = cmd_result:get()
+        if result and result.ok then
+            return true
+        else
+            return false, result and result.errors or "unknown error"
+        end
     end
-    return true
 end
 
 -- remove directories
@@ -207,24 +283,44 @@ function async_task.rmdir(dir, opt)
         return false, errors
     end
 
-    -- TODO
-    assert(opt.detach)
-
     -- post task
     dir = path.absolute(tostring(dir))
+
+    local cmd = {kind = "rmdir", dir = dir}
+    local cmd_event, cmd_result
+
+    -- create event and result for non-detach mode
+    if not opt.detach then
+        cmd_event = thread.event()
+        cmd_result = thread.sharedata()
+
+        -- serialize thread objects for passing to worker thread
+        cmd.event_data = thread._serialize_object(cmd_event)
+        cmd.result_data = thread._serialize_object(cmd_result)
+    end
+
     task_mutex:lock()
-    task_queue:push({kind = "rmdir", dir = dir})
+    task_queue:push(cmd)
     local queue_size = task_queue:size()
     task_mutex:unlock()
+
     if opt.detach then
         -- We cache some tasks before executing them to avoid frequent thread switching.
         if queue_size > 10 then
             task_event:post()
         end
+        return true
     else
+        -- wait for completion
         task_event:post()
+        cmd_event:wait(-1)
+        local result = cmd_result:get()
+        if result and result.ok then
+            return true
+        else
+            return false, result and result.errors or "unknown error"
+        end
     end
-    return true
 end
 
 -- return module: async_task
