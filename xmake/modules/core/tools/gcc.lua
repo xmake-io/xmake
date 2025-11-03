@@ -1018,7 +1018,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
                 -- remove preprocess file
                 local cppfile = _get_cppfile(sourcefile, objectfile)
-                os.tryrm(cppfile)
+                os.tryrm(cppfile, {async = true, detach = true})
 
                 -- parse and strip errors
                 local lines = errors and tostring(errors):split('\n', {plain = true}) or {}

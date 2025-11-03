@@ -714,7 +714,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
                 -- remove preprocess file
                 local cppfile = _get_cppfile(sourcefile, objectfile)
-                os.tryrm(cppfile)
+                os.tryrm(cppfile, {async = true, detach = true})
 
                 -- use cl/stdout as errors first from vstool.iorunv()
                 if type(errors) == "table" then
@@ -777,7 +777,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         if depfile and os.isfile(depfile) then
             dependinfo.depfiles_format = "cl_json"
             dependinfo.depfiles = io.readfile(depfile)
-            os.tryrm(depfile)
+            os.tryrm(depfile, {async = true, detach = true})
         elseif outdata then
             dependinfo.depfiles_format = "cl"
             dependinfo.depfiles = outdata
