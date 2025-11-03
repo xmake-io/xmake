@@ -142,7 +142,14 @@ function async_task.cp(srcpath, dstpath, opt)
     srcpath = path.absolute(tostring(srcpath))
     dstpath = path.absolute(tostring(dstpath))
     task_queue:push({kind = "cp", srcpath = srcpath, dstpath = dstpath})
-    task_event:post()
+    if opt.detach then
+        -- We cache some tasks before executing them to avoid frequent thread switching.
+        if task_queue:size() > 10 then
+            task_event:post()
+        end
+    else
+        task_event:post()
+    end
     return true
 end
 
@@ -160,7 +167,14 @@ function async_task.rm(filepath, opt)
     -- post task
     filepath = path.absolute(tostring(filepath))
     task_queue:push({kind = "rm", filepath = filepath})
-    task_event:post()
+    if opt.detach then
+        -- We cache some tasks before executing them to avoid frequent thread switching.
+        if task_queue:size() > 10 then
+            task_event:post()
+        end
+    else
+        task_event:post()
+    end
     return true
 end
 
@@ -178,7 +192,14 @@ function async_task.rmdir(dir, opt)
     -- post task
     dir = path.absolute(tostring(dir))
     task_queue:push({kind = "rmdir", dir = dir})
-    task_event:post()
+    if opt.detach then
+        -- We cache some tasks before executing them to avoid frequent thread switching.
+        if task_queue:size() > 10 then
+            task_event:post()
+        end
+    else
+        task_event:post()
+    end
     return true
 end
 
