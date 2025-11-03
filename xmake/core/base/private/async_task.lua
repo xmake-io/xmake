@@ -226,6 +226,8 @@ function async_task.cp(srcpath, dstpath, opt)
         task_event:post()
         cmd_event:wait(-1)
         local result = cmd_result:get()
+        cmd_event:close()
+        cmd_result:close()
         if result and result.ok then
             return true
         else
@@ -275,6 +277,8 @@ function async_task.rm(filepath, opt)
         task_event:post()
         cmd_event:wait(-1)
         local result = cmd_result:get()
+        cmd_event:close()
+        cmd_result:close()
         if result and result.ok then
             return true
         else
@@ -324,6 +328,8 @@ function async_task.rmdir(dir, opt)
         task_event:post()
         cmd_event:wait(-1)
         local result = cmd_result:get()
+        cmd_event:close()
+        cmd_result:close()
         if result and result.ok then
             return true
         else
@@ -358,6 +364,8 @@ function async_task.match(pattern, mode)
     task_event:post()
     cmd_event:wait(-1)
     local result = cmd_result:get()
+    cmd_event:close()
+    cmd_result:close()
     if result and result.ok then
         return result.data
     else
