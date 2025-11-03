@@ -637,6 +637,9 @@ end
 function os.cd(dir)
     assert(dir)
 
+    -- we can only change directory in main thread
+    assert(xmake.in_main_thread())
+
     -- support path instance
     dir = tostring(dir)
 

@@ -218,7 +218,7 @@ function main._init()
         xmake._PROJECT_FILE = projectfile
 
         -- enter the project directory
-        if os.isdir(os.projectdir()) then
+        if os.isdir(os.projectdir()) and xmake.in_main_thread() then
             os.cd(os.projectdir())
         end
     else
