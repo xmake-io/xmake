@@ -273,8 +273,8 @@ function main(snippets, opt)
     }
 
     -- remove some files
-    os.tryrm(objectfile)
-    os.tryrm(binaryfile)
+    os.tryrm(objectfile, {async = true, detach = true})
+    os.tryrm(binaryfile, {async = true, detach = true})
 
     -- trace
     if opt.verbose or option.get("verbose") or option.get("diagnosis") then

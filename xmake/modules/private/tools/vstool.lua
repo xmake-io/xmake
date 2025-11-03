@@ -77,8 +77,8 @@ function runv(program, argv, opt)
         end
 
         -- remove the files
-        os.tryrm(outpath)
-        os.tryrm(errpath)
+        os.tryrm(outpath, {async = true, detach = true})
+        os.tryrm(errpath, {async = true, detach = true})
 
         -- raise errors
         os.raise({errors = errors, stderr = errdata, stdout = outdata})
@@ -122,8 +122,8 @@ function iorunv(program, argv, opt)
     local errdata = os.isfile(errpath) and io.readfile(errpath) or nil
 
     -- remove the temporary output and error file
-    os.tryrm(outpath)
-    os.tryrm(errpath)
+    os.tryrm(outpath, {async = true, detach = true})
+    os.tryrm(errpath, {async = true, detach = true})
 
     -- failed?
     if ok ~= 0 then
