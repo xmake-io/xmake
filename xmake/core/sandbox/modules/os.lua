@@ -411,23 +411,23 @@ function sandbox_os.vexecv(program, argv, opt)
 end
 
 -- match files or directories
-function sandbox_os.match(pattern, mode, callback)
-    return os.match(vformat(tostring(pattern)), mode, callback)
+function sandbox_os.match(pattern, mode, opt)
+    return os.match(vformat(tostring(pattern)), mode, opt)
 end
 
 -- match directories
-function sandbox_os.dirs(pattern, callback)
-    return (sandbox_os.match(pattern, 'd', callback))
+function sandbox_os.dirs(pattern, opt)
+    return os.dirs(vformat(tostring(pattern)), opt)
 end
 
 -- match files
-function sandbox_os.files(pattern, callback)
-    return (sandbox_os.match(pattern, 'f', callback))
+function sandbox_os.files(pattern, opt)
+    return os.files(vformat(tostring(pattern)), opt)
 end
 
 -- match files and directories
-function sandbox_os.filedirs(pattern, callback)
-    return (sandbox_os.match(pattern, 'a', callback))
+function sandbox_os.filedirs(pattern, opt)
+    return os.filedirs(vformat(tostring(pattern)), opt)
 end
 
 -- is directory?

@@ -66,24 +66,31 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
     local function _runcmd_rmdir(cmd)
         os.rmdir(cmd.dir)
     end
+    local function _runcmd_match(cmd)
+        return os.match(cmd.pattern, cmd.mode)
+    end
     local runops = {
         cp    = _runcmd_cp,
         rm    = _runcmd_rm,
-        rmdir = _runcmd_rmdir
+        rmdir = _runcmd_rmdir,
+        match = _runcmd_match
     }
     local function _runcmd(cmd)
 
-        -- restore thread objects if needed
         _restore_thread_objects(cmd)
 
         local ok = true
         local errors
+        local result_data
         local runop = runops[cmd.kind]
         if runop then
             try
             {
                 function ()
-                    runop(cmd)
+                    local ret = runop(cmd)
+                    if ret then
+                        result_data = ret
+                    end
                 end,
                 catch
                 {
@@ -97,7 +104,7 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
         
         -- notify completion if event is provided
         if cmd.event and cmd.result then
-            cmd.result:set({ok = ok, errors = errors})
+            cmd.result:set({ok = ok, errors = errors, data = result_data})
             cmd.event:post()
         end
     end
@@ -322,6 +329,39 @@ function async_task.rmdir(dir, opt)
         else
             return false, result and result.errors or "unknown error"
         end
+    end
+end
+
+-- match files or directories
+function async_task.match(pattern, mode)
+    local ok, errors = async_task._ensure_started()
+    if not ok then
+        return nil, errors
+    end
+
+    -- post task
+    pattern = path.absolute(tostring(pattern))
+
+    local cmd = {kind = "match", pattern = pattern, mode = mode}
+    local cmd_event = thread.event()
+    local cmd_result = thread.sharedata()
+    
+    -- serialize thread objects for passing to worker thread
+    cmd.event_data = thread._serialize_object(cmd_event)
+    cmd.result_data = thread._serialize_object(cmd_result)
+
+    task_mutex:lock()
+    task_queue:push(cmd)
+    task_mutex:unlock()
+
+    -- wait for completion
+    task_event:post()
+    cmd_event:wait(-1)
+    local result = cmd_result:get()
+    if result and result.ok then
+        return result.data
+    else
+        return nil, result and result.errors or "unknown error"
     end
 end
 

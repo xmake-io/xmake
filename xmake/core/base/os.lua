@@ -400,7 +400,15 @@ end
 --              end)
 -- @endcode
 --
-function os.match(pattern, mode, callback)
+function os.match(pattern, mode, opt)
+
+    -- do it in the asynchronous task
+    if type(opt) == "table" and opt.async and xmake.in_main_thread() then
+        return os._async_task().match(pattern, mode)
+    end
+
+    -- extract callback
+    local callback = type(opt) == "function" and opt or (type(opt) == "table" and opt.callback or nil)
 
     -- support path instance
     pattern = tostring(pattern)
@@ -493,18 +501,18 @@ end
 --
 -- @note only return {} without count to simplify code, e.g. table.unpack(os.dirs(""))
 --
-function os.dirs(pattern, callback)
-    return (os.match(pattern, 'd', callback))
+function os.dirs(pattern, opt)
+    return (os.match(pattern, 'd', opt))
 end
 
 -- match files
-function os.files(pattern, callback)
-    return (os.match(pattern, 'f', callback))
+function os.files(pattern, opt)
+    return (os.match(pattern, 'f', opt))
 end
 
 -- match files and directories
-function os.filedirs(pattern, callback)
-    return (os.match(pattern, 'a', callback))
+function os.filedirs(pattern, opt)
+    return (os.match(pattern, 'a', opt))
 end
 
 -- copy files or directories and we can reserve the source directory structure
