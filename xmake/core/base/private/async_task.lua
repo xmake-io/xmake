@@ -101,7 +101,7 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
                 }
             }
         end
-        
+
         -- notify completion if event is provided
         if cmd.event and cmd.result then
             cmd.result:set({ok = ok, errors = errors, data = result_data})
@@ -204,7 +204,7 @@ function async_task.cp(srcpath, dstpath, opt)
     if not is_detach then
         cmd_event = thread.event()
         cmd_result = thread.sharedata()
-        
+
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
         cmd.result_data = thread._serialize_object(cmd_result)
@@ -255,7 +255,7 @@ function async_task.rm(filepath, opt)
     if not is_detach then
         cmd_event = thread.event()
         cmd_result = thread.sharedata()
-        
+
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
         cmd.result_data = thread._serialize_object(cmd_result)
@@ -306,7 +306,7 @@ function async_task.rmdir(dir, opt)
     if not is_detach then
         cmd_event = thread.event()
         cmd_result = thread.sharedata()
-        
+
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
         cmd.result_data = thread._serialize_object(cmd_result)
@@ -351,7 +351,7 @@ function async_task.match(pattern, mode)
     local cmd = {kind = "match", pattern = pattern, mode = mode}
     local cmd_event = thread.event()
     local cmd_result = thread.sharedata()
-    
+
     -- serialize thread objects for passing to worker thread
     cmd.event_data = thread._serialize_object(cmd_event)
     cmd.result_data = thread._serialize_object(cmd_result)
