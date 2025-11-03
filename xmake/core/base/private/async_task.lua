@@ -367,9 +367,9 @@ function async_task.match(pattern, mode)
     cmd_event:close()
     cmd_result:close()
     if result and result.ok then
-        return result.data
+        return result.data, #result.data
     else
-        return nil, result and result.errors or "unknown error"
+        return nil, 0
     end
 end
 
