@@ -48,9 +48,7 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
         end
     end
 
-    -- restore thread objects from serialized format
     local function _restore_thread_objects(cmd)
-        -- use thread helper to deserialize thread objects from queue data
         if cmd.event_data then
             cmd.event = thread._deserialize_object(cmd.event_data)
         end
@@ -74,12 +72,12 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
         rmdir = _runcmd_rmdir
     }
     local function _runcmd(cmd)
-        local ok = true
-        local errors
 
         -- restore thread objects if needed
         _restore_thread_objects(cmd)
 
+        local ok = true
+        local errors
         local runop = runops[cmd.kind]
         if runop then
             try
@@ -96,6 +94,7 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
                 }
             }
         end
+        
         -- notify completion if event is provided
         if cmd.event and cmd.result then
             cmd.result:set({ok = ok, errors = errors})
@@ -192,12 +191,13 @@ function async_task.cp(srcpath, dstpath, opt)
 
     local cmd = {kind = "cp", srcpath = srcpath, dstpath = dstpath}
     local cmd_event, cmd_result
+    local is_detach = opt.detach
 
     -- create event and result for non-detach mode
-    if not opt.detach then
+    if not is_detach then
         cmd_event = thread.event()
         cmd_result = thread.sharedata()
-
+        
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
         cmd.result_data = thread._serialize_object(cmd_result)
@@ -208,7 +208,7 @@ function async_task.cp(srcpath, dstpath, opt)
     local queue_size = task_queue:size()
     task_mutex:unlock()
 
-    if opt.detach then
+    if is_detach then
         -- We cache some tasks before executing them to avoid frequent thread switching.
         if queue_size > 10 then
             task_event:post()
@@ -240,12 +240,13 @@ function async_task.rm(filepath, opt)
 
     local cmd = {kind = "rm", filepath = filepath}
     local cmd_event, cmd_result
+    local is_detach = opt.detach
 
     -- create event and result for non-detach mode
-    if not opt.detach then
+    if not is_detach then
         cmd_event = thread.event()
         cmd_result = thread.sharedata()
-
+        
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
         cmd.result_data = thread._serialize_object(cmd_result)
@@ -256,7 +257,7 @@ function async_task.rm(filepath, opt)
     local queue_size = task_queue:size()
     task_mutex:unlock()
 
-    if opt.detach then
+    if is_detach then
         -- We cache some tasks before executing them to avoid frequent thread switching.
         if queue_size > 10 then
             task_event:post()
@@ -288,12 +289,13 @@ function async_task.rmdir(dir, opt)
 
     local cmd = {kind = "rmdir", dir = dir}
     local cmd_event, cmd_result
+    local is_detach = opt.detach
 
     -- create event and result for non-detach mode
-    if not opt.detach then
+    if not is_detach then
         cmd_event = thread.event()
         cmd_result = thread.sharedata()
-
+        
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
         cmd.result_data = thread._serialize_object(cmd_result)
@@ -304,7 +306,7 @@ function async_task.rmdir(dir, opt)
     local queue_size = task_queue:size()
     task_mutex:unlock()
 
-    if opt.detach then
+    if is_detach then
         -- We cache some tasks before executing them to avoid frequent thread switching.
         if queue_size > 10 then
             task_event:post()
