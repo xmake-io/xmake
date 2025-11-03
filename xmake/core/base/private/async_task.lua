@@ -135,6 +135,10 @@ function async_task.cp(srcpath, dstpath, opt)
         return false, errors
     end
 
+    -- TODO
+    assert(opt.detach)
+
+    -- post task
     srcpath = path.absolute(tostring(srcpath))
     dstpath = path.absolute(tostring(dstpath))
     task_queue:push({kind = "cp", srcpath = srcpath, dstpath = dstpath})
@@ -150,6 +154,10 @@ function async_task.rm(filepath, opt)
         return false, errors
     end
 
+    -- TODO
+    assert(opt.detach)
+
+    -- post task
     filepath = path.absolute(tostring(filepath))
     task_queue:push({kind = "rm", filepath = filepath})
     task_event:post()
@@ -164,6 +172,10 @@ function async_task.rmdir(dir, opt)
         return false, errors
     end
 
+    -- TODO
+    assert(opt.detach)
+
+    -- post task
     dir = path.absolute(tostring(dir))
     task_queue:push({kind = "rmdir", dir = dir})
     task_event:post()

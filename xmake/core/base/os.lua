@@ -522,7 +522,7 @@ function os.cp(srcpath, dstpath, opt)
     end
 
     -- do it in the asynchronous task
-    if opt and opt.async then
+    if opt and opt.async and xmake.in_main_thread() then
         return os._async_task().cp(srcpath, dstpath, {detach = opt.detach})
     end
 
@@ -587,8 +587,8 @@ function os.rm(filepath, opt)
     end
 
     -- do it in the asynchronous task
-    if opt.async then
-        return os._async_task().rm(filepath, {detach = opt.detach})
+    if opt.async and xmake.in_main_thread() then
+       return os._async_task().rm(filepath, {detach = opt.detach})
     end
 
     -- remove file or directories
@@ -710,7 +710,7 @@ function os.rmdir(dir, opt)
     end
 
     -- do it in the asynchronous task
-    if opt and opt.async then
+    if opt and opt.async and xmake.in_main_thread() then
         return os._async_task().rmdir(dir, {detach = opt.detach})
     end
 
@@ -861,16 +861,14 @@ function os.runv(program, argv, opt)
         end
 
         -- remove the temporary log file
-        os.rm(logfile)
+        os.rm(logfile, {async = true, detach = true})
 
         -- failed
         return false, errors
     end
 
     -- remove the temporary log file
-    os.rm(logfile)
-
-    -- ok
+    os.rm(logfile, {async = true, detach = true})
     return true
 end
 
@@ -1093,8 +1091,8 @@ function os.iorunv(program, argv, opt)
     local errdata = io.readfile(errfile)
 
     -- remove the temporary output and error file
-    os.rm(outfile)
-    os.rm(errfile)
+    os.rm(outfile, {async = true, detach = true})
+    os.rm(errfile, {async = true, detach = true})
     return ok == 0, outdata, errdata, errors
 end
 

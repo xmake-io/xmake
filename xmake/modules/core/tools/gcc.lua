@@ -1070,7 +1070,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                     end
 
                     -- remove the temporary dependent file
-                    os.tryrm(depfile)
+                    os.tryrm(depfile, {async = true, detach = true})
                 end
             end
         }
