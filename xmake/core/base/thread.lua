@@ -182,7 +182,7 @@ function _thread:wait(timeout)
 
     local ok, errors
     local rpipe = self._RPIPE
-    if rpipe and scheduler:co_running() then
+    if rpipe then
         local buff = bytes(16)
         local read, data_or_errors = rpipe:read(buff, 1, {block = true, timeout = timeout})
         if read > 0 then
@@ -191,8 +191,13 @@ function _thread:wait(timeout)
             ok = read
             errors = data_or_errors
         end
-    else
-        ok, errors = thread.thread_wait(self:cdata(), timeout)
+    end
+    if not scheduler:co_running() then
+        local waitok, wait_errors = thread.thread_wait(self:cdata(), timeout)
+        if ok == nil or ok > 0 then
+            ok = waitok
+            errors = wait_errors
+        end
     end
     if ok < 0 then
         return -1, errors or string.format("%s: failed to resume thread!", self)
@@ -914,11 +919,9 @@ function thread._run_thread(callback_str, callinfo_str)
 
     -- thread is finished, we need to notify the waited thread
     if wpipe then
-        if scheduler:co_running() then
-            local ok, errors = wpipe:write("1", {block = true})
-            if ok < 0 then
-                return false, errors
-            end
+        local ok, errors = wpipe:write("1", {block = true})
+        if ok < 0 then
+            return false, errors
         end
         wpipe:close()
     end
