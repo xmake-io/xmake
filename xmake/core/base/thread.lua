@@ -914,9 +914,11 @@ function thread._run_thread(callback_str, callinfo_str)
 
     -- thread is finished, we need to notify the waited thread
     if wpipe then
-        local ok, errors = wpipe:write("1", {block = true})
-        if ok < 0 then
-            return false, errors
+        if scheduler:co_running() then
+            local ok, errors = wpipe:write("1", {block = true})
+            if ok < 0 then
+                return false, errors
+            end
         end
         wpipe:close()
     end
