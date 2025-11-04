@@ -36,6 +36,44 @@ local task_event = nil
 local task_queue = nil
 local task_mutex = nil
 
+-- object pool for event and sharedata
+local event_pool = {}
+local sharedata_pool = {}
+
+-- get event from pool or create new one
+local function _get_event()
+    local event = table.remove(event_pool)
+    if not event then
+        event = thread.event()
+    end
+    return event
+end
+
+-- return event to pool
+local function _put_event(event)
+    if event then
+        table.insert(event_pool, event)
+    end
+end
+
+-- get sharedata from pool or create new one
+local function _get_sharedata()
+    local sharedata = table.remove(sharedata_pool)
+    if not sharedata then
+        sharedata = thread.sharedata()
+    else
+        sharedata:clear()
+    end
+    return sharedata
+end
+
+-- return sharedata to pool
+local function _put_sharedata(sharedata)
+    if sharedata then
+        table.insert(sharedata_pool, sharedata)
+    end
+end
+
 -- the asynchronous task loop
 function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
     local os = require("base/os")
@@ -202,8 +240,8 @@ function async_task.cp(srcpath, dstpath, opt)
 
     -- create event and result for non-detach mode
     if not is_detach then
-        cmd_event = thread.event()
-        cmd_result = thread.sharedata()
+        cmd_event = _get_event()
+        cmd_result = _get_sharedata()
 
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
@@ -226,8 +264,8 @@ function async_task.cp(srcpath, dstpath, opt)
         task_event:post()
         cmd_event:wait(-1)
         local result = cmd_result:get()
-        cmd_event:close()
-        cmd_result:close()
+        _put_event(cmd_event)
+        _put_sharedata(cmd_result)
         if result and result.ok then
             return true
         else
@@ -253,8 +291,8 @@ function async_task.rm(filepath, opt)
 
     -- create event and result for non-detach mode
     if not is_detach then
-        cmd_event = thread.event()
-        cmd_result = thread.sharedata()
+        cmd_event = _get_event()
+        cmd_result = _get_sharedata()
 
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
@@ -277,8 +315,8 @@ function async_task.rm(filepath, opt)
         task_event:post()
         cmd_event:wait(-1)
         local result = cmd_result:get()
-        cmd_event:close()
-        cmd_result:close()
+        _put_event(cmd_event)
+        _put_sharedata(cmd_result)
         if result and result.ok then
             return true
         else
@@ -304,8 +342,8 @@ function async_task.rmdir(dir, opt)
 
     -- create event and result for non-detach mode
     if not is_detach then
-        cmd_event = thread.event()
-        cmd_result = thread.sharedata()
+        cmd_event = _get_event()
+        cmd_result = _get_sharedata()
 
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
@@ -328,8 +366,8 @@ function async_task.rmdir(dir, opt)
         task_event:post()
         cmd_event:wait(-1)
         local result = cmd_result:get()
-        cmd_event:close()
-        cmd_result:close()
+        _put_event(cmd_event)
+        _put_sharedata(cmd_result)
         if result and result.ok then
             return true
         else
@@ -349,8 +387,8 @@ function async_task.match(pattern, mode)
     pattern = path.absolute(tostring(pattern))
 
     local cmd = {kind = "match", pattern = pattern, mode = mode}
-    local cmd_event = thread.event()
-    local cmd_result = thread.sharedata()
+    local cmd_event = _get_event()
+    local cmd_result = _get_sharedata()
 
     -- serialize thread objects for passing to worker thread
     cmd.event_data = thread._serialize_object(cmd_event)
@@ -364,8 +402,8 @@ function async_task.match(pattern, mode)
     task_event:post()
     cmd_event:wait(-1)
     local result = cmd_result:get()
-    cmd_event:close()
-    cmd_result:close()
+    _put_event(cmd_event)
+    _put_sharedata(cmd_result)
     if result and result.ok then
         return result.data, #result.data
     else
