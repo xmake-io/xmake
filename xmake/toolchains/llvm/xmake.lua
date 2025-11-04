@@ -50,10 +50,16 @@ toolchain("llvm")
     on_check("check")
 
     on_load(function (toolchain)
+        import("private.utils.toolchain", {alias = "toolchain_utils"})
 
         -- add runtimes
         if toolchain:is_plat("windows") then
             toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
+        end
+
+        local dirs = toolchain_utils.get_llvm_dirs(toolchain)
+        if dirs and dirs.rt then
+            toolchain:add("runenvs", dirs.rt)
         end
 
         -- add target flags
@@ -150,12 +156,6 @@ toolchain("llvm")
                 toolchain:add("ldflags", "--sysroot=" .. sysroot)
                 toolchain:add("shflags", "--sysroot=" .. sysroot)
             end
-        end
-
-        -- add bin search library for loading some dependent .dll files windows
-        local bindir = toolchain:bindir()
-        if bindir and is_host("windows") then
-            toolchain:add("runenvs", "PATH", bindir)
         end
     end)
 

@@ -21,6 +21,7 @@
 -- inherit gcc
 inherit("gcc")
 import("core.language.language")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- init it
 function init(self)
@@ -191,76 +192,6 @@ function _has_static_libstdcxx(self)
     return has_static_libstdcxx
 end
 
--- get llvm sdk root directory
-function _get_llvm_rootdir(self)
-    local llvm_rootdir = _g._LLVM_ROOTDIR
-    if llvm_rootdir == nil then
-        local outdata = try { function() return os.iorunv(self:program(), {"-print-resource-dir"}, {envs = self:runenvs()}) end }
-        if outdata then
-            llvm_rootdir = path.normalize(path.join(outdata:trim(), "..", "..", ".."))
-            if not os.isdir(llvm_rootdir) then
-                llvm_rootdir = nil
-            end
-        end
-        _g._LLVM_ROOTDIR = llvm_rootdir or false
-    end
-    return llvm_rootdir or nil
-end
-
--- get llvm target triple
-function _get_llvm_target_triple(self)
-    local llvm_targettriple = _g._LLVM_TARGETTRIPLE
-    if llvm_targettriple == nil then
-        local outdata = try { function() return os.iorunv(self:program(), {"-print-target-triple"}, {envs = self:runenvs()}) end }
-        if outdata then
-            llvm_targettriple = outdata:trim()
-        end
-        _g._LLVM_TARGETTRIPLE = llvm_targettriple or false
-    end
-    return llvm_targettriple or nil
-end
-
--- find compiler-rt dir
-function _get_llvm_compiler_rtdir(self, target, llvm_rootdir)
-    import("lib.detect.find_tool")
-    import("core.base.semver")
-
-    local libdir = path.absolute(path.join(llvm_rootdir, "lib", "clang"))
-    local target_triple = _get_llvm_target_triple(self)
-
-    local cc = target:tool("cc")
-    local cc_tool = find_tool(cc, {version = true})
-    if cc_tool and cc_tool.version then
-        local version = semver.new(cc_tool.version):major()
-        local basedir = path.join(libdir, version, "lib")
-
-        local compiler_rtdir
-        -- sometimes llvm is built with -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON, compiler_rt is located in a target-triple subfolder
-        local tripletdir = path.join(basedir, target_triple)
-        if os.isdir(tripletdir) then
-            compiler_rtdir = tripletdir
-        else
-            -- sometimes llvm is built with -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF, compiler_rt is located in a platform name subfolder
-            if target:is_plat("windows") then
-                compiler_rtdir = os.isdir(path.join(basedir, "windows")) and path.join(basedir, "windows")
-            elseif target:is_plat("linux") then
-                compiler_rtdir = os.isdir(path.join(basedir, "linux")) and path.join(basedir, "linux")
-            elseif target:is_plat("macosx") then
-                compiler_rtdir = os.isdir(path.join(basedir, "darwin")) and path.join(basedir, "darwin")
-            end
-        end
-
-        if compiler_rtdir and target_triple then
-            local arch = target_triple:split("-")[1]
-            local compiler_rtlink = "clang_rt.builtins-" .. arch
-            if os.isfile(path.join(compiler_rtdir, compiler_rtlink .. ".lib")) then
-                return compiler_rtdir, path.join(compiler_rtdir, compiler_rtlink .. ".lib")
-            end
-        end
-        return compiler_rtdir
-    end
-end
-
 -- make the runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
 function nf_runtime(self, runtime, opt)
@@ -291,58 +222,72 @@ function nf_runtime(self, runtime, opt)
             }
         end
     end
-    if not self:is_plat("android") then -- we will set runtimes in android ndk toolchain
-        maps = maps or {}
-        local llvm_rootdir = self:toolchain():sdkdir()
-        if not llvm_rootdir and self:is_plat("windows") then
-            llvm_rootdir = _get_llvm_rootdir(self)
+    local target = opt.target or opt
+    -- llvm on windows still doesn't support autolinking of libc++ and compiler-rt builtins
+    -- @see https://discourse.llvm.org/t/improve-autolinking-of-compiler-rt-and-libc-on-windows-with-lld-link/71392/10
+    -- and need manual setting of libc++ headerdirectory 
+    -- @see https://github.com/llvm/llvm-project/issues/79647
+    local llvm_dirs = toolchain_utils.get_llvm_dirs(self)
+
+    if self:is_plat("windows") and runtime == "c++_shared" then
+        if llvm_dirs.bin then
+            self:add("runenvs", "PATHS", llvm_dirs.bin)
         end
-        if kind == "cxx" then
+        if llvm_dirs.rt then
+            self:add("runenvs", "PATHS", llvm_dirs.rt)
+        end
+    end
+
+    -- we will set runtimes in android ndk toolchain
+    if not self:is_plat("android") then
+        maps = maps or {}
+        if kind == "cxx" or kind == "ld" or kind == "sh" then
             maps["c++_static"]    = "-stdlib=libc++"
             maps["c++_shared"]    = "-stdlib=libc++"
             maps["stdc++_static"] = "-stdlib=libstdc++"
             maps["stdc++_shared"] = "-stdlib=libstdc++"
-            -- clang on windows fail to add libc++ includepath when using -stdlib=libc++ so we manually add it
-            -- @see https://github.com/llvm/llvm-project/issues/79647
-            if llvm_rootdir then
-                maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
-                maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
+            if kind == "cxx" then
+                -- force the toolchain libc++ headers to prevent clang picking the systems one
+                if llvm_dirs.cxxinclude then
+                    maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. llvm_dirs.cxxinclude)
+                    maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. llvm_dirs.cxxinclude)
+                end
             end
-        elseif kind == "ld" or kind == "sh" then
-            local target = opt.target or opt
-            local is_cxx_or_c = target and (target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx", "cc"))
-            if is_cxx_or_c then
-                maps["c++_static"]    = "-stdlib=libc++"
-                maps["c++_shared"]    = "-stdlib=libc++"
-                maps["stdc++_static"] = "-stdlib=libstdc++"
-                maps["stdc++_shared"] = "-stdlib=libstdc++"
-                -- clang on windows fail to add libc++ librarypath when using -stdlib=libc++ so we manually add it
-                -- @see https://github.com/llvm/llvm-project/issues/79647
-                if llvm_rootdir then
-                    local libdir = path.absolute(path.join(llvm_rootdir, "lib"))
-                    maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, libdir))
-                    maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, libdir))
+        end
+
+        if self:is_plat("windows") and language.sourcekinds()[kind] then
+              -- on windows force link to compiler_rt builtins
+            if llvm_dirs.rt and llvm_dirs.rtlink then
+                for name, _ in pairs(maps) do
+                    maps[name] = table.join({"-Xclang", "--dependent-lib=" .. llvm_dirs.rtlink}, maps[name])
+                end
+            end
+        end
+        if kind == "ld" or kind == "sh" then
+            if self:is_plat("windows") and llvm_dirs.rt then
+                  -- on windows force add compiler_rt link directories
+                for name, _ in pairs(maps) do
+                    maps[name] = table.join(nf_linkdir(self, llvm_dirs.rt), maps[name])
+                    maps[name] = table.join("-resource-dir=" .. llvm_dirs.res, maps[name])
+                end
+            end
+
+            local is_cxx = target and (target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx"))
+            if is_cxx then
+                if llvm_dirs.lib then
+                    maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, llvm_dirs.lib))
+                    maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, llvm_dirs.lib))
+                    maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, llvm_dirs.lib))
                     -- sometimes llvm c++ runtimes are located in c++ subfolder (e.g homebrew llvm)
-                    local cxx_libdir = path.join(libdir, "c++")
-                    if os.isdir(cxx_libdir) then
-                        maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, cxx_libdir))
-                        maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. nf_linkdir(self, cxx_libdir))
+                    if llvm_dirs.cxxlib then
+                        maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, llvm_dirs.cxxlib))
+                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, llvm_dirs.cxxlib))
+                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, llvm_dirs.cxxlib))
                     end
-                    local compiler_rtdir, compiler_rtlink = _get_llvm_compiler_rtdir(self, target, llvm_rootdir)
-                    if compiler_rtdir then
-                        for name, _ in pairs(maps) do
-                            maps[name] = table.join(nf_linkdir(self, compiler_rtdir), maps[name])
-                            if compiler_rtlink then
-                                maps[name] = table.join(compiler_rtlink, maps[name])
-                            end
-                        end
+                    if llvm_dirs.rt then
+                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, llvm_dirs.rt))
                     end
                     -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
-                    maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, libdir))
-                    if compiler_rtdir then
-                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, compiler_rtdir))
-                        maps["MD"] = table.join(maps["MD"], nf_rpathdir(self, compiler_rtdir))
-                    end
                     if target.is_shared and target:is_shared() and target.filename and self:is_plat("macosx", "iphoneos", "watchos") then
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-install_name")
                         maps["c++_shared"] = table.join(maps["c++_shared"], "@rpath/" .. target:filename())
