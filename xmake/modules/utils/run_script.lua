@@ -150,14 +150,19 @@ function _run(script, opt)
         option.set("quiet", true, {force = true})
     end
 
-    local curdir = opt.curdir or os.workingdir()
-    local oldir = os.cd(curdir)
+    local oldir
+    if xmake.in_main_thread() then
+        local curdir = opt.curdir or os.workingdir()
+        oldir = os.cd(curdir)
+    end
     if opt.command then
         _run_commanad(script, _get_args(opt), opt)
     else
         _run_script(script, _get_args(opt), opt)
     end
-    os.cd(oldir)
+    if oldir then
+        os.cd(oldir)
+    end
 
     if opt.quiet then
         option.restore()

@@ -646,7 +646,10 @@ function os.cd(dir)
     assert(dir)
 
     -- we can only change directory in main thread
-    assert(xmake.in_main_thread())
+    if not xmake.in_main_thread() then
+        local thread = require("base/thread")
+        os.raise("we cannot change directory in non-main thread(%s)", thread.running())
+    end
 
     -- support path instance
     dir = tostring(dir)
