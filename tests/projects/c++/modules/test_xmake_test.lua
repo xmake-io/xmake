@@ -11,8 +11,7 @@ function run_xmake_test(...)
         flags = "-vD"
     end
     local outdata, errdata = os.iorun("xmake test " .. flags)
-    print(outdata, errdata)
-    -- assert(outdata, errdata)
+    assert(outdata, errdata)
 end
 
 function main(t)

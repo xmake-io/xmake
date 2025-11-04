@@ -234,7 +234,6 @@ function _get_packages_for(target)
     for name, dep in pairs(target:orderdeps()) do
         local dep_packages = _get_packages_for(dep)
         for pkgname, package in pairs(dep_packages) do
-        	-- print(package)
             packages[pkgname] = {pkg = package.pkg, from_dep = package.from_dep or dep, from_package = true}
         end
     end
@@ -377,13 +376,13 @@ function _patch_sourcebatch(target, sourcebatch)
         local localcache = support.localcache()
 
         local reuse = target:policy("build.c++.modules.reuse") or
-                     target:policy("build.c++.modules.tryreuse")
+                      target:policy("build.c++.modules.tryreuse")
         local reused = {}
         for sourcefile, fileconfig in pairs(from_depmodules) do
             if reuse and fileconfig.from_dep then
                 local nocheck = target:policy("build.c++.modules.reuse.nocheck")
                 local strict = target:policy("build.c++.modules.reuse.strict") or
-                             target:policy("build.c++.modules.tryreuse.discriminate_on_defines")
+                               target:policy("build.c++.modules.tryreuse.discriminate_on_defines")
                 local dep = target:dep(fileconfig.from_dep)
                 assert(dep, "dep target <%s> for <%s> not found", fileconfig.from_dep, target:fullname())
                 local can_reuse = nocheck or _are_flags_compatible(target, dep, sourcefile, {strict = strict})
@@ -415,7 +414,7 @@ function _patch_sourcebatch(target, sourcebatch)
         end
 
         table.sort(sourcebatch.sourcefiles)
-        memcache:set2(target:fullname(), "cached_sourcebatch", sourcebatch)
+        memcache:set2(target:fullname(), "cached_sourcebatch", table.clone(sourcebatch))
 
         local keys = #sourcebatch.sourcefiles > 0 and table.concat(sourcebatch.sourcefiles) or "_"
         local sum = hash.strhash64(keys)
@@ -566,7 +565,7 @@ function _schedule_module_dependencies_scan(target, jobgraph, sourcebatch)
                                 modules[name].alias = true
                             end
                         end
-                    end)
+                                        end)
                     local reused, from = support.is_reused(target, sourcefile)
                     if reused then
                         local scanfilejob = get_scanfilejob_for(from, sourcefile)
@@ -886,9 +885,7 @@ function after_scan(target)
     local sourcebatches = target:sourcebatches()
     local sourcebatch_builder = sourcebatches and sourcebatches["c++.build.modules.builder"]
     local sourcebatch_scanner = sourcebatches and sourcebatches["c++.build.modules.scanner"]
-    if sourcebatch_scanner then
-        sourcebatch_scanner.sourcefiles = {}
-    end
+    support.memcache():set2(target:fullname(), "jobdeps", nil)
     if sourcebatch_builder then
         sourcebatch_builder.sourcefiles = {}
         sourcebatch_builder.dependfiles = {}
