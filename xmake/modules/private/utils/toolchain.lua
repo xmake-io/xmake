@@ -181,3 +181,137 @@ function map_linkflags_for_package(package, targetkind, sourcekinds, name, value
     return flags
 end
 
+-- get llvm sdk resource directory
+function _get_llvm_resourcedir(toolchain)
+    local llvm_resourcedir = _g._LLVM_resourceDIR
+    if llvm_resourcedir == nil then
+        local outdata = try { function() return os.iorunv(toolchain:get("cc"), {"-print-resource-dir"}, {envs = toolchain:runenvs()}) end }
+        if outdata then
+            llvm_resourcedir = path.normalize(outdata:trim())
+            if not os.isdir(llvm_resourcedir) then
+                llvm_resourcedir = nil
+            end
+        end
+        _g._LLVM_resourceDIR = llvm_resourcedir or false
+    end
+    return llvm_resourcedir or nil
+end
+
+-- get llvm sdk root directory
+function _get_llvm_rootdir(self)
+    local llvm_rootdir = _g._LLVM_ROOTDIR
+    if llvm_rootdir == nil then
+        local resourcedir = _get_llvm_resourcedir(self)
+        if resourcedir then
+            llvm_rootdir = path.normalize(path.join(resourcedir, "..", "..", ".."))
+            if not os.isdir(llvm_rootdir) then
+                llvm_rootdir = nil
+            end
+        end
+        _g._LLVM_ROOTDIR = llvm_rootdir or false
+    end
+    return llvm_rootdir or nil
+end
+
+-- find compiler-rt dir
+function _get_llvm_compiler_win_rtdir_and_link(self, target)
+    import("lib.detect.find_tool")
+
+    local cc = self:get("cc")
+    local cc_tool = find_tool(cc, {version = true})
+    if cc_tool and cc_tool.version then
+        local resdir = _get_llvm_resourcedir(self)
+        if resdir  then
+            local res_libdir = path.join(resdir, "lib")
+            -- when -DLLVM_ENABLE_TARGET_RUNTIME_DIR=OFF rtdir is windows/ and rtlink is clang_rt.builtinsi_<arch>.lib  
+            -- when ON rtdir is windows/<target-triple> and rtlink is clang_rt.builtins.lib
+            local target_triple = _get_llvm_target_triple(self)
+            local arch = target_triple and target_triple:split("-")[1]
+
+            local tripletdir = target_triple and path.join(res_libdir, "windows", target_triple)
+            tripletdir = os.isdir(tripletdir) or nil
+
+            local rtdir = tripletdir and path.join("windows", target_triple) or "windows"
+            if os.isdir(path.join(res_libdir, rtdir)) then
+                local rtlink = "clang_rt.builtins" .. (tripletdir and ".lib" or ("-" .. arch .. ".lib"))
+                if os.isfile(path.join(res_libdir, rtdir, rtlink)) then
+                    return res_libdir, path.join(rtdir, rtlink)
+                end
+            end
+            return res_libdir
+        end
+    end
+end
+
+-- get llvm target triple
+function _get_llvm_target_triple(self)
+    local llvm_targettriple = _g._LLVM_TARGETTRIPLE
+    if llvm_targettriple == nil then
+        local outdata = try { function() return os.iorunv(self:program(), {"-print-target-triple"}, {envs = self:runenvs()}) end }
+        if outdata then
+            llvm_targettriple = outdata:trim()
+        end
+        _g._LLVM_TARGETTRIPLE = llvm_targettriple or false
+    end
+    return llvm_targettriple or nil
+end
+
+-- get llvm toolchain dirs
+function get_llvm_dirs(toolchain)
+    local llvm_dirs = _g.llvm_dirs
+    if llvm_dirs == nil then
+        local rootdir = toolchain:sdkdir()
+        if not rootdir and toolchain:is_plat("windows") then
+            rootdir = _get_llvm_rootdir(toolchain)
+        end
+
+        local bindir, libdir, cxxlibdir, includedir, cxxincludedir, resdir, rtdir, rtlink
+        if rootdir then
+            bindir = path.join(rootdir, "bin")
+            if bindir then
+                bindir = os.isdir(bindir) and bindir or nil
+            end
+
+            libdir = path.join(rootdir, "lib")
+            if libdir then
+                libdir = os.isdir(libdir) and libdir or nil
+            end
+
+            if libdir then
+                cxxlibdir = libdir and path.join(libdir, "c++")
+                if cxxlibdir then
+                    cxxlibdir = os.isdir(cxxlibdir) and cxxlibdir or nil
+                end
+            end
+
+            includedir = path.join(rootdir, "include")
+            if includedir then
+                includedir = os.isdir(includedir) and includedir or nil
+            end
+
+            if includedir then
+                cxxincludedir = includedir and path.join(includedir, "c++", "v1") or nil
+                if cxxincludedir then
+                    cxxincludedir = os.isdir(cxxincludedir) and cxxincludedir or nil
+                end
+            end
+
+            resdir = _get_llvm_resourcedir(toolchain)
+            if toolchain:is_plat("windows") then
+                rtdir, rtlink = _get_llvm_compiler_win_rtdir_and_link(toolchain)
+            end
+        end
+
+        llvm_dirs = {root = rootdir,
+        	           bin = bindir,
+        	           lib = libdir,
+        	           cxxlib = cxxlibdir,
+        	           include = includedir,
+        	           cxxinclude = cxxincludedir,
+        	           res = resdir,
+        	           rt = rtdir,
+        	           rtlink = rtlink }
+        _g.llvm_dirs = llvm_dirs
+      end
+      return llvm_dirs
+end
