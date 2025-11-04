@@ -41,7 +41,7 @@ local event_pool = {}
 local sharedata_pool = {}
 
 -- get event from pool or create new one
-local function _get_event()
+function async_task._get_event()
     local event = table.remove(event_pool)
     if not event then
         event = thread.event()
@@ -50,14 +50,14 @@ local function _get_event()
 end
 
 -- return event to pool
-local function _put_event(event)
+function async_task._put_event(event)
     if event then
         table.insert(event_pool, event)
     end
 end
 
 -- get sharedata from pool or create new one
-local function _get_sharedata()
+function async_task._get_sharedata()
     local sharedata = table.remove(sharedata_pool)
     if not sharedata then
         sharedata = thread.sharedata()
@@ -68,7 +68,7 @@ local function _get_sharedata()
 end
 
 -- return sharedata to pool
-local function _put_sharedata(sharedata)
+function async_task._put_sharedata(sharedata)
     if sharedata then
         table.insert(sharedata_pool, sharedata)
     end
@@ -222,26 +222,14 @@ function async_task._ensure_started()
     return true
 end
 
--- copy files or directories
-function async_task.cp(srcpath, dstpath, opt)
-    opt = opt or {}
-    local ok, errors = async_task._ensure_started()
-    if not ok then
-        return false, errors
-    end
-
-    -- post task
-    srcpath = path.absolute(tostring(srcpath))
-    dstpath = path.absolute(tostring(dstpath))
-
-    local cmd = {kind = "cp", srcpath = srcpath, dstpath = dstpath}
+-- post task and wait for result
+function async_task._post_task(cmd, is_detach, return_data)
     local cmd_event, cmd_result
-    local is_detach = opt.detach
 
     -- create event and result for non-detach mode
     if not is_detach then
-        cmd_event = _get_event()
-        cmd_result = _get_sharedata()
+        cmd_event = async_task._get_event()
+        cmd_result = async_task._get_sharedata()
 
         -- serialize thread objects for passing to worker thread
         cmd.event_data = thread._serialize_object(cmd_event)
@@ -264,14 +252,33 @@ function async_task.cp(srcpath, dstpath, opt)
         task_event:post()
         cmd_event:wait(-1)
         local result = cmd_result:get()
-        _put_event(cmd_event)
-        _put_sharedata(cmd_result)
+        async_task._put_event(cmd_event)
+        async_task._put_sharedata(cmd_result)
         if result and result.ok then
-            return true
+            if return_data then
+                return result.data, #result.data
+            else
+                return true
+            end
         else
-            return false, result and result.errors or "unknown error"
+            if return_data then
+                return nil, 0
+            else
+                return false, result and result.errors or "unknown error"
+            end
         end
     end
+end
+
+-- copy files or directories
+function async_task.cp(srcpath, dstpath, opt)
+    opt = opt or {}
+    local ok, errors = async_task._ensure_started()
+    if not ok then
+        return false, errors
+    end
+    local cmd = {kind = "cp", srcpath = path.absolute(tostring(srcpath)), dstpath = path.absolute(tostring(dstpath))}
+    return async_task._post_task(cmd, opt.detach, false)
 end
 
 -- remove files or directories
@@ -281,48 +288,8 @@ function async_task.rm(filepath, opt)
     if not ok then
         return false, errors
     end
-
-    -- post task
-    filepath = path.absolute(tostring(filepath))
-
-    local cmd = {kind = "rm", filepath = filepath}
-    local cmd_event, cmd_result
-    local is_detach = opt.detach
-
-    -- create event and result for non-detach mode
-    if not is_detach then
-        cmd_event = _get_event()
-        cmd_result = _get_sharedata()
-
-        -- serialize thread objects for passing to worker thread
-        cmd.event_data = thread._serialize_object(cmd_event)
-        cmd.result_data = thread._serialize_object(cmd_result)
-    end
-
-    task_mutex:lock()
-    task_queue:push(cmd)
-    local queue_size = task_queue:size()
-    task_mutex:unlock()
-
-    if is_detach then
-        -- We cache some tasks before executing them to avoid frequent thread switching.
-        if queue_size > 10 then
-            task_event:post()
-        end
-        return true
-    else
-        -- wait for completion
-        task_event:post()
-        cmd_event:wait(-1)
-        local result = cmd_result:get()
-        _put_event(cmd_event)
-        _put_sharedata(cmd_result)
-        if result and result.ok then
-            return true
-        else
-            return false, result and result.errors or "unknown error"
-        end
-    end
+    local cmd = {kind = "rm", filepath = path.absolute(tostring(filepath))}
+    return async_task._post_task(cmd, opt.detach, false)
 end
 
 -- remove directories
@@ -332,48 +299,8 @@ function async_task.rmdir(dir, opt)
     if not ok then
         return false, errors
     end
-
-    -- post task
-    dir = path.absolute(tostring(dir))
-
-    local cmd = {kind = "rmdir", dir = dir}
-    local cmd_event, cmd_result
-    local is_detach = opt.detach
-
-    -- create event and result for non-detach mode
-    if not is_detach then
-        cmd_event = _get_event()
-        cmd_result = _get_sharedata()
-
-        -- serialize thread objects for passing to worker thread
-        cmd.event_data = thread._serialize_object(cmd_event)
-        cmd.result_data = thread._serialize_object(cmd_result)
-    end
-
-    task_mutex:lock()
-    task_queue:push(cmd)
-    local queue_size = task_queue:size()
-    task_mutex:unlock()
-
-    if is_detach then
-        -- We cache some tasks before executing them to avoid frequent thread switching.
-        if queue_size > 10 then
-            task_event:post()
-        end
-        return true
-    else
-        -- wait for completion
-        task_event:post()
-        cmd_event:wait(-1)
-        local result = cmd_result:get()
-        _put_event(cmd_event)
-        _put_sharedata(cmd_result)
-        if result and result.ok then
-            return true
-        else
-            return false, result and result.errors or "unknown error"
-        end
-    end
+    local cmd = {kind = "rmdir", dir = path.absolute(tostring(dir))}
+    return async_task._post_task(cmd, opt.detach, false)
 end
 
 -- match files or directories
@@ -382,33 +309,8 @@ function async_task.match(pattern, mode)
     if not ok then
         return nil, errors
     end
-
-    -- post task
-    pattern = path.absolute(tostring(pattern))
-
-    local cmd = {kind = "match", pattern = pattern, mode = mode}
-    local cmd_event = _get_event()
-    local cmd_result = _get_sharedata()
-
-    -- serialize thread objects for passing to worker thread
-    cmd.event_data = thread._serialize_object(cmd_event)
-    cmd.result_data = thread._serialize_object(cmd_result)
-
-    task_mutex:lock()
-    task_queue:push(cmd)
-    task_mutex:unlock()
-
-    -- wait for completion
-    task_event:post()
-    cmd_event:wait(-1)
-    local result = cmd_result:get()
-    _put_event(cmd_event)
-    _put_sharedata(cmd_result)
-    if result and result.ok then
-        return result.data, #result.data
-    else
-        return nil, 0
-    end
+    local cmd = {kind = "match", pattern = path.absolute(tostring(pattern)), mode = mode}
+    return async_task._post_task(cmd, false, true)
 end
 
 -- return module: async_task
