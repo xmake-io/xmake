@@ -52,9 +52,11 @@ local menu =
     -- the tasks: xmake [task]
 ,   function ()
         local tasks = task.tasks() or {}
-        local ok, project_tasks = pcall(project.tasks)
-        if ok then
-            table.join2(tasks, project_tasks)
+        if xmake.in_main_thread() then
+            local ok, project_tasks = pcall(project.tasks)
+            if ok then
+                table.join2(tasks, project_tasks)
+            end
         end
         return task.menu(tasks)
     end
@@ -302,33 +304,36 @@ function main.entry()
         return main._exit(ok, errors)
     end
 
-    -- check run command as root
-    if main._limit_root() then
-        if os.isroot() then
-            errors = [[Running xmake as root is extremely dangerous and no longer supported.
-As xmake does not drop privileges on installation you would be giving all
-build scripts full access to your system.
-Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
-            ]]
-            return main._exit(false, errors)
-        end
-    end
+    if xmake.in_main_thread() then
 
-    -- show help?
-    if main._show_help() then
-        return main._exit(true)
-    end
-
-    -- save command lines to history and we need to make sure that the .xmake directory is not generated everywhere
-    local skip_history = (os.getenv('XMAKE_SKIP_HISTORY') or ''):trim()
-    if os.projectfile() and os.isfile(os.projectfile()) and os.isdir(config.directory()) and skip_history == '' then
-        local cmdlines = table.wrap(localcache.get("history", "cmdlines"))
-        if #cmdlines > 64 then
-            table.remove(cmdlines, 1)
+        -- check run command as root
+        if main._limit_root() then
+            if os.isroot() then
+                errors = [[Running xmake as root is extremely dangerous and no longer supported.
+    As xmake does not drop privileges on installation you would be giving all
+    build scripts full access to your system.
+    Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
+                ]]
+                return main._exit(false, errors)
+            end
         end
-        table.insert(cmdlines, option.cmdline())
-        localcache.set("history", "cmdlines", cmdlines)
-        localcache.save("history")
+
+        -- show help?
+        if main._show_help() then
+            return main._exit(true)
+        end
+
+        -- save command lines to history and we need to make sure that the .xmake directory is not generated everywhere
+        local skip_history = (os.getenv('XMAKE_SKIP_HISTORY') or ''):trim()
+        if os.projectfile() and os.isfile(os.projectfile()) and os.isdir(config.directory()) and skip_history == '' then
+            local cmdlines = table.wrap(localcache.get("history", "cmdlines"))
+            if #cmdlines > 64 then
+                table.remove(cmdlines, 1)
+            end
+            table.insert(cmdlines, option.cmdline())
+            localcache.set("history", "cmdlines", cmdlines)
+            localcache.save("history")
+        end
     end
 
     -- enable scheduler
@@ -362,3 +367,4 @@ end
 
 -- return module: main
 return main
+
