@@ -21,6 +21,7 @@ import("core.base.bytes")
 import("core.base.option")
 import("core.base.json")
 import("core.base.hashset")
+import("core.tool.toolchain")
 import("core.cache.memcache", {alias = "_memcache"})
 import("core.cache.localcache", {alias = "_localcache"})
 import("async.runjobs")
@@ -73,15 +74,25 @@ function get_cpplibrary_name(target)
     -- libc++ come first because on windows, if we use libc++ clang will still use msvc crt so MD / MT / MDd / MTd can be set
     if target:has_runtime("c++_shared", "c++_static") then
         return "c++"
-    elseif target:has_runtime("stdc++_shared", "stdc++_static") then
+    elseif target:has_runtime("stdc++_shared", "stdc++_static", "gnustl_static", "gnustl_shared") then
         return "stdc++"
+    elseif target:has_runtime("stlport_static", "stlport_shared") then
+        return "stlport"
     elseif target:has_runtime("MD", "MT", "MDd", "MTd") then
         return "msstl"
     end
     -- if no specified runtime, fallback on native platform C++ library
-    if target:is_plat("macosx", "iphoneos", "appletvos") then
+    if target:is_plat("android") then
+        local ndk = toolchain.load("ndk", { plat = target:plat(), arch = target:arch() })
+        local ver = ndk:config("ndkver")
+        if not ver or ver > 14 then
+            return "c++"
+        else
+            return "stdc++"
+        end
+    elseif target:is_plat("macosx", "iphoneos", "watchos", "appletvos", "applexros", "bsd", "harmony") then
         return "c++"
-    elseif target:is_plat("linux") or target:is_plat("mingw") then
+    elseif target:is_plat("linux", "mingw", "cygwin", "msys", "haiku") then
         return "stdc++"
     elseif target:is_plat("windows") then
         return "msstl"
