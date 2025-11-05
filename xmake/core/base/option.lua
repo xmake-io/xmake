@@ -119,7 +119,7 @@ function option.init(menu)
         end
 
         -- not found?
-        if xmake.in_main_thread() and (not context.taskname or not menu[context.taskname]) then
+        if not context.taskname or not menu[context.taskname] then
             option.show_main()
             return false, "invalid task: " .. xmake._COMMAND
         end
