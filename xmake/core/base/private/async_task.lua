@@ -152,6 +152,7 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
         if event:wait(-1) > 0 then
 
             -- fetch all tasks from queue at once
+            dprint("async_task: fetching tasks ..")
             local cmds = {}
             mutex:lock()
             while not queue:empty() do
@@ -163,9 +164,11 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
             mutex:unlock()
 
             -- execute tasks without holding lock
+            dprint("async_task: handling tasks(%d) ..", #cmds)
             for _, cmd in ipairs(cmds) do
                 _runcmd(cmd)
             end
+            dprint("async_task: handle tasks(%d) done", #cmds)
         end
     end
     dprint("async_task: exited")
@@ -187,7 +190,7 @@ function async_task._start()
     end
     os.atexit(function (errors)
         if task_thread then
-            utils.dprint("async_task: wait for exiting ..")
+            utils.dprint("async_task: wait the pending tasks(%d) for exiting ..", task_queue:size())
             is_stopped = true
             -- Perhaps the thread hasn't started yet.
             -- Let's wait a while and let it finish executing the tasks in the current queue.
@@ -200,7 +203,9 @@ function async_task._start()
             end
             task_is_stopped:set(true)
             task_event:post()
+            utils.dprint("async_task: wait exiting thread ..")
             task_thread:wait(-1)
+            utils.dprint("async_task: wait finished")
         end
     end)
     return true
