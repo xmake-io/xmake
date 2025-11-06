@@ -770,7 +770,8 @@ function interpreter:load(file, opt)
     self:_clear()
 
     -- translate to absolute file path for scriptdir/rootdir
-    file = path.absolute(file)
+    -- we need to normalize path for rootdir, @see https://github.com/xmake-io/xmake/issues/6995
+    file = path.normalize(path.absolute(file))
 
     -- init the current file
     self._PRIVATE._CURFILE = file
@@ -1865,11 +1866,8 @@ function interpreter:api_builtin_includes(...)
                 -- clear the current scope, force to enter root scope
                 scopes._CURRENT = nil
 
-                -- save the current directory
-                local oldir = os.curdir()
-
                 -- enter the script directory
-                os.cd(path.directory(file))
+                local oldir = os.cd(path.directory(file))
 
                 -- done interpreter
                 local ok, errors = xpcall(script, interpreter._traceback)
