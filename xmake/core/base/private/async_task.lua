@@ -81,6 +81,8 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
     local thread = require("base/thread")
 
     local function dprint(...)
+        -- TODO
+        is_diagnosis = true
         if is_diagnosis then
             print(...)
         end
@@ -188,8 +190,8 @@ function async_task._start()
     end
     os.atexit(function (errors)
         if task_thread then
-            utils.dprint("async_task: wait the pending tasks(%d) for exiting ..", task_queue:size())
             is_stopped = true
+
             -- Perhaps the thread hasn't started yet.
             -- Let's wait a while and let it finish executing the tasks in the current queue.
             task_mutex:lock()
@@ -201,6 +203,8 @@ function async_task._start()
             end
             task_is_stopped:set(true)
             task_event:post()
+
+            utils.dprint("async_task: wait the pending tasks(%d) for exiting ..", task_queue:size())
             task_thread:wait(-1)
             utils.dprint("async_task: wait finished")
         end
