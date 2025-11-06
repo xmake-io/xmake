@@ -34,8 +34,8 @@ rule("asn1c")
         batchcmds:add_depfiles(sourcefile_asn1)
         batchcmds:set_depcache(target:dependfile(sourcefile_asn1))
 
-        -- add includedirs
-        target:add("includedirs", sourcefile_dir)
+        -- add sysincludedirs
+        target:add("sysincludedirs", sourcefile_dir)
     end)
 
     on_buildcmd_file(function (target, batchcmds, sourcefile_asn1, opt)
@@ -44,7 +44,7 @@ rule("asn1c")
         local sourcefile_dir = path.join(target:autogendir(), "rules", "asn1c")
         for _, sourcefile in ipairs(os.files(path.join(sourcefile_dir, "*.c|converter-*.c"))) do
             local objectfile = target:objectfile(sourcefile)
-            batchcmds:compile(sourcefile, objectfile, {configs = {includedirs = sourcefile_dir}})
+            batchcmds:compile(sourcefile, objectfile, {configs = {sysincludedirs = sourcefile_dir}})
             table.insert(target:objectfiles(), objectfile)
             batchcmds:add_depfiles(sourcefile)
         end
