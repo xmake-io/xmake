@@ -113,15 +113,18 @@ function _thread:start()
     end
 
     -- init callback info
+    local is_internal = self._INTERNAL
     local callback = string._dump(self._CALLBACK)
-    local callinfo = {name = self:name(), argv = argv, internal = self._INTERNAL}
+    local callinfo = {name = self:name(), argv = argv, internal = is_internal}
 
     -- we need a pipe pair to wait and listen thread exit event
-    local rpipe, wpipe = pipe.openpair("AA")
-    self._RPIPE = rpipe
-    callinfo.wpipe = libc.dataptr(wpipe:cdata(), {ffi = false})
-    -- we need to suppress gc to free it, because it has been transfer to thread in another lua state instance
-    wpipe._PIPE = nil
+    if not is_internal then
+        local rpipe, wpipe = pipe.openpair("AA")
+        self._RPIPE = rpipe
+        callinfo.wpipe = libc.dataptr(wpipe:cdata(), {ffi = false})
+        -- we need to suppress gc to free it, because it has been transfer to thread in another lua state instance
+        wpipe._PIPE = nil
+    end
 
     -- serialize and pass callback and arguments to this thread
     -- we do not use string.serialize to serialize callback, because it's slower (deserialize)
@@ -182,7 +185,7 @@ function _thread:wait(timeout)
 
     local ok, errors
     local rpipe = self._RPIPE
-    if rpipe then
+    if rpipe and scheduler:co_running() then
         local buff = bytes(16)
         local read, data_or_errors = rpipe:read(buff, 1, {block = true, timeout = timeout})
         if read > 0 then
@@ -192,7 +195,7 @@ function _thread:wait(timeout)
             errors = data_or_errors
         end
     end
-    if not scheduler:co_running() then
+    if not rpipe then
         local waitok, wait_errors = thread.thread_wait(self:cdata(), timeout)
         if ok == nil or ok > 0 then
             ok = waitok
@@ -857,7 +860,9 @@ function thread._run_thread(callback_str, callinfo_str)
             argv = callinfo.argv
             threadname = callinfo.name
             is_internal = callinfo.internal
-            wpipe = pipe.new(libc.ptraddr(callinfo.wpipe, {ffi = false}))
+            if callinfo.wpipe then
+                wpipe = pipe.new(libc.ptraddr(callinfo.wpipe, {ffi = false}))
+            end
         end
     end
 
