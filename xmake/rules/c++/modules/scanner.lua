@@ -510,7 +510,11 @@ end
 
 function _do_scan(target, sourcefile, opt)
     profiler.enter(target:fullname(), "c++ modules", "scanner", "scan dependencies for", sourcefile)
-    local changed = _scanner(target).scan_dependency_for(target, sourcefile, opt)
+    local fileconfig = target:fileconfig(sourcefile)
+    local from_package = fileconfig and fileconfig.from_package
+    local is_std = path.basename(sourcefile) == "std" or path.basename(sourcefile) == "std.compat"
+    local rescan = target:is_rebuilt() and not from_package and not is_std
+    local changed = _scanner(target).scan_dependency_for(target, sourcefile, rescan, opt)
     if changed or not support.localcache():get2(target:fullname(), "module_mapper") then
         support.memcache():set2(target:fullname(), "modules.changed", true)
     end
