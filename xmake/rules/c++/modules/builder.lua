@@ -179,7 +179,11 @@ function should_build(target, module)
         local objectfile_exists = (module.headerunit or support.is_bmionly(target, module.sourcefile)) and true or os.isfile(module.objectfile)
         dependinfo.lastmtime = (os.isfile(module.bmifile or module.objectfile) and objectfile_exists) and os.mtime(dependfile) or 0
 
-        local old_dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
+        local fileconfig = target:fileconfig(module.sourcefile)
+        local from_package = fileconfig and fileconfig.from_package
+        local is_std = path.basename(module.sourcefile) == "std" or path.basename(module.sourcefile) == "std.compat"
+        local rebuild = target:is_rebuilt() and not from_package and not is_std
+        local old_dependinfo = rebuild and {} or (depend.load(dependfile) or {})
         old_dependinfo.files = {module.sourcefile}
 
         -- need build this object?
