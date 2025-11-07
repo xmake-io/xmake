@@ -1018,7 +1018,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
                 -- remove preprocess file
                 local cppfile = _get_cppfile(sourcefile, objectfile)
-                os.tryrm(cppfile, {async = true, detach = true})
+                os.tryrm(cppfile)
 
                 -- parse and strip errors
                 local lines = errors and tostring(errors):split('\n', {plain = true}) or {}
@@ -1070,7 +1070,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                     end
 
                     -- remove the temporary dependent file
-                    os.tryrm(depfile, {async = true, detach = true})
+                    os.tryrm(depfile)
                 end
             end
         }

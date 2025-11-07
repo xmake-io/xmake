@@ -874,15 +874,10 @@ function os.runv(program, argv, opt)
             errors = string.format("cannot runv(%s), %s", cmd, errors and errors or "unknown reason")
         end
 
-        -- remove the temporary log file
-        os.rm(logfile, {async = true, detach = true})
-
-        -- failed
+        os.rm(logfile)
         return false, errors
     end
-
-    -- remove the temporary log file
-    os.rm(logfile, {async = true, detach = true})
+    os.rm(logfile)
     return true
 end
 
@@ -1105,8 +1100,8 @@ function os.iorunv(program, argv, opt)
     local errdata = io.readfile(errfile)
 
     -- remove the temporary output and error file
-    os.rm(outfile, {async = true, detach = true})
-    os.rm(errfile, {async = true, detach = true})
+    os.rm(outfile)
+    os.rm(errfile)
     return ok == 0, outdata, errdata, errors
 end
 
