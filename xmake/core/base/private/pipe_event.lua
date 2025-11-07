@@ -33,7 +33,7 @@ function _instance.new(name)
     event._PIPE_EVENT = true
     event._BUFFER = bytes(2)
     event._NAME = name or "pipe_event"
-    local reader, writer, errors = pipe.openpair("BA")
+    local reader, writer, errors = pipe.openpair("AA")
     if not reader or not writer then
         if reader then reader:close() end
         if writer then writer:close() end
@@ -54,7 +54,7 @@ function _instance:post()
     if not writer then
         return false, "pipe event writer closed"
     end
-    local ok, errors = writer:write("1")
+    local ok, errors = writer:write("1", {block = true})
     if ok < 0 then
         return false, errors or "pipe event post failed"
     end
@@ -68,11 +68,7 @@ function _instance:wait(timeout)
     if not self._READER then
         return false, "pipe event reader closed"
     end
-    local events, errors = self._READER:wait(pipe.EV_READ, timeout or -1)
-    if events < 0 then
-        return false, errors
-    end
-    local read, read_errors = self._READER:read(self._BUFFER, 1)
+    local read, read_errors = self._READER:read(self._BUFFER, 1, {block = true, timeout = timeout})
     if read < 0 then
         return false, read_errors
     end
