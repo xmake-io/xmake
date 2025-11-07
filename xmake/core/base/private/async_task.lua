@@ -26,6 +26,7 @@ local os     = require("base/os")
 local utils  = require("base/utils")
 local thread = require("base/thread")
 local option = require("base/option")
+local path   = require("base/path")
 
 -- the task status
 local is_stopped = false
@@ -39,6 +40,19 @@ local task_mutex = nil
 -- object pool for event and sharedata
 local event_pool = {}
 local sharedata_pool = {}
+
+function async_task._absolute_dirs(searchdirs)
+    local dirs = {}
+    if searchdirs then
+        for _, directory in ipairs(searchdirs) do
+            local dir = tostring(directory)
+            if #dir > 0 then
+                table.insert(dirs, path.absolute(dir))
+            end
+        end
+    end
+    return dirs
+end
 
 -- get event from pool or create new one
 function async_task._get_event()
@@ -107,11 +121,31 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
     local function _runcmd_match(cmd)
         return os.match(cmd.pattern, cmd.mode)
     end
+    local function _runcmd_find_file(cmd)
+        local find_file = require("sandbox/modules/import/lib/detect/find_file")
+        return find_file._find_from_directories(cmd.name, cmd.searchdirs or {}, cmd.suffixes or {})
+    end
+    local function _runcmd_find_path(cmd)
+        local find_path = require("sandbox/modules/import/lib/detect/find_path")
+        return find_path._find_from_directories(cmd.name, cmd.searchdirs or {}, cmd.suffixes or {})
+    end
+    local function _runcmd_find_directory(cmd)
+        local find_directory = require("sandbox/modules/import/lib/detect/find_directory")
+        return find_directory._find_from_directories(cmd.name, cmd.searchdirs or {}, cmd.suffixes or {})
+    end
+    local function _runcmd_find_library(cmd)
+        local find_library = require("sandbox/modules/import/lib/detect/find_library")
+        return find_library._find_from_directories(cmd.names or {}, cmd.searchdirs or {}, cmd.kinds or {}, cmd.suffixes or {}, cmd.opt or {})
+    end
     local runops = {
         cp    = _runcmd_cp,
         rm    = _runcmd_rm,
         rmdir = _runcmd_rmdir,
-        match = _runcmd_match
+        match = _runcmd_match,
+        find_file = _runcmd_find_file,
+        find_path = _runcmd_find_path,
+        find_directory = _runcmd_find_directory,
+        find_library = _runcmd_find_library
     }
     local function _runcmd(cmd)
 
@@ -261,7 +295,14 @@ function async_task._post_task(cmd, is_detach, return_data)
         async_task._put_sharedata(cmd_result)
         if result and result.ok then
             if return_data then
-                return result.data, #result.data
+                local data = result.data
+                if type(data) == "table" then
+                    return data, #data
+                elseif data ~= nil then
+                    return data
+                else
+                    return nil, 0
+                end
             else
                 return true
             end
@@ -315,6 +356,94 @@ function async_task.match(pattern, mode)
         return nil, errors
     end
     local cmd = {kind = "match", pattern = path.absolute(tostring(pattern)), mode = mode}
+    return async_task._post_task(cmd, false, true)
+end
+
+-- find file
+function async_task.find_file(name, searchdirs, opt)
+    opt = opt or {}
+    local ok, errors = async_task._ensure_started()
+    if not ok then
+        return nil, errors
+    end
+    local dirs = async_task._absolute_dirs(searchdirs)
+    local suffixes = {}
+    if opt.suffixes then
+        for _, suffix in ipairs(opt.suffixes) do
+            table.insert(suffixes, tostring(suffix))
+        end
+    end
+    local cmd = {kind = "find_file", name = tostring(name), searchdirs = dirs, suffixes = suffixes}
+    return async_task._post_task(cmd, false, true)
+end
+
+-- find path
+function async_task.find_path(name, searchdirs, opt)
+    opt = opt or {}
+    local ok, errors = async_task._ensure_started()
+    if not ok then
+        return nil, errors
+    end
+    local dirs = async_task._absolute_dirs(searchdirs)
+    local suffixes = {}
+    if opt.suffixes then
+        for _, suffix in ipairs(opt.suffixes) do
+            table.insert(suffixes, tostring(suffix))
+        end
+    end
+    local cmd = {kind = "find_path", name = tostring(name), searchdirs = dirs, suffixes = suffixes}
+    return async_task._post_task(cmd, false, true)
+end
+
+-- find directory
+function async_task.find_directory(name, searchdirs, opt)
+    opt = opt or {}
+    local ok, errors = async_task._ensure_started()
+    if not ok then
+        return nil, errors
+    end
+    local dirs = async_task._absolute_dirs(searchdirs)
+    local suffixes = {}
+    if opt.suffixes then
+        for _, suffix in ipairs(opt.suffixes) do
+            table.insert(suffixes, tostring(suffix))
+        end
+    end
+    local cmd = {kind = "find_directory", name = tostring(name), searchdirs = dirs, suffixes = suffixes}
+    return async_task._post_task(cmd, false, true)
+end
+
+-- find library
+function async_task.find_library(names, searchdirs, kinds, opt)
+    opt = opt or {}
+    local ok, errors = async_task._ensure_started()
+    if not ok then
+        return nil, errors
+    end
+    local dirs = async_task._absolute_dirs(searchdirs)
+    local suffixes = {}
+    if opt.suffixes then
+        for _, suffix in ipairs(opt.suffixes) do
+            table.insert(suffixes, tostring(suffix))
+        end
+    end
+    local names_list = {}
+    if names then
+        if type(names) == "table" then
+            for _, name in ipairs(names) do
+                table.insert(names_list, tostring(name))
+            end
+        else
+            table.insert(names_list, tostring(names))
+        end
+    end
+    local kinds_list = {}
+    if kinds then
+        for _, kind in ipairs(kinds) do
+            table.insert(kinds_list, tostring(kind))
+        end
+    end
+    local cmd = {kind = "find_library", names = names_list, searchdirs = dirs, kinds = kinds_list, suffixes = suffixes, opt = {plat = opt.plat}}
     return async_task._post_task(cmd, false, true)
 end
 

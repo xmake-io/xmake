@@ -30,7 +30,39 @@ local config            = require("project/config")
 local target            = require("project/target")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
+local xmake             = require("base/xmake")
 local find_file         = import("lib.detect.find_file")
+
+-- find library from directories list
+function sandbox_lib_detect_find_library._find_from_directories(names, directories, kinds, suffixes, opt)
+    names = table.wrap(names)
+    directories = table.wrap(directories)
+    kinds = table.wrap(kinds)
+    suffixes = table.wrap(suffixes)
+    if #kinds == 0 then
+        kinds = {"static", "shared"}
+    end
+    opt = opt or {}
+    local plat = opt.plat
+    for _, name in ipairs(names) do
+        for _, kind in ipairs(kinds) do
+            local filename = target.filename(name, kind, {plat = plat})
+            local filepath = find_file._find_from_directories(filename, directories, suffixes)
+            if plat == "mingw" then
+                if not filepath and kind == "shared" then
+                    filepath = find_file._find_from_directories(filename .. ".a", directories, suffixes)
+                end
+                if not filepath then
+                    filepath = find_file._find_from_directories(target.filename(name, kind, {plat = "windows"}), directories, suffixes)
+                end
+            end
+            if filepath then
+                local linkname = target.linkname(path.filename(filepath), {plat = plat})
+                return {kind = kind, filename = path.filename(filepath), linkdir = path.directory(filepath), link = linkname}
+            end
+        end
+    end
+end
 
 -- find library
 --
@@ -56,27 +88,16 @@ function sandbox_lib_detect_find_library.main(names, paths, opt)
 
     -- find library file from the given paths
     opt = opt or {}
-    local kinds = opt.kind or {"static", "shared"}
-    for _, name in ipairs(table.wrap(names)) do
-        for _, kind in ipairs(table.wrap(kinds)) do
-            local filepath = find_file(target.filename(name, kind, {plat = opt.plat}), paths, opt)
-            if opt.plat == "mingw" then
-                if not filepath and kind == "shared" then
-                    -- for implib/mingw, e.g. libxxx.dll.a
-                    filepath = find_file(target.filename(name, kind, {plat = opt.plat}) .. ".a", paths, opt)
-                end
-                if not filepath then
-                    -- in order to be compatible with mingw/windows library with .lib
-                    filepath = find_file(target.filename(name, kind, {plat = "windows"}), paths, opt)
-                end
-            end
-            if filepath then
-                local filename = path.filename(filepath)
-                local linkname = target.linkname(filename, {plat = opt.plat})
-                return {kind = kind, filename = filename, linkdir = path.directory(filepath), link = linkname}
-            end
-        end
+    local directories = find_file._expand_paths(paths)
+    local suffixes = find_file._normalize_suffixes(opt.suffixes)
+    local kinds = table.wrap(opt.kind or {"static", "shared"})
+
+    if opt.async and xmake.in_main_thread() then
+        local result, _ = os._async_task().find_library(names, directories, kinds, {suffixes = suffixes, plat = opt.plat})
+        return result
     end
+
+    return sandbox_lib_detect_find_library._find_from_directories(names, directories, kinds, suffixes, {plat = opt.plat})
 end
 
 -- return module
