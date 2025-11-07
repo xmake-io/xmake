@@ -28,14 +28,15 @@ local _queue     = _queue or {}
 local _sharedata = _sharedata or {}
 
 -- load modules
-local io        = require("base/io")
-local libc      = require("base/libc")
-local pipe      = require("base/pipe")
-local bytes     = require("base/bytes")
-local table     = require("base/table")
-local string    = require("base/string")
-local scheduler = require("base/scheduler")
-local sandbox   = require("sandbox/sandbox")
+local io         = require("base/io")
+local libc       = require("base/libc")
+local pipe       = require("base/pipe")
+local pipe_event = require("base/private/pipe_event")
+local bytes      = require("base/bytes")
+local table      = require("base/table")
+local string     = require("base/string")
+local scheduler  = require("base/scheduler")
+local sandbox    = require("sandbox/sandbox")
 
 -- the thread status
 thread.STATUS_READY     = 1
@@ -810,6 +811,15 @@ function thread._serialize_object(obj)
         result.sharedata = true
         result.name = obj:name()
         result.caddr = libc.dataptr(obj:cdata(), {ffi = false})
+    elseif obj._PIPE_EVENT then
+        local data = obj:_serialize()
+        if not data then
+            return nil
+        end
+        result.pipe_event = true
+        result.ptr = data.ptr
+        result.name = data.name
+        result.caddr = data.ptr
     else
         return nil
     end
@@ -836,6 +846,16 @@ function thread._deserialize_object(data)
         return _queue.new(data.name, cdata)
     elseif data.sharedata then
         return _sharedata.new(data.name, cdata)
+    elseif data.pipe_event then
+        local event = pipe_event.new(data.name)
+        if not event then
+            return nil, "failed to create pipe event"
+        end
+        local ok, errors = event:_deserialize({ptr = data.ptr, name = data.name})
+        if not ok then
+            return nil, errors
+        end
+        return event
     end
 
     return nil

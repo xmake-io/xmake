@@ -27,6 +27,7 @@ local utils  = require("base/utils")
 local thread = require("base/thread")
 local option = require("base/option")
 local path   = require("base/path")
+local pipe_event = require("base/private/pipe_event")
 
 -- the task status
 local is_stopped = false
@@ -37,8 +38,7 @@ local task_event = nil
 local task_queue = nil
 local task_mutex = nil
 
--- object pool for event and sharedata
-local event_pool = {}
+-- object pool for sharedata
 local sharedata_pool = {}
 
 function async_task._absolute_dirs(searchdirs)
@@ -54,19 +54,13 @@ function async_task._absolute_dirs(searchdirs)
     return dirs
 end
 
--- get event from pool or create new one
 function async_task._get_event()
-    local event = table.remove(event_pool)
-    if not event then
-        event = thread.event()
-    end
-    return event
+    return pipe_event.new("async_task")
 end
 
--- return event to pool
 function async_task._put_event(event)
     if event then
-        table.insert(event_pool, event)
+        event:close()
     end
 end
 
@@ -102,10 +96,14 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
 
     local function _restore_thread_objects(cmd)
         if cmd.event_data then
-            cmd.event = thread._deserialize_object(cmd.event_data)
+            local event, errors = thread._deserialize_object(cmd.event_data)
+            assert(event, errors or "failed to deserialize event")
+            cmd.event = event
         end
         if cmd.result_data then
-            cmd.result = thread._deserialize_object(cmd.result_data)
+            local result, errors = thread._deserialize_object(cmd.result_data)
+            assert(result, errors or "failed to deserialize result")
+            cmd.result = result
         end
     end
 
@@ -263,55 +261,71 @@ end
 
 -- post task and wait for result
 function async_task._post_task(cmd, is_detach, return_data)
-    local cmd_event, cmd_result
+    local cmd_event
+    local cmd_result
 
-    -- create event and result for non-detach mode
+    -- create pipe and result for non-detach mode
     if not is_detach then
         cmd_event = async_task._get_event()
+        if not cmd_event then
+            return false, "failed to acquire event"
+        end
         cmd_result = async_task._get_sharedata()
-
-        -- serialize thread objects for passing to worker thread
-        cmd.event_data = thread._serialize_object(cmd_event)
         cmd.result_data = thread._serialize_object(cmd_result)
+        if not cmd.result_data then
+            async_task._put_sharedata(cmd_result)
+            async_task._put_event(cmd_event)
+            return false, "failed to serialize sharedata"
+        end
+        cmd.event_data = thread._serialize_object(cmd_event)
+        if not cmd.event_data then
+            async_task._put_sharedata(cmd_result)
+            async_task._put_event(cmd_event)
+            return false, "failed to serialize event"
+        end
     end
 
     task_mutex:lock()
     task_queue:push(cmd)
-    local queue_size = task_queue:size()
     task_mutex:unlock()
 
+    task_event:post()
+
     if is_detach then
-        -- We cache some tasks before executing them to avoid frequent thread switching.
-        if queue_size > 10 then
-            task_event:post()
-        end
         return true
-    else
-        -- wait for completion
-        task_event:post()
-        cmd_event:wait(-1)
-        local result = cmd_result:get()
-        async_task._put_event(cmd_event)
-        async_task._put_sharedata(cmd_result)
-        if result and result.ok then
-            if return_data then
-                local data = result.data
-                if type(data) == "table" then
-                    return data, #data
-                elseif data ~= nil then
-                    return data
-                else
-                    return nil, 0
-                end
+    end
+
+    local wait_ok, wait_errors = cmd_event:wait(-1)
+
+    local result
+    if wait_ok then
+        result = cmd_result:get()
+    end
+    async_task._put_sharedata(cmd_result)
+    async_task._put_event(cmd_event)
+
+    if not wait_ok then
+        return false, wait_errors or "wait event failed"
+    end
+
+    if result and result.ok then
+        if return_data then
+            local data = result.data
+            if type(data) == "table" then
+                return data, #data
+            elseif data ~= nil then
+                return data
             else
-                return true
+                return nil, 0
             end
         else
-            if return_data then
-                return nil, 0
-            else
-                return false, result and result.errors or "unknown error"
-            end
+            return true
+        end
+    else
+        if return_data then
+            return nil, 0
+        else
+            return false, result and result.errors or "unknown error"
         end
     end
 end
