@@ -1248,16 +1248,33 @@ function _instance:build_envs(lazy_loading)
     if build_envs == nil then
         -- lazy loading the given environment value and cache it
         build_envs = {}
+        local builtin_configs = hashset.of("cflags", "cxflags", "cxxflags", "ldflags", "shflags", "asflags")
         setmetatable(build_envs, { __index = function (tbl, key)
+            local result = {}
             local value = config.get(key)
             if value == nil then
                 value = self:tool(key)
             end
-            value = table.unique(table.join(table.wrap(value), table.wrap(self:config(key)), self:toolconfig(key)))
-            if #value > 0 then
-                value = table.unwrap(value)
-                rawset(tbl, key, value)
-                return value
+            if value then
+                table.join2(result, value)
+            end
+            -- we can only get the builtin config values
+            -- https://github.com/xmake-io/xmake/issues/6897
+            if builtin_configs:has(key) then
+                value = self:config(key)
+                if value then
+                    table.join2(result, value)
+                end
+            end
+            value = self:toolconfig(key)
+            if value then
+                table.join2(result, value)
+            end
+            result = table.unique(result)
+            if #result > 0 then
+                result = table.unwrap(result)
+                rawset(tbl, key, result)
+                return result
             end
             return rawget(tbl, key)
         end})
