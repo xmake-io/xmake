@@ -23,17 +23,10 @@ function main()
         end
 
         scheduler.co_start(function ()
-            local copydir = root .. "_copy"
-            os.cp(root, copydir, {async = true})
-            assert(os.isdir(copydir))
-            os.rm(copydir, {async = true})
-            print("async copy complete: %s", copydir)
+            print("async find all files in programdir...")
+            local files = os.files(path.join(os.programdir(), "**"), {async = true})
+            print("files: %d", #files)
+            print("async find all finished")
         end)
     end)
-
-    scheduler.co_group_wait(group)
-    print("all async tasks finished")
-    os.rm(root, {async = true})
-    print("async scheduler test finished")
 end
-
