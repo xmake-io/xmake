@@ -774,6 +774,7 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
     // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
+    tb_trace_i("xm_engine_get_program_file");
     tb_bool_t ok = tb_false;
     do
     {
@@ -784,6 +785,7 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
             break;
         }
 
+        tb_trace_i("xm_engine_get_program_file 111");
 #if defined(TB_CONFIG_OS_WINDOWS)
         // get the executale file path as program directory
         tb_wchar_t buf[TB_PATH_MAXN] = {0};
@@ -799,6 +801,7 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
         ok = tb_true;
 
 #elif defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
+        tb_trace_i("xm_engine_get_program_file 222");
         /*
          * _NSGetExecutablePath() copies the path of the main executable into the buffer. The bufsize parameter
          * should initially be the size of the buffer.  The function returns 0 if the path was successfully copied,
@@ -813,6 +816,7 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
         if (!_NSGetExecutablePath(path, &bufsize))
             ok = tb_true;
 #elif defined(XM_PROC_SELF_FILE)
+        tb_trace_i("xm_engine_get_program_file 333");
         // get the executale file path as program directory
         ssize_t size = readlink(XM_PROC_SELF_FILE, path, (size_t)maxn);
         if (size > 0 && size < maxn)
@@ -842,6 +846,7 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
             }
         }
 #else
+        tb_trace_i("xm_engine_get_program_file 555");
         static tb_char_t const* s_paths[] =
         {
             "~/.local/bin/xmake",
@@ -1708,16 +1713,20 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     // save main arguments to the global variable: _ARGV
     if (!xm_engine_save_arguments(engine, argc, argv, taskargv)) return -1;
 
+    tb_trace_i("xm_engine_main 111");
     // get the project directory
     tb_char_t path[TB_PATH_MAXN] = {0};
     if (!xm_engine_get_project_directory(engine, path, sizeof(path))) return -1;
 
+    tb_trace_i("xm_engine_main 111");
     // get the program file
     if (!xm_engine_get_program_file(engine, argv, path, sizeof(path))) return -1;
 
+    tb_trace_i("xm_engine_main 111");
     // get the program directory
     if (!xm_engine_get_program_directory(engine, path, sizeof(path), path)) return -1;
 
+    tb_trace_i("xm_engine_main 111");
 #ifdef XM_EMBED_ENABLE
     if (!xm_engine_extract_programfiles(engine, path)) return -1;
 #endif
