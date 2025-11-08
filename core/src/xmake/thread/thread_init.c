@@ -46,7 +46,9 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv)
     xm_thread_t* thread = (xm_thread_t*)priv;
     tb_assert_and_check_return_val(thread, 0);
 
+    tb_trace_i("xm_thread_func");
     xm_engine_ref_t engine = xm_engine_pool_alloc(xm_engine_pool());
+    tb_trace_i("xm_engine_init ..");
     if (!engine) engine = xm_engine_init(XM_THREAD_ENGINE_NAME, tb_null);
     if (engine)
     {
@@ -71,9 +73,11 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv)
             lua_setglobal(lua, "_THREAD_CALLINFO");
         }
 
+        tb_trace_i("xm_engine_main ..");
         // start engine
         tb_char_t* argv[] = {XM_THREAD_ENGINE_NAME, tb_null};
         xm_engine_main(engine, 1, argv, tb_null);
+        tb_trace_i("xm_engine_main end");
         if (!xm_engine_pool_free(xm_engine_pool(), engine))
             xm_engine_exit(engine);
     }
@@ -118,6 +122,7 @@ tb_int_t xm_thread_init(lua_State* lua)
         tb_string_init(&thread->callinfo);
         tb_string_cstrncpy(&thread->callinfo, callinfo_data, callinfo_size);
 
+        tb_trace_i("tb_thread_init..");
         // create and start thread
         thread->handle = tb_thread_init(name, xm_thread_func, thread, stacksize);
         tb_assert_and_check_break(thread->handle);
