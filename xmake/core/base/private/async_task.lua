@@ -285,17 +285,21 @@ function async_task._post_task(cmd, is_detach, return_data)
         end
     end
 
+    print("2222")
     task_mutex:lock()
     task_queue:push(cmd)
     task_mutex:unlock()
 
+    print("2222")
     task_event:post()
 
     if is_detach then
         return true
     end
 
+    print("wait ..")
     local wait_ok, wait_errors = cmd_event:wait(-1)
+    print("wait", wait_ok, wait_errors)
 
     local result
     if wait_ok then
