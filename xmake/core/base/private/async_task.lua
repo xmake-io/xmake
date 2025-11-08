@@ -157,7 +157,9 @@ function async_task._loop(event, queue, mutex, is_stopped, is_diagnosis)
             try
             {
                 function ()
+                    print("runop", cmd)
                     local ret = runop(cmd)
+                    print("runop ok", ret)
                     if ret then
                         result_data = ret
                     end

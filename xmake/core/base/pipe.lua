@@ -92,12 +92,16 @@ function _instance:write(data, opt)
     if opt.block then
         local size = last + 1 - start
         while start <= last do
+            print("pipe_write", start, last)
             real, errors = io.pipe_write(self:cdata(), dataaddr + start - 1, last + 1 - start)
+            print("pipe_write ok", real, errors)
             if real > 0 then
                 write = write + real
                 start = start + real
             elseif real == 0 then
+                print("pipe_write wait ..")
                 local events, waiterrs = _instance.wait(self, pipe.EV_WRITE, opt.timeout or -1)
+                print("pipe_write wait ok", events, waiterrs)
                 if events ~= pipe.EV_WRITE then
                     errors = waiterrs
                     break
@@ -156,11 +160,15 @@ function _instance:read(buff, size, opt)
     if opt.block then
         local results = {}
         while read < size do
+            print("pipe_read", read, size)
             real, data_or_errors = io.pipe_read(self:cdata(), buff:caddr() + pos + read, math.min(buff:size() - pos - read, size - read))
+            print("pipe_read ok", real, data_or_errors)
             if real > 0 then
                 read = read + real
             elseif real == 0 then
+                print("pipe_read wait ..", opt.timeout or -1)
                 local events, waiterrs = _instance.wait(self, pipe.EV_READ, opt.timeout or -1)
+                print("pipe_read wait ok", events, waiterrs)
                 if events ~= pipe.EV_READ then
                     data_or_errors = waiterrs
                     break

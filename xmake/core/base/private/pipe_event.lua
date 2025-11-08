@@ -54,7 +54,9 @@ function _instance:post()
     if not writer then
         return false, "pipe event writer closed"
     end
+    print("pipe_event post")
     local ok, errors = writer:write("1", {block = true})
+    print("pipe_event post ok")
     if ok < 0 then
         return false, errors or "pipe event post failed"
     end
