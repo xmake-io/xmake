@@ -777,6 +777,8 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
     static tb_char_t s_program_filepath[TB_PATH_MAXN] = {0};
     if (s_program_filepath[0])
     {
+        tb_trace_i("s_program_filepath %s", s_program_filepath);
+        tb_strlcpy(path, s_program_filepath, maxn);
         lua_pushstring(engine->lua, s_program_filepath);
         lua_setglobal(engine->lua, "_PROGRAM_FILE");
         return tb_true;
@@ -929,6 +931,8 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
     static tb_char_t s_program_directory[TB_PATH_MAXN] = {0};
     if (s_program_directory[0])
     {
+        tb_trace_i("s_program_directory %s", s_program_directory);
+        tb_strlcpy(path, s_program_directory, maxn);
         lua_pushstring(engine->lua, s_program_directory);
         lua_setglobal(engine->lua, "_PROGRAM_DIR");
         return tb_true;
