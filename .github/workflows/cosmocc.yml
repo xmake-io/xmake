@@ -72,7 +72,7 @@ jobs:
         run: |
           ls -l core/build/
           core/build/xmake --version
-          core/build/xmake lua -v -D tests/run.lua
+          core/build/xmake lua -v -D tests/run.lua os
 
       - name: Artifact
         if: matrix.os == 'ubuntu-latest'
