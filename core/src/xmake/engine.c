@@ -876,7 +876,7 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
     if (ok)
     {
         // trace
-        tb_trace_d("programfile: %s", path);
+        tb_trace_i("programfile: %s", path);
 
         // save the directory to the global variable: _PROGRAM_FILE
         lua_pushstring(engine->lua, path);
@@ -992,7 +992,7 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
     if (ok)
     {
         // trace
-        tb_trace_d("programdir: %s", path);
+        tb_trace_i("programdir: %s", path);
 
         // save the directory to the global variable: _PROGRAM_DIR
         lua_pushstring(engine->lua, path);
@@ -1021,7 +1021,7 @@ static tb_bool_t xm_engine_get_project_directory(xm_engine_t* engine, tb_char_t*
         }
 
         // trace
-        tb_trace_d("project: %s", path);
+        tb_trace_i("project: %s", path);
 
         // save the directory to the global variable: _PROJECT_DIR
         lua_pushstring(engine->lua, path);
@@ -1362,7 +1362,7 @@ static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t* engine, tb_cha
             p += 4;
 
             // write file
-            tb_trace_d("extracting %s, %lu bytes ..", filepath, n);
+            tb_trace_i("extracting %s, %lu bytes ..", filepath, n);
             tb_stream_ref_t stream = tb_stream_init_from_file(filepath,  TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC);
             tb_assert_and_check_break(stream);
 
@@ -1733,12 +1733,13 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     }
 
     // trace
-    tb_trace_d("main: %s", path);
+    tb_trace_i("main: %s", path);
 
     // load and execute the main script
     if (!xm_engine_load_main_script(engine, path))
         return -1;
 
+    tb_trace_i("call main");
     // set the error function
     lua_getglobal(engine->lua, "debug");
     lua_getfield(engine->lua, -1, "traceback");

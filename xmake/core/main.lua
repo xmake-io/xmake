@@ -279,12 +279,14 @@ end
 
 -- the main entry function
 function main.entry()
+    print("main.entry", xmake.in_main_thread())
 
     -- init
     local ok, errors = main._init()
     if not ok then
         return main._exit(ok, errors)
     end
+    print("main 11111")
 
     -- load global configuration
     ok, errors = global.load()
@@ -292,18 +294,21 @@ function main.entry()
         return main._exit(ok, errors)
     end
 
+    print("main 11111")
     -- load theme
     local theme_inst = theme.load(os.getenv("XMAKE_THEME") or global.get("theme")) or theme.load("default")
     if theme_inst then
         colors.theme_set(theme_inst)
     end
 
+    print("main 11111")
     -- init option
     ok, errors = option.init(menu)
     if not ok then
         return main._exit(ok, errors)
     end
 
+    print("main 11111")
     if xmake.in_main_thread() then
 
         -- check run command as root
@@ -341,6 +346,7 @@ function main.entry()
 
     -- run task or thread
     local thread_callback = xmake._THREAD_CALLBACK
+    print("main run thread", thread_callback)
     if thread_callback then
         ok, errors = thread._run_thread(thread_callback, xmake._THREAD_CALLINFO)
     else
