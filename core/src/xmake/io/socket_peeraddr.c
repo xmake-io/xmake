@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "socket_peeraddr"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "socket_peeraddr"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,7 +35,7 @@
  */
 
 // socket to fd
-#define xm_io_sock2fd(sock)            (lua_Number)tb_sock2fd(sock)
+#define xm_io_sock2fd(sock) (lua_Number) tb_sock2fd(sock)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -43,8 +43,7 @@
 
 /* io.socket_peeraddr(sock)
  */
-tb_int_t xm_io_socket_peeraddr(lua_State* lua)
-{
+tb_int_t xm_io_socket_peeraddr(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -57,11 +56,12 @@ tb_int_t xm_io_socket_peeraddr(lua_State* lua)
     tb_check_return_val(sock, 0);
 
     // get peer address
-    tb_ipaddr_t addr;
-    tb_char_t data[256];
-    tb_char_t const* cstr = tb_null;
+    tb_ipaddr_t      addr;
+    tb_char_t        data[256];
+    tb_char_t const *cstr = tb_null;
     if (tb_socket_peer(sock, &addr) && (cstr = tb_ipaddr_cstr(&addr, data, sizeof(data))))
         lua_pushstring(lua, cstr);
-    else lua_pushnil(lua);
+    else
+        lua_pushnil(lua);
     return 1;
 }

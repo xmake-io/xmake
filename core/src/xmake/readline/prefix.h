@@ -26,12 +26,9 @@
  */
 #include "../prefix.h"
 #ifdef XM_CONFIG_API_HAVE_READLINE
-#   include <stdio.h>   // on some OS (like centos) required
-#   include <readline/readline.h>
-#   include <readline/history.h>
+#include <stdio.h> // on some OS (like centos) required
+#include <readline/readline.h>
+#include <readline/history.h>
 #endif
 
-
 #endif
-
-

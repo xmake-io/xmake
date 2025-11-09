@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "isfile"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "isfile"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,17 +33,16 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_os_isfile(lua_State* lua)
-{
+tb_int_t xm_os_isfile(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the path
-    tb_char_t const* path = luaL_checkstring(lua, 1);
+    tb_char_t const *path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
     // is file?
-    tb_file_info_t info = {0};
+    tb_file_info_t info = { 0 };
     lua_pushboolean(lua, tb_file_info(path, &info) && (info.type == TB_FILE_TYPE_FILE));
     return 1;
 }

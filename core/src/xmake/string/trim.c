@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "string_trim"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "string_trim"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,13 +33,12 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_void_t xm_string_trim_space(tb_char_t const** psstr, tb_char_t const** pestr, tb_int_t mode)
-{
+static tb_void_t xm_string_trim_space(tb_char_t const **psstr, tb_char_t const **pestr, tb_int_t mode) {
     // check
     tb_assert(psstr && pestr && *psstr && *pestr);
 
-    tb_char_t const* p = *psstr;
-    tb_char_t const* e = *pestr;
+    tb_char_t const *p = *psstr;
+    tb_char_t const *e = *pestr;
 
     // trim left?
     if (mode <= 0)
@@ -47,8 +46,7 @@ static tb_void_t xm_string_trim_space(tb_char_t const** psstr, tb_char_t const**
             p++;
 
     // trim right
-    if (mode >= 0)
-    {
+    if (mode >= 0) {
         e--;
         while (e >= p && tb_isspace(*e))
             e--;
@@ -60,23 +58,27 @@ static tb_void_t xm_string_trim_space(tb_char_t const** psstr, tb_char_t const**
     *pestr = e;
 }
 
-static tb_char_t const* xm_string_ltrim(tb_char_t const* sstr, tb_char_t const* estr, tb_char_t const* ctrim, size_t ntrim)
-{
+static tb_char_t const *xm_string_ltrim(tb_char_t const *sstr,
+                                        tb_char_t const *estr,
+                                        tb_char_t const *ctrim,
+                                        size_t           ntrim) {
     // check
     tb_assert(sstr && estr && ctrim);
 
-    tb_char_t const* p = sstr;
+    tb_char_t const *p = sstr;
     while (p < estr && tb_strnchr(ctrim, ntrim, *p))
         p++;
     return p;
 }
 
-static tb_char_t const* xm_string_rtrim(tb_char_t const* sstr, tb_char_t const* estr, tb_char_t const* ctrim, size_t ntrim)
-{
+static tb_char_t const *xm_string_rtrim(tb_char_t const *sstr,
+                                        tb_char_t const *estr,
+                                        tb_char_t const *ctrim,
+                                        size_t           ntrim) {
     // check
     tb_assert(sstr && estr && ctrim);
 
-    tb_char_t const* p = estr - 1;
+    tb_char_t const *p = estr - 1;
     while (p >= sstr && tb_strnchr(ctrim, ntrim, *p))
         p--;
     return p + 1;
@@ -97,30 +99,29 @@ static tb_char_t const* xm_string_rtrim(tb_char_t const* sstr, tb_char_t const* 
  *      local result = string.trim(str, "(", -1)
  * @endcode
  */
-tb_int_t xm_string_trim(lua_State* lua)
-{
+tb_int_t xm_string_trim(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     size_t           lstr, ltrim;
-    tb_char_t const* sstr      = luaL_checklstring(lua, 1, &lstr);
-    tb_char_t const* estr      = sstr + lstr;
-    tb_char_t const* trimchars = luaL_optlstring(lua, 2, "", &ltrim);
+    tb_char_t const *sstr      = luaL_checklstring(lua, 1, &lstr);
+    tb_char_t const *estr      = sstr + lstr;
+    tb_char_t const *trimchars = luaL_optlstring(lua, 2, "", &ltrim);
     tb_int_t const   trimtype  = (tb_int_t)luaL_optinteger(lua, 3, 0);
-    do
-    {
+    do {
         tb_assert_and_check_break(sstr && trimchars);
         tb_check_break(lstr != 0);
 
-        tb_char_t const* const rsstr = sstr;
-        tb_char_t const* const restr = estr;
+        tb_char_t const *const rsstr = sstr;
+        tb_char_t const *const restr = estr;
         if (ltrim == 0)
             xm_string_trim_space(&sstr, &estr, trimtype);
-        else
-        {
+        else {
             // trim chars
-            if (trimtype <= 0) sstr = xm_string_ltrim(sstr, estr, trimchars, ltrim);
-            if (trimtype >= 0) estr = xm_string_rtrim(sstr, estr, trimchars, ltrim);
+            if (trimtype <= 0)
+                sstr = xm_string_ltrim(sstr, estr, trimchars, ltrim);
+            if (trimtype >= 0)
+                estr = xm_string_rtrim(sstr, estr, trimchars, ltrim);
         }
 
         // no trimed chars

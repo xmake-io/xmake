@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "decompress_stream_write"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "decompress_stream_write"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -34,30 +34,29 @@
  * implementation
  */
 
-tb_int_t xm_lz4_decompress_stream_write(lua_State* lua)
-{
+tb_int_t xm_lz4_decompress_stream_write(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check handle
-    if (!xm_lua_ispointer(lua, 1))
-    {
+    if (!xm_lua_ispointer(lua, 1)) {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid handle!");
         return 2;
     }
 
     // get stream
-    xm_lz4_dstream_t* stream = (xm_lz4_dstream_t*)xm_lua_topointer(lua, 1);
+    xm_lz4_dstream_t *stream = (xm_lz4_dstream_t *)xm_lua_topointer(lua, 1);
     tb_check_return_val(stream, 0);
 
     // get data and size
     tb_size_t        size = 0;
-    tb_byte_t const* data = tb_null;
-    if (xm_lua_isinteger(lua, 2)) data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
-    if (xm_lua_isinteger(lua, 3)) size = (tb_size_t)lua_tointeger(lua, 3);
-    if (!data || !size)
-    {
+    tb_byte_t const *data = tb_null;
+    if (xm_lua_isinteger(lua, 2))
+        data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
+    if (xm_lua_isinteger(lua, 3))
+        size = (tb_size_t)lua_tointeger(lua, 3);
+    if (!data || !size) {
         lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
         return 2;

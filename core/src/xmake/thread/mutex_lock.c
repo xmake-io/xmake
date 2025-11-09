@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_mutex"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_mutex"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,14 +33,12 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_mutex_lock(lua_State* lua)
-{
+tb_int_t xm_thread_mutex_lock(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_mutex_t* thread_mutex = xm_thread_mutex_get(lua, 1);
+    xm_thread_mutex_t *thread_mutex = xm_thread_mutex_get(lua, 1);
     tb_assert_and_check_return_val(thread_mutex && thread_mutex->handle, 0);
 
     lua_pushboolean(lua, tb_mutex_enter(thread_mutex->handle));
     return 1;
 }
-

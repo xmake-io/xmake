@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "syserror"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "syserror"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,22 +33,28 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_os_syserror(lua_State* lua)
-{
+tb_int_t xm_os_syserror(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get syserror state
-    tb_int_t  err = 0;
+    tb_int_t  err      = 0;
     tb_size_t syserror = tb_syserror_state();
-    switch (syserror)
-    {
-    case TB_STATE_SYSERROR_NOT_PERM:            err = 1; break;
-    case TB_STATE_SYSERROR_NOT_FILEDIR:         err = 2; break;
+    switch (syserror) {
+    case TB_STATE_SYSERROR_NOT_PERM:
+        err = 1;
+        break;
+    case TB_STATE_SYSERROR_NOT_FILEDIR:
+        err = 2;
+        break;
 #if ((TB_VERSION_MAJOR * 100) + (TB_VERSION_MINOR * 10) + TB_VERSION_ALTER) >= 173
-    case TB_STATE_SYSERROR_NOT_ACCESS:          err = 3; break;
+    case TB_STATE_SYSERROR_NOT_ACCESS:
+        err = 3;
+        break;
 #endif
-    case TB_STATE_SYSERROR_UNKNOWN_ERROR:       err = -1; break;
+    case TB_STATE_SYSERROR_UNKNOWN_ERROR:
+        err = -1;
+        break;
     }
     lua_pushinteger(lua, err);
     return 1;

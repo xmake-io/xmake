@@ -22,35 +22,32 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "strerror"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "strerror"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-#   include <windows.h>
+#include <windows.h>
 #else
-#   include <errno.h>
-#   include <string.h>
+#include <errno.h>
+#include <string.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_os_strerror(lua_State* lua)
-{
+tb_int_t xm_os_strerror(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get syserror state
     tb_size_t syserror = tb_syserror_state();
-    if (syserror != TB_STATE_SYSERROR_UNKNOWN_ERROR)
-    {
-        tb_char_t const* strerr = "Unknown";
-        switch (syserror)
-        {
+    if (syserror != TB_STATE_SYSERROR_UNKNOWN_ERROR) {
+        tb_char_t const *strerr = "Unknown";
+        switch (syserror) {
         case TB_STATE_SYSERROR_NOT_PERM:
             strerr = "Permission denied";
             break;
@@ -66,11 +63,9 @@ tb_int_t xm_os_strerror(lua_State* lua)
             break;
         }
         lua_pushstring(lua, strerr);
-    }
-    else
-    {
+    } else {
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-        tb_char_t strerr[128] = {0};
+        tb_char_t strerr[128] = { 0 };
         tb_snprintf(strerr, sizeof(strerr), "Unknown Error (%lu)", (tb_size_t)GetLastError());
         lua_pushstring(lua, strerr);
 #else

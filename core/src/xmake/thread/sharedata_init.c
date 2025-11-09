@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_sharedata"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_sharedata"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,18 +33,16 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_sharedata_init(lua_State* lua)
-{
+tb_int_t xm_thread_sharedata_init(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_bool_t ok = tb_false;
-    xm_thread_sharedata_t* thread_sharedata = tb_null;
-    do
-    {
+    tb_bool_t              ok               = tb_false;
+    xm_thread_sharedata_t *thread_sharedata = tb_null;
+    do {
         thread_sharedata = tb_malloc0_type(xm_thread_sharedata_t);
         tb_assert_and_check_break(thread_sharedata);
 
-        thread_sharedata->refn = 1;
+        thread_sharedata->refn       = 1;
         thread_sharedata->value.kind = XM_THREAD_VALUE_NIL;
         tb_buffer_init(&thread_sharedata->buffer);
 
@@ -53,10 +51,8 @@ tb_int_t xm_thread_sharedata_init(lua_State* lua)
 
     } while (0);
 
-    if (!ok)
-    {
-        if (thread_sharedata)
-        {
+    if (!ok) {
+        if (thread_sharedata) {
             tb_buffer_exit(&thread_sharedata->buffer);
             tb_free(thread_sharedata);
         }

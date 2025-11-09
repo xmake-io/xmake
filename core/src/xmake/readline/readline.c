@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "readline"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "readline"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -37,25 +37,23 @@
  */
 
 // readline wrapper
-tb_int_t xm_readline_readline(lua_State* lua)
-{
+tb_int_t xm_readline_readline(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the prompt
-    tb_char_t const* prompt = luaL_optstring(lua, 1, tb_null);
+    tb_char_t const *prompt = luaL_optstring(lua, 1, tb_null);
 
     // call readline
-    tb_char_t* line = readline(prompt);
-    if (line)
-    {
+    tb_char_t *line = readline(prompt);
+    if (line) {
         // return line
         lua_pushstring(lua, line);
 
         // free it
         tb_free(line);
-    }
-    else lua_pushnil(lua);
+    } else
+        lua_pushnil(lua);
 
     // ok
     return 1;

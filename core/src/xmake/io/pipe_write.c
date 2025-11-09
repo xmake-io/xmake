@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "pipe_write"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "pipe_write"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,14 +35,12 @@
  */
 
 // io.pipe_write(pipefile, data, start, last)
-tb_int_t xm_io_pipe_write(lua_State* lua)
-{
+tb_int_t xm_io_pipe_write(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check pipe
-    if (!xm_pipe_file_is_valid(lua, 1))
-    {
+    if (!xm_pipe_file_is_valid(lua, 1)) {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid pipe file!");
         return 2;
@@ -54,11 +52,12 @@ tb_int_t xm_io_pipe_write(lua_State* lua)
 
     // get data and size
     tb_size_t        size = 0;
-    tb_byte_t const* data = tb_null;
-    if (xm_lua_isinteger(lua, 2)) data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
-    if (xm_lua_isinteger(lua, 3)) size = (tb_size_t)lua_tointeger(lua, 3);
-    if (!data || !size)
-    {
+    tb_byte_t const *data = tb_null;
+    if (xm_lua_isinteger(lua, 2))
+        data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
+    if (xm_lua_isinteger(lua, 3))
+        size = (tb_size_t)lua_tointeger(lua, 3);
+    if (!data || !size) {
         lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
         return 2;

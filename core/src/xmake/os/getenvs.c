@@ -22,15 +22,15 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "getenvs"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "getenvs"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-#   include <windows.h>
+#include <windows.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -39,9 +39,9 @@
 
 // the separator
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-#   define XM_OS_ENV_SEP                    ';'
+#define XM_OS_ENV_SEP ';'
 #else
-#   define XM_OS_ENV_SEP                    ':'
+#define XM_OS_ENV_SEP ':'
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -50,19 +50,18 @@
 
 // the user environment
 #if !defined(TB_CONFIG_OS_WINDOWS) || defined(TB_COMPILER_LIKE_UNIX)
-extern tb_char_t** environ;
+extern tb_char_t **environ;
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-static tb_void_t xm_os_getenvs_trim(tb_char_t const** sstr, tb_char_t const** estr)
-{
+static tb_void_t xm_os_getenvs_trim(tb_char_t const **sstr, tb_char_t const **estr) {
     // check
     tb_assert(sstr && estr && *sstr && *estr);
 
-    tb_char_t const* p = *sstr;
-    tb_char_t const* e = *estr;
+    tb_char_t const *p = *sstr;
+    tb_char_t const *e = *estr;
 
     // trim left
     while (p < e && tb_isspace(*p))
@@ -77,8 +76,7 @@ static tb_void_t xm_os_getenvs_trim(tb_char_t const** sstr, tb_char_t const** es
     *estr = e;
 }
 
-static tb_void_t xm_os_getenvs_process_line(lua_State* lua, tb_char_t const* line)
-{
+static tb_void_t xm_os_getenvs_process_line(lua_State *lua, tb_char_t const *line) {
     // check
     tb_assert_and_check_return(lua && line);
 
@@ -86,36 +84,36 @@ static tb_void_t xm_os_getenvs_process_line(lua_State* lua, tb_char_t const* lin
     tb_check_return(n > 0);
 
     // find '=' separator
-    tb_char_t const* p = tb_strchr(line, '=');
+    tb_char_t const *p = tb_strchr(line, '=');
     tb_check_return(p);
 
     // get key and value parts
-    tb_char_t const* key_start = line;
-    tb_char_t const* key_end = p;
-    tb_char_t const* value_start = p + 1;
-    tb_char_t const* value_end = line + n;
+    tb_char_t const *key_start   = line;
+    tb_char_t const *key_end     = p;
+    tb_char_t const *value_start = p + 1;
+    tb_char_t const *value_end   = line + n;
 
     // trim key
     xm_os_getenvs_trim(&key_start, &key_end);
-    if (key_start >= key_end) return;
+    if (key_start >= key_end)
+        return;
 
     // trim value
     xm_os_getenvs_trim(&value_start, &value_end);
 
     // get key and value lengths
-    tb_size_t key_len = key_end - key_start;
+    tb_size_t key_len   = key_end - key_start;
     tb_size_t value_len = value_end > value_start ? value_end - value_start : 0;
 
     // handle Windows-specific PATH conversion
-    tb_char_t const* final_key_start = key_start;
-    tb_size_t final_key_len = key_len;
+    tb_char_t const *final_key_start = key_start;
+    tb_size_t        final_key_len   = key_len;
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-    if (key_len == 4 && tb_strnicmp(key_start, "path", 4) == 0)
-    {
+    if (key_len == 4 && tb_strnicmp(key_start, "path", 4) == 0) {
         // use "PATH" instead of "path"
         static tb_char_t const PATH_UPPER[] = "PATH";
-        final_key_start = PATH_UPPER;
-        final_key_len = 4;
+        final_key_start                     = PATH_UPPER;
+        final_key_len                       = 4;
     }
 #endif
 
@@ -125,8 +123,7 @@ static tb_void_t xm_os_getenvs_process_line(lua_State* lua, tb_char_t const* lin
     lua_rawset(lua, -3);
 }
 
-tb_int_t xm_os_getenvs(lua_State* lua)
-{
+tb_int_t xm_os_getenvs(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -134,32 +131,24 @@ tb_int_t xm_os_getenvs(lua_State* lua)
     lua_newtable(lua);
 
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-    tb_wchar_t const* p = (tb_wchar_t const*)GetEnvironmentStringsW();
-    if (p)
-    {
-        tb_char_t*  data = tb_null;
-        tb_size_t   maxn = 0;
-        tb_char_t   line[TB_PATH_MAXN];
-        tb_size_t   n = 0;
-        while (*p)
-        {
+    tb_wchar_t const *p = (tb_wchar_t const *)GetEnvironmentStringsW();
+    if (p) {
+        tb_char_t *data = tb_null;
+        tb_size_t  maxn = 0;
+        tb_char_t  line[TB_PATH_MAXN];
+        tb_size_t  n = 0;
+        while (*p) {
             n = tb_wcslen(p);
-            if (n + 1 <  tb_arrayn(line))
-            {
+            if (n + 1 < tb_arrayn(line)) {
                 if (tb_wtoa(line, p, tb_arrayn(line)) >= 0)
                     xm_os_getenvs_process_line(lua, line);
-            }
-            else
-            {
-                if (!data)
-                {
+            } else {
+                if (!data) {
                     maxn = n + 1;
-                    data = (tb_char_t*)tb_malloc(maxn);
-                }
-                else if (n >= maxn)
-                {
+                    data = (tb_char_t *)tb_malloc(maxn);
+                } else if (n >= maxn) {
                     maxn = n + TB_PATH_MAXN + 1;
-                    data = (tb_char_t*)tb_ralloc(data, maxn);
+                    data = (tb_char_t *)tb_ralloc(data, maxn);
                 }
                 tb_assert_and_check_break(data);
 
@@ -168,15 +157,14 @@ tb_int_t xm_os_getenvs(lua_State* lua)
             }
             p += n + 1;
         }
-        if (data && data != line) tb_free(data);
+        if (data && data != line)
+            tb_free(data);
         data = tb_null;
     }
 #else
-    tb_char_t const** p = (tb_char_t const**)environ;
-    if (p)
-    {
-        while (*p)
-        {
+    tb_char_t const **p = (tb_char_t const **)environ;
+    if (p) {
+        while (*p) {
             xm_os_getenvs_process_line(lua, *p);
             p++;
         }

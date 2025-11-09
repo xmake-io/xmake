@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "socket_listen"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "socket_listen"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // io.socket_listen(sock, backlog)
-tb_int_t xm_io_socket_listen(lua_State* lua)
-{
+tb_int_t xm_io_socket_listen(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -55,4 +54,3 @@ tb_int_t xm_io_socket_listen(lua_State* lua)
     lua_pushnumber(lua, (tb_int_t)tb_socket_listen(sock, backlog));
     return 1;
 }
-

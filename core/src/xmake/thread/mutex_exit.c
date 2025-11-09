@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_mutex"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_mutex"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,17 +33,14 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_mutex_exit(lua_State* lua)
-{
+tb_int_t xm_thread_mutex_exit(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_mutex_t* thread_mutex = xm_thread_mutex_get(lua, 1);
+    xm_thread_mutex_t *thread_mutex = xm_thread_mutex_get(lua, 1);
     tb_assert_and_check_return_val(thread_mutex && thread_mutex->handle, 0);
 
-    if (tb_atomic_fetch_and_sub(&thread_mutex->refn, 1) == 1)
-    {
-        if (thread_mutex->handle)
-        {
+    if (tb_atomic_fetch_and_sub(&thread_mutex->refn, 1) == 1) {
+        if (thread_mutex->handle) {
             tb_mutex_exit(thread_mutex->handle);
             thread_mutex->handle = tb_null;
         }
@@ -52,4 +49,3 @@ tb_int_t xm_thread_mutex_exit(lua_State* lua)
     lua_pushboolean(lua, tb_true);
     return 1;
 }
-

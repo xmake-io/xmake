@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_event"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_event"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,15 +33,13 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_event_wait(lua_State* lua)
-{
+tb_int_t xm_thread_event_wait(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_event_t* thread_event = xm_thread_event_get(lua, 1);
+    xm_thread_event_t *thread_event = xm_thread_event_get(lua, 1);
     tb_assert_and_check_return_val(thread_event && thread_event->handle, 0);
 
     tb_long_t timeout = (tb_long_t)luaL_checknumber(lua, 2);
     lua_pushinteger(lua, tb_event_wait(thread_event->handle, timeout));
     return 1;
 }
-

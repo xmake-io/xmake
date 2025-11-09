@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "pipe_open"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "pipe_open"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -37,29 +37,32 @@
 /*
  * io.pipe_open(name, mode, buffsize)
  */
-tb_int_t xm_io_pipe_open(lua_State* lua)
-{
+tb_int_t xm_io_pipe_open(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get pipe name and mode
-    tb_char_t const* name = luaL_checkstring(lua, 1);
-    tb_char_t const* modestr = luaL_optstring(lua, 2, "r");
+    tb_char_t const *name    = luaL_checkstring(lua, 1);
+    tb_char_t const *modestr = luaL_optstring(lua, 2, "r");
     tb_assert_and_check_return_val(name && modestr, 0);
 
     // get pipe mode value
     tb_size_t mode = TB_PIPE_MODE_RO;
-    if (modestr[0] == 'w') mode = TB_PIPE_MODE_WO;
+    if (modestr[0] == 'w')
+        mode = TB_PIPE_MODE_WO;
 
     // set block mode
-    if (modestr[1] == 'B') mode |= TB_PIPE_MODE_BLOCK;
+    if (modestr[1] == 'B')
+        mode |= TB_PIPE_MODE_BLOCK;
 
     // get buffer size
     tb_size_t buffsize = (tb_size_t)luaL_checknumber(lua, 3);
 
     // open pipe file
     tb_pipe_file_ref_t pipefile = tb_pipe_file_init(name, mode, buffsize);
-    if (pipefile) xm_lua_pushpointer(lua, (tb_pointer_t)pipefile);
-    else lua_pushnil(lua);
+    if (pipefile)
+        xm_lua_pushpointer(lua, (tb_pointer_t)pipefile);
+    else
+        lua_pushnil(lua);
     return 1;
 }

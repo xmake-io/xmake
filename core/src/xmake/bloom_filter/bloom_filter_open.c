@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "bloom_filter_open"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "bloom_filter_open"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,17 +33,15 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_bloom_filter_open(lua_State* lua)
-{
+tb_int_t xm_bloom_filter_open(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get arguments
     tb_int_t probability = (tb_int_t)lua_tointeger(lua, 1);
-    tb_int_t hash_count = (tb_int_t)lua_tointeger(lua, 2);
-    tb_int_t item_maxn = (tb_int_t)lua_tointeger(lua, 3);
-    if (hash_count > 16 || item_maxn < 0)
-    {
+    tb_int_t hash_count  = (tb_int_t)lua_tointeger(lua, 2);
+    tb_int_t item_maxn   = (tb_int_t)lua_tointeger(lua, 3);
+    if (hash_count > 16 || item_maxn < 0) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "invalid hash count(%p) and item maxn(%d)!", hash_count, item_maxn);
         return 2;
@@ -51,8 +49,9 @@ tb_int_t xm_bloom_filter_open(lua_State* lua)
 
     // init the bloom filter
     tb_bloom_filter_ref_t filter = tb_bloom_filter_init(probability, hash_count, item_maxn, tb_element_str(tb_true));
-    if (filter) xm_lua_pushpointer(lua, (tb_pointer_t)filter);
-    else lua_pushnil(lua);
+    if (filter)
+        xm_lua_pushpointer(lua, (tb_pointer_t)filter);
+    else
+        lua_pushnil(lua);
     return 1;
 }
-

@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "byteof"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "byteof"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,8 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_libc_byteof(lua_State* lua)
-{
+tb_int_t xm_libc_byteof(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -44,15 +43,15 @@ tb_int_t xm_libc_byteof(lua_State* lua)
         data = (tb_pointer_t)(tb_size_t)lua_tointeger(lua, 1);
     else if (lua_isstring(lua, 1))
         data = (tb_pointer_t)luaL_checkstring(lua, 1);
-    else xm_libc_return_error(lua, "libc.byteof(invalid data)!");
+    else
+        xm_libc_return_error(lua, "libc.byteof(invalid data)!");
 
     // get offset
     tb_int_t offset = 0;
     if (lua_isnumber(lua, 2))
         offset = (tb_int_t)lua_tointeger(lua, 2);
-    else xm_libc_return_error(lua, "libc.byteof(invalid offset)!");
-    lua_pushinteger(lua, ((tb_byte_t const*)data)[offset]);
+    else
+        xm_libc_return_error(lua, "libc.byteof(invalid offset)!");
+    lua_pushinteger(lua, ((tb_byte_t const *)data)[offset]);
     return 1;
 }
-
-

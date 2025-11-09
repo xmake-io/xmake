@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "semver"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "semver"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,8 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_void_t lua_pushsemver(lua_State *lua, semver_t const* semver)
-{
+tb_void_t lua_pushsemver(lua_State *lua, semver_t const *semver) {
     // check
     tb_assert(lua && semver);
 
@@ -60,12 +59,13 @@ tb_void_t lua_pushsemver(lua_State *lua, semver_t const* semver)
     lua_pushstring(lua, "prerelease");
     lua_newtable(lua);
 
-    tb_uchar_t i = 0;
-    semver_id_t const* id = &semver->prerelease;
-    while (id && id->len)
-    {
-        if (id->numeric) lua_pushinteger(lua, id->num);
-        else lua_pushlstring(lua, id->raw, id->len);
+    tb_uchar_t         i  = 0;
+    semver_id_t const *id = &semver->prerelease;
+    while (id && id->len) {
+        if (id->numeric)
+            lua_pushinteger(lua, id->num);
+        else
+            lua_pushlstring(lua, id->raw, id->len);
         id = id->next;
         lua_rawseti(lua, -2, ++i);
     }
@@ -76,10 +76,11 @@ tb_void_t lua_pushsemver(lua_State *lua, semver_t const* semver)
     lua_pushstring(lua, "build");
     lua_newtable(lua);
     id = &semver->build;
-    while (id && id->len)
-    {
-        if (id->numeric) lua_pushinteger(lua, id->num);
-        else lua_pushlstring(lua, id->raw, id->len);
+    while (id && id->len) {
+        if (id->numeric)
+            lua_pushinteger(lua, id->num);
+        else
+            lua_pushlstring(lua, id->raw, id->len);
         id = id->next;
         lua_rawseti(lua, -2, ++i);
     }

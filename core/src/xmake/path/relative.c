@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "relative"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "relative"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,17 +33,16 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_path_relative(lua_State* lua)
-{
+tb_int_t xm_path_relative(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the path
-    tb_char_t const* path = luaL_checkstring(lua, 1);
+    tb_char_t const *path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
     // get the root
-    tb_char_t const* root = luaL_optstring(lua, 2, tb_null);
+    tb_char_t const *root = luaL_optstring(lua, 2, tb_null);
 
     // path:relative(root)
     tb_char_t data[TB_PATH_MAXN];

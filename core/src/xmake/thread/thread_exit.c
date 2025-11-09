@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,8 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_exit(lua_State* lua)
-{
+tb_int_t xm_thread_exit(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -43,16 +42,14 @@ tb_int_t xm_thread_exit(lua_State* lua)
         return 0;
 
     // get thread
-    xm_thread_t* thread = (xm_thread_t*)xm_lua_topointer(lua, 1);
+    xm_thread_t *thread = (xm_thread_t *)xm_lua_topointer(lua, 1);
     tb_check_return_val(thread, 0);
 
     // exit thread
-    if (thread)
-    {
+    if (thread) {
         tb_string_exit(&thread->callback);
         tb_string_exit(&thread->callinfo);
-        if (thread->handle)
-        {
+        if (thread->handle) {
             tb_thread_exit(thread->handle);
             thread->handle = tb_null;
         }
@@ -61,4 +58,3 @@ tb_int_t xm_thread_exit(lua_State* lua)
     lua_pushboolean(lua, tb_true);
     return 1;
 }
-

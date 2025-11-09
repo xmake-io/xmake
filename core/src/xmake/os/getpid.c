@@ -22,25 +22,24 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "getpid"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "getpid"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
 #ifdef TB_CONFIG_OS_WINDOWS
-#   include <windows.h>
+#include <windows.h>
 #else
-#   include <unistd.h>
-#   include <errno.h>
+#include <unistd.h>
+#include <errno.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_os_getpid(lua_State* lua)
-{
+tb_int_t xm_os_getpid(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -51,4 +50,3 @@ tb_int_t xm_os_getpid(lua_State* lua)
 #endif
     return 1;
 }
-

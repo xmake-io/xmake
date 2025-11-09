@@ -36,10 +36,12 @@ __tb_extern_c_enter__
  */
 
 /// the xmake engine type
-typedef struct {tb_int_t dummy;} const* xm_engine_ref_t;
+typedef struct {
+    tb_int_t dummy;
+} const *xm_engine_ref_t;
 
 /// the lni initializer callback type
-typedef tb_void_t (*xm_engine_lni_initalizer_cb_t)(xm_engine_ref_t engine, lua_State* lua);
+typedef tb_void_t (*xm_engine_lni_initalizer_cb_t)(xm_engine_ref_t engine, lua_State *lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -52,13 +54,13 @@ typedef tb_void_t (*xm_engine_lni_initalizer_cb_t)(xm_engine_ref_t engine, lua_S
  *
  * @return                  the engine
  */
-xm_engine_ref_t             xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_cb_t lni_initalizer);
+xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_cb_t lni_initalizer);
 
 /*! exit the engine
  *
  * @param engine            the engine
  */
-tb_void_t                   xm_engine_exit(xm_engine_ref_t engine);
+tb_void_t xm_engine_exit(xm_engine_ref_t engine);
 
 /*! do the main entry of the engine
  *
@@ -69,7 +71,7 @@ tb_void_t                   xm_engine_exit(xm_engine_ref_t engine);
  *
  * @return                  the error code of main()
  */
-tb_int_t                    xm_engine_main(xm_engine_ref_t engine, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv);
+tb_int_t xm_engine_main(xm_engine_ref_t engine, tb_int_t argc, tb_char_t **argv, tb_char_t **taskargv);
 
 /*! register lni modules in the engine, @note we need to call it in lni_initalizer()
  *
@@ -77,7 +79,7 @@ tb_int_t                    xm_engine_main(xm_engine_ref_t engine, tb_int_t argc
  * @param module            the lni module name
  * @param funcs             the lni module functions
  */
-tb_void_t                   xm_engine_register(xm_engine_ref_t engine, tb_char_t const* module, luaL_Reg const funcs[]);
+tb_void_t xm_engine_register(xm_engine_ref_t engine, tb_char_t const *module, luaL_Reg const funcs[]);
 
 /*! add the embed files
  *
@@ -85,7 +87,7 @@ tb_void_t                   xm_engine_register(xm_engine_ref_t engine, tb_char_t
  * @param data              the embedfiles data
  * @param size              the data size
  */
-tb_void_t                   xm_engine_add_embedfiles(xm_engine_ref_t engine, tb_byte_t const* data, tb_size_t size);
+tb_void_t xm_engine_add_embedfiles(xm_engine_ref_t engine, tb_byte_t const *data, tb_size_t size);
 
 /* get lua state from engine
  *
@@ -93,7 +95,7 @@ tb_void_t                   xm_engine_add_embedfiles(xm_engine_ref_t engine, tb_
  *
  * @return                  the lua state
  */
-lua_State*                  xm_engine_lua(xm_engine_ref_t engine);
+lua_State *xm_engine_lua(xm_engine_ref_t engine);
 
 /* get poller from engine
  *
@@ -101,7 +103,7 @@ lua_State*                  xm_engine_lua(xm_engine_ref_t engine);
  *
  * @return                  the poller
  */
-tb_poller_ref_t             xm_engine_poller(xm_engine_ref_t engine);
+tb_poller_ref_t xm_engine_poller(xm_engine_ref_t engine);
 
 /*! run main entry of the engine singleton
  *
@@ -113,7 +115,11 @@ tb_poller_ref_t             xm_engine_poller(xm_engine_ref_t engine);
  *
  * @return                  the error code of main()
  */
-tb_int_t                    xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv, xm_engine_lni_initalizer_cb_t lni_initalizer);
+tb_int_t xm_engine_run(tb_char_t const              *name,
+                       tb_int_t                      argc,
+                       tb_char_t                   **argv,
+                       tb_char_t                   **taskargv,
+                       xm_engine_lni_initalizer_cb_t lni_initalizer);
 
 /*! get engine from the given lua state
  *
@@ -121,7 +127,7 @@ tb_int_t                    xm_engine_run(tb_char_t const* name, tb_int_t argc, 
  *
  * @return                  the engine
  */
-xm_engine_ref_t             xm_engine_get(lua_State* lua);
+xm_engine_ref_t xm_engine_get(lua_State *lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

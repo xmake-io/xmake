@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "fwatcher.add"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "fwatcher.add"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // fwatcher.add(watchdir, recursion)
-tb_int_t xm_fwatcher_add(lua_State* lua)
-{
+tb_int_t xm_fwatcher_add(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -49,7 +48,7 @@ tb_int_t xm_fwatcher_add(lua_State* lua)
     tb_check_return_val(fwatcher, 0);
 
     // get watchdir
-    tb_char_t const* watchdir = luaL_checkstring(lua, 2);
+    tb_char_t const *watchdir = luaL_checkstring(lua, 2);
     tb_check_return_val(watchdir, 0);
 
     // get recursion

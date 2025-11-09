@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "cpdir"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "cpdir"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,18 +33,17 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_os_cpdir(lua_State* lua)
-{
+tb_int_t xm_os_cpdir(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the source and destination
-    tb_char_t const* src = luaL_checkstring(lua, 1);
-    tb_char_t const* dst = luaL_checkstring(lua, 2);
+    tb_char_t const *src = luaL_checkstring(lua, 1);
+    tb_char_t const *dst = luaL_checkstring(lua, 2);
     tb_check_return_val(src && dst, 0);
 
     // init copy flags
-    tb_size_t flags = TB_FILE_COPY_NONE;
+    tb_size_t flags      = TB_FILE_COPY_NONE;
     tb_bool_t is_symlink = lua_toboolean(lua, 3);
     if (is_symlink)
         flags |= TB_FILE_COPY_LINK;

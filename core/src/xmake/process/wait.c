@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "process.wait"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "process.wait"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,14 +35,12 @@
  */
 
 // ok, status = process.wait(proc, timeout)
-tb_int_t xm_process_wait(lua_State* lua)
-{
+tb_int_t xm_process_wait(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
-    if (!xm_lua_ispointer(lua, 1))
-    {
+    if (!xm_lua_ispointer(lua, 1)) {
         // error
         lua_pushfstring(lua, "invalid argument type(%s) for process.wait", luaL_typename(lua, 1));
         lua_error(lua);
@@ -58,7 +56,7 @@ tb_int_t xm_process_wait(lua_State* lua)
 
     // wait it
     tb_long_t status = 0;
-    tb_long_t ok = tb_process_wait(process, &status, timeout);
+    tb_long_t ok     = tb_process_wait(process, &status, timeout);
 
     // save result
     lua_pushinteger(lua, ok);

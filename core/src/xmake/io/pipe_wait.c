@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "pipe_wait"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "pipe_wait"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // io.pipe_wait(pipefile, events, timeout)
-tb_int_t xm_io_pipe_wait(lua_State* lua)
-{
+tb_int_t xm_io_pipe_wait(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -58,4 +57,3 @@ tb_int_t xm_io_pipe_wait(lua_State* lua)
     lua_pushnumber(lua, (tb_int_t)tb_pipe_file_wait(pipefile, events, timeout));
     return 1;
 }
-

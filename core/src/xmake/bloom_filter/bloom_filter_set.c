@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "bloom_filter_set"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "bloom_filter_set"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,8 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_bloom_filter_set(lua_State* lua)
-{
+tb_int_t xm_bloom_filter_set(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -47,7 +46,7 @@ tb_int_t xm_bloom_filter_set(lua_State* lua)
     tb_check_return_val(filter, 0);
 
     // get item
-    tb_char_t const* item = luaL_checkstring(lua, 2);
+    tb_char_t const *item = luaL_checkstring(lua, 2);
     tb_assert_and_check_return_val(item, 0);
 
     // set item
@@ -55,4 +54,3 @@ tb_int_t xm_bloom_filter_set(lua_State* lua)
     lua_pushboolean(lua, ok);
     return 1;
 }
-

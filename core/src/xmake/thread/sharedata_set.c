@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_sharedata"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_sharedata"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,45 +33,34 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_sharedata_set(lua_State* lua)
-{
+tb_int_t xm_thread_sharedata_set(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_sharedata_t* thread_sharedata = xm_thread_sharedata_get(lua, 1);
+    xm_thread_sharedata_t *thread_sharedata = xm_thread_sharedata_get(lua, 1);
     tb_assert_and_check_return_val(thread_sharedata, 0);
 
-    if (lua_isstring(lua, 2))
-    {
-        size_t data_size = 0;
-        tb_char_t const* data = luaL_checklstring(lua, 2, &data_size);
+    if (lua_isstring(lua, 2)) {
+        size_t           data_size = 0;
+        tb_char_t const *data      = luaL_checklstring(lua, 2, &data_size);
         tb_assert_and_check_return_val(data, 0);
 
         thread_sharedata->value.kind = (tb_uint32_t)XM_THREAD_VALUE_STR;
         if (data_size)
-            tb_buffer_memncpy(&thread_sharedata->buffer, (tb_byte_t const*)data, data_size);
-        else tb_buffer_clear(&thread_sharedata->buffer);
-    }
-    else if (xm_lua_isinteger(lua, 2))
-    {
-        thread_sharedata->value.kind = (tb_uint32_t)XM_THREAD_VALUE_INT;
+            tb_buffer_memncpy(&thread_sharedata->buffer, (tb_byte_t const *)data, data_size);
+        else
+            tb_buffer_clear(&thread_sharedata->buffer);
+    } else if (xm_lua_isinteger(lua, 2)) {
+        thread_sharedata->value.kind      = (tb_uint32_t)XM_THREAD_VALUE_INT;
         thread_sharedata->value.u.integer = lua_tointeger(lua, 2);
-    }
-    else if (lua_isnumber(lua, 2))
-    {
-        thread_sharedata->value.kind = (tb_uint32_t)XM_THREAD_VALUE_NUM;
+    } else if (lua_isnumber(lua, 2)) {
+        thread_sharedata->value.kind     = (tb_uint32_t)XM_THREAD_VALUE_NUM;
         thread_sharedata->value.u.number = lua_tonumber(lua, 2);
-    }
-    else if (lua_isboolean(lua, 2))
-    {
-        thread_sharedata->value.kind = (tb_uint32_t)XM_THREAD_VALUE_BOOL;
+    } else if (lua_isboolean(lua, 2)) {
+        thread_sharedata->value.kind      = (tb_uint32_t)XM_THREAD_VALUE_BOOL;
         thread_sharedata->value.u.boolean = lua_toboolean(lua, 2);
-    }
-    else if (lua_isnil(lua, 2))
-    {
+    } else if (lua_isnil(lua, 2)) {
         thread_sharedata->value.kind = (tb_uint32_t)XM_THREAD_VALUE_NIL;
-    }
-    else
-    {
+    } else {
         lua_pushboolean(lua, tb_false);
         lua_pushliteral(lua, "unsupported thread sharedata item");
         return 2;
@@ -80,5 +69,3 @@ tb_int_t xm_thread_sharedata_set(lua_State* lua)
     lua_pushboolean(lua, tb_true);
     return 1;
 }
-
-

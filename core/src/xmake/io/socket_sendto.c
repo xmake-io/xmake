@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "socket_sendto"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "socket_sendto"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,14 +35,12 @@
  */
 
 // io.socket_sendto(sock, data, addr, port)
-tb_int_t xm_io_socket_sendto(lua_State* lua)
-{
+tb_int_t xm_io_socket_sendto(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket
-    if (!xm_lua_ispointer(lua, 1))
-    {
+    if (!xm_lua_ispointer(lua, 1)) {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
         return 2;
@@ -54,11 +52,12 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
 
     // get data and size
     tb_size_t        size = 0;
-    tb_byte_t const* data = tb_null;
-    if (xm_lua_isinteger(lua, 2)) data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
-    if (xm_lua_isinteger(lua, 3)) size = (tb_size_t)lua_tointeger(lua, 3);
-    if (!data || !size)
-    {
+    tb_byte_t const *data = tb_null;
+    if (xm_lua_isinteger(lua, 2))
+        data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
+    if (xm_lua_isinteger(lua, 3))
+        size = (tb_size_t)lua_tointeger(lua, 3);
+    if (!data || !size) {
         lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
         return 2;
@@ -66,10 +65,9 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
     tb_assert_static(sizeof(lua_Integer) >= sizeof(tb_pointer_t));
 
     // get address
-    tb_char_t const* addr = lua_tostring(lua, 4);
+    tb_char_t const *addr = lua_tostring(lua, 4);
     tb_uint16_t      port = (tb_uint16_t)luaL_checknumber(lua, 5);
-    if (!addr || !port)
-    {
+    if (!addr || !port) {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid address!");
         return 2;

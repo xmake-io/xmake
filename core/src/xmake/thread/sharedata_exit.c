@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_sharedata"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_sharedata"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,19 +33,16 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_sharedata_exit(lua_State* lua)
-{
+tb_int_t xm_thread_sharedata_exit(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_sharedata_t* thread_sharedata = xm_thread_sharedata_get(lua, 1);
+    xm_thread_sharedata_t *thread_sharedata = xm_thread_sharedata_get(lua, 1);
     tb_assert_and_check_return_val(thread_sharedata, 0);
 
-    if (tb_atomic_fetch_and_sub(&thread_sharedata->refn, 1) == 1)
-    {
+    if (tb_atomic_fetch_and_sub(&thread_sharedata->refn, 1) == 1) {
         tb_buffer_exit(&thread_sharedata->buffer);
         tb_free(thread_sharedata);
     }
     lua_pushboolean(lua, tb_true);
     return 1;
 }
-

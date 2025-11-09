@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "filelock_close"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "filelock_close"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // io.filelock_close(lock)
-tb_int_t xm_io_filelock_close(lua_State* lua)
-{
+tb_int_t xm_io_filelock_close(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -57,4 +56,3 @@ tb_int_t xm_io_filelock_close(lua_State* lua)
     // ok
     return 1;
 }
-

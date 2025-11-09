@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "poller"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "poller"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -34,12 +34,11 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_poller_ref_t xm_io_poller(lua_State* lua)
-{
+tb_poller_ref_t xm_io_poller(lua_State *lua) {
     tb_poller_ref_t poller = tb_null;
     xm_engine_ref_t engine = xm_engine_get(lua);
-    if (engine) poller = xm_engine_poller(engine);
+    if (engine)
+        poller = xm_engine_poller(engine);
     tb_assert(poller);
     return poller;
 }
-

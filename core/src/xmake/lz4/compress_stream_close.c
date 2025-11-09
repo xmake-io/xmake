@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "compress_stream_close"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "compress_stream_close"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,8 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_lz4_compress_stream_close(lua_State* lua)
-{
+tb_int_t xm_lz4_compress_stream_close(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -43,7 +42,7 @@ tb_int_t xm_lz4_compress_stream_close(lua_State* lua)
         return 0;
 
     // get the stream
-    xm_lz4_cstream_t* stream = (xm_lz4_cstream_t*)xm_lua_topointer(lua, 1);
+    xm_lz4_cstream_t *stream = (xm_lz4_cstream_t *)xm_lua_topointer(lua, 1);
     tb_check_return_val(stream, 0);
 
     // exit stream
@@ -53,4 +52,3 @@ tb_int_t xm_lz4_compress_stream_close(lua_State* lua)
     lua_pushboolean(lua, tb_true);
     return 1;
 }
-

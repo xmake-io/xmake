@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "pipe_openpair"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "pipe_openpair"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -37,32 +37,30 @@
 /*
  * io.pipe_openpair(mode, buffsize)
  */
-tb_int_t xm_io_pipe_openpair(lua_State* lua)
-{
+tb_int_t xm_io_pipe_openpair(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get pipe mode
-    tb_char_t const* modestr = luaL_optstring(lua, 1, "AA");
+    tb_char_t const *modestr = luaL_optstring(lua, 1, "AA");
     tb_assert_and_check_return_val(modestr, 0);
 
     // init mode
-    tb_size_t mode[2] = {0};
-    if (modestr[0] == 'B') mode[0] |= TB_PIPE_MODE_BLOCK;
-    if (modestr[1] == 'B') mode[1] |= TB_PIPE_MODE_BLOCK;
+    tb_size_t mode[2] = { 0 };
+    if (modestr[0] == 'B')
+        mode[0] |= TB_PIPE_MODE_BLOCK;
+    if (modestr[1] == 'B')
+        mode[1] |= TB_PIPE_MODE_BLOCK;
 
     // get buffer size
     tb_size_t buffsize = (tb_size_t)luaL_checknumber(lua, 2);
 
     // init pipe
     tb_pipe_file_ref_t pipefile[2];
-    if (tb_pipe_file_init_pair(pipefile, mode, buffsize))
-    {
+    if (tb_pipe_file_init_pair(pipefile, mode, buffsize)) {
         xm_lua_pushpointer(lua, (tb_pointer_t)pipefile[0]);
         xm_lua_pushpointer(lua, (tb_pointer_t)pipefile[1]);
-    }
-    else
-    {
+    } else {
         lua_pushnil(lua);
         lua_pushnil(lua);
     }

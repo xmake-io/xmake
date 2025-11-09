@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "clear_history"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "clear_history"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -36,8 +36,7 @@
 #ifdef XM_CONFIG_API_HAVE_READLINE
 
 // clear_history wrapper
-tb_int_t xm_readline_clear_history(lua_State* lua)
-{
+tb_int_t xm_readline_clear_history(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 

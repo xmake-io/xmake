@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_size"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "file_size"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // io.file_size(file)
-tb_int_t xm_io_file_size(lua_State* lua)
-{
+tb_int_t xm_io_file_size(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -45,16 +44,15 @@ tb_int_t xm_io_file_size(lua_State* lua)
         xm_io_return_error(lua, "get size for invalid file!");
 
     // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    xm_io_file_t *file = (xm_io_file_t *)lua_touserdata(lua, 1);
     tb_check_return_val(file, 0);
 
     // get file length
-    if (xm_io_file_is_file(file))
-    {
+    if (xm_io_file_is_file(file)) {
         // get size from raw file stream, because we cannot get size from fstream
         tb_assert(file->stream);
         lua_pushnumber(lua, (lua_Number)tb_stream_size(file->stream));
         return 1;
-    }
-    else xm_io_return_error(lua, "get size for invalid file!");
+    } else
+        xm_io_return_error(lua, "get size for invalid file!");
 }

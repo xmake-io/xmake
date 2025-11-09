@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "free"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "free"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,14 +33,13 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_libc_free(lua_State* lua)
-{
+tb_int_t xm_libc_free(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // do free
     tb_pointer_t data = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 1);
-    if (data) tb_free(data);
+    if (data)
+        tb_free(data);
     return 0;
 }
-

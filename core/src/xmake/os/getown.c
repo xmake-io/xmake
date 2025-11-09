@@ -22,16 +22,16 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "getown"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "getown"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
 #ifndef TB_CONFIG_OS_WINDOWS
-#   include <unistd.h>
-#   include <sys/stat.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -41,13 +41,12 @@
 #ifndef TB_CONFIG_OS_WINDOWS
 
 // get owner by a given path
-tb_int_t xm_os_getown(lua_State* lua)
-{
+tb_int_t xm_os_getown(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the pathname
-    tb_char_t const* pathname = luaL_checkstring(lua, 1);
+    tb_char_t const *pathname = luaL_checkstring(lua, 1);
     tb_check_return_val(pathname, 0);
 
     // get stat

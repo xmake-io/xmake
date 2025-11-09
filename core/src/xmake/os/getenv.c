@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "getenv"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "getenv"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -36,41 +36,40 @@
 
 // the separator
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-#   define XM_OS_ENV_SEP                    ';'
+#define XM_OS_ENV_SEP ';'
 #else
-#   define XM_OS_ENV_SEP                    ':'
+#define XM_OS_ENV_SEP ':'
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_os_getenv(lua_State* lua)
-{
+tb_int_t xm_os_getenv(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the name
-    tb_char_t const* name = luaL_checkstring(lua, 1);
+    tb_char_t const *name = luaL_checkstring(lua, 1);
     tb_check_return_val(name, 0);
 
     // init values
     tb_string_t values;
-    if (!tb_string_init(&values)) return 0;
+    if (!tb_string_init(&values))
+        return 0;
 
     // init environment
     tb_environment_ref_t environment = tb_environment_init();
-    if (environment)
-    {
+    if (environment) {
         // load variable
-        if (tb_environment_load(environment, name))
-        {
+        if (tb_environment_load(environment, name)) {
             // make values
             tb_bool_t is_first = tb_true;
-            tb_for_all_if (tb_char_t const*, value, environment, value)
-            {
+            tb_for_all_if(tb_char_t const *, value, environment, value) {
                 // append separator
-                if (!is_first) tb_string_chrcat(&values, XM_OS_ENV_SEP);
-                else is_first = tb_false;
+                if (!is_first)
+                    tb_string_chrcat(&values, XM_OS_ENV_SEP);
+                else
+                    is_first = tb_false;
 
                 // append value
                 tb_string_cstrcat(&values, value);
@@ -82,8 +81,10 @@ tb_int_t xm_os_getenv(lua_State* lua)
     }
 
     // save result
-    if (tb_string_size(&values)) lua_pushstring(lua, tb_string_cstr(&values));
-    else lua_pushnil(lua);
+    if (tb_string_size(&values))
+        lua_pushstring(lua, tb_string_cstr(&values));
+    else
+        lua_pushnil(lua);
 
     // exit values
     tb_string_exit(&values);

@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "pipe_close"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "pipe_close"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // io.pipe_close(pipe)
-tb_int_t xm_io_pipe_close(lua_State* lua)
-{
+tb_int_t xm_io_pipe_close(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -52,4 +51,3 @@ tb_int_t xm_io_pipe_close(lua_State* lua)
     lua_pushboolean(lua, tb_pipe_file_exit(pipefile));
     return 1;
 }
-

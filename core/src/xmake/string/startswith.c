@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "startswith"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "startswith"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,15 +33,14 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_string_startswith(lua_State* lua)
-{
+tb_int_t xm_string_startswith(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the string and prefix
-    size_t              prefix_size = 0;
-    tb_char_t const*    string = luaL_checkstring(lua, 1);
-    tb_char_t const*    prefix = luaL_checklstring(lua, 2, &prefix_size);
+    size_t           prefix_size = 0;
+    tb_char_t const *string      = luaL_checkstring(lua, 1);
+    tb_char_t const *prefix      = luaL_checklstring(lua, 2, &prefix_size);
     tb_check_return_val(string && prefix, 0);
 
     // string:startswith(prefix)?

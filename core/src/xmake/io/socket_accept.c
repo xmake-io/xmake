@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "socket_accept"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "socket_accept"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // local sock = io.socket_accept(sock)
-tb_int_t xm_io_socket_accept(lua_State* lua)
-{
+tb_int_t xm_io_socket_accept(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -50,8 +49,9 @@ tb_int_t xm_io_socket_accept(lua_State* lua)
 
     // accept socket
     tb_socket_ref_t client = tb_socket_accept(sock, tb_null);
-    if (client) xm_lua_pushpointer(lua, (tb_pointer_t)client);
-    else lua_pushnil(lua);
+    if (client)
+        xm_lua_pushpointer(lua, (tb_pointer_t)client);
+    else
+        lua_pushnil(lua);
     return 1;
 }
-

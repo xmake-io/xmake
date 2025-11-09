@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "pipe_connect"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "pipe_connect"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,14 +35,12 @@
  */
 
 // io.pipe_connect(pipefile)
-tb_int_t xm_io_pipe_connect(lua_State* lua)
-{
+tb_int_t xm_io_pipe_connect(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check pipe
-    if (!xm_lua_ispointer(lua, 1))
-    {
+    if (!xm_lua_ispointer(lua, 1)) {
         lua_pushnumber(lua, -1);
         lua_pushliteral(lua, "invalid pipe!");
         return 2;
@@ -56,4 +54,3 @@ tb_int_t xm_io_pipe_connect(lua_State* lua)
     lua_pushnumber(lua, (tb_int_t)tb_pipe_file_connect(pipefile));
     return 1;
 }
-

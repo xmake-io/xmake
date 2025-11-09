@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "fwatcher.close"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "fwatcher.close"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // fwatcher.close(p)
-tb_int_t xm_fwatcher_close(lua_State* lua)
-{
+tb_int_t xm_fwatcher_close(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 

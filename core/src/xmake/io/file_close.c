@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_close"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "file_close"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // io.file_close(file)
-tb_int_t xm_io_file_close(lua_State* lua)
-{
+tb_int_t xm_io_file_close(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -45,30 +44,29 @@ tb_int_t xm_io_file_close(lua_State* lua)
         xm_io_return_error(lua, "close(invalid file)!");
 
     // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    xm_io_file_t *file = (xm_io_file_t *)lua_touserdata(lua, 1);
     tb_check_return_val(file, 0);
 
     // close file
-    if (xm_io_file_is_file(file))
-    {
+    if (xm_io_file_is_file(file)) {
         // check
         tb_assert(file->u.file_ref);
 
 #ifdef TB_CONFIG_OS_WINDOWS
         // write cached data first
-        tb_byte_t const* odata = tb_buffer_data(&file->wcache);
+        tb_byte_t const *odata = tb_buffer_data(&file->wcache);
         tb_size_t        osize = tb_buffer_size(&file->wcache);
-        if (odata && osize)
-        {
-            if (!tb_stream_bwrit(file->u.file_ref, odata, osize)) return tb_false;
+        if (odata && osize) {
+            if (!tb_stream_bwrit(file->u.file_ref, odata, osize))
+                return tb_false;
             tb_buffer_clear(&file->wcache);
         }
 #endif
 
         // flush filter stream cache, TODO we should fix it in tbox/stream
-        if ((file->mode & TB_FILE_MODE_RW) == TB_FILE_MODE_RW && file->fstream)
-        {
-            if (!tb_stream_sync(file->u.file_ref, tb_false)) return tb_false;
+        if ((file->mode & TB_FILE_MODE_RW) == TB_FILE_MODE_RW && file->fstream) {
+            if (!tb_stream_sync(file->u.file_ref, tb_false))
+                return tb_false;
         }
 
         // close file
@@ -76,11 +74,13 @@ tb_int_t xm_io_file_close(lua_State* lua)
         file->u.file_ref = tb_null;
 
         // exit fstream
-        if (file->fstream) tb_stream_exit(file->fstream);
+        if (file->fstream)
+            tb_stream_exit(file->fstream);
         file->fstream = tb_null;
 
         // exit stream
-        if (file->stream) tb_stream_exit(file->stream);
+        if (file->stream)
+            tb_stream_exit(file->stream);
         file->stream = tb_null;
 
         // exit the line cache buffer
@@ -93,8 +93,7 @@ tb_int_t xm_io_file_close(lua_State* lua)
         // ok
         lua_pushboolean(lua, tb_true);
         return 1;
-    }
-    else // for stdfile (gc/close)
+    } else // for stdfile (gc/close)
     {
         // exit the line cache buffer
         tb_buffer_exit(&file->rcache);
@@ -108,4 +107,3 @@ tb_int_t xm_io_file_close(lua_State* lua)
         return 1;
     }
 }
-

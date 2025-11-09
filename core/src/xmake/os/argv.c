@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "os.argv"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "os.argv"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,19 +33,17 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_os_argv(lua_State* lua)
-{
+tb_int_t xm_os_argv(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the argument string
-    tb_char_t const* args = luaL_checkstring(lua, 1);
+    tb_char_t const *args = luaL_checkstring(lua, 1);
     tb_check_return_val(args, 0);
 
     // split only? do not escape
     tb_bool_t splitonly = tb_false;
-    if (lua_istable(lua, 2))
-    {
+    if (lua_istable(lua, 2)) {
         lua_pushstring(lua, "splitonly");
         lua_gettable(lua, 2);
         splitonly = lua_toboolean(lua, -1);
@@ -54,39 +52,44 @@ tb_int_t xm_os_argv(lua_State* lua)
 
     // parse argument list
     tb_string_t arg;
-    do
-    {
+    do {
         // init table
         lua_newtable(lua);
 
         // init arg
-        if (!tb_string_init(&arg)) break;
+        if (!tb_string_init(&arg))
+            break;
 
         // parse command to the arguments
-        tb_int_t            i = 1;
-        tb_int_t            skip = 0;
-        tb_int_t            escape = 0;
-        tb_char_t           quote = 0;
-        tb_char_t           ch = 0;
-        tb_char_t const*    p = args;
-        while ((ch = *p))
-        {
+        tb_int_t         i      = 1;
+        tb_int_t         skip   = 0;
+        tb_int_t         escape = 0;
+        tb_char_t        quote  = 0;
+        tb_char_t        ch     = 0;
+        tb_char_t const *p      = args;
+        while ((ch = *p)) {
             // no escape now?
-            if (!escape)
-            {
+            if (!escape) {
                 // enter quote?
-                if (!quote && (ch == '\"' || ch == '\'')) { quote = ch; skip = 1; }
+                if (!quote && (ch == '\"' || ch == '\'')) {
+                    quote = ch;
+                    skip  = 1;
+                }
                 // leave quote?
-                else if (ch == quote) { quote = 0; skip = 1; }
+                else if (ch == quote) {
+                    quote = 0;
+                    skip  = 1;
+                }
                 // escape charactor? only escape \\, \"
-                else if (ch == '\\' && (p[1] == '\\' || p[1] == '\"')) { escape = 1; skip = 1; }
+                else if (ch == '\\' && (p[1] == '\\' || p[1] == '\"')) {
+                    escape = 1;
+                    skip   = 1;
+                }
                 // is argument end with ' '?
-                else if (!quote && tb_isspace(ch))
-                {
+                else if (!quote && tb_isspace(ch)) {
                     // save this argument
                     tb_string_ltrim(&arg);
-                    if (tb_string_size(&arg))
-                    {
+                    if (tb_string_size(&arg)) {
                         // save argument
                         lua_pushstring(lua, tb_string_cstr(&arg));
                         lua_rawseti(lua, -2, i++);
@@ -98,11 +101,14 @@ tb_int_t xm_os_argv(lua_State* lua)
             }
 
             // save this charactor to argument
-            if (splitonly || !skip) tb_string_chrcat(&arg, ch);
+            if (splitonly || !skip)
+                tb_string_chrcat(&arg, ch);
 
             // step and cancel escape
-            if (escape == 1) escape++;
-            else if (escape == 2) escape = 0;
+            if (escape == 1)
+                escape++;
+            else if (escape == 2)
+                escape = 0;
 
             // clear skip
             skip = 0;
@@ -113,8 +119,7 @@ tb_int_t xm_os_argv(lua_State* lua)
 
         // save this argument
         tb_string_ltrim(&arg);
-        if (tb_string_size(&arg))
-        {
+        if (tb_string_size(&arg)) {
             // save argument
             lua_pushstring(lua, tb_string_cstr(&arg));
             lua_rawseti(lua, -2, i++);

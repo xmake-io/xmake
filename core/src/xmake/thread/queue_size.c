@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_queue"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_queue"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,14 +33,12 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_queue_size(lua_State* lua)
-{
+tb_int_t xm_thread_queue_size(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_queue_t* thread_queue = xm_thread_queue_get(lua, 1);
+    xm_thread_queue_t *thread_queue = xm_thread_queue_get(lua, 1);
     tb_assert_and_check_return_val(thread_queue && thread_queue->handle, 0);
 
     lua_pushinteger(lua, (tb_int_t)tb_queue_size(thread_queue->handle));
     return 1;
 }
-

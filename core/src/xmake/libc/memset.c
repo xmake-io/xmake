@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "memset"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "memset"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,17 +33,15 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_libc_memset(lua_State* lua)
-{
+tb_int_t xm_libc_memset(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // do memset
     tb_pointer_t data = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 1);
-    tb_char_t ch = (tb_char_t)lua_tointeger(lua, 2);
-    tb_int_t size = (tb_int_t)lua_tointeger(lua, 3);
+    tb_char_t    ch   = (tb_char_t)lua_tointeger(lua, 2);
+    tb_int_t     size = (tb_int_t)lua_tointeger(lua, 3);
     if (data && size > 0)
         tb_memset(data, ch, size);
     return 0;
 }
-

@@ -31,12 +31,10 @@
  */
 
 // the poller state in wait events
-typedef struct __xm_poller_state_t
-{
-    lua_State*      lua;
-    tb_int_t        events_count;
-
-}xm_poller_state_t;
+typedef struct __xm_poller_state_t {
+    lua_State *lua;
+    tb_int_t   events_count;
+} xm_poller_state_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -46,8 +44,6 @@ typedef struct __xm_poller_state_t
  *
  * @return          the io poller
  */
-tb_poller_ref_t     xm_io_poller(lua_State* lua);
+tb_poller_ref_t xm_io_poller(lua_State *lua);
 
 #endif
-
-

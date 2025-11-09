@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_seek"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "file_seek"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  */
 
 // io.file_seek(file, [whence [, offset]])
-tb_int_t xm_io_file_seek(lua_State* lua)
-{
+tb_int_t xm_io_file_seek(lua_State *lua) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
@@ -45,41 +44,38 @@ tb_int_t xm_io_file_seek(lua_State* lua)
         xm_io_return_error(lua, "seek(invalid file)!");
 
     // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    xm_io_file_t *file = (xm_io_file_t *)lua_touserdata(lua, 1);
     tb_check_return_val(file, 0);
 
     // get whence and offset
-    tb_char_t const* whence = luaL_optstring(lua, 2, "cur");
+    tb_char_t const *whence = luaL_optstring(lua, 2, "cur");
     tb_hong_t        offset = (tb_hong_t)luaL_optnumber(lua, 3, 0);
     tb_assert_and_check_return_val(whence, 0);
 
     // seek file
-    if (xm_io_file_is_file(file))
-    {
+    if (xm_io_file_is_file(file)) {
         tb_assert(file->u.file_ref);
-        switch (*whence)
-        {
+        switch (*whence) {
         case 's': // "set"
             break;
         case 'e': // "end"
-            {
-                tb_hong_t size = tb_stream_size(file->u.file_ref);
-                if (size > 0 && size + offset <= size)
-                    offset = size + offset;
-                else xm_io_return_error(lua, "seek failed, invalid offset!");
-            }
-            break;
-        default:  // "cur"
+        {
+            tb_hong_t size = tb_stream_size(file->u.file_ref);
+            if (size > 0 && size + offset <= size)
+                offset = size + offset;
+            else
+                xm_io_return_error(lua, "seek failed, invalid offset!");
+        } break;
+        default: // "cur"
             offset = tb_stream_offset(file->u.file_ref) + offset;
             break;
         }
 
-        if (tb_stream_seek(file->u.file_ref, offset))
-        {
+        if (tb_stream_seek(file->u.file_ref, offset)) {
             lua_pushnumber(lua, (lua_Number)offset);
             return 1;
-        }
-        else xm_io_return_error(lua, "seek failed!");
-    }
-    else xm_io_return_error(lua, "seek is not supported on this file");
+        } else
+            xm_io_return_error(lua, "seek failed!");
+    } else
+        xm_io_return_error(lua, "seek is not supported on this file");
 }

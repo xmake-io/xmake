@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_event"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_event"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,17 +33,14 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_event_exit(lua_State* lua)
-{
+tb_int_t xm_thread_event_exit(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_event_t* thread_event = xm_thread_event_get(lua, 1);
+    xm_thread_event_t *thread_event = xm_thread_event_get(lua, 1);
     tb_assert_and_check_return_val(thread_event && thread_event->handle, 0);
 
-    if (tb_atomic_fetch_and_sub(&thread_event->refn, 1) == 1)
-    {
-        if (thread_event->handle)
-        {
+    if (tb_atomic_fetch_and_sub(&thread_event->refn, 1) == 1) {
+        if (thread_event->handle) {
             tb_event_exit(thread_event->handle);
             thread_event->handle = tb_null;
         }
@@ -52,4 +49,3 @@ tb_int_t xm_thread_event_exit(lua_State* lua)
     lua_pushboolean(lua, tb_true);
     return 1;
 }
-
