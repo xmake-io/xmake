@@ -40,6 +40,12 @@ xmake._EMBED            = _EMBED
 xmake._THREAD_CALLBACK  = _THREAD_CALLBACK
 xmake._THREAD_CALLINFO  = _THREAD_CALLINFO
 
+-- we need not any arguments in sub-thread.
+-- because it always uses CommandLineToArgvW() on windows, so we need to reset it.
+if _THREAD_CALLBACK then
+    xmake._ARGV = {}
+end
+
 -- In order to be compatible with updates from lower versions of engine core
 -- @see https://github.com/xmake-io/xmake/issues/1694#issuecomment-925507210
 if xmake._LUAJIT == nil then

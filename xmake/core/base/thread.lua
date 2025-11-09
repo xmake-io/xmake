@@ -28,14 +28,15 @@ local _queue     = _queue or {}
 local _sharedata = _sharedata or {}
 
 -- load modules
-local io        = require("base/io")
-local libc      = require("base/libc")
-local pipe      = require("base/pipe")
-local bytes     = require("base/bytes")
-local table     = require("base/table")
-local string    = require("base/string")
-local scheduler = require("base/scheduler")
-local sandbox   = require("sandbox/sandbox")
+local io         = require("base/io")
+local libc       = require("base/libc")
+local pipe       = require("base/pipe")
+local pipe_event = require("base/private/pipe_event")
+local bytes      = require("base/bytes")
+local table      = require("base/table")
+local string     = require("base/string")
+local scheduler  = require("base/scheduler")
+local sandbox    = require("sandbox/sandbox")
 
 -- the thread status
 thread.STATUS_READY     = 1
@@ -52,6 +53,7 @@ function _thread.new(callback, opt)
     instance._CALLBACK  = callback
     instance._STACKSIZE = opt.stacksize or 0
     instance._STATUS    = thread.STATUS_READY
+    instance._INTERNAL  = opt.internal
     setmetatable(instance, _thread)
     return instance
 end
@@ -102,41 +104,28 @@ function _thread:start()
     local argv = {}
     for _, arg in ipairs(self._ARGV) do
         if type(arg) == "table" then
-            -- is mutex? we can only pass cdata address
-            if arg._MUTEX and arg.cdata then
-                thread.mutex_incref(arg:cdata())
-                arg = {mutex = true, name = arg:name(), caddr = libc.dataptr(arg:cdata(), {ffi = false})}
-            -- is event? we can only pass cdata address
-            elseif arg._EVENT and arg.cdata then
-                thread.event_incref(arg:cdata())
-                arg = {event = true, name = arg:name(), caddr = libc.dataptr(arg:cdata(), {ffi = false})}
-            -- is semaphore? we can only pass cdata address
-            elseif arg._SEMAPHORE and arg.cdata then
-                thread.semaphore_incref(arg:cdata())
-                arg = {semaphore = true, name = arg:name(), caddr = libc.dataptr(arg:cdata(), {ffi = false})}
-            -- is queue? we can only pass cdata address
-            elseif arg._QUEUE and arg.cdata then
-                thread.queue_incref(arg:cdata())
-                arg = {queue = true, name = arg:name(), caddr = libc.dataptr(arg:cdata(), {ffi = false})}
-            -- is sharedata? we can only pass cdata address
-            elseif arg._SHAREDATA and arg.cdata then
-                thread.sharedata_incref(arg:cdata())
-                arg = {sharedata = true, name = arg:name(), caddr = libc.dataptr(arg:cdata())}
+            -- try to serialize thread object (mutex, event, semaphore, queue, sharedata)
+            local serialized = thread._serialize_object(arg)
+            if serialized then
+                arg = serialized
             end
         end
         table.insert(argv, arg)
     end
 
     -- init callback info
+    local is_internal = self._INTERNAL
     local callback = string._dump(self._CALLBACK)
-    local callinfo = {name = self:name(), argv = argv}
+    local callinfo = {name = self:name(), argv = argv, internal = is_internal}
 
     -- we need a pipe pair to wait and listen thread exit event
-    local rpipe, wpipe = pipe.openpair("AA")
-    self._RPIPE = rpipe
-    callinfo.wpipe = libc.dataptr(wpipe:cdata(), {ffi = false})
-    -- we need to suppress gc to free it, because it has been transfer to thread in another lua state instance
-    wpipe._PIPE = nil
+    if not is_internal then
+        local rpipe, wpipe = pipe.openpair("AA")
+        self._RPIPE = rpipe
+        callinfo.wpipe = libc.dataptr(wpipe:cdata(), {ffi = false})
+        -- we need to suppress gc to free it, because it has been transfer to thread in another lua state instance
+        wpipe._PIPE = nil
+    end
 
     -- serialize and pass callback and arguments to this thread
     -- we do not use string.serialize to serialize callback, because it's slower (deserialize)
@@ -206,8 +195,13 @@ function _thread:wait(timeout)
             ok = read
             errors = data_or_errors
         end
-    else
-        ok, errors = thread.thread_wait(self:cdata(), timeout)
+    end
+    if not rpipe then
+        local waitok, wait_errors = thread.thread_wait(self:cdata(), timeout)
+        if ok == nil or ok > 0 then
+            ok = waitok
+            errors = wait_errors
+        end
     end
     if ok < 0 then
         return -1, errors or string.format("%s: failed to resume thread!", self)
@@ -781,23 +775,90 @@ function _sharedata:__gc()
     end
 end
 
--- new a thread
---
--- @param callback      the thread callback
--- @param opt           the thread options, e.g. {name = "", argv = {}, stacksize = 8192}
---
--- @return the thread instance
---
-function thread.new(callback, opt)
-    if callback == nil then
-        return nil, "invalid thread, callback is nil"
+-- serialize thread object for passing through queue or table (private helper)
+-- this is used when you need to pass thread objects (mutex, event, semaphore, queue, sharedata)
+-- through a queue or embed them in a table
+-- returns a table with serialized caddr that can be pushed to queue
+function thread._serialize_object(obj)
+    if not obj or type(obj) ~= "table" or not obj.cdata then
+        return nil
     end
-    return _thread.new(callback, opt)
+
+    local result = {}
+    -- detect object type by checking internal marker
+    if obj._MUTEX then
+        thread.mutex_incref(obj:cdata())
+        result.mutex = true
+        result.name = obj:name()
+        result.caddr = libc.dataptr(obj:cdata(), {ffi = false})
+    elseif obj._EVENT then
+        thread.event_incref(obj:cdata())
+        result.event = true
+        result.name = obj:name()
+        result.caddr = libc.dataptr(obj:cdata(), {ffi = false})
+    elseif obj._SEMAPHORE then
+        thread.semaphore_incref(obj:cdata())
+        result.semaphore = true
+        result.name = obj:name()
+        result.caddr = libc.dataptr(obj:cdata(), {ffi = false})
+    elseif obj._QUEUE then
+        thread.queue_incref(obj:cdata())
+        result.queue = true
+        result.name = obj:name()
+        result.caddr = libc.dataptr(obj:cdata(), {ffi = false})
+    elseif obj._SHAREDATA then
+        thread.sharedata_incref(obj:cdata())
+        result.sharedata = true
+        result.name = obj:name()
+        result.caddr = libc.dataptr(obj:cdata(), {ffi = false})
+    elseif obj._PIPE_EVENT then
+        local data = obj:_serialize()
+        if not data then
+            return nil
+        end
+        result.pipe_event = true
+        result.ptr = data.ptr
+        result.name = data.name
+        result.caddr = data.ptr
+    else
+        return nil
+    end
+
+    return result
 end
 
--- get the running thread name
-function thread.running()
-    return thread._RUNNING
+-- deserialize thread object from serialized data (private helper)
+-- this is used to restore thread objects (mutex, event, semaphore, queue, sharedata)
+-- from serialized caddr received through queue or from table
+function thread._deserialize_object(data)
+    if not data or type(data) ~= "table" or not data.caddr then
+        return nil
+    end
+
+    local cdata = libc.ptraddr(data.caddr, {ffi = false})
+    if data.mutex then
+        return _mutex.new(data.name, cdata)
+    elseif data.event then
+        return _event.new(data.name, cdata)
+    elseif data.semaphore then
+        return _semaphore.new(data.name, cdata)
+    elseif data.queue then
+        return _queue.new(data.name, cdata)
+    elseif data.sharedata then
+        return _sharedata.new(data.name, cdata)
+    elseif data.pipe_event then
+        local event = pipe_event.new(data.name)
+        if not event then
+            return nil, "failed to create pipe event"
+        end
+        local ok, errors = event:_deserialize({ptr = data.ptr, name = data.name})
+        if not ok then
+            return nil, errors
+        end
+        return event
+    end
+
+    return nil
 end
 
 -- run thread
@@ -808,6 +869,7 @@ function thread._run_thread(callback_str, callinfo_str)
     local argv
     local threadname
     local wpipe
+    local is_internal = false
     if callinfo_str then
         local result, errors = string.deserialize(callinfo_str)
         if not result then
@@ -817,7 +879,10 @@ function thread._run_thread(callback_str, callinfo_str)
         if callinfo then
             argv = callinfo.argv
             threadname = callinfo.name
-            wpipe = pipe.new(libc.ptraddr(callinfo.wpipe, {ffi = false}))
+            is_internal = callinfo.internal
+            if callinfo.wpipe then
+                wpipe = pipe.new(libc.ptraddr(callinfo.wpipe, {ffi = false}))
+            end
         end
     end
 
@@ -850,23 +915,24 @@ function thread._run_thread(callback_str, callinfo_str)
         return false, errors
     end
 
+    -- if it's an internal thread, we need to bind some additional internal interfaces.
+    if is_internal then
+        sandbox_inst:api_register_builtin("require", require)
+    end
+
     -- save the running thread name
     thread._RUNNING = threadname
 
-    -- translate arguments (mutex, ...)
+    -- translate arguments (mutex, event, semaphore, queue, sharedata, ...)
     if argv then
         local newargv = {}
         for _, arg in ipairs(argv) do
-            if type(arg) == "table" and arg.mutex and arg.caddr then
-                arg = _mutex.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
-            elseif type(arg) == "table" and arg.event and arg.caddr then
-                arg = _event.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
-            elseif type(arg) == "table" and arg.semaphore and arg.caddr then
-                arg = _semaphore.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
-            elseif type(arg) == "table" and arg.queue and arg.caddr then
-                arg = _queue.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
-            elseif type(arg) == "table" and arg.sharedata and arg.caddr then
-                arg = _sharedata.new(arg.name, libc.ptraddr(arg.caddr, {ffi = false}))
+            if type(arg) == "table" and arg.caddr then
+                -- try to deserialize thread object
+                local obj = thread._deserialize_object(arg)
+                if obj then
+                    arg = obj
+                end
             end
             table.insert(newargv, arg)
         end
@@ -885,6 +951,25 @@ function thread._run_thread(callback_str, callinfo_str)
         wpipe:close()
     end
     return ok, errors
+end
+
+-- new a thread
+--
+-- @param callback      the thread callback
+-- @param opt           the thread options, e.g. {name = "", argv = {}, stacksize = 8192}
+--
+-- @return the thread instance
+--
+function thread.new(callback, opt)
+    if callback == nil then
+        return nil, "invalid thread, callback is nil"
+    end
+    return _thread.new(callback, opt)
+end
+
+-- get the running thread name
+function thread.running()
+    return thread._RUNNING
 end
 
 -- open a mutex

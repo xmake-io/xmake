@@ -769,10 +769,24 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
     return tb_true;
 }
 
-static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** argv, tb_char_t* path, tb_size_t maxn)
+static tb_bool_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** argv, tb_char_t* path, tb_size_t maxn)
 {
     // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
+
+    /* we cache it, because the current path will be changed in thread.
+     *
+     * The executable file compiled using cosmocc on macOS might retrieve a relative path to the programfile.
+     * If the root directory has been changed, the retrieved programfile will be a non-existent path.
+     */
+    static tb_char_t s_program_filepath[TB_PATH_MAXN] = {0};
+    if (s_program_filepath[0])
+    {
+        tb_strlcpy(path, s_program_filepath, maxn);
+        lua_pushstring(engine->lua, s_program_filepath);
+        lua_setglobal(engine->lua, "_PROGRAM_FILE");
+        return tb_true;
+    }
 
     tb_bool_t ok = tb_false;
     do
@@ -813,7 +827,10 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
         if (!_NSGetExecutablePath(path, &bufsize))
             ok = tb_true;
 #elif defined(XM_PROC_SELF_FILE)
-        // get the executale file path as program directory
+        /* get the executale file path as program directory
+         *
+         * @see it may be a relative path
+         */
         ssize_t size = readlink(XM_PROC_SELF_FILE, path, (size_t)maxn);
         if (size > 0 && size < maxn)
         {
@@ -878,6 +895,9 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
         // trace
         tb_trace_d("programfile: %s", path);
 
+        // cache it
+        tb_strlcpy(s_program_filepath, path, sizeof(s_program_filepath));
+
         // save the directory to the global variable: _PROGRAM_FILE
         lua_pushstring(engine->lua, path);
         lua_setglobal(engine->lua, "_PROGRAM_FILE");
@@ -908,6 +928,15 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
 {
     // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
+
+    static tb_char_t s_program_directory[TB_PATH_MAXN] = {0};
+    if (s_program_directory[0])
+    {
+        tb_strlcpy(path, s_program_directory, maxn);
+        lua_pushstring(engine->lua, s_program_directory);
+        lua_setglobal(engine->lua, "_PROGRAM_DIR");
+        return tb_true;
+    }
 
     tb_bool_t ok = tb_false;
     tb_char_t data[TB_PATH_MAXN] = {0};
@@ -993,6 +1022,9 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
     {
         // trace
         tb_trace_d("programdir: %s", path);
+
+        // cache it
+        tb_strlcpy(s_program_directory, path, sizeof(s_program_directory));
 
         // save the directory to the global variable: _PROGRAM_DIR
         lua_pushstring(engine->lua, path);

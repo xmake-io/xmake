@@ -245,6 +245,11 @@ function sandbox:namespace()
     return self._PRIVATE._NAMESPACE
 end
 
+-- register api for builtin
+function sandbox:api_register_builtin(name, func)
+    sandbox._api_register_builtin(self, name, func)
+end
+
 -- get current instance in the sandbox modules
 function sandbox.instance(script)
 

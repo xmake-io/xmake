@@ -1276,6 +1276,11 @@ end
 -- get the project menu
 function project.menu()
 
+    -- we cannot only get it in main thread
+    if not xmake.in_main_thread() then
+        return {}
+    end
+
     -- attempt to load options from the project file
     local options = nil
     local errors = nil

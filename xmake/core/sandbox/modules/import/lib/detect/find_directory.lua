@@ -28,6 +28,66 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
+local xmake     = require("base/xmake")
+
+-- expand search paths
+function sandbox_lib_detect_find_directory._expand_paths(paths)
+    local results = {}
+    for _, _path in ipairs(table.wrap(paths)) do
+        if type(_path) == "function" then
+            local ok, result_or_errors = sandbox.load(_path)
+            if ok then
+                _path = result_or_errors or ""
+            else
+                raise(result_or_errors)
+            end
+        else
+            _path = vformat(_path)
+        end
+        for _, _s_path in ipairs(table.wrap(_path)) do
+            _s_path = tostring(_s_path)
+            if #_s_path > 0 then
+                table.insert(results, _s_path)
+            end
+        end
+    end
+    return results
+end
+
+-- normalize suffixes
+function sandbox_lib_detect_find_directory._normalize_suffixes(suffixes)
+    local results = {}
+    for _, suffix in ipairs(table.wrap(suffixes)) do
+        suffix = tostring(suffix)
+        if #suffix > 0 then
+            table.insert(results, suffix)
+        end
+    end
+    return results
+end
+
+-- find directory from directories list
+function sandbox_lib_detect_find_directory._find_from_directories(name, directories, suffixes)
+    directories = table.wrap(directories)
+    suffixes = table.wrap(suffixes)
+    if #suffixes > 0 then
+        for _, directory in ipairs(directories) do
+            for _, suffix in ipairs(suffixes) do
+                local results = os.dirs(path.join(directory, suffix, name), function (file, isdir) return false end)
+                if results and #results > 0 then
+                    return results[1]
+                end
+            end
+        end
+    else
+        for _, directory in ipairs(directories) do
+            local results = os.dirs(path.join(directory, name), function (file, isdir) return false end)
+            if results and #results > 0 then
+                return results[1]
+            end
+        end
+    end
+end
 
 -- find directory
 --
@@ -51,43 +111,17 @@ function sandbox_lib_detect_find_directory.main(name, paths, opt)
     -- init options
     opt = opt or {}
 
-    -- init paths
-    paths = table.wrap(paths)
+    local suffixes = sandbox_lib_detect_find_directory._normalize_suffixes(opt.suffixes)
+    local directories = sandbox_lib_detect_find_directory._expand_paths(paths)
 
-    -- append suffixes to paths
-    local suffixes = table.wrap(opt.suffixes)
-    if #suffixes > 0 then
-        local paths_new = {}
-        for _, parent in ipairs(paths) do
-            for _, suffix in ipairs(suffixes) do
-                table.insert(paths_new, path.join(parent, suffix))
-            end
-        end
-        paths = paths_new
+    if opt.async and xmake.in_main_thread() then
+        local result, _ = os._async_task().find_directory(name, directories, {suffixes = suffixes})
+        return result
     end
 
-    -- find file
-    for _, _path in ipairs(paths) do
-
-        -- format path for builtin variables
-        if type(_path) == "function" then
-            local ok, results = sandbox.load(_path)
-            if ok then
-                _path = results or ""
-            else
-                raise(results)
-            end
-        else
-            _path = vformat(_path)
-        end
-
-        -- find the first directory
-        local results = os.dirs(path.join(_path, name), function (file, isdir) return false end)
-        if results and #results > 0 then
-            return results[1]
-        end
-    end
+    return sandbox_lib_detect_find_directory._find_from_directories(name, directories, suffixes)
 end
 
 -- return module
 return sandbox_lib_detect_find_directory
+

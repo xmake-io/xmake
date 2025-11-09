@@ -314,21 +314,12 @@ end
 function option.taskmenu(task)
     assert(option._MENU)
 
-    -- the current task
     task = task or option.taskname() or "main"
-
-    -- get the task menu
     local taskmenu = option._MENU[task]
     if type(taskmenu) == "function" then
-
-        -- load this task menu
         taskmenu = taskmenu()
-
-        -- save this task menu
         option._MENU[task] = taskmenu
     end
-
-    -- get it
     return taskmenu
 end
 

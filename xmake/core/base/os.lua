@@ -54,6 +54,16 @@ os.SYSERR_NOT_PERM    = 1
 os.SYSERR_NOT_FILEDIR = 2
 os.SYSERR_NOT_ACCESS  = 3
 
+-- get the async task
+function os._async_task()
+    local async_task = os._ASYNC_TASK
+    if async_task == nil then
+        async_task = require("base/private/async_task")
+        os._ASYNC_TASK = async_task
+    end
+    return async_task
+end
+
 -- copy single file or directory
 function os._cp(src, dst, rootdir, opt)
     opt = opt or {}
@@ -390,7 +400,15 @@ end
 --              end)
 -- @endcode
 --
-function os.match(pattern, mode, callback)
+function os.match(pattern, mode, opt)
+
+    -- do it in the asynchronous task
+    if type(opt) == "table" and opt.async and xmake.in_main_thread() then
+        return os._async_task().match(pattern, mode)
+    end
+
+    -- extract callback
+    local callback = type(opt) == "function" and opt or (type(opt) == "table" and opt.callback or nil)
 
     -- support path instance
     pattern = tostring(pattern)
@@ -483,18 +501,18 @@ end
 --
 -- @note only return {} without count to simplify code, e.g. table.unpack(os.dirs(""))
 --
-function os.dirs(pattern, callback)
-    return (os.match(pattern, 'd', callback))
+function os.dirs(pattern, opt)
+    return (os.match(pattern, 'd', opt))
 end
 
 -- match files
-function os.files(pattern, callback)
-    return (os.match(pattern, 'f', callback))
+function os.files(pattern, opt)
+    return (os.match(pattern, 'f', opt))
 end
 
 -- match files and directories
-function os.filedirs(pattern, callback)
-    return (os.match(pattern, 'a', callback))
+function os.filedirs(pattern, opt)
+    return (os.match(pattern, 'a', opt))
 end
 
 -- copy files or directories and we can reserve the source directory structure
@@ -509,6 +527,11 @@ function os.cp(srcpath, dstpath, opt)
     -- check arguments
     if not srcpath or not dstpath then
         return false, string.format("invalid arguments!")
+    end
+
+    -- do it in the asynchronous task
+    if opt and opt.async and xmake.in_main_thread() then
+        return os._async_task().cp(srcpath, dstpath, {detach = opt.detach})
     end
 
     -- reserve the source directory structure if opt.rootdir is given
@@ -564,14 +587,19 @@ end
 
 -- remove files or directories
 function os.rm(filepath, opt)
+    opt = opt or {}
 
     -- check arguments
     if not filepath then
         return false, string.format("invalid arguments!")
     end
 
+    -- do it in the asynchronous task
+    if opt.async and xmake.in_main_thread() then
+       return os._async_task().rm(filepath, {detach = opt.detach})
+    end
+
     -- remove file or directories
-    opt = opt or {}
     filepath = tostring(filepath)
     local filepathes = os._match_wildcard_pathes(filepath)
     if type(filepathes) == "string" then
@@ -616,6 +644,12 @@ end
 -- change to directory
 function os.cd(dir)
     assert(dir)
+
+    -- we can only change directory in main thread
+    if not xmake.in_main_thread() then
+        local thread = require("base/thread")
+        os.raise("we cannot change directory in non-main thread(%s)", thread.running() or "unknown")
+    end
 
     -- support path instance
     dir = tostring(dir)
@@ -682,11 +716,16 @@ function os.mkdir(dir)
 end
 
 -- remove directories
-function os.rmdir(dir)
+function os.rmdir(dir, opt)
 
     -- check arguments
     if not dir then
         return false, string.format("invalid arguments!")
+    end
+
+    -- do it in the asynchronous task
+    if opt and opt.async and xmake.in_main_thread() then
+        return os._async_task().rmdir(dir, {detach = opt.detach})
     end
 
     -- support path instance
@@ -835,17 +874,10 @@ function os.runv(program, argv, opt)
             errors = string.format("cannot runv(%s), %s", cmd, errors and errors or "unknown reason")
         end
 
-        -- remove the temporary log file
         os.rm(logfile)
-
-        -- failed
         return false, errors
     end
-
-    -- remove the temporary log file
     os.rm(logfile)
-
-    -- ok
     return true
 end
 

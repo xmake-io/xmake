@@ -67,6 +67,11 @@ function xmake.is_embed()
     return xmake._EMBED or false
 end
 
+-- in main thread?
+function xmake.in_main_thread()
+    return xmake._THREAD_CALLBACK == nil
+end
+
 -- get command arguments
 function xmake.argv()
     return xmake._ARGV

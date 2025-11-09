@@ -193,6 +193,20 @@ function utils.vprintf(format, ...)
     end
 end
 
+-- print the diagnosis information
+function utils.dprint(format, ...)
+    if option.get("diagnosis") and format ~= nil then
+        utils.print(format, ...)
+    end
+end
+
+-- print the diagnosis information without newline
+function utils.dprintf(format, ...)
+    if option.get("diagnosis") and format ~= nil then
+        utils.printf(format, ...)
+    end
+end
+
 -- print the error information
 function utils.error(format, ...)
     if format ~= nil then

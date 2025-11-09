@@ -28,6 +28,43 @@ local table     = require("base/table")
 local profiler  = require("base/profiler")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
+local xmake     = require("base/xmake")
+
+-- expand search paths
+function sandbox_lib_detect_find_path._expand_paths(paths)
+    local results = {}
+    for _, _path in ipairs(table.wrap(paths)) do
+        if type(_path) == "function" then
+            local ok, result_or_errors = sandbox.load(_path)
+            if ok then
+                _path = result_or_errors or ""
+            else
+                raise(result_or_errors)
+            end
+        else
+            _path = vformat(_path)
+        end
+        for _, _s_path in ipairs(table.wrap(_path)) do
+            _s_path = tostring(_s_path)
+            if #_s_path > 0 then
+                table.insert(results, _s_path)
+            end
+        end
+    end
+    return results
+end
+
+-- normalize suffixes
+function sandbox_lib_detect_find_path._normalize_suffixes(suffixes)
+    local results = {}
+    for _, suffix in ipairs(table.wrap(suffixes)) do
+        suffix = tostring(suffix)
+        if #suffix > 0 then
+            table.insert(results, suffix)
+        end
+    end
+    return results
+end
 
 -- find the given file path or directory
 function sandbox_lib_detect_find_path._find(filedir, name)
@@ -49,6 +86,31 @@ function sandbox_lib_detect_find_path._find(filedir, name)
             end
         end
 
+    end
+end
+
+-- find from directories list
+function sandbox_lib_detect_find_path._find_from_directories(name, directories, suffixes)
+    local results
+    suffixes = table.wrap(suffixes)
+    directories = table.wrap(directories)
+    if #suffixes > 0 then
+        for _, directory in ipairs(directories) do
+            for _, suffix in ipairs(suffixes) do
+                local filedir = path.join(directory, suffix)
+                results = sandbox_lib_detect_find_path._find(filedir, name)
+                if results then
+                    return results
+                end
+            end
+        end
+    else
+        for _, directory in ipairs(directories) do
+            results = sandbox_lib_detect_find_path._find(directory, name)
+            if results then
+                return results
+            end
+        end
     end
 end
 
@@ -76,42 +138,17 @@ function sandbox_lib_detect_find_path.main(name, paths, opt)
     -- init options
     opt = opt or {}
 
-    -- find path
-    local results
     profiler:enter("find_path", name)
-    local suffixes = table.wrap(opt.suffixes)
-    for _, _path in ipairs(table.wrap(paths)) do
+    local suffixes = sandbox_lib_detect_find_path._normalize_suffixes(opt.suffixes)
+    local directories = sandbox_lib_detect_find_path._expand_paths(paths)
 
-        -- format path for builtin variables
-        if type(_path) == "function" then
-            local ok, result_or_errors = sandbox.load(_path)
-            if ok then
-                _path = result_or_errors or ""
-            else
-                raise(result_or_errors)
-            end
-        else
-            _path = vformat(_path)
-        end
-
-        -- find file with suffixes
-        if #suffixes > 0 then
-            for _, suffix in ipairs(suffixes) do
-                local filedir = path.join(_path, suffix)
-                results = sandbox_lib_detect_find_path._find(filedir, name)
-                if results then
-                    goto found
-                end
-            end
-        else
-            -- find file in the given path
-            results = sandbox_lib_detect_find_path._find(_path, name)
-            if results then
-                goto found
-            end
-        end
+    if opt.async and xmake.in_main_thread() then
+        local result, _ = os._async_task().find_path(name, directories, {suffixes = suffixes})
+        profiler:leave("find_path", name)
+        return result
     end
-::found::
+
+    local results = sandbox_lib_detect_find_path._find_from_directories(name, directories, suffixes)
     profiler:leave("find_path", name)
     return results
 end

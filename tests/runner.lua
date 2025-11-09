@@ -18,7 +18,6 @@ function main(script, opt)
     local context = test_context(script)
 
     local root = path.directory(script)
-
     local verbose = option.get("verbose") or option.get("diagnosis")
 
     -- trace
@@ -26,7 +25,6 @@ function main(script, opt)
 
     -- get test functions
     local data = import("test", { rootdir = root, anonymous = true })
-
     if data.main then
         -- ignore everthing when we found a main function
         data = { test_main = data.main }
@@ -37,9 +35,12 @@ function main(script, opt)
 
     -- run test
     local succeed_count = 0
+    local start_time = os.mclock()
     for k, v in pairs(data) do
         if k:startswith("test") and type(v) == "function" then
-            if verbose then print(">>     running %s ...", k) end
+            if verbose then
+                print(">>     running %s ...", k)
+            end
             context.func = v
             context.funcname = k
             local result = try
@@ -69,7 +70,9 @@ function main(script, opt)
             succeed_count = succeed_count + 1
         end
     end
-    if verbose then print(">>   finished %d test method(s) ...", succeed_count) end
+    if verbose then
+        print(">>   finished %d test method(s), spent %0.02fs", succeed_count, (os.mclock() - start_time) / 1000)
+    end
 
     -- leave script directory
     os.cd(old_dir)
