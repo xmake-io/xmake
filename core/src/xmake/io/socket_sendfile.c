@@ -85,8 +85,9 @@ tb_int_t xm_io_socket_sendfile(lua_State *lua) {
 
     // get start
     tb_long_t start = 1;
-    if (lua_isnumber(lua, 3))
+    if (lua_isnumber(lua, 3)) {
         start = (tb_long_t)lua_tonumber(lua, 3);
+    }
     if (start < 1 || start > filesize) {
         lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid start position(%d)!", (tb_int_t)start);
@@ -95,8 +96,9 @@ tb_int_t xm_io_socket_sendfile(lua_State *lua) {
 
     // get last
     tb_long_t last = (tb_long_t)filesize;
-    if (lua_isnumber(lua, 4))
+    if (lua_isnumber(lua, 4)) {
         last = (tb_long_t)lua_tonumber(lua, 4);
+    }
     if (last < start - 1 || last > filesize + start - 1) {
         lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid last position(%d)!", (tb_int_t)last);

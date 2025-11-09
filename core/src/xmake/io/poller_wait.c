@@ -46,10 +46,11 @@ static tb_void_t xm_io_poller_event(tb_poller_ref_t        poller,
     lua_newtable(lua);
     lua_pushinteger(lua, (tb_int_t)object->type);
     lua_rawseti(lua, -2, 1);
-    if (priv)
+    if (priv) {
         lua_pushstring(lua, (tb_char_t const *)priv);
-    else
+    } else {
         lua_pushlightuserdata(lua, object->ref.ptr);
+    }
     lua_rawseti(lua, -2, 2);
     if (object->type == TB_POLLER_OBJECT_FWATCHER) {
         lua_newtable(lua);
@@ -63,8 +64,9 @@ static tb_void_t xm_io_poller_event(tb_poller_ref_t        poller,
             lua_pushinteger(lua, event->event);
             lua_settable(lua, -3);
         }
-    } else
+    } else {
         lua_pushinteger(lua, (tb_int_t)events);
+    }
     lua_rawseti(lua, -2, 3);
     lua_rawseti(lua, -2, ++state->events_count);
 }

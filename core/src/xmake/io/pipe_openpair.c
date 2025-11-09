@@ -46,10 +46,12 @@ tb_int_t xm_io_pipe_openpair(lua_State *lua) {
 
     // init mode
     tb_size_t mode[2] = { 0 };
-    if (modestr[0] == 'B')
+    if (modestr[0] == 'B') {
         mode[0] |= TB_PIPE_MODE_BLOCK;
-    if (modestr[1] == 'B')
+    }
+    if (modestr[1] == 'B') {
         mode[1] |= TB_PIPE_MODE_BLOCK;
+    }
 
     // get buffer size
     tb_size_t buffsize = (tb_size_t)luaL_checknumber(lua, 2);

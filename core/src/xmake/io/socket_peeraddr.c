@@ -47,8 +47,9 @@ tb_int_t xm_io_socket_peeraddr(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
-    if (!xm_lua_ispointer(lua, 1))
+    if (!xm_lua_ispointer(lua, 1)) {
         xm_io_return_error(lua, "get peer address for invalid sock!");
+    }
 
     // get socket
     tb_socket_ref_t sock = (tb_socket_ref_t)xm_lua_topointer(lua, 1);
@@ -58,9 +59,10 @@ tb_int_t xm_io_socket_peeraddr(lua_State *lua) {
     tb_ipaddr_t      addr;
     tb_char_t        data[256];
     tb_char_t const *cstr = tb_null;
-    if (tb_socket_peer(sock, &addr) && (cstr = tb_ipaddr_cstr(&addr, data, sizeof(data))))
+    if (tb_socket_peer(sock, &addr) && (cstr = tb_ipaddr_cstr(&addr, data, sizeof(data)))) {
         lua_pushstring(lua, cstr);
-    else
+    } else {
         lua_pushnil(lua);
+    }
     return 1;
 }

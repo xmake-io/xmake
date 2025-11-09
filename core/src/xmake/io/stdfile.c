@@ -71,8 +71,9 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type) {
     /* we cannot call is_cygpty for stdin, because it will cause io.readable is always true
      * https://github.com/xmake-io/xmake/issues/2504#issuecomment-1170130756
      */
-    if (!answer && type != XM_IO_FILE_TYPE_STDIN)
+    if (!answer && type != XM_IO_FILE_TYPE_STDIN) {
         answer = is_cygpty(console_handle);
+    }
 #else
     switch (type) {
     case XM_IO_FILE_TYPE_STDIN:
@@ -87,8 +88,9 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type) {
     }
 #endif
 
-    if (answer)
+    if (answer) {
         type |= XM_IO_FILE_FLAG_TTY;
+    }
     return type;
 }
 
@@ -97,8 +99,9 @@ static tb_void_t xm_io_stdfile_init_buffer(tb_size_t type) {
 #if !defined(TB_CONFIG_OS_WINDOWS)
     struct stat stats;
     tb_int_t    size = BUFSIZ;
-    if (fstat(fileno(stdout), &stats) != -1)
+    if (fstat(fileno(stdout), &stats) != -1) {
         size = stats.st_blksize;
+    }
     setvbuf(stdout, tb_null, _IOLBF, size);
 #endif
 }
@@ -154,8 +157,9 @@ tb_int_t xm_io_stdfile(lua_State *lua) {
      * @note we need to ensure that it is a singleton in the external lua script, and will only be created once, e.g. io.stdin, io.stdout, io.stderr
      */
     xm_io_file_t *file = xm_io_stdfile_new(lua, type);
-    if (file)
+    if (file) {
         return 1;
-    else
+    } else {
         xm_io_return_error(lua, "invalid stdfile type!");
+    }
 }

@@ -39,8 +39,9 @@ tb_int_t xm_io_file_seek(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
-    if (!lua_isuserdata(lua, 1))
+    if (!lua_isuserdata(lua, 1)) {
         xm_io_return_error(lua, "seek(invalid file)!");
+    }
 
     // get file
     xm_io_file_t *file = (xm_io_file_t *)lua_touserdata(lua, 1);
@@ -60,10 +61,11 @@ tb_int_t xm_io_file_seek(lua_State *lua) {
         case 'e': // "end"
         {
             tb_hong_t size = tb_stream_size(file->u.file_ref);
-            if (size > 0 && size + offset <= size)
+            if (size > 0 && size + offset <= size) {
                 offset = size + offset;
-            else
+            } else {
                 xm_io_return_error(lua, "seek failed, invalid offset!");
+            }
         } break;
         default: // "cur"
             offset = tb_stream_offset(file->u.file_ref) + offset;
@@ -73,8 +75,10 @@ tb_int_t xm_io_file_seek(lua_State *lua) {
         if (tb_stream_seek(file->u.file_ref, offset)) {
             lua_pushnumber(lua, (lua_Number)offset);
             return 1;
-        } else
+        } else {
             xm_io_return_error(lua, "seek failed!");
-    } else
+        }
+    } else {
         xm_io_return_error(lua, "seek is not supported on this file");
+    }
 }

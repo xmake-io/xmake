@@ -50,8 +50,9 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const **data_ptr, tb_long_t
     tb_size_t        charset = XM_IO_FILE_ENCODING_BINARY;
     do {
         // is luajit bitcode? open as binary
-        if (size >= 3 && data[0] == 27 && data[1] == 'L' && data[2] == 'J')
+        if (size >= 3 && data[0] == 27 && data[1] == 'L' && data[2] == 'J') {
             break;
+        }
 
         // utf-8 with bom
         if (size >= 3 && data[0] == 239 && data[1] == 187 && data[2] == 191) {
@@ -80,34 +81,39 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const **data_ptr, tb_long_t
         tb_sint16_t ascii_conf   = 0;
         tb_sint16_t zero_count   = 0;
         for (tb_long_t i = 0; i < (size - 4) && i < CHECK_SIZE; i++) {
-            if (data[i] == 0)
+            if (data[i] == 0) {
                 zero_count++;
-
-            if (data[i] < 0x80)
-                ascii_conf++;
-            else
-                ascii_conf = TB_MINS16;
-
-            if (i % 2 == 0) {
-                if (data[i] == 0)
-                    utf16be_conf++;
-                if (data[i + 1] == 0)
-                    utf16le_conf++;
             }
 
-            if (IS_UTF8_TAIL(data[i]))
-                ;
-            else if (data[i] < 0x80)
+            if (data[i] < 0x80) {
+                ascii_conf++;
+            } else {
+                ascii_conf = TB_MINS16;
+            }
+
+            if (i % 2 == 0) {
+                if (data[i] == 0) {
+                    utf16be_conf++;
+                }
+                if (data[i + 1] == 0) {
+                    utf16le_conf++;
+                }
+            }
+
+            if (IS_UTF8_TAIL(data[i])) {
+                // continue
+            } else if (data[i] < 0x80) {
                 utf8_conf++;
-            else if (data[i] >= 0xc0 && data[i] < 0xe0 && IS_UTF8_TAIL(data[i + 1]))
+            } else if (data[i] >= 0xc0 && data[i] < 0xe0 && IS_UTF8_TAIL(data[i + 1])) {
                 utf8_conf++;
-            else if (data[i] >= 0xe0 && data[i] < 0xf0 && IS_UTF8_TAIL(data[i + 1]) && IS_UTF8_TAIL(data[i + 2]))
+            } else if (data[i] >= 0xe0 && data[i] < 0xf0 && IS_UTF8_TAIL(data[i + 1]) && IS_UTF8_TAIL(data[i + 2])) {
                 utf8_conf++;
-            else if (data[i] >= 0xf0 && data[i] < 0xf8 && IS_UTF8_TAIL(data[i + 1]) && IS_UTF8_TAIL(data[i + 2]) &&
-                     IS_UTF8_TAIL(data[i + 3]))
+            } else if (data[i] >= 0xf0 && data[i] < 0xf8 && IS_UTF8_TAIL(data[i + 1]) && IS_UTF8_TAIL(data[i + 2]) &&
+                       IS_UTF8_TAIL(data[i + 3])) {
                 utf8_conf++;
-            else
+            } else {
                 utf8_conf = TB_MINS16;
+            }
         }
 
         if (ascii_conf > 0 && zero_count <= 1) {
@@ -188,44 +194,46 @@ tb_int_t xm_io_file_open(lua_State *lua) {
     tb_stream_ref_t stream   = tb_null;
     tb_bool_t       update   = !!tb_strchr(modestr, '+');
     tb_size_t       encoding = XM_IO_FILE_ENCODING_UNKNOWN;
-    if (modestr[1] == 'b' || (update && modestr[2] == 'b'))
+    if (modestr[1] == 'b' || (update && modestr[2] == 'b')) {
         encoding = XM_IO_FILE_ENCODING_BINARY;
-    else if (tb_strstr(modestr, "utf8") || tb_strstr(modestr, "utf-8"))
+    } else if (tb_strstr(modestr, "utf8") || tb_strstr(modestr, "utf-8")) {
         encoding = TB_CHARSET_TYPE_UTF8;
-    else if (tb_strstr(modestr, "utf16le") || tb_strstr(modestr, "utf-16le"))
+    } else if (tb_strstr(modestr, "utf16le") || tb_strstr(modestr, "utf-16le")) {
         encoding = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE;
-    else if (tb_strstr(modestr, "utf16be") || tb_strstr(modestr, "utf-16be"))
+    } else if (tb_strstr(modestr, "utf16be") || tb_strstr(modestr, "utf-16be")) {
         encoding = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE;
-    else if (tb_strstr(modestr, "utf16") || tb_strstr(modestr, "utf-16"))
+    } else if (tb_strstr(modestr, "utf16") || tb_strstr(modestr, "utf-16")) {
         encoding = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_NE;
-    else if (tb_strstr(modestr, "ansi"))
+    } else if (tb_strstr(modestr, "ansi")) {
         encoding = TB_CHARSET_TYPE_ANSI;
-    else if (tb_strstr(modestr, "gbk"))
+    } else if (tb_strstr(modestr, "gbk")) {
         encoding = TB_CHARSET_TYPE_GBK;
-    else if (tb_strstr(modestr, "gb2312"))
+    } else if (tb_strstr(modestr, "gb2312")) {
         encoding = TB_CHARSET_TYPE_GB2312;
-    else if (tb_strstr(modestr, "iso8859"))
+    } else if (tb_strstr(modestr, "iso8859")) {
         encoding = TB_CHARSET_TYPE_ISO8859;
-    else if (modestr[0] == 'w' || modestr[0] == 'a') // set to utf-8 if not specified for the writing mode
+    } else if (modestr[0] == 'w' || modestr[0] == 'a') { // set to utf-8 if not specified for the writing mode
         encoding = TB_CHARSET_TYPE_UTF8;
-    else if (modestr[0] == 'r') // detect encoding if not specified for the reading mode
-    {
+    } else if (modestr[0] == 'r') { // detect encoding if not specified for the reading mode
         stream = tb_stream_init_from_file(path, mode);
-        if (stream && tb_stream_open(stream))
+        if (stream && tb_stream_open(stream)) {
             encoding = xm_io_file_detect_encoding(stream, &bomoff);
-        else {
-            if (stream)
+        } else {
+            if (stream) {
                 tb_stream_exit(stream);
+            }
             xm_io_return_error(lua, "file not found!");
         }
-    } else
+    } else {
         xm_io_return_error(lua, "invalid open mode!");
+    }
     tb_assert_and_check_return_val(encoding != XM_IO_FILE_ENCODING_UNKNOWN, 0);
 
     // write data with utf bom? e.g. utf8bom, utf16lebom, utf16bom
     tb_bool_t utfbom = tb_false;
-    if (tb_strstr(modestr, "bom"))
+    if (tb_strstr(modestr, "bom")) {
         utfbom = tb_true;
+    }
 
     // open file
     tb_bool_t       open_ok  = tb_false;
@@ -239,24 +247,28 @@ tb_int_t xm_io_file_open(lua_State *lua) {
         // is transcode?
         tb_bool_t is_transcode = encoding != TB_CHARSET_TYPE_UTF8 && encoding != XM_IO_FILE_ENCODING_BINARY;
         if (is_transcode) {
-            if (modestr[0] == 'r')
+            if (modestr[0] == 'r') {
                 fstream = tb_stream_init_filter_from_charset(stream, encoding, TB_CHARSET_TYPE_UTF8);
-            else
+            } else {
                 fstream = tb_stream_init_filter_from_charset(stream, TB_CHARSET_TYPE_UTF8, encoding);
+            }
             tb_assert_and_check_break(fstream);
 
             // use fstream as file
             file_ref = fstream;
-        } else
+        } else {
             file_ref = stream;
+        }
 
         // open file stream
-        if (!tb_stream_open(file_ref))
+        if (!tb_stream_open(file_ref)) {
             break;
+        }
 
         // skip bom characters if exists
-        if (bomoff > 0 && !tb_stream_seek(stream, bomoff))
+        if (bomoff > 0 && !tb_stream_seek(stream, bomoff)) {
             break;
+        }
 
         open_ok = tb_true;
 
@@ -265,13 +277,15 @@ tb_int_t xm_io_file_open(lua_State *lua) {
     // open failed?
     if (!open_ok) {
         // exit stream
-        if (stream)
+        if (stream) {
             tb_stream_exit(stream);
+        }
         stream = tb_null;
 
         // exit charset stream filter
-        if (fstream)
+        if (fstream) {
             tb_stream_exit(fstream);
+        }
         fstream = tb_null;
 
         // return errors

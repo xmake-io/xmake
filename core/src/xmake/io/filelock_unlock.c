@@ -39,8 +39,9 @@ tb_int_t xm_io_filelock_unlock(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // check lock?
-    if (!xm_lua_topointer(lua, 1))
+    if (!xm_lua_topointer(lua, 1)) {
         return 0;
+    }
 
     // get lock
     tb_filelock_ref_t lock = (tb_filelock_ref_t)xm_lua_topointer(lua, 1);

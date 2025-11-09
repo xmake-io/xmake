@@ -39,8 +39,9 @@ tb_int_t xm_io_pipe_wait(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // check pipe?
-    if (!xm_pipe_file_is_valid(lua, 1))
+    if (!xm_pipe_file_is_valid(lua, 1)) {
         return 0;
+    }
 
     // get pipe file
     tb_pipe_file_ref_t pipefile = xm_pipe_file_get(lua, 1);

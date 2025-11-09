@@ -131,8 +131,9 @@ int is_cygpty(HANDLE h) {
             p = NULL;
         }
         if (p != NULL) {
-            while (*p && isxdigit(*p)) /* Skip 16-digit hexadecimal. */
+            while (*p && isxdigit(*p)) { /* Skip 16-digit hexadecimal. */
                 ++p;
+            }
             if (is_wprefix(p, L"-pty")) {
                 p += 4;
             } else {
@@ -140,8 +141,9 @@ int is_cygpty(HANDLE h) {
             }
         }
         if (p != NULL) {
-            while (*p && isdigit(*p)) /* Skip pty number. */
+            while (*p && isdigit(*p)) { /* Skip pty number. */
                 ++p;
+            }
             if (is_wprefix(p, L"-from-master")) {
                 //p += 12;
             } else if (is_wprefix(p, L"-to-master")) {

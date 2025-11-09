@@ -47,21 +47,24 @@ tb_int_t xm_io_pipe_open(lua_State *lua) {
 
     // get pipe mode value
     tb_size_t mode = TB_PIPE_MODE_RO;
-    if (modestr[0] == 'w')
+    if (modestr[0] == 'w') {
         mode = TB_PIPE_MODE_WO;
+    }
 
     // set block mode
-    if (modestr[1] == 'B')
+    if (modestr[1] == 'B') {
         mode |= TB_PIPE_MODE_BLOCK;
+    }
 
     // get buffer size
     tb_size_t buffsize = (tb_size_t)luaL_checknumber(lua, 3);
 
     // open pipe file
     tb_pipe_file_ref_t pipefile = tb_pipe_file_init(name, mode, buffsize);
-    if (pipefile)
+    if (pipefile) {
         xm_lua_pushpointer(lua, (tb_pointer_t)pipefile);
-    else
+    } else {
         lua_pushnil(lua);
+    }
     return 1;
 }

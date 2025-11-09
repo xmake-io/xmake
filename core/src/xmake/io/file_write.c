@@ -137,21 +137,23 @@ tb_int_t xm_io_file_write(lua_State *lua) {
             // get data
             size_t           datasize = 0;
             tb_byte_t const *data     = tb_null;
-            if (lua_isstring(lua, i))
+            if (lua_isstring(lua, i)) {
                 data = (tb_byte_t const *)luaL_checklstring(lua, i, &datasize);
-            else if (lua_istable(lua, i)) {
+            } else if (lua_istable(lua, i)) {
                 // get bytes data
                 lua_pushstring(lua, "data");
                 lua_gettable(lua, i);
-                if (xm_lua_isinteger(lua, -1))
+                if (xm_lua_isinteger(lua, -1)) {
                     data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, -1);
+                }
                 lua_pop(lua, 1);
                 tb_assert_static(sizeof(lua_Integer) >= sizeof(tb_pointer_t));
 
                 lua_pushstring(lua, "size");
                 lua_gettable(lua, i);
-                if (xm_lua_isinteger(lua, -1))
+                if (xm_lua_isinteger(lua, -1)) {
                     datasize = (tb_size_t)lua_tointeger(lua, -1);
+                }
                 lua_pop(lua, 1);
 
                 // mark as binary data
@@ -162,11 +164,11 @@ tb_int_t xm_io_file_write(lua_State *lua) {
             tb_assert_and_check_break(data);
 
             // write data to std or file
-            if (xm_io_file_is_std(file))
+            if (xm_io_file_is_std(file)) {
                 xm_io_file_write_std(file, data, (tb_size_t)datasize);
-            else if (is_binary)
+            } else if (is_binary) {
                 xm_io_file_write_file_directly(file, data, (tb_size_t)datasize);
-            else {
+            } else {
                 // write utf bom first?
                 if (file->utfbom) {
                     xm_io_file_write_file_utfbom(file);

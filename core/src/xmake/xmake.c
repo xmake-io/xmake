@@ -77,8 +77,9 @@ tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build) {
     tb_trace_d("init: ..");
 
     // check mode
-    if (!xm_check_mode(mode))
+    if (!xm_check_mode(mode)) {
         return tb_false;
+    }
 
     // check version
     xm_version_check(build);
@@ -88,8 +89,9 @@ tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build) {
     if (!tb_init(tb_null, tb_default_allocator(tb_null, 0))) return tb_false;
 #else
     // init tbox, since small compilation mode is enabled, it still uses the native allocator
-    if (!tb_init(tb_null, tb_null))
+    if (!tb_init(tb_null, tb_null)) {
         return tb_false;
+    }
 #endif
 
     tb_trace_d("init: ok");

@@ -39,8 +39,9 @@ tb_int_t xm_io_file_size(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
-    if (!lua_isuserdata(lua, 1))
+    if (!lua_isuserdata(lua, 1)) {
         xm_io_return_error(lua, "get size for invalid file!");
+    }
 
     // get file
     xm_io_file_t *file = (xm_io_file_t *)lua_touserdata(lua, 1);
@@ -52,6 +53,7 @@ tb_int_t xm_io_file_size(lua_State *lua) {
         tb_assert(file->stream);
         lua_pushnumber(lua, (lua_Number)tb_stream_size(file->stream));
         return 1;
-    } else
+    } else {
         xm_io_return_error(lua, "get size for invalid file!");
+    }
 }

@@ -79,10 +79,11 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     }
 
     tb_size_t linesize = tb_buffer_size(line);
-    if (linesize)
+    if (linesize) {
         return linesize;
-    else
+    } else {
         return (eof || tb_stream_beof(stream)) ? -1 : 0;
+    }
 }
 static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t  buf,
                                            xm_io_file_t    *file,
@@ -122,9 +123,9 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t  buf,
         tb_assert_and_check_break(data);
 
         // no lf found
-        if (size > 0 && data[size - 1] != '\n')
+        if (size > 0 && data[size - 1] != '\n') {
             result = PL_FIN;
-        else if (size > 1) {
+        } else if (size > 1) {
             // crlf? => lf
             if (!is_binary && data[size - 2] == '\r') {
                 data[size - 2] = '\n';
@@ -137,27 +138,31 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t  buf,
                                         0;
 
             // do not keep crlf, strip the last lf
-            if (!keep_crlf && !has_conline)
+            if (!keep_crlf && !has_conline) {
                 size--;
+            }
 
             // strip it if has continuation?
-            if (has_conline)
+            if (has_conline) {
                 size -= conlen + 1;
+            }
             data[size] = '\0';
 
             result = has_conline ? PL_CONL : PL_FIN;
         } else {
             // a single '\n'
-            if (!keep_crlf)
+            if (!keep_crlf) {
                 size = 0;
+            }
             result = PL_FIN;
         }
 
     } while (0);
 
     // push line data
-    if (data && size > 0 && (result == PL_FIN || result == PL_CONL))
+    if (data && size > 0 && (result == PL_FIN || result == PL_CONL)) {
         tb_buffer_memncat(buf, (tb_byte_t const *)data, size);
+    }
 
     // return result
     return result;
@@ -167,8 +172,9 @@ static tb_int_t xm_io_file_read_all_directly(lua_State *lua, xm_io_file_t *file)
 
     // init buffer
     tb_buffer_t buf;
-    if (!tb_buffer_init(&buf))
+    if (!tb_buffer_init(&buf)) {
         xm_io_return_error(lua, "init buffer failed!");
+    }
 
     tb_byte_t *data = tb_buffer_resize(&file->rcache, XM_IO_BLOCK_MAXN);
     if (!data) {
@@ -180,19 +186,21 @@ static tb_int_t xm_io_file_read_all_directly(lua_State *lua, xm_io_file_t *file)
     tb_stream_ref_t stream = file->u.file_ref;
     while (!tb_stream_beof(stream)) {
         tb_long_t real = tb_stream_read(stream, data, XM_IO_BLOCK_MAXN);
-        if (real > 0)
+        if (real > 0) {
             tb_buffer_memncat(&buf, data, real);
-        else if (!real) {
+        } else if (!real) {
             real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, -1);
             tb_check_break(real > 0);
-        } else
+        } else {
             break;
+        }
     }
 
-    if (tb_buffer_size(&buf))
+    if (tb_buffer_size(&buf)) {
         lua_pushlstring(lua, (tb_char_t const *)tb_buffer_data(&buf), tb_buffer_size(&buf));
-    else
+    } else {
         lua_pushliteral(lua, "");
+    }
     tb_buffer_exit(&buf);
     return 1;
 }
@@ -201,23 +209,26 @@ static tb_int_t xm_io_file_read_all(lua_State *lua, xm_io_file_t *file, tb_char_
 
     // is binary? read all directly
     tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
-    if (is_binary)
+    if (is_binary) {
         return xm_io_file_read_all_directly(lua, file);
+    }
 
     // init buffer
     tb_buffer_t buf;
-    if (!tb_buffer_init(&buf))
+    if (!tb_buffer_init(&buf)) {
         xm_io_return_error(lua, "init buffer failed!");
+    }
 
     // read all
     tb_bool_t has_content = tb_false;
     while (1) {
         switch (xm_io_file_buffer_pushline(&buf, file, continuation, tb_true)) {
         case PL_EOF:
-            if (!has_content)
+            if (!has_content) {
                 lua_pushliteral(lua, "");
-            else
+            } else {
                 lua_pushlstring(lua, (tb_char_t const *)tb_buffer_data(&buf), tb_buffer_size(&buf));
+            }
             tb_buffer_exit(&buf);
             return 1;
         case PL_FIN:
@@ -241,18 +252,20 @@ static tb_int_t xm_io_file_read_line(lua_State       *lua,
 
     // init buffer
     tb_buffer_t buf;
-    if (!tb_buffer_init(&buf))
+    if (!tb_buffer_init(&buf)) {
         xm_io_return_error(lua, "init buffer failed!");
+    }
 
     // read line
     tb_bool_t has_content = tb_false;
     while (1) {
         switch (xm_io_file_buffer_pushline(&buf, file, continuation, keep_crlf)) {
         case PL_EOF:
-            if (!has_content)
+            if (!has_content) {
                 lua_pushnil(lua);
-            else
+            } else {
                 lua_pushlstring(lua, (tb_char_t const *)tb_buffer_data(&buf), tb_buffer_size(&buf));
+            }
             tb_buffer_exit(&buf);
             return 1;
         case PL_FIN:
@@ -275,12 +288,14 @@ static tb_int_t xm_io_file_read_n(lua_State *lua, xm_io_file_t *file, tb_char_t 
     tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
 
     // check continuation
-    if (*continuation != '\0')
+    if (*continuation != '\0') {
         xm_io_return_error(lua, "continuation is not supported for read number of bytes");
+    }
 
     // check encoding
-    if (file->encoding != XM_IO_FILE_ENCODING_BINARY)
+    if (file->encoding != XM_IO_FILE_ENCODING_BINARY) {
         xm_io_return_error(lua, "read number of bytes only allows binary file, reopen with 'rb' and try again");
+    }
 
     tb_bool_t ok = tb_false;
     if (n == 0) {
@@ -298,8 +313,9 @@ static tb_int_t xm_io_file_read_n(lua_State *lua, xm_io_file_t *file, tb_char_t 
             }
         }
     }
-    if (!ok)
+    if (!ok) {
         lua_pushnil(lua);
+    }
     return 1;
 }
 
@@ -313,10 +329,11 @@ static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t  buf,
     tb_char_t strbuf[8192];
     tb_size_t buflen = 0;
     tb_size_t result = PL_FAIL;
-    if (tb_stdfile_gets(file->u.std_ref, strbuf, tb_arrayn(strbuf) - 1))
+    if (tb_stdfile_gets(file->u.std_ref, strbuf, tb_arrayn(strbuf) - 1)) {
         buflen = tb_strlen(strbuf);
-    else
+    } else {
         return PL_EOF;
+    }
 
     tb_size_t conlen = tb_strlen(continuation);
     if (buflen > 0 && strbuf[buflen - 1] != '\n') {
@@ -334,24 +351,28 @@ static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t  buf,
                                 tb_strncmp(continuation, (strbuf + buflen - conlen - 1), conlen) == 0;
 
         // do not keep crlf, strip the last lf
-        if (!keep_crlf && !has_conline)
+        if (!keep_crlf && !has_conline) {
             buflen--;
+        }
 
         // strip it if has continuation?
-        if (has_conline)
+        if (has_conline) {
             buflen -= conlen + 1;
+        }
         strbuf[buflen] = '\0';
 
         result = has_conline ? PL_CONL : PL_FIN;
     } else {
         // a single '\n'
-        if (!keep_crlf)
+        if (!keep_crlf) {
             buflen = 0;
+        }
         result = PL_FIN;
     }
 
-    if (result == PL_FIN || result == PL_CONL)
+    if (result == PL_FIN || result == PL_CONL) {
         tb_buffer_memncat(buf, (tb_byte_t const *)strbuf, buflen);
+    }
     return result;
 }
 
@@ -363,18 +384,20 @@ static tb_int_t xm_io_file_std_read_line(lua_State       *lua,
 
     // init buffer
     tb_buffer_t buf;
-    if (!tb_buffer_init(&buf))
+    if (!tb_buffer_init(&buf)) {
         xm_io_return_error(lua, "init buffer failed!");
+    }
 
     // read line
     tb_bool_t has_content = tb_false;
     while (1) {
         switch (xm_io_file_std_buffer_pushline(&buf, file, continuation, keep_crlf)) {
         case PL_EOF:
-            if (!has_content)
+            if (!has_content) {
                 lua_pushnil(lua);
-            else
+            } else {
                 lua_pushlstring(lua, (tb_char_t const *)tb_buffer_data(&buf), tb_buffer_size(&buf));
+            }
             tb_buffer_exit(&buf);
             return 1;
         case PL_FIN:

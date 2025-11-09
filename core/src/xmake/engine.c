@@ -898,18 +898,20 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t     *engine,
         return tb_true;
     }
 
-    tb_bool_t ok                 = tb_false;
+    tb_bool_t ok = tb_false;
     tb_char_t data[TB_PATH_MAXN] = { 0 };
     do {
 #ifdef XM_EMBED_ENABLE
         tb_size_t embedcount = engine->embedcount;
         if (embedcount) {
             tb_uint32_t crc32 = 0;
-            for (tb_size_t i = 0; i < embedcount; i++)
+            for (tb_size_t i = 0; i < embedcount; i++) {
                 crc32 += tb_crc32_make(engine->embeddata[i], engine->embedsize[i], 0);
+            }
             tb_snprintf(path, maxn, "%s/%x", engine->tmpdir, crc32);
-        } else
+        } else {
             tb_strlcpy(path, engine->tmpdir, maxn);
+        }
         ok = tb_true;
         break;
 #endif
@@ -1011,8 +1013,9 @@ static tb_bool_t xm_engine_get_project_directory(xm_engine_t *engine, tb_char_t 
     } while (0);
 
     // failed?
-    if (!ok)
+    if (!ok) {
         tb_printf("error: not found the project directory!\n");
+    }
 
     return ok;
 }
@@ -1054,12 +1057,13 @@ static tb_void_t xm_engine_init_host(xm_engine_t *engine) {
 #if defined(__COSMOPOLITAN__)
     struct utsname buffer;
     if (uname(&buffer) == 0) {
-        if (tb_strstr(buffer.sysname, "Darwin"))
+        if (tb_strstr(buffer.sysname, "Darwin")) {
             syshost = "macosx";
-        else if (tb_strstr(buffer.sysname, "Linux"))
+        } else if (tb_strstr(buffer.sysname, "Linux")) {
             syshost = "linux";
-        else if (tb_strstr(buffer.sysname, "Windows"))
+        } else if (tb_strstr(buffer.sysname, "Windows")) {
             syshost = "windows";
+        }
     }
 #elif defined(TB_CONFIG_OS_WINDOWS)
     syshost = "windows";
@@ -1096,8 +1100,9 @@ static tb_void_t xm_engine_init_host(xm_engine_t *engine) {
                                 "clang",
                                 5) // clang32/64 on msys2, @see https://github.com/xmake-io/xmake/issues/3060
                 || !tb_stricmp(data, "ucrt64") // ucrt64 https://www.msys2.org/docs/environments/
-                || !tb_stricmp(data, "msys"))  // on msys2
+                || !tb_stricmp(data, "msys")) { // on msys2
                 subhost = "msys";
+            }
         }
     }
 #endif
@@ -1145,12 +1150,14 @@ static tb_void_t xm_engine_init_arch(xm_engine_t *engine) {
     if (uname(&buffer) == 0) {
         sysarch = buffer.machine;
         if (tb_strstr(buffer.sysname, "Windows")) {
-            if (!tb_strcmp(buffer.machine, "x86_64"))
+            if (!tb_strcmp(buffer.machine, "x86_64")) {
                 sysarch = "x64";
-            else if (!tb_strcmp(buffer.machine, "i686") || !tb_strcmp(buffer.machine, "i386"))
+            } else if (!tb_strcmp(buffer.machine, "i686") || !tb_strcmp(buffer.machine, "i386")) {
                 sysarch = "x86";
-        } else if (!tb_strcmp(buffer.machine, "aarch64"))
+            }
+        } else if (!tb_strcmp(buffer.machine, "aarch64")) {
             sysarch = "arm64";
+        }
     }
 #elif defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     // the GetNativeSystemInfo function type
@@ -1160,12 +1167,14 @@ static tb_void_t xm_engine_init_arch(xm_engine_t *engine) {
     SYSTEM_INFO           systeminfo           = { 0 };
     GetNativeSystemInfo_t pGetNativeSystemInfo = tb_null;
     tb_dynamic_ref_t      kernel32             = tb_dynamic_init("kernel32.dll");
-    if (kernel32)
+    if (kernel32) {
         pGetNativeSystemInfo = (GetNativeSystemInfo_t)tb_dynamic_func(kernel32, "GetNativeSystemInfo");
-    if (pGetNativeSystemInfo)
+    }
+    if (pGetNativeSystemInfo) {
         pGetNativeSystemInfo(&systeminfo);
-    else
+    } else {
         GetSystemInfo(&systeminfo);
+    }
 
     // init architecture
     switch (systeminfo.wProcessorArchitecture) {
@@ -1187,8 +1196,9 @@ static tb_void_t xm_engine_init_arch(xm_engine_t *engine) {
         break;
     }
 #endif
-    if (!sysarch)
+    if (!sysarch) {
         sysarch = xmakearch;
+    }
     lua_pushstring(engine->lua, sysarch);
     lua_setglobal(engine->lua, "_ARCH");
 
@@ -1198,10 +1208,11 @@ static tb_void_t xm_engine_init_arch(xm_engine_t *engine) {
     // get architecture from msys environment
     tb_char_t data[64] = { 0 };
     if (tb_environment_first("MSYSTEM_CARCH", data, sizeof(data))) {
-        if (!tb_strcmp(data, "i686"))
+        if (!tb_strcmp(data, "i686")) {
             subarch = "i386";
-        else
+        } else {
             subarch = data;
+        }
     }
 #endif
     lua_pushstring(engine->lua, subarch);
@@ -1238,8 +1249,9 @@ static tb_void_t xm_engine_init_features(xm_engine_t *engine) {
 static tb_void_t xm_engine_init_signal(xm_engine_t *engine) {
     // we enable it to catch the current lua stack in ctrl-c signal handler if XMAKE_PROFILE=stuck
     tb_char_t data[64] = { 0 };
-    if (!tb_environment_first("XMAKE_PROFILE", data, sizeof(data)) || tb_strcmp(data, "stuck"))
+    if (!tb_environment_first("XMAKE_PROFILE", data, sizeof(data)) || tb_strcmp(data, "stuck")) {
         return;
+    }
 
     g_lua = engine->lua;
 #if defined(TB_CONFIG_OS_WINDOWS)
@@ -1253,14 +1265,15 @@ static tb_void_t xm_engine_init_signal(xm_engine_t *engine) {
 // udata is unused, it has been used by engine. see xm_engine_bind_to_lua()
 static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data, size_t osize, size_t nsize) {
     tb_pointer_t ptr = tb_null;
-    if (nsize == 0 && data)
+    if (nsize == 0 && data) {
         tb_free(data);
-    else if (!data)
+    } else if (!data) {
         ptr = tb_malloc((tb_size_t)nsize);
-    else if (nsize != osize)
+    } else if (nsize != osize) {
         ptr = tb_ralloc(data, (tb_size_t)nsize);
-    else
+    } else {
         ptr = data;
+    }
     return ptr;
 }
 #endif
@@ -1293,8 +1306,9 @@ static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t     *engine,
                 break;
             }
 
-            if (buffer_size == 0)
+            if (buffer_size == 0) {
                 break;
+            }
             data += advance;
             size -= advance;
 
@@ -1428,10 +1442,12 @@ static tb_bool_t xm_engine_load_main_script(xm_engine_t *engine, tb_char_t const
 
     } while (0);
 
-    if (data)
+    if (data) {
         tb_free(data);
-    if (file)
+    }
+    if (file) {
         tb_file_exit(file);
+    }
     return ok;
 #else
     if (luaL_dofile(engine->lua, mainfile)) {
@@ -1560,7 +1576,7 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
 
         // init version string
         tb_char_t version_cstr[256] = { 0 };
-        if (tb_strcmp(XM_CONFIG_VERSION_BRANCH, "") && tb_strcmp(XM_CONFIG_VERSION_COMMIT, ""))
+        if (tb_strcmp(XM_CONFIG_VERSION_BRANCH, "") && tb_strcmp(XM_CONFIG_VERSION_COMMIT, "")) {
             tb_snprintf(version_cstr,
                         sizeof(version_cstr),
                         "%u.%u.%u+%s.%s",
@@ -1569,14 +1585,15 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
                         version->alter,
                         XM_CONFIG_VERSION_BRANCH,
                         XM_CONFIG_VERSION_COMMIT);
-        else
+        } else {
             tb_snprintf(version_cstr,
                         sizeof(version_cstr),
                         "%u.%u.%u+%llu",
                         version->major,
                         version->minor,
                         version->alter,
-                        version->build);
+                        (unsigned long long)version->build);
+        }
         lua_pushstring(engine->lua, version_cstr);
         lua_setglobal(engine->lua, "_VERSION");
 
@@ -1615,8 +1632,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
          * we can get the lni modules for _lni or `import("lib.lni.xxx")` in sandbox
          */
         lua_newtable(engine->lua);
-        if (lni_initalizer)
+        if (lni_initalizer) {
             lni_initalizer((xm_engine_ref_t)engine, engine->lua);
+        }
         lua_setglobal(engine->lua, "_lni");
 
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -1626,8 +1644,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
             DWORD mode;
             if (GetConsoleMode(output, &mode)) {
                 // attempt to enable 0x4: ENABLE_VIRTUAL_TERMINAL_PROCESSING
-                if (SetConsoleMode(output, mode | 0x4))
+                if (SetConsoleMode(output, mode | 0x4)) {
                     tb_environment_set("COLORTERM", "color256");
+                }
             }
         }
 #endif
@@ -1636,8 +1655,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
     } while (0);
 
     if (!ok) {
-        if (engine)
+        if (engine) {
             xm_engine_exit((xm_engine_ref_t)engine);
+        }
         engine = tb_null;
     }
     return (xm_engine_ref_t)engine;
@@ -1647,13 +1667,15 @@ tb_void_t xm_engine_exit(xm_engine_ref_t self) {
     tb_assert_and_check_return(engine);
 
     // exit lua
-    if (engine->lua)
+    if (engine->lua) {
         lua_close(engine->lua);
+    }
     engine->lua = tb_null;
 
     // exit poller
-    if (engine->poller)
+    if (engine->poller) {
         tb_poller_exit(engine->poller);
+    }
     engine->poller = tb_null;
 
     // exit it
@@ -1665,13 +1687,15 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t **argv, t
 
 #if defined(TB_CONFIG_OS_WINDOWS) && defined(TB_COMPILER_IS_MSVC)
     // set "stdin" to have unicode mode
-    if (_isatty(_fileno(stdin)))
+    if (_isatty(_fileno(stdin))) {
         _setmode(_fileno(stdin), _O_U16TEXT);
+    }
 #endif
 
     // save main arguments to the global variable: _ARGV
-    if (!xm_engine_save_arguments(engine, argc, argv, taskargv))
+    if (!xm_engine_save_arguments(engine, argc, argv, taskargv)) {
         return -1;
+    }
 
     // get the project directory
     tb_char_t path[TB_PATH_MAXN] = { 0 };
