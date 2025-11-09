@@ -83,8 +83,7 @@ tb_int_t xm_hash_md5(lua_State *lua) {
                 if (real > 0) {
                     tb_md5_spak(&md5, data, real);
                 // no data? continue it
-                }
-                else if (!real) {
+                } else if (!real) {
                     // wait
                     real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, tb_stream_timeout(stream));
                     tb_check_break(real > 0);

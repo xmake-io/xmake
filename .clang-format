@@ -11,6 +11,16 @@ UseTab: Never
 
 # Braces
 BreakBeforeBraces: Attach
+BraceWrapping:
+  AfterControlStatement: false
+  AfterFunction: false
+  AfterEnum: false
+  AfterClass: false
+  AfterStruct: false
+  AfterUnion: false
+  BeforeElse: false
+  BeforeCatch: false
+  BeforeLambdaBody: false
 
 # Alignment
 AlignAfterOpenBracket: Align

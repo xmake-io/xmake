@@ -46,8 +46,7 @@ tb_int_t xm_thread_sharedata_get_(lua_State *lua) {
             lua_pushlstring(lua,
                             (tb_char_t *)tb_buffer_data(&thread_sharedata->buffer),
                             tb_buffer_size(&thread_sharedata->buffer));
-        }
-        else {
+        } else {
             lua_pushliteral(lua, "");
         }
         ok = tb_true;

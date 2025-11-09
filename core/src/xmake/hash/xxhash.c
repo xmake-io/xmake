@@ -105,8 +105,7 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
             // reset xxhash
             if (mode == 32 || mode == 64) {
                 XM_XXH3_64bits_reset(state);
-            }
-            else {
+            } else {
                 XM_XXH3_128bits_reset(state);
             }
 
@@ -119,8 +118,7 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
                 if (real > 0) {
                     if (mode == 32 || mode == 64) {
                         XM_XXH3_64bits_update(state, data, real);
-                    }
-                    else {
+                    } else {
                         XM_XXH3_128bits_update(state, data, real);
                     }
                 }

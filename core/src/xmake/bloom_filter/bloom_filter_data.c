@@ -49,8 +49,7 @@ tb_int_t xm_bloom_filter_data(lua_State *lua) {
     tb_pointer_t data = (tb_pointer_t)tb_bloom_filter_data(filter);
     if (data) {
         xm_lua_pushpointer(lua, data);
-    }
-    else {
+    } else {
         lua_pushnil(lua);
     }
     return 1;
