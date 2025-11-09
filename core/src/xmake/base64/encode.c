@@ -39,10 +39,12 @@ tb_int_t xm_base64_encode(lua_State *lua) {
     // get data and size
     tb_size_t        size = 0;
     tb_byte_t const *data = tb_null;
-    if (xm_lua_isinteger(lua, 1))
+    if (xm_lua_isinteger(lua, 1)) {
         data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 1);
-    if (xm_lua_isinteger(lua, 2))
+    }
+    if (xm_lua_isinteger(lua, 2)) {
         size = (tb_size_t)lua_tointeger(lua, 2);
+    }
     if (!data || !size) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);

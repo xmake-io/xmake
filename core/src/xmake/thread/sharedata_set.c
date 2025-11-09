@@ -45,10 +45,12 @@ tb_int_t xm_thread_sharedata_set(lua_State *lua) {
         tb_assert_and_check_return_val(data, 0);
 
         thread_sharedata->value.kind = (tb_uint32_t)XM_THREAD_VALUE_STR;
-        if (data_size)
+        if (data_size) {
             tb_buffer_memncpy(&thread_sharedata->buffer, (tb_byte_t const *)data, data_size);
-        else
+        }
+        else {
             tb_buffer_clear(&thread_sharedata->buffer);
+        }
     } else if (xm_lua_isinteger(lua, 2)) {
         thread_sharedata->value.kind      = (tb_uint32_t)XM_THREAD_VALUE_INT;
         thread_sharedata->value.u.integer = lua_tointeger(lua, 2);
