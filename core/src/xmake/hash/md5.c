@@ -80,9 +80,10 @@ tb_int_t xm_hash_md5(lua_State *lua) {
                 // read data
                 tb_long_t real = tb_stream_read(stream, data, sizeof(data));
 
-                if (real > 0)
+                if (real > 0) {
                     tb_md5_spak(&md5, data, real);
                 // no data? continue it
+                }
                 else if (!real) {
                     // wait
                     real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, tb_stream_timeout(stream));
@@ -92,8 +93,9 @@ tb_int_t xm_hash_md5(lua_State *lua) {
                     tb_assert_and_check_break(real & TB_STREAM_WAIT_READ);
                 }
                 // failed or end?
-                else
+                else {
                     break;
+                }
             }
 
             // exit md5
@@ -112,7 +114,8 @@ tb_int_t xm_hash_md5(lua_State *lua) {
         // exit stream
         tb_stream_exit(stream);
     }
-    if (!ok)
+    if (!ok) {
         lua_pushnil(lua);
+    }
     return 1;
 }

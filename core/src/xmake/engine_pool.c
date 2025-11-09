@@ -53,8 +53,9 @@ static tb_handle_t xm_engine_pool_instance_init(tb_cpointer_t *ppriv) {
 }
 
 static tb_void_t xm_engine_pool_instance_exit(tb_handle_t engine_pool, tb_cpointer_t priv) {
-    if (engine_pool)
+    if (engine_pool) {
         xm_engine_pool_exit((xm_engine_pool_ref_t)engine_pool);
+    }
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -72,8 +73,9 @@ xm_engine_pool_ref_t xm_engine_pool_init() {
 tb_void_t xm_engine_pool_exit(xm_engine_pool_ref_t engine_pool) {
     if (engine_pool) {
         tb_for_all(xm_engine_ref_t, engine, engine_pool) {
-            if (engine)
+            if (engine) {
                 xm_engine_exit(engine);
+            }
         }
         tb_single_list_exit(engine_pool);
     }

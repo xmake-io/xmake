@@ -37,8 +37,9 @@ tb_int_t xm_hash_rand32(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     static tb_uint64_t s_seed = 0;
-    if (!s_seed)
+    if (!s_seed) {
         s_seed = (tb_uint64_t)tb_uclock();
+    }
     s_seed = xm_hash_xorshift64(s_seed);
 
     tb_char_t   s[256];

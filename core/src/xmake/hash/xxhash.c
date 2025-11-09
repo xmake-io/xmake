@@ -103,10 +103,12 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
         XXH3_state_t *state = XM_XXH3_createState();
         if (tb_stream_open(stream) && state) {
             // reset xxhash
-            if (mode == 32 || mode == 64)
+            if (mode == 32 || mode == 64) {
                 XM_XXH3_64bits_reset(state);
-            else
+            }
+            else {
                 XM_XXH3_128bits_reset(state);
+            }
 
             // read data and update xxhash
             tb_byte_t data[TB_STREAM_BLOCK_MAXN];
@@ -115,10 +117,12 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
                 tb_long_t real = tb_stream_read(stream, data, sizeof(data));
 
                 if (real > 0) {
-                    if (mode == 32 || mode == 64)
+                    if (mode == 32 || mode == 64) {
                         XM_XXH3_64bits_update(state, data, real);
-                    else
+                    }
+                    else {
                         XM_XXH3_128bits_update(state, data, real);
+                    }
                 }
                 // no data? continue it
                 else if (!real) {
@@ -130,8 +134,9 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
                     tb_assert_and_check_break(real & TB_STREAM_WAIT_READ);
                 }
                 // failed or end?
-                else
+                else {
                     break;
+                }
             }
 
             // compuate hash
@@ -165,10 +170,12 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
         tb_stream_exit(stream);
 
         // exit xxhash
-        if (state)
+        if (state) {
             XM_XXH3_freeState(state);
+        }
     }
-    if (!ok)
+    if (!ok) {
         lua_pushnil(lua);
+    }
     return 1;
 }
