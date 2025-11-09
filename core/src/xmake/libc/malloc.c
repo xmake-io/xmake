@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "malloc"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "malloc"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,16 +33,15 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_libc_malloc(lua_State* lua)
-{
-    // check
+tb_int_t xm_libc_malloc(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // do malloc
     tb_pointer_t data = tb_null;
-    tb_long_t size = (tb_long_t)luaL_checkinteger(lua, 1);
-    if (size > 0) data = tb_malloc(size);
+    tb_long_t    size = (tb_long_t)luaL_checkinteger(lua, 1);
+    if (size > 0) {
+        data = tb_malloc(size);
+    }
     lua_pushinteger(lua, (lua_Integer)(tb_long_t)data);
     return 1;
 }
-

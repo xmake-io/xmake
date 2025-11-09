@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "chdir"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "chdir"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,18 +33,15 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_os_chdir(lua_State* lua)
-{
-    // check
+tb_int_t xm_os_chdir(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the path
-    tb_char_t const* path = luaL_checkstring(lua, 1);
+    tb_char_t const *path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
     // done os.chdir(path)
     lua_pushboolean(lua, tb_directory_current_set(path));
 
-    // ok
     return 1;
 }

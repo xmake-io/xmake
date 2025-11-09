@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "filelock_open"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "filelock_open"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -37,21 +37,25 @@
 /*
  * io.filelock_open(path)
  */
-tb_int_t xm_io_filelock_open(lua_State* lua)
-{
-    // check
+tb_int_t xm_io_filelock_open(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get file path
-    tb_char_t const* path = luaL_checkstring(lua, 1);
+    tb_char_t const *path = luaL_checkstring(lua, 1);
     tb_assert_and_check_return_val(path, 0);
 
     // init file lock
-    tb_long_t tryn = 2;
+    tb_long_t         tryn = 2;
     tb_filelock_ref_t lock = tb_null;
-    while (!lock && tryn-- > 0)
-        lock = tb_filelock_init_from_path(path, tb_file_info(path, tb_null)? TB_FILE_MODE_RW : TB_FILE_MODE_RW | TB_FILE_MODE_CREAT);
-    if (lock) xm_lua_pushpointer(lua, (tb_pointer_t)lock);
-    else lua_pushnil(lua);
+    while (!lock && tryn-- > 0) {
+        lock = tb_filelock_init_from_path(path,
+                                          tb_file_info(path, tb_null) ? TB_FILE_MODE_RW
+                                                                      : TB_FILE_MODE_RW | TB_FILE_MODE_CREAT);
+    }
+    if (lock) {
+        xm_lua_pushpointer(lua, (tb_pointer_t)lock);
+    } else {
+        lua_pushnil(lua);
+    }
     return 1;
 }

@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "socket_ctrl"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "socket_ctrl"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,14 +35,11 @@
  */
 
 // io.socket_ctrl(sock, code, value)
-tb_int_t xm_io_socket_ctrl(lua_State* lua)
-{
-    // check
+tb_int_t xm_io_socket_ctrl(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket
-    if (!xm_lua_ispointer(lua, 1))
-    {
+    if (!xm_lua_ispointer(lua, 1)) {
         lua_pushnumber(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
         return 2;
@@ -62,4 +59,3 @@ tb_int_t xm_io_socket_ctrl(lua_State* lua)
     lua_pushboolean(lua, tb_socket_ctrl(sock, code, value));
     return 1;
 }
-

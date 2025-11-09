@@ -15,15 +15,15 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_semaphore_lock.c
+ * @file        semaphore_post.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_semaphore"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_semaphore"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,15 +33,13 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_semaphore_post(lua_State* lua)
-{
+tb_int_t xm_thread_semaphore_post(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_semaphore_t* thread_semaphore = xm_thread_semaphore_get(lua, 1);
+    xm_thread_semaphore_t *thread_semaphore = xm_thread_semaphore_get(lua, 1);
     tb_assert_and_check_return_val(thread_semaphore && thread_semaphore->handle, 0);
 
     tb_long_t value = (tb_long_t)luaL_checknumber(lua, 2);
     lua_pushboolean(lua, tb_semaphore_post(thread_semaphore->handle, value));
     return 1;
 }
-

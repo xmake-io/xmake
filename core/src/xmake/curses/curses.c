@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "curses"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "curses"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,71 +33,66 @@
 #include <stdlib.h>
 #if defined(PDCURSES)
 // fix macro redefinition
-#   undef MOUSE_MOVED
+#undef MOUSE_MOVED
 #endif
 #define NCURSES_MOUSE_VERSION 2
 #ifdef TB_COMPILER_IS_MINGW
-#   include <ncursesw/curses.h>
+#include <ncursesw/curses.h>
 #else
-#   include <curses.h>
+#include <curses.h>
 #endif
 #if defined(NCURSES_VERSION)
-#   include <locale.h>
+#include <locale.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
 
-#define XM_CURSES_STDSCR   "curses.stdscr"
-#define XM_CURSES_WINDOW   "curses.window"
-#define XM_CURSES_OK(v)    (((v) == ERR) ? 0 : 1)
+#define XM_CURSES_STDSCR "curses.stdscr"
+#define XM_CURSES_WINDOW "curses.window"
+#define XM_CURSES_OK(v) (((v) == ERR) ? 0 : 1)
 
 // define functions
-#define XM_CURSES_NUMBER(n) \
-    static int xm_curses_ ## n(lua_State* lua) \
-    { \
-        lua_pushnumber(lua, n()); \
-        return 1; \
+#define XM_CURSES_NUMBER(n)                                                                                            \
+    static int xm_curses_##n(lua_State *lua) {                                                                         \
+        lua_pushnumber(lua, n());                                                                                      \
+        return 1;                                                                                                      \
     }
 
-#define XM_CURSES_NUMBER2(n, v) \
-    static int xm_curses_ ## n(lua_State* lua) \
-    { \
-        lua_pushnumber(lua, v); \
-        return 1; \
+#define XM_CURSES_NUMBER2(n, v)                                                                                        \
+    static int xm_curses_##n(lua_State *lua) {                                                                         \
+        lua_pushnumber(lua, v);                                                                                        \
+        return 1;                                                                                                      \
     }
 
-#define XM_CURSES_BOOL(n) \
-    static int xm_curses_ ## n(lua_State* lua) \
-    { \
-        lua_pushboolean(lua, n()); \
-        return 1; \
+#define XM_CURSES_BOOL(n)                                                                                              \
+    static int xm_curses_##n(lua_State *lua) {                                                                         \
+        lua_pushboolean(lua, n());                                                                                     \
+        return 1;                                                                                                      \
     }
 
-#define XM_CURSES_BOOLOK(n) \
-    static int xm_curses_ ## n(lua_State* lua) \
-    { \
-        lua_pushboolean(lua, XM_CURSES_OK(n())); \
-        return 1; \
+#define XM_CURSES_BOOLOK(n)                                                                                            \
+    static int xm_curses_##n(lua_State *lua) {                                                                         \
+        lua_pushboolean(lua, XM_CURSES_OK(n()));                                                                       \
+        return 1;                                                                                                      \
     }
 
-#define XM_CURSES_WINDOW_BOOLOK(n) \
-    static int xm_curses_window_ ## n(lua_State* lua) \
-    { \
-        WINDOW* w = xm_curses_window_check(lua, 1); \
-        lua_pushboolean(lua, XM_CURSES_OK(n(w))); \
-        return 1; \
+#define XM_CURSES_WINDOW_BOOLOK(n)                                                                                     \
+    static int xm_curses_window_##n(lua_State *lua) {                                                                  \
+        WINDOW *w = xm_curses_window_check(lua, 1);                                                                    \
+        lua_pushboolean(lua, XM_CURSES_OK(n(w)));                                                                      \
+        return 1;                                                                                                      \
     }
 
 // define constants
-#define XM_CURSES_CONST_(n, v) \
-    lua_pushstring(lua, n); \
-    lua_pushnumber(lua, v); \
+#define XM_CURSES_CONST_(n, v)                                                                                         \
+    lua_pushstring(lua, n);                                                                                            \
+    lua_pushnumber(lua, v);                                                                                            \
     lua_settable(lua, lua_upvalueindex(1));
 
-#define XM_CURSES_CONST(s)       XM_CURSES_CONST_(#s, s)
-#define XM_CURSES_CONST2(s, v)   XM_CURSES_CONST_(#s, v)
+#define XM_CURSES_CONST(s) XM_CURSES_CONST_(#s, s)
+#define XM_CURSES_CONST2(s, v) XM_CURSES_CONST_(#s, v)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
@@ -109,12 +104,13 @@ static int g_mapkey = 0;
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static chtype xm_curses_checkch(lua_State* lua, int index)
-{
-    if (lua_type(lua, index) == LUA_TNUMBER)
+static chtype xm_curses_checkch(lua_State *lua, int index) {
+    if (lua_type(lua, index) == LUA_TNUMBER) {
         return (chtype)luaL_checknumber(lua, index);
-    if (lua_type(lua, index) == LUA_TSTRING)
+    }
+    if (lua_type(lua, index) == LUA_TSTRING) {
         return *lua_tostring(lua, index);
+    }
 #ifdef USE_LUAJIT
     luaL_typerror(lua, index, "chtype");
 #endif
@@ -122,48 +118,65 @@ static chtype xm_curses_checkch(lua_State* lua, int index)
 }
 
 // get character and map key
-static int xm_curses_window_getch_impl(WINDOW* w)
-{
+static int xm_curses_window_getch_impl(WINDOW *w) {
 #ifdef PDCURSES
-    static int has_key = 0;
+    static int has_key  = 0;
     static int temp_key = 0;
 
     int key;
-    if (g_mapkey && has_key)
-    {
+    if (g_mapkey && has_key) {
         has_key = 0;
         return temp_key;
     }
 
     key = wgetch(w);
-    if (key == KEY_RESIZE) resize_term(0, 0);
-    if (key == ERR || !g_mapkey) return key;
-    if (key >= ALT_A && key <= ALT_Z)
-    {
-        has_key = 1;
+    if (key == KEY_RESIZE)
+        resize_term(0, 0);
+    if (key == ERR || !g_mapkey)
+        return key;
+    if (key >= ALT_A && key <= ALT_Z) {
+        has_key  = 1;
         temp_key = key - ALT_A + 'A';
-    }
-    else if (key >= ALT_0 && key <= ALT_9)
-    {
-        has_key = 1;
+    } else if (key >= ALT_0 && key <= ALT_9) {
+        has_key  = 1;
         temp_key = key - ALT_0 + '0';
-    }
-    else
-    {
-        switch (key)
-        {
-            case ALT_DEL:       temp_key = KEY_DC;      break;
-            case ALT_INS:       temp_key = KEY_IC;      break;
-            case ALT_HOME:      temp_key = KEY_HOME;    break;
-            case ALT_END:       temp_key = KEY_END;     break;
-            case ALT_PGUP:      temp_key = KEY_PPAGE;   break;
-            case ALT_PGDN:      temp_key = KEY_NPAGE;   break;
-            case ALT_UP:        temp_key = KEY_UP;      break;
-            case ALT_DOWN:      temp_key = KEY_DOWN;    break;
-            case ALT_RIGHT:     temp_key = KEY_RIGHT;   break;
-            case ALT_LEFT:      temp_key = KEY_LEFT;    break;
-            case ALT_BKSP:      temp_key = KEY_BACKSPACE; break;
-            default: return key;
+    } else {
+        switch (key) {
+        case ALT_DEL:
+            temp_key = KEY_DC;
+            break;
+        case ALT_INS:
+            temp_key = KEY_IC;
+            break;
+        case ALT_HOME:
+            temp_key = KEY_HOME;
+            break;
+        case ALT_END:
+            temp_key = KEY_END;
+            break;
+        case ALT_PGUP:
+            temp_key = KEY_PPAGE;
+            break;
+        case ALT_PGDN:
+            temp_key = KEY_NPAGE;
+            break;
+        case ALT_UP:
+            temp_key = KEY_UP;
+            break;
+        case ALT_DOWN:
+            temp_key = KEY_DOWN;
+            break;
+        case ALT_RIGHT:
+            temp_key = KEY_RIGHT;
+            break;
+        case ALT_LEFT:
+            temp_key = KEY_LEFT;
+            break;
+        case ALT_BKSP:
+            temp_key = KEY_BACKSPACE;
+            break;
+        default:
+            return key;
         }
     }
     has_key = 1;
@@ -174,63 +187,57 @@ static int xm_curses_window_getch_impl(WINDOW* w)
 }
 
 // new a window object
-static void xm_curses_window_new(lua_State* lua, WINDOW* nw)
-{
-    if (nw)
-    {
-        WINDOW** w = (WINDOW**)lua_newuserdata(lua, sizeof(WINDOW*));
+static void xm_curses_window_new(lua_State *lua, WINDOW *nw) {
+    if (nw) {
+        WINDOW **w = (WINDOW **)lua_newuserdata(lua, sizeof(WINDOW *));
         luaL_getmetatable(lua, XM_CURSES_WINDOW);
         lua_setmetatable(lua, -2);
         *w = nw;
-    }
-    else
-    {
+    } else {
         lua_pushliteral(lua, "failed to create window");
         lua_error(lua);
     }
 }
 
 // get window
-static WINDOW** xm_curses_window_get(lua_State* lua, int index)
-{
-    WINDOW** w = (WINDOW**)luaL_checkudata(lua, index, XM_CURSES_WINDOW);
-    if (w == NULL) luaL_argerror(lua, index, "bad curses window");
+static WINDOW **xm_curses_window_get(lua_State *lua, int index) {
+    WINDOW **w = (WINDOW **)luaL_checkudata(lua, index, XM_CURSES_WINDOW);
+    if (w == NULL)
+        luaL_argerror(lua, index, "bad curses window");
     return w;
 }
 
 // get and check window
-static WINDOW* xm_curses_window_check(lua_State* lua, int index)
-{
-    WINDOW** w = xm_curses_window_get(lua, index);
-    if (*w == NULL) luaL_argerror(lua, index, "attempt to use closed curses window");
+static WINDOW *xm_curses_window_check(lua_State *lua, int index) {
+    WINDOW **w = xm_curses_window_get(lua, index);
+    if (*w == NULL)
+        luaL_argerror(lua, index, "attempt to use closed curses window");
     return *w;
 }
 
 // tostring(window)
-static int xm_curses_window_tostring(lua_State* lua)
-{
-    WINDOW** w = xm_curses_window_get(lua, 1);
-    char const* s = NULL;
-    if (*w) s = (char const*)lua_touserdata(lua, 1);
-    lua_pushfstring(lua, "curses window (%s)", s? s : "closed");
+static int xm_curses_window_tostring(lua_State *lua) {
+    WINDOW    **w = xm_curses_window_get(lua, 1);
+    char const *s = NULL;
+    if (*w)
+        s = (char const *)lua_touserdata(lua, 1);
+    lua_pushfstring(lua, "curses window (%s)", s ? s : "closed");
     return 1;
 }
 
 // window:move(y, x)
-static int xm_curses_window_move(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int y = luaL_checkint(lua, 2);
-    int x = luaL_checkint(lua, 3);
+static int xm_curses_window_move(lua_State *lua) {
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int     y = luaL_checkint(lua, 2);
+    int     x = luaL_checkint(lua, 3);
     lua_pushboolean(lua, XM_CURSES_OK(wmove(w, y, x)));
     return 1;
 }
 
 // window:getyx(y, x)
-static int xm_curses_window_getyx(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int y, x;
+static int xm_curses_window_getyx(lua_State *lua) {
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int     y, x;
     getyx(w, y, x);
     lua_pushnumber(lua, y);
     lua_pushnumber(lua, x);
@@ -238,10 +245,9 @@ static int xm_curses_window_getyx(lua_State* lua)
 }
 
 // window:getmaxyx(y, x)
-static int xm_curses_window_getmaxyx(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int y, x;
+static int xm_curses_window_getmaxyx(lua_State *lua) {
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int     y, x;
     getmaxyx(w, y, x);
     lua_pushnumber(lua, y);
     lua_pushnumber(lua, x);
@@ -249,11 +255,9 @@ static int xm_curses_window_getmaxyx(lua_State* lua)
 }
 
 // window:delwin()
-static int xm_curses_window_delwin(lua_State* lua)
-{
-    WINDOW** w = xm_curses_window_get(lua, 1);
-    if (*w && *w != stdscr)
-    {
+static int xm_curses_window_delwin(lua_State *lua) {
+    WINDOW **w = xm_curses_window_get(lua, 1);
+    if (*w && *w != stdscr) {
         delwin(*w);
         *w = NULL;
     }
@@ -261,32 +265,29 @@ static int xm_curses_window_delwin(lua_State* lua)
 }
 
 // window:addch(ch)
-static int xm_curses_window_addch(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    chtype ch = xm_curses_checkch(lua, 2);
+static int xm_curses_window_addch(lua_State *lua) {
+    WINDOW *w  = xm_curses_window_check(lua, 1);
+    chtype  ch = xm_curses_checkch(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(waddch(w, ch)));
     return 1;
 }
 
 // window:addnstr(str)
-static int xm_curses_window_addnstr(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    const char* str = luaL_checkstring(lua, 2);
-    int n = luaL_optint(lua, 3, -1);
-    if (n < 0) n = (int)lua_strlen(lua, 2);
+static int xm_curses_window_addnstr(lua_State *lua) {
+    WINDOW     *w   = xm_curses_window_check(lua, 1);
+    const char *str = luaL_checkstring(lua, 2);
+    int         n   = luaL_optint(lua, 3, -1);
+    if (n < 0)
+        n = (int)lua_strlen(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(waddnstr(w, str, n)));
     return 1;
 }
 
 // window:keypad(true)
-static int xm_curses_window_keypad(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int enabled = lua_isnoneornil(lua, 2) ? 1 : lua_toboolean(lua, 2);
-    if (enabled)
-    {
+static int xm_curses_window_keypad(lua_State *lua) {
+    WINDOW *w       = xm_curses_window_check(lua, 1);
+    int     enabled = lua_isnoneornil(lua, 2) ? 1 : lua_toboolean(lua, 2);
+    if (enabled) {
         // on WIN32 ALT keys need to be mapped, so to make sure you get the wanted keys,
         // only makes sense when using keypad(true) and echo(false)
         g_mapkey = 1;
@@ -296,91 +297,83 @@ static int xm_curses_window_keypad(lua_State* lua)
 }
 
 // window:meta(true)
-static int xm_curses_window_meta(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int enabled = lua_toboolean(lua, 2);
+static int xm_curses_window_meta(lua_State *lua) {
+    WINDOW *w       = xm_curses_window_check(lua, 1);
+    int     enabled = lua_toboolean(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(meta(w, enabled)));
     return 1;
 }
 
 // window:nodelay(true)
-static int xm_curses_window_nodelay(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int enabled = lua_toboolean(lua, 2);
+static int xm_curses_window_nodelay(lua_State *lua) {
+    WINDOW *w       = xm_curses_window_check(lua, 1);
+    int     enabled = lua_toboolean(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(nodelay(w, enabled)));
     return 1;
 }
 
 // window:leaveok(true)
-static int xm_curses_window_leaveok(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int enabled = lua_toboolean(lua, 2);
+static int xm_curses_window_leaveok(lua_State *lua) {
+    WINDOW *w       = xm_curses_window_check(lua, 1);
+    int     enabled = lua_toboolean(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(leaveok(w, enabled)));
     return 1;
 }
 
 // window:getch()
-static int xm_curses_window_getch(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int c = xm_curses_window_getch_impl(w);
-    if (c == ERR) return 0;
+static int xm_curses_window_getch(lua_State *lua) {
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int     c = xm_curses_window_getch_impl(w);
+    if (c == ERR)
+        return 0;
     lua_pushnumber(lua, c);
     return 1;
 }
 
 // window:attroff(attrs)
-static int xm_curses_window_attroff(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int attrs = luaL_checkint(lua, 2);
+static int xm_curses_window_attroff(lua_State *lua) {
+    WINDOW *w     = xm_curses_window_check(lua, 1);
+    int     attrs = luaL_checkint(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(wattroff(w, attrs)));
     return 1;
 }
 
 // window:attron(attrs)
-static int xm_curses_window_attron(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int attrs = luaL_checkint(lua, 2);
+static int xm_curses_window_attron(lua_State *lua) {
+    WINDOW *w     = xm_curses_window_check(lua, 1);
+    int     attrs = luaL_checkint(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(wattron(w, attrs)));
     return 1;
 }
 
 // window:attrset(attrs)
-static int xm_curses_window_attrset(lua_State* lua)
-{
-    WINDOW* w = xm_curses_window_check(lua, 1);
-    int attrs = luaL_checkint(lua, 2);
+static int xm_curses_window_attrset(lua_State *lua) {
+    WINDOW *w     = xm_curses_window_check(lua, 1);
+    int     attrs = luaL_checkint(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(wattrset(w, attrs)));
     return 1;
 }
 
 // window:copywin(...)
-static int xm_curses_window_copywin(lua_State* lua)
-{
-    WINDOW* srcwin = xm_curses_window_check(lua, 1);
-    WINDOW* dstwin = xm_curses_window_check(lua, 2);
-    int sminrow = luaL_checkint(lua, 3);
-    int smincol = luaL_checkint(lua, 4);
-    int dminrow = luaL_checkint(lua, 5);
-    int dmincol = luaL_checkint(lua, 6);
-    int dmaxrow = luaL_checkint(lua, 7);
-    int dmaxcol = luaL_checkint(lua, 8);
-    int overlay = lua_toboolean(lua, 9);
-    lua_pushboolean(lua, XM_CURSES_OK(copywin(srcwin, dstwin, sminrow,
-        smincol, dminrow, dmincol, dmaxrow, dmaxcol, overlay)));
+static int xm_curses_window_copywin(lua_State *lua) {
+    WINDOW *srcwin  = xm_curses_window_check(lua, 1);
+    WINDOW *dstwin  = xm_curses_window_check(lua, 2);
+    int     sminrow = luaL_checkint(lua, 3);
+    int     smincol = luaL_checkint(lua, 4);
+    int     dminrow = luaL_checkint(lua, 5);
+    int     dmincol = luaL_checkint(lua, 6);
+    int     dmaxrow = luaL_checkint(lua, 7);
+    int     dmaxcol = luaL_checkint(lua, 8);
+    int     overlay = lua_toboolean(lua, 9);
+    lua_pushboolean(lua,
+                    XM_CURSES_OK(
+                        copywin(srcwin, dstwin, sminrow, smincol, dminrow, dmincol, dmaxrow, dmaxcol, overlay)));
     return 1;
 }
 
 // clean window after exiting program
-static void xm_curses_cleanup()
-{
-    if (!isendwin())
-    {
+static void xm_curses_cleanup() {
+    if (!isendwin()) {
         wclear(stdscr);
         wrefresh(stdscr);
         endwin();
@@ -388,8 +381,7 @@ static void xm_curses_cleanup()
 }
 
 // register constants
-static void xm_curses_register_constants(lua_State* lua)
-{
+static void xm_curses_register_constants(lua_State *lua) {
     // colors
     XM_CURSES_CONST(COLOR_BLACK)
     XM_CURSES_CONST(COLOR_RED)
@@ -495,9 +487,9 @@ static void xm_curses_register_constants(lua_State* lua)
     XM_CURSES_CONST(KEY_B3)
 #endif
 #if !defined(XCURSES)
-#   ifndef NOMOUSE
+#ifndef NOMOUSE
     XM_CURSES_CONST(KEY_MOUSE)
-#   endif
+#endif
 #endif
     XM_CURSES_CONST(KEY_MOVE)
     XM_CURSES_CONST(KEY_NEXT)
@@ -560,7 +552,7 @@ static void xm_curses_register_constants(lua_State* lua)
     XM_CURSES_CONST2(KEY_F12, KEY_F(12))
 
 #if !defined(XCURSES)
-#   ifndef NOMOUSE
+#ifndef NOMOUSE
     // mouse constants
     XM_CURSES_CONST(BUTTON1_RELEASED)
     XM_CURSES_CONST(BUTTON1_PRESSED)
@@ -587,26 +579,26 @@ static void xm_curses_register_constants(lua_State* lua)
     XM_CURSES_CONST(BUTTON_ALT)
     XM_CURSES_CONST(REPORT_MOUSE_POSITION)
     XM_CURSES_CONST(ALL_MOUSE_EVENTS)
-#       if NCURSES_MOUSE_VERSION > 1
+#if NCURSES_MOUSE_VERSION > 1
     XM_CURSES_CONST(BUTTON5_RELEASED)
     XM_CURSES_CONST(BUTTON5_PRESSED)
     XM_CURSES_CONST(BUTTON5_CLICKED)
     XM_CURSES_CONST(BUTTON5_DOUBLE_CLICKED)
     XM_CURSES_CONST(BUTTON5_TRIPLE_CLICKED)
-#       endif
-#   endif
+#endif
+#endif
 #endif
 }
 
 // init curses
-static int xm_curses_initscr(lua_State* lua)
-{
-    WINDOW* w = initscr();
-    if (!w) return 0;
+static int xm_curses_initscr(lua_State *lua) {
+    WINDOW *w = initscr();
+    if (!w)
+        return 0;
     xm_curses_window_new(lua, w);
 
 #if defined(NCURSES_VERSION)
-//    ESCDELAY = 0;
+    //    ESCDELAY = 0;
     set_escdelay(0);
 #endif
 
@@ -622,8 +614,7 @@ static int xm_curses_initscr(lua_State* lua)
     return 1;
 }
 
-static int xm_curses_endwin(lua_State* lua)
-{
+static int xm_curses_endwin(lua_State *lua) {
     endwin();
 #ifdef XCURSES
     XCursesExit();
@@ -632,19 +623,16 @@ static int xm_curses_endwin(lua_State* lua)
     return 0;
 }
 
-static int xm_curses_stdscr(lua_State* lua)
-{
+static int xm_curses_stdscr(lua_State *lua) {
     lua_pushstring(lua, XM_CURSES_STDSCR);
     lua_rawget(lua, LUA_REGISTRYINDEX);
     return 1;
 }
 
 #if !defined(XCURSES) && !defined(NOMOUSE)
-static int xm_curses_getmouse(lua_State* lua)
-{
+static int xm_curses_getmouse(lua_State *lua) {
     MEVENT e;
-    if (getmouse(&e) == OK)
-    {
+    if (getmouse(&e) == OK) {
         lua_pushinteger(lua, e.bstate);
         lua_pushinteger(lua, e.x);
         lua_pushinteger(lua, e.y);
@@ -657,8 +645,7 @@ static int xm_curses_getmouse(lua_State* lua)
     return 1;
 }
 
-static int xm_curses_mousemask(lua_State* lua)
-{
+static int xm_curses_mousemask(lua_State *lua) {
     mmask_t m = luaL_checkint(lua, 1);
     mmask_t om;
     m = mousemask(m, &om);
@@ -668,26 +655,23 @@ static int xm_curses_mousemask(lua_State* lua)
 }
 #endif
 
-static int xm_curses_init_pair(lua_State* lua)
-{
+static int xm_curses_init_pair(lua_State *lua) {
     short pair = luaL_checkint(lua, 1);
-    short f = luaL_checkint(lua, 2);
-    short b = luaL_checkint(lua, 3);
+    short f    = luaL_checkint(lua, 2);
+    short b    = luaL_checkint(lua, 3);
 
     lua_pushboolean(lua, XM_CURSES_OK(init_pair(pair, f, b)));
     return 1;
 }
 
-static int xm_curses_COLOR_PAIR(lua_State* lua)
-{
+static int xm_curses_COLOR_PAIR(lua_State *lua) {
     int n = luaL_checkint(lua, 1);
     lua_pushnumber(lua, COLOR_PAIR(n));
     return 1;
 }
 
-static int xm_curses_curs_set(lua_State* lua)
-{
-    int vis = luaL_checkint(lua, 1);
+static int xm_curses_curs_set(lua_State *lua) {
+    int vis   = luaL_checkint(lua, 1);
     int state = curs_set(vis);
     if (state == ERR)
         return 0;
@@ -696,44 +680,42 @@ static int xm_curses_curs_set(lua_State* lua)
     return 1;
 }
 
-static int xm_curses_napms(lua_State* lua)
-{
+static int xm_curses_napms(lua_State *lua) {
     int ms = luaL_checkint(lua, 1);
     lua_pushboolean(lua, XM_CURSES_OK(napms(ms)));
     return 1;
 }
 
-static int xm_curses_cbreak(lua_State* lua)
-{
-    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1))
+static int xm_curses_cbreak(lua_State *lua) {
+    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1)) {
         lua_pushboolean(lua, XM_CURSES_OK(cbreak()));
-    else
+    } else {
         lua_pushboolean(lua, XM_CURSES_OK(nocbreak()));
+    }
     return 1;
 }
 
-static int xm_curses_echo(lua_State* lua)
-{
-    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1))
+static int xm_curses_echo(lua_State *lua) {
+    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1)) {
         lua_pushboolean(lua, XM_CURSES_OK(echo()));
-    else
+    } else {
         lua_pushboolean(lua, XM_CURSES_OK(noecho()));
+    }
     return 1;
 }
 
-static int xm_curses_nl(lua_State* lua)
-{
-    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1))
+static int xm_curses_nl(lua_State *lua) {
+    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1)) {
         lua_pushboolean(lua, XM_CURSES_OK(nl()));
-    else
+    } else {
         lua_pushboolean(lua, XM_CURSES_OK(nonl()));
+    }
     return 1;
 }
 
-static int xm_curses_newpad(lua_State* lua)
-{
+static int xm_curses_newpad(lua_State *lua) {
     int nlines = luaL_checkint(lua, 1);
-    int ncols = luaL_checkint(lua, 2);
+    int ncols  = luaL_checkint(lua, 2);
     xm_curses_window_new(lua, newpad(nlines, ncols));
     return 1;
 }
@@ -751,69 +733,66 @@ XM_CURSES_WINDOW_BOOLOK(wnoutrefresh)
  * globals
  */
 
-static const luaL_Reg g_window_functions[] =
-{
-    { "close",      xm_curses_window_delwin       },
-    { "keypad",     xm_curses_window_keypad       },
-    { "meta",       xm_curses_window_meta         },
-    { "nodelay",    xm_curses_window_nodelay      },
-    { "leaveok",    xm_curses_window_leaveok      },
-    { "move",       xm_curses_window_move         },
-    { "clear",      xm_curses_window_wclear       },
-    { "noutrefresh",xm_curses_window_wnoutrefresh },
-    { "attroff",    xm_curses_window_attroff      },
-    { "attron",     xm_curses_window_attron       },
-    { "attrset",    xm_curses_window_attrset      },
-    { "getch",      xm_curses_window_getch        },
-    { "getyx",      xm_curses_window_getyx        },
-    { "getmaxyx",   xm_curses_window_getmaxyx     },
-    { "addch",      xm_curses_window_addch        },
-    { "addstr",     xm_curses_window_addnstr      },
-    { "copy",       xm_curses_window_copywin      },
-    {"__gc",        xm_curses_window_delwin       },
-    {"__tostring",  xm_curses_window_tostring     },
-    {NULL, NULL                                   }
+static const luaL_Reg g_window_functions[] = {
+    { "close", xm_curses_window_delwin },
+    { "keypad", xm_curses_window_keypad },
+    { "meta", xm_curses_window_meta },
+    { "nodelay", xm_curses_window_nodelay },
+    { "leaveok", xm_curses_window_leaveok },
+    { "move", xm_curses_window_move },
+    { "clear", xm_curses_window_wclear },
+    { "noutrefresh", xm_curses_window_wnoutrefresh },
+    { "attroff", xm_curses_window_attroff },
+    { "attron", xm_curses_window_attron },
+    { "attrset", xm_curses_window_attrset },
+    { "getch", xm_curses_window_getch },
+    { "getyx", xm_curses_window_getyx },
+    { "getmaxyx", xm_curses_window_getmaxyx },
+    { "addch", xm_curses_window_addch },
+    { "addstr", xm_curses_window_addnstr },
+    { "copy", xm_curses_window_copywin },
+    { "__gc", xm_curses_window_delwin },
+    { "__tostring", xm_curses_window_tostring },
+    { NULL, NULL },
 };
 
-static const luaL_Reg g_curses_functions[] =
-{
-    { "done",           xm_curses_endwin       },
-    { "isdone",         xm_curses_isendwin     },
-    { "main_window",    xm_curses_stdscr       },
-    { "columns",        xm_curses_COLS         },
-    { "lines",          xm_curses_LINES        },
-    { "start_color",    xm_curses_start_color  },
-    { "has_colors",     xm_curses_has_colors   },
-    { "init_pair",      xm_curses_init_pair    },
-    { "color_pair",     xm_curses_COLOR_PAIR   },
-    { "napms",          xm_curses_napms        },
-    { "cursor_set",     xm_curses_curs_set     },
-    { "new_pad",        xm_curses_newpad       },
-    { "doupdate",       xm_curses_doupdate     },
-    { "cbreak",         xm_curses_cbreak       },
-    { "echo",           xm_curses_echo         },
-    { "nl",             xm_curses_nl           },
+static const luaL_Reg g_curses_functions[] = {
+    { "done", xm_curses_endwin },
+    { "isdone", xm_curses_isendwin },
+    { "main_window", xm_curses_stdscr },
+    { "columns", xm_curses_COLS },
+    { "lines", xm_curses_LINES },
+    { "start_color", xm_curses_start_color },
+    { "has_colors", xm_curses_has_colors },
+    { "init_pair", xm_curses_init_pair },
+    { "color_pair", xm_curses_COLOR_PAIR },
+    { "napms", xm_curses_napms },
+    { "cursor_set", xm_curses_curs_set },
+    { "new_pad", xm_curses_newpad },
+    { "doupdate", xm_curses_doupdate },
+    { "cbreak", xm_curses_cbreak },
+    { "echo", xm_curses_echo },
+    { "nl", xm_curses_nl },
 #if !defined(XCURSES)
 #ifndef NOMOUSE
-    { "mousemask",      xm_curses_mousemask    },
-    { "getmouse",       xm_curses_getmouse     },
+    { "mousemask", xm_curses_mousemask },
+    { "getmouse", xm_curses_getmouse },
 #endif
 #endif
-    {NULL, NULL}
+    { NULL, NULL },
 };
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementations
  */
-int xm_lua_curses_register(lua_State* lua, const char* module)
-{
+int xm_lua_curses_register(lua_State *lua, const char *module) {
     // create new metatable for window objects
     luaL_newmetatable(lua, XM_CURSES_WINDOW);
     lua_pushliteral(lua, "__index");
-    lua_pushvalue(lua, -2);               /* push metatable */
-    lua_rawset(lua, -3);                  /* metatable.__index = metatable */
+    lua_pushvalue(lua, -2); /* push metatable */
+    lua_rawset(lua, -3);    /* metatable.__index = metatable */
     luaL_setfuncs(lua, g_window_functions, 0);
-    lua_pop(lua, 1);                      /* remove metatable from stack */
+    lua_pop(lua, 1); /* remove metatable from stack */
 
     // create global table with curses methods/variables/constants
     lua_newtable(lua);

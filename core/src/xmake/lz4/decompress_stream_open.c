@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "decompress_stream_open"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "decompress_stream_open"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,14 +33,14 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_lz4_decompress_stream_open(lua_State* lua)
-{
-    // check
+tb_int_t xm_lz4_decompress_stream_open(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_lz4_dstream_t* stream = xm_lz4_dstream_init();
-    if (stream) xm_lua_pushpointer(lua, (tb_pointer_t)stream);
-    else lua_pushnil(lua);
+    xm_lz4_dstream_t *stream = xm_lz4_dstream_init();
+    if (stream) {
+        xm_lua_pushpointer(lua, (tb_pointer_t)stream);
+    } else {
+        lua_pushnil(lua);
+    }
     return 1;
 }
-

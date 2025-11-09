@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "parse"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "parse"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -54,25 +54,21 @@
     }
  *
  */
-tb_int_t xm_semver_parse(lua_State* lua)
-{
-    // check
+tb_int_t xm_semver_parse(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the version string
-    tb_char_t const* version_str = luaL_checkstring(lua, 1);
+    tb_char_t const *version_str = luaL_checkstring(lua, 1);
     tb_check_return_val(version_str, 0);
 
     // try to parse version string
-    semver_t semver = {0};
-    if (semver_tryn(&semver, version_str, tb_strlen(version_str)))
-    {
+    semver_t semver = { 0 };
+    if (semver_tryn(&semver, version_str, tb_strlen(version_str))) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "unable to parse semver '%s'", version_str);
         return 2;
     }
 
-    // ok
     lua_pushsemver(lua, &semver);
     semver_dtor(&semver);
     return 1;

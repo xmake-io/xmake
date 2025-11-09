@@ -7,4 +7,3 @@ int main() {
     printf("sub(1, 2): %d\n", foo::sub(1, 2));
     return 0;
 }
-

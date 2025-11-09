@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_semaphore"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_semaphore"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,20 +33,18 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_semaphore_init(lua_State* lua)
-{
+tb_int_t xm_thread_semaphore_init(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_bool_t ok = tb_false;
-    xm_thread_semaphore_t* thread_semaphore = tb_null;
-    do
-    {
+    tb_bool_t              ok               = tb_false;
+    xm_thread_semaphore_t *thread_semaphore = tb_null;
+    do {
         tb_long_t value = (tb_long_t)luaL_checknumber(lua, 1);
 
         thread_semaphore = tb_malloc0_type(xm_thread_semaphore_t);
         tb_assert_and_check_break(thread_semaphore);
 
-        thread_semaphore->refn = 1;
+        thread_semaphore->refn   = 1;
         thread_semaphore->handle = tb_semaphore_init(value);
         tb_assert_and_check_break(thread_semaphore->handle);
 
@@ -55,12 +53,9 @@ tb_int_t xm_thread_semaphore_init(lua_State* lua)
 
     } while (0);
 
-    if (!ok)
-    {
-        if (thread_semaphore)
-        {
-            if (thread_semaphore->handle)
-            {
+    if (!ok) {
+        if (thread_semaphore) {
+            if (thread_semaphore->handle) {
                 tb_semaphore_exit(thread_semaphore->handle);
                 thread_semaphore->handle = tb_null;
             }

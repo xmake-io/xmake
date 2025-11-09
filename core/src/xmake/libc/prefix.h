@@ -31,14 +31,11 @@
  */
 
 // return libc error
-#define xm_libc_return_error(lua, error)          \
-    do                                            \
-    {                                             \
-        lua_pushnil(lua);                         \
-        lua_pushliteral(lua, error);              \
-        return 2;                                 \
+#define xm_libc_return_error(lua, error)                                                                               \
+    do {                                                                                                               \
+        lua_pushnil(lua);                                                                                              \
+        lua_pushliteral(lua, error);                                                                                   \
+        return 2;                                                                                                      \
     } while (0)
 
 #endif
-
-

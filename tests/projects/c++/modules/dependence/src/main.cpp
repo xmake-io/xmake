@@ -6,4 +6,3 @@ int main() {
     hello::say(sizeof(hello::say)).hello();
     return 0;
 }
-

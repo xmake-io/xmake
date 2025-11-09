@@ -26,10 +26,7 @@
  */
 #include "../prefix.h"
 #ifdef TB_CONFIG_OS_WINDOWS
-#   include <windows.h>
+#include <windows.h>
 #endif
 
-
 #endif
-
-

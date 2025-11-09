@@ -36,7 +36,7 @@
  * small mode
  */
 #if XM_CONFIG_SMALL
-#   define __xm_small__
+#define __xm_small__
 #endif
 
 /*! @def __xm_debug__
@@ -44,7 +44,7 @@
  * debug mode
  */
 #ifdef __tb_debug__
-#   define __xm_debug__
+#define __xm_debug__
 #endif
 
 /* unix/gcc on msys/cygwin? do not support it now!
@@ -64,9 +64,7 @@
  * $ make install prefix=/mingw64
  */
 #if defined(TB_CONFIG_OS_WINDOWS) && defined(TB_COMPILER_LIKE_UNIX)
-#   error "do not support gcc on msys/cygwin, please uses mingw-w64-[i686|x86_64]-gcc"
+#error "do not support gcc on msys/cygwin, please uses mingw-w64-[i686|x86_64]-gcc"
 #endif
 
 #endif
-
-

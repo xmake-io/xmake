@@ -43,19 +43,19 @@ typedef tb_single_list_ref_t xm_engine_pool_ref_t;
  */
 
 // get the engine pool singleton
-xm_engine_pool_ref_t        xm_engine_pool(tb_void_t);
+xm_engine_pool_ref_t xm_engine_pool(tb_void_t);
 
 /*! init the engine_pool
  *
  * @return                  the engine pool
  */
-xm_engine_pool_ref_t        xm_engine_pool_init(tb_void_t);
+xm_engine_pool_ref_t xm_engine_pool_init(tb_void_t);
 
 /*! exit the engine_pool
  *
  * @param engine_pool       the engine_pool
  */
-tb_void_t                   xm_engine_pool_exit(xm_engine_pool_ref_t engine_pool);
+tb_void_t xm_engine_pool_exit(xm_engine_pool_ref_t engine_pool);
 
 /*! alloc a engine from the engine_pool
  *
@@ -63,7 +63,7 @@ tb_void_t                   xm_engine_pool_exit(xm_engine_pool_ref_t engine_pool
  *
  * @return                  the engine
  */
-xm_engine_ref_t             xm_engine_pool_alloc(xm_engine_pool_ref_t engine_pool);
+xm_engine_ref_t xm_engine_pool_alloc(xm_engine_pool_ref_t engine_pool);
 
 /*! free a engine to the engine_pool
  *
@@ -72,7 +72,7 @@ xm_engine_ref_t             xm_engine_pool_alloc(xm_engine_pool_ref_t engine_poo
  *
  * @return                  tb_true or tb_false
  */
-tb_bool_t                   xm_engine_pool_free(xm_engine_pool_ref_t engine_pool, xm_engine_ref_t engine);
+tb_bool_t xm_engine_pool_free(xm_engine_pool_ref_t engine_pool, xm_engine_ref_t engine);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

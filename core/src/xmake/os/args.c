@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "os.args"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "os.args"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,55 +33,55 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr, tb_size_t size, tb_bool_t escape, tb_bool_t nowrap)
-{
-    // check
+static tb_void_t tb_os_args_append(
+    tb_string_ref_t result, tb_char_t const *cstr, tb_size_t size, tb_bool_t escape, tb_bool_t nowrap) {
     tb_assert_and_check_return(size < TB_PATH_MAXN);
 
     // need wrap quote?
-    tb_char_t ch;
-    tb_char_t const* p = cstr;
-    tb_bool_t wrap_quote = tb_false;
-    if (!nowrap)
-    {
-        while ((ch = *p))
-        {
-            if (ch == ' ') wrap_quote = tb_true;
+    tb_char_t        ch;
+    tb_char_t const *p          = cstr;
+    tb_bool_t        wrap_quote = tb_false;
+    if (!nowrap) {
+        while ((ch = *p)) {
+            if (ch == ' ') {
+                wrap_quote = tb_true;
+            }
             p++;
         }
     }
 
     // wrap begin quote
-    if (wrap_quote) tb_string_chrcat(result, '\"');
+    if (wrap_quote) {
+        tb_string_chrcat(result, '\"');
+    }
 
     // escape characters
     p = cstr;
-    while ((ch = *p))
-    {
+    while ((ch = *p)) {
         // escape '"' or '\\'
-        if (ch == '\"' || ((escape || wrap_quote) && ch == '\\'))
+        if (ch == '\"' || ((escape || wrap_quote) && ch == '\\')) {
             tb_string_chrcat(result, '\\');
+        }
         tb_string_chrcat(result, ch);
         p++;
     }
 
     // wrap end quote
-    if (wrap_quote) tb_string_chrcat(result, '\"');
+    if (wrap_quote) {
+        tb_string_chrcat(result, '\"');
+    }
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 // os.args({"xx", "yy"}, {escape = true})
-tb_int_t xm_os_args(lua_State* lua)
-{
-    // check
+tb_int_t xm_os_args(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // escape '\\' characters in global?
     tb_bool_t escape = tb_false;
-    if (lua_istable(lua, 2))
-    {
+    if (lua_istable(lua, 2)) {
         // is escape?
         lua_pushstring(lua, "escape");
         lua_gettable(lua, 2);
@@ -91,8 +91,7 @@ tb_int_t xm_os_args(lua_State* lua)
 
     // disable to wrap quote characters in global?
     tb_bool_t nowrap = tb_false;
-    if (lua_istable(lua, 2))
-    {
+    if (lua_istable(lua, 2)) {
         // is nowrap?
         lua_pushstring(lua, "nowrap");
         lua_gettable(lua, 2);
@@ -105,50 +104,51 @@ tb_int_t xm_os_args(lua_State* lua)
     tb_string_init(&result);
 
     // make string from arguments list
-    if (lua_istable(lua, 1))
-    {
+    if (lua_istable(lua, 1)) {
         tb_size_t i = 0;
         tb_size_t n = (tb_size_t)lua_objlen(lua, 1);
-        for (i = 1; i <= n; i++)
-        {
+        for (i = 1; i <= n; i++) {
             // add space
-            if (i != 1) tb_string_chrcat(&result, ' ');
+            if (i != 1) {
+                tb_string_chrcat(&result, ' ');
+            }
 
             // add argument
             lua_pushnumber(lua, (tb_int_t)i);
             lua_rawget(lua, 1);
-            if (lua_istable(lua, -1)) // is path instance?
-            {
+            if (lua_istable(lua, -1)) { // is path instance?
                 lua_pushstring(lua, "_STR");
                 lua_gettable(lua, -2);
-                size_t size = 0;
-                tb_char_t const* cstr = luaL_checklstring(lua, -1, &size);
-                if (cstr && size)
+                size_t           size = 0;
+                tb_char_t const *cstr = luaL_checklstring(lua, -1, &size);
+                if (cstr && size) {
                     tb_os_args_append(&result, cstr, size, escape, nowrap);
+                }
                 lua_pop(lua, 1);
-            }
-            else
-            {
-                size_t size = 0;
-                tb_char_t const* cstr = luaL_checklstring(lua, -1, &size);
-                if (cstr && size)
+            } else {
+                size_t           size = 0;
+                tb_char_t const *cstr = luaL_checklstring(lua, -1, &size);
+                if (cstr && size) {
                     tb_os_args_append(&result, cstr, size, escape, nowrap);
+                }
             }
             lua_pop(lua, 1);
         }
-    }
-    else
-    {
-        size_t size = 0;
-        tb_char_t const* cstr = luaL_checklstring(lua, 1, &size);
-        if (cstr && size)
+    } else {
+        size_t           size = 0;
+        tb_char_t const *cstr = luaL_checklstring(lua, 1, &size);
+        if (cstr && size) {
             tb_os_args_append(&result, cstr, size, escape, nowrap);
+        }
     }
 
     // return result
     tb_size_t size = tb_string_size(&result);
-    if (size) lua_pushlstring(lua, tb_string_cstr(&result), size);
-    else lua_pushliteral(lua, "");
+    if (size) {
+        lua_pushlstring(lua, tb_string_cstr(&result), size);
+    } else {
+        lua_pushliteral(lua, "");
+    }
     tb_string_exit(&result);
     return 1;
 }

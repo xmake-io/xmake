@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "add_history"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "add_history"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -36,19 +36,16 @@
 #ifdef XM_CONFIG_API_HAVE_READLINE
 
 // add_history wrapper
-tb_int_t xm_readline_add_history(lua_State* lua)
-{
-    // check
+tb_int_t xm_readline_add_history(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get history
-    tb_char_t const* history = luaL_checkstring(lua, 1);
+    tb_char_t const *history = luaL_checkstring(lua, 1);
     tb_check_return_val(history, 0);
 
     // call add_history
     add_history(history);
 
-    // ok
     return 0;
 }
 #endif

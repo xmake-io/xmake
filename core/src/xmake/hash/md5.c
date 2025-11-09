@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "md5"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "md5"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,18 +33,14 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_hash_md5(lua_State* lua)
-{
-    // check
+tb_int_t xm_hash_md5(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is bytes? get data and size
-    if (xm_lua_isinteger(lua, 1) && xm_lua_isinteger(lua, 2))
-    {
-        tb_byte_t const* data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tointeger(lua, 1);
-        tb_size_t size = (tb_size_t)lua_tointeger(lua, 2);
-        if (!data || !size)
-        {
+    if (xm_lua_isinteger(lua, 1) && xm_lua_isinteger(lua, 2)) {
+        tb_byte_t const *data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 1);
+        tb_size_t        size = (tb_size_t)lua_tointeger(lua, 2);
+        if (!data || !size) {
             lua_pushnil(lua);
             lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
             return 2;
@@ -65,33 +61,29 @@ tb_int_t xm_hash_md5(lua_State* lua)
     }
 
     // get the filename
-    tb_char_t const* filename = luaL_checkstring(lua, 1);
+    tb_char_t const *filename = luaL_checkstring(lua, 1);
     tb_check_return_val(filename, 0);
 
     // load data from file
-    tb_bool_t ok = tb_false;
+    tb_bool_t       ok     = tb_false;
     tb_stream_ref_t stream = tb_stream_init_from_file(filename, TB_FILE_MODE_RO);
-    if (stream)
-    {
+    if (stream) {
         // open stream
-        if (tb_stream_open(stream))
-        {
+        if (tb_stream_open(stream)) {
             // init md5
             tb_md5_t md5;
             tb_md5_init(&md5, 0);
 
             // read data and update md5
             tb_byte_t data[TB_STREAM_BLOCK_MAXN];
-            while (!tb_stream_beof(stream))
-            {
+            while (!tb_stream_beof(stream)) {
                 // read data
                 tb_long_t real = tb_stream_read(stream, data, sizeof(data));
 
-                // ok?
-                if (real > 0) tb_md5_spak(&md5, data, real);
+                if (real > 0) {
+                    tb_md5_spak(&md5, data, real);
                 // no data? continue it
-                else if (!real)
-                {
+                } else if (!real) {
                     // wait
                     real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, tb_stream_timeout(stream));
                     tb_check_break(real > 0);
@@ -100,7 +92,9 @@ tb_int_t xm_hash_md5(lua_State* lua)
                     tb_assert_and_check_break(real & TB_STREAM_WAIT_READ);
                 }
                 // failed or end?
-                else break;
+                else {
+                    break;
+                }
             }
 
             // exit md5
@@ -112,13 +106,15 @@ tb_int_t xm_hash_md5(lua_State* lua)
             tb_size_t n = xm_hash_make_cstr(s, buffer, 16);
 
             // save result
-	        lua_pushlstring(lua, s, n);
+            lua_pushlstring(lua, s, n);
             ok = tb_true;
         }
 
         // exit stream
         tb_stream_exit(stream);
     }
-    if (!ok) lua_pushnil(lua);
+    if (!ok) {
+        lua_pushnil(lua);
+    }
     return 1;
 }

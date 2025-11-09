@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "poller_remove"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "poller_remove"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -36,14 +36,11 @@
  */
 
 // io.poller_remove(obj:otype(), obj)
-tb_int_t xm_io_poller_remove(lua_State* lua)
-{
-    // check
+tb_int_t xm_io_poller_remove(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
-    if (!xm_lua_ispointer(lua, 2))
-    {
+    if (!xm_lua_ispointer(lua, 2)) {
         lua_pushboolean(lua, tb_false);
         lua_pushfstring(lua, "invalid poller object!");
         return 2;
@@ -63,4 +60,3 @@ tb_int_t xm_io_poller_remove(lua_State* lua)
     lua_pushboolean(lua, tb_poller_remove(xm_io_poller(lua), &object));
     return 1;
 }
-

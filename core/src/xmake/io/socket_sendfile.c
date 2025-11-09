@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "socket_sendfile"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "socket_sendfile"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,22 +35,18 @@
  */
 
 // io.socket_sendfile(sock, file, start, last)
-tb_int_t xm_io_socket_sendfile(lua_State* lua)
-{
-    // check
+tb_int_t xm_io_socket_sendfile(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket
-    if (!xm_lua_ispointer(lua, 1))
-    {
+    if (!xm_lua_ispointer(lua, 1)) {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
         return 2;
     }
 
     // check file
-    if (!lua_isuserdata(lua, 2))
-    {
+    if (!lua_isuserdata(lua, 2)) {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid file!");
         return 2;
@@ -61,12 +57,11 @@ tb_int_t xm_io_socket_sendfile(lua_State* lua)
     tb_check_return_val(sock, 0);
 
     // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 2);
+    xm_io_file_t *file = (xm_io_file_t *)lua_touserdata(lua, 2);
     tb_check_return_val(file, 0);
 
     // does not support stdfile
-    if (!xm_io_file_is_file(file) || !file->stream)
-    {
+    if (!xm_io_file_is_file(file) || !file->stream) {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid file type!");
         return 2;
@@ -74,8 +69,7 @@ tb_int_t xm_io_socket_sendfile(lua_State* lua)
 
     // get file reference
     tb_file_ref_t rawfile = tb_null;
-    if (!tb_stream_ctrl(file->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile) || !rawfile)
-    {
+    if (!tb_stream_ctrl(file->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile) || !rawfile) {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "cannot get file reference!");
         return 2;
@@ -83,8 +77,7 @@ tb_int_t xm_io_socket_sendfile(lua_State* lua)
 
     // get file size
     tb_hize_t filesize = tb_file_size(rawfile);
-    if (!filesize)
-    {
+    if (!filesize) {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "cannot send empty file!");
         return 2;
@@ -92,9 +85,10 @@ tb_int_t xm_io_socket_sendfile(lua_State* lua)
 
     // get start
     tb_long_t start = 1;
-    if (lua_isnumber(lua, 3)) start = (tb_long_t)lua_tonumber(lua, 3);
-    if (start < 1 || start > filesize)
-    {
+    if (lua_isnumber(lua, 3)) {
+        start = (tb_long_t)lua_tonumber(lua, 3);
+    }
+    if (start < 1 || start > filesize) {
         lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid start position(%d)!", (tb_int_t)start);
         return 2;
@@ -102,9 +96,10 @@ tb_int_t xm_io_socket_sendfile(lua_State* lua)
 
     // get last
     tb_long_t last = (tb_long_t)filesize;
-    if (lua_isnumber(lua, 4)) last = (tb_long_t)lua_tonumber(lua, 4);
-    if (last < start - 1 || last > filesize + start - 1)
-    {
+    if (lua_isnumber(lua, 4)) {
+        last = (tb_long_t)lua_tonumber(lua, 4);
+    }
+    if (last < start - 1 || last > filesize + start - 1) {
         lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid last position(%d)!", (tb_int_t)last);
         return 2;

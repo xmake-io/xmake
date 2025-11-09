@@ -37,15 +37,15 @@ __tb_extern_c_enter__
  */
 
 #ifdef __xm_debug__
-#   define __xm_mode_debug__    TB_MODE_DEBUG
+#define __xm_mode_debug__ TB_MODE_DEBUG
 #else
-#   define __xm_mode_debug__    (0)
+#define __xm_mode_debug__ (0)
 #endif
 
 #ifdef __xm_small__
-#   define __xm_mode_small__    TB_MODE_SMALL
+#define __xm_mode_small__ TB_MODE_SMALL
 #else
-#   define __xm_mode_small__    (0)
+#define __xm_mode_small__ (0)
 #endif
 
 /*! init xmake
@@ -67,7 +67,7 @@ __tb_extern_c_enter__
     }
  * @endcode
  */
-#define xm_init()     xm_init_((tb_size_t)(__xm_mode_debug__ | __xm_mode_small__), XM_VERSION_BUILD)
+#define xm_init() xm_init_((tb_size_t)(__xm_mode_debug__ | __xm_mode_small__), XM_VERSION_BUILD)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -80,16 +80,17 @@ __tb_extern_c_enter__
  *
  * @return          tb_true or tb_false
  */
-tb_bool_t           xm_init_(tb_size_t mode, tb_hize_t build);
+tb_bool_t
+xm_init_(tb_size_t mode, tb_hize_t build);
 
 /// exit the xmake library
-tb_void_t           xm_exit(tb_noarg_t);
+tb_void_t xm_exit(tb_noarg_t);
 
 /*! the xmake version
  *
  * @return          the xmake version
  */
-tb_version_t const* xm_version(tb_noarg_t);
+tb_version_t const *xm_version(tb_noarg_t);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

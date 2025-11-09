@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,17 +33,16 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_wait(lua_State* lua)
-{
-    // check
+tb_int_t xm_thread_wait(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
-    if (!xm_lua_ispointer(lua, 1))
+    if (!xm_lua_ispointer(lua, 1)) {
         return 0;
+    }
 
     // get thread
-    xm_thread_t* thread = (xm_thread_t*)xm_lua_topointer(lua, 1);
+    xm_thread_t *thread = (xm_thread_t *)xm_lua_topointer(lua, 1);
     tb_check_return_val(thread->handle, 0);
 
     // get timeout
@@ -54,4 +53,3 @@ tb_int_t xm_thread_wait(lua_State* lua)
     lua_pushinteger(lua, (tb_int_t)tb_thread_wait(thread->handle, timeout, &retval));
     return 1;
 }
-

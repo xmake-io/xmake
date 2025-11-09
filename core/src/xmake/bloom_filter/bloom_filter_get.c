@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "bloom_filter_get"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "bloom_filter_get"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,21 +33,20 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_bloom_filter_get(lua_State* lua)
-{
-    // check
+tb_int_t xm_bloom_filter_get(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
-    if (!xm_lua_ispointer(lua, 1))
+    if (!xm_lua_ispointer(lua, 1)) {
         return 0;
+    }
 
     // get the bloom filter
     tb_bloom_filter_ref_t filter = (tb_bloom_filter_ref_t)xm_lua_topointer(lua, 1);
     tb_check_return_val(filter, 0);
 
     // get item
-    tb_char_t const* item = luaL_checkstring(lua, 2);
+    tb_char_t const *item = luaL_checkstring(lua, 2);
     tb_assert_and_check_return_val(item, 0);
 
     // get item
@@ -55,5 +54,3 @@ tb_int_t xm_bloom_filter_get(lua_State* lua)
     lua_pushboolean(lua, ok);
     return 1;
 }
-
-

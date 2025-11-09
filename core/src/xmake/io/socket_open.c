@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "socket_open"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "socket_open"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -37,9 +37,7 @@
 /*
  * io.socket_open(socktype, family)
  */
-tb_int_t xm_io_socket_open(lua_State* lua)
-{
-    // check
+tb_int_t xm_io_socket_open(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get socket type
@@ -49,8 +47,7 @@ tb_int_t xm_io_socket_open(lua_State* lua)
     tb_size_t family = (tb_size_t)luaL_checknumber(lua, 2);
 
     // map socket type
-    switch (socktype)
-    {
+    switch (socktype) {
     case 2:
         socktype = TB_SOCKET_TYPE_UDP;
         break;
@@ -64,7 +61,10 @@ tb_int_t xm_io_socket_open(lua_State* lua)
 
     // init socket
     tb_socket_ref_t sock = tb_socket_init(socktype, family);
-    if (sock) xm_lua_pushpointer(lua, (tb_pointer_t)sock);
-    else lua_pushnil(lua);
+    if (sock) {
+        xm_lua_pushpointer(lua, (tb_pointer_t)sock);
+    } else {
+        lua_pushnil(lua);
+    }
     return 1;
 }

@@ -15,15 +15,15 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_semaphore_exit.c
+ * @file        semaphore_exit.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_semaphore"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_semaphore"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,17 +33,14 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_semaphore_exit(lua_State* lua)
-{
+tb_int_t xm_thread_semaphore_exit(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_semaphore_t* thread_semaphore = xm_thread_semaphore_get(lua, 1);
+    xm_thread_semaphore_t *thread_semaphore = xm_thread_semaphore_get(lua, 1);
     tb_assert_and_check_return_val(thread_semaphore && thread_semaphore->handle, 0);
 
-    if (tb_atomic_fetch_and_sub(&thread_semaphore->refn, 1) == 1)
-    {
-        if (thread_semaphore->handle)
-        {
+    if (tb_atomic_fetch_and_sub(&thread_semaphore->refn, 1) == 1) {
+        if (thread_semaphore->handle) {
             tb_semaphore_exit(thread_semaphore->handle);
             thread_semaphore->handle = tb_null;
         }
@@ -52,4 +49,3 @@ tb_int_t xm_thread_semaphore_exit(lua_State* lua)
     lua_pushboolean(lua, tb_true);
     return 1;
 }
-

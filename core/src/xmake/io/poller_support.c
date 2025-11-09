@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "poller_support"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "poller_support"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -36,9 +36,7 @@
  */
 
 // io.poller_support(events)
-tb_int_t xm_io_poller_support(lua_State* lua)
-{
-    // check
+tb_int_t xm_io_poller_support(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get events
@@ -48,4 +46,3 @@ tb_int_t xm_io_poller_support(lua_State* lua)
     lua_pushboolean(lua, tb_poller_support(xm_io_poller(lua), events));
     return 1;
 }
-

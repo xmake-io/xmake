@@ -30,8 +30,7 @@
  * helper implementation
  */
 
-static __tb_inline__ tb_uint64_t xm_hash_xorshift64(tb_uint64_t x)
-{
+static __tb_inline__ tb_uint64_t xm_hash_xorshift64(tb_uint64_t x) {
     x ^= x << 13;
     x ^= x >> 7;
     x ^= x << 17;
@@ -39,27 +38,24 @@ static __tb_inline__ tb_uint64_t xm_hash_xorshift64(tb_uint64_t x)
 }
 
 // http://xorshift.di.unimi.it/xorshift128plus.c
-static __tb_inline__ tb_uint64_t xm_hash_xorshift128(tb_uint64_t* s)
-{
-    tb_uint64_t s1       = s[0];
+static __tb_inline__ tb_uint64_t xm_hash_xorshift128(tb_uint64_t *s) {
+    tb_uint64_t       s1 = s[0];
     tb_uint64_t const s0 = s[1];
-    s[0] = s0;
+    s[0]                 = s0;
     s1 ^= s1 << 23;
     s[1] = s1 ^ s0 ^ (s1 >> 18) ^ (s0 >> 5);
     return s[1] + s0;
 }
 
-static __tb_inline__ tb_size_t xm_hash_make_cstr(tb_char_t hash[256], tb_byte_t const* data, tb_size_t size)
-{
-    static tb_char_t const* digits_table = "0123456789abcdef";
-    tb_size_t i = 0;
-    tb_byte_t value;
-    tb_char_t* s = hash;
-    for (i = 0; i < size; ++i)
-    {
+static __tb_inline__ tb_size_t xm_hash_make_cstr(tb_char_t hash[256], tb_byte_t const *data, tb_size_t size) {
+    static tb_char_t const *digits_table = "0123456789abcdef";
+    tb_size_t               i            = 0;
+    tb_byte_t               value;
+    tb_char_t              *s = hash;
+    for (i = 0; i < size; ++i) {
         value = data[i];
-        s[0] = digits_table[(value >> 4) & 15];
-        s[1] = digits_table[value & 15];
+        s[0]  = digits_table[(value >> 4) & 15];
+        s[1]  = digits_table[value & 15];
         s += 2;
     }
     *s = '\0';
@@ -67,5 +63,3 @@ static __tb_inline__ tb_size_t xm_hash_make_cstr(tb_char_t hash[256], tb_byte_t 
 }
 
 #endif
-
-

@@ -31,29 +31,37 @@
  */
 
 /// the major version
-#define XM_VERSION_MAJOR            XM_CONFIG_VERSION_MAJOR
+#define XM_VERSION_MAJOR XM_CONFIG_VERSION_MAJOR
 
 /// the minor version
-#define XM_VERSION_MINOR            XM_CONFIG_VERSION_MINOR
+#define XM_VERSION_MINOR XM_CONFIG_VERSION_MINOR
 
 /// the alter version
-#define XM_VERSION_ALTER            XM_CONFIG_VERSION_ALTER
+#define XM_VERSION_ALTER XM_CONFIG_VERSION_ALTER
 
 /// the build version
 #ifndef XM_CONFIG_VERSION_BUILD
-#   define XM_CONFIG_VERSION_BUILD  0
+#define XM_CONFIG_VERSION_BUILD 0
 #endif
-#define XM_VERSION_BUILD            XM_CONFIG_VERSION_BUILD
+#define XM_VERSION_BUILD XM_CONFIG_VERSION_BUILD
 
 /// the build version string
-#define XM_VERSION_BUILD_STRING     __tb_mstring_ex__(XM_CONFIG_VERSION_BUILD)
+#define XM_VERSION_BUILD_STRING __tb_mstring_ex__(XM_CONFIG_VERSION_BUILD)
 
 /// the version string
-#define XM_VERSION_STRING           __tb_mstrcat6__("xmake_", __tb_mstring_ex__(__tb_mconcat8_ex__(v, XM_VERSION_MAJOR, _, XM_VERSION_MINOR, _, XM_VERSION_ALTER, _, XM_CONFIG_VERSION_BUILD)), "_", TB_ARCH_VERSION_STRING, " by ", TB_COMPILER_VERSION_STRING)
+#define XM_VERSION_STRING                                                                                              \
+    __tb_mstrcat6__("xmake_",                                                                                          \
+                    __tb_mstring_ex__(__tb_mconcat8_ex__(                                                              \
+                        v, XM_VERSION_MAJOR, _, XM_VERSION_MINOR, _, XM_VERSION_ALTER, _, XM_CONFIG_VERSION_BUILD)),   \
+                    "_",                                                                                               \
+                    TB_ARCH_VERSION_STRING,                                                                            \
+                    " by ",                                                                                            \
+                    TB_COMPILER_VERSION_STRING)
 
 /// the short version string
-#define XM_VERSION_SHORT_STRING     __tb_mstrcat__("xmake_", __tb_mstring_ex__(__tb_mconcat8_ex__(v, XM_VERSION_MAJOR, _, XM_VERSION_MINOR, _, XM_VERSION_ALTER, _, XM_CONFIG_VERSION_BUILD)))
+#define XM_VERSION_SHORT_STRING                                                                                        \
+    __tb_mstrcat__("xmake_",                                                                                           \
+                   __tb_mstring_ex__(__tb_mconcat8_ex__(                                                               \
+                       v, XM_VERSION_MAJOR, _, XM_VERSION_MINOR, _, XM_VERSION_ALTER, _, XM_CONFIG_VERSION_BUILD)))
 
 #endif
-
-

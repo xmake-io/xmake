@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "memcpy"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "memcpy"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,17 +33,15 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_libc_memcpy(lua_State* lua)
-{
-    // check
+tb_int_t xm_libc_memcpy(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // do memcpy
-    tb_pointer_t dst = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 1);
-    tb_pointer_t src = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 2);
-    tb_int_t size = (tb_int_t)lua_tointeger(lua, 3);
-    if (dst && src && size > 0)
+    tb_pointer_t dst  = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 1);
+    tb_pointer_t src  = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 2);
+    tb_int_t     size = (tb_int_t)lua_tointeger(lua, 3);
+    if (dst && src && size > 0) {
         tb_memcpy(dst, src, size);
+    }
     return 0;
 }
-

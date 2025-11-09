@@ -1,0 +1,92 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+DisableFormat: false
+
+# Indentation
+IndentWidth: 4
+ContinuationIndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Braces
+BreakBeforeBraces: Attach
+BraceWrapping:
+  AfterControlStatement: false
+  AfterFunction: false
+  AfterEnum: false
+  AfterClass: false
+  AfterStruct: false
+  AfterUnion: false
+  BeforeElse: false
+  BeforeCatch: false
+  BeforeLambdaBody: false
+
+# Alignment
+AlignAfterOpenBracket: Align
+AlignTrailingComments: true
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: None
+AlignConsecutiveDeclarations: Consecutive
+AlignConsecutiveMacros: None
+
+# Spacing
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpacesBeforeTrailingComments: 1
+
+# Column limit
+ColumnLimit: 120
+
+# Short constructs
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Line breaking
+AlwaysBreakAfterReturnType: None
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+
+# Functions
+IndentWrappedFunctionNames: false
+MaxEmptyLinesToKeep: 1
+
+# Includes
+IncludeBlocks: Preserve
+SortIncludes: Never
+
+# Initializers
+AllowAllConstructorInitializersOnNextLine: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+Cpp11BracedListStyle: false
+BinPackArguments: false
+BinPackParameters: false
+
+# Preprocessor/Macros
+IndentPPDirectives: None
+
+# Misc
+KeepEmptyLinesAtTheStartOfBlocks: false
+ReflowComments: false
+SeparateDefinitionBlocks: Leave
+
+# Penalties
+PenaltyBreakAssignment: 100
+PenaltyBreakBeforeFirstCallParameter: 100
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 1000
+PenaltyBreakTemplateDeclaration: 1000
+
+---
+Language: ObjC
+BasedOnStyle: LLVM
+DisableFormat: true

@@ -1,4 +1,4 @@
 class bar {
-public:
+  public:
     static int add(int a, int b);
 };

@@ -3,10 +3,8 @@
 
 #include "demo_global.h"
 
-class QT_DEMOSHARED_EXPORT QtDemo
-{
-
-public:
+class QT_DEMOSHARED_EXPORT QtDemo {
+  public:
     QtDemo();
 };
 

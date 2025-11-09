@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_flush"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "file_flush"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,24 +33,21 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_bool_t xm_io_std_flush_impl(xm_io_file_t* file)
-{
+static tb_bool_t xm_io_std_flush_impl(xm_io_file_t *file) {
     tb_assert_and_check_return_val(xm_io_file_is_std(file), tb_false);
-    return (file->u.std_ref != tb_stdfile_input())? tb_stdfile_flush(file->u.std_ref) : tb_false;
+    return (file->u.std_ref != tb_stdfile_input()) ? tb_stdfile_flush(file->u.std_ref) : tb_false;
 }
 
-static tb_bool_t xm_io_file_flush_impl(xm_io_file_t* file)
-{
-    // check
+static tb_bool_t xm_io_file_flush_impl(xm_io_file_t *file) {
     tb_assert_and_check_return_val(xm_io_file_is_file(file), tb_false);
 
 #ifdef TB_CONFIG_OS_WINDOWS
     // write cached data first
-    tb_byte_t const* odata = tb_buffer_data(&file->wcache);
+    tb_byte_t const *odata = tb_buffer_data(&file->wcache);
     tb_size_t        osize = tb_buffer_size(&file->wcache);
-    if (odata && osize)
-    {
-        if (!tb_stream_bwrit(file->u.file_ref, odata, osize)) return tb_false;
+    if (odata && osize) {
+        if (!tb_stream_bwrit(file->u.file_ref, odata, osize))
+            return tb_false;
         tb_buffer_clear(&file->wcache);
     }
 #endif
@@ -62,25 +59,24 @@ static tb_bool_t xm_io_file_flush_impl(xm_io_file_t* file)
  */
 
 // io.file_flush(file)
-tb_int_t xm_io_file_flush(lua_State* lua)
-{
-    // check
+tb_int_t xm_io_file_flush(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
-    if (!lua_isuserdata(lua, 1))
+    if (!lua_isuserdata(lua, 1)) {
         xm_io_return_error(lua, "flush(invalid file)!");
+    }
 
     // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    xm_io_file_t *file = (xm_io_file_t *)lua_touserdata(lua, 1);
     tb_check_return_val(file, 0);
 
     // flush file
-    tb_bool_t ok = xm_io_file_is_file(file)? xm_io_file_flush_impl(file) : xm_io_std_flush_impl(file);
-    if (ok)
-    {
+    tb_bool_t ok = xm_io_file_is_file(file) ? xm_io_file_flush_impl(file) : xm_io_std_flush_impl(file);
+    if (ok) {
         lua_pushboolean(lua, tb_true);
         return 1;
+    } else {
+        xm_io_return_error(lua, "failed to flush file");
     }
-    else xm_io_return_error(lua, "failed to flush file");
 }

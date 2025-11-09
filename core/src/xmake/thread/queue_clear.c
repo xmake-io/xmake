@@ -15,15 +15,15 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_queue_clear.c
+ * @file        queue_clear.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_queue"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_queue"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,15 +33,13 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_queue_clear(lua_State* lua)
-{
+tb_int_t xm_thread_queue_clear(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_queue_t* thread_queue = xm_thread_queue_get(lua, 1);
+    xm_thread_queue_t *thread_queue = xm_thread_queue_get(lua, 1);
     tb_assert_and_check_return_val(thread_queue && thread_queue->handle, 0);
 
     tb_queue_clear(thread_queue->handle);
     lua_pushboolean(lua, tb_true);
     return 1;
 }
-

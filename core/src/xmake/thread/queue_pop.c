@@ -15,15 +15,15 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_queue_pop.c
+ * @file        queue_pop.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_queue"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_queue"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,30 +33,29 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_queue_pop(lua_State* lua)
-{
+tb_int_t xm_thread_queue_pop(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_queue_t* thread_queue = xm_thread_queue_get(lua, 1);
+    xm_thread_queue_t *thread_queue = xm_thread_queue_get(lua, 1);
     tb_assert_and_check_return_val(thread_queue && thread_queue->handle, 0);
 
-    if (tb_queue_null(thread_queue->handle))
-    {
+    if (tb_queue_null(thread_queue->handle)) {
         lua_pushnil(lua);
         lua_pushliteral(lua, "the thread queue is empty");
         return 2;
     }
 
-    xm_thread_value_t* item = (xm_thread_value_t*)tb_queue_get(thread_queue->handle);
+    xm_thread_value_t *item = (xm_thread_value_t *)tb_queue_get(thread_queue->handle);
     tb_assert_and_check_return_val(item, 0);
 
     tb_bool_t ok = tb_false;
-    switch (item->kind)
-    {
+    switch (item->kind) {
     case XM_THREAD_VALUE_STR:
-        if (item->size)
+        if (item->size) {
             lua_pushlstring(lua, item->u.string, item->size);
-        else lua_pushliteral(lua, "");
+        } else {
+            lua_pushliteral(lua, "");
+        }
         ok = tb_true;
         break;
     case XM_THREAD_VALUE_INT:
@@ -79,8 +78,7 @@ tb_int_t xm_thread_queue_pop(lua_State* lua)
         break;
     }
 
-    if (!ok)
-    {
+    if (!ok) {
         lua_pushnil(lua);
         lua_pushliteral(lua, "invalid thread queue item");
         return 2;
@@ -89,4 +87,3 @@ tb_int_t xm_thread_queue_pop(lua_State* lua)
     tb_queue_pop(thread_queue->handle);
     return 1;
 }
-

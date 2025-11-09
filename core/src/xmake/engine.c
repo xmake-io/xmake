@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "engine"
-#define TB_TRACE_MODULE_DEBUG               (1)
+#define TB_TRACE_MODULE_NAME "engine"
+#define TB_TRACE_MODULE_DEBUG (1)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -31,38 +31,39 @@
 #include "xmake.h"
 #include "io/poller.h"
 #if defined(TB_CONFIG_OS_WINDOWS)
-#   include <windows.h>
-#   include <io.h>
-#   include <fcntl.h>
+#include <windows.h>
+#include <io.h>
+#include <fcntl.h>
 #elif defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
-#   include <unistd.h>
-#   include <mach-o/dyld.h>
-#   include <signal.h>
-#elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_ANDROID) || defined(TB_CONFIG_OS_HAIKU)
-#   include <unistd.h>
-#   include <signal.h>
+#include <unistd.h>
+#include <mach-o/dyld.h>
+#include <signal.h>
+#elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_ANDROID) ||                     \
+    defined(TB_CONFIG_OS_HAIKU)
+#include <unistd.h>
+#include <signal.h>
 #endif
 #ifdef TB_CONFIG_OS_BSD
-#   include <sys/types.h>
-#   include <sys/sysctl.h>
-#   include <signal.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <signal.h>
 #endif
 #ifdef TB_CONFIG_OS_HAIKU
-#   include <image.h>
+#include <image.h>
 #endif
 #ifdef __COSMOPOLITAN__
-#   include <sys/utsname.h>
+#include <sys/utsname.h>
 #endif
 
 // for uid
 #ifndef TB_CONFIG_OS_WINDOWS
-#   include <unistd.h>
-#   include <errno.h>
+#include <unistd.h>
+#include <errno.h>
 #endif
 
 // for embed files
 #ifdef XM_EMBED_ENABLE
-#   include "lz4/prefix.h"
+#include "lz4/prefix.h"
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -71,321 +72,318 @@
 
 // proc/self
 #if defined(TB_CONFIG_OS_LINUX)
-#   define XM_PROC_SELF_FILE        "/proc/self/exe"
+#define XM_PROC_SELF_FILE "/proc/self/exe"
 #elif defined(TB_CONFIG_OS_BSD) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
-#   if defined(__NetBSD__)
-#       define XM_PROC_SELF_FILE    "/proc/curproc/exe"
-#   else
-#       define XM_PROC_SELF_FILE    "/proc/curproc/file"
-#   endif
+#if defined(__NetBSD__)
+#define XM_PROC_SELF_FILE "/proc/curproc/exe"
+#else
+#define XM_PROC_SELF_FILE "/proc/curproc/file"
+#endif
 #endif
 
 // hook lua memory allocator
-#define XM_HOOK_LUA_MEMALLOC        (0)
+#define XM_HOOK_LUA_MEMALLOC (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
 
 // the engine type
-typedef struct __xm_engine_t
-{
+typedef struct __xm_engine_t {
     // the lua
-    lua_State*              lua;
+    lua_State *lua;
 
     // the engine name
-    tb_char_t               name[64];
+    tb_char_t name[64];
 
     // the io poller
-    tb_poller_ref_t         poller;
-    xm_poller_state_t       poller_state;
+    tb_poller_ref_t   poller;
+    xm_poller_state_t poller_state;
 
 #ifdef XM_EMBED_ENABLE
     // the temporary directory
-    tb_char_t               tmpdir[TB_PATH_MAXN];
+    tb_char_t tmpdir[TB_PATH_MAXN];
 
     // the embed files
-    tb_byte_t const*        embeddata[32];
-    tb_size_t               embedsize[32];
-    tb_size_t               embedcount;
+    tb_byte_t const *embeddata[32];
+    tb_size_t        embedsize[32];
+    tb_size_t        embedcount;
 #endif
-
-}xm_engine_t;
+} xm_engine_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * declaration
  */
 
 // the os functions
-tb_int_t xm_os_argv(lua_State* lua);
-tb_int_t xm_os_args(lua_State* lua);
-tb_int_t xm_os_find(lua_State* lua);
-tb_int_t xm_os_link(lua_State* lua);
-tb_int_t xm_os_isdir(lua_State* lua);
-tb_int_t xm_os_rmdir(lua_State* lua);
-tb_int_t xm_os_mkdir(lua_State* lua);
-tb_int_t xm_os_cpdir(lua_State* lua);
-tb_int_t xm_os_chdir(lua_State* lua);
-tb_int_t xm_os_mtime(lua_State* lua);
-tb_int_t xm_os_sleep(lua_State* lua);
-tb_int_t xm_os_mclock(lua_State* lua);
-tb_int_t xm_os_curdir(lua_State* lua);
-tb_int_t xm_os_tmpdir(lua_State* lua);
-tb_int_t xm_os_islink(lua_State* lua);
-tb_int_t xm_os_isfile(lua_State* lua);
-tb_int_t xm_os_touch(lua_State* lua);
-tb_int_t xm_os_rmfile(lua_State* lua);
-tb_int_t xm_os_cpfile(lua_State* lua);
-tb_int_t xm_os_fscase(lua_State* lua);
-tb_int_t xm_os_rename(lua_State* lua);
-tb_int_t xm_os_exists(lua_State* lua);
-tb_int_t xm_os_setenv(lua_State* lua);
-tb_int_t xm_os_getenv(lua_State* lua);
-tb_int_t xm_os_getenvs(lua_State* lua);
-tb_int_t xm_os_cpuinfo(lua_State* lua);
-tb_int_t xm_os_meminfo(lua_State* lua);
-tb_int_t xm_os_readlink(lua_State* lua);
-tb_int_t xm_os_filesize(lua_State* lua);
-tb_int_t xm_os_emptydir(lua_State* lua);
-tb_int_t xm_os_syserror(lua_State* lua);
-tb_int_t xm_os_strerror(lua_State* lua);
-tb_int_t xm_os_getwinsize(lua_State* lua);
-tb_int_t xm_os_getpid(lua_State* lua);
-tb_int_t xm_os_signal(lua_State* lua);
+tb_int_t xm_os_argv(lua_State *lua);
+tb_int_t xm_os_args(lua_State *lua);
+tb_int_t xm_os_find(lua_State *lua);
+tb_int_t xm_os_link(lua_State *lua);
+tb_int_t xm_os_isdir(lua_State *lua);
+tb_int_t xm_os_rmdir(lua_State *lua);
+tb_int_t xm_os_mkdir(lua_State *lua);
+tb_int_t xm_os_cpdir(lua_State *lua);
+tb_int_t xm_os_chdir(lua_State *lua);
+tb_int_t xm_os_mtime(lua_State *lua);
+tb_int_t xm_os_sleep(lua_State *lua);
+tb_int_t xm_os_mclock(lua_State *lua);
+tb_int_t xm_os_curdir(lua_State *lua);
+tb_int_t xm_os_tmpdir(lua_State *lua);
+tb_int_t xm_os_islink(lua_State *lua);
+tb_int_t xm_os_isfile(lua_State *lua);
+tb_int_t xm_os_touch(lua_State *lua);
+tb_int_t xm_os_rmfile(lua_State *lua);
+tb_int_t xm_os_cpfile(lua_State *lua);
+tb_int_t xm_os_fscase(lua_State *lua);
+tb_int_t xm_os_rename(lua_State *lua);
+tb_int_t xm_os_exists(lua_State *lua);
+tb_int_t xm_os_setenv(lua_State *lua);
+tb_int_t xm_os_getenv(lua_State *lua);
+tb_int_t xm_os_getenvs(lua_State *lua);
+tb_int_t xm_os_cpuinfo(lua_State *lua);
+tb_int_t xm_os_meminfo(lua_State *lua);
+tb_int_t xm_os_readlink(lua_State *lua);
+tb_int_t xm_os_filesize(lua_State *lua);
+tb_int_t xm_os_emptydir(lua_State *lua);
+tb_int_t xm_os_syserror(lua_State *lua);
+tb_int_t xm_os_strerror(lua_State *lua);
+tb_int_t xm_os_getwinsize(lua_State *lua);
+tb_int_t xm_os_getpid(lua_State *lua);
+tb_int_t xm_os_signal(lua_State *lua);
 #ifndef TB_CONFIG_OS_WINDOWS
-tb_int_t xm_os_uid(lua_State* lua);
-tb_int_t xm_os_gid(lua_State* lua);
-tb_int_t xm_os_getown(lua_State* lua);
+tb_int_t xm_os_uid(lua_State *lua);
+tb_int_t xm_os_gid(lua_State *lua);
+tb_int_t xm_os_getown(lua_State *lua);
 #endif
 
 // the io/file functions
-tb_int_t xm_io_stdfile(lua_State* lua);
-tb_int_t xm_io_file_open(lua_State* lua);
-tb_int_t xm_io_file_read(lua_State* lua);
-tb_int_t xm_io_file_readable(lua_State* lua);
-tb_int_t xm_io_file_seek(lua_State* lua);
-tb_int_t xm_io_file_size(lua_State* lua);
-tb_int_t xm_io_file_rawfd(lua_State* lua);
-tb_int_t xm_io_file_write(lua_State* lua);
-tb_int_t xm_io_file_flush(lua_State* lua);
-tb_int_t xm_io_file_close(lua_State* lua);
-tb_int_t xm_io_file_isatty(lua_State* lua);
+tb_int_t xm_io_stdfile(lua_State *lua);
+tb_int_t xm_io_file_open(lua_State *lua);
+tb_int_t xm_io_file_read(lua_State *lua);
+tb_int_t xm_io_file_readable(lua_State *lua);
+tb_int_t xm_io_file_seek(lua_State *lua);
+tb_int_t xm_io_file_size(lua_State *lua);
+tb_int_t xm_io_file_rawfd(lua_State *lua);
+tb_int_t xm_io_file_write(lua_State *lua);
+tb_int_t xm_io_file_flush(lua_State *lua);
+tb_int_t xm_io_file_close(lua_State *lua);
+tb_int_t xm_io_file_isatty(lua_State *lua);
 
 // the io/filelock functions
-tb_int_t xm_io_filelock_open(lua_State* lua);
-tb_int_t xm_io_filelock_lock(lua_State* lua);
-tb_int_t xm_io_filelock_unlock(lua_State* lua);
-tb_int_t xm_io_filelock_trylock(lua_State* lua);
-tb_int_t xm_io_filelock_close(lua_State* lua);
+tb_int_t xm_io_filelock_open(lua_State *lua);
+tb_int_t xm_io_filelock_lock(lua_State *lua);
+tb_int_t xm_io_filelock_unlock(lua_State *lua);
+tb_int_t xm_io_filelock_trylock(lua_State *lua);
+tb_int_t xm_io_filelock_close(lua_State *lua);
 
 // the io/socket functions
-tb_int_t xm_io_socket_open(lua_State* lua);
-tb_int_t xm_io_socket_rawfd(lua_State* lua);
-tb_int_t xm_io_socket_peeraddr(lua_State* lua);
-tb_int_t xm_io_socket_wait(lua_State* lua);
-tb_int_t xm_io_socket_bind(lua_State* lua);
-tb_int_t xm_io_socket_ctrl(lua_State* lua);
-tb_int_t xm_io_socket_listen(lua_State* lua);
-tb_int_t xm_io_socket_accept(lua_State* lua);
-tb_int_t xm_io_socket_connect(lua_State* lua);
-tb_int_t xm_io_socket_send(lua_State* lua);
-tb_int_t xm_io_socket_sendto(lua_State* lua);
-tb_int_t xm_io_socket_sendfile(lua_State* lua);
-tb_int_t xm_io_socket_recv(lua_State* lua);
-tb_int_t xm_io_socket_recvfrom(lua_State* lua);
-tb_int_t xm_io_socket_kill(lua_State* lua);
-tb_int_t xm_io_socket_close(lua_State* lua);
+tb_int_t xm_io_socket_open(lua_State *lua);
+tb_int_t xm_io_socket_rawfd(lua_State *lua);
+tb_int_t xm_io_socket_peeraddr(lua_State *lua);
+tb_int_t xm_io_socket_wait(lua_State *lua);
+tb_int_t xm_io_socket_bind(lua_State *lua);
+tb_int_t xm_io_socket_ctrl(lua_State *lua);
+tb_int_t xm_io_socket_listen(lua_State *lua);
+tb_int_t xm_io_socket_accept(lua_State *lua);
+tb_int_t xm_io_socket_connect(lua_State *lua);
+tb_int_t xm_io_socket_send(lua_State *lua);
+tb_int_t xm_io_socket_sendto(lua_State *lua);
+tb_int_t xm_io_socket_sendfile(lua_State *lua);
+tb_int_t xm_io_socket_recv(lua_State *lua);
+tb_int_t xm_io_socket_recvfrom(lua_State *lua);
+tb_int_t xm_io_socket_kill(lua_State *lua);
+tb_int_t xm_io_socket_close(lua_State *lua);
 
 // the io/pipe functions
-tb_int_t xm_io_pipe_open(lua_State* lua);
-tb_int_t xm_io_pipe_openpair(lua_State* lua);
-tb_int_t xm_io_pipe_close(lua_State* lua);
-tb_int_t xm_io_pipe_read(lua_State* lua);
-tb_int_t xm_io_pipe_write(lua_State* lua);
-tb_int_t xm_io_pipe_wait(lua_State* lua);
-tb_int_t xm_io_pipe_connect(lua_State* lua);
+tb_int_t xm_io_pipe_open(lua_State *lua);
+tb_int_t xm_io_pipe_openpair(lua_State *lua);
+tb_int_t xm_io_pipe_close(lua_State *lua);
+tb_int_t xm_io_pipe_read(lua_State *lua);
+tb_int_t xm_io_pipe_write(lua_State *lua);
+tb_int_t xm_io_pipe_wait(lua_State *lua);
+tb_int_t xm_io_pipe_connect(lua_State *lua);
 
 // the io/poller functions
-tb_int_t xm_io_poller_insert(lua_State* lua);
-tb_int_t xm_io_poller_modify(lua_State* lua);
-tb_int_t xm_io_poller_remove(lua_State* lua);
-tb_int_t xm_io_poller_spank(lua_State* lua);
-tb_int_t xm_io_poller_support(lua_State* lua);
-tb_int_t xm_io_poller_wait(lua_State* lua);
+tb_int_t xm_io_poller_insert(lua_State *lua);
+tb_int_t xm_io_poller_modify(lua_State *lua);
+tb_int_t xm_io_poller_remove(lua_State *lua);
+tb_int_t xm_io_poller_spank(lua_State *lua);
+tb_int_t xm_io_poller_support(lua_State *lua);
+tb_int_t xm_io_poller_wait(lua_State *lua);
 
 // the path functions
-tb_int_t xm_path_relative(lua_State* lua);
-tb_int_t xm_path_absolute(lua_State* lua);
-tb_int_t xm_path_translate(lua_State* lua);
-tb_int_t xm_path_directory(lua_State* lua);
-tb_int_t xm_path_is_absolute(lua_State* lua);
+tb_int_t xm_path_relative(lua_State *lua);
+tb_int_t xm_path_absolute(lua_State *lua);
+tb_int_t xm_path_translate(lua_State *lua);
+tb_int_t xm_path_directory(lua_State *lua);
+tb_int_t xm_path_is_absolute(lua_State *lua);
 
 // the hash functions
-tb_int_t xm_hash_uuid4(lua_State* lua);
-tb_int_t xm_hash_sha(lua_State* lua);
-tb_int_t xm_hash_md5(lua_State* lua);
-tb_int_t xm_hash_xxhash(lua_State* lua);
-tb_int_t xm_hash_rand32(lua_State* lua);
-tb_int_t xm_hash_rand64(lua_State* lua);
-tb_int_t xm_hash_rand128(lua_State* lua);
+tb_int_t xm_hash_uuid4(lua_State *lua);
+tb_int_t xm_hash_sha(lua_State *lua);
+tb_int_t xm_hash_md5(lua_State *lua);
+tb_int_t xm_hash_xxhash(lua_State *lua);
+tb_int_t xm_hash_rand32(lua_State *lua);
+tb_int_t xm_hash_rand64(lua_State *lua);
+tb_int_t xm_hash_rand128(lua_State *lua);
 
 // the base64 functions
-tb_int_t xm_base64_encode(lua_State* lua);
-tb_int_t xm_base64_decode(lua_State* lua);
+tb_int_t xm_base64_encode(lua_State *lua);
+tb_int_t xm_base64_decode(lua_State *lua);
 
 // the lz4 functions
-tb_int_t xm_lz4_compress(lua_State* lua);
-tb_int_t xm_lz4_decompress(lua_State* lua);
-tb_int_t xm_lz4_block_compress(lua_State* lua);
-tb_int_t xm_lz4_block_decompress(lua_State* lua);
-tb_int_t xm_lz4_compress_file(lua_State* lua);
-tb_int_t xm_lz4_decompress_file(lua_State* lua);
-tb_int_t xm_lz4_compress_stream_open(lua_State* lua);
-tb_int_t xm_lz4_compress_stream_read(lua_State* lua);
-tb_int_t xm_lz4_compress_stream_write(lua_State* lua);
-tb_int_t xm_lz4_compress_stream_close(lua_State* lua);
-tb_int_t xm_lz4_decompress_stream_open(lua_State* lua);
-tb_int_t xm_lz4_decompress_stream_read(lua_State* lua);
-tb_int_t xm_lz4_decompress_stream_write(lua_State* lua);
-tb_int_t xm_lz4_decompress_stream_close(lua_State* lua);
+tb_int_t xm_lz4_compress(lua_State *lua);
+tb_int_t xm_lz4_decompress(lua_State *lua);
+tb_int_t xm_lz4_block_compress(lua_State *lua);
+tb_int_t xm_lz4_block_decompress(lua_State *lua);
+tb_int_t xm_lz4_compress_file(lua_State *lua);
+tb_int_t xm_lz4_decompress_file(lua_State *lua);
+tb_int_t xm_lz4_compress_stream_open(lua_State *lua);
+tb_int_t xm_lz4_compress_stream_read(lua_State *lua);
+tb_int_t xm_lz4_compress_stream_write(lua_State *lua);
+tb_int_t xm_lz4_compress_stream_close(lua_State *lua);
+tb_int_t xm_lz4_decompress_stream_open(lua_State *lua);
+tb_int_t xm_lz4_decompress_stream_read(lua_State *lua);
+tb_int_t xm_lz4_decompress_stream_write(lua_State *lua);
+tb_int_t xm_lz4_decompress_stream_close(lua_State *lua);
 
 // the bloom filter functions
-tb_int_t xm_bloom_filter_open(lua_State* lua);
-tb_int_t xm_bloom_filter_close(lua_State* lua);
-tb_int_t xm_bloom_filter_clear(lua_State* lua);
-tb_int_t xm_bloom_filter_data(lua_State* lua);
-tb_int_t xm_bloom_filter_size(lua_State* lua);
-tb_int_t xm_bloom_filter_get(lua_State* lua);
-tb_int_t xm_bloom_filter_set(lua_State* lua);
-tb_int_t xm_bloom_filter_data_set(lua_State* lua);
+tb_int_t xm_bloom_filter_open(lua_State *lua);
+tb_int_t xm_bloom_filter_close(lua_State *lua);
+tb_int_t xm_bloom_filter_clear(lua_State *lua);
+tb_int_t xm_bloom_filter_data(lua_State *lua);
+tb_int_t xm_bloom_filter_size(lua_State *lua);
+tb_int_t xm_bloom_filter_get(lua_State *lua);
+tb_int_t xm_bloom_filter_set(lua_State *lua);
+tb_int_t xm_bloom_filter_data_set(lua_State *lua);
 
 // the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
-tb_int_t xm_winos_cp_info(lua_State* lua);
-tb_int_t xm_winos_console_cp(lua_State* lua);
-tb_int_t xm_winos_console_output_cp(lua_State* lua);
-tb_int_t xm_winos_ansi_cp(lua_State* lua);
-tb_int_t xm_winos_oem_cp(lua_State* lua);
-tb_int_t xm_winos_logical_drives(lua_State* lua);
-tb_int_t xm_winos_registry_query(lua_State* lua);
-tb_int_t xm_winos_registry_keys(lua_State* lua);
-tb_int_t xm_winos_registry_values(lua_State* lua);
-tb_int_t xm_winos_short_path(lua_State* lua);
+tb_int_t xm_winos_cp_info(lua_State *lua);
+tb_int_t xm_winos_console_cp(lua_State *lua);
+tb_int_t xm_winos_console_output_cp(lua_State *lua);
+tb_int_t xm_winos_ansi_cp(lua_State *lua);
+tb_int_t xm_winos_oem_cp(lua_State *lua);
+tb_int_t xm_winos_logical_drives(lua_State *lua);
+tb_int_t xm_winos_registry_query(lua_State *lua);
+tb_int_t xm_winos_registry_keys(lua_State *lua);
+tb_int_t xm_winos_registry_values(lua_State *lua);
+tb_int_t xm_winos_short_path(lua_State *lua);
 #endif
 
 // the string functions
-tb_int_t xm_string_trim(lua_State* lua);
-tb_int_t xm_string_split(lua_State* lua);
-tb_int_t xm_string_lastof(lua_State* lua);
-tb_int_t xm_string_convert(lua_State* lua);
-tb_int_t xm_string_endswith(lua_State* lua);
-tb_int_t xm_string_startswith(lua_State* lua);
+tb_int_t xm_string_trim(lua_State *lua);
+tb_int_t xm_string_split(lua_State *lua);
+tb_int_t xm_string_lastof(lua_State *lua);
+tb_int_t xm_string_convert(lua_State *lua);
+tb_int_t xm_string_endswith(lua_State *lua);
+tb_int_t xm_string_startswith(lua_State *lua);
 
 // the process functions
-tb_int_t xm_process_open(lua_State* lua);
-tb_int_t xm_process_openv(lua_State* lua);
-tb_int_t xm_process_wait(lua_State* lua);
-tb_int_t xm_process_kill(lua_State* lua);
-tb_int_t xm_process_close(lua_State* lua);
+tb_int_t xm_process_open(lua_State *lua);
+tb_int_t xm_process_openv(lua_State *lua);
+tb_int_t xm_process_wait(lua_State *lua);
+tb_int_t xm_process_kill(lua_State *lua);
+tb_int_t xm_process_close(lua_State *lua);
 
 // the fwatcher functions
-tb_int_t xm_fwatcher_open(lua_State* lua);
-tb_int_t xm_fwatcher_add(lua_State* lua);
-tb_int_t xm_fwatcher_remove(lua_State* lua);
-tb_int_t xm_fwatcher_wait(lua_State* lua);
-tb_int_t xm_fwatcher_close(lua_State* lua);
+tb_int_t xm_fwatcher_open(lua_State *lua);
+tb_int_t xm_fwatcher_add(lua_State *lua);
+tb_int_t xm_fwatcher_remove(lua_State *lua);
+tb_int_t xm_fwatcher_wait(lua_State *lua);
+tb_int_t xm_fwatcher_close(lua_State *lua);
 
 // the sandbox functions
-tb_int_t xm_sandbox_interactive(lua_State* lua);
+tb_int_t xm_sandbox_interactive(lua_State *lua);
 
 #ifdef XM_CONFIG_API_HAVE_READLINE
 // the readline functions
-tb_int_t xm_readline_readline(lua_State* lua);
-tb_int_t xm_readline_history_list(lua_State* lua);
-tb_int_t xm_readline_add_history(lua_State* lua);
-tb_int_t xm_readline_clear_history(lua_State* lua);
+tb_int_t xm_readline_readline(lua_State *lua);
+tb_int_t xm_readline_history_list(lua_State *lua);
+tb_int_t xm_readline_add_history(lua_State *lua);
+tb_int_t xm_readline_clear_history(lua_State *lua);
 #endif
 
 // the semver functions
-tb_int_t xm_semver_parse(lua_State* lua);
-tb_int_t xm_semver_compare(lua_State* lua);
-tb_int_t xm_semver_satisfies(lua_State* lua);
-tb_int_t xm_semver_select(lua_State* lua);
+tb_int_t xm_semver_parse(lua_State *lua);
+tb_int_t xm_semver_compare(lua_State *lua);
+tb_int_t xm_semver_satisfies(lua_State *lua);
+tb_int_t xm_semver_select(lua_State *lua);
 
 // the libc functions
-tb_int_t xm_libc_malloc(lua_State* lua);
-tb_int_t xm_libc_free(lua_State* lua);
-tb_int_t xm_libc_memcpy(lua_State* lua);
-tb_int_t xm_libc_memmov(lua_State* lua);
-tb_int_t xm_libc_memset(lua_State* lua);
-tb_int_t xm_libc_strndup(lua_State* lua);
-tb_int_t xm_libc_dataptr(lua_State* lua);
-tb_int_t xm_libc_byteof(lua_State* lua);
-tb_int_t xm_libc_setbyte(lua_State* lua);
+tb_int_t xm_libc_malloc(lua_State *lua);
+tb_int_t xm_libc_free(lua_State *lua);
+tb_int_t xm_libc_memcpy(lua_State *lua);
+tb_int_t xm_libc_memmov(lua_State *lua);
+tb_int_t xm_libc_memset(lua_State *lua);
+tb_int_t xm_libc_strndup(lua_State *lua);
+tb_int_t xm_libc_dataptr(lua_State *lua);
+tb_int_t xm_libc_byteof(lua_State *lua);
+tb_int_t xm_libc_setbyte(lua_State *lua);
 
 // the tty functions
-tb_int_t xm_tty_term_mode(lua_State* lua);
+tb_int_t xm_tty_term_mode(lua_State *lua);
 
 // the package functions
-tb_int_t xm_package_loadxmi(lua_State* lua);
+tb_int_t xm_package_loadxmi(lua_State *lua);
 
 // the utils functions
-tb_int_t xm_utils_bin2c(lua_State* lua);
+tb_int_t xm_utils_bin2c(lua_State *lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses functions
-tb_int_t xm_lua_curses_register(lua_State* lua, tb_char_t const* module);
+tb_int_t xm_lua_curses_register(lua_State *lua, tb_char_t const *module);
 #endif
 
 // the thread functions
-tb_int_t xm_thread_init(lua_State* lua);
-tb_int_t xm_thread_exit(lua_State* lua);
-tb_int_t xm_thread_wait(lua_State* lua);
-tb_int_t xm_thread_suspend(lua_State* lua);
-tb_int_t xm_thread_resume(lua_State* lua);
+tb_int_t xm_thread_init(lua_State *lua);
+tb_int_t xm_thread_exit(lua_State *lua);
+tb_int_t xm_thread_wait(lua_State *lua);
+tb_int_t xm_thread_suspend(lua_State *lua);
+tb_int_t xm_thread_resume(lua_State *lua);
 
 // the thread/mutex functions
-tb_int_t xm_thread_mutex_init(lua_State* lua);
-tb_int_t xm_thread_mutex_exit(lua_State* lua);
-tb_int_t xm_thread_mutex_lock(lua_State* lua);
-tb_int_t xm_thread_mutex_trylock(lua_State* lua);
-tb_int_t xm_thread_mutex_unlock(lua_State* lua);
-tb_int_t xm_thread_mutex_incref(lua_State* lua);
+tb_int_t xm_thread_mutex_init(lua_State *lua);
+tb_int_t xm_thread_mutex_exit(lua_State *lua);
+tb_int_t xm_thread_mutex_lock(lua_State *lua);
+tb_int_t xm_thread_mutex_trylock(lua_State *lua);
+tb_int_t xm_thread_mutex_unlock(lua_State *lua);
+tb_int_t xm_thread_mutex_incref(lua_State *lua);
 
 // the thread/event functions
-tb_int_t xm_thread_event_init(lua_State* lua);
-tb_int_t xm_thread_event_exit(lua_State* lua);
-tb_int_t xm_thread_event_post(lua_State* lua);
-tb_int_t xm_thread_event_wait(lua_State* lua);
-tb_int_t xm_thread_event_incref(lua_State* lua);
+tb_int_t xm_thread_event_init(lua_State *lua);
+tb_int_t xm_thread_event_exit(lua_State *lua);
+tb_int_t xm_thread_event_post(lua_State *lua);
+tb_int_t xm_thread_event_wait(lua_State *lua);
+tb_int_t xm_thread_event_incref(lua_State *lua);
 
 // the thread/semaphore functions
-tb_int_t xm_thread_semaphore_init(lua_State* lua);
-tb_int_t xm_thread_semaphore_exit(lua_State* lua);
-tb_int_t xm_thread_semaphore_post(lua_State* lua);
-tb_int_t xm_thread_semaphore_wait(lua_State* lua);
-tb_int_t xm_thread_semaphore_incref(lua_State* lua);
+tb_int_t xm_thread_semaphore_init(lua_State *lua);
+tb_int_t xm_thread_semaphore_exit(lua_State *lua);
+tb_int_t xm_thread_semaphore_post(lua_State *lua);
+tb_int_t xm_thread_semaphore_wait(lua_State *lua);
+tb_int_t xm_thread_semaphore_incref(lua_State *lua);
 
 // the thread/queue functions
-tb_int_t xm_thread_queue_init(lua_State* lua);
-tb_int_t xm_thread_queue_exit(lua_State* lua);
-tb_int_t xm_thread_queue_size(lua_State* lua);
-tb_int_t xm_thread_queue_clear(lua_State* lua);
-tb_int_t xm_thread_queue_incref(lua_State* lua);
-tb_int_t xm_thread_queue_push(lua_State* lua);
-tb_int_t xm_thread_queue_pop(lua_State* lua);
+tb_int_t xm_thread_queue_init(lua_State *lua);
+tb_int_t xm_thread_queue_exit(lua_State *lua);
+tb_int_t xm_thread_queue_size(lua_State *lua);
+tb_int_t xm_thread_queue_clear(lua_State *lua);
+tb_int_t xm_thread_queue_incref(lua_State *lua);
+tb_int_t xm_thread_queue_push(lua_State *lua);
+tb_int_t xm_thread_queue_pop(lua_State *lua);
 
 // the thread/sharedata functions
-tb_int_t xm_thread_sharedata_init(lua_State* lua);
-tb_int_t xm_thread_sharedata_exit(lua_State* lua);
-tb_int_t xm_thread_sharedata_clear(lua_State* lua);
-tb_int_t xm_thread_sharedata_incref(lua_State* lua);
-tb_int_t xm_thread_sharedata_set(lua_State* lua);
-tb_int_t xm_thread_sharedata_get_(lua_State* lua);
+tb_int_t xm_thread_sharedata_init(lua_State *lua);
+tb_int_t xm_thread_sharedata_exit(lua_State *lua);
+tb_int_t xm_thread_sharedata_clear(lua_State *lua);
+tb_int_t xm_thread_sharedata_incref(lua_State *lua);
+tb_int_t xm_thread_sharedata_set(lua_State *lua);
+tb_int_t xm_thread_sharedata_get_(lua_State *lua);
 
 // open cjson
-__tb_extern_c_enter__
-tb_int_t luaopen_cjson(lua_State *l);
+__tb_extern_c_enter__ tb_int_t luaopen_cjson(lua_State *l);
 __tb_extern_c_leave__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -393,341 +391,320 @@ __tb_extern_c_leave__
  */
 
 // the os functions
-static luaL_Reg const g_os_functions[] =
-{
-    { "argv",           xm_os_argv      }
-,   { "args",           xm_os_args      }
-,   { "find",           xm_os_find      }
-,   { "link",           xm_os_link      }
-,   { "isdir",          xm_os_isdir     }
-,   { "rmdir",          xm_os_rmdir     }
-,   { "mkdir",          xm_os_mkdir     }
-,   { "cpdir",          xm_os_cpdir     }
-,   { "chdir",          xm_os_chdir     }
-,   { "mtime",          xm_os_mtime     }
-,   { "sleep",          xm_os_sleep     }
-,   { "mclock",         xm_os_mclock    }
-,   { "curdir",         xm_os_curdir    }
-,   { "tmpdir",         xm_os_tmpdir    }
-,   { "islink",         xm_os_islink    }
-,   { "isfile",         xm_os_isfile    }
-,   { "touch",          xm_os_touch     }
-,   { "rmfile",         xm_os_rmfile    }
-,   { "cpfile",         xm_os_cpfile    }
-,   { "fscase",         xm_os_fscase    }
-,   { "rename",         xm_os_rename    }
-,   { "exists",         xm_os_exists    }
-,   { "setenv",         xm_os_setenv    }
-,   { "getenv",         xm_os_getenv    }
-,   { "getenvs",        xm_os_getenvs   }
-,   { "cpuinfo",        xm_os_cpuinfo   }
-,   { "meminfo",        xm_os_meminfo   }
-,   { "readlink",       xm_os_readlink  }
-,   { "emptydir",       xm_os_emptydir  }
-,   { "strerror",       xm_os_strerror  }
-,   { "syserror",       xm_os_syserror  }
-,   { "filesize",       xm_os_filesize  }
-,   { "getwinsize",     xm_os_getwinsize}
-,   { "getpid",         xm_os_getpid    }
-,   { "signal",         xm_os_signal    }
+static luaL_Reg const g_os_functions[] = {
+    { "argv", xm_os_argv },
+    { "args", xm_os_args },
+    { "find", xm_os_find },
+    { "link", xm_os_link },
+    { "isdir", xm_os_isdir },
+    { "rmdir", xm_os_rmdir },
+    { "mkdir", xm_os_mkdir },
+    { "cpdir", xm_os_cpdir },
+    { "chdir", xm_os_chdir },
+    { "mtime", xm_os_mtime },
+    { "sleep", xm_os_sleep },
+    { "mclock", xm_os_mclock },
+    { "curdir", xm_os_curdir },
+    { "tmpdir", xm_os_tmpdir },
+    { "islink", xm_os_islink },
+    { "isfile", xm_os_isfile },
+    { "touch", xm_os_touch },
+    { "rmfile", xm_os_rmfile },
+    { "cpfile", xm_os_cpfile },
+    { "fscase", xm_os_fscase },
+    { "rename", xm_os_rename },
+    { "exists", xm_os_exists },
+    { "setenv", xm_os_setenv },
+    { "getenv", xm_os_getenv },
+    { "getenvs", xm_os_getenvs },
+    { "cpuinfo", xm_os_cpuinfo },
+    { "meminfo", xm_os_meminfo },
+    { "readlink", xm_os_readlink },
+    { "emptydir", xm_os_emptydir },
+    { "strerror", xm_os_strerror },
+    { "syserror", xm_os_syserror },
+    { "filesize", xm_os_filesize },
+    { "getwinsize", xm_os_getwinsize },
+    { "getpid", xm_os_getpid },
+    { "signal", xm_os_signal },
 #ifndef TB_CONFIG_OS_WINDOWS
-,   { "uid",            xm_os_uid       }
-,   { "gid",            xm_os_gid       }
-,   { "getown",         xm_os_getown    }
+    { "uid", xm_os_uid },
+    { "gid", xm_os_gid },
+    { "getown", xm_os_getown },
 #endif
-,   { tb_null,          tb_null         }
+    { tb_null, tb_null },
 };
 
 // the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
-static luaL_Reg const g_winos_functions[] =
-{
-    { "cp_info",             xm_winos_cp_info           }
-,   { "console_cp",          xm_winos_console_cp        }
-,   { "console_output_cp",   xm_winos_console_output_cp }
-,   { "oem_cp",              xm_winos_oem_cp            }
-,   { "ansi_cp",             xm_winos_ansi_cp           }
-,   { "logical_drives",      xm_winos_logical_drives    }
-,   { "registry_query",      xm_winos_registry_query    }
-,   { "registry_keys",       xm_winos_registry_keys     }
-,   { "registry_values",     xm_winos_registry_values   }
-,   { "short_path",          xm_winos_short_path        }
-,   { tb_null,               tb_null                    }
+static luaL_Reg const g_winos_functions[] = {
+    { "cp_info", xm_winos_cp_info },
+    { "console_cp", xm_winos_console_cp },
+    { "console_output_cp", xm_winos_console_output_cp },
+    { "oem_cp", xm_winos_oem_cp },
+    { "ansi_cp", xm_winos_ansi_cp },
+    { "logical_drives", xm_winos_logical_drives },
+    { "registry_query", xm_winos_registry_query },
+    { "registry_keys", xm_winos_registry_keys },
+    { "registry_values", xm_winos_registry_values },
+    { "short_path", xm_winos_short_path },
+    { tb_null, tb_null },
 };
 #endif
 
 // the io functions
-static luaL_Reg const g_io_functions[] =
-{
-    { "stdfile",            xm_io_stdfile          }
-,   { "file_open",          xm_io_file_open        }
-,   { "file_read",          xm_io_file_read        }
-,   { "file_readable",      xm_io_file_readable    }
-,   { "file_seek",          xm_io_file_seek        }
-,   { "file_size",          xm_io_file_size        }
-,   { "file_write",         xm_io_file_write       }
-,   { "file_flush",         xm_io_file_flush       }
-,   { "file_isatty",        xm_io_file_isatty      }
-,   { "file_close",         xm_io_file_close       }
-,   { "file_rawfd",         xm_io_file_rawfd       }
-,   { "filelock_open",      xm_io_filelock_open    }
-,   { "filelock_lock",      xm_io_filelock_lock    }
-,   { "filelock_trylock",   xm_io_filelock_trylock }
-,   { "filelock_unlock",    xm_io_filelock_unlock  }
-,   { "filelock_close",     xm_io_filelock_close   }
-,   { "socket_open",        xm_io_socket_open      }
-,   { "socket_rawfd",       xm_io_socket_rawfd     }
-,   { "socket_peeraddr",    xm_io_socket_peeraddr  }
-,   { "socket_wait",        xm_io_socket_wait      }
-,   { "socket_bind",        xm_io_socket_bind      }
-,   { "socket_ctrl",        xm_io_socket_ctrl      }
-,   { "socket_listen",      xm_io_socket_listen    }
-,   { "socket_accept",      xm_io_socket_accept    }
-,   { "socket_connect",     xm_io_socket_connect   }
-,   { "socket_send",        xm_io_socket_send      }
-,   { "socket_sendto",      xm_io_socket_sendto    }
-,   { "socket_sendfile",    xm_io_socket_sendfile  }
-,   { "socket_recv",        xm_io_socket_recv      }
-,   { "socket_recvfrom",    xm_io_socket_recvfrom  }
-,   { "socket_kill"    ,    xm_io_socket_kill      }
-,   { "socket_close",       xm_io_socket_close     }
-,   { "pipe_open",          xm_io_pipe_open        }
-,   { "pipe_openpair",      xm_io_pipe_openpair    }
-,   { "pipe_close",         xm_io_pipe_close       }
-,   { "pipe_read",          xm_io_pipe_read        }
-,   { "pipe_write",         xm_io_pipe_write       }
-,   { "pipe_wait",          xm_io_pipe_wait        }
-,   { "pipe_connect",       xm_io_pipe_connect     }
-,   { "poller_insert",      xm_io_poller_insert    }
-,   { "poller_modify",      xm_io_poller_modify    }
-,   { "poller_remove",      xm_io_poller_remove    }
-,   { "poller_spank",       xm_io_poller_spank     }
-,   { "poller_support",     xm_io_poller_support   }
-,   { "poller_wait",        xm_io_poller_wait      }
-,   { tb_null,              tb_null                }
+static luaL_Reg const g_io_functions[] = {
+    { "stdfile", xm_io_stdfile },
+    { "file_open", xm_io_file_open },
+    { "file_read", xm_io_file_read },
+    { "file_readable", xm_io_file_readable },
+    { "file_seek", xm_io_file_seek },
+    { "file_size", xm_io_file_size },
+    { "file_write", xm_io_file_write },
+    { "file_flush", xm_io_file_flush },
+    { "file_isatty", xm_io_file_isatty },
+    { "file_close", xm_io_file_close },
+    { "file_rawfd", xm_io_file_rawfd },
+    { "filelock_open", xm_io_filelock_open },
+    { "filelock_lock", xm_io_filelock_lock },
+    { "filelock_trylock", xm_io_filelock_trylock },
+    { "filelock_unlock", xm_io_filelock_unlock },
+    { "filelock_close", xm_io_filelock_close },
+    { "socket_open", xm_io_socket_open },
+    { "socket_rawfd", xm_io_socket_rawfd },
+    { "socket_peeraddr", xm_io_socket_peeraddr },
+    { "socket_wait", xm_io_socket_wait },
+    { "socket_bind", xm_io_socket_bind },
+    { "socket_ctrl", xm_io_socket_ctrl },
+    { "socket_listen", xm_io_socket_listen },
+    { "socket_accept", xm_io_socket_accept },
+    { "socket_connect", xm_io_socket_connect },
+    { "socket_send", xm_io_socket_send },
+    { "socket_sendto", xm_io_socket_sendto },
+    { "socket_sendfile", xm_io_socket_sendfile },
+    { "socket_recv", xm_io_socket_recv },
+    { "socket_recvfrom", xm_io_socket_recvfrom },
+    { "socket_kill", xm_io_socket_kill },
+    { "socket_close", xm_io_socket_close },
+    { "pipe_open", xm_io_pipe_open },
+    { "pipe_openpair", xm_io_pipe_openpair },
+    { "pipe_close", xm_io_pipe_close },
+    { "pipe_read", xm_io_pipe_read },
+    { "pipe_write", xm_io_pipe_write },
+    { "pipe_wait", xm_io_pipe_wait },
+    { "pipe_connect", xm_io_pipe_connect },
+    { "poller_insert", xm_io_poller_insert },
+    { "poller_modify", xm_io_poller_modify },
+    { "poller_remove", xm_io_poller_remove },
+    { "poller_spank", xm_io_poller_spank },
+    { "poller_support", xm_io_poller_support },
+    { "poller_wait", xm_io_poller_wait },
+    { tb_null, tb_null },
 };
 
 // the path functions
-static luaL_Reg const g_path_functions[] =
-{
-    { "relative",       xm_path_relative    }
-,   { "absolute",       xm_path_absolute    }
-,   { "translate",      xm_path_translate   }
-,   { "directory",      xm_path_directory   }
-,   { "is_absolute",    xm_path_is_absolute }
-,   { tb_null,          tb_null             }
+static luaL_Reg const g_path_functions[] = {
+    { "relative", xm_path_relative },
+    { "absolute", xm_path_absolute },
+    { "translate", xm_path_translate },
+    { "directory", xm_path_directory },
+    { "is_absolute", xm_path_is_absolute },
+    { tb_null, tb_null },
 };
 
 // the hash functions
-static luaL_Reg const g_hash_functions[] =
-{
-    { "uuid4",          xm_hash_uuid4   }
-,   { "sha",            xm_hash_sha     }
-,   { "md5",            xm_hash_md5     }
-,   { "xxhash",         xm_hash_xxhash  }
-,   { "rand32",         xm_hash_rand32  }
-,   { "rand64",         xm_hash_rand64  }
-,   { "rand128",        xm_hash_rand128 }
-,   { tb_null,          tb_null         }
+static luaL_Reg const g_hash_functions[] = {
+    { "uuid4", xm_hash_uuid4 },
+    { "sha", xm_hash_sha },
+    { "md5", xm_hash_md5 },
+    { "xxhash", xm_hash_xxhash },
+    { "rand32", xm_hash_rand32 },
+    { "rand64", xm_hash_rand64 },
+    { "rand128", xm_hash_rand128 },
+    { tb_null, tb_null },
 };
 
 // the base64 functions
-static luaL_Reg const g_base64_functions[] =
-{
-    { "encode",         xm_base64_encode }
-,   { "decode",         xm_base64_decode }
-,   { tb_null,          tb_null          }
+static luaL_Reg const g_base64_functions[] = {
+    { "encode", xm_base64_encode },
+    { "decode", xm_base64_decode },
+    { tb_null, tb_null },
 };
 
 // the lz4 functions
-static luaL_Reg const g_lz4_functions[] =
-{
-    { "compress",               xm_lz4_compress                }
-,   { "decompress",             xm_lz4_decompress              }
-,   { "block_compress",         xm_lz4_block_compress          }
-,   { "block_decompress",       xm_lz4_block_decompress        }
-,   { "compress_file",          xm_lz4_compress_file           }
-,   { "decompress_file",        xm_lz4_decompress_file         }
-,   { "compress_stream_open",   xm_lz4_compress_stream_open    }
-,   { "compress_stream_read",   xm_lz4_compress_stream_read    }
-,   { "compress_stream_write",  xm_lz4_compress_stream_write   }
-,   { "compress_stream_close",  xm_lz4_compress_stream_close   }
-,   { "decompress_stream_open", xm_lz4_decompress_stream_open  }
-,   { "decompress_stream_read", xm_lz4_decompress_stream_read  }
-,   { "decompress_stream_write",xm_lz4_decompress_stream_write }
-,   { "decompress_stream_close",xm_lz4_decompress_stream_close }
-,   { tb_null,                  tb_null                        }
+static luaL_Reg const g_lz4_functions[] = {
+    { "compress", xm_lz4_compress },
+    { "decompress", xm_lz4_decompress },
+    { "block_compress", xm_lz4_block_compress },
+    { "block_decompress", xm_lz4_block_decompress },
+    { "compress_file", xm_lz4_compress_file },
+    { "decompress_file", xm_lz4_decompress_file },
+    { "compress_stream_open", xm_lz4_compress_stream_open },
+    { "compress_stream_read", xm_lz4_compress_stream_read },
+    { "compress_stream_write", xm_lz4_compress_stream_write },
+    { "compress_stream_close", xm_lz4_compress_stream_close },
+    { "decompress_stream_open", xm_lz4_decompress_stream_open },
+    { "decompress_stream_read", xm_lz4_decompress_stream_read },
+    { "decompress_stream_write", xm_lz4_decompress_stream_write },
+    { "decompress_stream_close", xm_lz4_decompress_stream_close },
+    { tb_null, tb_null },
 };
 
 // the bloom filter functions
-static luaL_Reg const g_bloom_filter_functions[] =
-{
-    { "open",           xm_bloom_filter_open     }
-,   { "close",          xm_bloom_filter_close    }
-,   { "clear",          xm_bloom_filter_clear    }
-,   { "data",           xm_bloom_filter_data     }
-,   { "size",           xm_bloom_filter_size     }
-,   { "get",            xm_bloom_filter_get      }
-,   { "set",            xm_bloom_filter_set      }
-,   { "data_set",       xm_bloom_filter_data_set }
-,   { tb_null,          tb_null                  }
+static luaL_Reg const g_bloom_filter_functions[] = {
+    { "open", xm_bloom_filter_open },
+    { "close", xm_bloom_filter_close },
+    { "clear", xm_bloom_filter_clear },
+    { "data", xm_bloom_filter_data },
+    { "size", xm_bloom_filter_size },
+    { "get", xm_bloom_filter_get },
+    { "set", xm_bloom_filter_set },
+    { "data_set", xm_bloom_filter_data_set },
+    { tb_null, tb_null },
 };
 
 // the string functions
-static luaL_Reg const g_string_functions[] =
-{
-    { "trim",           xm_string_trim          }
-,   { "split",          xm_string_split         }
-,   { "lastof",         xm_string_lastof        }
-,   { "convert",        xm_string_convert       }
-,   { "endswith",       xm_string_endswith      }
-,   { "startswith",     xm_string_startswith    }
-,   { tb_null,          tb_null                 }
+static luaL_Reg const g_string_functions[] = {
+    { "trim", xm_string_trim },
+    { "split", xm_string_split },
+    { "lastof", xm_string_lastof },
+    { "convert", xm_string_convert },
+    { "endswith", xm_string_endswith },
+    { "startswith", xm_string_startswith },
+    { tb_null, tb_null },
 };
 
 // the process functions
-static luaL_Reg const g_process_functions[] =
-{
-    { "open",           xm_process_open     }
-,   { "openv",          xm_process_openv    }
-,   { "wait",           xm_process_wait     }
-,   { "kill",           xm_process_kill     }
-,   { "close",          xm_process_close    }
-,   { tb_null,          tb_null             }
+static luaL_Reg const g_process_functions[] = {
+    { "open", xm_process_open },
+    { "openv", xm_process_openv },
+    { "wait", xm_process_wait },
+    { "kill", xm_process_kill },
+    { "close", xm_process_close },
+    { tb_null, tb_null },
 };
 
 // the fwatcher functions
-static luaL_Reg const g_fwatcher_functions[] =
-{
-    { "open",           xm_fwatcher_open    }
-,   { "add",            xm_fwatcher_add     }
-,   { "remove",         xm_fwatcher_remove  }
-,   { "wait",           xm_fwatcher_wait    }
-,   { "close",          xm_fwatcher_close   }
-,   { tb_null,          tb_null             }
+static luaL_Reg const g_fwatcher_functions[] = {
+    { "open", xm_fwatcher_open },
+    { "add", xm_fwatcher_add },
+    { "remove", xm_fwatcher_remove },
+    { "wait", xm_fwatcher_wait },
+    { "close", xm_fwatcher_close },
+    { tb_null, tb_null },
 };
 
 // the sandbox functions
-static luaL_Reg const g_sandbox_functions[] =
-{
-    { "interactive",    xm_sandbox_interactive }
-,   { tb_null,          tb_null                }
+static luaL_Reg const g_sandbox_functions[] = {
+    { "interactive", xm_sandbox_interactive },
+    { tb_null, tb_null },
 };
 
 #ifdef XM_CONFIG_API_HAVE_READLINE
 // the readline functions
-static luaL_Reg const g_readline_functions[] =
-{
-    { "readline",       xm_readline_readline     }
-,   { "history_list",   xm_readline_history_list }
-,   { "add_history",    xm_readline_add_history  }
-,   { "clear_history",  xm_readline_clear_history}
-,   { tb_null,          tb_null                  }
+static luaL_Reg const g_readline_functions[] = {
+    { "readline", xm_readline_readline },
+    { "history_list", xm_readline_history_list },
+    { "add_history", xm_readline_add_history },
+    { "clear_history", xm_readline_clear_history },
+    { tb_null, tb_null },
 };
 #endif
 
 // the semver functions
-static luaL_Reg const g_semver_functions[] =
-{
-    { "parse",          xm_semver_parse     }
-,   { "compare",        xm_semver_compare   }
-,   { "satisfies",      xm_semver_satisfies }
-,   { "select",         xm_semver_select    }
-,   { tb_null,          tb_null             }
+static luaL_Reg const g_semver_functions[] = {
+    { "parse", xm_semver_parse },
+    { "compare", xm_semver_compare },
+    { "satisfies", xm_semver_satisfies },
+    { "select", xm_semver_select },
+    { tb_null, tb_null },
 };
 
 // the libc functions
-static luaL_Reg const g_libc_functions[] =
-{
-    { "malloc",         xm_libc_malloc      }
-,   { "free",           xm_libc_free        }
-,   { "memcpy",         xm_libc_memcpy      }
-,   { "memset",         xm_libc_memset      }
-,   { "memmov",         xm_libc_memmov      }
-,   { "strndup",        xm_libc_strndup     }
-,   { "dataptr",        xm_libc_dataptr     }
-,   { "byteof",         xm_libc_byteof      }
-,   { "setbyte",        xm_libc_setbyte     }
-,   { tb_null,          tb_null             }
+static luaL_Reg const g_libc_functions[] = {
+    { "malloc", xm_libc_malloc },
+    { "free", xm_libc_free },
+    { "memcpy", xm_libc_memcpy },
+    { "memset", xm_libc_memset },
+    { "memmov", xm_libc_memmov },
+    { "strndup", xm_libc_strndup },
+    { "dataptr", xm_libc_dataptr },
+    { "byteof", xm_libc_byteof },
+    { "setbyte", xm_libc_setbyte },
+    { tb_null, tb_null },
 };
 
 // the tty functions
-static luaL_Reg const g_tty_functions[] =
-{
-    { "term_mode",      xm_tty_term_mode    }
-,   { tb_null,          tb_null             }
+static luaL_Reg const g_tty_functions[] = {
+    { "term_mode", xm_tty_term_mode },
+    { tb_null, tb_null },
 };
 
 // the package functions
-static luaL_Reg const g_package_functions[] =
-{
-    { "loadxmi",        xm_package_loadxmi  }
-,   { tb_null,          tb_null             }
+static luaL_Reg const g_package_functions[] = {
+    { "loadxmi", xm_package_loadxmi },
+    { tb_null, tb_null },
 };
 
 // the utils functions
-static luaL_Reg const g_utils_functions[] =
-{
-    { "bin2c",          xm_utils_bin2c      }
-,   { tb_null,          tb_null             }
+static luaL_Reg const g_utils_functions[] = {
+    { "bin2c", xm_utils_bin2c },
+    { tb_null, tb_null },
 };
 
 // the thread functions
-static luaL_Reg const g_thread_functions[] =
-{
-    { "thread_init",      xm_thread_init             }
-,   { "thread_exit",      xm_thread_exit             }
-,   { "thread_wait",      xm_thread_wait             }
-,   { "thread_resume",    xm_thread_resume           }
-,   { "thread_suspend",   xm_thread_suspend          }
-,   { "mutex_init",       xm_thread_mutex_init       }
-,   { "mutex_exit",       xm_thread_mutex_exit       }
-,   { "mutex_lock",       xm_thread_mutex_lock       }
-,   { "mutex_trylock",    xm_thread_mutex_trylock    }
-,   { "mutex_unlock",     xm_thread_mutex_unlock     }
-,   { "mutex_incref",     xm_thread_mutex_incref     }
-,   { "event_init",       xm_thread_event_init       }
-,   { "event_exit",       xm_thread_event_exit       }
-,   { "event_post",       xm_thread_event_post       }
-,   { "event_wait",       xm_thread_event_wait       }
-,   { "event_incref",     xm_thread_event_incref     }
-,   { "semaphore_init",   xm_thread_semaphore_init   }
-,   { "semaphore_exit",   xm_thread_semaphore_exit   }
-,   { "semaphore_post",   xm_thread_semaphore_post   }
-,   { "semaphore_wait",   xm_thread_semaphore_wait   }
-,   { "semaphore_incref", xm_thread_semaphore_incref }
-,   { "queue_init",       xm_thread_queue_init       }
-,   { "queue_exit",       xm_thread_queue_exit       }
-,   { "queue_size",       xm_thread_queue_size       }
-,   { "queue_clear",      xm_thread_queue_clear      }
-,   { "queue_incref",     xm_thread_queue_incref     }
-,   { "queue_push",       xm_thread_queue_push       }
-,   { "queue_pop",        xm_thread_queue_pop        }
-,   { "sharedata_init",   xm_thread_sharedata_init   }
-,   { "sharedata_exit",   xm_thread_sharedata_exit   }
-,   { "sharedata_clear",  xm_thread_sharedata_clear  }
-,   { "sharedata_incref", xm_thread_sharedata_incref }
-,   { "sharedata_set",    xm_thread_sharedata_set    }
-,   { "sharedata_get",    xm_thread_sharedata_get_   }
-,   { tb_null,            tb_null                    }
+static luaL_Reg const g_thread_functions[] = {
+    { "thread_init", xm_thread_init },
+    { "thread_exit", xm_thread_exit },
+    { "thread_wait", xm_thread_wait },
+    { "thread_resume", xm_thread_resume },
+    { "thread_suspend", xm_thread_suspend },
+    { "mutex_init", xm_thread_mutex_init },
+    { "mutex_exit", xm_thread_mutex_exit },
+    { "mutex_lock", xm_thread_mutex_lock },
+    { "mutex_trylock", xm_thread_mutex_trylock },
+    { "mutex_unlock", xm_thread_mutex_unlock },
+    { "mutex_incref", xm_thread_mutex_incref },
+    { "event_init", xm_thread_event_init },
+    { "event_exit", xm_thread_event_exit },
+    { "event_post", xm_thread_event_post },
+    { "event_wait", xm_thread_event_wait },
+    { "event_incref", xm_thread_event_incref },
+    { "semaphore_init", xm_thread_semaphore_init },
+    { "semaphore_exit", xm_thread_semaphore_exit },
+    { "semaphore_post", xm_thread_semaphore_post },
+    { "semaphore_wait", xm_thread_semaphore_wait },
+    { "semaphore_incref", xm_thread_semaphore_incref },
+    { "queue_init", xm_thread_queue_init },
+    { "queue_exit", xm_thread_queue_exit },
+    { "queue_size", xm_thread_queue_size },
+    { "queue_clear", xm_thread_queue_clear },
+    { "queue_incref", xm_thread_queue_incref },
+    { "queue_push", xm_thread_queue_push },
+    { "queue_pop", xm_thread_queue_pop },
+    { "sharedata_init", xm_thread_sharedata_init },
+    { "sharedata_exit", xm_thread_sharedata_exit },
+    { "sharedata_clear", xm_thread_sharedata_clear },
+    { "sharedata_incref", xm_thread_sharedata_incref },
+    { "sharedata_set", xm_thread_sharedata_set },
+    { "sharedata_get", xm_thread_sharedata_get_ },
+    { tb_null, tb_null },
 };
 
 // the lua global instance for signal handler
-static lua_State* g_lua = tb_null;
+static lua_State *g_lua = tb_null;
 
 // the xmake script files data
 #ifdef XM_EMBED_ENABLE
 static tb_byte_t g_xmake_xmz_data[] = {
-    #include "xmake.xmz.h"
+#include "xmake.xmz.h"
 };
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv)
-{
-    // check
+static tb_bool_t xm_engine_save_arguments(xm_engine_t *engine, tb_int_t argc, tb_char_t **argv, tb_char_t **taskargv) {
     tb_assert_and_check_return_val(engine && engine->lua && argc >= 1 && argv, tb_false);
 
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
@@ -738,11 +715,9 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
     lua_newtable(engine->lua);
 
     // patch the task arguments list
-    if (taskargv)
-    {
-        tb_char_t** taskarg = taskargv;
-        while (*taskarg)
-        {
+    if (taskargv) {
+        tb_char_t **taskarg = taskargv;
+        while (*taskarg) {
             lua_pushstring(engine->lua, *taskarg);
             lua_rawseti(engine->lua, -2, (int)lua_objlen(engine->lua, -2) + 1);
             taskarg++;
@@ -751,10 +726,9 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
 
     // save all arguments to the new table
     tb_int_t i = 0;
-    for (i = 1; i < argc; i++)
-    {
+    for (i = 1; i < argc; i++) {
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-        tb_char_t argvbuf[4096] = {0};
+        tb_char_t argvbuf[4096] = { 0 };
         tb_wcstombs(argvbuf, argvw[i], tb_arrayn(argvbuf));
         // table_new[table.getn(table_new) + 1] = argv[i]
         lua_pushstring(engine->lua, argvbuf);
@@ -769,9 +743,7 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
     return tb_true;
 }
 
-static tb_bool_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** argv, tb_char_t* path, tb_size_t maxn)
-{
-    // check
+static tb_bool_t xm_engine_get_program_file(xm_engine_t *engine, tb_char_t **argv, tb_char_t *path, tb_size_t maxn) {
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
     /* we cache it, because the current path will be changed in thread.
@@ -779,9 +751,8 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
      * The executable file compiled using cosmocc on macOS might retrieve a relative path to the programfile.
      * If the root directory has been changed, the retrieved programfile will be a non-existent path.
      */
-    static tb_char_t s_program_filepath[TB_PATH_MAXN] = {0};
-    if (s_program_filepath[0])
-    {
+    static tb_char_t s_program_filepath[TB_PATH_MAXN] = { 0 };
+    if (s_program_filepath[0]) {
         tb_strlcpy(path, s_program_filepath, maxn);
         lua_pushstring(engine->lua, s_program_filepath);
         lua_setglobal(engine->lua, "_PROGRAM_FILE");
@@ -789,27 +760,23 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
     }
 
     tb_bool_t ok = tb_false;
-    do
-    {
+    do {
         // get it from the environment variable first
-        if (tb_environment_first("XMAKE_PROGRAM_FILE", path, maxn) && tb_file_info(path, tb_null))
-        {
+        if (tb_environment_first("XMAKE_PROGRAM_FILE", path, maxn) && tb_file_info(path, tb_null)) {
             ok = tb_true;
             break;
         }
 
 #if defined(TB_CONFIG_OS_WINDOWS)
         // get the executale file path as program directory
-        tb_wchar_t buf[TB_PATH_MAXN] = {0};
+        tb_wchar_t buf[TB_PATH_MAXN] = { 0 };
         tb_size_t  size              = (tb_size_t)GetModuleFileNameW(tb_null, buf, (DWORD)TB_PATH_MAXN);
         tb_assert_and_check_break(size < TB_PATH_MAXN);
-        // end
-        buf[size]  = L'\0';
-        size       = tb_wcstombs(path, buf, maxn);
+        buf[size] = L'\0';
+        size      = tb_wcstombs(path, buf, maxn);
         tb_assert_and_check_break(size < maxn);
         path[size] = '\0';
 
-        // ok
         ok = tb_true;
 
 #elif defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
@@ -832,44 +799,41 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
          * @see it may be a relative path
          */
         ssize_t size = readlink(XM_PROC_SELF_FILE, path, (size_t)maxn);
-        if (size > 0 && size < maxn)
-        {
+        if (size > 0 && size < maxn) {
             path[size] = '\0';
-            ok = tb_true;
+            ok         = tb_true;
         }
 #elif defined(TB_CONFIG_OS_BSD) && defined(KERN_PROC_PATHNAME)
         // only for FreeBSD and OpenBSD, https://github.com/xmake-io/xmake/issues/2948
-        tb_int_t mib[4];  mib[0] = CTL_KERN;  mib[1] = KERN_PROC;  mib[2] = KERN_PROC_PATHNAME;  mib[3] = -1;
+        tb_int_t mib[4];
+        mib[0]      = CTL_KERN;
+        mib[1]      = KERN_PROC;
+        mib[2]      = KERN_PROC_PATHNAME;
+        mib[3]      = -1;
         size_t size = maxn;
-        if (sysctl(mib, 4, path, &size, tb_null, 0) == 0 && size < maxn)
-        {
+        if (sysctl(mib, 4, path, &size, tb_null, 0) == 0 && size < maxn) {
             path[size] = '\0';
-            ok = tb_true;
+            ok         = tb_true;
         }
 #elif defined(TB_CONFIG_OS_HAIKU)
-        int32 cookie = 0;
+        int32      cookie = 0;
         image_info info;
-        while (get_next_image_info(B_CURRENT_TEAM, &cookie, &info) == B_OK)
-        {
-            if (info.type == B_APP_IMAGE)
-            {
+        while (get_next_image_info(B_CURRENT_TEAM, &cookie, &info) == B_OK) {
+            if (info.type == B_APP_IMAGE) {
                 tb_strlcpy(path, info.name, maxn);
                 ok = tb_true;
                 break;
             }
         }
 #else
-        static tb_char_t const* s_paths[] =
-        {
+        static tb_char_t const *s_paths[] = {
             "~/.local/bin/xmake",
             "/usr/local/bin/xmake",
-            "/usr/bin/xmake"
+            "/usr/bin/xmake",
         };
-        for (tb_size_t i = 0; i < tb_arrayn(s_paths); i++)
-        {
-            tb_char_t const* p = s_paths[i];
-            if (tb_file_info(p, tb_null))
-            {
+        for (tb_size_t i = 0; i < tb_arrayn(s_paths); i++) {
+            tb_char_t const *p = s_paths[i];
+            if (tb_file_info(p, tb_null)) {
                 tb_strlcpy(path, p, maxn);
                 ok = tb_true;
                 break;
@@ -877,11 +841,9 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
         }
 #endif
 
-        if (!ok && argv)
-        {
-            tb_char_t const* p = argv[0];
-            if (p && tb_file_info(p, tb_null))
-            {
+        if (!ok && argv) {
+            tb_char_t const *p = argv[0];
+            if (p && tb_file_info(p, tb_null)) {
                 tb_strlcpy(path, p, maxn);
                 ok = tb_true;
             }
@@ -889,10 +851,7 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
 
     } while (0);
 
-    // ok?
-    if (ok)
-    {
-        // trace
+    if (ok) {
         tb_trace_d("programfile: %s", path);
 
         // cache it
@@ -906,11 +865,12 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
 }
 
 #ifdef XM_EMBED_ENABLE
-static tb_bool_t xm_engine_get_temporary_directory(tb_char_t* path, tb_size_t maxn, tb_char_t const* name, tb_char_t const* version_cstr)
-{
-    tb_char_t data[TB_PATH_MAXN] = {0};
-    if (tb_directory_temporary(data, sizeof(data)))
-    {
+static tb_bool_t xm_engine_get_temporary_directory(tb_char_t       *path,
+                                                   tb_size_t        maxn,
+                                                   tb_char_t const *name,
+                                                   tb_char_t const *version_cstr) {
+    tb_char_t data[TB_PATH_MAXN] = { 0 };
+    if (tb_directory_temporary(data, sizeof(data))) {
         // get euid
         tb_int_t euid = 0;
 #ifndef TB_CONFIG_OS_WINDOWS
@@ -924,14 +884,14 @@ static tb_bool_t xm_engine_get_temporary_directory(tb_char_t* path, tb_size_t ma
 }
 #endif
 
-static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t* path, tb_size_t maxn, tb_char_t const* programfile)
-{
-    // check
+static tb_bool_t xm_engine_get_program_directory(xm_engine_t     *engine,
+                                                 tb_char_t       *path,
+                                                 tb_size_t        maxn,
+                                                 tb_char_t const *programfile) {
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
-    static tb_char_t s_program_directory[TB_PATH_MAXN] = {0};
-    if (s_program_directory[0])
-    {
+    static tb_char_t s_program_directory[TB_PATH_MAXN] = { 0 };
+    if (s_program_directory[0]) {
         tb_strlcpy(path, s_program_directory, maxn);
         lua_pushstring(engine->lua, s_program_directory);
         lua_setglobal(engine->lua, "_PROGRAM_DIR");
@@ -939,58 +899,55 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
     }
 
     tb_bool_t ok = tb_false;
-    tb_char_t data[TB_PATH_MAXN] = {0};
-    do
-    {
+    tb_char_t data[TB_PATH_MAXN] = { 0 };
+    do {
 #ifdef XM_EMBED_ENABLE
         tb_size_t embedcount = engine->embedcount;
-        if (embedcount)
-        {
+        if (embedcount) {
             tb_uint32_t crc32 = 0;
-            for (tb_size_t i = 0; i < embedcount; i++)
+            for (tb_size_t i = 0; i < embedcount; i++) {
                 crc32 += tb_crc32_make(engine->embeddata[i], engine->embedsize[i], 0);
+            }
             tb_snprintf(path, maxn, "%s/%x", engine->tmpdir, crc32);
+        } else {
+            tb_strlcpy(path, engine->tmpdir, maxn);
         }
-        else tb_strlcpy(path, engine->tmpdir, maxn);
         ok = tb_true;
         break;
 #endif
 
         // get it from the environment variable first
-        if (tb_environment_first("XMAKE_PROGRAM_DIR", data, sizeof(data)) && tb_path_absolute(data, path, maxn))
-        {
+        if (tb_environment_first("XMAKE_PROGRAM_DIR", data, sizeof(data)) && tb_path_absolute(data, path, maxn)) {
             ok = tb_true;
             break;
         }
 
         // get it from program file path
-        if (programfile)
-        {
+        if (programfile) {
             // get real program file path from the symbol link
 #if !defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_CONFIG_OS_IOS)
             tb_char_t programpath[TB_PATH_MAXN];
             tb_long_t size = readlink(programfile, programpath, sizeof(programpath));
-            if (size >= 0 && size < sizeof(programpath))
-            {
+            if (size >= 0 && size < sizeof(programpath)) {
                 programpath[size] = '\0';
 
                 // soft link to relative path? fix it
-                if (!tb_path_is_absolute(programpath))
-                {
-                    tb_char_t buff[TB_PATH_MAXN];
-                    tb_char_t const* rootdir = tb_path_directory(programfile, buff, sizeof(buff));
-                    if (rootdir && tb_path_absolute_to(rootdir, programpath, path, maxn)) // @note path and programfile are same buffer
+                if (!tb_path_is_absolute(programpath)) {
+                    tb_char_t        buff[TB_PATH_MAXN];
+                    tb_char_t const *rootdir = tb_path_directory(programfile, buff, sizeof(buff));
+                    if (rootdir && tb_path_absolute_to(
+                                       rootdir, programpath, path, maxn)) // @note path and programfile are same buffer
                         tb_strlcpy(programpath, path, maxn);
                 }
-            }
-            else tb_strlcpy(programpath, programfile, sizeof(programpath));
+            } else
+                tb_strlcpy(programpath, programfile, sizeof(programpath));
 #else
-            tb_char_t const* programpath = programfile;
+            tb_char_t const *programpath = programfile;
 #endif
 
             // get the root directory
-            tb_char_t data[TB_PATH_MAXN];
-            tb_char_t const* rootdir = tb_path_directory(programpath, data, sizeof(data));
+            tb_char_t        data[TB_PATH_MAXN];
+            tb_char_t const *rootdir = tb_path_directory(programpath, data, sizeof(data));
             tb_assert_and_check_break(rootdir);
 
             // init share/name sub-directory
@@ -998,17 +955,18 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
             tb_snprintf(sharedir, sizeof(sharedir), "../share/%s", engine->name);
 
             // find the program (lua) directory
-            tb_size_t i;
-            tb_file_info_t info;
-            tb_char_t scriptpath[TB_PATH_MAXN];
-            tb_char_t const* subdirs[] = {".", sharedir};
-            for (i = 0; i < tb_arrayn(subdirs); i++)
-            {
+            tb_size_t        i;
+            tb_file_info_t   info;
+            tb_char_t        scriptpath[TB_PATH_MAXN];
+            tb_char_t const *subdirs[] = {
+                ".",
+                sharedir,
+            };
+            for (i = 0; i < tb_arrayn(subdirs); i++) {
                 // get program directory
                 if (tb_path_absolute_to(rootdir, subdirs[i], path, maxn) &&
                     tb_path_absolute_to(path, "core/_xmake_main.lua", scriptpath, sizeof(scriptpath)) &&
-                    tb_file_info(scriptpath, &info) && info.type == TB_FILE_TYPE_FILE)
-                {
+                    tb_file_info(scriptpath, &info) && info.type == TB_FILE_TYPE_FILE) {
                     ok = tb_true;
                     break;
                 }
@@ -1017,10 +975,7 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
 
     } while (0);
 
-    // ok?
-    if (ok)
-    {
-        // trace
+    if (ok) {
         tb_trace_d("programdir: %s", path);
 
         // cache it
@@ -1031,49 +986,42 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
         lua_setglobal(engine->lua, "_PROGRAM_DIR");
     }
 
-    // ok?
     return ok;
 }
 
-static tb_bool_t xm_engine_get_project_directory(xm_engine_t* engine, tb_char_t* path, tb_size_t maxn)
-{
-    // check
+static tb_bool_t xm_engine_get_project_directory(xm_engine_t *engine, tb_char_t *path, tb_size_t maxn) {
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
     tb_bool_t ok = tb_false;
-    do
-    {
+    do {
         // attempt to get it from the environment variable first
-        tb_char_t data[TB_PATH_MAXN] = {0};
-        if (    !tb_environment_first("XMAKE_PROJECT_DIR", data, sizeof(data))
-            ||  !tb_path_absolute(data, path, maxn))
-        {
+        tb_char_t data[TB_PATH_MAXN] = { 0 };
+        if (!tb_environment_first("XMAKE_PROJECT_DIR", data, sizeof(data)) || !tb_path_absolute(data, path, maxn)) {
             // get it from the current directory
-            if (!tb_directory_current(path, maxn)) break;
+            if (!tb_directory_current(path, maxn))
+                break;
         }
 
-        // trace
         tb_trace_d("project: %s", path);
 
         // save the directory to the global variable: _PROJECT_DIR
         lua_pushstring(engine->lua, path);
         lua_setglobal(engine->lua, "_PROJECT_DIR");
 
-        // ok
         ok = tb_true;
 
     } while (0);
 
     // failed?
-    if (!ok) tb_printf("error: not found the project directory!\n");
+    if (!ok) {
+        tb_printf("error: not found the project directory!\n");
+    }
 
-    // ok?
     return ok;
 }
 
 #if defined(TB_CONFIG_OS_WINDOWS) || defined(SIGINT)
-static tb_void_t xm_engine_dump_traceback(lua_State* lua)
-{
+static tb_void_t xm_engine_dump_traceback(lua_State *lua) {
     // @note it's not safe, but it doesn't matter, we're just trying to get the stack backtrace for debugging
     lua_getglobal(lua, "debug");
     lua_getfield(lua, -1, "traceback");
@@ -1085,43 +1033,37 @@ static tb_void_t xm_engine_dump_traceback(lua_State* lua)
 #endif
 
 #if defined(TB_CONFIG_OS_WINDOWS)
-static BOOL WINAPI xm_engine_signal_handler(DWORD signo)
-{
-    if (signo == CTRL_C_EVENT && g_lua)
-    {
+static BOOL WINAPI xm_engine_signal_handler(DWORD signo) {
+    if (signo == CTRL_C_EVENT && g_lua) {
         xm_engine_dump_traceback(g_lua);
         tb_abort();
     }
     return TRUE;
 }
 #elif defined(SIGINT)
-static tb_void_t xm_engine_signal_handler(tb_int_t signo)
-{
-    if (signo == SIGINT && g_lua)
-    {
+static tb_void_t xm_engine_signal_handler(tb_int_t signo) {
+    if (signo == SIGINT && g_lua) {
         xm_engine_dump_traceback(g_lua);
         tb_abort();
     }
 }
 #endif
 
-static tb_void_t xm_engine_init_host(xm_engine_t* engine)
-{
-    // check
+static tb_void_t xm_engine_init_host(xm_engine_t *engine) {
     tb_assert_and_check_return(engine && engine->lua);
 
     // init system host
-    tb_char_t const* syshost = tb_null;
+    tb_char_t const *syshost = tb_null;
 #if defined(__COSMOPOLITAN__)
     struct utsname buffer;
-    if (uname(&buffer) == 0)
-    {
-        if (tb_strstr(buffer.sysname, "Darwin"))
+    if (uname(&buffer) == 0) {
+        if (tb_strstr(buffer.sysname, "Darwin")) {
             syshost = "macosx";
-        else if (tb_strstr(buffer.sysname, "Linux"))
+        } else if (tb_strstr(buffer.sysname, "Linux")) {
             syshost = "linux";
-        else if (tb_strstr(buffer.sysname, "Windows"))
+        } else if (tb_strstr(buffer.sysname, "Windows")) {
             syshost = "windows";
+        }
     }
 #elif defined(TB_CONFIG_OS_WINDOWS)
     syshost = "windows";
@@ -1138,48 +1080,49 @@ static tb_void_t xm_engine_init_host(xm_engine_t* engine)
 #elif defined(TB_CONFIG_OS_HAIKU)
     syshost = "haiku";
 #endif
-    lua_pushstring(engine->lua, syshost? syshost : "unknown");
+    lua_pushstring(engine->lua, syshost ? syshost : "unknown");
     lua_setglobal(engine->lua, "_HOST");
 
     // init subsystem host
-    tb_char_t const* subhost = syshost;
+    tb_char_t const *subhost = syshost;
 #if defined(TB_CONFIG_OS_WINDOWS)
-#   if defined(TB_COMPILER_ON_MSYS)
+#if defined(TB_COMPILER_ON_MSYS)
     subhost = "msys";
-#   elif defined(TB_COMPILER_ON_CYGWIN)
+#elif defined(TB_COMPILER_ON_CYGWIN)
     subhost = "cygwin";
-#   else
+#else
     {
-        tb_char_t data[64] = {0};
-        if (tb_environment_first("MSYSTEM", data, sizeof(data)))
-        {
+        tb_char_t data[64] = { 0 };
+        if (tb_environment_first("MSYSTEM", data, sizeof(data))) {
             // on msys?
             if (!tb_strnicmp(data, "mingw", 5) // mingw32/64 on msys2
-                || !tb_strnicmp(data, "clang", 5) // clang32/64 on msys2, @see https://github.com/xmake-io/xmake/issues/3060
-                || !tb_stricmp(data, "ucrt64")  // ucrt64 https://www.msys2.org/docs/environments/
-                || !tb_stricmp(data, "msys"))  // on msys2
+                || !tb_strnicmp(data,
+                                "clang",
+                                5) // clang32/64 on msys2, @see https://github.com/xmake-io/xmake/issues/3060
+                || !tb_stricmp(data, "ucrt64") // ucrt64 https://www.msys2.org/docs/environments/
+                || !tb_stricmp(data, "msys")) { // on msys2
                 subhost = "msys";
+            }
         }
     }
-#   endif
 #endif
-    lua_pushstring(engine->lua, subhost? subhost : "unknown");
+#endif
+    lua_pushstring(engine->lua, subhost ? subhost : "unknown");
     lua_setglobal(engine->lua, "_SUBHOST");
 }
 
-static __tb_inline__ tb_char_t const* xm_engine_xmake_arch()
-{
-    tb_char_t const* arch = tb_null;
+static __tb_inline__ tb_char_t const *xm_engine_xmake_arch() {
+    tb_char_t const *arch = tb_null;
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-#   if defined(TB_ARCH_x64)
+#if defined(TB_ARCH_x64)
     arch = "x64";
-#   elif defined(TB_ARCH_ARM64)
+#elif defined(TB_ARCH_ARM64)
     arch = "arm64";
-#   elif defined(TB_ARCH_ARM)
+#elif defined(TB_ARCH_ARM)
     arch = "arm";
-#   else
+#else
     arch = "x86";
-#   endif
+#endif
 #elif defined(TB_ARCH_x64)
     arch = "x86_64";
 #elif defined(TB_ARCH_x86)
@@ -1192,48 +1135,49 @@ static __tb_inline__ tb_char_t const* xm_engine_xmake_arch()
     return arch;
 }
 
-static tb_void_t xm_engine_init_arch(xm_engine_t* engine)
-{
-    // check
+static tb_void_t xm_engine_init_arch(xm_engine_t *engine) {
     tb_assert_and_check_return(engine && engine->lua);
 
     // init xmake arch
-    tb_char_t const* xmakearch = xm_engine_xmake_arch();
+    tb_char_t const *xmakearch = xm_engine_xmake_arch();
     lua_pushstring(engine->lua, xmakearch);
     lua_setglobal(engine->lua, "_XMAKE_ARCH");
 
     // init system architecture
-    tb_char_t const* sysarch = tb_null;
+    tb_char_t const *sysarch = tb_null;
 #if defined(__COSMOPOLITAN__)
     struct utsname buffer;
-    if (uname(&buffer) == 0)
-    {
+    if (uname(&buffer) == 0) {
         sysarch = buffer.machine;
-        if (tb_strstr(buffer.sysname, "Windows"))
-        {
-            if (!tb_strcmp(buffer.machine, "x86_64"))
+        if (tb_strstr(buffer.sysname, "Windows")) {
+            if (!tb_strcmp(buffer.machine, "x86_64")) {
                 sysarch = "x64";
-            else if (!tb_strcmp(buffer.machine, "i686") || !tb_strcmp(buffer.machine, "i386"))
+            } else if (!tb_strcmp(buffer.machine, "i686") || !tb_strcmp(buffer.machine, "i386")) {
                 sysarch = "x86";
-        }
-        else if (!tb_strcmp(buffer.machine, "aarch64"))
+            }
+        } else if (!tb_strcmp(buffer.machine, "aarch64")) {
             sysarch = "arm64";
+        }
     }
 #elif defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     // the GetNativeSystemInfo function type
-    typedef void (WINAPI *GetNativeSystemInfo_t)(LPSYSTEM_INFO);
+    typedef void(WINAPI * GetNativeSystemInfo_t)(LPSYSTEM_INFO);
 
     // get system info
-    SYSTEM_INFO systeminfo = {0};
+    SYSTEM_INFO           systeminfo           = { 0 };
     GetNativeSystemInfo_t pGetNativeSystemInfo = tb_null;
-    tb_dynamic_ref_t kernel32 = tb_dynamic_init("kernel32.dll");
-    if (kernel32) pGetNativeSystemInfo = (GetNativeSystemInfo_t)tb_dynamic_func(kernel32, "GetNativeSystemInfo");
-    if (pGetNativeSystemInfo) pGetNativeSystemInfo(&systeminfo);
-    else GetSystemInfo(&systeminfo);
+    tb_dynamic_ref_t      kernel32             = tb_dynamic_init("kernel32.dll");
+    if (kernel32) {
+        pGetNativeSystemInfo = (GetNativeSystemInfo_t)tb_dynamic_func(kernel32, "GetNativeSystemInfo");
+    }
+    if (pGetNativeSystemInfo) {
+        pGetNativeSystemInfo(&systeminfo);
+    } else {
+        GetSystemInfo(&systeminfo);
+    }
 
     // init architecture
-    switch (systeminfo.wProcessorArchitecture)
-    {
+    switch (systeminfo.wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_AMD64:
         sysarch = "x64";
         break;
@@ -1252,30 +1196,30 @@ static tb_void_t xm_engine_init_arch(xm_engine_t* engine)
         break;
     }
 #endif
-    if (!sysarch) sysarch = xmakearch;
+    if (!sysarch) {
+        sysarch = xmakearch;
+    }
     lua_pushstring(engine->lua, sysarch);
     lua_setglobal(engine->lua, "_ARCH");
 
     // init subsystem architecture
-    tb_char_t const* subarch = sysarch;
+    tb_char_t const *subarch = sysarch;
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     // get architecture from msys environment
-    tb_char_t data[64] = {0};
-    if (tb_environment_first("MSYSTEM_CARCH", data, sizeof(data)))
-    {
-        if (!tb_strcmp(data, "i686"))
+    tb_char_t data[64] = { 0 };
+    if (tb_environment_first("MSYSTEM_CARCH", data, sizeof(data))) {
+        if (!tb_strcmp(data, "i686")) {
             subarch = "i386";
-        else
+        } else {
             subarch = data;
+        }
     }
 #endif
     lua_pushstring(engine->lua, subarch);
     lua_setglobal(engine->lua, "_SUBARCH");
 }
 
-static tb_void_t xm_engine_init_features(xm_engine_t* engine)
-{
-    // check
+static tb_void_t xm_engine_init_features(xm_engine_t *engine) {
     tb_assert_and_check_return(engine && engine->lua);
 
     // init features
@@ -1302,12 +1246,12 @@ static tb_void_t xm_engine_init_features(xm_engine_t* engine)
     lua_setglobal(engine->lua, "_FEATURES");
 }
 
-static tb_void_t xm_engine_init_signal(xm_engine_t* engine)
-{
+static tb_void_t xm_engine_init_signal(xm_engine_t *engine) {
     // we enable it to catch the current lua stack in ctrl-c signal handler if XMAKE_PROFILE=stuck
-    tb_char_t data[64] = {0};
-    if (!tb_environment_first("XMAKE_PROFILE", data, sizeof(data)) || tb_strcmp(data, "stuck"))
-        return ;
+    tb_char_t data[64] = { 0 };
+    if (!tb_environment_first("XMAKE_PROFILE", data, sizeof(data)) || tb_strcmp(data, "stuck")) {
+        return;
+    }
 
     g_lua = engine->lua;
 #if defined(TB_CONFIG_OS_WINDOWS)
@@ -1319,46 +1263,52 @@ static tb_void_t xm_engine_init_signal(xm_engine_t* engine)
 
 #if XM_HOOK_LUA_MEMALLOC
 // udata is unused, it has been used by engine. see xm_engine_bind_to_lua()
-static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data, size_t osize, size_t nsize)
-{
+static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data, size_t osize, size_t nsize) {
     tb_pointer_t ptr = tb_null;
-    if (nsize == 0 && data) tb_free(data);
-    else if (!data) ptr = tb_malloc((tb_size_t)nsize);
-    else if (nsize != osize) ptr = tb_ralloc(data, (tb_size_t)nsize);
-    else ptr = data;
+    if (nsize == 0 && data) {
+        tb_free(data);
+    } else if (!data) {
+        ptr = tb_malloc((tb_size_t)nsize);
+    } else if (nsize != osize) {
+        ptr = tb_ralloc(data, (tb_size_t)nsize);
+    } else {
+        ptr = data;
+    }
     return ptr;
 }
 #endif
 
 #ifdef XM_EMBED_ENABLE
-static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t* engine, tb_char_t const* programdir, tb_byte_t const* data, tb_size_t size)
-{
+static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t     *engine,
+                                                     tb_char_t const *programdir,
+                                                     tb_byte_t const *data,
+                                                     tb_size_t        size) {
     // do decompress
-    tb_bool_t ok = tb_false;
-    LZ4F_errorCode_t code;
+    tb_bool_t                   ok = tb_false;
+    LZ4F_errorCode_t            code;
     LZ4F_decompressionContext_t ctx = tb_null;
-    tb_buffer_t result;
-    do
-    {
+    tb_buffer_t                 result;
+    do {
         tb_buffer_init(&result);
 
         code = LZ4F_createDecompressionContext(&ctx, LZ4F_VERSION);
-        if (LZ4F_isError(code)) break;
+        if (LZ4F_isError(code))
+            break;
 
         tb_byte_t buffer[8192];
         tb_bool_t failed = tb_false;
-        while (1)
-        {
-            size_t advance = (size_t)size;
+        while (1) {
+            size_t advance     = (size_t)size;
             size_t buffer_size = sizeof(buffer);
-            code = LZ4F_decompress(ctx, buffer, &buffer_size, data, &advance, tb_null);
-            if (LZ4F_isError(code))
-            {
+            code               = LZ4F_decompress(ctx, buffer, &buffer_size, data, &advance, tb_null);
+            if (LZ4F_isError(code)) {
                 failed = tb_true;
                 break;
             }
 
-            if (buffer_size == 0) break;
+            if (buffer_size == 0) {
+                break;
+            }
             data += advance;
             size -= advance;
 
@@ -1370,22 +1320,20 @@ static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t* engine, tb_cha
     } while (0);
 
     // extract files to programdir
-    if (ok)
-    {
-        data = tb_buffer_data(&result);
-        size = tb_buffer_size(&result);
-        tb_byte_t const* p = data;
-        tb_byte_t const* e = data + size;
-        tb_size_t n = 0;
-        tb_char_t filepath[TB_PATH_MAXN];
-        tb_long_t pos = tb_snprintf(filepath, sizeof(filepath), "%s/", programdir);
-        while (p < e)
-        {
+    if (ok) {
+        data               = tb_buffer_data(&result);
+        size               = tb_buffer_size(&result);
+        tb_byte_t const *p = data;
+        tb_byte_t const *e = data + size;
+        tb_size_t        n = 0;
+        tb_char_t        filepath[TB_PATH_MAXN];
+        tb_long_t        pos = tb_snprintf(filepath, sizeof(filepath), "%s/", programdir);
+        while (p < e) {
             // get filepath
             n = (tb_size_t)tb_bits_get_u16_be(p);
             p += 2;
             tb_assert_and_check_break(pos + n + 1 < sizeof(filepath));
-            tb_strncpy(filepath + pos, (tb_char_t const*)p, n);
+            tb_strncpy(filepath + pos, (tb_char_t const *)p, n);
             filepath[pos + n] = '\0';
             p += n;
 
@@ -1395,11 +1343,12 @@ static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t* engine, tb_cha
 
             // write file
             tb_trace_d("extracting %s, %lu bytes ..", filepath, n);
-            tb_stream_ref_t stream = tb_stream_init_from_file(filepath,  TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC);
+            tb_stream_ref_t stream = tb_stream_init_from_file(filepath,
+                                                              TB_FILE_MODE_RW | TB_FILE_MODE_CREAT |
+                                                                  TB_FILE_MODE_TRUNC);
             tb_assert_and_check_break(stream);
 
-            if (tb_stream_open(stream))
-            {
+            if (tb_stream_open(stream)) {
                 tb_stream_bwrit(stream, p, n);
                 tb_stream_exit(stream);
             }
@@ -1407,18 +1356,14 @@ static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t* engine, tb_cha
             p += n;
         }
         ok = (p == e);
-        if (!ok)
-        {
+        if (!ok) {
             tb_trace_e("extract program files failed");
         }
-    }
-    else
-    {
+    } else {
         tb_trace_e("decompress program files failed, %s", LZ4F_getErrorName(code));
     }
 
-    if (ctx)
-    {
+    if (ctx) {
         LZ4F_freeDecompressionContext(ctx);
         ctx = tb_null;
     }
@@ -1426,19 +1371,16 @@ static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t* engine, tb_cha
     return ok;
 }
 
-static tb_bool_t xm_engine_extract_programfiles(xm_engine_t* engine, tb_char_t const* programdir)
-{
-    tb_file_info_t info = {0};
-    if (!tb_file_info(programdir, &info))
-    {
-        tb_byte_t const* data = g_xmake_xmz_data;
-        tb_size_t size = sizeof(g_xmake_xmz_data);
+static tb_bool_t xm_engine_extract_programfiles(xm_engine_t *engine, tb_char_t const *programdir) {
+    tb_file_info_t info = { 0 };
+    if (!tb_file_info(programdir, &info)) {
+        tb_byte_t const *data = g_xmake_xmz_data;
+        tb_size_t        size = sizeof(g_xmake_xmz_data);
         if (!xm_engine_extract_programfiles_impl(engine, programdir, data, size))
             return tb_false;
 
         tb_size_t embedcount = engine->embedcount;
-        for (tb_size_t i = 0; i < embedcount; i++)
-        {
+        for (tb_size_t i = 0; i < embedcount; i++) {
             data = engine->embeddata[i];
             size = engine->embedsize[i];
             if (!xm_engine_extract_programfiles_impl(engine, programdir, data, size))
@@ -1449,27 +1391,23 @@ static tb_bool_t xm_engine_extract_programfiles(xm_engine_t* engine, tb_char_t c
 }
 #endif
 
-static tb_void_t xm_engine_bind_to_lua(lua_State* lua, xm_engine_t* engine)
-{
+static tb_void_t xm_engine_bind_to_lua(lua_State *lua, xm_engine_t *engine) {
     lua_pushlightuserdata(lua, engine);
     lua_setglobal(lua, "__global_engine");
 }
 
 // load and execute the main script
-static tb_bool_t xm_engine_load_main_script(xm_engine_t* engine, tb_char_t const* mainfile)
-{
+static tb_bool_t xm_engine_load_main_script(xm_engine_t *engine, tb_char_t const *mainfile) {
 #ifdef TB_CONFIG_OS_WINDOWS
     // use tb_file_init to support unicode file path on windows
-    tb_bool_t ok = tb_false;
+    tb_bool_t     ok   = tb_false;
     tb_file_ref_t file = tb_null;
-    tb_byte_t* data = tb_null;
+    tb_byte_t    *data = tb_null;
 
-    do
-    {
+    do {
         // open file
         file = tb_file_init(mainfile, TB_FILE_MODE_RO);
-        if (!file)
-        {
+        if (!file) {
             tb_printf("error: cannot open file: %s\n", mainfile);
             break;
         }
@@ -1479,26 +1417,23 @@ static tb_bool_t xm_engine_load_main_script(xm_engine_t* engine, tb_char_t const
         tb_assert_and_check_break(size);
 
         // allocate buffer
-        data = (tb_byte_t*)tb_malloc(size);
+        data = (tb_byte_t *)tb_malloc(size);
         tb_assert_and_check_break(data);
 
         // read file content
-        if (!tb_file_read(file, data, size))
-        {
+        if (!tb_file_read(file, data, size)) {
             tb_printf("error: cannot read file: %s\n", mainfile);
             break;
         }
 
         // load lua buffer
-        if (luaL_loadbuffer(engine->lua, (tb_char_t const*)data, size, mainfile))
-        {
+        if (luaL_loadbuffer(engine->lua, (tb_char_t const *)data, size, mainfile)) {
             tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
             break;
         }
 
         // execute lua script
-        if (lua_pcall(engine->lua, 0, LUA_MULTRET, 0))
-        {
+        if (lua_pcall(engine->lua, 0, LUA_MULTRET, 0)) {
             tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
             break;
         }
@@ -1507,12 +1442,15 @@ static tb_bool_t xm_engine_load_main_script(xm_engine_t* engine, tb_char_t const
 
     } while (0);
 
-    if (data) tb_free(data);
-    if (file) tb_file_exit(file);
+    if (data) {
+        tb_free(data);
+    }
+    if (file) {
+        tb_file_exit(file);
+    }
     return ok;
 #else
-    if (luaL_dofile(engine->lua, mainfile))
-    {
+    if (luaL_dofile(engine->lua, mainfile)) {
         tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
         return tb_false;
     }
@@ -1523,12 +1461,10 @@ static tb_bool_t xm_engine_load_main_script(xm_engine_t* engine, tb_char_t const
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_cb_t lni_initalizer)
-{
-    tb_bool_t     ok = tb_false;
-    xm_engine_t*  engine = tb_null;
-    do
-    {
+xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_cb_t lni_initalizer) {
+    tb_bool_t    ok     = tb_false;
+    xm_engine_t *engine = tb_null;
+    do {
         // init self
         engine = tb_malloc0_type(xm_engine_t);
         tb_assert_and_check_break(engine);
@@ -1635,14 +1571,29 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         xm_engine_init_signal(engine);
 
         // get version
-        tb_version_t const* version = xm_version();
+        tb_version_t const *version = xm_version();
         tb_assert_and_check_break(version);
 
         // init version string
-        tb_char_t version_cstr[256] = {0};
-        if (tb_strcmp(XM_CONFIG_VERSION_BRANCH, "") && tb_strcmp(XM_CONFIG_VERSION_COMMIT, ""))
-            tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u+%s.%s", version->major, version->minor, version->alter, XM_CONFIG_VERSION_BRANCH, XM_CONFIG_VERSION_COMMIT);
-        else tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u+%llu", version->major, version->minor, version->alter, version->build);
+        tb_char_t version_cstr[256] = { 0 };
+        if (tb_strcmp(XM_CONFIG_VERSION_BRANCH, "") && tb_strcmp(XM_CONFIG_VERSION_COMMIT, "")) {
+            tb_snprintf(version_cstr,
+                        sizeof(version_cstr),
+                        "%u.%u.%u+%s.%s",
+                        version->major,
+                        version->minor,
+                        version->alter,
+                        XM_CONFIG_VERSION_BRANCH,
+                        XM_CONFIG_VERSION_COMMIT);
+        } else {
+            tb_snprintf(version_cstr,
+                        sizeof(version_cstr),
+                        "%u.%u.%u+%llu",
+                        version->major,
+                        version->minor,
+                        version->alter,
+                        (unsigned long long)version->build);
+        }
         lua_pushstring(engine->lua, version_cstr);
         lua_setglobal(engine->lua, "_VERSION");
 
@@ -1661,7 +1612,7 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         lua_setglobal(engine->lua, "_VERSION_SHORT");
 
         // init engine name
-        lua_pushstring(engine->lua, name? name : "xmake");
+        lua_pushstring(engine->lua, name ? name : "xmake");
         lua_setglobal(engine->lua, "_NAME");
 
         // use luajit as runtime?
@@ -1681,20 +1632,21 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
          * we can get the lni modules for _lni or `import("lib.lni.xxx")` in sandbox
          */
         lua_newtable(engine->lua);
-        if (lni_initalizer) lni_initalizer((xm_engine_ref_t)engine, engine->lua);
+        if (lni_initalizer) {
+            lni_initalizer((xm_engine_ref_t)engine, engine->lua);
+        }
         lua_setglobal(engine->lua, "_lni");
 
 #ifdef TB_CONFIG_OS_WINDOWS
         // enable terminal colors output for windows cmd
-        HANDLE output =  GetStdHandle(STD_OUTPUT_HANDLE);
-        if (output != INVALID_HANDLE_VALUE)
-        {
+        HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+        if (output != INVALID_HANDLE_VALUE) {
             DWORD mode;
-            if (GetConsoleMode(output, &mode))
-            {
+            if (GetConsoleMode(output, &mode)) {
                 // attempt to enable 0x4: ENABLE_VIRTUAL_TERMINAL_PROCESSING
-                if (SetConsoleMode(output, mode | 0x4))
+                if (SetConsoleMode(output, mode | 0x4)) {
                     tb_environment_set("COLORTERM", "color256");
+                }
             }
         }
 #endif
@@ -1702,69 +1654,76 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
     } while (0);
 
-    if (!ok)
-    {
-        if (engine) xm_engine_exit((xm_engine_ref_t)engine);
+    if (!ok) {
+        if (engine) {
+            xm_engine_exit((xm_engine_ref_t)engine);
+        }
         engine = tb_null;
     }
     return (xm_engine_ref_t)engine;
 }
-tb_void_t xm_engine_exit(xm_engine_ref_t self)
-{
-    // check
-    xm_engine_t* engine = (xm_engine_t*)self;
+tb_void_t xm_engine_exit(xm_engine_ref_t self) {
+    xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return(engine);
 
     // exit lua
-    if (engine->lua) lua_close(engine->lua);
+    if (engine->lua) {
+        lua_close(engine->lua);
+    }
     engine->lua = tb_null;
 
     // exit poller
-    if (engine->poller) tb_poller_exit(engine->poller);
+    if (engine->poller) {
+        tb_poller_exit(engine->poller);
+    }
     engine->poller = tb_null;
 
     // exit it
     tb_free(engine);
 }
-tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv)
-{
-    // check
-    xm_engine_t* engine = (xm_engine_t*)self;
+tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t **argv, tb_char_t **taskargv) {
+    xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return_val(engine && engine->lua, -1);
 
 #if defined(TB_CONFIG_OS_WINDOWS) && defined(TB_COMPILER_IS_MSVC)
     // set "stdin" to have unicode mode
-    if (_isatty(_fileno(stdin))) _setmode(_fileno(stdin), _O_U16TEXT);
+    if (_isatty(_fileno(stdin))) {
+        _setmode(_fileno(stdin), _O_U16TEXT);
+    }
 #endif
 
     // save main arguments to the global variable: _ARGV
-    if (!xm_engine_save_arguments(engine, argc, argv, taskargv)) return -1;
+    if (!xm_engine_save_arguments(engine, argc, argv, taskargv)) {
+        return -1;
+    }
 
     // get the project directory
-    tb_char_t path[TB_PATH_MAXN] = {0};
-    if (!xm_engine_get_project_directory(engine, path, sizeof(path))) return -1;
+    tb_char_t path[TB_PATH_MAXN] = { 0 };
+    if (!xm_engine_get_project_directory(engine, path, sizeof(path)))
+        return -1;
 
     // get the program file
-    if (!xm_engine_get_program_file(engine, argv, path, sizeof(path))) return -1;
+    if (!xm_engine_get_program_file(engine, argv, path, sizeof(path)))
+        return -1;
 
     // get the program directory
-    if (!xm_engine_get_program_directory(engine, path, sizeof(path), path)) return -1;
+    if (!xm_engine_get_program_directory(engine, path, sizeof(path), path))
+        return -1;
 
 #ifdef XM_EMBED_ENABLE
-    if (!xm_engine_extract_programfiles(engine, path)) return -1;
+    if (!xm_engine_extract_programfiles(engine, path))
+        return -1;
 #endif
 
     // append the main script path
     tb_strcat(path, "/core/_xmake_main.lua");
 
     // exists this script?
-    if (!tb_file_info(path, tb_null))
-    {
+    if (!tb_file_info(path, tb_null)) {
         tb_printf("not found main script: %s\n", path);
         return -1;
     }
 
-    // trace
     tb_trace_d("main: %s", path);
 
     // load and execute the main script
@@ -1777,8 +1736,7 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
 
     // call the main function
     lua_getglobal(engine->lua, "_xmake_main");
-    if (lua_pcall(engine->lua, 0, 1, -2))
-    {
+    if (lua_pcall(engine->lua, 0, 1, -2)) {
         tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
         return -1;
     }
@@ -1786,10 +1744,8 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     // get the error code
     return (tb_int_t)lua_tonumber(engine->lua, -1);
 }
-tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const* module, luaL_Reg const funcs[])
-{
-    // check
-    xm_engine_t* engine = (xm_engine_t*)self;
+tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const *module, luaL_Reg const funcs[]) {
+    xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return(engine && engine->lua && module && funcs);
 
     // do register
@@ -1799,10 +1755,8 @@ tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const* module, luaL
     lua_rawset(engine->lua, -3);
 }
 #ifdef XM_EMBED_ENABLE
-tb_void_t xm_engine_add_embedfiles(xm_engine_ref_t self, tb_byte_t const* data, tb_size_t size)
-{
-    // check
-    xm_engine_t* engine = (xm_engine_t*)self;
+tb_void_t xm_engine_add_embedfiles(xm_engine_ref_t self, tb_byte_t const *data, tb_size_t size) {
+    xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return(engine && engine->embedcount < tb_arrayn(engine->embedsize) && data && size);
 
     engine->embeddata[engine->embedcount] = data;
@@ -1810,25 +1764,20 @@ tb_void_t xm_engine_add_embedfiles(xm_engine_ref_t self, tb_byte_t const* data, 
     engine->embedcount++;
 }
 #endif
-lua_State* xm_engine_lua(xm_engine_ref_t self)
-{
-    // check
-    xm_engine_t* engine = (xm_engine_t*)self;
+lua_State *xm_engine_lua(xm_engine_ref_t self) {
+    xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return_val(engine, tb_null);
 
     return engine->lua;
 }
-tb_poller_ref_t xm_engine_poller(xm_engine_ref_t self)
-{
-    // check
-    xm_engine_t* engine = (xm_engine_t*)self;
+tb_poller_ref_t xm_engine_poller(xm_engine_ref_t self) {
+    xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return_val(engine, tb_null);
 
-    if (!engine->poller)
-    {
+    if (!engine->poller) {
         // init poller
         engine->poller_state.lua = engine->lua;
-        tb_poller_ref_t poller = tb_poller_init(&engine->poller_state);
+        tb_poller_ref_t poller   = tb_poller_init(&engine->poller_state);
         tb_assert_and_check_return_val(poller, tb_null);
 
         // attach poller to the current thread
@@ -1837,14 +1786,15 @@ tb_poller_ref_t xm_engine_poller(xm_engine_ref_t self)
     }
     return engine->poller;
 }
-tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv, xm_engine_lni_initalizer_cb_t lni_initalizer)
-{
+tb_int_t xm_engine_run(tb_char_t const              *name,
+                       tb_int_t                      argc,
+                       tb_char_t                   **argv,
+                       tb_char_t                   **taskargv,
+                       xm_engine_lni_initalizer_cb_t lni_initalizer) {
     tb_int_t ok = -1;
-    if (xm_init())
-    {
+    if (xm_init()) {
         xm_engine_ref_t engine = xm_engine_init(name, lni_initalizer);
-        if (engine)
-        {
+        if (engine) {
             ok = xm_engine_main(engine, argc, argv, taskargv);
             xm_engine_exit(engine);
         }
@@ -1852,11 +1802,9 @@ tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, t
     }
     return ok;
 }
-xm_engine_ref_t xm_engine_get(lua_State* lua)
-{
+xm_engine_ref_t xm_engine_get(lua_State *lua) {
     tb_assert_and_check_return_val(lua, tb_null);
 
     lua_getglobal(lua, "__global_engine");
     return (xm_engine_ref_t)lua_touserdata(lua, -1);
 }
-

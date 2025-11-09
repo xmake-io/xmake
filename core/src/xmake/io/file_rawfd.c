@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_rawfd"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "file_rawfd"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -36,9 +36,9 @@
 
 // file to fd
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-#   define xm_io_file2fd(file)            (lua_Number)((tb_size_t)(file))
+#define xm_io_file2fd(file) (lua_Number)((tb_size_t)(file))
 #else
-#   define xm_io_file2fd(file)            (lua_Number)tb_file2fd(file)
+#define xm_io_file2fd(file) (lua_Number) tb_file2fd(file)
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -51,25 +51,22 @@
  *
  * e.g. set VS_UNICODE_OUTPUT=fd to enable vs unicode output, @see https://github.com/xmake-io/xmake/issues/528
  */
-tb_int_t xm_io_file_rawfd(lua_State* lua)
-{
-    // check
+tb_int_t xm_io_file_rawfd(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
-    if (!lua_isuserdata(lua, 1))
+    if (!lua_isuserdata(lua, 1)) {
         xm_io_return_error(lua, "get rawfd for invalid file!");
+    }
 
     // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    xm_io_file_t *file = (xm_io_file_t *)lua_touserdata(lua, 1);
     tb_check_return_val(file, 0);
 
     // get file raw fd
-    if (xm_io_file_is_file(file))
-    {
+    if (xm_io_file_is_file(file)) {
         tb_file_ref_t rawfile = tb_null;
-        if (tb_stream_ctrl(file->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile))
-        {
+        if (tb_stream_ctrl(file->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile)) {
             lua_pushnumber(lua, xm_io_file2fd(rawfile));
             return 1;
         }

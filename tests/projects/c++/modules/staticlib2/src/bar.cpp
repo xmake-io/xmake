@@ -1,8 +1,7 @@
 module bar;
 
 namespace bar {
-    int hello() {
-        return 2;
-    }
+int hello() {
+    return 2;
 }
-
+} // namespace bar

@@ -15,15 +15,15 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_sharedata_get.c
+ * @file        sharedata_get.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread_sharedata"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread_sharedata"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,20 +33,22 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_sharedata_get_(lua_State* lua)
-{
+tb_int_t xm_thread_sharedata_get_(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_thread_sharedata_t* thread_sharedata = xm_thread_sharedata_get(lua, 1);
+    xm_thread_sharedata_t *thread_sharedata = xm_thread_sharedata_get(lua, 1);
     tb_assert_and_check_return_val(thread_sharedata, 0);
 
     tb_bool_t ok = tb_false;
-    switch (thread_sharedata->value.kind)
-    {
+    switch (thread_sharedata->value.kind) {
     case XM_THREAD_VALUE_STR:
-        if (tb_buffer_size(&thread_sharedata->buffer) > 0)
-            lua_pushlstring(lua, (tb_char_t*)tb_buffer_data(&thread_sharedata->buffer), tb_buffer_size(&thread_sharedata->buffer));
-        else lua_pushliteral(lua, "");
+        if (tb_buffer_size(&thread_sharedata->buffer) > 0) {
+            lua_pushlstring(lua,
+                            (tb_char_t *)tb_buffer_data(&thread_sharedata->buffer),
+                            tb_buffer_size(&thread_sharedata->buffer));
+        } else {
+            lua_pushliteral(lua, "");
+        }
         ok = tb_true;
         break;
     case XM_THREAD_VALUE_INT:
@@ -69,8 +71,7 @@ tb_int_t xm_thread_sharedata_get_(lua_State* lua)
         break;
     }
 
-    if (!ok)
-    {
+    if (!ok) {
         lua_pushnil(lua);
         lua_pushliteral(lua, "invalid thread sharedata thread_sharedata");
         return 2;
@@ -78,5 +79,3 @@ tb_int_t xm_thread_sharedata_get_(lua_State* lua)
 
     return 1;
 }
-
-

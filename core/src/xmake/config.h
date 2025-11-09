@@ -27,5 +27,3 @@
 #include "xmake.config.h"
 
 #endif
-
-

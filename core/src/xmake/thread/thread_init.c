@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "thread"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "thread"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,47 +35,46 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
-#define XM_THREAD_ENGINE_NAME   "xmake"
+#define XM_THREAD_ENGINE_NAME "xmake"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
 
-static tb_int_t xm_thread_func(tb_cpointer_t priv)
-{
-    xm_thread_t* thread = (xm_thread_t*)priv;
+static tb_int_t xm_thread_func(tb_cpointer_t priv) {
+    xm_thread_t *thread = (xm_thread_t *)priv;
     tb_assert_and_check_return_val(thread, 0);
 
     xm_engine_ref_t engine = xm_engine_pool_alloc(xm_engine_pool());
-    if (!engine) engine = xm_engine_init(XM_THREAD_ENGINE_NAME, tb_null);
-    if (engine)
-    {
-        lua_State* lua = xm_engine_lua(engine);
+    if (!engine) {
+        engine = xm_engine_init(XM_THREAD_ENGINE_NAME, tb_null);
+    }
+    if (engine) {
+        lua_State *lua = xm_engine_lua(engine);
         tb_assert(lua);
 
         // pass callback
-        tb_char_t const* callback_data = tb_string_cstr(&thread->callback);
+        tb_char_t const *callback_data = tb_string_cstr(&thread->callback);
         tb_size_t        callback_size = tb_string_size(&thread->callback);
-        if (callback_data && callback_size)
-        {
+        if (callback_data && callback_size) {
             lua_pushlstring(lua, callback_data, callback_size);
             lua_setglobal(lua, "_THREAD_CALLBACK");
         }
 
         // pass callinfo
-        tb_char_t const* callinfo_data = tb_string_cstr(&thread->callinfo);
+        tb_char_t const *callinfo_data = tb_string_cstr(&thread->callinfo);
         tb_size_t        callinfo_size = tb_string_size(&thread->callinfo);
-        if (callinfo_data && callinfo_size)
-        {
+        if (callinfo_data && callinfo_size) {
             lua_pushlstring(lua, callinfo_data, callinfo_size);
             lua_setglobal(lua, "_THREAD_CALLINFO");
         }
 
         // start engine
-        tb_char_t* argv[] = {XM_THREAD_ENGINE_NAME, tb_null};
+        tb_char_t *argv[] = { XM_THREAD_ENGINE_NAME, tb_null };
         xm_engine_main(engine, 1, argv, tb_null);
-        if (!xm_engine_pool_free(xm_engine_pool(), engine))
+        if (!xm_engine_pool_free(xm_engine_pool(), engine)) {
             xm_engine_exit(engine);
+        }
     }
     return 0;
 }
@@ -83,26 +82,23 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv)
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_thread_init(lua_State* lua)
-{
-    // check
+tb_int_t xm_thread_init(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_bool_t ok = tb_false;
-    xm_thread_t* thread = tb_null;
-    do
-    {
+    tb_bool_t    ok     = tb_false;
+    xm_thread_t *thread = tb_null;
+    do {
         // get thread name
-        tb_char_t const* name = luaL_checkstring(lua, 1);
+        tb_char_t const *name = luaL_checkstring(lua, 1);
 
         // get callback
-        size_t              callback_size = 0;
-        tb_char_t const*    callback_data = luaL_checklstring(lua, 2, &callback_size);
+        size_t           callback_size = 0;
+        tb_char_t const *callback_data = luaL_checklstring(lua, 2, &callback_size);
         tb_assert_and_check_break(callback_data && callback_size);
 
         // get callinfo
-        size_t              callinfo_size = 0;
-        tb_char_t const*    callinfo_data = luaL_checklstring(lua, 3, &callinfo_size);
+        size_t           callinfo_size = 0;
+        tb_char_t const *callinfo_data = luaL_checklstring(lua, 3, &callinfo_size);
         tb_assert_and_check_break(callinfo_data && callinfo_size);
 
         // get stack size
@@ -127,14 +123,11 @@ tb_int_t xm_thread_init(lua_State* lua)
 
     } while (0);
 
-    if (!ok)
-    {
-        if (thread)
-        {
+    if (!ok) {
+        if (thread) {
             tb_string_exit(&thread->callback);
             tb_string_exit(&thread->callinfo);
-            if (thread->handle)
-            {
+            if (thread->handle) {
                 tb_thread_exit(thread->handle);
                 thread->handle = tb_null;
             }

@@ -26,7 +26,4 @@
  */
 #include "../prefix.h"
 
-
 #endif
-
-

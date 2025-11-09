@@ -4,9 +4,9 @@
 #include <QtCore/qglobal.h>
 
 #if defined(QT_DEMO_LIBRARY)
-#  define QT_DEMOSHARED_EXPORT Q_DECL_EXPORT
+#define QT_DEMOSHARED_EXPORT Q_DECL_EXPORT
 #else
-#  define QT_DEMOSHARED_EXPORT Q_DECL_IMPORT
+#define QT_DEMOSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
 #endif // QT_DEMO_GLOBAL_H

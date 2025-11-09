@@ -22,19 +22,19 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "getwinsize"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "getwinsize"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-#   include <windows.h>
+#include <windows.h>
 #else
-#   include <sys/ioctl.h>
-#   include <errno.h>  // for errno
-#   include <unistd.h> // for STDOUT_FILENO
+#include <sys/ioctl.h>
+#include <errno.h>  // for errno
+#include <unistd.h> // for STDOUT_FILENO
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -42,9 +42,7 @@
  */
 
 // get console window size
-tb_int_t xm_os_getwinsize(lua_State* lua)
-{
-    // check
+tb_int_t xm_os_getwinsize(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // init default window size (we will not consider winsize limit if cannot get it)
@@ -53,15 +51,13 @@ tb_int_t xm_os_getwinsize(lua_State* lua)
     // get winsize
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
-    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
-    {
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
         w = (tb_int_t)csbi.dwSize.X;
         h = (tb_int_t)csbi.dwSize.Y;
     }
 #else
     struct winsize size;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0)
-    {
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0) {
         w = (tb_int_t)size.ws_col;
         h = (tb_int_t)size.ws_row;
     }
@@ -83,6 +79,5 @@ tb_int_t xm_os_getwinsize(lua_State* lua)
     lua_pushinteger(lua, h);
     lua_settable(lua, -3);
 
-    // ok
     return 1;
 }

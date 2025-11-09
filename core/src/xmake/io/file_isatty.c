@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_isatty"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME "file_isatty"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,17 +35,16 @@
  */
 
 // io.file_isatty(file)
-tb_int_t xm_io_file_isatty(lua_State* lua)
-{
-    // check
+tb_int_t xm_io_file_isatty(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
-    if (!lua_isuserdata(lua, 1))
+    if (!lua_isuserdata(lua, 1)) {
         xm_io_return_error(lua, "isatty(invalid file)!");
+    }
 
     // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    xm_io_file_t *file = (xm_io_file_t *)lua_touserdata(lua, 1);
     tb_check_return_val(file, 0);
 
     // is tty?
