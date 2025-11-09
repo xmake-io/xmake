@@ -44,7 +44,6 @@
  * private implementation
  */
 static tb_size_t xm_io_file_detect_charset(tb_byte_t const **data_ptr, tb_long_t size) {
-    // check
     tb_assert(data_ptr && *data_ptr);
 
     tb_byte_t const *data    = *data_ptr;
@@ -142,7 +141,6 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const **data_ptr, tb_long_t
     return charset;
 }
 static tb_size_t xm_io_file_detect_encoding(tb_stream_ref_t stream, tb_long_t *pbomoff) {
-    // check
     tb_assert_and_check_return_val(stream && pbomoff, XM_IO_FILE_ENCODING_BINARY);
 
     // detect encoding
@@ -163,7 +161,6 @@ static tb_size_t xm_io_file_detect_encoding(tb_stream_ref_t stream, tb_long_t *p
 
 // io.file_open(path, modestr)
 tb_int_t xm_io_file_open(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get file path and mode
@@ -261,7 +258,6 @@ tb_int_t xm_io_file_open(lua_State *lua) {
         if (bomoff > 0 && !tb_stream_seek(stream, bomoff))
             break;
 
-        // ok
         open_ok = tb_true;
 
     } while (0);

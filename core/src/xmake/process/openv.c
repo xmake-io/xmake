@@ -46,7 +46,6 @@
  *  envs = {"PATH=xxx", "XXX=yyy"}})
  */
 tb_int_t xm_process_openv(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check argv
@@ -323,6 +322,5 @@ tb_int_t xm_process_openv(lua_State *lua) {
         tb_free(argv);
     argv = tb_null;
 
-    // ok
     return 1;
 }

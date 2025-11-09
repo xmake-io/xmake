@@ -57,7 +57,6 @@ extern tb_char_t **environ;
  * implementation
  */
 static tb_void_t xm_os_getenvs_trim(tb_char_t const **sstr, tb_char_t const **estr) {
-    // check
     tb_assert(sstr && estr && *sstr && *estr);
 
     tb_char_t const *p = *sstr;
@@ -77,7 +76,6 @@ static tb_void_t xm_os_getenvs_trim(tb_char_t const **sstr, tb_char_t const **es
 }
 
 static tb_void_t xm_os_getenvs_process_line(lua_State *lua, tb_char_t const *line) {
-    // check
     tb_assert_and_check_return(lua && line);
 
     tb_size_t n = tb_strlen(line);
@@ -124,7 +122,6 @@ static tb_void_t xm_os_getenvs_process_line(lua_State *lua, tb_char_t const *lin
 }
 
 tb_int_t xm_os_getenvs(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // init table

@@ -81,7 +81,6 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv) {
  * implementation
  */
 tb_int_t xm_thread_init(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     tb_bool_t    ok     = tb_false;

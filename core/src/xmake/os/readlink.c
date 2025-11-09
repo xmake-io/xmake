@@ -37,7 +37,6 @@
  * implementation
  */
 tb_int_t xm_os_readlink(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the path
@@ -69,6 +68,5 @@ tb_int_t xm_os_readlink(lua_State *lua) {
         lua_pushnil(lua);
 #endif
 
-    // ok
     return 1;
 }

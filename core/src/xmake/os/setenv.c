@@ -35,7 +35,6 @@
  */
 // ok = os.setenv(name, value)
 tb_int_t xm_os_setenv(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the name and value

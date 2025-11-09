@@ -71,7 +71,6 @@ static tb_void_t xm_string_lastof_chr(lua_State *lua, tb_char_t const *cstr, tb_
  * @param substr          the substring
  */
 tb_int_t xm_string_lastof(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get string

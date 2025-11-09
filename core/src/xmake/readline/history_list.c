@@ -37,7 +37,6 @@
 
 // history_list wrapper
 tb_int_t xm_readline_history_list(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // history list
@@ -70,7 +69,6 @@ tb_int_t xm_readline_history_list(lua_State *lua) {
     }
 #endif
 
-    // ok
     return 1;
 }
 

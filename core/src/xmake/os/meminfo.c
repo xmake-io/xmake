@@ -159,7 +159,6 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t *ptotalsize, tb_int_t *pavailsize)
  * implementation
  */
 tb_int_t xm_os_meminfo(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // init table

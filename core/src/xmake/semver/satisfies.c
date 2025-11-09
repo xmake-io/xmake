@@ -39,7 +39,6 @@
  * semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
  */
 tb_int_t xm_semver_satisfies(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the version string

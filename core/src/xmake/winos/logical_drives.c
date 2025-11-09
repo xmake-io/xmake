@@ -73,6 +73,5 @@ tb_int_t xm_winos_logical_drives(lua_State *lua) {
         tb_free(data);
     data = tb_null;
 
-    // ok
     return 1;
 }

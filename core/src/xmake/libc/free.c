@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_libc_free(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // do free

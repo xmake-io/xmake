@@ -39,7 +39,6 @@
  * local short_path, errors = winos.short_path(long_path)
  */
 tb_int_t xm_winos_short_path(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments

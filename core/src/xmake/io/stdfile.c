@@ -144,7 +144,6 @@ static xm_io_file_t *xm_io_stdfile_new(lua_State *lua, tb_size_t type) {
 
 // io.stdfile(stdin: 1, stdout: 2, stderr: 3)
 tb_int_t xm_io_stdfile(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get std type

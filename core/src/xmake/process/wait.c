@@ -36,7 +36,6 @@
 
 // ok, status = process.wait(proc, timeout)
 tb_int_t xm_process_wait(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
@@ -62,6 +61,5 @@ tb_int_t xm_process_wait(lua_State *lua) {
     lua_pushinteger(lua, ok);
     lua_pushinteger(lua, status);
 
-    // ok
     return 2;
 }

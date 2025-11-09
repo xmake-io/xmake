@@ -40,7 +40,6 @@
  * shared lock:     io.filelock_lock(lock, "/xxxx/filelock", {shared = true})
  */
 tb_int_t xm_io_filelock_lock(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get option argument

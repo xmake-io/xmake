@@ -36,7 +36,6 @@
 
 // real, data_or_errors, addr, port = io.socket_recvfrom(sock, size)
 tb_int_t xm_io_socket_recvfrom(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket

@@ -101,7 +101,6 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
  * local ok, errors = utils.bin2c(binaryfile, outputfile, linewidth, nozeroend)
  */
 tb_int_t xm_utils_bin2c(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the binaryfile

@@ -36,7 +36,6 @@
 
 // fwatcher.remove(watchdir)
 tb_int_t xm_fwatcher_remove(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?

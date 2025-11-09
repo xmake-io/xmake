@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_os_link(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the source and destination
@@ -45,6 +44,5 @@ tb_int_t xm_os_link(lua_State *lua) {
     // do os.link(src, dst)
     lua_pushboolean(lua, tb_file_link(src, dst));
 
-    // ok
     return 1;
 }

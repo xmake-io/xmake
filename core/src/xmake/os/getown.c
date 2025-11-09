@@ -42,7 +42,6 @@
 
 // get owner by a given path
 tb_int_t xm_os_getown(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the pathname
@@ -63,7 +62,6 @@ tb_int_t xm_os_getown(lua_State *lua) {
     lua_pushinteger(lua, sts.st_gid);
     lua_settable(lua, -3);
 
-    // ok
     return 1;
 }
 

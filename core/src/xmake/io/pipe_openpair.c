@@ -38,7 +38,6 @@
  * io.pipe_openpair(mode, buffsize)
  */
 tb_int_t xm_io_pipe_openpair(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get pipe mode

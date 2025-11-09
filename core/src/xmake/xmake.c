@@ -52,7 +52,6 @@ static __tb_inline__ tb_bool_t xm_check_mode(tb_size_t mode) {
     }
 #endif
 
-    // ok
     return tb_true;
 }
 static __tb_inline__ tb_bool_t xm_version_check(tb_hize_t build) {
@@ -60,7 +59,6 @@ static __tb_inline__ tb_bool_t xm_version_check(tb_hize_t build) {
     tb_version_t const *version = xm_version();
     tb_used(version);
 
-    // ok
     if ((build / 100) == (XM_VERSION_BUILD / 100)) {
         tb_trace_d("version: %s", XM_VERSION_STRING);
         return tb_true;
@@ -76,7 +74,6 @@ static __tb_inline__ tb_bool_t xm_version_check(tb_hize_t build) {
  * implementation
  */
 tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build) {
-    // trace
     tb_trace_d("init: ..");
 
     // check mode
@@ -95,10 +92,8 @@ tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build) {
         return tb_false;
 #endif
 
-    // trace
     tb_trace_d("init: ok");
 
-    // ok
     return tb_true;
 }
 tb_void_t xm_exit() {

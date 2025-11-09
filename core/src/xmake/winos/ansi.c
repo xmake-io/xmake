@@ -36,7 +36,6 @@
  */
 
 static tb_int_t xm_expand_cp(tb_int_t cp) {
-    // check
     tb_assert_and_check_return_val(cp >= 0 && cp <= 65535, 0);
 
     if (cp == CP_OEMCP)
@@ -47,7 +46,6 @@ static tb_int_t xm_expand_cp(tb_int_t cp) {
 }
 
 tb_int_t xm_winos_console_cp(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     tb_int_t n = lua_gettop(lua);
@@ -66,7 +64,6 @@ tb_int_t xm_winos_console_cp(lua_State *lua) {
 }
 
 tb_int_t xm_winos_console_output_cp(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     tb_int_t n = lua_gettop(lua);
@@ -85,7 +82,6 @@ tb_int_t xm_winos_console_output_cp(lua_State *lua) {
 }
 
 tb_int_t xm_winos_cp_info(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     lua_Integer cp = luaL_checkinteger(lua, 1);
@@ -138,7 +134,6 @@ tb_int_t xm_winos_cp_info(lua_State *lua) {
 }
 
 tb_int_t xm_winos_ansi_cp(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     tb_uint_t cp = GetACP();
@@ -147,7 +142,6 @@ tb_int_t xm_winos_ansi_cp(lua_State *lua) {
 }
 
 tb_int_t xm_winos_oem_cp(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     tb_uint_t cp = GetOEMCP();

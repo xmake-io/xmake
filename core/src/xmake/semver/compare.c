@@ -36,7 +36,6 @@
 
 // semver.compare("v1.0.1-beta", "1.2") > 0?
 tb_int_t xm_semver_compare(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the version1 string
@@ -66,7 +65,6 @@ tb_int_t xm_semver_compare(lua_State *lua) {
     // do compare
     lua_pushinteger(lua, semver_pcmp(&semver1, &semver2));
 
-    // end
     semver_dtor(&semver1);
     semver_dtor(&semver2);
     return 1;

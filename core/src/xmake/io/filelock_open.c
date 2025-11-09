@@ -38,7 +38,6 @@
  * io.filelock_open(path)
  */
 tb_int_t xm_io_filelock_open(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get file path

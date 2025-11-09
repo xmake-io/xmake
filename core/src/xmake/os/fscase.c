@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_os_fscase(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
 #if ((TB_VERSION_MAJOR * 100) + (TB_VERSION_MINOR * 10) + TB_VERSION_ALTER) >= 174

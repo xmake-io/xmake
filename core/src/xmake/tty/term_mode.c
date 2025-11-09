@@ -41,7 +41,6 @@
  * local oldmode = tty.term_mode(stdtype, newmode)
  */
 tb_int_t xm_tty_term_mode(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
 #ifdef TB_CONFIG_OS_WINDOWS

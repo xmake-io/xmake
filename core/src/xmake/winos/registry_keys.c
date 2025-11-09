@@ -168,7 +168,6 @@ static tb_void_t xm_winos_registry_enum_keys(xm_winos_registry_enum_info_t *info
  *                                             end)
  */
 tb_int_t xm_winos_registry_keys(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments
@@ -231,7 +230,6 @@ tb_int_t xm_winos_registry_keys(lua_State *lua) {
 
     } while (0);
 
-    // ok?
     if (ok) {
         lua_pushinteger(lua, count);
         return 1;

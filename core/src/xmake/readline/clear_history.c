@@ -37,7 +37,6 @@
 
 // clear_history wrapper
 tb_int_t xm_readline_clear_history(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
 #ifdef TB_CONFIG_OS_MACOSX
@@ -48,7 +47,6 @@ tb_int_t xm_readline_clear_history(lua_State *lua) {
     clear_history();
 #endif
 
-    // ok
     return 0;
 }
 

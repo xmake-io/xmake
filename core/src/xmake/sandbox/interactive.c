@@ -121,7 +121,6 @@ static tb_int_t xm_sandbox_docall(lua_State *lua, tb_int_t narg, tb_int_t clear)
     if (status != 0)
         lua_gc(lua, LUA_GCCOLLECT, 0);
 
-    // ok?
     return status;
 }
 
@@ -158,7 +157,6 @@ static tb_size_t xm_sandbox_readline(tb_char_t *data, tb_size_t maxn, tb_char_t 
         if (size >= maxn)
             return 0;
 
-        // ok
         return size;
     }
 #else
@@ -189,7 +187,6 @@ static tb_int_t xm_sandbox_pushline(lua_State *lua, tb_char_t const *prompt2) {
         // push line
         lua_pushstring(lua, data);
 
-        // ok
         return 1;
     }
 
@@ -228,7 +225,6 @@ static tb_int_t xm_sandbox_loadline(lua_State *lua, tb_int_t top) {
         // attempt to load "return ..."
         status = luaL_loadbuffer(lua, data, size + 7, "=stdin");
 
-        // ok?
         if (status != LUA_ERRSYNTAX)
             return status;
 
@@ -292,7 +288,6 @@ static tb_int_t xm_sandbox_loadline(lua_State *lua, tb_int_t top) {
 
 // sandbox.interactive()
 tb_int_t xm_sandbox_interactive(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     /* get init stack top
@@ -358,6 +353,5 @@ tb_int_t xm_sandbox_interactive(lua_State *lua) {
     tb_printl("");
     tb_print_sync();
 
-    // end
     return 0;
 }

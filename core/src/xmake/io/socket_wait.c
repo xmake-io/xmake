@@ -36,7 +36,6 @@
 
 // io.socket_wait(sock, events, timeout)
 tb_int_t xm_io_socket_wait(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket?

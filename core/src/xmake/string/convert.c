@@ -98,7 +98,6 @@ static xm_charset_entry_ref_t xm_string_charset_find_by_name(tb_char_t const *na
  * @endcode
  */
 tb_int_t xm_string_convert(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the string and charset types
@@ -137,6 +136,5 @@ tb_int_t xm_string_convert(lua_State *lua) {
         tb_free(dst_data);
     }
 
-    // ok
     return 1;
 }

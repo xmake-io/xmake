@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_lz4_decompress_file(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the file paths
@@ -91,7 +90,6 @@ tb_int_t xm_lz4_decompress_file(lua_State *lua) {
     }
     xm_lz4_dstream_exit(stream_lz4);
 
-    // ok?
     lua_pushboolean(lua, ok);
     return 1;
 }

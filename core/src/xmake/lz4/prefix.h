@@ -131,7 +131,6 @@ static __tb_inline__ tb_long_t xm_lz4_cstream_write(xm_lz4_cstream_t *stream,
                                                     tb_byte_t const  *idata,
                                                     tb_size_t         isize,
                                                     tb_bool_t         end) {
-    // check
     tb_assert_and_check_return_val(stream && stream->cctx && idata && isize, -1);
     tb_assert_and_check_return_val(isize <= stream->write_maxn, -1);
     tb_assert_and_check_return_val(stream->buffer_size + isize < stream->buffer_maxn, -1);
@@ -162,7 +161,6 @@ static __tb_inline__ tb_long_t xm_lz4_cstream_write(xm_lz4_cstream_t *stream,
 }
 
 static __tb_inline__ tb_long_t xm_lz4_cstream_read(xm_lz4_cstream_t *stream, tb_byte_t *odata, tb_size_t osize) {
-    // check
     tb_assert_and_check_return_val(stream && stream->cctx && odata && osize, -1);
     tb_assert_and_check_return_val(osize >= stream->header_size, -1);
 
@@ -224,7 +222,6 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_write(xm_lz4_dstream_t *stream,
                                                     tb_byte_t const  *idata,
                                                     tb_size_t         isize,
                                                     tb_bool_t         end) {
-    // check
     tb_assert_and_check_return_val(stream && stream->dctx && idata && isize, -1);
 
     // read header first
@@ -279,7 +276,6 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_write(xm_lz4_dstream_t *stream,
 }
 
 static __tb_inline__ tb_long_t xm_lz4_dstream_read(xm_lz4_dstream_t *stream, tb_byte_t *odata, tb_size_t osize) {
-    // check
     tb_assert_and_check_return_val(stream && stream->dctx && stream->buffer && odata && osize, -1);
     tb_check_return_val(stream->buffer_size, 0);
 

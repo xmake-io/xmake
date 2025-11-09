@@ -34,7 +34,6 @@
  * private implementation
  */
 static tb_long_t xm_os_rmdir_empty(tb_char_t const *path, tb_file_info_t const *info, tb_cpointer_t priv) {
-    // check
     tb_bool_t *is_emptydir = (tb_bool_t *)priv;
     tb_assert_and_check_return_val(path && info && is_emptydir, TB_DIRECTORY_WALK_CODE_END);
 
@@ -47,7 +46,6 @@ static tb_long_t xm_os_rmdir_empty(tb_char_t const *path, tb_file_info_t const *
     return TB_DIRECTORY_WALK_CODE_CONTINUE;
 }
 static tb_long_t xm_os_rmdir_remove(tb_char_t const *path, tb_file_info_t const *info, tb_cpointer_t priv) {
-    // check
     tb_assert_and_check_return_val(path, TB_DIRECTORY_WALK_CODE_END);
 
     // is directory?
@@ -56,7 +54,6 @@ static tb_long_t xm_os_rmdir_remove(tb_char_t const *path, tb_file_info_t const 
         tb_bool_t is_emptydir = tb_true;
         tb_directory_walk(path, tb_false, tb_true, xm_os_rmdir_empty, &is_emptydir);
 
-        // trace
         tb_trace_d("path: %s, emptydir: %u", path, is_emptydir);
 
         // remove empty directory
@@ -70,7 +67,6 @@ static tb_long_t xm_os_rmdir_remove(tb_char_t const *path, tb_file_info_t const 
  * implementation
  */
 tb_int_t xm_os_rmdir(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the path
@@ -89,10 +85,8 @@ tb_int_t xm_os_rmdir(lua_State *lua) {
         if (is_emptydir)
             tb_directory_remove(path);
 
-        // trace
         tb_trace_d("path: %s, emptydir: %u", path, is_emptydir);
 
-        // ok?
         lua_pushboolean(lua, !tb_file_info(path, tb_null));
     } else {
         // os.rmdir(path)

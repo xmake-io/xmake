@@ -37,7 +37,6 @@
 
 // add_history wrapper
 tb_int_t xm_readline_add_history(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get history
@@ -47,7 +46,6 @@ tb_int_t xm_readline_add_history(lua_State *lua) {
     // call add_history
     add_history(history);
 
-    // ok
     return 0;
 }
 #endif

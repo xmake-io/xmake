@@ -43,7 +43,6 @@ typedef int (*xm_setup_func_t)(xmi_lua_ops_t *ops);
  * implementation
  */
 tb_int_t xm_package_loadxmi(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     tb_char_t const *path = luaL_checkstring(lua, 1);

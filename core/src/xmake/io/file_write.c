@@ -34,7 +34,6 @@
  * private implementation
  */
 static tb_void_t xm_io_file_write_file_utfbom(xm_io_file_t *file) {
-    // check
     tb_assert(file && xm_io_file_is_file(file) && file->u.file_ref);
 
     // write bom
@@ -60,7 +59,6 @@ static tb_void_t xm_io_file_write_file_directly(xm_io_file_t *file, tb_byte_t co
     tb_stream_bwrit(file->u.file_ref, data, size);
 }
 static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t *file, tb_byte_t const *data, tb_size_t size) {
-    // check
     tb_assert(file && data && xm_io_file_is_file(file) && file->u.file_ref);
 
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -105,7 +103,6 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t *file, tb_byte_t c
 #endif
 }
 static tb_void_t xm_io_file_write_std(xm_io_file_t *file, tb_byte_t const *data, tb_size_t size) {
-    // check
     tb_assert(file && data && xm_io_file_is_std(file));
 
     // check type
@@ -122,7 +119,6 @@ static tb_void_t xm_io_file_write_std(xm_io_file_t *file, tb_byte_t const *data,
 
 // io.file_write(file, ...)
 tb_int_t xm_io_file_write(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?

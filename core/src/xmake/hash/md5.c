@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_hash_md5(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is bytes? get data and size
@@ -81,7 +80,6 @@ tb_int_t xm_hash_md5(lua_State *lua) {
                 // read data
                 tb_long_t real = tb_stream_read(stream, data, sizeof(data));
 
-                // ok?
                 if (real > 0)
                     tb_md5_spak(&md5, data, real);
                 // no data? continue it

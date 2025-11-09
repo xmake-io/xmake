@@ -35,7 +35,6 @@
  */
 static tb_void_t tb_os_args_append(
     tb_string_ref_t result, tb_char_t const *cstr, tb_size_t size, tb_bool_t escape, tb_bool_t nowrap) {
-    // check
     tb_assert_and_check_return(size < TB_PATH_MAXN);
 
     // need wrap quote?
@@ -74,7 +73,6 @@ static tb_void_t tb_os_args_append(
  */
 // os.args({"xx", "yy"}, {escape = true})
 tb_int_t xm_os_args(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // escape '\\' characters in global?

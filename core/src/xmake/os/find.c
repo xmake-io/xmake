@@ -34,7 +34,6 @@
  * private implementation
  */
 static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *info, tb_cpointer_t priv) {
-    // check
     tb_value_ref_t tuple = (tb_value_ref_t)priv;
     tb_assert_and_check_return_val(path && info && tuple, TB_DIRECTORY_WALK_CODE_END);
 
@@ -56,7 +55,6 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
     // the count
     tb_size_t *pcount = &(tuple[3].ul);
 
-    // trace
     tb_trace_d("path[%c]: %s", info->type == TB_FILE_TYPE_DIRECTORY ? 'd' : 'f', path);
 
     // we can ignore it directly if this path is file, but we need directory
@@ -70,7 +68,6 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
     lua_pushstring(lua, path);
     lua_pushstring(lua, pattern);
     if (lua_pcall(lua, 2, 1, 0)) {
-        // trace
         tb_printf("error: call string.match(%s, %s) failed: %s!\n", path, pattern, lua_tostring(lua, -1));
         return TB_DIRECTORY_WALK_CODE_END;
     }
@@ -87,7 +84,6 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
             tb_char_t const *rootdir = luaL_checklstring(lua, 1, &rootlen);
             tb_assert_and_check_return_val(rootdir && rootlen, TB_DIRECTORY_WALK_CODE_END);
 
-            // check
             tb_assert(!tb_strncmp(path, rootdir, rootlen));
             tb_assert(rootlen + 1 <= tb_strlen(path));
 
@@ -108,7 +104,6 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
                     lua_pushstring(lua, path);
                     lua_pushstring(lua, exclude);
                     if (lua_pcall(lua, 2, 1, 0)) {
-                        // trace
                         tb_printf("error: call string.match(%s, %s) failed: %s!\n",
                                   path,
                                   exclude,
@@ -163,7 +158,6 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
  * implementation
  */
 tb_int_t xm_os_find(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the root directory

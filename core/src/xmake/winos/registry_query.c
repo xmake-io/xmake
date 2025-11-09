@@ -46,7 +46,6 @@ typedef BOOL(WINAPI *xm_RegGetValueW_t)(
  * local value, errors = winos.registry_query("HKEY_LOCAL_MACHINE", "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug", "Debugger")
  */
 tb_int_t xm_winos_registry_query(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments
@@ -226,6 +225,5 @@ tb_int_t xm_winos_registry_query(lua_State *lua) {
         tb_free(value_w);
     value_w = tb_null;
 
-    // ok?
     return ok ? 1 : 2;
 }

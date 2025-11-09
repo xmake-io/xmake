@@ -75,7 +75,6 @@ static tb_bool_t xm_semver_select_from_versions_tags1(
     // exit the popped semver
     semver_dtor(&top);
 
-    // ok
     return tb_true;
 }
 static tb_bool_t xm_semver_select_from_versions_tags2(
@@ -173,7 +172,6 @@ static tb_bool_t xm_semver_select_latest_from_versions_tags(lua_State *lua,
  * local versioninfo, errors = semver.select(">=1.5.0 <1.6", {"1.5.0", "1.5.1"}, {"v1.5.0", ..}, {"latest", "dev"})
  */
 tb_int_t xm_semver_select(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // select version
@@ -260,6 +258,5 @@ tb_int_t xm_semver_select(lua_State *lua) {
         return 2;
     }
 
-    // ok
     return 1;
 }

@@ -34,7 +34,6 @@
  * private implementation
  */
 static tb_void_t xm_string_trim_space(tb_char_t const **psstr, tb_char_t const **pestr, tb_int_t mode) {
-    // check
     tb_assert(psstr && pestr && *psstr && *pestr);
 
     tb_char_t const *p = *psstr;
@@ -62,7 +61,6 @@ static tb_char_t const *xm_string_ltrim(tb_char_t const *sstr,
                                         tb_char_t const *estr,
                                         tb_char_t const *ctrim,
                                         size_t           ntrim) {
-    // check
     tb_assert(sstr && estr && ctrim);
 
     tb_char_t const *p = sstr;
@@ -75,7 +73,6 @@ static tb_char_t const *xm_string_rtrim(tb_char_t const *sstr,
                                         tb_char_t const *estr,
                                         tb_char_t const *ctrim,
                                         size_t           ntrim) {
-    // check
     tb_assert(sstr && estr && ctrim);
 
     tb_char_t const *p = estr - 1;
@@ -100,7 +97,6 @@ static tb_char_t const *xm_string_rtrim(tb_char_t const *sstr,
  * @endcode
  */
 tb_int_t xm_string_trim(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     size_t           lstr, ltrim;
@@ -127,7 +123,6 @@ tb_int_t xm_string_trim(lua_State *lua) {
         // no trimed chars
         tb_check_break(sstr != rsstr || estr != restr);
 
-        // ok
         lua_pushlstring(lua, sstr, estr - sstr);
         return 1;
 

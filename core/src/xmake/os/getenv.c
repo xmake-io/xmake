@@ -45,7 +45,6 @@
  * implementation
  */
 tb_int_t xm_os_getenv(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the name
@@ -89,6 +88,5 @@ tb_int_t xm_os_getenv(lua_State *lua) {
     // exit values
     tb_string_exit(&values);
 
-    // ok
     return 1;
 }

@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_hash_rand128(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     static union {

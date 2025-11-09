@@ -35,7 +35,6 @@
  */
 
 tb_int_t xm_lz4_decompress_stream_write(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check handle

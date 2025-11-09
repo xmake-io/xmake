@@ -38,7 +38,6 @@
 
 // readline wrapper
 tb_int_t xm_readline_readline(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the prompt
@@ -55,7 +54,6 @@ tb_int_t xm_readline_readline(lua_State *lua) {
     } else
         lua_pushnil(lua);
 
-    // ok
     return 1;
 }
 

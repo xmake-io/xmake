@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_os_mkdir(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the path
@@ -48,6 +47,5 @@ tb_int_t xm_os_mkdir(lua_State *lua) {
     else
         lua_pushboolean(lua, tb_true);
 
-    // ok
     return 1;
 }

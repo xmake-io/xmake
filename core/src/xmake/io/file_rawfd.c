@@ -52,7 +52,6 @@
  * e.g. set VS_UNICODE_OUTPUT=fd to enable vs unicode output, @see https://github.com/xmake-io/xmake/issues/528
  */
 tb_int_t xm_io_file_rawfd(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?

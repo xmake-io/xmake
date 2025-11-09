@@ -36,7 +36,6 @@
 
 // local sock = io.socket_kill(sock)
 tb_int_t xm_io_socket_kill(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?

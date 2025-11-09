@@ -36,7 +36,6 @@
 
 // io.file_close(file)
 tb_int_t xm_io_file_close(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
@@ -49,7 +48,6 @@ tb_int_t xm_io_file_close(lua_State *lua) {
 
     // close file
     if (xm_io_file_is_file(file)) {
-        // check
         tb_assert(file->u.file_ref);
 
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -90,7 +88,6 @@ tb_int_t xm_io_file_close(lua_State *lua) {
         // gc will free it if no any refs for lua_newuserdata()
         // ...
 
-        // ok
         lua_pushboolean(lua, tb_true);
         return 1;
     } else // for stdfile (gc/close)
@@ -102,7 +99,6 @@ tb_int_t xm_io_file_close(lua_State *lua) {
         // gc will free it if no any refs for lua_newuserdata()
         // ...
 
-        // ok
         lua_pushboolean(lua, tb_true);
         return 1;
     }

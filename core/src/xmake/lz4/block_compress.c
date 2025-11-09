@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_lz4_block_compress(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get data and size

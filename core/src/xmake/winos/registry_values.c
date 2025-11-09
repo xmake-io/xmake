@@ -43,7 +43,6 @@
  *                                             end)
  */
 tb_int_t xm_winos_registry_values(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments
@@ -156,7 +155,6 @@ tb_int_t xm_winos_registry_values(lua_State *lua) {
             }
         }
 
-        // ok
         if (i == value_name_num)
             ok = tb_true;
 
@@ -167,7 +165,6 @@ tb_int_t xm_winos_registry_values(lua_State *lua) {
         RegCloseKey(keynew);
     keynew = tb_null;
 
-    // ok?
     if (ok) {
         lua_pushinteger(lua, count);
         return 1;

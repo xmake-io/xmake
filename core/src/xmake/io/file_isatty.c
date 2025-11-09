@@ -36,7 +36,6 @@
 
 // io.file_isatty(file)
 tb_int_t xm_io_file_isatty(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?

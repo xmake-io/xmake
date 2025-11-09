@@ -38,7 +38,6 @@
  * implementation
  */
 tb_int_t xm_hash_xxhash(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get mode
@@ -115,7 +114,6 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
                 // read data
                 tb_long_t real = tb_stream_read(stream, data, sizeof(data));
 
-                // ok?
                 if (real > 0) {
                     if (mode == 32 || mode == 64)
                         XM_XXH3_64bits_update(state, data, real);

@@ -36,7 +36,6 @@
 
 // io.socket_close(sock)
 tb_int_t xm_io_socket_close(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?

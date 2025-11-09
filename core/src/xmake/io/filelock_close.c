@@ -36,7 +36,6 @@
 
 // io.filelock_close(lock)
 tb_int_t xm_io_filelock_close(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check lock?
@@ -53,6 +52,5 @@ tb_int_t xm_io_filelock_close(lua_State *lua) {
     // save result: ok
     lua_pushboolean(lua, tb_true);
 
-    // ok
     return 1;
 }

@@ -41,7 +41,6 @@
 
 // get & set gid
 tb_int_t xm_os_gid(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     tb_int_t rgidset = -1;
@@ -124,7 +123,6 @@ tb_int_t xm_os_gid(lua_State *lua) {
     lua_pushinteger(lua, egid);
     lua_settable(lua, -3);
 
-    // ok
     return 1;
 }
 

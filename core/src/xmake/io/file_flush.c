@@ -39,7 +39,6 @@ static tb_bool_t xm_io_std_flush_impl(xm_io_file_t *file) {
 }
 
 static tb_bool_t xm_io_file_flush_impl(xm_io_file_t *file) {
-    // check
     tb_assert_and_check_return_val(xm_io_file_is_file(file), tb_false);
 
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -61,7 +60,6 @@ static tb_bool_t xm_io_file_flush_impl(xm_io_file_t *file) {
 
 // io.file_flush(file)
 tb_int_t xm_io_file_flush(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?

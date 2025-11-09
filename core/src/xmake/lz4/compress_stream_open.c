@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_lz4_compress_stream_open(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     xm_lz4_cstream_t *stream = xm_lz4_cstream_init();

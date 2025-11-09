@@ -55,7 +55,6 @@
  *
  */
 tb_int_t xm_semver_parse(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the version string
@@ -70,7 +69,6 @@ tb_int_t xm_semver_parse(lua_State *lua) {
         return 2;
     }
 
-    // ok
     lua_pushsemver(lua, &semver);
     semver_dtor(&semver);
     return 1;

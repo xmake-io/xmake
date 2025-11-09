@@ -36,7 +36,6 @@
 
 // io.pipe_connect(pipefile)
 tb_int_t xm_io_pipe_connect(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // check pipe

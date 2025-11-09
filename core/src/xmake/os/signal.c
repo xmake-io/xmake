@@ -101,7 +101,6 @@ static tb_void_t xm_os_signal_handler(tb_int_t signo_native) {
  * implementation
  */
 tb_int_t xm_os_signal(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
     g_lua            = lua;
     tb_int_t handler = XM_OS_SIGFUN;

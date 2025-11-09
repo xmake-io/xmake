@@ -705,7 +705,6 @@ static tb_byte_t g_xmake_xmz_data[] = {
  * private implementation
  */
 static tb_bool_t xm_engine_save_arguments(xm_engine_t *engine, tb_int_t argc, tb_char_t **argv, tb_char_t **taskargv) {
-    // check
     tb_assert_and_check_return_val(engine && engine->lua && argc >= 1 && argv, tb_false);
 
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
@@ -745,7 +744,6 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t *engine, tb_int_t argc, tb
 }
 
 static tb_bool_t xm_engine_get_program_file(xm_engine_t *engine, tb_char_t **argv, tb_char_t *path, tb_size_t maxn) {
-    // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
     /* we cache it, because the current path will be changed in thread.
@@ -774,13 +772,11 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t *engine, tb_char_t **arg
         tb_wchar_t buf[TB_PATH_MAXN] = { 0 };
         tb_size_t  size              = (tb_size_t)GetModuleFileNameW(tb_null, buf, (DWORD)TB_PATH_MAXN);
         tb_assert_and_check_break(size < TB_PATH_MAXN);
-        // end
         buf[size] = L'\0';
         size      = tb_wcstombs(path, buf, maxn);
         tb_assert_and_check_break(size < maxn);
         path[size] = '\0';
 
-        // ok
         ok = tb_true;
 
 #elif defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
@@ -855,9 +851,7 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t *engine, tb_char_t **arg
 
     } while (0);
 
-    // ok?
     if (ok) {
-        // trace
         tb_trace_d("programfile: %s", path);
 
         // cache it
@@ -894,7 +888,6 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t     *engine,
                                                  tb_char_t       *path,
                                                  tb_size_t        maxn,
                                                  tb_char_t const *programfile) {
-    // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
     static tb_char_t s_program_directory[TB_PATH_MAXN] = { 0 };
@@ -980,9 +973,7 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t     *engine,
 
     } while (0);
 
-    // ok?
     if (ok) {
-        // trace
         tb_trace_d("programdir: %s", path);
 
         // cache it
@@ -993,12 +984,10 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t     *engine,
         lua_setglobal(engine->lua, "_PROGRAM_DIR");
     }
 
-    // ok?
     return ok;
 }
 
 static tb_bool_t xm_engine_get_project_directory(xm_engine_t *engine, tb_char_t *path, tb_size_t maxn) {
-    // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
     tb_bool_t ok = tb_false;
@@ -1011,14 +1000,12 @@ static tb_bool_t xm_engine_get_project_directory(xm_engine_t *engine, tb_char_t 
                 break;
         }
 
-        // trace
         tb_trace_d("project: %s", path);
 
         // save the directory to the global variable: _PROJECT_DIR
         lua_pushstring(engine->lua, path);
         lua_setglobal(engine->lua, "_PROJECT_DIR");
 
-        // ok
         ok = tb_true;
 
     } while (0);
@@ -1027,7 +1014,6 @@ static tb_bool_t xm_engine_get_project_directory(xm_engine_t *engine, tb_char_t 
     if (!ok)
         tb_printf("error: not found the project directory!\n");
 
-    // ok?
     return ok;
 }
 
@@ -1061,7 +1047,6 @@ static tb_void_t xm_engine_signal_handler(tb_int_t signo) {
 #endif
 
 static tb_void_t xm_engine_init_host(xm_engine_t *engine) {
-    // check
     tb_assert_and_check_return(engine && engine->lua);
 
     // init system host
@@ -1146,7 +1131,6 @@ static __tb_inline__ tb_char_t const *xm_engine_xmake_arch() {
 }
 
 static tb_void_t xm_engine_init_arch(xm_engine_t *engine) {
-    // check
     tb_assert_and_check_return(engine && engine->lua);
 
     // init xmake arch
@@ -1225,7 +1209,6 @@ static tb_void_t xm_engine_init_arch(xm_engine_t *engine) {
 }
 
 static tb_void_t xm_engine_init_features(xm_engine_t *engine) {
-    // check
     tb_assert_and_check_return(engine && engine->lua);
 
     // init features
@@ -1660,7 +1643,6 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
     return (xm_engine_ref_t)engine;
 }
 tb_void_t xm_engine_exit(xm_engine_ref_t self) {
-    // check
     xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return(engine);
 
@@ -1678,7 +1660,6 @@ tb_void_t xm_engine_exit(xm_engine_ref_t self) {
     tb_free(engine);
 }
 tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t **argv, tb_char_t **taskargv) {
-    // check
     xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return_val(engine && engine->lua, -1);
 
@@ -1719,7 +1700,6 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t **argv, t
         return -1;
     }
 
-    // trace
     tb_trace_d("main: %s", path);
 
     // load and execute the main script
@@ -1741,7 +1721,6 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t **argv, t
     return (tb_int_t)lua_tonumber(engine->lua, -1);
 }
 tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const *module, luaL_Reg const funcs[]) {
-    // check
     xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return(engine && engine->lua && module && funcs);
 
@@ -1753,7 +1732,6 @@ tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const *module, luaL
 }
 #ifdef XM_EMBED_ENABLE
 tb_void_t xm_engine_add_embedfiles(xm_engine_ref_t self, tb_byte_t const *data, tb_size_t size) {
-    // check
     xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return(engine && engine->embedcount < tb_arrayn(engine->embedsize) && data && size);
 
@@ -1763,14 +1741,12 @@ tb_void_t xm_engine_add_embedfiles(xm_engine_ref_t self, tb_byte_t const *data, 
 }
 #endif
 lua_State *xm_engine_lua(xm_engine_ref_t self) {
-    // check
     xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return_val(engine, tb_null);
 
     return engine->lua;
 }
 tb_poller_ref_t xm_engine_poller(xm_engine_ref_t self) {
-    // check
     xm_engine_t *engine = (xm_engine_t *)self;
     tb_assert_and_check_return_val(engine, tb_null);
 

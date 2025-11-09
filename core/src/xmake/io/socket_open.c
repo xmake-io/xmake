@@ -38,7 +38,6 @@
  * io.socket_open(socktype, family)
  */
 tb_int_t xm_io_socket_open(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get socket type

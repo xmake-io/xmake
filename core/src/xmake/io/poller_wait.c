@@ -38,7 +38,6 @@ static tb_void_t xm_io_poller_event(tb_poller_ref_t        poller,
                                     tb_poller_object_ref_t object,
                                     tb_long_t              events,
                                     tb_cpointer_t          priv) {
-    // check
     xm_poller_state_t *state = (xm_poller_state_t *)tb_poller_priv(poller);
     tb_assert_and_check_return(state && state->lua);
 
@@ -76,7 +75,6 @@ static tb_void_t xm_io_poller_event(tb_poller_ref_t        poller,
 
 // local events, count = io.poller_wait(timeout)
 tb_int_t xm_io_poller_wait(lua_State *lua) {
-    // check
     tb_poller_ref_t poller = xm_io_poller(lua);
     tb_assert_and_check_return_val(poller && lua, 0);
 
@@ -101,7 +99,6 @@ tb_int_t xm_io_poller_wait(lua_State *lua) {
         return 2;
     }
 
-    // failed
     lua_pop(lua, 1);
     lua_pushnil(lua);
     lua_pushinteger(lua, -1);

@@ -34,7 +34,6 @@
  * implementation
  */
 tb_int_t xm_string_startswith(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the string and prefix
@@ -46,6 +45,5 @@ tb_int_t xm_string_startswith(lua_State *lua) {
     // string:startswith(prefix)?
     lua_pushboolean(lua, !tb_strncmp(string, prefix, (tb_size_t)prefix_size));
 
-    // ok
     return 1;
 }

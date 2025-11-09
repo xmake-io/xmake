@@ -43,7 +43,6 @@
 
 // get console window size
 tb_int_t xm_os_getwinsize(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // init default window size (we will not consider winsize limit if cannot get it)
@@ -80,6 +79,5 @@ tb_int_t xm_os_getwinsize(lua_State *lua) {
     lua_pushinteger(lua, h);
     lua_settable(lua, -3);
 
-    // ok
     return 1;
 }

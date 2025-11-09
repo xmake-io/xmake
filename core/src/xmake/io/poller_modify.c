@@ -37,7 +37,6 @@
 
 // io.poller_modify(obj:otype(), obj:cdata(), events)
 tb_int_t xm_io_poller_modify(lua_State *lua) {
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
