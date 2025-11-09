@@ -1,10 +1,8 @@
 #ifndef QT_DEMO_H
 #define QT_DEMO_H
 
-class QtDemo
-{
-
-public:
+class QtDemo {
+  public:
     QtDemo();
 };
 

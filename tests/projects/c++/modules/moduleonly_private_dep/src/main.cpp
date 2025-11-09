@@ -1,5 +1,5 @@
 import B;
 
 int main() {
-  return func();
+    return func();
 }

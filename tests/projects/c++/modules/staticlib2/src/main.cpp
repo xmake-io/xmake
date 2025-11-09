@@ -5,4 +5,3 @@ int main() {
     printf("%d\n", foo::hello());
     return 0;
 }
-

@@ -1,4 +1,4 @@
 class foo {
-public:
+  public:
     static int add(int a, int b);
 };

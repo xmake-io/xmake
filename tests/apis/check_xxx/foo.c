@@ -1,6 +1,5 @@
 #include "config.h"
 
-int foo()
-{
+int foo() {
     return 0;
 }

@@ -1,5 +1,4 @@
 #include "demo.h"
 
-QtDemo::QtDemo()
-{
+QtDemo::QtDemo() {
 }

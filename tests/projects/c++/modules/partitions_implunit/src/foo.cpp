@@ -3,4 +3,6 @@ module Foo;
 
 // Impl is implictly imported here
 
-void foo() { bar(); }
+void foo() {
+    bar();
+}

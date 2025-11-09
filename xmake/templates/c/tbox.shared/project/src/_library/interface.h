@@ -11,7 +11,8 @@
  */
 __tb_extern_c_enter__
 
-__tb_export__ tb_int_t add(tb_int_t a, tb_int_t b);
+    __tb_export__ tb_int_t
+    add(tb_int_t a, tb_int_t b);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

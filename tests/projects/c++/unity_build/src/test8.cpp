@@ -2,7 +2,6 @@
 // main.cpp
 #include "header.h"
 
-int test8()
-{
+int test8() {
     return 0;
 }

@@ -1,1 +1,3 @@
-inline int foo() { return 5; }
+inline int foo() {
+    return 5;
+}
