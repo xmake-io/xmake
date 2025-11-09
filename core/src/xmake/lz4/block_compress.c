@@ -39,10 +39,12 @@ tb_int_t xm_lz4_block_compress(lua_State *lua) {
     // get data and size
     tb_int_t         size = 0;
     tb_byte_t const *data = tb_null;
-    if (xm_lua_isinteger(lua, 1))
+    if (xm_lua_isinteger(lua, 1)) {
         data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 1);
-    if (xm_lua_isinteger(lua, 2))
+    }
+    if (xm_lua_isinteger(lua, 2)) {
         size = (tb_int_t)lua_tointeger(lua, 2);
+    }
     if (!data || !size || size > LZ4_MAX_INPUT_SIZE) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
@@ -73,7 +75,8 @@ tb_int_t xm_lz4_block_compress(lua_State *lua) {
         output_data = tb_null;
     }
 
-    if (!ok)
+    if (!ok) {
         lua_pushnil(lua);
+    }
     return 1;
 }

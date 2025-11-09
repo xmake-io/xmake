@@ -63,12 +63,14 @@ static tb_void_t xm_os_getenvs_trim(tb_char_t const **sstr, tb_char_t const **es
     tb_char_t const *e = *estr;
 
     // trim left
-    while (p < e && tb_isspace(*p))
+    while (p < e && tb_isspace(*p)) {
         p++;
+    }
 
     // trim right
-    while (e > p && tb_isspace(*(e - 1)))
+    while (e > p && tb_isspace(*(e - 1))) {
         e--;
+    }
 
     // save trimmed string
     *sstr = p;
@@ -93,8 +95,9 @@ static tb_void_t xm_os_getenvs_process_line(lua_State *lua, tb_char_t const *lin
 
     // trim key
     xm_os_getenvs_trim(&key_start, &key_end);
-    if (key_start >= key_end)
+    if (key_start >= key_end) {
         return;
+    }
 
     // trim value
     xm_os_getenvs_trim(&value_start, &value_end);
@@ -137,8 +140,9 @@ tb_int_t xm_os_getenvs(lua_State *lua) {
         while (*p) {
             n = tb_wcslen(p);
             if (n + 1 < tb_arrayn(line)) {
-                if (tb_wtoa(line, p, tb_arrayn(line)) >= 0)
+                if (tb_wtoa(line, p, tb_arrayn(line)) >= 0) {
                     xm_os_getenvs_process_line(lua, line);
+                }
             } else {
                 if (!data) {
                     maxn = n + 1;
@@ -149,13 +153,15 @@ tb_int_t xm_os_getenvs(lua_State *lua) {
                 }
                 tb_assert_and_check_break(data);
 
-                if (tb_wtoa(data, p, maxn) >= 0)
+                if (tb_wtoa(data, p, maxn) >= 0) {
                     xm_os_getenvs_process_line(lua, data);
+                }
             }
             p += n + 1;
         }
-        if (data && data != line)
+        if (data && data != line) {
             tb_free(data);
+        }
         data = tb_null;
     }
 #else

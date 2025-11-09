@@ -93,8 +93,9 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
             }
             usagerate += total > 0 ? ((tb_float_t)use / (tb_float_t)total) : 0;
         }
-        if (s_cpuinfo_prev)
+        if (s_cpuinfo_prev) {
             vm_deallocate(mach_task_self(), (vm_address_t)s_cpuinfo_prev, sizeof(integer_t) * s_cpuinfo_count_prev);
+        }
         s_time               = tb_mclock();
         s_cpuinfo_prev       = cpuinfo;
         s_cpuinfo_count_prev = cpuinfo_count;
@@ -119,8 +120,9 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
             tb_uint64_t kernel_total = kernel_diff - idle_diff;
 
             // sometimes kernel_time > idle_time
-            if (sys_total > 0)
+            if (sys_total > 0) {
                 usagerate = (tb_float_t)((tb_double_t)(kernel_total + user_diff) / sys_total);
+            }
         }
 
         idle_prev   = idle;
@@ -175,8 +177,9 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
                         if (total_prev > 0 && active_prev > 0) {
                             tb_int64_t total_diff  = total - total_prev;
                             tb_int64_t active_diff = active - active_prev;
-                            if (total_diff > 0)
+                            if (total_diff > 0) {
                                 usagerate = (tb_float_t)((tb_double_t)active_diff / total_diff);
+                            }
                         }
                         total_prev  = total;
                         active_prev = active;
@@ -214,8 +217,9 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
         if (total_prev > 0 && active_prev > 0) {
             tb_int64_t total_diff  = total - total_prev;
             tb_int64_t active_diff = active - active_prev;
-            if (total_diff > 0)
+            if (total_diff > 0) {
                 usagerate = (tb_float_t)((tb_double_t)active_diff / total_diff);
+            }
         }
         total_prev  = total;
         active_prev = active;

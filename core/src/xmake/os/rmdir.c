@@ -57,8 +57,9 @@ static tb_long_t xm_os_rmdir_remove(tb_char_t const *path, tb_file_info_t const 
         tb_trace_d("path: %s, emptydir: %u", path, is_emptydir);
 
         // remove empty directory
-        if (is_emptydir)
+        if (is_emptydir) {
             tb_directory_remove(path);
+        }
     }
     return TB_DIRECTORY_WALK_CODE_CONTINUE;
 }
@@ -82,8 +83,9 @@ tb_int_t xm_os_rmdir(lua_State *lua) {
         // remove empty root directory
         tb_bool_t is_emptydir = tb_true;
         tb_directory_walk(path, tb_false, tb_true, xm_os_rmdir_empty, &is_emptydir);
-        if (is_emptydir)
+        if (is_emptydir) {
             tb_directory_remove(path);
+        }
 
         tb_trace_d("path: %s, emptydir: %u", path, is_emptydir);
 

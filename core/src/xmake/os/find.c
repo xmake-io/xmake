@@ -46,8 +46,9 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
     tb_assert_and_check_return_val(pattern, TB_DIRECTORY_WALK_CODE_END);
 
     // remove ./ for path
-    if (path[0] == '.' && (path[1] == '/' || path[1] == '\\'))
+    if (path[0] == '.' && (path[1] == '/' || path[1] == '\\')) {
         path = path + 2;
+    }
 
     // the match mode
     tb_long_t mode = tuple[2].l;
@@ -60,8 +61,9 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
     // we can ignore it directly if this path is file, but we need directory
     tb_size_t needtype = (mode == 1) ? TB_FILE_TYPE_DIRECTORY
                                      : ((mode == 0) ? TB_FILE_TYPE_FILE : (TB_FILE_TYPE_FILE | TB_FILE_TYPE_DIRECTORY));
-    if (info->type == TB_FILE_TYPE_FILE && needtype == TB_FILE_TYPE_DIRECTORY)
+    if (info->type == TB_FILE_TYPE_FILE && needtype == TB_FILE_TYPE_DIRECTORY) {
         return TB_DIRECTORY_WALK_CODE_CONTINUE;
+    }
 
     // do path:match(pattern)
     lua_getfield(lua, -1, "match");
@@ -88,8 +90,9 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
             tb_assert(rootlen + 1 <= tb_strlen(path));
 
             // skip the rootdir if not "."
-            if (tb_strcmp(rootdir, "."))
+            if (tb_strcmp(rootdir, ".")) {
                 path += rootlen + 1;
+            }
 
             // exclude paths
             tb_int_t i     = 0;
@@ -140,18 +143,21 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
                     // is continue?
                     tb_bool_t is_continue = lua_toboolean(lua, -1);
                     lua_pop(lua, 1);
-                    if (!is_continue)
+                    if (!is_continue) {
                         return TB_DIRECTORY_WALK_CODE_END;
+                    }
                 }
                 matched = tb_true;
             }
         }
         // we do not recurse sub-directories if this path has been excluded and it's directory
-        else
+        else {
             skip_recursion = tb_true;
+        }
     }
-    if (!matched)
+    if (!matched) {
         lua_pop(lua, 1);
+    }
     return skip_recursion ? TB_DIRECTORY_WALK_CODE_SKIP_RECURSION : TB_DIRECTORY_WALK_CODE_CONTINUE;
 }
 /* //////////////////////////////////////////////////////////////////////////////////////

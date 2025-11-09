@@ -38,9 +38,10 @@ tb_int_t xm_fwatcher_open(lua_State *lua) {
 
     // init fwatcher
     tb_fwatcher_ref_t fwatcher = (tb_fwatcher_ref_t)tb_fwatcher_init();
-    if (fwatcher)
+    if (fwatcher) {
         xm_lua_pushpointer(lua, (tb_pointer_t)fwatcher);
-    else
+    } else {
         lua_pushnil(lua);
+    }
     return 1;
 }

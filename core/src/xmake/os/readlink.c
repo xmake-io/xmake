@@ -57,15 +57,17 @@ tb_int_t xm_os_readlink(lua_State *lua) {
             if (size > 0 && size < maxn) {
                 data[size] = '\0';
                 lua_pushstring(lua, data);
-            } else
+            } else {
                 lua_pushnil(lua);
+            }
             tb_free(data);
         }
     } else if (size >= 0 && size < TB_PATH_MAXN) {
         srcpath[size] = '\0';
         lua_pushstring(lua, srcpath);
-    } else
+    } else {
         lua_pushnil(lua);
+    }
 #endif
 
     return 1;

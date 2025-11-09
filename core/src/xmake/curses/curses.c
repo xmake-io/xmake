@@ -105,10 +105,12 @@ static int g_mapkey = 0;
  * private implementation
  */
 static chtype xm_curses_checkch(lua_State *lua, int index) {
-    if (lua_type(lua, index) == LUA_TNUMBER)
+    if (lua_type(lua, index) == LUA_TNUMBER) {
         return (chtype)luaL_checknumber(lua, index);
-    if (lua_type(lua, index) == LUA_TSTRING)
+    }
+    if (lua_type(lua, index) == LUA_TSTRING) {
         return *lua_tostring(lua, index);
+    }
 #ifdef USE_LUAJIT
     luaL_typerror(lua, index, "chtype");
 #endif
@@ -685,26 +687,29 @@ static int xm_curses_napms(lua_State *lua) {
 }
 
 static int xm_curses_cbreak(lua_State *lua) {
-    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1))
+    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1)) {
         lua_pushboolean(lua, XM_CURSES_OK(cbreak()));
-    else
+    } else {
         lua_pushboolean(lua, XM_CURSES_OK(nocbreak()));
+    }
     return 1;
 }
 
 static int xm_curses_echo(lua_State *lua) {
-    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1))
+    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1)) {
         lua_pushboolean(lua, XM_CURSES_OK(echo()));
-    else
+    } else {
         lua_pushboolean(lua, XM_CURSES_OK(noecho()));
+    }
     return 1;
 }
 
 static int xm_curses_nl(lua_State *lua) {
-    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1))
+    if (lua_isnoneornil(lua, 1) || lua_toboolean(lua, 1)) {
         lua_pushboolean(lua, XM_CURSES_OK(nl()));
-    else
+    } else {
         lua_pushboolean(lua, XM_CURSES_OK(nonl()));
+    }
     return 1;
 }
 

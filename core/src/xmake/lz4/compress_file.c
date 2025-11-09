@@ -70,13 +70,15 @@ tb_int_t xm_lz4_compress_file(lua_State *lua) {
                     }
                 }
                 tb_assert_and_check_break(oreal >= 0);
-            } else
+            } else {
                 break;
+            }
             write_ok = tb_true;
         }
 
-        if (tb_stream_beof(istream) && write_ok)
+        if (tb_stream_beof(istream) && write_ok) {
             ok = tb_true;
+        }
     }
 
     // exit stream

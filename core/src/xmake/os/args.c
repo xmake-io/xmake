@@ -43,29 +43,33 @@ static tb_void_t tb_os_args_append(
     tb_bool_t        wrap_quote = tb_false;
     if (!nowrap) {
         while ((ch = *p)) {
-            if (ch == ' ')
+            if (ch == ' ') {
                 wrap_quote = tb_true;
+            }
             p++;
         }
     }
 
     // wrap begin quote
-    if (wrap_quote)
+    if (wrap_quote) {
         tb_string_chrcat(result, '\"');
+    }
 
     // escape characters
     p = cstr;
     while ((ch = *p)) {
         // escape '"' or '\\'
-        if (ch == '\"' || ((escape || wrap_quote) && ch == '\\'))
+        if (ch == '\"' || ((escape || wrap_quote) && ch == '\\')) {
             tb_string_chrcat(result, '\\');
+        }
         tb_string_chrcat(result, ch);
         p++;
     }
 
     // wrap end quote
-    if (wrap_quote)
+    if (wrap_quote) {
         tb_string_chrcat(result, '\"');
+    }
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -105,42 +109,46 @@ tb_int_t xm_os_args(lua_State *lua) {
         tb_size_t n = (tb_size_t)lua_objlen(lua, 1);
         for (i = 1; i <= n; i++) {
             // add space
-            if (i != 1)
+            if (i != 1) {
                 tb_string_chrcat(&result, ' ');
+            }
 
             // add argument
             lua_pushnumber(lua, (tb_int_t)i);
             lua_rawget(lua, 1);
-            if (lua_istable(lua, -1)) // is path instance?
-            {
+            if (lua_istable(lua, -1)) { // is path instance?
                 lua_pushstring(lua, "_STR");
                 lua_gettable(lua, -2);
                 size_t           size = 0;
                 tb_char_t const *cstr = luaL_checklstring(lua, -1, &size);
-                if (cstr && size)
+                if (cstr && size) {
                     tb_os_args_append(&result, cstr, size, escape, nowrap);
+                }
                 lua_pop(lua, 1);
             } else {
                 size_t           size = 0;
                 tb_char_t const *cstr = luaL_checklstring(lua, -1, &size);
-                if (cstr && size)
+                if (cstr && size) {
                     tb_os_args_append(&result, cstr, size, escape, nowrap);
+                }
             }
             lua_pop(lua, 1);
         }
     } else {
         size_t           size = 0;
         tb_char_t const *cstr = luaL_checklstring(lua, 1, &size);
-        if (cstr && size)
+        if (cstr && size) {
             tb_os_args_append(&result, cstr, size, escape, nowrap);
+        }
     }
 
     // return result
     tb_size_t size = tb_string_size(&result);
-    if (size)
+    if (size) {
         lua_pushlstring(lua, tb_string_cstr(&result), size);
-    else
+    } else {
         lua_pushliteral(lua, "");
+    }
     tb_string_exit(&result);
     return 1;
 }

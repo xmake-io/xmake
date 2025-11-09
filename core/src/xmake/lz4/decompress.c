@@ -39,10 +39,12 @@ tb_int_t xm_lz4_decompress(lua_State *lua) {
     // get data and size
     tb_size_t        size = 0;
     tb_byte_t const *data = tb_null;
-    if (xm_lua_isinteger(lua, 1))
+    if (xm_lua_isinteger(lua, 1)) {
         data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 1);
-    if (xm_lua_isinteger(lua, 2))
+    }
+    if (xm_lua_isinteger(lua, 2)) {
         size = (tb_size_t)lua_tointeger(lua, 2);
+    }
     if (!data || !size) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
@@ -59,8 +61,9 @@ tb_int_t xm_lz4_decompress(lua_State *lua) {
         tb_buffer_init(&result);
 
         code = LZ4F_createDecompressionContext(&ctx, LZ4F_VERSION);
-        if (LZ4F_isError(code))
+        if (LZ4F_isError(code)) {
             break;
+        }
 
         tb_byte_t buffer[8192];
         tb_bool_t failed = tb_false;
@@ -73,8 +76,9 @@ tb_int_t xm_lz4_decompress(lua_State *lua) {
                 break;
             }
 
-            if (buffer_size == 0)
+            if (buffer_size == 0) {
                 break;
+            }
             data += advance;
             size -= advance;
 

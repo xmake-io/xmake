@@ -78,8 +78,9 @@ static tb_void_t xm_os_signal_handler_impl(tb_int_t signo) {
 
 #if defined(TB_CONFIG_OS_WINDOWS)
 static BOOL WINAPI xm_os_signal_handler(DWORD ctrl_type) {
-    if (ctrl_type == CTRL_C_EVENT)
+    if (ctrl_type == CTRL_C_EVENT) {
         xm_os_signal_handler_impl(XM_OS_SIGINT);
+    }
     return TRUE;
 }
 #elif defined(SIGINT)
@@ -92,8 +93,9 @@ static tb_void_t xm_os_signal_handler(tb_int_t signo_native) {
     default:
         break;
     }
-    if (signo >= 0)
+    if (signo >= 0) {
         xm_os_signal_handler_impl(signo);
+    }
 }
 #endif
 
@@ -106,10 +108,11 @@ tb_int_t xm_os_signal(lua_State *lua) {
     tb_int_t handler = XM_OS_SIGFUN;
 
     // check signal handler
-    if (lua_isnumber(lua, 2))
+    if (lua_isnumber(lua, 2)) {
         handler = (tb_int_t)luaL_checkinteger(lua, 2);
-    else if (!lua_isfunction(lua, 2))
+    } else if (!lua_isfunction(lua, 2)) {
         return 0;
+    }
 
     // save signal handler
     tb_int_t signo = (tb_int_t)luaL_checkinteger(lua, 1);
@@ -121,8 +124,9 @@ tb_int_t xm_os_signal(lua_State *lua) {
     }
 
 #if defined(TB_CONFIG_OS_WINDOWS)
-    if (signo != XM_OS_SIGINT)
+    if (signo != XM_OS_SIGINT) {
         return 0;
+    }
 
     switch (handler) {
     case XM_OS_SIGFUN:

@@ -50,8 +50,9 @@ tb_int_t xm_os_getown(lua_State *lua) {
 
     // get stat
     struct stat sts;
-    if (stat(pathname, &sts) != 0)
+    if (stat(pathname, &sts) != 0) {
         return 0;
+    }
 
     // push
     lua_newtable(lua);

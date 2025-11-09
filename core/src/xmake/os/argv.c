@@ -56,8 +56,9 @@ tb_int_t xm_os_argv(lua_State *lua) {
         lua_newtable(lua);
 
         // init arg
-        if (!tb_string_init(&arg))
+        if (!tb_string_init(&arg)) {
             break;
+        }
 
         // parse command to the arguments
         tb_int_t         i      = 1;
@@ -73,19 +74,13 @@ tb_int_t xm_os_argv(lua_State *lua) {
                 if (!quote && (ch == '\"' || ch == '\'')) {
                     quote = ch;
                     skip  = 1;
-                }
-                // leave quote?
-                else if (ch == quote) {
+                } else if (ch == quote) { // leave quote?
                     quote = 0;
                     skip  = 1;
-                }
-                // escape charactor? only escape \\, \"
-                else if (ch == '\\' && (p[1] == '\\' || p[1] == '\"')) {
+                } else if (ch == '\\' && (p[1] == '\\' || p[1] == '\"')) { // escape character? only escape \\ and \"
                     escape = 1;
                     skip   = 1;
-                }
-                // is argument end with ' '?
-                else if (!quote && tb_isspace(ch)) {
+                } else if (!quote && tb_isspace(ch)) { // is argument end with ' '?
                     // save this argument
                     tb_string_ltrim(&arg);
                     if (tb_string_size(&arg)) {
@@ -100,14 +95,16 @@ tb_int_t xm_os_argv(lua_State *lua) {
             }
 
             // save this charactor to argument
-            if (splitonly || !skip)
+            if (splitonly || !skip) {
                 tb_string_chrcat(&arg, ch);
+            }
 
             // step and cancel escape
-            if (escape == 1)
+            if (escape == 1) {
                 escape++;
-            else if (escape == 2)
+            } else if (escape == 2) {
                 escape = 0;
+            }
 
             // clear skip
             skip = 0;

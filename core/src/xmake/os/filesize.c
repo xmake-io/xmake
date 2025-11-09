@@ -42,9 +42,10 @@ tb_int_t xm_os_filesize(lua_State *lua) {
 
     // os.filesize(path)
     tb_file_info_t info = { 0 };
-    if (tb_file_info(path, &info) && (info.type == TB_FILE_TYPE_FILE))
+    if (tb_file_info(path, &info) && (info.type == TB_FILE_TYPE_FILE)) {
         lua_pushinteger(lua, (lua_Integer)info.size);
-    else
+    } else {
         lua_pushinteger(lua, 0);
+    }
     return 1;
 }

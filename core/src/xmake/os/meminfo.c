@@ -103,8 +103,9 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t *ptotalsize, tb_int_t *pavailsize)
                     tb_int64_t freesize   = xm_os_meminfo_get_value(buffer, "MemFree:");
                     tb_int64_t buffersize = xm_os_meminfo_get_value(buffer, "Buffers:");
                     tb_int64_t shmemsize  = xm_os_meminfo_get_value(buffer, "Shmem:");
-                    if (cachesize >= 0 && freesize >= 0 && buffersize >= 0 && shmemsize >= 0)
+                    if (cachesize >= 0 && freesize >= 0 && buffersize >= 0 && shmemsize >= 0) {
                         availsize = freesize + buffersize + cachesize - shmemsize;
+                    }
                 }
                 if (totalsize > 0 && availsize >= 0) {
                     *ptotalsize = (tb_int_t)(totalsize / 1024);
@@ -134,19 +135,22 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t *ptotalsize, tb_int_t *pavailsize)
 #elif defined(TB_CONFIG_OS_BSD) && !defined(__OpenBSD__)
     unsigned long totalsize;
     size_t        size = sizeof(totalsize);
-    if (sysctlbyname("hw.physmem", &totalsize, &size, tb_null, 0) != 0)
+    if (sysctlbyname("hw.physmem", &totalsize, &size, tb_null, 0) != 0) {
         return tb_false;
+    }
 
     // http://web.mit.edu/freebsd/head/usr.bin/systat/vmstat.c
     tb_uint32_t v_free_count;
     size = sizeof(v_free_count);
-    if (sysctlbyname("vm.stats.vm.v_free_count", &v_free_count, &size, tb_null, 0) != 0)
+    if (sysctlbyname("vm.stats.vm.v_free_count", &v_free_count, &size, tb_null, 0) != 0) {
         return tb_false;
+    }
 
     tb_uint32_t v_inactive_count;
     size = sizeof(v_inactive_count);
-    if (sysctlbyname("vm.stats.vm.v_inactive_count", &v_inactive_count, &size, tb_null, 0) != 0)
+    if (sysctlbyname("vm.stats.vm.v_inactive_count", &v_inactive_count, &size, tb_null, 0) != 0) {
         return tb_false;
+    }
 
     *ptotalsize = (tb_int_t)(totalsize / (1024 * 1024));
     *pavailsize = (tb_int_t)(((tb_int64_t)(v_free_count + v_inactive_count) * tb_page_size()) / (1024 * 1024));

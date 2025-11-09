@@ -38,9 +38,10 @@ tb_int_t xm_os_curdir(lua_State *lua) {
 
     // os.curdir()
     tb_char_t path[TB_PATH_MAXN];
-    if (tb_directory_current(path, sizeof(path)))
+    if (tb_directory_current(path, sizeof(path))) {
         lua_pushstring(lua, path);
-    else
+    } else {
         lua_pushnil(lua);
+    }
     return 1;
 }

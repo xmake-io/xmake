@@ -37,8 +37,9 @@ tb_int_t xm_lz4_compress_stream_close(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
-    if (!xm_lua_ispointer(lua, 1))
+    if (!xm_lua_ispointer(lua, 1)) {
         return 0;
+    }
 
     // get the stream
     xm_lz4_cstream_t *stream = (xm_lz4_cstream_t *)xm_lua_topointer(lua, 1);
