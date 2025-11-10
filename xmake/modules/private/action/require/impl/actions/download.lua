@@ -50,6 +50,8 @@ end
 function _checkout(package, url, sourcedir, opt)
     opt = opt or {}
     local filename = opt.url_filename or url_filename(url)
+    local sparse_includes = opt.url_includes
+    local clone_submodules = opt.url_submodules ~= false
 
     -- we need to enable longpaths on windows
     local longpaths = package:policy("platform.longpaths")
@@ -108,8 +110,7 @@ function _checkout(package, url, sourcedir, opt)
             branch = nil
         end
 
-        -- only shallow clone this branch 
-        local clone_submodules = opt.url_submodules ~= false
+        -- only shallow clone this branch
         git.clone(url, {depth = 1, recursive = clone_submodules, shallow_submodules = clone_submodules, longpaths = longpaths, branch = branch, outputdir = packagedir})
 
     -- download package from revision or tag?
@@ -130,8 +131,7 @@ function _checkout(package, url, sourcedir, opt)
 
         -- only shallow clone this tag
         -- @see https://github.com/xmake-io/xmake/issues/4151
-        if tag and git.clone.can_clone_tag() then
-            local clone_submodules = opt.url_submodules ~= false
+        if tag and git.support.can_clone_tag() and not sparse_includes then
             git.clone(url, {depth = 1, recursive = clone_submodules, shallow_submodules = clone_submodules, longpaths = longpaths, branch = tag, outputdir = packagedir})
         else
 
@@ -140,10 +140,10 @@ function _checkout(package, url, sourcedir, opt)
             git.clone(url, {treeless = true, checkout = false, longpaths = longpaths, outputdir = packagedir})
 
             -- attempt to checkout the given version
-            git.checkout(revision, {repodir = packagedir, includes = opt.url_includes})
+            git.checkout(revision, {repodir = packagedir, includes = sparse_includes})
 
             -- update all submodules
-            if os.isfile(path.join(packagedir, ".gitmodules")) and opt.url_submodules ~= false then
+            if os.isfile(path.join(packagedir, ".gitmodules")) and clone_submodules then
                 git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = packagedir})
             end
         end
