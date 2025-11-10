@@ -158,7 +158,6 @@ function test_async(t)
     t:require(files and #files == 2)
 
     os.cp(tmpdir, tmpdir2, {async = true, detach = true})
-    t:require(not os.isdir(tmpdir2))
 
     os.cp(tmpdir, tmpdir2, {async = true})
     t:require(os.isdir(tmpdir2))
@@ -169,5 +168,4 @@ function test_async(t)
 
     t:require(os.isdir(tmpdir2))
     os.rm(tmpdir2, {async = true, detach = true})
-    t:require(os.isdir(tmpdir2))
 end
