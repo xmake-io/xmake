@@ -232,7 +232,6 @@ function main()
     -- package the given target?
     if targetname then
         local target = assert(check_targetname(targetname))
-        _package_targets(target:orderdeps())
         _package_target(target)
     else
         -- package default or all targets
