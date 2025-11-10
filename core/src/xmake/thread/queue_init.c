@@ -37,8 +37,9 @@ static tb_void_t xm_thread_value_free(tb_element_ref_t element, tb_pointer_t buf
     xm_thread_value_t *item = (xm_thread_value_t *)buff;
     if (item) {
         if (item->kind == XM_THREAD_VALUE_STR) {
-            if (item->u.string)
+            if (item->u.string) {
                 tb_free((tb_pointer_t)item->u.string);
+            }
             item->u.string = tb_null;
         }
         item->size = 0;

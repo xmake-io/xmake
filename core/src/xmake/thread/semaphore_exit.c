@@ -15,7 +15,7 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_semaphore_exit.c
+ * @file        semaphore_exit.c
  *
  */
 

@@ -15,7 +15,7 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_event_wait.c
+ * @file        event_wait.c
  *
  */
 

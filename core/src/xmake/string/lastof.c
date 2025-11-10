@@ -48,17 +48,19 @@ static tb_void_t xm_string_lastof_str(
     } while (!next);
 
     // found?
-    if (curr)
+    if (curr) {
         lua_pushinteger(lua, curr - cstr + 1);
-    else
+    } else {
         lua_pushnil(lua);
+    }
 }
 static tb_void_t xm_string_lastof_chr(lua_State *lua, tb_char_t const *cstr, tb_size_t nstr, tb_char_t ch) {
     tb_char_t const *pos = tb_strrchr(cstr, ch); // faster than tb_strnrchr()
-    if (pos)
+    if (pos) {
         lua_pushinteger(lua, pos - cstr + 1);
-    else
+    } else {
         lua_pushnil(lua);
+    }
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -83,9 +85,10 @@ tb_int_t xm_string_lastof(lua_State *lua) {
 
     // lastof it
     lua_newtable(lua);
-    if (nsubstr == 1)
+    if (nsubstr == 1) {
         xm_string_lastof_chr(lua, cstr, (tb_size_t)nstr, csubstr[0]);
-    else
+    } else {
         xm_string_lastof_str(lua, cstr, (tb_size_t)nstr, csubstr, nsubstr);
+    }
     return 1;
 }

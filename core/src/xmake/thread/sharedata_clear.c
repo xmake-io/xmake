@@ -15,7 +15,7 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_sharedata_clear.c
+ * @file        sharedata_clear.c
  *
  */
 

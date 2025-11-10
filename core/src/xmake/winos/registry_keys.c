@@ -138,20 +138,23 @@ static tb_void_t xm_winos_registry_enum_keys(xm_winos_registry_enum_info_t *info
             }
 
             // enum all subkeys
-            if (recursion > 0 || recursion < 0)
+            if (recursion > 0 || recursion < 0) {
                 xm_winos_registry_enum_keys(info, key_path, recursion > 0 ? recursion - 1 : recursion);
+            }
         }
 
     } while (0);
 
     // exit registry key
-    if (keynew)
+    if (keynew) {
         RegCloseKey(keynew);
+    }
     keynew = tb_null;
 
     // free key path
-    if (key_path)
+    if (key_path) {
         tb_free(key_path);
+    }
     key_path = tb_null;
 }
 
@@ -183,25 +186,25 @@ tb_int_t xm_winos_registry_keys(lua_State *lua) {
     HKEY      key   = tb_null;
     do {
         // get registry rootkey
-        if (!tb_strcmp(rootkey, "HKEY_CLASSES_ROOT"))
+    if (!tb_strcmp(rootkey, "HKEY_CLASSES_ROOT")) {
             key = HKEY_CLASSES_ROOT;
-        else if (!tb_strcmp(rootkey, "HKCR"))
+    } else if (!tb_strcmp(rootkey, "HKCR")) {
             key = HKEY_CLASSES_ROOT;
-        else if (!tb_strcmp(rootkey, "HKEY_CURRENT_CONFIG"))
+    } else if (!tb_strcmp(rootkey, "HKEY_CURRENT_CONFIG")) {
             key = HKEY_CURRENT_CONFIG;
-        else if (!tb_strcmp(rootkey, "HKCC"))
+    } else if (!tb_strcmp(rootkey, "HKCC")) {
             key = HKEY_CURRENT_CONFIG;
-        else if (!tb_strcmp(rootkey, "HKEY_CURRENT_USER"))
+    } else if (!tb_strcmp(rootkey, "HKEY_CURRENT_USER")) {
             key = HKEY_CURRENT_USER;
-        else if (!tb_strcmp(rootkey, "HKCU"))
+    } else if (!tb_strcmp(rootkey, "HKCU")) {
             key = HKEY_CURRENT_USER;
-        else if (!tb_strcmp(rootkey, "HKEY_LOCAL_MACHINE"))
+    } else if (!tb_strcmp(rootkey, "HKEY_LOCAL_MACHINE")) {
             key = HKEY_LOCAL_MACHINE;
-        else if (!tb_strcmp(rootkey, "HKLM"))
+    } else if (!tb_strcmp(rootkey, "HKLM")) {
             key = HKEY_LOCAL_MACHINE;
-        else if (!tb_strcmp(rootkey, "HKEY_USERS"))
+    } else if (!tb_strcmp(rootkey, "HKEY_USERS")) {
             key = HKEY_USERS;
-        else {
+    } else {
             lua_pushnil(lua);
             lua_pushfstring(lua, "invalid registry rootkey: %s", rootkey);
             break;
@@ -233,6 +236,7 @@ tb_int_t xm_winos_registry_keys(lua_State *lua) {
     if (ok) {
         lua_pushinteger(lua, count);
         return 1;
-    } else
+    } else {
         return 2;
+    }
 }

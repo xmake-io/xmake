@@ -76,10 +76,11 @@ static xm_charset_entry_ref_t xm_string_charset_find_by_name(tb_char_t const *na
 
     // find it by the binary search
     tb_size_t itor = tb_binary_find_all_if(iterator, xm_string_charset_comp_by_name, name);
-    if (itor != tb_iterator_tail(iterator))
+    if (itor != tb_iterator_tail(iterator)) {
         return (xm_charset_entry_ref_t)tb_iterator_item(iterator, itor);
-    else
+    } else {
         return tb_null;
+    }
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -115,9 +116,9 @@ tb_int_t xm_string_convert(lua_State *lua) {
     tb_check_return_val(fcharset && tcharset, 0);
 
     // empty string?
-    if (!src_size)
+    if (!src_size) {
         lua_pushstring(lua, "");
-    else {
+    } else {
         // convert string
         tb_long_t  dst_size = 0;
         tb_size_t  dst_maxn = (tb_size_t)src_size << 2;
@@ -131,8 +132,9 @@ tb_int_t xm_string_convert(lua_State *lua) {
                                              dst_maxn)) >= 0 &&
             dst_size < dst_maxn) {
             lua_pushlstring(lua, (tb_char_t const *)dst_data, dst_size);
-        } else
+        } else {
             lua_pushnil(lua);
+        }
         tb_free(dst_data);
     }
 

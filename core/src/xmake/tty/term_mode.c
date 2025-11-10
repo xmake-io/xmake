@@ -65,8 +65,9 @@ tb_int_t xm_tty_term_mode(lua_State *lua) {
     GetConsoleMode(console_handle, &mode);
     if (lua_isnumber(lua, 2)) {
         tb_int_t newmode = (tb_int_t)lua_tointeger(lua, 2);
-        if (console_handle != INVALID_HANDLE_VALUE)
+        if (console_handle != INVALID_HANDLE_VALUE) {
             SetConsoleMode(console_handle, (DWORD)newmode);
+        }
     }
 #else
     tb_int_t mode = 0;

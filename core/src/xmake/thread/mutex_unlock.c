@@ -15,7 +15,7 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_mutex_unlock.c
+ * @file        mutex_unlock.c
  *
  */
 

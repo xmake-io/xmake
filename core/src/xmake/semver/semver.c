@@ -61,10 +61,11 @@ tb_void_t lua_pushsemver(lua_State *lua, semver_t const *semver) {
     tb_uchar_t         i  = 0;
     semver_id_t const *id = &semver->prerelease;
     while (id && id->len) {
-        if (id->numeric)
+        if (id->numeric) {
             lua_pushinteger(lua, id->num);
-        else
+        } else {
             lua_pushlstring(lua, id->raw, id->len);
+        }
         id = id->next;
         lua_rawseti(lua, -2, ++i);
     }
@@ -76,10 +77,11 @@ tb_void_t lua_pushsemver(lua_State *lua, semver_t const *semver) {
     lua_newtable(lua);
     id = &semver->build;
     while (id && id->len) {
-        if (id->numeric)
+        if (id->numeric) {
             lua_pushinteger(lua, id->num);
-        else
+        } else {
             lua_pushlstring(lua, id->raw, id->len);
+        }
         id = id->next;
         lua_rawseti(lua, -2, ++i);
     }

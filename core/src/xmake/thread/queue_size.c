@@ -15,7 +15,7 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_queue_lock.c
+ * @file        queue_size.c
  *
  */
 

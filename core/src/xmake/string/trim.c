@@ -40,15 +40,18 @@ static tb_void_t xm_string_trim_space(tb_char_t const **psstr, tb_char_t const *
     tb_char_t const *e = *pestr;
 
     // trim left?
-    if (mode <= 0)
-        while (p < e && tb_isspace(*p))
+    if (mode <= 0) {
+        while (p < e && tb_isspace(*p)) {
             p++;
+        }
+    }
 
     // trim right
     if (mode >= 0) {
         e--;
-        while (e >= p && tb_isspace(*e))
+        while (e >= p && tb_isspace(*e)) {
             e--;
+        }
         e++;
     }
 
@@ -64,8 +67,9 @@ static tb_char_t const *xm_string_ltrim(tb_char_t const *sstr,
     tb_assert(sstr && estr && ctrim);
 
     tb_char_t const *p = sstr;
-    while (p < estr && tb_strnchr(ctrim, ntrim, *p))
+    while (p < estr && tb_strnchr(ctrim, ntrim, *p)) {
         p++;
+    }
     return p;
 }
 
@@ -76,8 +80,9 @@ static tb_char_t const *xm_string_rtrim(tb_char_t const *sstr,
     tb_assert(sstr && estr && ctrim);
 
     tb_char_t const *p = estr - 1;
-    while (p >= sstr && tb_strnchr(ctrim, ntrim, *p))
+    while (p >= sstr && tb_strnchr(ctrim, ntrim, *p)) {
         p--;
+    }
     return p + 1;
 }
 
@@ -110,14 +115,16 @@ tb_int_t xm_string_trim(lua_State *lua) {
 
         tb_char_t const *const rsstr = sstr;
         tb_char_t const *const restr = estr;
-        if (ltrim == 0)
+        if (ltrim == 0) {
             xm_string_trim_space(&sstr, &estr, trimtype);
-        else {
+        } else {
             // trim chars
-            if (trimtype <= 0)
+            if (trimtype <= 0) {
                 sstr = xm_string_ltrim(sstr, estr, trimchars, ltrim);
-            if (trimtype >= 0)
+            }
+            if (trimtype >= 0) {
                 estr = xm_string_rtrim(sstr, estr, trimchars, ltrim);
+            }
         }
 
         // no trimed chars

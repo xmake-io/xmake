@@ -45,8 +45,9 @@ static tb_void_t xm_string_split_str(lua_State       *lua,
     tb_char_t const *pos = tb_strstr(cstr, cdls); // faster than tb_strnstr()
     while (pos && pos < end) {
         if (pos > cstr || strict) {
-            if (limit > 0 && num + 1 >= limit)
+            if (limit > 0 && num + 1 >= limit) {
                 break;
+            }
 
             lua_pushlstring(lua, cstr, pos - cstr);
             lua_rawseti(lua, -2, ++num);
@@ -70,8 +71,9 @@ static tb_void_t xm_string_split_chr(
     tb_char_t const *pos = tb_strchr(cstr, ch); // faster than tb_strnchr()
     while (pos && pos < end) {
         if (pos > cstr || strict) {
-            if (limit > 0 && num + 1 >= limit)
+            if (limit > 0 && num + 1 >= limit) {
                 break;
+            }
 
             lua_pushlstring(lua, cstr, pos - cstr);
             lua_rawseti(lua, -2, ++num);
@@ -119,9 +121,10 @@ tb_int_t xm_string_split(lua_State *lua) {
 
     // split it
     lua_newtable(lua);
-    if (ndls == 1)
+    if (ndls == 1) {
         xm_string_split_chr(lua, cstr, (tb_size_t)nstr, cdls[0], strict, limit);
-    else
+    } else {
         xm_string_split_str(lua, cstr, (tb_size_t)nstr, cdls, ndls, strict, limit);
+    }
     return 1;
 }

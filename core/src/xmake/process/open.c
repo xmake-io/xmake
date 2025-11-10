@@ -68,8 +68,9 @@ tb_int_t xm_process_open(lua_State *lua) {
         // is detached?
         lua_pushstring(lua, "detach");
         lua_gettable(lua, 2);
-        if (lua_toboolean(lua, -1))
+        if (lua_toboolean(lua, -1)) {
             attr.flags |= TB_PROCESS_FLAG_DETACH;
+        }
         lua_pop(lua, 1);
 
         // get curdir
@@ -161,9 +162,9 @@ tb_int_t xm_process_open(lua_State *lua) {
                 // is string?
                 if (lua_isstring(lua, -1)) {
                     // add this environment value
-                    if (envn + 1 < tb_arrayn(envs))
+                    if (envn + 1 < tb_arrayn(envs)) {
                         envs[envn++] = lua_tostring(lua, -1);
-                    else {
+                    } else {
                         // error
                         lua_pushfstring(lua,
                                         "envs is too large(%d > %d) for process.openv",
@@ -239,14 +240,16 @@ tb_int_t xm_process_open(lua_State *lua) {
     }
 
     // set the new environments
-    if (envn > 0)
+    if (envn > 0) {
         attr.envp = envs;
+    }
 
     // init process
     tb_process_ref_t process = (tb_process_ref_t)tb_process_init_cmd(command, &attr);
-    if (process)
+    if (process) {
         xm_lua_pushpointer(lua, (tb_pointer_t)process);
-    else
+    } else {
         lua_pushnil(lua);
+    }
     return 1;
 }

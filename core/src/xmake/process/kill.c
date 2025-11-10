@@ -39,8 +39,9 @@ tb_int_t xm_process_kill(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
-    if (!xm_lua_ispointer(lua, 1))
+    if (!xm_lua_ispointer(lua, 1)) {
         return 0;
+    }
 
     // get the process
     tb_process_ref_t process = (tb_process_ref_t)xm_lua_topointer(lua, 1);

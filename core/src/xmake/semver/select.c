@@ -47,10 +47,11 @@ static tb_bool_t xm_semver_select_from_versions_tags1(
 
         tb_char_t const *source_str = luaL_checkstring(lua, -1);
         if (source_str && semver_tryn(semver, source_str, tb_strlen(source_str)) == 0) {
-            if (semver_range_pmatch(semver, range))
+            if (semver_range_pmatch(semver, range)) {
                 semvers_ppush(matches, *semver);
-            else
+            } else {
                 semver_dtor(semver);
+            }
         }
         lua_pop(lua, 1);
     }
@@ -138,8 +139,9 @@ static tb_bool_t xm_semver_select_latest_from_versions_tags(lua_State *lua,
         lua_gettable(lua, fromidx);
 
         tb_char_t const *source_str = luaL_checkstring(lua, -1);
-        if (source_str && semver_tryn(semver, source_str, tb_strlen(source_str)) == 0)
+        if (source_str && semver_tryn(semver, source_str, tb_strlen(source_str)) == 0) {
             semvers_ppush(matches, *semver);
+        }
 
         lua_pop(lua, 1);
     }

@@ -117,15 +117,17 @@ tb_int_t xm_process_openv(lua_State *lua) {
         // is detached?
         lua_pushstring(lua, "detach");
         lua_gettable(lua, 3);
-        if (lua_toboolean(lua, -1))
+        if (lua_toboolean(lua, -1)) {
             attr.flags |= TB_PROCESS_FLAG_DETACH;
+        }
         lua_pop(lua, 1);
 
         // is exclusive?
         lua_pushstring(lua, "exclusive");
         lua_gettable(lua, 3);
-        if (lua_toboolean(lua, -1))
+        if (lua_toboolean(lua, -1)) {
             exclusive = tb_true;
+        }
         lua_pop(lua, 1);
 
         // get curdir
@@ -217,9 +219,9 @@ tb_int_t xm_process_openv(lua_State *lua) {
                 // is string?
                 if (lua_isstring(lua, -1)) {
                     // add this environment value
-                    if (envn + 1 < tb_arrayn(envs))
+                    if (envn + 1 < tb_arrayn(envs)) {
                         envs[envn++] = lua_tostring(lua, -1);
-                    else {
+                    } else {
                         // error
                         lua_pushfstring(lua,
                                         "envs is too large(%d > %d) for process.openv",
@@ -295,31 +297,36 @@ tb_int_t xm_process_openv(lua_State *lua) {
     }
 
     // set the new environments
-    if (envn > 0)
+    if (envn > 0) {
         attr.envp = envs;
+    }
 
     /* we need to ignore SIGINT and SIGQUIT if we enter exclusive mode
      * @see https://github.com/xmake-io/xmake/discussions/2893
      */
 #if defined(SIGINT)
-    if (exclusive)
+    if (exclusive) {
         signal(SIGINT, SIG_IGN);
+    }
 #endif
 #if defined(SIGQUIT)
-    if (exclusive)
+    if (exclusive) {
         signal(SIGQUIT, SIG_IGN);
+    }
 #endif
 
     // init process
     tb_process_ref_t process = (tb_process_ref_t)tb_process_init(shellname, argv, &attr);
-    if (process)
+    if (process) {
         xm_lua_pushpointer(lua, (tb_pointer_t)process);
-    else
+    } else {
         lua_pushnil(lua);
+    }
 
     // exit argv
-    if (argv)
+    if (argv) {
         tb_free(argv);
+    }
     argv = tb_null;
 
     return 1;

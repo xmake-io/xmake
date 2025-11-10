@@ -15,7 +15,7 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_semaphore_lock.c
+ * @file        semaphore_post.c
  *
  */
 

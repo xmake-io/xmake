@@ -74,8 +74,9 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
             if (first) {
                 first            = tb_false;
                 line[linesize++] = ' ';
-            } else
+            } else {
                 line[linesize++] = ',';
+            }
             linesize += xm_utils_bin2c_hex2str(line + linesize, data[i]);
 
             for (i = 1; i < need; i++) {

@@ -38,10 +38,12 @@
 static tb_int_t xm_expand_cp(tb_int_t cp) {
     tb_assert_and_check_return_val(cp >= 0 && cp <= 65535, 0);
 
-    if (cp == CP_OEMCP)
+    if (cp == CP_OEMCP) {
         return GetOEMCP();
-    if (cp == CP_ACP)
+    }
+    if (cp == CP_ACP) {
         return GetACP();
+    }
     return cp;
 }
 

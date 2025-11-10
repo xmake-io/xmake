@@ -15,7 +15,7 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        thread_queue_pop.c
+ * @file        queue_pop.c
  *
  */
 
@@ -51,10 +51,11 @@ tb_int_t xm_thread_queue_pop(lua_State *lua) {
     tb_bool_t ok = tb_false;
     switch (item->kind) {
     case XM_THREAD_VALUE_STR:
-        if (item->size)
+        if (item->size) {
             lua_pushlstring(lua, item->u.string, item->size);
-        else
+        } else {
             lua_pushliteral(lua, "");
+        }
         ok = tb_true;
         break;
     case XM_THREAD_VALUE_INT:

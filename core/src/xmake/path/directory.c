@@ -43,9 +43,10 @@ tb_int_t xm_path_directory(lua_State *lua) {
     // do path:directory()
     tb_char_t        data[TB_PATH_MAXN];
     tb_char_t const *dir = tb_path_directory(path, data, sizeof(data));
-    if (dir)
+    if (dir) {
         lua_pushstring(lua, dir);
-    else
+    } else {
         lua_pushnil(lua);
+    }
     return 1;
 }

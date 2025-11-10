@@ -65,8 +65,9 @@ static tb_void_t xm_sandbox_report(lua_State *lua) {
     if (!lua_isnil(lua, -1)) {
         // get message
         tb_char_t const *msg = lua_tostring(lua, -1);
-        if (!msg)
+        if (!msg) {
             msg = "(error object is not a string)";
+        }
 
         // print it
         tb_printl(msg);
@@ -81,8 +82,9 @@ static tb_void_t xm_sandbox_report(lua_State *lua) {
 static tb_int_t xm_sandbox_traceback(lua_State *lua) {
     if (!lua_isstring(lua, 1)) {
         // non-string error object? try metamethod.
-        if (lua_isnoneornil(lua, 1) || !luaL_callmeta(lua, 1, "__tostring") || !lua_isstring(lua, -1))
+        if (lua_isnoneornil(lua, 1) || !luaL_callmeta(lua, 1, "__tostring") || !lua_isstring(lua, -1)) {
             return 1; // return non-string error object.
+        }
 
         // replace object by result of __tostring metamethod.
         lua_remove(lua, 1);
@@ -118,8 +120,9 @@ static tb_int_t xm_sandbox_docall(lua_State *lua, tb_int_t narg, tb_int_t clear)
     lua_remove(lua, errfunc);
 
     // force a complete garbage collection in case of errors
-    if (status != 0)
+    if (status != 0) {
         lua_gc(lua, LUA_GCCOLLECT, 0);
+    }
 
     return status;
 }
@@ -154,8 +157,9 @@ static tb_size_t xm_sandbox_readline(tb_char_t *data, tb_size_t maxn, tb_char_t 
         free((void *)line);
 
         // truncated?
-        if (size >= maxn)
+        if (size >= maxn) {
             return 0;
+        }
 
         return size;
     }
@@ -166,8 +170,9 @@ static tb_size_t xm_sandbox_readline(tb_char_t *data, tb_size_t maxn, tb_char_t 
     tb_print_sync();
 
     // get input buffer
-    if (tb_stdfile_gets(tb_stdfile_input(), data, maxn))
+    if (tb_stdfile_gets(tb_stdfile_input(), data, maxn)) {
         return tb_strlen(data);
+    }
 #endif
 
     // no more input
@@ -181,8 +186,9 @@ static tb_int_t xm_sandbox_pushline(lua_State *lua, tb_char_t const *prompt2) {
     tb_size_t size = xm_sandbox_readline(data, sizeof(data), prompt2);
     if (size) {
         // split line '\0'
-        if (data[size - 1] == '\n')
+        if (data[size - 1] == '\n') {
             data[size - 1] = '\0';
+        }
 
         // push line
         lua_pushstring(lua, data);
@@ -216,8 +222,9 @@ static tb_int_t xm_sandbox_loadline(lua_State *lua, tb_int_t top) {
     tb_size_t size = xm_sandbox_readline(data + 7, sizeof(data) - 7, prompt);
     if (size) {
         // split line '\0'
-        if (data[size - 1] == '\n')
+        if (data[size - 1] == '\n') {
             data[--size] = '\0';
+        }
 
         // patch "return "
         tb_memcpy(data, "return ", 7);
@@ -225,8 +232,9 @@ static tb_int_t xm_sandbox_loadline(lua_State *lua, tb_int_t top) {
         // attempt to load "return ..."
         status = luaL_loadbuffer(lua, data, size + 7, "=stdin");
 
-        if (status != LUA_ERRSYNTAX)
+        if (status != LUA_ERRSYNTAX) {
             return status;
+        }
 
         // pop error msg
         lua_pop(lua, 1);
@@ -246,12 +254,14 @@ static tb_int_t xm_sandbox_loadline(lua_State *lua, tb_int_t top) {
         status = luaL_loadbuffer(lua, lua_tostring(lua, -1), (size_t)lua_strlen(lua, -1), "=stdin");
 
         // complete?
-        if (!xm_sandbox_incomplete(lua, status))
+        if (!xm_sandbox_incomplete(lua, status)) {
             break;
+        }
 
         // get more input
-        if (!xm_sandbox_pushline(lua, prompt2))
+        if (!xm_sandbox_pushline(lua, prompt2)) {
             return -1;
+        }
 
         // cancel multi-line input?
         if (!tb_strcmp(lua_tostring(lua, -1), "q")) {
@@ -313,10 +323,11 @@ tb_int_t xm_sandbox_interactive(lua_State *lua) {
             lua_getfield(lua, 1, "$interactive_setfenv");
             lua_pushvalue(lua, -2);
             lua_pushvalue(lua, 1);
-            if (lua_pcall(lua, 2, 0, 0) != 0)
+            if (lua_pcall(lua, 2, 0, 0) != 0) {
                 tb_printl(lua_pushfstring(lua,
                                           "error calling " LUA_QL("$interactive_setfenv") " (%s)",
                                           lua_tostring(lua, -1)));
+            }
 #endif
 
             /* run script
@@ -327,8 +338,9 @@ tb_int_t xm_sandbox_interactive(lua_State *lua) {
         }
 
         // report errors
-        if (status)
+        if (status) {
             xm_sandbox_report(lua);
+        }
 
         // print any results
         if (status == 0 && lua_gettop(lua) > top) {
@@ -342,9 +354,10 @@ tb_int_t xm_sandbox_interactive(lua_State *lua) {
              */
             lua_getfield(lua, 1, "$interactive_dump"); // load $interactive_dump() from sandbox_scope
             lua_insert(lua, -(count + 1));
-            if (lua_pcall(lua, count, 0, 0) != 0)
+            if (lua_pcall(lua, count, 0, 0) != 0) {
                 tb_printl(
                     lua_pushfstring(lua, "error calling " LUA_QL("$interactive_dump") " (%s)", lua_tostring(lua, -1)));
+            }
         }
     }
 
