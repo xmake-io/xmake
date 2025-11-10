@@ -31,10 +31,6 @@
  */
 #define XM_IO_BLOCK_MAXN (TB_STREAM_BLOCK_MAXN * 10)
 
-#define xm_io_file_is_file(file) ((file)->type == XM_IO_FILE_TYPE_FILE)
-#define xm_io_file_is_std(file) ((file)->type != XM_IO_FILE_TYPE_FILE)
-#define xm_io_file_is_tty(file) (!!((file)->type & XM_IO_FILE_FLAG_TTY))
-
 // return io error
 #define xm_io_return_error(lua, error)                                                                                 \
     do {                                                                                                               \
@@ -89,6 +85,18 @@ typedef struct __xm_io_file_t {
     tb_buffer_t rcache; // the read line cache buffer
     tb_buffer_t wcache; // the write line cache buffer
 } xm_io_file_t;
+
+static __tb_inline__ tb_bool_t xm_io_file_is_file(xm_io_file_t const *file) {
+    return file && file->type == XM_IO_FILE_TYPE_FILE;
+}
+
+static __tb_inline__ tb_bool_t xm_io_file_is_std(xm_io_file_t const *file) {
+    return file && file->type != XM_IO_FILE_TYPE_FILE;
+}
+
+static __tb_inline__ tb_bool_t xm_io_file_is_tty(xm_io_file_t const *file) {
+    return file && (file->type & XM_IO_FILE_FLAG_TTY);
+}
 
 // check pipe file
 static __tb_inline__ tb_bool_t xm_pipe_file_is_valid(lua_State *lua, tb_int_t index) {
