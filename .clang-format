@@ -25,9 +25,9 @@ BraceWrapping:
 # Alignment
 AlignAfterOpenBracket: Align
 AlignTrailingComments: true
-AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveAssignments: None
 AlignConsecutiveBitFields: None
-AlignConsecutiveDeclarations: Consecutive
+AlignConsecutiveDeclarations: None
 AlignConsecutiveMacros: None
 
 # Spacing
