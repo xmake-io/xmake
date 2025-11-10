@@ -132,7 +132,7 @@ function _checkout(package, url, sourcedir, opt)
         -- @see https://github.com/xmake-io/xmake/issues/4151
         local sparse_includes = opt.url_includes
         local clone_submodules = opt.url_submodules ~= false
-        if tag and git.clone.can_clone_tag() and not sparse_includes then
+        if tag and git.support.can_clone_tag() and not sparse_includes then
             git.clone(url, {depth = 1, recursive = clone_submodules, shallow_submodules = clone_submodules, longpaths = longpaths, branch = tag, outputdir = packagedir})
         else
 
