@@ -28,7 +28,7 @@ import("builder")
 import(".scanner", {inherit = true})
 
 -- scan module dependencies
-function scan_dependency_for(target, sourcefile, opt)
+function scan_dependency_for(target, sourcefile, rescan, opt)
 
     local compinst = target:compiler("cxx")
     local baselineflags = {"-E", "-x", "c++"}
@@ -77,7 +77,7 @@ function scan_dependency_for(target, sourcefile, opt)
 
         local dependinfo = io.readfile(jsonfile)
         return { moduleinfo = dependinfo }
-    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt(), values = compflags})
+    end, {dependfile = dependfile, files = {sourcefile}, changed = rescan, values = compflags})
     return changed
 end
 

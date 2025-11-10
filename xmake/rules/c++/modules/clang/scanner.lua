@@ -28,7 +28,7 @@ import("support")
 import(".scanner", {inherit = true})
 
 -- scan module dependencies
-function scan_dependency_for(target, sourcefile, opt)
+function scan_dependency_for(target, sourcefile, rescan, opt)
 
     local compinst = target:compiler("cxx")
     local changed = false
@@ -87,7 +87,7 @@ function scan_dependency_for(target, sourcefile, opt)
 
         local rawdependinfo = io.readfile(jsonfile)
         return {moduleinfo = rawdependinfo}
-    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt(), values = compflags})
+    end, {dependfile = dependfile, files = {sourcefile}, changed = rescan, values = compflags})
     return changed
 end
 
