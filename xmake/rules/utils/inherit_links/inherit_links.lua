@@ -18,6 +18,9 @@
 -- @file        inherit_links.lua
 --
 
+-- imports
+import("private.utils.target", {alias = "target_utils"})
+
 -- get values from target
 function _get_values_from_target(target, name)
     local values = table.clone(table.wrap(target:get(name)))
@@ -70,9 +73,19 @@ function main(target)
         local targetfile = target:targetfile()
 
         -- rust maybe will disable inherit links, only inherit linkdirs
+        local link_filepath = false
         if target:data("inherit.links.deplink") ~= false then
+            -- use full paths for links whenever possible to avoid link conflicts.
+            -- @see https://github.com/xmake-io/xmake/issues/7000
+            if target_utils.can_link_fullpath(target) then
+                link_filepath = true
+            end
             -- we need to move target link to head
-            _add_export_value(target, "links", target:linkname())
+            if link_filepath then
+                _add_export_value(target, "links", targetfile)
+            else
+                _add_export_value(target, "links", target:linkname())
+            end
             local links = target:get("links", {rawref = true})
             if links and type(links) == "table" and #links > 1 then
                 table.insert(links, 1, links[#links])
@@ -80,11 +93,13 @@ function main(target)
             end
         end
 
-        local implibfile = target:artifactfile("implib")
-        if implibfile then
-            _add_export_value(target, "linkdirs", path.directory(implibfile))
-        else
-            _add_export_value(target, "linkdirs", path.directory(targetfile))
+        if not link_filepath then
+            local implibfile = target:artifactfile("implib")
+            if implibfile then
+                _add_export_value(target, "linkdirs", path.directory(implibfile))
+            else
+                _add_export_value(target, "linkdirs", path.directory(targetfile))
+            end
         end
 
         if target:rule("go") then
