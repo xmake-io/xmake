@@ -73,16 +73,23 @@ function main(target)
         local targetfile = target:targetfile()
 
         -- rust maybe will disable inherit links, only inherit linkdirs
-        local link_filepath = false
+        local link_fullpath = false
+        local link_targetpath = targetfile
+        if target:is_plat("windows") then
+            local implibfile = target:artifactfile("implib")
+            if implibfile then
+                link_targetpath = implibfile
+            end
+        end
         if target:data("inherit.links.deplink") ~= false then
             -- use full paths for links whenever possible to avoid link conflicts.
             -- @see https://github.com/xmake-io/xmake/issues/7000
             if target_utils.can_link_fullpath(target) then
-                link_filepath = true
+                link_fullpath = true
             end
             -- we need to move target link to head
-            if link_filepath then
-                _add_export_value(target, "links", targetfile)
+            if link_fullpath then
+                _add_export_value(target, "links", link_targetpath)
             else
                 _add_export_value(target, "links", target:linkname())
             end
@@ -93,13 +100,8 @@ function main(target)
             end
         end
 
-        if not link_filepath then
-            local implibfile = target:artifactfile("implib")
-            if implibfile then
-                _add_export_value(target, "linkdirs", path.directory(implibfile))
-            else
-                _add_export_value(target, "linkdirs", path.directory(targetfile))
-            end
+        if not link_fullpath then
+            _add_export_value(target, "linkdirs", path.directory(link_targetpath))
         end
 
         if target:rule("go") then
