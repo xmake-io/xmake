@@ -37,7 +37,7 @@ tb_int_t xm_base64_decode(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the string
-    size_t           size = 0;
+    size_t size = 0;
     tb_char_t const *cstr = luaL_checklstring(lua, 1, &size);
     tb_check_return_val(cstr && size, 0);
 

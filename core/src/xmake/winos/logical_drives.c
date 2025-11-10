@@ -55,7 +55,7 @@ tb_int_t xm_winos_logical_drives(lua_State *lua) {
         tb_assert_and_check_break(size);
 
         // parse logical drives
-        tb_size_t        i = 1;
+        tb_size_t i = 1;
         tb_char_t const *p = data;
         while (*p) {
             // save drive

@@ -65,7 +65,7 @@ tb_int_t xm_process_openv(lua_State *lua) {
     tb_check_return_val(argn >= 0, 0);
 
     // get arguments
-    tb_size_t         argi = 0;
+    tb_size_t argi = 0;
     tb_char_t const **argv = tb_nalloc0_type(1 + argn + 1, tb_char_t const *);
     tb_check_return_val(argv, 0);
 
@@ -101,18 +101,18 @@ tb_int_t xm_process_openv(lua_State *lua) {
     tb_process_attr_t attr = { 0 };
 
     // get option arguments
-    tb_bool_t          exclusive  = tb_false;
-    tb_size_t          envn       = 0;
-    tb_char_t const   *envs[1024] = { 0 };
-    tb_char_t const   *inpath     = tb_null;
-    tb_char_t const   *outpath    = tb_null;
-    tb_char_t const   *errpath    = tb_null;
-    xm_io_file_t      *infile     = tb_null;
-    xm_io_file_t      *outfile    = tb_null;
-    xm_io_file_t      *errfile    = tb_null;
-    tb_pipe_file_ref_t inpipe     = tb_null;
-    tb_pipe_file_ref_t outpipe    = tb_null;
-    tb_pipe_file_ref_t errpipe    = tb_null;
+    tb_bool_t exclusive = tb_false;
+    tb_size_t envn = 0;
+    tb_char_t const *envs[1024] = { 0 };
+    tb_char_t const *inpath = tb_null;
+    tb_char_t const *outpath = tb_null;
+    tb_char_t const *errpath = tb_null;
+    xm_io_file_t *infile = tb_null;
+    xm_io_file_t *outfile = tb_null;
+    xm_io_file_t *errfile = tb_null;
+    tb_pipe_file_ref_t inpipe = tb_null;
+    tb_pipe_file_ref_t outpipe = tb_null;
+    tb_pipe_file_ref_t errpipe = tb_null;
     if (lua_istable(lua, 3)) {
         // is detached?
         lua_pushstring(lua, "detach");

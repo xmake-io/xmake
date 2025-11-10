@@ -36,7 +36,7 @@
 tb_int_t xm_thread_event_init(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_bool_t          ok           = tb_false;
+    tb_bool_t ok = tb_false;
     xm_thread_event_t *thread_event = tb_null;
     do {
         thread_event = tb_malloc0_type(xm_thread_event_t);

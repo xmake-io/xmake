@@ -37,7 +37,7 @@ tb_int_t xm_path_translate(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the path
-    size_t           path_size = 0;
+    size_t path_size = 0;
     tb_char_t const *path      = luaL_checklstring(lua, 1, &path_size);
     tb_check_return_val(path, 0);
 

@@ -56,8 +56,8 @@ tb_int_t xm_io_socket_peeraddr(lua_State *lua) {
     tb_check_return_val(sock, 0);
 
     // get peer address
-    tb_ipaddr_t      addr;
-    tb_char_t        data[256];
+    tb_ipaddr_t addr;
+    tb_char_t data[256];
     tb_char_t const *cstr = tb_null;
     if (tb_socket_peer(sock, &addr) && (cstr = tb_ipaddr_cstr(&addr, data, sizeof(data)))) {
         lua_pushstring(lua, cstr);

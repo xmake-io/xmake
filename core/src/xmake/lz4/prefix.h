@@ -56,22 +56,22 @@ typedef unsigned int   LZ4_u32;
 // the lz4 compress stream type
 typedef struct __xm_lz4_cstream_t {
     LZ4F_cctx *cctx;
-    LZ4_byte  *buffer;
-    tb_size_t  buffer_size;
-    tb_size_t  buffer_maxn;
-    tb_size_t  write_maxn;
-    tb_size_t  header_size;
-    LZ4_byte   header[LZ4F_HEADER_SIZE_MAX];
+    LZ4_byte *buffer;
+    tb_size_t buffer_size;
+    tb_size_t buffer_maxn;
+    tb_size_t write_maxn;
+    tb_size_t header_size;
+    LZ4_byte header[LZ4F_HEADER_SIZE_MAX];
 } xm_lz4_cstream_t;
 
 // the lz4 decompress stream type
 typedef struct __xm_lz4_dstream_t {
     LZ4F_dctx *dctx;
-    LZ4_byte  *buffer;
-    tb_size_t  buffer_size;
-    tb_size_t  buffer_maxn;
-    tb_size_t  header_size;
-    LZ4_byte   header[LZ4F_HEADER_SIZE_MAX];
+    LZ4_byte *buffer;
+    tb_size_t buffer_size;
+    tb_size_t buffer_maxn;
+    tb_size_t header_size;
+    LZ4_byte header[LZ4F_HEADER_SIZE_MAX];
 } xm_lz4_dstream_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -93,17 +93,17 @@ static __tb_inline__ tb_void_t xm_lz4_cstream_exit(xm_lz4_cstream_t *stream) {
 }
 
 static __tb_inline__ xm_lz4_cstream_t *xm_lz4_cstream_init() {
-    tb_size_t                 ret;
-    tb_bool_t                 ok       = tb_false;
-    xm_lz4_cstream_t         *stream   = tb_null;
+    tb_size_t ret;
+    tb_bool_t ok = tb_false;
+    xm_lz4_cstream_t *stream = tb_null;
     LZ4F_preferences_t const *prefsPtr = tb_null;
     do {
         stream = tb_malloc0_type(xm_lz4_cstream_t);
         tb_assert_and_check_break(stream);
 
-        stream->write_maxn  = 64 * 1024;
+        stream->write_maxn = 64 * 1024;
         stream->buffer_maxn = LZ4F_compressBound(stream->write_maxn, prefsPtr);
-        stream->buffer      = (LZ4_byte *)tb_malloc(stream->buffer_maxn);
+        stream->buffer = (LZ4_byte *)tb_malloc(stream->buffer_maxn);
         tb_assert_and_check_break(stream->buffer);
 
         ret = LZ4F_createCompressionContext(&stream->cctx, LZ4F_getVersion());

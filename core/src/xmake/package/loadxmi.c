@@ -76,8 +76,8 @@ tb_int_t xm_package_loadxmi(lua_State *lua) {
     }
 
     // setup lua interfaces
-    static xmi_lua_ops_t s_luaops        = { 0 };
-    static tb_bool_t     s_luaops_inited = tb_false;
+    static xmi_lua_ops_t s_luaops = { 0 };
+    static tb_bool_t s_luaops_inited = tb_false;
     if (!s_luaops_inited) {
         // get functions
 #ifdef XMI_USE_LUAJIT

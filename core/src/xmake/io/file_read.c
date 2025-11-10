@@ -47,10 +47,10 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     tb_assert_and_check_return_val(stream && line, -1);
 
     // read line and reserve crlf
-    tb_bool_t  eof    = tb_false;
-    tb_hize_t  offset = 0;
-    tb_byte_t *data   = tb_null;
-    tb_hong_t  size   = tb_stream_size(stream);
+    tb_bool_t eof = tb_false;
+    tb_hize_t offset = 0;
+    tb_byte_t *data = tb_null;
+    tb_hong_t size = tb_stream_size(stream);
     while (size < 0 || (offset = tb_stream_offset(stream)) < size) {
         tb_long_t real = tb_stream_peek(stream, &data, XM_IO_BLOCK_MAXN);
         if (real > 0) {
@@ -85,17 +85,17 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
         return (eof || tb_stream_beof(stream)) ? -1 : 0;
     }
 }
-static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t  buf,
-                                           xm_io_file_t    *file,
+static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf,
+                                           xm_io_file_t *file,
                                            tb_char_t const *continuation,
-                                           tb_bool_t        keep_crlf) {
+                                           tb_bool_t keep_crlf) {
     tb_assert(buf && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
 
     // is binary?
     tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
     if (is_binary) {
         continuation = "";
-        keep_crlf    = tb_true;
+        keep_crlf = tb_true;
     }
 
     // clear line buffer
@@ -105,9 +105,9 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t  buf,
     tb_long_t size = xm_io_file_buffer_readline(file->u.file_ref, &file->rcache);
 
     // translate line data
-    tb_int_t   result = PL_FAIL;
-    tb_char_t *data   = tb_null;
-    tb_size_t  conlen = tb_strlen(continuation);
+    tb_int_t result = PL_FAIL;
+    tb_char_t *data = tb_null;
+    tb_size_t conlen = tb_strlen(continuation);
     do {
         // eof?
         if (size < 0) {
@@ -244,10 +244,10 @@ static tb_int_t xm_io_file_read_all(lua_State *lua, xm_io_file_t *file, tb_char_
     }
 }
 
-static tb_int_t xm_io_file_read_line(lua_State       *lua,
-                                     xm_io_file_t    *file,
+static tb_int_t xm_io_file_read_line(lua_State *lua,
+                                     xm_io_file_t *file,
                                      tb_char_t const *continuation,
-                                     tb_bool_t        keep_crlf) {
+                                     tb_bool_t keep_crlf) {
     tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
 
     // init buffer
@@ -319,10 +319,10 @@ static tb_int_t xm_io_file_read_n(lua_State *lua, xm_io_file_t *file, tb_char_t 
     return 1;
 }
 
-static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t  buf,
-                                                xm_io_file_t    *file,
+static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t buf,
+                                                xm_io_file_t *file,
                                                 tb_char_t const *continuation,
-                                                tb_bool_t        keep_crlf) {
+                                                tb_bool_t keep_crlf) {
     tb_assert(buf && file && continuation && xm_io_file_is_std(file));
 
     // get input buffer
@@ -376,10 +376,10 @@ static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t  buf,
     return result;
 }
 
-static tb_int_t xm_io_file_std_read_line(lua_State       *lua,
-                                         xm_io_file_t    *file,
+static tb_int_t xm_io_file_std_read_line(lua_State *lua,
+                                         xm_io_file_t *file,
                                          tb_char_t const *continuation,
-                                         tb_bool_t        keep_crlf) {
+                                         tb_bool_t keep_crlf) {
     tb_assert(lua && file && continuation && xm_io_file_is_std(file));
 
     // init buffer

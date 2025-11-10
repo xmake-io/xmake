@@ -33,7 +33,7 @@
 // the poller state in wait events
 typedef struct __xm_poller_state_t {
     lua_State *lua;
-    tb_int_t   events_count;
+    tb_int_t events_count;
 } xm_poller_state_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////

@@ -61,12 +61,12 @@ tb_int_t xm_os_argv(lua_State *lua) {
         }
 
         // parse command to the arguments
-        tb_int_t         i      = 1;
-        tb_int_t         skip   = 0;
-        tb_int_t         escape = 0;
-        tb_char_t        quote  = 0;
-        tb_char_t        ch     = 0;
-        tb_char_t const *p      = args;
+        tb_int_t i = 1;
+        tb_int_t skip = 0;
+        tb_int_t escape = 0;
+        tb_char_t quote = 0;
+        tb_char_t ch = 0;
+        tb_char_t const *p = args;
         while ((ch = *p)) {
             // no escape now?
             if (!escape) {

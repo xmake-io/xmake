@@ -52,7 +52,7 @@ static tb_void_t xm_thread_value_free(tb_element_ref_t element, tb_pointer_t buf
 tb_int_t xm_thread_queue_init(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_bool_t          ok           = tb_false;
+    tb_bool_t ok = tb_false;
     xm_thread_queue_t *thread_queue = tb_null;
     do {
         thread_queue = tb_malloc0_type(xm_thread_queue_t);

@@ -119,7 +119,7 @@ tb_int_t xm_utils_bin2c(lua_State *lua) {
     tb_bool_t nozeroend = (tb_bool_t)lua_toboolean(lua, 4);
 
     // do dump
-    tb_bool_t       ok      = tb_false;
+    tb_bool_t ok = tb_false;
     tb_stream_ref_t istream = tb_stream_init_from_file(binaryfile, TB_FILE_MODE_RO);
     tb_stream_ref_t ostream = tb_stream_init_from_file(outputfile,
                                                        TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC);

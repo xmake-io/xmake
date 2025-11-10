@@ -40,8 +40,8 @@ tb_int_t xm_thread_sharedata_set(lua_State *lua) {
     tb_assert_and_check_return_val(thread_sharedata, 0);
 
     if (lua_isstring(lua, 2)) {
-        size_t           data_size = 0;
-        tb_char_t const *data      = luaL_checklstring(lua, 2, &data_size);
+        size_t data_size = 0;
+        tb_char_t const *data = luaL_checklstring(lua, 2, &data_size);
         tb_assert_and_check_return_val(data, 0);
 
         thread_sharedata->value.kind = (tb_uint32_t)XM_THREAD_VALUE_STR;

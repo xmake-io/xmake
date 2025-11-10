@@ -36,7 +36,7 @@
 tb_int_t xm_thread_mutex_init(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_bool_t          ok           = tb_false;
+    tb_bool_t ok = tb_false;
     xm_thread_mutex_t *thread_mutex = tb_null;
     do {
         thread_mutex = tb_malloc0_type(xm_thread_mutex_t);

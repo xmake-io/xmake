@@ -217,7 +217,7 @@ static tb_int_t xm_sandbox_loadline(lua_State *lua, tb_int_t top) {
     lua_pop(lua, 1);
 
     // read first line
-    tb_int_t  status;
+    tb_int_t status;
     tb_char_t data[LUA_PROMPT_BUFSIZE];
     tb_size_t size = xm_sandbox_readline(data + 7, sizeof(data) - 7, prompt);
     if (size) {

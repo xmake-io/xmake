@@ -42,7 +42,7 @@ tb_int_t xm_hash_sha(lua_State *lua) {
     // is bytes? get data and size
     if (xm_lua_isinteger(lua, 2) && xm_lua_isinteger(lua, 3)) {
         tb_byte_t const *data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
-        tb_size_t        size = (tb_size_t)lua_tointeger(lua, 3);
+        tb_size_t size = (tb_size_t)lua_tointeger(lua, 3);
         if (!data || !size) {
             lua_pushnil(lua);
             lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
@@ -51,7 +51,7 @@ tb_int_t xm_hash_sha(lua_State *lua) {
         tb_assert_static(sizeof(lua_Integer) >= sizeof(tb_pointer_t));
 
         // compute sha
-        tb_sha_t  sha;
+        tb_sha_t sha;
         tb_byte_t buffer[32];
         tb_sha_init(&sha, mode);
         tb_sha_spak(&sha, data, size);
@@ -59,7 +59,7 @@ tb_int_t xm_hash_sha(lua_State *lua) {
 
         // make sha string
         tb_char_t s[256];
-        tb_size_t n   = sha.digest_len << 2;
+        tb_size_t n = sha.digest_len << 2;
         tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
         // save result
@@ -72,7 +72,7 @@ tb_int_t xm_hash_sha(lua_State *lua) {
     tb_check_return_val(filename, 0);
 
     // load data from file
-    tb_bool_t       ok     = tb_false;
+    tb_bool_t ok = tb_false;
     tb_stream_ref_t stream = tb_stream_init_from_file(filename, TB_FILE_MODE_RO);
     if (stream) {
         // open stream

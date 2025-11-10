@@ -62,7 +62,7 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t *ptotalsize, tb_int_t *pavailsize)
     vm_statistics64_data_t vmstat;
     mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
     if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info_t)&vmstat, &count) == KERN_SUCCESS) {
-        tb_int_t   pagesize  = (tb_int_t)tb_page_size();
+        tb_int_t pagesize = (tb_int_t)tb_page_size();
         tb_int64_t totalsize = (tb_int64_t)(vmstat.inactive_count + vmstat.free_count + vmstat.active_count +
                                             vmstat.wire_count
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
@@ -94,15 +94,15 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t *ptotalsize, tb_int_t *pavailsize)
         if (fp) {
             // 8192 should be enough for the foreseeable future.
             tb_char_t buffer[8192];
-            size_t    len = fread(buffer, 1, sizeof(buffer) - 1, fp);
+            size_t len = fread(buffer, 1, sizeof(buffer) - 1, fp);
             if (!ferror(fp) && len) {
                 tb_int64_t totalsize = xm_os_meminfo_get_value(buffer, "MemTotal:");
                 tb_int64_t availsize = xm_os_meminfo_get_value(buffer, "MemAvailable:");
                 if (availsize <= 0) {
-                    tb_int64_t cachesize  = xm_os_meminfo_get_value(buffer, "Cached:");
-                    tb_int64_t freesize   = xm_os_meminfo_get_value(buffer, "MemFree:");
+                    tb_int64_t cachesize = xm_os_meminfo_get_value(buffer, "Cached:");
+                    tb_int64_t freesize = xm_os_meminfo_get_value(buffer, "MemFree:");
                     tb_int64_t buffersize = xm_os_meminfo_get_value(buffer, "Buffers:");
-                    tb_int64_t shmemsize  = xm_os_meminfo_get_value(buffer, "Shmem:");
+                    tb_int64_t shmemsize = xm_os_meminfo_get_value(buffer, "Shmem:");
                     if (cachesize >= 0 && freesize >= 0 && buffersize >= 0 && shmemsize >= 0) {
                         availsize = freesize + buffersize + cachesize - shmemsize;
                     }
@@ -110,7 +110,7 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t *ptotalsize, tb_int_t *pavailsize)
                 if (totalsize > 0 && availsize >= 0) {
                     *ptotalsize = (tb_int_t)(totalsize / 1024);
                     *pavailsize = (tb_int_t)(availsize / 1024);
-                    ok          = tb_true;
+                    ok = tb_true;
                 }
             }
             fclose(fp);
@@ -134,7 +134,7 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t *ptotalsize, tb_int_t *pavailsize)
     }
 #elif defined(TB_CONFIG_OS_BSD) && !defined(__OpenBSD__)
     unsigned long totalsize;
-    size_t        size = sizeof(totalsize);
+    size_t size = sizeof(totalsize);
     if (sysctlbyname("hw.physmem", &totalsize, &size, tb_null, 0) != 0) {
         return tb_false;
     }

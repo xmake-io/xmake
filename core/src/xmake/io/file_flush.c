@@ -44,7 +44,7 @@ static tb_bool_t xm_io_file_flush_impl(xm_io_file_t *file) {
 #ifdef TB_CONFIG_OS_WINDOWS
     // write cached data first
     tb_byte_t const *odata = tb_buffer_data(&file->wcache);
-    tb_size_t        osize = tb_buffer_size(&file->wcache);
+    tb_size_t osize = tb_buffer_size(&file->wcache);
     if (odata && osize) {
         if (!tb_stream_bwrit(file->u.file_ref, odata, osize))
             return tb_false;

@@ -104,11 +104,11 @@ static tb_char_t const *xm_string_rtrim(tb_char_t const *sstr,
 tb_int_t xm_string_trim(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    size_t           lstr, ltrim;
-    tb_char_t const *sstr      = luaL_checklstring(lua, 1, &lstr);
-    tb_char_t const *estr      = sstr + lstr;
+    size_t lstr, ltrim;
+    tb_char_t const *sstr = luaL_checklstring(lua, 1, &lstr);
+    tb_char_t const *estr = sstr + lstr;
     tb_char_t const *trimchars = luaL_optlstring(lua, 2, "", &ltrim);
-    tb_int_t const   trimtype  = (tb_int_t)luaL_optinteger(lua, 3, 0);
+    tb_int_t const trimtype = (tb_int_t)luaL_optinteger(lua, 3, 0);
     do {
         tb_assert_and_check_break(sstr && trimchars);
         tb_check_break(lstr != 0);

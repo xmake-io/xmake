@@ -46,16 +46,16 @@ tb_int_t xm_winos_registry_values(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments
-    tb_char_t const *rootkey     = luaL_checkstring(lua, 1);
-    tb_char_t const *rootdir     = luaL_checkstring(lua, 2);
-    tb_bool_t        is_function = lua_isfunction(lua, 3);
+    tb_char_t const *rootkey = luaL_checkstring(lua, 1);
+    tb_char_t const *rootdir = luaL_checkstring(lua, 2);
+    tb_bool_t is_function = lua_isfunction(lua, 3);
     tb_check_return_val(rootkey && rootdir && is_function, 0);
 
     // enum values
-    tb_bool_t ok     = tb_false;
-    tb_int_t  count  = 0;
-    HKEY      key    = tb_null;
-    HKEY      keynew = tb_null;
+    tb_bool_t ok = tb_false;
+    tb_int_t count = 0;
+    HKEY key = tb_null;
+    HKEY keynew = tb_null;
     do {
         // get registry rootkey
         if (!tb_strcmp(rootkey, "HKEY_CLASSES_ROOT")) {
@@ -119,7 +119,7 @@ tb_int_t xm_winos_registry_values(lua_State *lua) {
         }
 
         // get all values
-        DWORD     i = 0;
+        DWORD i = 0;
         tb_char_t value_name_a[1024];
         for (i = 0; i < value_name_num; i++) {
             // get value name

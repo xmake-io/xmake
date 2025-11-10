@@ -33,8 +33,8 @@
 // the thread type
 typedef struct __xm_thread_t {
     tb_thread_ref_t handle;
-    tb_string_t     callback;
-    tb_string_t     callinfo;
+    tb_string_t callback;
+    tb_string_t callinfo;
 } xm_thread_t;
 
 // the thread value kind
@@ -51,42 +51,42 @@ typedef struct __xm_thread_value_t {
     tb_uint32_t kind : 3;
     tb_uint32_t size : 29;
     union {
-        tb_char_t  *string;
-        tb_bool_t   boolean;
+        tb_char_t *string;
+        tb_bool_t boolean;
         lua_Integer integer;
-        lua_Number  number;
+        lua_Number number;
     } u;
 } xm_thread_value_t;
 
 // the thread event type
 typedef struct __xm_thread_event_t {
     tb_event_ref_t handle;
-    tb_atomic_t    refn;
+    tb_atomic_t refn;
 } xm_thread_event_t;
 
 // the thread mutex type
 typedef struct __xm_thread_mutex_t {
     tb_mutex_ref_t handle;
-    tb_atomic_t    refn;
+    tb_atomic_t refn;
 } xm_thread_mutex_t;
 
 // the thread semaphore type
 typedef struct __xm_thread_semaphore_t {
     tb_semaphore_ref_t handle;
-    tb_atomic_t        refn;
+    tb_atomic_t refn;
 } xm_thread_semaphore_t;
 
 // the thread queue type
 typedef struct __xm_thread_queue_t {
     tb_queue_ref_t handle;
-    tb_atomic_t    refn;
+    tb_atomic_t refn;
 } xm_thread_queue_t;
 
 // the thread sharedata type
 typedef struct __xm_thread_sharedata_t {
     xm_thread_value_t value;
-    tb_buffer_t       buffer;
-    tb_atomic_t       refn;
+    tb_buffer_t buffer;
+    tb_atomic_t refn;
 } xm_thread_sharedata_t;
 
 // get the thread event from arguments

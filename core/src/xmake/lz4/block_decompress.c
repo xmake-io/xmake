@@ -37,7 +37,7 @@ tb_int_t xm_lz4_block_decompress(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get data and size
-    tb_size_t        size = 0;
+    tb_size_t size = 0;
     tb_byte_t const *data = tb_null;
     if (xm_lua_isinteger(lua, 1)) {
         data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 1);
@@ -61,7 +61,7 @@ tb_int_t xm_lz4_block_decompress(lua_State *lua) {
     }
 
     // do decompress
-    tb_bool_t  ok          = tb_false;
+    tb_bool_t ok = tb_false;
     tb_byte_t *output_data = tb_null;
     tb_byte_t  buffer[8192];
     do {

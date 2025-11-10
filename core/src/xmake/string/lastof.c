@@ -76,11 +76,11 @@ tb_int_t xm_string_lastof(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get string
-    size_t           nstr = 0;
+    size_t nstr = 0;
     tb_char_t const *cstr = luaL_checklstring(lua, 1, &nstr);
 
     // get substring
-    size_t           nsubstr = 0;
+    size_t nsubstr = 0;
     tb_char_t const *csubstr = luaL_checklstring(lua, 2, &nsubstr);
 
     // lastof it

@@ -49,18 +49,18 @@ tb_int_t xm_winos_registry_query(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments
-    tb_char_t const *rootkey   = luaL_checkstring(lua, 1);
-    tb_char_t const *rootdir   = luaL_checkstring(lua, 2);
+    tb_char_t const *rootkey = luaL_checkstring(lua, 1);
+    tb_char_t const *rootdir = luaL_checkstring(lua, 2);
     tb_char_t const *valuename = luaL_checkstring(lua, 3);
     tb_check_return_val(rootkey && rootdir && valuename, 0);
 
     // query key-value
-    tb_bool_t   ok      = tb_false;
-    HKEY        key     = tb_null;
-    HKEY        keynew  = tb_null;
-    tb_char_t  *value   = tb_null;
+    tb_bool_t ok = tb_false;
+    HKEY key = tb_null;
+    HKEY keynew = tb_null;
+    tb_char_t *value = tb_null;
     tb_wchar_t *value_w = tb_null;
-    tb_size_t   value_n = (tb_size_t)-1;
+    tb_size_t value_n = (tb_size_t)-1;
     do {
         // get registry rootkey
         if (!tb_strcmp(rootkey, "HKEY_CLASSES_ROOT")) {

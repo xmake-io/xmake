@@ -46,7 +46,7 @@ tb_int_t xm_lz4_compress_file(lua_State *lua) {
     tb_check_return_val(stream_lz4, 0);
 
     // do compress
-    tb_bool_t       ok      = tb_false;
+    tb_bool_t ok = tb_false;
     tb_stream_ref_t istream = tb_stream_init_from_file(srcpath, TB_FILE_MODE_RO);
     tb_stream_ref_t ostream = tb_stream_init_from_file(dstpath,
                                                        TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC);

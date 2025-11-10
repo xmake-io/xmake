@@ -51,7 +51,7 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
     // is bytes? get data and size
     if (xm_lua_isinteger(lua, 2) && xm_lua_isinteger(lua, 3)) {
         tb_byte_t const *data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
-        tb_size_t        size = (tb_size_t)lua_tointeger(lua, 3);
+        tb_size_t size = (tb_size_t)lua_tointeger(lua, 3);
         if (!data || !size) {
             lua_pushnil(lua);
             lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
@@ -61,19 +61,19 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
 
         // compuate hash
         tb_byte_t const *buffer = tb_null;
-        tb_uint32_t      value32;
-        XXH64_hash_t     value64;
-        XXH128_hash_t    value128;
+        tb_uint32_t value32;
+        XXH64_hash_t value64;
+        XXH128_hash_t value128;
         if (mode == 128) {
             value128 = XM_XXH3_128bits(data, size);
-            buffer   = (tb_byte_t const *)&value128;
+            buffer = (tb_byte_t const *)&value128;
         } else if (mode == 64) {
             value64 = XM_XXH3_64bits(data, size);
-            buffer  = (tb_byte_t const *)&value64;
+            buffer = (tb_byte_t const *)&value64;
         } else if (mode == 32) {
             value64 = XM_XXH3_64bits(data, size);
             value32 = (value64 >> 32) ^ (value64 & 0xffffffff);
-            buffer  = (tb_byte_t const *)&value32;
+            buffer = (tb_byte_t const *)&value32;
         }
         if (!buffer) {
             lua_pushnil(lua);
@@ -83,7 +83,7 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
 
         // make xxhash string
         tb_char_t s[256];
-        tb_size_t n   = mode >> 3;
+        tb_size_t n = mode >> 3;
         tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
         // save result
@@ -96,7 +96,7 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
     tb_check_return_val(filename, 0);
 
     // load data from file
-    tb_bool_t       ok     = tb_false;
+    tb_bool_t ok = tb_false;
     tb_stream_ref_t stream = tb_stream_init_from_file(filename, TB_FILE_MODE_RO);
     if (stream) {
         // open stream
@@ -139,24 +139,24 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
 
             // compuate hash
             tb_byte_t const *buffer;
-            tb_uint32_t      value32;
-            XXH64_hash_t     value64;
-            XXH128_hash_t    value128;
+            tb_uint32_t value32;
+            XXH64_hash_t value64;
+            XXH128_hash_t value128;
             if (mode == 128) {
                 value128 = XM_XXH3_128bits_digest(state);
-                buffer   = (tb_byte_t const *)&value128;
+                buffer = (tb_byte_t const *)&value128;
             } else if (mode == 64) {
                 value64 = XM_XXH3_64bits_digest(state);
-                buffer  = (tb_byte_t const *)&value64;
+                buffer = (tb_byte_t const *)&value64;
             } else if (mode == 32) {
                 value64 = XM_XXH3_64bits_digest(state);
                 value32 = (value64 >> 32) ^ (value64 & 0xffffffff);
-                buffer  = (tb_byte_t const *)&value32;
+                buffer = (tb_byte_t const *)&value32;
             }
 
             // make xxhash string
             tb_char_t s[256];
-            tb_size_t n   = mode >> 3;
+            tb_size_t n = mode >> 3;
             tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
             // save result

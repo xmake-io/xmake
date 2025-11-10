@@ -34,10 +34,10 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_void_t xm_io_poller_event(tb_poller_ref_t        poller,
+static tb_void_t xm_io_poller_event(tb_poller_ref_t poller,
                                     tb_poller_object_ref_t object,
-                                    tb_long_t              events,
-                                    tb_cpointer_t          priv) {
+                                    tb_long_t events,
+                                    tb_cpointer_t priv) {
     xm_poller_state_t *state = (xm_poller_state_t *)tb_poller_priv(poller);
     tb_assert_and_check_return(state && state->lua);
 
@@ -85,7 +85,7 @@ tb_int_t xm_io_poller_wait(lua_State *lua) {
 
     // reset events count
     xm_poller_state_t *state = (xm_poller_state_t *)tb_poller_priv(poller);
-    state->events_count      = 0;
+    state->events_count = 0;
 
     // wait it
     lua_newtable(lua);

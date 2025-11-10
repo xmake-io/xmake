@@ -217,7 +217,7 @@ static WINDOW *xm_curses_window_check(lua_State *lua, int index) {
 
 // tostring(window)
 static int xm_curses_window_tostring(lua_State *lua) {
-    WINDOW    **w = xm_curses_window_get(lua, 1);
+    WINDOW **w = xm_curses_window_get(lua, 1);
     char const *s = NULL;
     if (*w)
         s = (char const *)lua_touserdata(lua, 1);
@@ -228,8 +228,8 @@ static int xm_curses_window_tostring(lua_State *lua) {
 // window:move(y, x)
 static int xm_curses_window_move(lua_State *lua) {
     WINDOW *w = xm_curses_window_check(lua, 1);
-    int     y = luaL_checkint(lua, 2);
-    int     x = luaL_checkint(lua, 3);
+    int y = luaL_checkint(lua, 2);
+    int x = luaL_checkint(lua, 3);
     lua_pushboolean(lua, XM_CURSES_OK(wmove(w, y, x)));
     return 1;
 }
@@ -237,7 +237,7 @@ static int xm_curses_window_move(lua_State *lua) {
 // window:getyx(y, x)
 static int xm_curses_window_getyx(lua_State *lua) {
     WINDOW *w = xm_curses_window_check(lua, 1);
-    int     y, x;
+    int y, x;
     getyx(w, y, x);
     lua_pushnumber(lua, y);
     lua_pushnumber(lua, x);
@@ -247,7 +247,7 @@ static int xm_curses_window_getyx(lua_State *lua) {
 // window:getmaxyx(y, x)
 static int xm_curses_window_getmaxyx(lua_State *lua) {
     WINDOW *w = xm_curses_window_check(lua, 1);
-    int     y, x;
+    int y, x;
     getmaxyx(w, y, x);
     lua_pushnumber(lua, y);
     lua_pushnumber(lua, x);
@@ -266,17 +266,17 @@ static int xm_curses_window_delwin(lua_State *lua) {
 
 // window:addch(ch)
 static int xm_curses_window_addch(lua_State *lua) {
-    WINDOW *w  = xm_curses_window_check(lua, 1);
-    chtype  ch = xm_curses_checkch(lua, 2);
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    chtype ch = xm_curses_checkch(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(waddch(w, ch)));
     return 1;
 }
 
 // window:addnstr(str)
 static int xm_curses_window_addnstr(lua_State *lua) {
-    WINDOW     *w   = xm_curses_window_check(lua, 1);
+    WINDOW *w = xm_curses_window_check(lua, 1);
     const char *str = luaL_checkstring(lua, 2);
-    int         n   = luaL_optint(lua, 3, -1);
+    int n = luaL_optint(lua, 3, -1);
     if (n < 0)
         n = (int)lua_strlen(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(waddnstr(w, str, n)));
@@ -285,8 +285,8 @@ static int xm_curses_window_addnstr(lua_State *lua) {
 
 // window:keypad(true)
 static int xm_curses_window_keypad(lua_State *lua) {
-    WINDOW *w       = xm_curses_window_check(lua, 1);
-    int     enabled = lua_isnoneornil(lua, 2) ? 1 : lua_toboolean(lua, 2);
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int enabled = lua_isnoneornil(lua, 2) ? 1 : lua_toboolean(lua, 2);
     if (enabled) {
         // on WIN32 ALT keys need to be mapped, so to make sure you get the wanted keys,
         // only makes sense when using keypad(true) and echo(false)
@@ -298,24 +298,24 @@ static int xm_curses_window_keypad(lua_State *lua) {
 
 // window:meta(true)
 static int xm_curses_window_meta(lua_State *lua) {
-    WINDOW *w       = xm_curses_window_check(lua, 1);
-    int     enabled = lua_toboolean(lua, 2);
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int enabled = lua_toboolean(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(meta(w, enabled)));
     return 1;
 }
 
 // window:nodelay(true)
 static int xm_curses_window_nodelay(lua_State *lua) {
-    WINDOW *w       = xm_curses_window_check(lua, 1);
-    int     enabled = lua_toboolean(lua, 2);
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int enabled = lua_toboolean(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(nodelay(w, enabled)));
     return 1;
 }
 
 // window:leaveok(true)
 static int xm_curses_window_leaveok(lua_State *lua) {
-    WINDOW *w       = xm_curses_window_check(lua, 1);
-    int     enabled = lua_toboolean(lua, 2);
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int enabled = lua_toboolean(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(leaveok(w, enabled)));
     return 1;
 }
@@ -323,7 +323,7 @@ static int xm_curses_window_leaveok(lua_State *lua) {
 // window:getch()
 static int xm_curses_window_getch(lua_State *lua) {
     WINDOW *w = xm_curses_window_check(lua, 1);
-    int     c = xm_curses_window_getch_impl(w);
+    int c = xm_curses_window_getch_impl(w);
     if (c == ERR)
         return 0;
     lua_pushnumber(lua, c);
@@ -332,39 +332,39 @@ static int xm_curses_window_getch(lua_State *lua) {
 
 // window:attroff(attrs)
 static int xm_curses_window_attroff(lua_State *lua) {
-    WINDOW *w     = xm_curses_window_check(lua, 1);
-    int     attrs = luaL_checkint(lua, 2);
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int attrs = luaL_checkint(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(wattroff(w, attrs)));
     return 1;
 }
 
 // window:attron(attrs)
 static int xm_curses_window_attron(lua_State *lua) {
-    WINDOW *w     = xm_curses_window_check(lua, 1);
-    int     attrs = luaL_checkint(lua, 2);
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int attrs = luaL_checkint(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(wattron(w, attrs)));
     return 1;
 }
 
 // window:attrset(attrs)
 static int xm_curses_window_attrset(lua_State *lua) {
-    WINDOW *w     = xm_curses_window_check(lua, 1);
-    int     attrs = luaL_checkint(lua, 2);
+    WINDOW *w = xm_curses_window_check(lua, 1);
+    int attrs = luaL_checkint(lua, 2);
     lua_pushboolean(lua, XM_CURSES_OK(wattrset(w, attrs)));
     return 1;
 }
 
 // window:copywin(...)
 static int xm_curses_window_copywin(lua_State *lua) {
-    WINDOW *srcwin  = xm_curses_window_check(lua, 1);
-    WINDOW *dstwin  = xm_curses_window_check(lua, 2);
-    int     sminrow = luaL_checkint(lua, 3);
-    int     smincol = luaL_checkint(lua, 4);
-    int     dminrow = luaL_checkint(lua, 5);
-    int     dmincol = luaL_checkint(lua, 6);
-    int     dmaxrow = luaL_checkint(lua, 7);
-    int     dmaxcol = luaL_checkint(lua, 8);
-    int     overlay = lua_toboolean(lua, 9);
+    WINDOW *srcwin = xm_curses_window_check(lua, 1);
+    WINDOW *dstwin = xm_curses_window_check(lua, 2);
+    int sminrow = luaL_checkint(lua, 3);
+    int smincol = luaL_checkint(lua, 4);
+    int dminrow = luaL_checkint(lua, 5);
+    int dmincol = luaL_checkint(lua, 6);
+    int dmaxrow = luaL_checkint(lua, 7);
+    int dmaxcol = luaL_checkint(lua, 8);
+    int overlay = lua_toboolean(lua, 9);
     lua_pushboolean(lua,
                     XM_CURSES_OK(
                         copywin(srcwin, dstwin, sminrow, smincol, dminrow, dmincol, dmaxrow, dmaxcol, overlay)));

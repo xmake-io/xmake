@@ -58,7 +58,7 @@ tb_void_t lua_pushsemver(lua_State *lua, semver_t const *semver) {
     lua_pushstring(lua, "prerelease");
     lua_newtable(lua);
 
-    tb_uchar_t         i  = 0;
+    tb_uchar_t i = 0;
     semver_id_t const *id = &semver->prerelease;
     while (id && id->len) {
         if (id->numeric) {

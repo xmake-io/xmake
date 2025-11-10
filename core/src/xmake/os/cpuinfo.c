@@ -65,15 +65,15 @@ static tb_uint64_t xm_os_cpuinfo_subtract_times(FILETIME const *one, FILETIME co
 
 static tb_float_t xm_os_cpuinfo_usagerate() {
 #if defined(TB_CONFIG_OS_MACOSX)
-    tb_float_t             usagerate = 0;
-    natural_t              cpu_count = 0;
+    tb_float_t usagerate = 0;
+    natural_t cpu_count = 0;
     processor_info_array_t cpuinfo;
     mach_msg_type_number_t cpuinfo_count;
-    static tb_hong_t       s_time = 0;
+    static tb_hong_t s_time = 0;
     if (tb_mclock() - s_time > 1000 &&
         host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &cpu_count, &cpuinfo, &cpuinfo_count) ==
             KERN_SUCCESS) {
-        static processor_info_array_t s_cpuinfo_prev       = tb_null;
+        static processor_info_array_t s_cpuinfo_prev = tb_null;
         static mach_msg_type_number_t s_cpuinfo_count_prev = 0;
         for (tb_int_t i = 0; i < cpu_count; ++i) {
             tb_int_t use, total;
@@ -96,27 +96,27 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
         if (s_cpuinfo_prev) {
             vm_deallocate(mach_task_self(), (vm_address_t)s_cpuinfo_prev, sizeof(integer_t) * s_cpuinfo_count_prev);
         }
-        s_time               = tb_mclock();
-        s_cpuinfo_prev       = cpuinfo;
+        s_time = tb_mclock();
+        s_cpuinfo_prev = cpuinfo;
         s_cpuinfo_count_prev = cpuinfo_count;
     }
     return cpu_count > 0 ? usagerate / cpu_count : 0;
 #elif defined(TB_CONFIG_OS_WINDOWS)
     // kernel include idle_time
     tb_float_t usagerate = 0;
-    FILETIME   idle, kernel, user;
+    FILETIME idle, kernel, user;
     if (GetSystemTimes(&idle, &kernel, &user)) {
-        static FILETIME idle_prev   = { 0 };
+        static FILETIME idle_prev = { 0 };
         static FILETIME kernel_prev = { 0 };
-        static FILETIME user_prev   = { 0 };
+        static FILETIME user_prev = { 0 };
 
         if (idle_prev.dwLowDateTime != 0 && idle_prev.dwHighDateTime != 0) {
-            tb_uint64_t idle_diff   = xm_os_cpuinfo_subtract_times(&idle, &idle_prev);
+            tb_uint64_t idle_diff = xm_os_cpuinfo_subtract_times(&idle, &idle_prev);
             tb_uint64_t kernel_diff = xm_os_cpuinfo_subtract_times(&kernel, &kernel_prev);
-            tb_uint64_t user_diff   = xm_os_cpuinfo_subtract_times(&user, &user_prev);
+            tb_uint64_t user_diff = xm_os_cpuinfo_subtract_times(&user, &user_prev);
 
             // kernel_time - idle_time = kernel_time, because kernel include idle_time
-            tb_uint64_t sys_total    = kernel_diff + user_diff;
+            tb_uint64_t sys_total = kernel_diff + user_diff;
             tb_uint64_t kernel_total = kernel_diff - idle_diff;
 
             // sometimes kernel_time > idle_time
@@ -125,7 +125,7 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
             }
         }
 
-        idle_prev   = idle;
+        idle_prev = idle;
         kernel_prev = kernel;
         user_prev   = user;
     }
@@ -135,8 +135,8 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
     if (tb_file_info("/proc/stat", tb_null)) {
         FILE *fp = fopen("/proc/stat", "r");
         if (fp) {
-            tb_char_t         line[8192];
-            static tb_int64_t total_prev  = 0;
+            tb_char_t line[8192];
+            static tb_int64_t total_prev = 0;
             static tb_int64_t active_prev = 0;
             while (!feof(fp)) {
                 /* cpu  548760 0 867417 102226682 12430 0 9089 0 0 0
@@ -172,10 +172,10 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
                                      &guest_nice)) {
                         tb_int64_t active = (tb_int64_t)(user + nice + sys + irq + softirq + steal + guest +
                                                          guest_nice);
-                        tb_int64_t total  = (tb_int64_t)(user + nice + sys + idle + iowait + irq + softirq + steal +
+                        tb_int64_t total = (tb_int64_t)(user + nice + sys + idle + iowait + irq + softirq + steal +
                                                         guest + guest_nice);
                         if (total_prev > 0 && active_prev > 0) {
-                            tb_int64_t total_diff  = total - total_prev;
+                            tb_int64_t total_diff = total - total_prev;
                             tb_int64_t active_diff = active - active_prev;
                             if (total_diff > 0) {
                                 usagerate = (tb_float_t)((tb_double_t)active_diff / total_diff);
@@ -199,29 +199,29 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
 #define CP_IDLE 4
 #define CPUSTATES 5
 
-    static tb_int64_t total_prev  = 0;
+    static tb_int64_t total_prev = 0;
     static tb_int64_t active_prev = 0;
 
-    tb_float_t usagerate         = 0;
-    long       states[CPUSTATES] = { 0 };
-    size_t     states_size       = sizeof(states);
+    tb_float_t usagerate = 0;
+    long states[CPUSTATES] = { 0 };
+    size_t states_size = sizeof(states);
     if (sysctlbyname("kern.cp_time", &states, &states_size, tb_null, 0) == 0) {
         tb_long_t user = states[CP_USER];
         tb_long_t nice = states[CP_NICE];
-        tb_long_t sys  = states[CP_SYS];
+        tb_long_t sys = states[CP_SYS];
         tb_long_t intr = states[CP_INTR];
         tb_long_t idle = states[CP_IDLE];
 
         tb_int64_t active = user + nice + sys + intr;
-        tb_int64_t total  = user + nice + sys + idle + intr;
+        tb_int64_t total = user + nice + sys + idle + intr;
         if (total_prev > 0 && active_prev > 0) {
-            tb_int64_t total_diff  = total - total_prev;
+            tb_int64_t total_diff = total - total_prev;
             tb_int64_t active_diff = active - active_prev;
             if (total_diff > 0) {
                 usagerate = (tb_float_t)((tb_double_t)active_diff / total_diff);
             }
         }
-        total_prev  = total;
+        total_prev = total;
         active_prev = active;
     }
     return usagerate;

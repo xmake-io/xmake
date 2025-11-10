@@ -37,7 +37,7 @@ tb_int_t xm_hash_rand128(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     static union {
-        tb_byte_t   b[16];
+        tb_byte_t b[16];
         tb_uint64_t word[2];
     } s_seed = { 0 };
     if (!s_seed.word[0] && !s_seed.word[1]) {

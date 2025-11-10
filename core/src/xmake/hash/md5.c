@@ -39,7 +39,7 @@ tb_int_t xm_hash_md5(lua_State *lua) {
     // is bytes? get data and size
     if (xm_lua_isinteger(lua, 1) && xm_lua_isinteger(lua, 2)) {
         tb_byte_t const *data = (tb_byte_t const *)(tb_size_t)(tb_long_t)lua_tointeger(lua, 1);
-        tb_size_t        size = (tb_size_t)lua_tointeger(lua, 2);
+        tb_size_t size = (tb_size_t)lua_tointeger(lua, 2);
         if (!data || !size) {
             lua_pushnil(lua);
             lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
@@ -65,7 +65,7 @@ tb_int_t xm_hash_md5(lua_State *lua) {
     tb_check_return_val(filename, 0);
 
     // load data from file
-    tb_bool_t       ok     = tb_false;
+    tb_bool_t ok = tb_false;
     tb_stream_ref_t stream = tb_stream_init_from_file(filename, TB_FILE_MODE_RO);
     if (stream) {
         // open stream

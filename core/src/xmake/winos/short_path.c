@@ -63,7 +63,7 @@ tb_int_t xm_winos_short_path(lua_State *lua) {
 
     // return result
     tb_char_t *short_path_a = (tb_char_t *)long_path_w;
-    tb_size_t  short_path_n = tb_wtoa(short_path_a, short_path_w, TB_PATH_MAXN);
+    tb_size_t short_path_n = tb_wtoa(short_path_a, short_path_w, TB_PATH_MAXN);
     if (short_path_n == (tb_size_t)-1) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "invalid short path from %s!", long_path);

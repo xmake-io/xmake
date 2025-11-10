@@ -55,7 +55,7 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv) {
 
         // pass callback
         tb_char_t const *callback_data = tb_string_cstr(&thread->callback);
-        tb_size_t        callback_size = tb_string_size(&thread->callback);
+        tb_size_t callback_size = tb_string_size(&thread->callback);
         if (callback_data && callback_size) {
             lua_pushlstring(lua, callback_data, callback_size);
             lua_setglobal(lua, "_THREAD_CALLBACK");
@@ -63,7 +63,7 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv) {
 
         // pass callinfo
         tb_char_t const *callinfo_data = tb_string_cstr(&thread->callinfo);
-        tb_size_t        callinfo_size = tb_string_size(&thread->callinfo);
+        tb_size_t callinfo_size = tb_string_size(&thread->callinfo);
         if (callinfo_data && callinfo_size) {
             lua_pushlstring(lua, callinfo_data, callinfo_size);
             lua_setglobal(lua, "_THREAD_CALLINFO");
@@ -85,19 +85,19 @@ static tb_int_t xm_thread_func(tb_cpointer_t priv) {
 tb_int_t xm_thread_init(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_bool_t    ok     = tb_false;
+    tb_bool_t ok = tb_false;
     xm_thread_t *thread = tb_null;
     do {
         // get thread name
         tb_char_t const *name = luaL_checkstring(lua, 1);
 
         // get callback
-        size_t           callback_size = 0;
+        size_t callback_size = 0;
         tb_char_t const *callback_data = luaL_checklstring(lua, 2, &callback_size);
         tb_assert_and_check_break(callback_data && callback_size);
 
         // get callinfo
-        size_t           callinfo_size = 0;
+        size_t callinfo_size = 0;
         tb_char_t const *callinfo_data = luaL_checklstring(lua, 3, &callinfo_size);
         tb_assert_and_check_break(callinfo_data && callinfo_size);
 

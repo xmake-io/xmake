@@ -37,10 +37,10 @@ tb_int_t xm_string_endswith(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the string and suffix
-    size_t           string_size = 0;
-    size_t           suffix_size = 0;
-    tb_char_t const *string      = luaL_checklstring(lua, 1, &string_size);
-    tb_char_t const *suffix      = luaL_checklstring(lua, 2, &suffix_size);
+    size_t string_size = 0;
+    size_t suffix_size = 0;
+    tb_char_t const *string = luaL_checklstring(lua, 1, &string_size);
+    tb_char_t const *suffix = luaL_checklstring(lua, 2, &suffix_size);
     tb_check_return_val(string && suffix, 0);
 
     // string:endswith(suffix)?

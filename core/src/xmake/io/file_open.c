@@ -46,8 +46,8 @@
 static tb_size_t xm_io_file_detect_charset(tb_byte_t const **data_ptr, tb_long_t size) {
     tb_assert(data_ptr && *data_ptr);
 
-    tb_byte_t const *data    = *data_ptr;
-    tb_size_t        charset = XM_IO_FILE_ENCODING_BINARY;
+    tb_byte_t const *data = *data_ptr;
+    tb_size_t charset = XM_IO_FILE_ENCODING_BINARY;
     do {
         // is luajit bitcode? open as binary
         if (size >= 3 && data[0] == 27 && data[1] == 'L' && data[2] == 'J') {
@@ -77,9 +77,9 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const **data_ptr, tb_long_t
 
         tb_sint16_t utf16be_conf = 0;
         tb_sint16_t utf16le_conf = 0;
-        tb_sint16_t utf8_conf    = 0;
-        tb_sint16_t ascii_conf   = 0;
-        tb_sint16_t zero_count   = 0;
+        tb_sint16_t utf8_conf = 0;
+        tb_sint16_t ascii_conf = 0;
+        tb_sint16_t zero_count = 0;
         for (tb_long_t i = 0; i < (size - 4) && i < CHECK_SIZE; i++) {
             if (data[i] == 0) {
                 zero_count++;
@@ -150,13 +150,13 @@ static tb_size_t xm_io_file_detect_encoding(tb_stream_ref_t stream, tb_long_t *p
     tb_assert_and_check_return_val(stream && pbomoff, XM_IO_FILE_ENCODING_BINARY);
 
     // detect encoding
-    tb_byte_t *data     = tb_null;
-    tb_size_t  encoding = XM_IO_FILE_ENCODING_BINARY;
-    tb_long_t  size     = tb_stream_peek(stream, &data, CHECK_SIZE);
+    tb_byte_t *data = tb_null;
+    tb_size_t encoding = XM_IO_FILE_ENCODING_BINARY;
+    tb_long_t size = tb_stream_peek(stream, &data, CHECK_SIZE);
     if (size > 0) {
         tb_byte_t const *p = data;
-        encoding           = xm_io_file_detect_charset(&p, size);
-        *pbomoff           = p - data;
+        encoding = xm_io_file_detect_charset(&p, size);
+        *pbomoff = p - data;
     }
     return encoding;
 }
@@ -170,7 +170,7 @@ tb_int_t xm_io_file_open(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get file path and mode
-    tb_char_t const *path    = luaL_checkstring(lua, 1);
+    tb_char_t const *path = luaL_checkstring(lua, 1);
     tb_char_t const *modestr = luaL_optstring(lua, 2, "r");
     tb_assert_and_check_return_val(path && modestr, 0);
 
@@ -190,10 +190,10 @@ tb_int_t xm_io_file_open(lua_State *lua) {
     }
 
     // get file encoding
-    tb_long_t       bomoff   = 0;
-    tb_stream_ref_t stream   = tb_null;
-    tb_bool_t       update   = !!tb_strchr(modestr, '+');
-    tb_size_t       encoding = XM_IO_FILE_ENCODING_UNKNOWN;
+    tb_long_t bomoff = 0;
+    tb_stream_ref_t stream = tb_null;
+    tb_bool_t update = !!tb_strchr(modestr, '+');
+    tb_size_t encoding = XM_IO_FILE_ENCODING_UNKNOWN;
     if (modestr[1] == 'b' || (update && modestr[2] == 'b')) {
         encoding = XM_IO_FILE_ENCODING_BINARY;
     } else if (tb_strstr(modestr, "utf8") || tb_strstr(modestr, "utf-8")) {
@@ -236,9 +236,9 @@ tb_int_t xm_io_file_open(lua_State *lua) {
     }
 
     // open file
-    tb_bool_t       open_ok  = tb_false;
+    tb_bool_t open_ok = tb_false;
     tb_stream_ref_t file_ref = tb_null;
-    tb_stream_ref_t fstream  = tb_null;
+    tb_stream_ref_t fstream = tb_null;
     do {
         // init stream from file
         stream = stream ? stream : tb_stream_init_from_file(path, mode);
@@ -298,12 +298,12 @@ tb_int_t xm_io_file_open(lua_State *lua) {
 
     // init file
     file->u.file_ref = file_ref;
-    file->stream     = stream;
-    file->fstream    = fstream;
-    file->mode       = mode;
-    file->type       = XM_IO_FILE_TYPE_FILE;
-    file->encoding   = encoding;
-    file->utfbom     = utfbom;
+    file->stream = stream;
+    file->fstream = fstream;
+    file->mode = mode;
+    file->type = XM_IO_FILE_TYPE_FILE;
+    file->encoding = encoding;
+    file->utfbom = utfbom;
 
     // init the read/write line cache buffer
     tb_buffer_init(&file->rcache);

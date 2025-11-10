@@ -75,14 +75,14 @@ tb_int_t xm_io_socket_recvfrom(lua_State *lua) {
     // recv data
     tb_ipaddr_t ipaddr;
     tb_ipaddr_clear(&ipaddr);
-    tb_int_t  retn = 1;
+    tb_int_t retn = 1;
     tb_long_t real = tb_socket_urecv(sock, &ipaddr, data, size);
     lua_pushinteger(lua, (tb_int_t)real);
     if (real > 0) {
         retn = 2;
         lua_pushnil(lua);
         if (!tb_ipaddr_is_empty(&ipaddr)) {
-            tb_char_t        buffer[256];
+            tb_char_t buffer[256];
             tb_char_t const *ipstr = tb_ipaddr_ip_cstr(&ipaddr, buffer, sizeof(buffer));
             if (ipstr) {
                 lua_pushstring(lua, ipstr);

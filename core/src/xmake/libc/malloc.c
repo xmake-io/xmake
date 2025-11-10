@@ -38,7 +38,7 @@ tb_int_t xm_libc_malloc(lua_State *lua) {
 
     // do malloc
     tb_pointer_t data = tb_null;
-    tb_long_t    size = (tb_long_t)luaL_checkinteger(lua, 1);
+    tb_long_t size = (tb_long_t)luaL_checkinteger(lua, 1);
     if (size > 0) {
         data = tb_malloc(size);
     }

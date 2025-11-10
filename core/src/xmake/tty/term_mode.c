@@ -49,7 +49,7 @@ tb_int_t xm_tty_term_mode(lua_State *lua) {
     tb_int_t stdtype = (tb_int_t)luaL_checkinteger(lua, 1);
 
     // get and set terminal mode
-    DWORD  mode           = 0;
+    DWORD mode = 0;
     HANDLE console_handle = INVALID_HANDLE_VALUE;
     switch (stdtype) {
     case 1:

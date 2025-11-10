@@ -40,7 +40,7 @@ static tb_void_t xm_string_split_str(lua_State       *lua,
                                      tb_size_t        ndls,
                                      tb_bool_t        strict,
                                      tb_int_t         limit) {
-    tb_int_t         num = 0;
+    tb_int_t num = 0;
     tb_char_t const *end = cstr + nstr;
     tb_char_t const *pos = tb_strstr(cstr, cdls); // faster than tb_strnstr()
     while (pos && pos < end) {
@@ -66,7 +66,7 @@ static tb_void_t xm_string_split_str(lua_State       *lua,
 }
 static tb_void_t xm_string_split_chr(
     lua_State *lua, tb_char_t const *cstr, tb_size_t nstr, tb_char_t ch, tb_bool_t strict, tb_int_t limit) {
-    tb_int_t         num = 0;
+    tb_int_t num = 0;
     tb_char_t const *end = cstr + nstr;
     tb_char_t const *pos = tb_strchr(cstr, ch); // faster than tb_strnchr()
     while (pos && pos < end) {
@@ -106,11 +106,11 @@ tb_int_t xm_string_split(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get string
-    size_t           nstr = 0;
+    size_t nstr = 0;
     tb_char_t const *cstr = luaL_checklstring(lua, 1, &nstr);
 
     // get delimiter
-    size_t           ndls = 0;
+    size_t ndls = 0;
     tb_char_t const *cdls = luaL_checklstring(lua, 2, &ndls);
 
     // is strict?

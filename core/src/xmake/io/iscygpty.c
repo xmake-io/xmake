@@ -60,17 +60,17 @@
 #define USE_DYNFILEID // we need to enable it for supporting xp
 #endif
 #ifdef USE_DYNFILEID
-typedef BOOL(WINAPI *pfnGetFileInformationByHandleEx)(HANDLE                    hFile,
+typedef BOOL(WINAPI *pfnGetFileInformationByHandleEx)(HANDLE hFile,
                                                       FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
-                                                      LPVOID                    lpFileInformation,
-                                                      DWORD                     dwBufferSize);
+                                                      LPVOID lpFileInformation,
+                                                      DWORD dwBufferSize);
 static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
 
 #ifndef USE_FILEEXTD
-static BOOL WINAPI stub_GetFileInformationByHandleEx(HANDLE                    hFile,
+static BOOL WINAPI stub_GetFileInformationByHandleEx(HANDLE hFile,
                                                      FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
-                                                     LPVOID                    lpFileInformation,
-                                                     DWORD                     dwBufferSize) {
+                                                     LPVOID lpFileInformation,
+                                                     DWORD dwBufferSize) {
     return FALSE;
 }
 #endif
@@ -101,9 +101,9 @@ int is_cygpty(HANDLE h) {
 #if defined(STUB_IMPL)
     return 0;
 #elif _WIN32_WINNT >= 0x0600
-    int             size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * (MAX_PATH - 1);
+    int size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * (MAX_PATH - 1);
     FILE_NAME_INFO *nameinfo;
-    WCHAR          *p = NULL;
+    WCHAR *p = NULL;
 
     setup_fileid_api();
 
@@ -122,7 +122,7 @@ int is_cygpty(HANDLE h) {
      * '\{cygwin,msys}-XXXXXXXXXXXXXXXX-ptyN-{from,to}-master' */
     if (pGetFileInformationByHandleEx(h, FileNameInfo, nameinfo, size)) {
         nameinfo->FileName[nameinfo->FileNameLength / sizeof(WCHAR)] = L'\0';
-        p                                                            = nameinfo->FileName;
+        p = nameinfo->FileName;
         if (is_wprefix(p, L"\\cygwin-")) { /* Cygwin */
             p += 8;
         } else if (is_wprefix(p, L"\\msys-")) { /* MSYS and MSYS2 */

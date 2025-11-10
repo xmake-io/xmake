@@ -103,12 +103,12 @@ static tb_void_t xm_os_getenvs_process_line(lua_State *lua, tb_char_t const *lin
     xm_os_getenvs_trim(&value_start, &value_end);
 
     // get key and value lengths
-    tb_size_t key_len   = key_end - key_start;
+    tb_size_t key_len = key_end - key_start;
     tb_size_t value_len = value_end > value_start ? value_end - value_start : 0;
 
     // handle Windows-specific PATH conversion
     tb_char_t const *final_key_start = key_start;
-    tb_size_t        final_key_len   = key_len;
+    tb_size_t final_key_len = key_len;
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     if (key_len == 4 && tb_strnicmp(key_start, "path", 4) == 0) {
         // use "PATH" instead of "path"
@@ -134,9 +134,9 @@ tb_int_t xm_os_getenvs(lua_State *lua) {
     tb_wchar_t const *p = (tb_wchar_t const *)GetEnvironmentStringsW();
     if (p) {
         tb_char_t *data = tb_null;
-        tb_size_t  maxn = 0;
-        tb_char_t  line[TB_PATH_MAXN];
-        tb_size_t  n = 0;
+        tb_size_t maxn = 0;
+        tb_char_t line[TB_PATH_MAXN];
+        tb_size_t n = 0;
         while (*p) {
             n = tb_wcslen(p);
             if (n + 1 < tb_arrayn(line)) {

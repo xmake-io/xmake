@@ -54,7 +54,7 @@
 static tb_size_t xm_io_stdfile_isatty(tb_size_t type) {
     tb_bool_t answer = tb_false;
 #if defined(TB_CONFIG_OS_WINDOWS)
-    DWORD  mode;
+    DWORD mode;
     HANDLE console_handle = tb_null;
     switch (type) {
     case XM_IO_FILE_TYPE_STDIN:
@@ -98,7 +98,7 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type) {
 static tb_void_t xm_io_stdfile_init_buffer(tb_size_t type) {
 #if !defined(TB_CONFIG_OS_WINDOWS)
     struct stat stats;
-    tb_int_t    size = BUFSIZ;
+    tb_int_t size = BUFSIZ;
     if (fstat(fileno(stdout), &stats) != -1) {
         size = stats.st_blksize;
     }

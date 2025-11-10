@@ -36,7 +36,7 @@
 tb_int_t xm_thread_semaphore_init(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_bool_t              ok               = tb_false;
+    tb_bool_t ok = tb_false;
     xm_thread_semaphore_t *thread_semaphore = tb_null;
     do {
         tb_long_t value = (tb_long_t)luaL_checknumber(lua, 1);

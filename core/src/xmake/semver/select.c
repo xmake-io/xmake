@@ -87,7 +87,7 @@ static tb_bool_t xm_semver_select_from_versions_tags2(
         lua_gettable(lua, fromidx);
 
         tb_char_t const *source_str = luaL_checkstring(lua, -1);
-        tb_size_t        source_len = tb_strlen(source_str);
+        tb_size_t source_len = tb_strlen(source_str);
         lua_pop(lua, 1);
         if (source_len == version_len && tb_strncmp(source_str, version_str, version_len) == 0) {
             lua_createtable(lua, 0, 2);
@@ -111,7 +111,7 @@ static tb_bool_t xm_semver_select_from_branches(lua_State       *lua,
         lua_gettable(lua, fromidx);
 
         tb_char_t const *source_str = luaL_checkstring(lua, -1);
-        tb_size_t        source_len = tb_strlen(source_str);
+        tb_size_t source_len = tb_strlen(source_str);
         lua_pop(lua, 1);
         if (source_len == range_len && tb_memcmp(source_str, range_str, source_len) == 0) {
             lua_createtable(lua, 0, 2);
@@ -177,12 +177,12 @@ tb_int_t xm_semver_select(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // select version
-    tb_bool_t        ok        = tb_false;
-    tb_bool_t        is_range  = tb_false;
+    tb_bool_t ok = tb_false;
+    tb_bool_t is_range = tb_false;
     tb_char_t const *range_str = tb_null;
-    semver_t         semver    = { 0 };
-    semvers_t        matches   = { 0 };
-    semver_range_t   range     = { 0 };
+    semver_t semver = { 0 };
+    semvers_t matches = { 0 };
+    semver_range_t range = { 0 };
     do {
         // get the version range string
         range_str = luaL_checkstring(lua, 1);

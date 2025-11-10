@@ -36,13 +36,13 @@
 
 // the enum info type
 typedef struct __xm_winos_registry_enum_info_t {
-    lua_State       *lua;
-    HKEY             key;
-    tb_int_t         ok;
+    lua_State *lua;
+    HKEY key;
+    tb_int_t ok;
     tb_char_t const *error;
-    tb_int_t         count;
-    tb_wchar_t       key_name[1024];
-    tb_char_t        key_path_a[TB_PATH_MAXN];
+    tb_int_t count;
+    tb_wchar_t key_name[1024];
+    tb_char_t key_path_a[TB_PATH_MAXN];
 } xm_winos_registry_enum_info_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -52,10 +52,10 @@ static tb_void_t xm_winos_registry_enum_keys(xm_winos_registry_enum_info_t *info
                                              tb_wchar_t const              *rootdir,
                                              tb_long_t                      recursion) {
     // enum keys
-    HKEY        keynew        = tb_null;
-    lua_State  *lua           = info->lua;
-    tb_wchar_t *key_path      = tb_null;
-    tb_size_t   key_path_maxn = TB_PATH_MAXN;
+    HKEY keynew = tb_null;
+    lua_State *lua = info->lua;
+    tb_wchar_t *key_path = tb_null;
+    tb_size_t key_path_maxn = TB_PATH_MAXN;
     do {
         // open registry key
         if (RegOpenKeyExW(info->key, rootdir, 0, KEY_READ, &keynew) != ERROR_SUCCESS && keynew) {
@@ -103,7 +103,7 @@ static tb_void_t xm_winos_registry_enum_keys(xm_winos_registry_enum_info_t *info
         DWORD i = 0;
         for (i = 0; i < key_name_num && info->ok > 0; i++) {
             // get key name
-            info->key_name[0]   = L'\0';
+            info->key_name[0] = L'\0';
             DWORD key_name_size = tb_arrayn(info->key_name);
             if (RegEnumKeyExW(keynew, i, info->key_name, &key_name_size, tb_null, tb_null, tb_null, tb_null) !=
                 ERROR_SUCCESS) {
@@ -174,37 +174,37 @@ tb_int_t xm_winos_registry_keys(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments
-    tb_char_t const *rootkey     = luaL_checkstring(lua, 1);
-    tb_char_t const *rootdir     = luaL_checkstring(lua, 2);
-    tb_long_t        recursion   = (tb_long_t)lua_tointeger(lua, 3);
-    tb_bool_t        is_function = lua_isfunction(lua, 4);
+    tb_char_t const *rootkey = luaL_checkstring(lua, 1);
+    tb_char_t const *rootdir = luaL_checkstring(lua, 2);
+    tb_long_t recursion = (tb_long_t)lua_tointeger(lua, 3);
+    tb_bool_t is_function = lua_isfunction(lua, 4);
     tb_check_return_val(rootkey && rootdir && is_function, 0);
 
     // enum keys
-    tb_bool_t ok    = tb_false;
-    tb_int_t  count = 0;
-    HKEY      key   = tb_null;
+    tb_bool_t ok = tb_false;
+    tb_int_t count = 0;
+    HKEY key = tb_null;
     do {
         // get registry rootkey
-    if (!tb_strcmp(rootkey, "HKEY_CLASSES_ROOT")) {
+        if (!tb_strcmp(rootkey, "HKEY_CLASSES_ROOT")) {
             key = HKEY_CLASSES_ROOT;
-    } else if (!tb_strcmp(rootkey, "HKCR")) {
+        } else if (!tb_strcmp(rootkey, "HKCR")) {
             key = HKEY_CLASSES_ROOT;
-    } else if (!tb_strcmp(rootkey, "HKEY_CURRENT_CONFIG")) {
+        } else if (!tb_strcmp(rootkey, "HKEY_CURRENT_CONFIG")) {
             key = HKEY_CURRENT_CONFIG;
-    } else if (!tb_strcmp(rootkey, "HKCC")) {
+        } else if (!tb_strcmp(rootkey, "HKCC")) {
             key = HKEY_CURRENT_CONFIG;
-    } else if (!tb_strcmp(rootkey, "HKEY_CURRENT_USER")) {
+        } else if (!tb_strcmp(rootkey, "HKEY_CURRENT_USER")) {
             key = HKEY_CURRENT_USER;
-    } else if (!tb_strcmp(rootkey, "HKCU")) {
+        } else if (!tb_strcmp(rootkey, "HKCU")) {
             key = HKEY_CURRENT_USER;
-    } else if (!tb_strcmp(rootkey, "HKEY_LOCAL_MACHINE")) {
+        } else if (!tb_strcmp(rootkey, "HKEY_LOCAL_MACHINE")) {
             key = HKEY_LOCAL_MACHINE;
-    } else if (!tb_strcmp(rootkey, "HKLM")) {
+        } else if (!tb_strcmp(rootkey, "HKLM")) {
             key = HKEY_LOCAL_MACHINE;
-    } else if (!tb_strcmp(rootkey, "HKEY_USERS")) {
+        } else if (!tb_strcmp(rootkey, "HKEY_USERS")) {
             key = HKEY_USERS;
-    } else {
+        } else {
             lua_pushnil(lua);
             lua_pushfstring(lua, "invalid registry rootkey: %s", rootkey);
             break;

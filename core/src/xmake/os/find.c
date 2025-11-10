@@ -82,7 +82,7 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
         tb_bool_t excluded = tb_false;
         if (lua_istable(lua, 5)) {
             // the root directory
-            size_t           rootlen = 0;
+            size_t rootlen = 0;
             tb_char_t const *rootdir = luaL_checklstring(lua, 1, &rootlen);
             tb_assert_and_check_return_val(rootdir && rootlen, TB_DIRECTORY_WALK_CODE_END);
 
@@ -95,7 +95,7 @@ static tb_long_t xm_os_find_walk(tb_char_t const *path, tb_file_info_t const *in
             }
 
             // exclude paths
-            tb_int_t i     = 0;
+            tb_int_t i = 0;
             tb_int_t count = (tb_int_t)lua_objlen(lua, 5);
             for (i = 0; i < count && !excluded; i++) {
                 // get exclude

@@ -52,7 +52,7 @@ tb_int_t xm_fwatcher_wait(lua_State *lua) {
 
     // wait fwatcher event
     tb_fwatcher_event_t event;
-    tb_long_t           ok = tb_fwatcher_wait(fwatcher, &event, timeout);
+    tb_long_t ok = tb_fwatcher_wait(fwatcher, &event, timeout);
 
     // save result
     lua_pushinteger(lua, ok);
