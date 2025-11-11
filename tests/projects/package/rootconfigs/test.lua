@@ -9,5 +9,5 @@ function main(t)
     end
 
     -- test packagekey
-    os.execv(os.programfile(), {"lua", "-vD", "utils.ci.packageskey"})
+    os.execv("xmake", {"lua", "-vD", "utils.ci.packageskey"})
 end
