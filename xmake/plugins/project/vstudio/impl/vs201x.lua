@@ -401,7 +401,7 @@ function make(outputdir, vsinfo)
             if mode ~= config.mode() or arch ~= config.arch() then
 
                 -- reset project configs and caches
-                vsutils.reset_config_and_caches()
+                vsutils.reset_config_and_caches(mode, arch)
 
                 -- check platform
                 platform.load(config.plat(), arch):check()

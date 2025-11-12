@@ -64,7 +64,7 @@ function translate_path(filepath)
     return (filepath:gsub("::", "#"))
 end
 
-function reset_config_and_caches()
+function reset_config_and_caches(mode, arch)
     -- reload config, project and platform
     -- modify config
     config.set("as", nil, {force = true}) -- force to re-check as for ml/ml64
