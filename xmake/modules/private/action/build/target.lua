@@ -96,7 +96,10 @@ end
 function _add_targetjobs_plain_orders(jobgraph, target, dep, opt)
     local jobname, jobname_dep
     local job_kind = opt.job_kind
-    if job_kind == "build" then
+    -- Configure the build order only if dependency linking inheritance is not disabled.
+    -- e.g. add_deps("foo", {links = false})
+    -- @see https://github.com/xmake-io/xmake/issues/6925
+    if job_kind == "build" and target:extraconf("deps", dep:name(), "links") ~= false then
         jobname = target:fullname() .. "/link"
         jobname_dep = dep:fullname() .. "/link"
         if not jobgraph:has(jobname) then
@@ -115,7 +118,10 @@ end
 function _add_targetjobs_deep_orders(jobgraph, target, dep, opt)
     local jobname, jobname_dep
     local job_kind = opt.job_kind
-    local target_fence = opt.target_fence or dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false
+    local target_fence = opt.target_fence
+    if target_fence == nil and (job_kind == "prepare" or job_kind == "build") then
+        target_fence = dep:policy("build.fence") or dep:policy("build.across_targets_in_parallel") == false
+    end
     if target_fence then
         jobname = string.format("%s/begin_%s", target:fullname(), job_kind)
         jobname_dep = string.format("%s/end_%s", dep:fullname(), job_kind)
