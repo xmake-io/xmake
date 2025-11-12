@@ -449,26 +449,8 @@ function main(outputdir, vsinfo)
             -- trace
             print("checking for %s.%s ...", mode, arch)
 
-            -- reload config, project and platform
-            -- modify config
-            config.set("as", nil, {force = true}) -- force to re-check as for ml/ml64
-            config.set("mode", mode, {readonly = true, force = true})
-            config.set("arch", arch, {readonly = true, force = true})
-
-            -- clear all options
-            for _, opt in pairs(project.options()) do
-                if not config.readonly(opt:fullname()) then
-                    opt:clear()
-                end
-            end
-
-            -- clear cache
-            memcache.clear()
-            localcache.clear("detect")
-            localcache.clear("option")
-            localcache.clear("package")
-            localcache.clear("toolchain")
-            localcache.clear("cxxmodules")
+            -- reset project configs and caches
+            vsutils.reset_config_and_caches()
 
             -- check platform
             platform.load(config.plat(), arch):check()
