@@ -134,19 +134,11 @@ _ninja_escape() {
     case "${rest}" in
         *\$*)
             local result=""
-            while :; do
-                case "${rest}" in
-                    *\$*)
-                        result="${result}${rest%%\$*}\$\$"
-                        rest="${rest#*\$}"
-                        ;;
-                    *)
-                        result="${result}${rest}"
-                        break
-                        ;;
-                esac
+            while case "${rest}" in *\$*) true;; *) false;; esac; do
+                result="${result}${rest%%\$*}\$\$"
+                rest="${rest#*\$}"
             done
-            _ret="${result}"
+            _ret="${result}${rest}"
             ;;
         *)
             _ret="${rest}"
@@ -159,19 +151,12 @@ _shell_escape_single_quotes() {
     case "${value}" in
         *"'"*)
             local escaped=""
-            while :; do
-                case "${value}" in
-                    *"'"*)
-                        escaped="${escaped}${value%%\'*}'\"'\"'"
-                        value="${value#*\'}"
-                        ;;
-                    *)
-                        escaped="${escaped}${value}"
-                        break
-                        ;;
-                esac
+            while case "${value}" in *"'"*) true;; *) false;; esac; do
+                escaped="${escaped}${value%%\'*}"
+                escaped="${escaped}'\"'\"'"
+                value="${value#*\'}"
             done
-            _ret="'${escaped}'"
+            _ret="'${escaped}${value}'"
             ;;
         *)
             _ret="'${value}'"
@@ -4720,13 +4705,10 @@ _ninja_add_build_target() {
     _get_target_flags "${target}" "${toolkind}"; local linkflags="${_ret}"
     _toolchain_linkcmd "${toolkind}" "${targetfile}" "${objectfiles}" "${linkflags}"; local linkcmd="${_ret}"
 
-    local command=""
     local use_shell_wrapper=false
+    local command="mkdir -p \"${targetdir}\" && ${linkcmd}"
     if is_host "msys" "cygwin" "mingw"; then
         use_shell_wrapper=true
-        command="mkdir -p \"${targetdir}\" && ${linkcmd}"
-    else
-        command="mkdir -p \"${targetdir}\" && ${linkcmd}"
     fi
     local description="linking.${_target_mode} ${targetfile}"
 
