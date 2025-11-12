@@ -56,7 +56,7 @@ end
 function main(packages)
     if project.policy("package.requires_lock") then
         local plat = config.plat() or os.subhost()
-        local arch = config.arch() or so.subarch()
+        local arch = config.arch() or os.subarch()
         local key = plat .. "|" .. arch
         local results = os.isfile(project.requireslock()) and io.load(project.requireslock()) or {}
         results.__meta__ = results.__meta__ or {}
