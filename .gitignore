@@ -6,6 +6,7 @@
 build/
 makefile
 Makefile
+build.ninja
 
 # gcc cache
 gcm.cache
