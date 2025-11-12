@@ -4614,6 +4614,33 @@ _ninja_add_switches() {
 }
 
 _ninja_add_rules() {
+    _get_targets_toolkinds; local kinds="${_ret}"
+    local compile_kinds=""
+    local kind=""
+    for kind in ${kinds}; do
+        case "${kind}" in
+            cc|cxx|mm|mxx|as|cu) compile_kinds="${compile_kinds} ${kind}";;
+        esac
+    done
+    if test_nz "${compile_kinds}"; then
+        _dedup "${compile_kinds}"; compile_kinds="${_ret}"
+        for kind in ${compile_kinds}; do
+            _get_toolchain_toolset "${_target_toolchain}" "${kind}"; local program="${_ret}"
+            if test_z "${program}"; then
+                continue
+            fi
+            local command=""
+            if is_host "msys" "cygwin" "mingw"; then
+                command="sh -lc \"${program} -c \$ARGS -o \$out \$in\""
+            else
+                command="${program} -c \$ARGS -o \$out \$in"
+            fi
+            echo "rule ${kind}" >> "${xmake_sh_ninjafile}"
+            echo "  command = ${command}" >> "${xmake_sh_ninjafile}"
+            echo "  description = compiling.${_target_mode} \$in" >> "${xmake_sh_ninjafile}"
+            echo "" >> "${xmake_sh_ninjafile}"
+        done
+    fi
     echo "rule command" >> "${xmake_sh_ninjafile}"
     echo "  command = \$command" >> "${xmake_sh_ninjafile}"
     echo "  description = \$description" >> "${xmake_sh_ninjafile}"
@@ -4655,27 +4682,14 @@ _ninja_add_build_object() {
     local objectfile="${3}"
     path_sourcekind "${sourcefile}"; local sourcekind="${_ret}"
     _get_target_flags "${target}" "${sourcekind}"; local flags="${_ret}"
-    _toolchain_compcmd "${sourcekind}" "${objectfile}" "${sourcefile}" "${flags}"; local compcmd="${_ret}"
-    path_directory "${objectfile}"; local objectdir="${_ret}"
-    local command=""
-    local use_shell_wrapper=false
-    if is_host "msys" "cygwin" "mingw"; then
-        use_shell_wrapper=true
-        command="mkdir -p \"${objectdir}\" && ${compcmd}"
-    else
-        command="mkdir -p \"${objectdir}\" && ${compcmd}"
+    local rule="${sourcekind}"
+    if test_nz "${flags}"; then
+        _ninja_escape "${flags}"; flags="${_ret}"
     fi
-    if ${use_shell_wrapper}; then
-        _shell_escape_single_quotes "${command}"; local command_script="${_ret}"
-        command="sh -lc ${command_script}"
+    echo "build ${objectfile}: ${rule} ${sourcefile}" >> "${xmake_sh_ninjafile}"
+    if test_nz "${flags}"; then
+        echo "  ARGS = ${flags}" >> "${xmake_sh_ninjafile}"
     fi
-    local description="compiling.${_target_mode} ${sourcefile}"
-    _ninja_escape "${command}"; command="${_ret}"
-    _ninja_escape "${description}"; description="${_ret}"
-    echo "build ${objectfile}: command ${sourcefile}" >> "${xmake_sh_ninjafile}"
-    echo "  command = ${command}" >> "${xmake_sh_ninjafile}"
-    echo "  description = ${description}" >> "${xmake_sh_ninjafile}"
-    echo "  restat = 0" >> "${xmake_sh_ninjafile}"
     echo "" >> "${xmake_sh_ninjafile}"
 }
 
