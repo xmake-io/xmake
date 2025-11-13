@@ -134,11 +134,19 @@ _ninja_escape() {
     case "${rest}" in
         *\$*)
             local result=""
-            while case "${rest}" in *\$*) true;; *) false;; esac; do
-                result="${result}${rest%%\$*}\$\$"
-                rest="${rest#*\$}"
+            while :; do
+                case "${rest}" in
+                    *\$*)
+                        result="${result}${rest%%\$*}\$\$"
+                        rest="${rest#*\$}"
+                        ;;
+                    *)
+                        result="${result}${rest}"
+                        break
+                        ;;
+                esac
             done
-            _ret="${result}${rest}"
+            _ret="${result}"
             ;;
         *)
             _ret="${rest}"
@@ -151,12 +159,19 @@ _shell_escape_single_quotes() {
     case "${value}" in
         *"'"*)
             local escaped=""
-            while case "${value}" in *"'"*) true;; *) false;; esac; do
-                escaped="${escaped}${value%%\'*}"
-                escaped="${escaped}'\"'\"'"
-                value="${value#*\'}"
+            while :; do
+                case "${value}" in
+                    *"'"*)
+                        escaped="${escaped}${value%%\'*}'\"'\"'"
+                        value="${value#*\'}"
+                        ;;
+                    *)
+                        escaped="${escaped}${value}"
+                        break
+                        ;;
+                esac
             done
-            _ret="'${escaped}${value}'"
+            _ret="'${escaped}'"
             ;;
         *)
             _ret="'${value}'"
