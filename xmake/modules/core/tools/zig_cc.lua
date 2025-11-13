@@ -18,7 +18,7 @@
 -- @file        zig_cc.lua
 --
 
--- inherit gcc
+-- inherit clang
 inherit("clang")
 
 -- make the strip flag
