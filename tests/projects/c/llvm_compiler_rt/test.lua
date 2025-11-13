@@ -2,7 +2,7 @@ import("lib.detect.find_tool")
 import("core.tool.toolchain")
 import("utils.ci.is_running", {alias = "ci_is_running"})
 
-function main(t)
+function run_test(toolchain_name)
     local flags = ""
     if ci_is_running() then
         flags = "-vD"
@@ -16,4 +16,9 @@ function main(t)
     os.exec("xmake clean -a")
     os.exec("xmake f --toolchain=llvm -c --yes " .. flags)
     os.run("xmake -r " .. flags)
+end
+
+function main(t)
+    run_test("llvm")
+    run_test("clang")
 end
