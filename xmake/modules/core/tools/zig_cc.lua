@@ -19,7 +19,7 @@
 --
 
 -- inherit gcc
-inherit("gcc")
+inherit("clang")
 
 -- make the strip flag
 function nf_strip(self, level)
