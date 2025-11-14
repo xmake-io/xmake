@@ -38,6 +38,16 @@ function test_json_encode(t)
     t:are_equal(json_encode({1, "2", {a = 1}}), '[1,"2",{"a":1}]')
     t:are_equal(json_encode({1, "2", {b = true}}), '[1,"2",{"b":true}]')
     t:are_equal(json_encode(json.mark_as_array({1, 0xa, 0xdeadbeef, 0xffffffff, -1})), '[1,10,3735928559,4294967295,-1]')
+    local pretty_expected = table.concat({
+        "{",
+        "    \"name\": \"xmake\",",
+        "    \"targets\": [",
+        "        \"foo\",",
+        "        \"bar\"",
+        "    ]",
+        "}"
+    }, "\n")
+    t:are_equal(json_encode({name = "xmake", targets = {"foo", "bar"}}, {pretty = true, indent = 4}), pretty_expected)
 end
 
 function test_pure_json_decode(t)
@@ -59,4 +69,14 @@ function test_pure_json_encode(t)
     t:are_equal(json_pure_encode({1, "2", {a = 1}}), '[1,"2",{"a":1}]')
     t:are_equal(json_pure_encode({1, "2", {b = true}}), '[1,"2",{"b":true}]')
     t:are_equal(json_pure_encode(json.mark_as_array({1, 0xa, 0xdeadbeef, 0xffffffff, -1})), '[1,10,3735928559,4294967295,-1]')
+    local pretty_expected = table.concat({
+        "{",
+        "    \"name\": \"xmake\",",
+        "    \"targets\": [",
+        "        \"foo\",",
+        "        \"bar\"",
+        "    ]",
+        "}"
+    }, "\n")
+    t:are_equal(json.encode({name = "xmake", targets = {"foo", "bar"}}, {pure = true, pretty = true, indent = 4}), pretty_expected)
 end
