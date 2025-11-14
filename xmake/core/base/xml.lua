@@ -29,10 +29,11 @@ local table = require("base/table")
 -- XML node structure:
 -- {
 --     name     = "element-name" | nil (for non-element nodes)
---     kind     = "element" | "text" | "comment" | "cdata" | "doctype"
+--     kind     = "element" | "text" | "comment" | "cdata" | "doctype" | "document"
 --     attrs    = { key = value, ... } or nil (only for elements)
 --     text     = "raw text" (for text/comment/cdata/doctype nodes)
---     children = { child1, child2, ... } or nil (only for elements with children)
+--     children = { child1, child2, ... } or nil (for elements or document nodes)
+--     prolog   = { comment/doctypes before root } or nil (only on root element)
 -- }
 --
 -- Example:
@@ -41,6 +42,7 @@ local table = require("base/table")
 --   doc.attrs.id == "1"
 --   xml.find(doc, "root/item").kind == "element"
 --   xml.text_of(doc) == ""       -- since root has no direct text nodes
+--   doc.prolog[1].kind == "doctype" -- e.g. when document had <!DOCTYPE ...>
 --   doc.children[2].kind == "comment" and doc.children[2].text == "note"
 --
 
@@ -145,8 +147,19 @@ end
 -- e.g. `local doc, err = xml.decode("<root><item>foo</item></root>")`
 function xml.decode(data, opt)
     opt = opt or {}
-    local root = {name = "__root__", attrs = {}, children = {}}
-    local stack = {root}
+    local root_children = {}
+    local doc_node = {kind = "document", children = root_children}
+    local stack = {doc_node}
+    local function ensure_children(node)
+        if not node.children then
+            if node == doc_node then
+                node.children = root_children
+            else
+                node.children = {}
+            end
+        end
+        return node.children
+    end
     local i = 1
     local len = #data
     while i <= len do
@@ -167,8 +180,8 @@ function xml.decode(data, opt)
             end
             local value = data:sub(lt + 4, close - 1)
             local top = stack[#stack]
-            top.children = top.children or {}
-            table.insert(top.children, xml.comment(value))
+            local children = ensure_children(top)
+            table.insert(children, xml.comment(value))
             i = close + 3
         elseif data:sub(lt + 1, lt + 8) == "![CDATA[" then
             local close = data:find("]]>", lt + 9, true)
@@ -177,18 +190,18 @@ function xml.decode(data, opt)
             end
             local value = data:sub(lt + 9, close - 1)
             local top = stack[#stack]
-            top.children = top.children or {}
-            table.insert(top.children, xml.cdata(value))
+            local children = ensure_children(top)
+            table.insert(children, xml.cdata(value))
             i = close + 3
-        elseif data:sub(lt + 1, lt + 9):upper() == "!DOCTYPE" then
-            local close = data:find(">", lt + 9)
+        elseif data:sub(lt + 1, lt + 8):upper() == "!DOCTYPE" then
+            local close = data:find(">", lt + 8)
             if not close then
                 return nil, "unterminated doctype declaration"
             end
-            local value = data:sub(lt + 10, close - 1)
+            local value = data:sub(lt + 9, close - 1)
             local top = stack[#stack]
-            top.children = top.children or {}
-            table.insert(top.children, xml.doctype(value))
+            local children = ensure_children(top)
+            table.insert(children, xml.doctype(value))
             i = close + 1
         elseif data:sub(lt + 1, lt + 1) == "?" then
             local close = data:find("?>", lt + 2, true)
@@ -227,8 +240,8 @@ function xml.decode(data, opt)
             local attrs = xml._parse_attrs(attrstr or "")
             local node = xml.empty(tagname, attrs)
             local top = stack[#stack]
-            top.children = top.children or {}
-            table.insert(top.children, node)
+            local children = ensure_children(top)
+            table.insert(children, node)
             if not selfclose then
                 table.insert(stack, node)
             end
@@ -238,10 +251,26 @@ function xml.decode(data, opt)
     if #stack ~= 1 then
         return nil, "malformed xml: unclosed tags"
     end
-    if #root.children == 1 then
-        return root.children[1]
+    local element_nodes = {}
+    for _, child in ipairs(root_children) do
+        if child.kind == "element" then
+            table.insert(element_nodes, child)
+        end
     end
-    return root.children
+    if #element_nodes == 1 then
+        local rootnode = element_nodes[1]
+        local prolog = {}
+        for _, child in ipairs(root_children) do
+            if child ~= rootnode then
+                table.insert(prolog, child)
+            end
+        end
+        if #prolog > 0 then
+            rootnode.prolog = prolog
+        end
+        return rootnode
+    end
+    return root_children
 end
 
 -- compute indent string for pretty output
@@ -260,7 +289,15 @@ end
 function xml._encode_node(node, opt, level)
     opt = opt or {}
     level = level or 0
-    if node.kind == "text" then
+    if node.kind == "document" then
+        local parts = {}
+        if node.children then
+            for _, child in ipairs(node.children) do
+                table.insert(parts, xml._encode_node(child, opt, level))
+            end
+        end
+        return table.concat(parts, opt.pretty and "\n" or "")
+    elseif node.kind == "text" then
         local indent = xml._indent(opt, level)
         local text = xml._encode_text(tostring(node.text or ""))
         if opt.pretty then
@@ -306,7 +343,18 @@ end
 -- e.g. `local xmlstr = xml.encode(node, {pretty = true, indent = 2})`
 function xml.encode(node, opt)
     opt = opt or {}
-    return xml._encode_node(node, opt, 0)
+    local fragments = {}
+    local prolog = node.prolog
+    if prolog then
+        for _, child in ipairs(prolog) do
+            table.insert(fragments, xml._encode_node(child, opt, 0))
+            if opt.pretty then
+                table.insert(fragments, "\n")
+            end
+        end
+    end
+    table.insert(fragments, xml._encode_node(node, opt, 0))
+    return table.concat(fragments)
 end
 
 -- load xml file
