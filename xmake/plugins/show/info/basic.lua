@@ -21,51 +21,120 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("core.base.json")
 import("core.project.config")
 import("core.project.project")
 import("core.package.package")
 
+function _show_xmake_info(opt, result)
+    local json_enabled = opt and opt.json
+    local info = {
+        version = tostring(xmake.version()),
+        host = {os = os.host(), arch = os.arch()},
+        programdir = xmake.programdir(),
+        programfile = xmake.programfile(),
+        globaldir = global.directory(),
+        tmpdir = os.tmpdir(),
+        workingdir = os.workingdir(),
+        packagedir = package.installdir(),
+        packagedir_cache = package.cachedir()
+    }
+    if json_enabled then
+        result = result or {}
+        result.xmake = info
+    else
+        print("The information of xmake:")
+        cprint("    ${color.dump.string}version${clear}: %s", info.version)
+        cprint("    ${color.dump.string}host${clear}: %s/%s", info.host.os, info.host.arch)
+        cprint("    ${color.dump.string}programdir${clear}: %s", info.programdir)
+        cprint("    ${color.dump.string}programfile${clear}: %s", info.programfile)
+        cprint("    ${color.dump.string}globaldir${clear}: %s", info.globaldir)
+        cprint("    ${color.dump.string}tmpdir${clear}: %s", info.tmpdir)
+        cprint("    ${color.dump.string}workingdir${clear}: %s", info.workingdir)
+        cprint("    ${color.dump.string}packagedir${clear}: %s", info.packagedir)
+        cprint("    ${color.dump.string}packagedir(cache)${clear}: %s", info.packagedir_cache)
+        print("")
+    end
+    return result
+end
+
+function _show_project_info(opt, result)
+    local json_enabled = opt and opt.json
+    local projectfile = os.projectfile()
+    if not os.isfile(projectfile) then
+        return result
+    end
+
+    local info = {
+        configdir = config.directory(),
+        projectdir = os.projectdir(),
+        projectfile = projectfile
+    }
+    local name = project.name()
+    if name then
+        info.name = name
+    end
+    local project_version = project.version()
+    if project_version ~= nil then
+        info.version = tostring(project_version)
+    end
+    local plat = config.plat()
+    if plat then
+        info.plat = plat
+    end
+    local arch = config.arch()
+    if arch then
+        info.arch = arch
+    end
+    local mode = config.mode()
+    if mode then
+        info.mode = mode
+    end
+    local builddir = config.builddir()
+    if builddir then
+        info.builddir = builddir
+    end
+
+    if json_enabled then
+        result = result or {}
+        result.project = info
+    else
+        print("The information of project: %s", info.name or "")
+        if info.version then
+            cprint("    ${color.dump.string}version${clear}: %s", info.version)
+        end
+        if info.plat then
+            cprint("    ${color.dump.string}plat${clear}: %s", info.plat)
+        end
+        if info.arch then
+            cprint("    ${color.dump.string}arch${clear}: %s", info.arch)
+        end
+        if info.mode then
+            cprint("    ${color.dump.string}mode${clear}: %s", info.mode)
+        end
+        if info.builddir then
+            cprint("    ${color.dump.string}builddir${clear}: %s", info.builddir)
+        end
+        cprint("    ${color.dump.string}configdir${clear}: %s", info.configdir)
+        cprint("    ${color.dump.string}projectdir${clear}: %s", info.projectdir)
+        cprint("    ${color.dump.string}projectfile${clear}: %s", info.projectfile)
+        print("")
+    end
+    return result
+end
+
 -- show basic info
 function main()
 
-    -- get target
     config.load()
 
-    -- show xmake information
-    print("The information of xmake:")
-    cprint("    ${color.dump.string}version${clear}: %s", xmake.version())
-    cprint("    ${color.dump.string}host${clear}: %s/%s", os.host(), os.arch())
-    cprint("    ${color.dump.string}programdir${clear}: %s", xmake.programdir())
-    cprint("    ${color.dump.string}programfile${clear}: %s", xmake.programfile())
-    cprint("    ${color.dump.string}globaldir${clear}: %s", global.directory())
-    cprint("    ${color.dump.string}tmpdir${clear}: %s", os.tmpdir())
-    cprint("    ${color.dump.string}workingdir${clear}: %s", os.workingdir())
-    cprint("    ${color.dump.string}packagedir${clear}: %s", package.installdir())
-    cprint("    ${color.dump.string}packagedir(cache)${clear}: %s", package.cachedir())
-    print("")
+    local opt = {json = option.get("json")}
+    local result = opt.json and {} or nil
 
-    local projectfile = os.projectfile()
-    if os.isfile(projectfile) then
-        print("The information of project: %s", project.name() and project.name() or "")
-        local version = project.version()
-        if version then
-            cprint("    ${color.dump.string}version${clear}: %s", version)
-        end
-        if config.plat() then
-            cprint("    ${color.dump.string}plat${clear}: %s", config.plat())
-        end
-        if config.arch() then
-            cprint("    ${color.dump.string}arch${clear}: %s", config.arch())
-        end
-        if config.mode() then
-            cprint("    ${color.dump.string}mode${clear}: %s", config.mode())
-        end
-        if config.builddir() then
-            cprint("    ${color.dump.string}builddir${clear}: %s", config.builddir())
-        end
-        cprint("    ${color.dump.string}configdir${clear}: %s", config.directory())
-        cprint("    ${color.dump.string}projectdir${clear}: %s", os.projectdir())
-        cprint("    ${color.dump.string}projectfile${clear}: %s", projectfile)
-        print("")
+    result = _show_xmake_info(opt, result)
+    result = _show_project_info(opt, result)
+
+    if opt.json then
+        print(json.encode(result or {}))
     end
 end
