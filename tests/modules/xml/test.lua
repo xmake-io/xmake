@@ -68,3 +68,36 @@ function test_load_save(t)
     os.tryrm(filepath)
 end
 
+function test_plist_sample(t)
+    local plist = [[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © 2020 tboox. All rights reserved.</string>
+    <key>NSSupportsAutomaticTermination</key>
+    <true/>
+</dict>
+</plist>]]
+    local doc = xml.decode(plist)
+    t:are_equal(doc.name, "plist")
+    t:are_equal(doc.attrs.version, "1.0")
+    t:are_equal(doc.prolog[1].kind, "doctype")
+    local dict = xml.find(doc, "plist/dict")
+    t:are_equal(dict.kind, "element")
+    local first_key = dict.children[1]
+    t:are_equal(first_key.name, "key")
+    t:are_equal(xml.text_of(first_key), "CFBundleDevelopmentRegion")
+    local first_value = dict.children[2]
+    t:are_equal(first_value.name, "string")
+    t:are_equal(xml.text_of(first_value), "$(DEVELOPMENT_LANGUAGE)")
+    local last_flag = dict.children[#dict.children]
+    t:are_equal(last_flag.name, "true")
+end
+

@@ -385,11 +385,21 @@ function xml.find(node, path)
     end
     local segments = path:split("/", {strict = true})
     local current = {node}
-    for _, segment in ipairs(segments) do
+    for idx, segment in ipairs(segments) do
         local next_level = {}
         for _, parent in ipairs(current) do
+            if parent.name == segment then
+                table.insert(next_level, parent)
+            end
             if parent.children then
                 for _, child in ipairs(parent.children) do
+                    if child.name == segment then
+                        table.insert(next_level, child)
+                    end
+                end
+            end
+            if parent.prolog then
+                for _, child in ipairs(parent.prolog) do
                     if child.name == segment then
                         table.insert(next_level, child)
                     end
