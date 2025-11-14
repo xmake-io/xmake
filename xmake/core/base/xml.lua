@@ -290,7 +290,7 @@ function xml.decode(data, opt)
             table.insert(children, xml.cdata(value))
             i = close + 3
         elseif data:sub(lt + 1, lt + 8):upper() == "!DOCTYPE" then
-            local close = data:find(">", lt + 8)
+            local close = data:find(">", lt + 8, true)
             if not close then
                 return nil, "unterminated doctype declaration"
             end
@@ -306,13 +306,13 @@ function xml.decode(data, opt)
             end
             i = close + 2
         elseif data:sub(lt + 1, lt + 1) == "!" then
-            local close = data:find(">", lt + 2)
+            local close = data:find(">", lt + 2, true)
             if not close then
                 return nil, "unterminated xml declaration"
             end
             i = close + 1
         elseif data:sub(lt + 1, lt + 1) == "/" then
-            local close = data:find(">", lt + 1)
+            local close = data:find(">", lt + 1, true)
             if not close then
                 return nil, "unterminated closing tag"
             end
@@ -323,7 +323,7 @@ function xml.decode(data, opt)
             end
             i = close + 1
         else
-            local close = data:find(">", lt + 1)
+            local close = data:find(">", lt + 1, true)
             if not close then
                 return nil, "unterminated opening tag"
             end
@@ -440,7 +440,7 @@ function xml.scan(data, callback, opt)
             emit(node)
             i = close + 3
         elseif data:sub(lt + 1, lt + 8):upper() == "!DOCTYPE" then
-            local close = data:find(">", lt + 8)
+            local close = data:find(">", lt + 8, true)
             if not close then
                 return nil, "unterminated doctype declaration"
             end
@@ -458,13 +458,13 @@ function xml.scan(data, callback, opt)
             end
             i = close + 2
         elseif data:sub(lt + 1, lt + 1) == "!" then
-            local close = data:find(">", lt + 2)
+            local close = data:find(">", lt + 2, true)
             if not close then
                 return nil, "unterminated xml declaration"
             end
             i = close + 1
         elseif data:sub(lt + 1, lt + 1) == "/" then
-            local close = data:find(">", lt + 1)
+            local close = data:find(">", lt + 1, true)
             if not close then
                 return nil, "unterminated closing tag"
             end
@@ -476,7 +476,7 @@ function xml.scan(data, callback, opt)
             emit(node)
             i = close + 1
         else
-            local close = data:find(">", lt + 1)
+            local close = data:find(">", lt + 1, true)
             if not close then
                 return nil, "unterminated opening tag"
             end
