@@ -3,12 +3,12 @@ import("core.base.json")
 local json_null = json.null
 local json_pure_null = json.purenull
 
-function json_decode(jsonstr)
-    return json.decode(jsonstr)
+function json_decode(jsonstr, opt)
+    return json.decode(jsonstr, opt)
 end
 
-function json_encode(luatable)
-    return json.encode(luatable)
+function json_encode(luatable, opt)
+    return json.encode(luatable, opt)
 end
 
 function json_pure_decode(jsonstr)
