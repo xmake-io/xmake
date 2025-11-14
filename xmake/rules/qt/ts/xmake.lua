@@ -21,7 +21,7 @@ rule("qt.ts")
                 end
             end
         end
-        if sourcefile_ts then
+        if sourcefile_ts and #source_files > 0 then
             -- save source files
             source_files = table.unique(source_files)
             local json_data = {
