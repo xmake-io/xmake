@@ -238,25 +238,6 @@ function string.dump(object, deflate)
     return string.serialize(object, deflate)
 end
 
--- convert object to json-serializable form
-function string.serializable(object, opt)
-    opt = opt or {}
-    local vtype = type(object)
-    if vtype == "table" then
-        local result = {}
-        for k, v in pairs(object) do
-            result[k] = string.serializable(v, opt)
-        end
-        return result
-    elseif vtype == "function" or vtype == "userdata" or vtype == "thread" then
-        if opt.stringify then
-            return opt.stringify(object)
-        end
-        return tostring(object)
-    end
-    return object
-end
-
 -- serialize to string from the given object
 --
 -- @param opt           serialize options

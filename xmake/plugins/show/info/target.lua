@@ -175,8 +175,8 @@ function _collect_target_info(target)
     if deps then
         local entries = {}
         for _, dep in ipairs(deps) do
-            local entry = {name = dep, source = _get_sourceinfo(target, "deps", dep)}
-            table.insert(entries, entry)
+        local entry = {name = dep, source = _get_sourceinfo(target, "deps", dep)}
+        table.insert(entries, entry)
         end
         if #entries > 0 then
             info.deps = entries
@@ -186,8 +186,8 @@ function _collect_target_info(target)
     if rules then
         local entries = {}
         for _, value in ipairs(rules) do
-            local entry = {name = value, source = _get_sourceinfo(target, "rules", value)}
-            table.insert(entries, entry)
+        local entry = {name = value, source = _get_sourceinfo(target, "rules", value)}
+        table.insert(entries, entry)
         end
         if #entries > 0 then
             info.rules = entries
@@ -202,7 +202,7 @@ function _collect_target_info(target)
     if #options > 0 then
         local entries = {}
         for _, value in ipairs(options) do
-            table.insert(entries, {name = value, source = _get_sourceinfo(target, "options", value)})
+        table.insert(entries, {name = value, source = _get_sourceinfo(target, "options", value)})
         end
         if #entries > 0 then
             info.options = entries
@@ -228,20 +228,20 @@ function _collect_target_info(target)
                 if #values > 0 then
                     for _, value in ipairs(values) do
                         local sourceinfo = _get_sourceinfo(target, valuename, value)
-                        table.insert(results, {value = string.serializable(value), source = sourceinfo})
+                table.insert(results, {value = value, source = sourceinfo})
                     end
                 end
                 local values_from_opts = _get_values_from_opts(target, valuename)
                 for value, sourceinfo in pairs(values_from_opts) do
-                    table.insert(results, {value = string.serializable(value), source = sourceinfo})
+                    table.insert(results, {value = value, source = sourceinfo})
                 end
                 local values_from_pkgs = _get_values_from_pkgs(target, valuename)
                 for value, sourceinfo in pairs(values_from_pkgs) do
-                    table.insert(results, {value = string.serializable(value), source = sourceinfo})
+                    table.insert(results, {value = value, source = sourceinfo})
                 end
                 local values_from_deps = _get_values_from_deps(target, valuename)
                 for value, sourceinfo in pairs(values_from_deps) do
-                    table.insert(results, {value = string.serializable(value), source = sourceinfo})
+                    table.insert(results, {value = value, source = sourceinfo})
                 end
                 if #results > 0 then
                     local entries = {}
@@ -329,9 +329,8 @@ function _print_target_info(info)
     if info.api_entries then
         for _, entry in ipairs(info.api_entries) do
             _print_entries(entry.name, entry.entries, function(item)
-                local value = item.value
                 local source = _format_sourceinfo(item.source)
-                return value, source
+                return item.value, source
             end)
         end
     end
@@ -367,7 +366,7 @@ function main(name)
     local info = _collect_target_info(target)
     if opt.json then
         info.api_entries = nil
-        print(json.encode(string.serializable(info) or {}))
+        print(json.encode(info or {}))
     else
         _print_target_info(info)
     end
