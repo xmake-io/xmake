@@ -31,6 +31,10 @@ sandbox_core_base_xml.find     = xml.find
 sandbox_core_base_xml.text_of  = xml.text_of
 sandbox_core_base_xml.text     = xml.text
 sandbox_core_base_xml.new      = xml.new
+sandbox_core_base_xml.empty    = xml.empty
+sandbox_core_base_xml.comment  = xml.comment
+sandbox_core_base_xml.cdata    = xml.cdata
+sandbox_core_base_xml.doctype  = xml.doctype
 
 -- decode xml data
 function sandbox_core_base_xml.decode(data, opt)
