@@ -3,20 +3,24 @@ import("core.base.json")
 local json_null = json.null
 local json_pure_null = json.purenull
 
-function json_decode(jsonstr)
-    return json.decode(jsonstr)
+function json_decode(jsonstr, opt)
+    return json.decode(jsonstr, opt)
 end
 
-function json_encode(luatable)
-    return json.encode(luatable)
+function json_encode(luatable, opt)
+    return json.encode(luatable, opt)
 end
 
-function json_pure_decode(jsonstr)
-    return json.decode(jsonstr, {pure = true})
+function json_pure_decode(jsonstr, opt)
+    opt = opt or {}
+    opt.pure = true
+    return json.decode(jsonstr, opt)
 end
 
-function json_pure_encode(luatable)
-    return json.encode(luatable, {pure = true})
+function json_pure_encode(luatable, opt)
+    opt = opt or {}
+    opt.pure = true
+    return json.encode(luatable, opt)
 end
 
 function test_json_decode(t)
@@ -38,6 +42,16 @@ function test_json_encode(t)
     t:are_equal(json_encode({1, "2", {a = 1}}), '[1,"2",{"a":1}]')
     t:are_equal(json_encode({1, "2", {b = true}}), '[1,"2",{"b":true}]')
     t:are_equal(json_encode(json.mark_as_array({1, 0xa, 0xdeadbeef, 0xffffffff, -1})), '[1,10,3735928559,4294967295,-1]')
+    local pretty_expected = table.concat({
+        "{",
+        "    \"name\": \"xmake\",",
+        "    \"targets\": [",
+        "        \"foo\",",
+        "        \"bar\"",
+        "    ]",
+        "}"
+    }, "\n")
+    t:are_equal(json_encode({name = "xmake", targets = {"foo", "bar"}}, {pretty = true, indent = 4}), pretty_expected)
 end
 
 function test_pure_json_decode(t)
@@ -59,4 +73,14 @@ function test_pure_json_encode(t)
     t:are_equal(json_pure_encode({1, "2", {a = 1}}), '[1,"2",{"a":1}]')
     t:are_equal(json_pure_encode({1, "2", {b = true}}), '[1,"2",{"b":true}]')
     t:are_equal(json_pure_encode(json.mark_as_array({1, 0xa, 0xdeadbeef, 0xffffffff, -1})), '[1,10,3735928559,4294967295,-1]')
+    local pretty_expected = table.concat({
+        "{",
+        "    \"name\": \"xmake\",",
+        "    \"targets\": [",
+        "        \"foo\",",
+        "        \"bar\"",
+        "    ]",
+        "}"
+    }, "\n")
+    t:are_equal(json_pure_encode({name = "xmake", targets = {"foo", "bar"}}, {pretty = true, indent = 4}), pretty_expected)
 end

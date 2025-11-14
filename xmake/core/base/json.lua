@@ -24,6 +24,7 @@ local json  = json or {}
 -- load modules
 local io    = require("base/io")
 local os    = require("base/os")
+local table = require("base/table")
 local utils = require("base/utils")
 
 -- export null
@@ -130,7 +131,18 @@ function json._pure_parse_num_val(str, pos)
     return val, pos + #num_str
 end
 
-function json._pure_stringify(obj, as_key)
+function json._pure_stringify(obj, level, as_key, opt)
+    opt = opt or {}
+    level = level or 0
+    local pretty = opt.pretty
+    local orderkeys = opt.orderkeys
+    if orderkeys == nil and pretty then
+        orderkeys = true
+    end
+    local indent_step = pretty and (opt.indent or 4) or nil
+    local newline = pretty and "\n" or ""
+    local curr_indent = indent_step and string.rep(" ", indent_step * level) or nil
+    local child_indent = indent_step and string.rep(" ", indent_step * (level + 1)) or nil
     local s = {}
     local kind = json._pure_kind_of(obj)
     if kind == "array" then
@@ -138,9 +150,25 @@ function json._pure_stringify(obj, as_key)
             os.raise("can\'t encode array as key.")
         end
         s[#s + 1] = '['
-        for i, val in ipairs(obj) do
-            if i > 1 then s[#s + 1] = ',' end
-            s[#s + 1] = json._pure_stringify(val)
+        local arrlen = #obj
+        if pretty and arrlen > 0 then
+            s[#s + 1] = newline
+        end
+        for idx = 1, arrlen do
+            if idx > 1 then
+                s[#s + 1] = ','
+                if pretty then
+                    s[#s + 1] = newline
+                end
+            end
+            if pretty then
+                s[#s + 1] = child_indent
+            end
+            s[#s + 1] = json._pure_stringify(obj[idx], level + 1, false, opt)
+        end
+        if pretty and arrlen > 0 then
+            s[#s + 1] = newline
+            s[#s + 1] = curr_indent
         end
         s[#s + 1] = ']'
     elseif kind == "table" then
@@ -148,11 +176,27 @@ function json._pure_stringify(obj, as_key)
             os.raise("can\'t encode table as key.")
         end
         s[#s + 1] = '{'
-        for k, v in pairs(obj) do
-            if #s > 1 then s[#s + 1] = ',' end
-            s[#s + 1] = json._pure_stringify(k, true)
+        local first = true
+        local iter = orderkeys and table.orderpairs or pairs
+        for k, v in iter(obj) do
+            if not first then
+                s[#s + 1] = ','
+            end
+            if pretty then
+                s[#s + 1] = newline
+                s[#s + 1] = child_indent
+            end
+            s[#s + 1] = json._pure_stringify(k, level + 1, true, opt)
             s[#s + 1] = ':'
-            s[#s + 1] = json._pure_stringify(v)
+            if pretty then
+                s[#s + 1] = ' '
+            end
+            s[#s + 1] = json._pure_stringify(v, level + 1, false, opt)
+            first = false
+        end
+        if pretty and not first then
+            s[#s + 1] = newline
+            s[#s + 1] = curr_indent
         end
         s[#s + 1] = '}'
     elseif kind == "string" then
@@ -237,7 +281,7 @@ end
 
 -- encode json string using pua lua
 function json._pure_encode(luatable, opt)
-    return json._pure_stringify(luatable)
+    return json._pure_stringify(luatable, 0, false, opt)
 end
 
 -- support empty array
@@ -281,11 +325,14 @@ end
 -- @return              the json string
 --
 function json.encode(luatable, opt)
-    local encode = cjson and cjson.encode or json._pure_encode
-    if opt and opt.pure then
-        encode = json._pure_encode
+    local use_pure = not cjson or (opt and (opt.pure or opt.pretty))
+    local encode = use_pure and json._pure_encode or cjson.encode
+    local ok, jsonstr_or_errors
+    if use_pure then
+        ok, jsonstr_or_errors = utils.trycall(encode, nil, luatable, opt)
+    else
+        ok, jsonstr_or_errors = utils.trycall(encode, nil, luatable)
     end
-    local ok, jsonstr_or_errors = utils.trycall(encode, nil, luatable)
     if not ok then
         return nil, string.format("encode json failed, %s", jsonstr_or_errors)
     end

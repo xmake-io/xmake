@@ -40,7 +40,12 @@ function _show_text(values)
 end
 
 function _show_json(values)
-    print(json.encode(values))
+    local opt = {}
+    if option.get("pretty") then
+        opt.pretty = true
+        opt.orderkeys = true
+    end
+    print(json.encode(values, opt))
 end
 
 function main(values)
