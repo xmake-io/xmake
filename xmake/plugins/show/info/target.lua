@@ -373,7 +373,7 @@ function main(name)
         info.api_entries = nil
         local json_opt
         if opt.pretty then
-            json_opt = {pretty = true}
+            json_opt = {pretty = true, orderkeys = true}
         end
         print(json.encode(info or {}, json_opt))
     else

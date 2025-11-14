@@ -24,6 +24,7 @@ local json  = json or {}
 -- load modules
 local io    = require("base/io")
 local os    = require("base/os")
+local table = require("base/table")
 local utils = require("base/utils")
 
 -- export null
@@ -134,6 +135,10 @@ function json._pure_stringify(obj, level, as_key, opt)
     opt = opt or {}
     level = level or 0
     local pretty = opt.pretty
+    local orderkeys = opt.orderkeys
+    if orderkeys == nil and pretty then
+        orderkeys = true
+    end
     local indent_step = pretty and (opt.indent or 4) or nil
     local newline = pretty and "\n" or ""
     local curr_indent = indent_step and string.rep(" ", indent_step * level) or nil
@@ -172,7 +177,8 @@ function json._pure_stringify(obj, level, as_key, opt)
         end
         s[#s + 1] = '{'
         local first = true
-        for k, v in pairs(obj) do
+        local iter = orderkeys and table.orderpairs or pairs
+        for k, v in iter(obj) do
             if not first then
                 s[#s + 1] = ','
             end

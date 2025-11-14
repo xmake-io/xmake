@@ -43,6 +43,7 @@ function _show_json(values)
     local opt = {}
     if option.get("pretty") then
         opt.pretty = true
+        opt.orderkeys = true
     end
     print(json.encode(values, opt))
 end

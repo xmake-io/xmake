@@ -11,12 +11,16 @@ function json_encode(luatable, opt)
     return json.encode(luatable, opt)
 end
 
-function json_pure_decode(jsonstr)
-    return json.decode(jsonstr, {pure = true})
+function json_pure_decode(jsonstr, opt)
+    opt = opt or {}
+    opt.pure = true
+    return json.decode(jsonstr, opt)
 end
 
-function json_pure_encode(luatable)
-    return json.encode(luatable, {pure = true})
+function json_pure_encode(luatable, opt)
+    opt = opt or {}
+    opt.pure = true
+    return json.encode(luatable, opt)
 end
 
 function test_json_decode(t)
@@ -78,5 +82,5 @@ function test_pure_json_encode(t)
         "    ]",
         "}"
     }, "\n")
-    t:are_equal(json.encode({name = "xmake", targets = {"foo", "bar"}}, {pure = true, pretty = true, indent = 4}), pretty_expected)
+    t:are_equal(json_pure_encode({name = "xmake", targets = {"foo", "bar"}}, {pretty = true, indent = 4}), pretty_expected)
 end

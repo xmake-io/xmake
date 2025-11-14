@@ -140,7 +140,7 @@ function main()
     if opt.json then
         local json_opt
         if opt.pretty then
-            json_opt = {pretty = true}
+            json_opt = {pretty = true, orderkeys = true}
         end
         print(json.encode(result or {}, json_opt))
     end
