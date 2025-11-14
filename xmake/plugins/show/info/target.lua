@@ -20,25 +20,48 @@
 
 -- imports
 import("core.base.option")
+import("core.base.json")
 import("core.base.hashset")
 import("core.project.config")
 import("core.language.language")
 import("private.detect.check_targetname")
 
--- get source info string
-function _get_sourceinfo_str(target, name, item, opt)
+-- get source info data
+function _get_sourceinfo(target, name, item, opt)
     opt = opt or {}
     local sourceinfo = target:sourceinfo(name, item)
+    local tips = opt.tips
     if sourceinfo then
-        local tips = opt.tips
-        if tips then
-            tips = tips .. " -> "
-        end
+        return {
+            file = sourceinfo.file,
+            line = sourceinfo.line,
+            tips = tips
+        }
+    elseif tips then
+        return {tips = tips}
+    end
+end
+
+-- format source info string with color
+function _format_sourceinfo(sourceinfo)
+    if not sourceinfo then
+        return ""
+    end
+    local tips = sourceinfo.tips
+    if tips then
+        tips = tips .. " -> "
+    end
+    if sourceinfo.file then
         return string.format(" ${dim}-> %s%s:%s${clear}", tips or "", sourceinfo.file or "", sourceinfo.line or -1)
-    elseif opt.tips then
-        return string.format(" ${dim}-> %s${clear}", opt.tips)
+    elseif tips then
+        return string.format(" ${dim}-> %s${clear}", tips)
     end
     return ""
+end
+
+-- get source info string
+function _get_sourceinfo_str(target, name, item, opt)
+    return _format_sourceinfo(_get_sourceinfo(target, name, item, opt))
 end
 
 -- get values from target options
@@ -47,7 +70,8 @@ function _get_values_from_opts(target, name)
     for _, opt_ in ipairs(target:orderopts()) do
         for _, value in ipairs(opt_:get(name)) do
             local tips = string.format("option(%s)", opt_:name())
-            values[value] = _get_sourceinfo_str(opt_, name, value, {tips = tips})
+            local sourceinfo = _get_sourceinfo(opt_, name, value, {tips = tips})
+            values[value] = sourceinfo or {tips = tips}
         end
     end
     return values
@@ -78,7 +102,8 @@ function _get_values_from_pkgs(target, name)
                     local info = components[component_name]
                     if info then
                         for _, value in ipairs(info[name]) do
-                            values[value] = string.format(" -> package(%s)", pkg:fullname())
+                            local tips = string.format("package(%s)", pkg:fullname())
+                            values[value] = {tips = tips}
                         end
                     else
                         local components_str = table.concat(table.wrap(configinfo.components), ", ")
@@ -90,12 +115,14 @@ function _get_values_from_pkgs(target, name)
         -- e.g. `add_packages("xxx", {links = "xxx"})`
         elseif configinfo and configinfo[name] then
             for _, value in ipairs(configinfo[name]) do
-                values[value] = _get_sourceinfo_str(target, "packages", pkg:name())
+                local sourceinfo = _get_sourceinfo(target, "packages", pkg:name())
+                values[value] = sourceinfo
             end
         else
             -- get values from the builtin package configs
             for _, value in ipairs(pkg:get(name)) do
-                values[value] = string.format(" -> package(%s)", pkg:fullname())
+                local tips = string.format("package(%s)", pkg:fullname())
+                values[value] = {tips = tips}
             end
         end
     end
@@ -112,18 +139,21 @@ function _get_values_from_deps(target, name)
         local depinherit = target:extraconf("deps", dep:name(), "inherit")
         if depinherit == nil or depinherit then
             for _, value in ipairs(dep:get(name, {interface = true})) do
-                values[value] = string.format(" -> dep(%s)", dep:name())
+                local tips = string.format("dep(%s)", dep:name())
+                values[value] = {tips = tips}
             end
             local values_chunks = dep:get_from(name, "option::*", {interface = true})
             for _, values_chunk in ipairs(values_chunks) do
                 for _, value in ipairs(values_chunk) do
-                    values[value] = string.format(" -> dep(%s) -> options", dep:name())
+                    local tips = string.format("dep(%s) -> options", dep:name())
+                    values[value] = {tips = tips}
                 end
             end
             values_chunks = dep:get_from(name, "package::*", {interface = true})
             for _, values_chunk in ipairs(values_chunks) do
                 for _, value in ipairs(values_chunk) do
-                    values[value] = string.format(" -> dep(%s) -> packages", dep:name())
+                    local tips = string.format("dep(%s) -> packages", dep:name())
+                    values[value] = {tips = tips}
                 end
             end
         end
@@ -131,27 +161,36 @@ function _get_values_from_deps(target, name)
     return values
 end
 
--- show target information
-function _show_target(target)
-    print("The information of target(%s):", target:name())
-    cprint("    ${color.dump.string}at${clear}: %s", path.join(target:scriptdir(), "xmake.lua"))
-    cprint("    ${color.dump.string}kind${clear}: %s", target:kind())
+function _collect_target_info(target)
+    local info = {
+        name = target:name(),
+        at = path.join(target:scriptdir(), "xmake.lua"),
+        kind = target:kind()
+    }
     local targetfile = target:targetfile()
     if targetfile then
-        cprint("    ${color.dump.string}targetfile${clear}: %s", targetfile)
+        info.targetfile = targetfile
     end
     local deps = target:get("deps")
     if deps then
-        cprint("    ${color.dump.string}deps${clear}:")
+        local entries = {}
         for _, dep in ipairs(deps) do
-            cprint("      ${color.dump.reference}->${clear} %s%s", dep, _get_sourceinfo_str(target, "deps", dep))
+            local entry = {name = dep, source = _get_sourceinfo(target, "deps", dep)}
+            table.insert(entries, entry)
+        end
+        if #entries > 0 then
+            info.deps = entries
         end
     end
     local rules = target:get("rules")
     if rules then
-        cprint("    ${color.dump.string}rules${clear}:")
+        local entries = {}
         for _, value in ipairs(rules) do
-            cprint("      ${color.dump.reference}->${clear} %s%s", value, _get_sourceinfo_str(target, "rules", value))
+            local entry = {name = value, source = _get_sourceinfo(target, "rules", value)}
+            table.insert(entries, entry)
+        end
+        if #entries > 0 then
+            info.rules = entries
         end
     end
     local options = {}
@@ -161,18 +200,25 @@ function _show_target(target)
         end
     end
     if #options > 0 then
-        cprint("    ${color.dump.string}options${clear}:")
+        local entries = {}
         for _, value in ipairs(options) do
-            cprint("      ${color.dump.reference}->${clear} %s%s", value, _get_sourceinfo_str(target, "options", value))
+            table.insert(entries, {name = value, source = _get_sourceinfo(target, "options", value)})
+        end
+        if #entries > 0 then
+            info.options = entries
         end
     end
     local packages = target:get("packages")
     if packages then
-        cprint("    ${color.dump.string}packages${clear}:")
+        local entries = {}
         for _, value in ipairs(packages) do
-            cprint("      ${color.dump.reference}->${clear} %s%s", value, _get_sourceinfo_str(target, "packages", value))
+            table.insert(entries, {name = value, source = _get_sourceinfo(target, "packages", value)})
+        end
+        if #entries > 0 then
+            info.packages = entries
         end
     end
+    info.api_entries = {}
     for _, apiname in ipairs(table.join(language.apis().values, language.apis().paths)) do
         if apiname:startswith("target.") then
             local valuename = apiname:split('.add_', {plain = true})[2]
@@ -181,37 +227,43 @@ function _show_target(target)
                 local values = table.unique(table.wrap(target:get(valuename)))
                 if #values > 0 then
                     for _, value in ipairs(values) do
-                        table.insert(results, {value = value, sourceinfo = _get_sourceinfo_str(target, valuename, value)})
+                        local sourceinfo = _get_sourceinfo(target, valuename, value)
+                        table.insert(results, {value = string.serializable(value), source = sourceinfo})
                     end
                 end
                 local values_from_opts = _get_values_from_opts(target, valuename)
                 for value, sourceinfo in pairs(values_from_opts) do
-                    table.insert(results, {value = value, sourceinfo = sourceinfo})
+                    table.insert(results, {value = string.serializable(value), source = sourceinfo})
                 end
                 local values_from_pkgs = _get_values_from_pkgs(target, valuename)
                 for value, sourceinfo in pairs(values_from_pkgs) do
-                    table.insert(results, {value = value, sourceinfo = sourceinfo})
+                    table.insert(results, {value = string.serializable(value), source = sourceinfo})
                 end
                 local values_from_deps = _get_values_from_deps(target, valuename)
                 for value, sourceinfo in pairs(values_from_deps) do
-                    table.insert(results, {value = value, sourceinfo = sourceinfo})
+                    table.insert(results, {value = string.serializable(value), source = sourceinfo})
                 end
                 if #results > 0 then
-                    cprint("    ${color.dump.string}%s${clear}:", valuename)
+                    local entries = {}
                     for _, result in ipairs(results) do
-                        cprint("      ${color.dump.reference}->${clear} %s%s", result.value, result.sourceinfo)
+                        table.insert(entries, result)
                     end
+                    info[valuename] = entries
+                    table.insert(info.api_entries, {name = valuename, entries = entries})
                 end
             end
         end
     end
     local files = target:get("files")
     if files then
-        cprint("    ${color.dump.string}files${clear}:")
+        local entries = {}
         for _, file in ipairs(files) do
             if not file:startswith("__remove_") then
-                cprint("      ${color.dump.reference}->${clear} %s%s", file, _get_sourceinfo_str(target, "files", file))
+                table.insert(entries, {path = file, source = _get_sourceinfo(target, "files", file)})
             end
+        end
+        if #entries > 0 then
+            info.files = entries
         end
     end
     local sourcekinds = hashset.new()
@@ -223,25 +275,85 @@ function _show_target(target)
     for _, sourcekind in sourcekinds:keys() do
         local compinst = target:compiler(sourcekind)
         if compinst then
-            cprint("    ${color.dump.string}compiler (%s)${clear}: %s", sourcekind, compinst:program())
-            cprint("      ${color.dump.reference}->${clear} %s", os.args(compinst:compflags()))
+            info.compilers = info.compilers or {}
+            table.insert(info.compilers, {
+                sourcekind = sourcekind,
+                program = compinst:program(),
+                flags = os.args(compinst:compflags()),
+                flags_with_target = os.args(compinst:compflags({target = target}))
+            })
         end
     end
     local linker = targetfile and target:linker()
     if linker then
-        cprint("    ${color.dump.string}linker (%s)${clear}: %s", linker:kind(), linker:program())
-        cprint("      ${color.dump.reference}->${clear} %s", os.args(linker:linkflags()))
+        info.linker = {
+            kind = linker:kind(),
+            program = linker:program(),
+            flags = os.args(linker:linkflags()),
+            flags_with_target = os.args(linker:linkflags({target = target}))
+        }
     end
-    for _, sourcekind in sourcekinds:keys() do
-        local compinst = target:compiler(sourcekind)
-        if compinst then
-            cprint("    ${color.dump.string}compflags (%s)${clear}:", sourcekind)
-            cprint("      ${color.dump.reference}->${clear} %s", os.args(compinst:compflags({target = target})))
+    return info
+end
+
+function _print_entries(label, items, formatter)
+    if not items or #items == 0 then
+        return
+    end
+    cprint("    ${color.dump.string}%s${clear}:", label)
+    for _, item in ipairs(items) do
+        local text, source = formatter(item)
+        cprint("      ${color.dump.reference}->${clear} %s%s", text, source or "")
+    end
+end
+
+function _print_target_info(info)
+    print("The information of target(%s):", info.name)
+    cprint("    ${color.dump.string}at${clear}: %s", info.at)
+    cprint("    ${color.dump.string}kind${clear}: %s", info.kind)
+    if info.targetfile then
+        cprint("    ${color.dump.string}targetfile${clear}: %s", info.targetfile)
+    end
+    _print_entries("deps", info.deps, function(item)
+        return item.name, _format_sourceinfo(item.source)
+    end)
+    _print_entries("rules", info.rules, function(item)
+        return item.name, _format_sourceinfo(item.source)
+    end)
+    _print_entries("options", info.options, function(item)
+        return item.name, _format_sourceinfo(item.source)
+    end)
+    _print_entries("packages", info.packages, function(item)
+        return item.name, _format_sourceinfo(item.source)
+    end)
+    if info.api_entries then
+        for _, entry in ipairs(info.api_entries) do
+            _print_entries(entry.name, entry.entries, function(item)
+                local value = item.value
+                local source = _format_sourceinfo(item.source)
+                return value, source
+            end)
         end
     end
-    if linker then
-        cprint("    ${color.dump.string}linkflags (%s)${clear}:", linker:kind())
-        cprint("      ${color.dump.reference}->${clear} %s", os.args(linker:linkflags({target = target})))
+    if info.files then
+        _print_entries("files", info.files, function(item)
+            return item.path, _format_sourceinfo(item.source)
+        end)
+    end
+    if info.compilers then
+        for _, compiler in ipairs(info.compilers) do
+            cprint("    ${color.dump.string}compiler (%s)${clear}: %s", compiler.sourcekind, compiler.program)
+        end
+        for _, compiler in ipairs(info.compilers) do
+            cprint("    ${color.dump.string}compflags (%s)${clear}:", compiler.sourcekind)
+            cprint("      ${color.dump.reference}->${clear} %s", compiler.flags_with_target)
+        end
+    end
+    if info.linker then
+        cprint("    ${color.dump.string}linker (%s)${clear}: %s", info.linker.kind, info.linker.program)
+        cprint("      ${color.dump.reference}->${clear} %s", info.linker.flags)
+        cprint("    ${color.dump.string}linkflags (%s)${clear}:", info.linker.kind)
+        cprint("      ${color.dump.reference}->${clear} %s", info.linker.flags_with_target)
     end
 end
 
@@ -249,8 +361,14 @@ function main(name)
 
     -- get target
     config.load()
+    local opt = {json = option.get("json")}
     local target = assert(check_targetname(name))
 
-    -- show target information
-    _show_target(target)
+    local info = _collect_target_info(target)
+    if opt.json then
+        info.api_entries = nil
+        print(json.encode(string.serializable(info) or {}))
+    else
+        _print_target_info(info)
+    end
 end
