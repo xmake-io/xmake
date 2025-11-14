@@ -70,8 +70,7 @@ function _get_values_from_opts(target, name)
     for _, opt_ in ipairs(target:orderopts()) do
         for _, value in ipairs(opt_:get(name)) do
             local tips = string.format("option(%s)", opt_:name())
-            local sourceinfo = _get_sourceinfo(opt_, name, value, {tips = tips})
-            values[value] = sourceinfo or {tips = tips}
+            values[value] = _get_sourceinfo(opt_, name, value, {tips = tips})
         end
     end
     return values
@@ -342,6 +341,9 @@ function _print_target_info(info)
     if info.compilers then
         for _, compiler in ipairs(info.compilers) do
             cprint("    ${color.dump.string}compiler (%s)${clear}: %s", compiler.sourcekind, compiler.program)
+            if compiler.flags then
+                cprint("      ${color.dump.reference}->${clear} %s", compiler.flags)
+            end
         end
         for _, compiler in ipairs(info.compilers) do
             cprint("    ${color.dump.string}compflags (%s)${clear}:", compiler.sourcekind)
