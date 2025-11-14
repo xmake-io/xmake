@@ -26,6 +26,25 @@ local io    = require("base/io")
 local os    = require("base/os")
 local table = require("base/table")
 
+-- XML node structure:
+-- {
+--     name     = "element-name" | nil (for non-element nodes)
+--     kind     = "element" | "text" | "comment" | "cdata" | "doctype"
+--     attrs    = { key = value, ... } or nil (only for elements)
+--     text     = "raw text" (for text/comment/cdata/doctype nodes)
+--     children = { child1, child2, ... } or nil (only for elements with children)
+-- }
+--
+-- Example:
+--   local doc = xml.decode("<root id='1'><item>foo</item><!--note--></root>")
+--   doc.kind == "element"
+--   doc.attrs.id == "1"
+--   xml.find(doc, "root/item").kind == "element"
+--   xml.text_of(doc) == ""       -- since root has no direct text nodes
+--   doc.children[2].kind == "comment" and doc.children[2].text == "note"
+--
+
+-- decode entities
 function xml._decode_entities(str)
     return (str:gsub("&lt;", "<")
                :gsub("&gt;", ">")
@@ -34,16 +53,19 @@ function xml._decode_entities(str)
                :gsub("&amp;", "&"))
 end
 
+-- encode raw text for xml element content
 function xml._encode_text(str)
     return (str:gsub("&", "&amp;")
                :gsub("<", "&lt;")
                :gsub(">", "&gt;"))
 end
 
+-- encode attribute value for xml output
 function xml._encode_attr(str)
     return xml._encode_text(str):gsub("\"", "&quot;")
 end
 
+-- parse attribute string to table (or nil if empty)
 function xml._parse_attrs(attrstr)
     local attrs
     attrstr:gsub("([%w_:%-%.]+)%s*=%s*([\"'])(.-)%2", function(key, quote, value)
@@ -51,6 +73,29 @@ function xml._parse_attrs(attrstr)
         attrs[key] = xml._decode_entities(value)
     end)
     return attrs
+end
+
+-- append normalized text node to top element on stack
+function xml._append_text(stack, text, opt)
+    opt = opt or {}
+    if opt.trim_text ~= false then
+        text = text:gsub("^%s+", ""):gsub("%s+$", "")
+    end
+    if text ~= "" then
+        local top = stack[#stack]
+        top.children = top.children or {}
+        table.insert(top.children, xml.text(xml._decode_entities(text)))
+    end
+end
+
+-- ensure closing tag matches stack and pop it
+function xml._handle_closing(stack, tagname)
+    local top = stack[#stack]
+    if not top or top.name ~= tagname then
+        return nil, string.format("malformed xml: unexpected closing </%s>", tagname)
+    end
+    table.remove(stack)
+    return true
 end
 
 -- create an xml element node
@@ -62,7 +107,7 @@ function xml.new(opt)
         attrs = opt.attrs,
         kind = opt.kind or "element",
         text = opt.text,
-        children = opt.children or {}
+        children = opt.children
     }
 end
 
@@ -94,27 +139,6 @@ end
 -- e.g. `local doc = xml.doctype('html')`
 function xml.doctype(value)
     return xml.new({kind = "doctype", text = value or ""})
-end
-
-function xml._append_text(stack, text, opt)
-    opt = opt or {}
-    if opt.trim_text ~= false then
-        text = text:gsub("^%s+", ""):gsub("%s+$", "")
-    end
-    if text ~= "" then
-        local top = stack[#stack]
-        top.children = top.children or {}
-        table.insert(top.children, xml.text(xml._decode_entities(text)))
-    end
-end
-
-function xml._handle_closing(stack, tagname)
-    local top = stack[#stack]
-    if not top or top.name ~= tagname then
-        return nil, string.format("malformed xml: unexpected closing </%s>", tagname)
-    end
-    table.remove(stack)
-    return true
 end
 
 -- decode xml string to tree node(s)
@@ -220,6 +244,7 @@ function xml.decode(data, opt)
     return root.children
 end
 
+-- compute indent string for pretty output
 function xml._indent(opt, level)
     if not opt.pretty then
         return ""
@@ -268,8 +293,10 @@ function xml._encode_node(node, opt, level)
     end
     local result = {}
     table.insert(result, xml._indent(opt, level) .. open .. ">")
-    for _, child in ipairs(node.children) do
-        table.insert(result, xml._encode_node(child, opt, level + 1))
+    if node.children then
+        for _, child in ipairs(node.children) do
+            table.insert(result, xml._encode_node(child, opt, level + 1))
+        end
     end
     table.insert(result, xml._indent(opt, level) .. "</" .. node.name .. ">")
     return table.concat(result, newline ~= "" and newline or "")
@@ -302,18 +329,31 @@ function xml.save(filepath, node, opt)
     return io.writefile(filepath, data, opt)
 end
 
--- find the first child node with the given name
--- e.g. `local doc = xml.decode("<root><item id='1'/></root>")`
---      `local item = xml.find(doc, "item")`
-function xml.find(node, name)
-    if not node or not node.children then
+-- find the first matching node by name or path (e.g. "root/item/subitem")
+-- returns nil if not found
+function xml.find(node, path)
+    if not node or not path or path == "" then
         return nil
     end
-    for _, child in ipairs(node.children) do
-        if child.name == name then
-            return child
+    local segments = path:split("/", {strict = true})
+    local current = {node}
+    for _, segment in ipairs(segments) do
+        local next_level = {}
+        for _, parent in ipairs(current) do
+            if parent.children then
+                for _, child in ipairs(parent.children) do
+                    if child.name == segment then
+                        table.insert(next_level, child)
+                    end
+                end
+            end
         end
+        if #next_level == 0 then
+            return nil
+        end
+        current = next_level
     end
+    return current[1]
 end
 
 -- get concatenated text from child nodes
