@@ -128,13 +128,20 @@ function main()
 
     config.load()
 
-    local opt = {json = option.get("json")}
+    local opt = {
+        json = option.get("json"),
+        pretty = option.get("pretty")
+    }
     local result = opt.json and {} or nil
 
     result = _show_xmake_info(opt, result)
     result = _show_project_info(opt, result)
 
     if opt.json then
-        print(json.encode(result or {}))
+        local json_opt
+        if opt.pretty then
+            json_opt = {pretty = true}
+        end
+        print(json.encode(result or {}, json_opt))
     end
 end

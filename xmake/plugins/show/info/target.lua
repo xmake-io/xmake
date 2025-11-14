@@ -360,13 +360,20 @@ function main(name)
 
     -- get target
     config.load()
-    local opt = {json = option.get("json")}
+    local opt = {
+        json = option.get("json"),
+        pretty = option.get("pretty")
+    }
     local target = assert(check_targetname(name))
 
     local info = _collect_target_info(target)
     if opt.json then
         info.api_entries = nil
-        print(json.encode(info or {}))
+        local json_opt
+        if opt.pretty then
+            json_opt = {pretty = true}
+        end
+        print(json.encode(info or {}, json_opt))
     else
         _print_target_info(info)
     end
