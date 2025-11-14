@@ -101,3 +101,26 @@ function test_plist_sample(t)
     t:are_equal(last_flag.name, "true")
 end
 
+function test_scan_stop(t)
+    local plist = [[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+  </dict>
+</plist>]]
+    local found
+    xml.scan(plist, function(node)
+        if node.name == "key" and xml.text_of(node) == "NSPrincipalClass" then
+            found = node
+            return false
+        end
+    end)
+    t:are_equal(found ~= nil, true)
+    t:are_equal(xml.text_of(found), "NSPrincipalClass")
+end
+

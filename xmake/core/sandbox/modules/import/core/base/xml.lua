@@ -45,6 +45,15 @@ function sandbox_core_base_xml.decode(data, opt)
     return node
 end
 
+-- stream parse xml data
+function sandbox_core_base_xml.scan(data, callback, opt)
+    local ok, errors = xml.scan(data, callback, opt)
+    if ok == nil then
+        raise(errors)
+    end
+    return ok
+end
+
 -- load xml file to the lua table
 function sandbox_core_base_xml.load(filepath, opt)
     local node, errors = xml.load(filepath, opt)
