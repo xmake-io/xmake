@@ -416,9 +416,7 @@ function graph:remove_edge(from, to)
             break
         end
     end
-    if not target_edge then
-        return
-    end
+    assert(target_edge, string.format("graph.remove_edge(%s, %s): edge not found", tostring(from), tostring(to)))
 
     table.remove(edges, target_index)
 
