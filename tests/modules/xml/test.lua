@@ -12,6 +12,25 @@ function test_decode_basic(t)
     t:are_equal(doc.children[2].attrs.id, "2")
 end
 
+function test_decode_unquoted_attrs(t)
+    local doc = xml.decode("<root flag=true count=42 path=/tmp/file><child data=abc/></root>")
+    t:are_equal(doc.attrs.flag, "true")
+    t:are_equal(doc.attrs.count, "42")
+    t:are_equal(doc.attrs.path, "/tmp/file")
+    t:are_equal(doc.children[1].attrs.data, "abc")
+end
+
+function test_decode_mixed_attrs(t)
+    local xmltext = [[<node a="1 2" b='foo &amp; bar' c=bare data-id=abc123 ns:flag=true dashed-name="hello-world"/>]]
+    local doc = xml.decode(xmltext)
+    t:are_equal(doc.attrs.a, "1 2")
+    t:are_equal(doc.attrs.b, "foo & bar")
+    t:are_equal(doc.attrs.c, "bare")
+    t:are_equal(doc.attrs["data-id"], "abc123")
+    t:are_equal(doc.attrs["ns:flag"], "true")
+    t:are_equal(doc.attrs["dashed-name"], "hello-world")
+end
+
 function test_encode_basic(t)
     local doc = xml.new({
         name = "root",

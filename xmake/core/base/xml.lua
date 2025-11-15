@@ -84,10 +84,36 @@ end
 -- parse attribute string to table (or nil if empty)
 function xml._parse_attrs(attrstr)
     local attrs
-    attrstr:gsub("([%w_:%-%.]+)%s*=%s*([\"'])(.-)%2", function(key, quote, value)
+    local i, len = 1, #attrstr
+    while i <= len do
+        local key, value_start = attrstr:match("^%s*([%w_:%-%.]+)%s*=%s*()", i)
+        if not key then
+            break
+        end
+        local value
+        local first_char = attrstr:sub(value_start, value_start)
+        if first_char == "\"" or first_char == "'" then
+            local closing = attrstr:find(first_char, value_start + 1, true)
+            if not closing then
+                break
+            end
+            value = attrstr:sub(value_start + 1, closing - 1)
+            i = closing + 1
+        else
+            local j = value_start
+            while j <= len do
+                local ch = attrstr:sub(j, j)
+                if ch:match("%s") or ch == ">" or (ch == "/" and attrstr:sub(j + 1, j + 1) == ">") then
+                    break
+                end
+                j = j + 1
+            end
+            value = attrstr:sub(value_start, j - 1)
+            i = j
+        end
         attrs = attrs or {}
         attrs[key] = xml._decode_entities(value)
-    end)
+    end
     return attrs
 end
 
