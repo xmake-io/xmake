@@ -28,6 +28,7 @@ import("core.base.hashset")
 local jobqueue = jobqueue or object {_init = {"_jobgraph", "_dag"}}
 local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag", "_groups", "_bridge_nodes", "_bridge_from", "_bridge_to"}}
 
+-- attach a job to existing bridge nodes of its group (if any)
 function jobgraph:_attach_job_to_bridges(job, group_name)
     local outbound = self._bridge_from[group_name]
     local inbound = self._bridge_to[group_name]
@@ -46,6 +47,7 @@ function jobgraph:_attach_job_to_bridges(job, group_name)
     end
 end
 
+-- ensure a reusable bridge node exists between two groups
 function jobgraph:_ensure_bridge(from_group, to_group)
     local key = from_group .. "->" .. to_group
     local bridge = self._bridge_nodes[key]
@@ -140,6 +142,7 @@ function jobgraph:add(name, run, opt)
                     self._groups[group_name] = groups
                 end
                 table.insert(groups, job)
+                -- ensure bridges (if any) are updated for new members
                 self:_attach_job_to_bridges(job, group_name)
             end
             for _, group_name in ipairs(self._current_groups or {}) do
