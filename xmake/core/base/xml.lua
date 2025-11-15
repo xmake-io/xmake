@@ -781,13 +781,13 @@ function xml.encode(node, opt)
 end
 
 -- load xml file
--- e.g. `local doc, err = xml.load("foo.xml")`
+-- e.g. `local doc, err = xml.loadfile("foo.xml")`
 --
 -- @param filepath  file path
 -- @param opt       read/decode options
 -- @return          node or nil + error
 --
-function xml.load(filepath, opt)
+function xml.loadfile(filepath, opt)
     local data, err = io.readfile(filepath, opt)
     if not data then
         return nil, err
@@ -796,14 +796,14 @@ function xml.load(filepath, opt)
 end
 
 -- save xml node to file
--- e.g. `assert(xml.save("foo.xml", node, {pretty = true}))`
+-- e.g. `assert(xml.savefile("foo.xml", node, {pretty = true}))`
 --
 -- @param filepath  destination file
 -- @param node      xml node
 -- @param opt       encode/write options
 -- @return          true on success or nil + error message
 --
-function xml.save(filepath, node, opt)
+function xml.savefile(filepath, node, opt)
     local data = xml.encode(node, opt)
     if not data then
         return nil, "failed to encode xml"

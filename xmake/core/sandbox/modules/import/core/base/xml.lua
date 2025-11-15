@@ -55,8 +55,8 @@ function sandbox_core_base_xml.scan(data, callback, opt)
 end
 
 -- load xml file to the lua table
-function sandbox_core_base_xml.load(filepath, opt)
-    local node, errors = xml.load(filepath, opt)
+function sandbox_core_base_xml.loadfile(filepath, opt)
+    local node, errors = xml.loadfile(filepath, opt)
     if not node then
         raise(errors)
     end
@@ -64,8 +64,8 @@ function sandbox_core_base_xml.load(filepath, opt)
 end
 
 -- save xml node to the file
-function sandbox_core_base_xml.save(filepath, node, opt)
-    local ok, errors = xml.save(filepath, node, opt)
+function sandbox_core_base_xml.savefile(filepath, node, opt)
+    local ok, errors = xml.savefile(filepath, node, opt)
     if not ok then
         raise(errors)
     end

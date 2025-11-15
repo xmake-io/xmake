@@ -80,8 +80,8 @@ function test_load_save(t)
         attrs = {id = "1"},
         children = {xml.text("hello")}
     })
-    assert(xml.save(filepath, doc, {pretty = true}))
-    local reloaded = xml.load(filepath)
+    assert(xml.savefile(filepath, doc, {pretty = true}))
+    local reloaded = xml.loadfile(filepath)
     t:are_equal(reloaded.name, "root")
     t:are_equal(xml.text_of(reloaded), "hello")
     os.tryrm(filepath)
