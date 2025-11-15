@@ -1,0 +1,45 @@
+import("async.jobgraph")
+
+local function dummy_job() end
+
+function test_group_bridge_reuse(t)
+    local jobs = jobgraph.new()
+    jobs:group("foo", function ()
+        jobs:add("foo/1", dummy_job)
+        jobs:add("foo/2", dummy_job)
+    end)
+    jobs:group("bar", function ()
+        jobs:add("bar/1", dummy_job)
+    end)
+    jobs:add_orders("foo", "bar")
+    local vertices_before = #jobs._dag:vertices()
+    jobs:add_orders("foo", "bar")
+    local vertices_after = #jobs._dag:vertices()
+    t:are_equal(vertices_before, vertices_after)
+end
+
+function test_group_bridge_updates_with_new_job(t)
+    local jobs = jobgraph.new()
+    jobs:group("foo", function ()
+        jobs:add("foo/1", dummy_job)
+    end)
+    jobs:group("bar", function ()
+        jobs:add("bar/1", dummy_job)
+    end)
+    jobs:add_orders("foo", "bar")
+    jobs:group("foo", function ()
+        jobs:add("foo/2", dummy_job)
+    end)
+
+    local queue = jobs:build()
+    local first = queue:getfree()
+    t:require(first.name == "foo/1" or first.name == "foo/2")
+    queue:remove(first)
+    local second = queue:getfree()
+    t:require(second.name == "foo/1" or second.name == "foo/2")
+    t:require(second.name ~= first.name)
+    queue:remove(second)
+    local third = queue:getfree()
+    t:are_equal(third.name, "bar/1")
+end
+

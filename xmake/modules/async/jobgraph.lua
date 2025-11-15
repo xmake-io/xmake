@@ -26,7 +26,49 @@ import("core.base.hashset")
 
 -- define module
 local jobqueue = jobqueue or object {_init = {"_jobgraph", "_dag"}}
-local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag", "_groups"}}
+local jobgraph = jobgraph or object {_init = {"_name", "_jobs", "_size", "_dag", "_groups", "_bridge_nodes", "_bridge_from", "_bridge_to"}}
+
+function jobgraph:_attach_job_to_bridges(job, group_name)
+    local outbound = self._bridge_from[group_name]
+    local inbound = self._bridge_to[group_name]
+    if not outbound and not inbound then
+        return
+    end
+    if outbound then
+        for _, bridge in ipairs(outbound) do
+            self._dag:add_edge(job, bridge)
+        end
+    end
+    if inbound then
+        for _, bridge in ipairs(inbound) do
+            self._dag:add_edge(bridge, job)
+        end
+    end
+end
+
+function jobgraph:_ensure_bridge(from_group, to_group)
+    local key = from_group .. "->" .. to_group
+    local bridge = self._bridge_nodes[key]
+    if bridge then
+        return bridge
+    end
+    bridge = {from_group = from_group, to_group = to_group}
+    self._bridge_nodes[key] = bridge
+    self._dag:add_vertex(bridge)
+    local from_members = self._groups[from_group] or {}
+    for _, member in ipairs(from_members) do
+        self._dag:add_edge(member, bridge)
+    end
+    local to_members = self._groups[to_group] or {}
+    for _, member in ipairs(to_members) do
+        self._dag:add_edge(bridge, member)
+    end
+    self._bridge_from[from_group] = self._bridge_from[from_group] or {}
+    table.insert(self._bridge_from[from_group], bridge)
+    self._bridge_to[to_group] = self._bridge_to[to_group] or {}
+    table.insert(self._bridge_to[to_group], bridge)
+    return bridge
+end
 
 -- remove the finished job
 function jobqueue:remove(job)
@@ -79,15 +121,36 @@ function jobgraph:add(name, run, opt)
         self._size = self._size + 1
 
         if self._current_groups or opt.groups then
-            local job_groups = table.join(self._current_groups or {}, opt.groups)
-            for _, group_name in ipairs(job_groups) do
+            local seen
+            local job_groups
+            local function add_group(group_name)
+                if not group_name then
+                    return
+                end
+                seen = seen or {}
+                if seen[group_name] then
+                    return
+                end
+                seen[group_name] = true
+                job_groups = job_groups or {}
+                table.insert(job_groups, group_name)
                 local groups = self._groups[group_name]
                 if not groups then
                     groups = {}
                     self._groups[group_name] = groups
                 end
                 table.insert(groups, job)
+                self:_attach_job_to_bridges(job, group_name)
             end
+            for _, group_name in ipairs(self._current_groups or {}) do
+                add_group(group_name)
+            end
+            if opt.groups then
+                for _, group_name in ipairs(opt.groups) do
+                    add_group(group_name)
+                end
+            end
+            job._groups = job_groups
         end
     else
         wprint("job(%s): has already been added!", name)
@@ -103,6 +166,17 @@ function jobgraph:remove(name)
         assert(self._size > 0)
         jobs[name] = nil
         dag:remove_vertex(job)
+        if job._groups then
+            for _, group_name in ipairs(job._groups) do
+                local members = self._groups[group_name]
+                if members then
+                    table.remove_if(members, function (_, item) return item == job end)
+                    if #members == 0 then
+                        self._groups[group_name] = nil
+                    end
+                end
+            end
+        end
         self._size = self._size - 1
     end
 end
@@ -164,14 +238,8 @@ function jobgraph:add_orders(...)
             assert(curr, "job(%s) not found in jobgraph(%s)", name, self)
             if prev then
                 if prev_is_group and curr_is_group then
-                    -- we use a bridge job as a node to bridge the two groups.
-                    local bridge = {from_group = prev_name, to_group = name}
-                    for _, job in ipairs(prev) do
-                        dag:add_edge(job, bridge)
-                    end
-                    for _, job in ipairs(curr) do
-                        dag:add_edge(bridge, job)
-                    end
+                    -- we use (and reuse) a bridge job as a node to bridge the two groups.
+                    self:_ensure_bridge(prev_name, name)
                 elseif curr_is_group then
                     for _, job in ipairs(curr) do
                         dag:add_edge(prev, job)
@@ -249,5 +317,5 @@ end
 
 -- new a jobgraph
 function new(name)
-    return jobgraph {name, {}, 0, graph.new(true), {}}
+    return jobgraph {name, {}, 0, graph.new(true), {}, {}, {}, {}}
 end
