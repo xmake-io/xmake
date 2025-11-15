@@ -22,9 +22,10 @@
 local xml = xml or {}
 
 -- load modules
-local io    = require("base/io")
-local os    = require("base/os")
-local table = require("base/table")
+local io     = require("base/io")
+local os     = require("base/os")
+local table  = require("base/table")
+local string = require("base/string")
 
 -- XML node structure (mutable DOM-style tables):
 -- {
@@ -88,11 +89,6 @@ function xml._parse_attrs(attrstr)
         attrs[key] = xml._decode_entities(value)
     end)
     return attrs
-end
-
--- trim helper
-function xml._trim(str)
-    return (str:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
 -- iterate element children and optional prolog nodes
@@ -168,7 +164,7 @@ function xml._parse_xpath(path)
             end
             i = i + 1
         end
-        local segment = xml._trim(path:sub(start, i - 1))
+        local segment = path:sub(start, i - 1):trim()
         if segment ~= "" then
             local step = xml._parse_xpath_segment(segment, axis)
             table.insert(steps, step)
@@ -182,7 +178,7 @@ end
 function xml._parse_xpath_segment(segment, axis)
     local step = {axis = axis or "child", predicates = {}}
     local name = segment:gsub("%b[]", "")
-    name = xml._trim(name)
+    name = name:trim()
     if name == "" or name == "*" then
         step.node_test = "any"
     elseif name == "." then
@@ -200,7 +196,7 @@ function xml._parse_xpath_segment(segment, axis)
         step.name = name
     end
     for predicate in segment:gmatch("%b[]") do
-        local expr = xml._trim(predicate:sub(2, -2))
+        local expr = predicate:sub(2, -2):trim()
         if expr ~= "" then
             local number_index = tonumber(expr)
             if number_index then
@@ -307,14 +303,18 @@ end
 -- append normalized text node to top element on stack
 function xml._append_text(stack, text, opt)
     opt = opt or {}
-    if opt.trim_text ~= false then
-        text = text:gsub("^%s+", ""):gsub("%s+$", "")
+    if opt.trim_text then
+        text = string.trim(text)
     end
-    if text ~= "" then
-        local top = stack[#stack]
-        top.children = top.children or {}
-        table.insert(top.children, xml.text(xml._decode_entities(text)))
+    if text == "" then
+        return
     end
+    if not opt.keep_whitespace_nodes and text:match("^%s*$") then
+        return
+    end
+    local top = stack[#stack]
+    top.children = top.children or {}
+    table.insert(top.children, xml.text(xml._decode_entities(text)))
 end
 
 -- ensure closing tag matches stack and pop it
@@ -465,7 +465,7 @@ end
 -- e.g. `local doc, err = xml.decode("<root><item>foo</item></root>")`
 --
 -- @param data   xml string
--- @param opt    options (trim_text, etc.)
+-- @param opt    options (e.g. {trim_text = true} to strip leading/trailing text, keep_whitespace_nodes = true)
 -- @return       root node or list on success, nil + error on failure
 --
 function xml.decode(data, opt)
@@ -585,7 +585,9 @@ function xml.decode(data, opt)
         local prolog = {}
         for _, child in ipairs(root_children) do
             if child ~= rootnode then
-                table.insert(prolog, child)
+                if not (child.kind == "text" and (child.text or ""):match("^%s*$")) then
+                    table.insert(prolog, child)
+                end
             end
         end
         if #prolog > 0 then
@@ -600,7 +602,7 @@ end
 --
 -- @param data        xml string
 -- @param callback    function(node) -> true|false (return false to stop scanning)
--- @param opt         options (trim_text, etc.)
+-- @param opt         options (e.g. {trim_text = true}, {keep_whitespace_nodes = true})
 -- @return            true on success or nil, error on failure
 --
 function xml.scan(data, callback, opt)

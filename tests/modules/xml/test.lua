@@ -155,3 +155,16 @@ function test_find_update(t)
     t:are_equal(encoded, '<root><item id="a" lang="en">bar</item><item id="b"/><item id="c">baz</item></root>')
 end
 
+function test_decode_trim_text(t)
+    local doc = xml.decode("<root>  foo  </root>")
+    t:are_equal(xml.text_of(doc), "  foo  ")
+    local trimmed = xml.decode("<root>  foo  </root>", {trim_text = true})
+    t:are_equal(xml.text_of(trimmed), "foo")
+    local formatted = "<root>\n  <item/>\n</root>"
+    local default = xml.decode(formatted)
+    t:are_equal(#default.children, 1)
+    local keep_ws = xml.decode(formatted, {keep_whitespace_nodes = true})
+    t:are_equal(#keep_ws.children, 3)
+    t:are_equal(keep_ws.children[1].kind, "text")
+end
+
