@@ -170,6 +170,48 @@ function test_paritail_topo_sort_dynamic(t)
     end
 end
 
+function test_remove_edge_and_vertex(t)
+    local gh = graph.new(true)
+    gh:add_edge("a", "b")
+    gh:add_edge("b", "c")
+    gh:add_edge("c", "d")
+    gh:add_edge("a", "d")
+
+    t:require(gh:has_edge("a", "b"))
+    gh:remove_edge("a", "b")
+    t:require(not gh:has_edge("a", "b"))
+    t:require(gh:has_edge("a", "d"))
+
+    gh:remove_vertex("c")
+    t:require(not gh:has_edge("b", "c"))
+    t:require(not gh:has_edge("c", "d"))
+    t:are_equal(#gh:vertices(), 3)
+    local order = gh:topo_sort()
+    t:require(#order == 3)
+
+    gh:add_edge("b", "a")
+    gh:add_edge("d", "b")
+    local _, has_cycle = gh:topo_sort()
+    t:require(has_cycle)
+end
+
+function test_clone_reverse_undirected(t)
+    local ug = graph.new(false)
+    ug:add_edge(1, 2)
+    ug:add_edge(2, 3)
+    ug:add_edge(3, 1)
+
+    local clone = ug:clone()
+    t:require(#clone:edges() == #ug:edges())
+    t:require(clone:has_edge(1, 2))
+    t:require(clone:has_edge(2, 1))
+
+    local rev = ug:reverse()
+    t:require(rev:has_edge(1, 2))
+    t:require(rev:has_edge(2, 1))
+    t:require(#rev:edges() == #ug:edges())
+end
+
 function test_find_cycle(t)
     local edges = {
         {9, 1},
