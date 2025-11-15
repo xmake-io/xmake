@@ -77,6 +77,220 @@ function xml._parse_attrs(attrstr)
     return attrs
 end
 
+-- trim helper
+function xml._trim(str)
+    return (str:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+-- iterate element children and optional prolog nodes
+function xml._each_child(node, callback)
+    if not node or not callback then
+        return
+    end
+    if node.children then
+        for _, child in ipairs(node.children) do
+            callback(child)
+        end
+    end
+    if node.prolog then
+        for _, child in ipairs(node.prolog) do
+            callback(child)
+        end
+    end
+end
+
+-- collect descendants that match predicate
+function xml._collect_descendants(node, matcher, results)
+    results = results or {}
+    xml._each_child(node, function(child)
+        if matcher(child) then
+            table.insert(results, child)
+        end
+        xml._collect_descendants(child, matcher, results)
+    end)
+    return results
+end
+
+-- parse xpath expression into steps
+function xml._parse_xpath(path)
+    local steps = {}
+    local len = #path
+    local i = 1
+    local first = true
+    while i <= len do
+        local axis
+        if path:sub(i, i + 1) == "//" then
+            axis = "descendant"
+            i = i + 2
+        elseif path:sub(i, i) == "/" then
+            axis = "child"
+            i = i + 1
+        elseif first then
+            axis = "self"
+        else
+            axis = "child"
+        end
+        while path:sub(i, i) == "/" do
+            if path:sub(i, i + 1) == "//" then
+                axis = "descendant"
+                i = i + 2
+            else
+                axis = "child"
+                i = i + 1
+            end
+        end
+        if i > len then
+            break
+        end
+        local start = i
+        local depth = 0
+        while i <= len do
+            local ch = path:sub(i, i)
+            if ch == "[" then
+                depth = depth + 1
+            elseif ch == "]" then
+                depth = depth - 1
+            elseif ch == "/" and depth == 0 then
+                break
+            end
+            i = i + 1
+        end
+        local segment = xml._trim(path:sub(start, i - 1))
+        if segment ~= "" then
+            local step = xml._parse_xpath_segment(segment, axis)
+            table.insert(steps, step)
+        end
+        first = false
+    end
+    return steps
+end
+
+-- parse a single xpath step
+function xml._parse_xpath_segment(segment, axis)
+    local step = {axis = axis or "child", predicates = {}}
+    local name = segment:gsub("%b[]", "")
+    name = xml._trim(name)
+    if name == "" or name == "*" then
+        step.node_test = "any"
+    elseif name == "." then
+        step.node_test = "self"
+    elseif name == "text()" then
+        step.node_test = "text"
+    elseif name == "comment()" then
+        step.node_test = "comment"
+    elseif name == "cdata()" then
+        step.node_test = "cdata"
+    elseif name == "doctype()" then
+        step.node_test = "doctype"
+    else
+        step.node_test = "name"
+        step.name = name
+    end
+    for predicate in segment:gmatch("%b[]") do
+        local expr = xml._trim(predicate:sub(2, -2))
+        if expr ~= "" then
+            local number_index = tonumber(expr)
+            if number_index then
+                step.indexes = step.indexes or {}
+                table.insert(step.indexes, number_index)
+            else
+                local attr_key, quote, attr_value = expr:match("^@([%w_:%-%.]+)%s*=%s*(['\"])(.-)%2$")
+                if attr_key then
+                    table.insert(step.predicates, {type = "attr", key = attr_key, value = attr_value})
+                else
+                    local attr_exists = expr:match("^@([%w_:%-%.]+)%s*$")
+                    if attr_exists then
+                        table.insert(step.predicates, {type = "attr_exists", key = attr_exists})
+                    else
+                        local text_value = expr:match("^text%(%s*%)%s*=%s*\"(.-)\"$")
+                        if not text_value then
+                            text_value = expr:match("^text%(%s*%)%s*=%s*'(.-)'$")
+                        end
+                        if text_value then
+                            table.insert(step.predicates, {type = "text", value = text_value})
+                        else
+                            step.unsupported = true
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return step
+end
+
+-- check whether node matches xpath step
+function xml._match_xpath_node(node, step)
+    if step.unsupported then
+        return false
+    end
+    local nodetype = step.node_test or "name"
+    if nodetype == "self" then
+        -- always match, predicates will refine
+    elseif nodetype == "any" then
+        -- match every node
+    elseif nodetype == "node" then
+        -- unused for now
+    elseif nodetype == "text" then
+        if node.kind ~= "text" then
+            return false
+        end
+    elseif nodetype == "comment" then
+        if node.kind ~= "comment" then
+            return false
+        end
+    elseif nodetype == "cdata" then
+        if node.kind ~= "cdata" then
+            return false
+        end
+    elseif nodetype == "doctype" then
+        if node.kind ~= "doctype" then
+            return false
+        end
+    else
+        if node.kind ~= "element" then
+            return false
+        end
+        if step.name and step.name ~= "*" and node.name ~= step.name then
+            return false
+        end
+    end
+    if step.predicates then
+        for _, predicate in ipairs(step.predicates) do
+            if predicate.type == "attr" then
+                if not node.attrs or node.attrs[predicate.key] ~= predicate.value then
+                    return false
+                end
+            elseif predicate.type == "attr_exists" then
+                if not node.attrs or node.attrs[predicate.key] == nil then
+                    return false
+                end
+            elseif predicate.type == "text" then
+                if xml.text_of(node) ~= predicate.value then
+                    return false
+                end
+            end
+        end
+    end
+    return true
+end
+
+-- apply positional predicates
+function xml._apply_xpath_indexes(nodes, indexes)
+    if not indexes or #indexes == 0 then
+        return nodes
+    end
+    local current = nodes
+    for _, index in ipairs(indexes) do
+        local selected = current[index]
+        if not selected then
+            return {}
+        end
+        current = {selected}
+    end
+    return current
+end
+
 -- append normalized text node to top element on stack
 function xml._append_text(stack, text, opt)
     opt = opt or {}
@@ -556,43 +770,67 @@ function xml.save(filepath, node, opt)
     return io.writefile(filepath, data, opt)
 end
 
--- find the first matching node by name or path (e.g. "root/item/subitem")
+-- find the first matching node with an XPath-like expression
+-- e.g. `xml.find(doc, "//dict/key[@name='CFBundleName']")`
+--
+-- Supported syntax:
+--   - `/` child axis, `//` descendant-or-self axis
+--   - `*`, `text()`, `comment()`, `cdata()`, `doctype()`, `.`
+--   - Attribute predicates: `[@id='foo']`, `[@enabled]`
+--   - Text predicate: `[text()='value']`
+--   - Positional predicate: `[2]`
 --
 -- @param node   root node
--- @param path   slash separated string
+-- @param path   xpath-like string
 -- @return       first matched node or nil
 --
 function xml.find(node, path)
     if not node or not path or path == "" then
         return nil
     end
-    local segments = path:split("/", {strict = true})
-    local current = {node}
-    for idx, segment in ipairs(segments) do
-        local next_level = {}
-        for _, parent in ipairs(current) do
-            if parent.name == segment then
-                table.insert(next_level, parent)
-            end
-            if parent.children then
-                for _, child in ipairs(parent.children) do
-                    if child.name == segment then
-                        table.insert(next_level, child)
-                    end
+    local steps = xml._parse_xpath(path)
+    if #steps == 0 then
+        return nil
+    end
+    local current
+    if path:sub(1, 1) == "/" then
+        current = {{kind = "document", children = {node}}}
+    else
+        current = {node}
+    end
+    for _, step in ipairs(steps) do
+        local matches = {}
+        if step.axis == "self" then
+            for _, candidate in ipairs(current) do
+                if xml._match_xpath_node(candidate, step) then
+                    table.insert(matches, candidate)
                 end
             end
-            if parent.prolog then
-                for _, child in ipairs(parent.prolog) do
-                    if child.name == segment then
-                        table.insert(next_level, child)
+        elseif step.axis == "child" then
+            for _, parent in ipairs(current) do
+                xml._each_child(parent, function(child)
+                    if xml._match_xpath_node(child, step) then
+                        table.insert(matches, child)
                     end
-                end
+                end)
             end
-        end
-        if #next_level == 0 then
+        elseif step.axis == "descendant" then
+            for _, parent in ipairs(current) do
+                if xml._match_xpath_node(parent, step) then
+                    table.insert(matches, parent)
+                end
+                xml._collect_descendants(parent, function(desc)
+                    return xml._match_xpath_node(desc, step)
+                end, matches)
+            end
+        else
             return nil
         end
-        current = next_level
+        matches = xml._apply_xpath_indexes(matches, step.indexes)
+        if #matches == 0 then
+            return nil
+        end
+        current = matches
     end
     return current[1]
 end

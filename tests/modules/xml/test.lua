@@ -124,3 +124,22 @@ function test_scan_stop(t)
     t:are_equal(xml.text_of(found), "NSPrincipalClass")
 end
 
+function test_find_xpath(t)
+    local doc = xml.decode([[
+<root>
+  <items>
+    <item id="a"><value>foo</value></item>
+    <item id="b"><value>bar</value></item>
+  </items>
+  <extras>
+    <item id="c"/>
+  </extras>
+</root>]])
+    local second = xml.find(doc, "root/items/item[2]")
+    t:are_equal(second.attrs.id, "b")
+    local descendant = xml.find(doc, "//item[@id='c']")
+    t:are_equal(descendant.attrs.id, "c")
+    local value = xml.find(doc, "//value[text()='bar']")
+    t:are_equal(xml.text_of(value), "bar")
+end
+
