@@ -26,7 +26,7 @@ local io    = require("base/io")
 local os    = require("base/os")
 local table = require("base/table")
 
--- XML node structure:
+-- XML node structure (mutable DOM-style tables):
 -- {
 --     name     = "element-name" | nil (for non-element nodes)
 --     kind     = "element" | "text" | "comment" | "cdata" | "doctype" | "document"
@@ -38,12 +38,11 @@ local table = require("base/table")
 --
 -- Example:
 --   local doc = xml.decode("<root id='1'><item>foo</item><!--note--></root>")
---   doc.kind == "element"
---   doc.attrs.id == "1"
---   xml.find(doc, "root/item").kind == "element"
---   xml.text_of(doc) == ""       -- since root has no direct text nodes
---   doc.prolog[1].kind == "doctype" -- e.g. when document had <!DOCTYPE ...>
---   doc.children[2].kind == "comment" and doc.children[2].text == "note"
+--   local node = xml.find(doc, "root/item")
+--   node.attrs = {lang = "en"}
+--   node.children = {xml.text("bar")}
+--   xml.encode(doc) == '<root id="1"><item lang="en">bar</item><!--note--></root>'
+--   -- nodes are regular Lua tables, so modifying them in-place updates the DOM
 --
 
 -- decode entities

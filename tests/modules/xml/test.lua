@@ -143,3 +143,15 @@ function test_find_xpath(t)
     t:are_equal(xml.text_of(value), "bar")
 end
 
+function test_find_update(t)
+    local doc = xml.decode("<root><item id='a'>foo</item><item id='b'/></root>")
+    local target = xml.find(doc, "//item[@id='a']")
+    t:are_not_equal(target, nil)
+    target.attrs.lang = "en"
+    target.children = {xml.text("bar")}
+    local new_item = xml.new({name = "item", attrs = {id = "c"}, children = {xml.text("baz")}})
+    table.insert(doc.children, new_item)
+    local encoded = xml.encode(doc)
+    t:are_equal(encoded, '<root><item id="a" lang="en">bar</item><item id="b"/><item id="c">baz</item></root>')
+end
+
