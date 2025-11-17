@@ -38,6 +38,9 @@ toolchain("llvm")
     set_toolset("objcopy", "llvm-objcopy")
     set_toolset("mrc",     "llvm-rc")
     set_toolset("dlltool", "llvm-dlltool")
+    if is_host("macosx") then
+        set_toolset("dsymutil", "dsymutil")
+    end
 
     set_toolset("sc",   "$(env SC)", "swift-frontend", "swiftc")
     set_toolset("scsh", "$(env SC)", "swiftc")

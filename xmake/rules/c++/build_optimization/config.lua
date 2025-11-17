@@ -44,6 +44,21 @@ function _add_lto_optimization(target, sourcekind)
     elseif ld == "clang" or ld == "clangxx" then
         target:add("ldflags", "-flto=thin")
         target:add("shflags", "-flto=thin")
+
+        -- On Darwin, when using -flto along with -g and compiling and linking in separate steps,
+        -- you also need to pass -Wl,-object_path_lto,<lto-filename>.o at the linking step to instruct
+        -- the ld64 linker not to delete the temporary object file generated during Link Time Optimization
+        -- (this flag is automatically passed to the linker by Clang if compilation and linking are done in a single step).
+        --
+        -- This allows debugging the executable as well as generating the .dSYM bundle using dsymutil(1).
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/7029
+        -- https://clang.llvm.org/docs/CommandGuide/clang.html
+        if target:is_plat("macosx", "iphoneos", "watchos") then
+            local lto_objectfile = target:objectfile(target:targetfile() .. ".lto")
+            target:add("ldflags", "-Wl,-object_path_lto," .. lto_objectfile)
+            target:add("shflags", "-Wl,-object_path_lto," .. lto_objectfile)
+        end
     elseif ld == "gcc" or ld == "gxx" then
         target:add("ldflags", "-flto")
         target:add("shflags", "-flto")

@@ -103,7 +103,7 @@ rule("utils.symbols.extract")
 
             -- strip it
             local strip_argv = {}
-            if target:is_plat("macosx", "iphoneos", "watchos") then
+            if target:is_plat("macosx", "iphoneos", "watchos") and not strip:find("llvm-strip", 1, true) then
                 -- do not support `-s`, we can only strip debug symbols
                 local arch = target:arch()
                 if arch then
