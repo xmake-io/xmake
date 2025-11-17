@@ -2,6 +2,60 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#6929](https://github.com/xmake-io/xmake/pull/6929): Add support for GCC 15 toolchain
+* [#6967](https://github.com/xmake-io/xmake/pull/6967): Add Swift interop support for C++ and Objective-C
+* [#6964](https://github.com/xmake-io/xmake/pull/6964): Support specifying CUDA SDK version via cuda_sdkver
+* [#6963](https://github.com/xmake-io/xmake/pull/6963): Add libtool patch support for cross compilation
+* [#6974](https://github.com/xmake-io/xmake/pull/6974): Support multi-row refresh for progress output
+* [#7024](https://github.com/xmake-io/xmake/pull/7024): Add JSON output format for `xmake show -t target`
+* [#7025](https://github.com/xmake-io/xmake/pull/7025): Add XML module with parsing and encoding support
+* [#6989](https://github.com/xmake-io/xmake/pull/6989): Add async support for os APIs
+
+### Changes
+
+* [#6924](https://github.com/xmake-io/xmake/pull/6924): Improve toolchain configuration with add_toolchains("name[configs]") syntax
+* [#6935](https://github.com/xmake-io/xmake/pull/6935): Refactor toolchain: separate gcc/clang registration from definition
+* [#6942](https://github.com/xmake-io/xmake/pull/6942): Improve file reading performance
+* [#6946](https://github.com/xmake-io/xmake/pull/6946): Add LLD linker support for Clang toolchain
+* [#6970](https://github.com/xmake-io/xmake/pull/6970): Improve TTY handling and output
+* [#6977](https://github.com/xmake-io/xmake/pull/6977): Refactor Xcode toolchain and integrate it into LLVM toolchain for Apple devices
+* [#6987](https://github.com/xmake-io/xmake/pull/6987): Add Ghostty terminal detection support
+* [#7003](https://github.com/xmake-io/xmake/pull/7003): Limit build environment retrieval in package configurations
+* [#7008](https://github.com/xmake-io/xmake/pull/7008): Format code style
+* [#7004](https://github.com/xmake-io/xmake/pull/7004): Skip rebuilding packages and std modules when using -r flag
+* [#7019](https://github.com/xmake-io/xmake/pull/7019): Improve xmake.sh/configure script and add Ninja generator support
+* [#7023](https://github.com/xmake-io/xmake/pull/7023): Update Qt TypeScript rule
+* [#7022](https://github.com/xmake-io/xmake/pull/7022): Make zig-cc toolchain inherit from clang
+* [#7027](https://github.com/xmake-io/xmake/pull/7027): Improve graph module performance
+* [#7031](https://github.com/xmake-io/xmake/pull/7031): Improve require parsing
+* [#7032](https://github.com/xmake-io/xmake/pull/7032): Improve symbol extraction
+* [#6952](https://github.com/xmake-io/xmake/pull/6952): Add realtime output support for tests
+* [#6998](https://github.com/xmake-io/xmake/pull/6998): Update tbox library for process/argv support
+
+### Bugs fixed
+
+* [#6926](https://github.com/xmake-io/xmake/pull/6926): Fix loading Unicode main script path on Windows
+* [#6931](https://github.com/xmake-io/xmake/pull/6931): Fix C++ modules: fallback to system-wide clang-scan-deps when toolchain version is not installed
+* [#6937](https://github.com/xmake-io/xmake/pull/6937): Fix target jobs handling
+* [#6954](https://github.com/xmake-io/xmake/pull/6954): Fix modules support for vsxmake/vs generators
+* [#6955](https://github.com/xmake-io/xmake/pull/6955): Fix build number sorting in packages
+* [#6956](https://github.com/xmake-io/xmake/pull/6956): Fix build failure when using zigcc linker that doesn't support depfile
+* [#6959](https://github.com/xmake-io/xmake/pull/6959): Fix using zigcc with autotools for dynamic linking
+* [#6983](https://github.com/xmake-io/xmake/pull/6983): Fix modules: strip sanitizer flags for module reuse
+* [#6984](https://github.com/xmake-io/xmake/pull/6984): Fix libdir path in installed CMake import files
+* [#6993](https://github.com/xmake-io/xmake/pull/6993): Fix xmake test modules
+* [#6992](https://github.com/xmake-io/xmake/pull/6992): Fix modules: add all supported platforms for clang get_cpp_library_name
+* [#6999](https://github.com/xmake-io/xmake/pull/6999): Fix rootdir handling
+* [#7002](https://github.com/xmake-io/xmake/pull/7002): Fix asn1c: include generated output as system headers
+* [#6996](https://github.com/xmake-io/xmake/pull/6996): Fix Nimble find_package to use latest package list format
+* [#7012](https://github.com/xmake-io/xmake/pull/7012): Fix sparse checkout handling
+* [#7013](https://github.com/xmake-io/xmake/pull/7013): Fix removing dependencies when packaging
+* [#7017](https://github.com/xmake-io/xmake/pull/7017): Fix lock_packages typo
+* [#7016](https://github.com/xmake-io/xmake/pull/7016): Fix project default configuration in vsxmake
+* [#7018](https://github.com/xmake-io/xmake/pull/7018): Fix build order: only disable when dependency linking inheritance is disabled
+
 ## v3.0.4
 
 ### New features
@@ -2129,6 +2183,60 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#6929](https://github.com/xmake-io/xmake/pull/6929): 添加 GCC 15 工具链支持
+* [#6967](https://github.com/xmake-io/xmake/pull/6967): 为 C++ 和 Objective-C 添加 Swift 互操作支持
+* [#6964](https://github.com/xmake-io/xmake/pull/6964): 支持通过 cuda_sdkver 参数指定 CUDA SDK 版本
+* [#6963](https://github.com/xmake-io/xmake/pull/6963): 为交叉编译添加 libtool 补丁支持
+* [#6974](https://github.com/xmake-io/xmake/pull/6974): 支持多行刷新进度输出显示
+* [#7024](https://github.com/xmake-io/xmake/pull/7024): 为 `xmake show -t target` 命令添加 JSON 格式输出
+* [#7025](https://github.com/xmake-io/xmake/pull/7025): 添加 XML 模块，支持解析和编码功能
+* [#6989](https://github.com/xmake-io/xmake/pull/6989): 为 os API 添加异步操作支持
+
+### 改进
+
+* [#6924](https://github.com/xmake-io/xmake/pull/6924): 改进工具链配置，支持 add_toolchains("name[configs]") 语法
+* [#6935](https://github.com/xmake-io/xmake/pull/6935): 重构工具链：将 gcc/clang 的注册与定义分离
+* [#6942](https://github.com/xmake-io/xmake/pull/6942): 改进文件读取性能
+* [#6946](https://github.com/xmake-io/xmake/pull/6946): 为 Clang 工具链添加 LLD 链接器支持
+* [#6970](https://github.com/xmake-io/xmake/pull/6970): 改进 TTY 处理和输出显示
+* [#6977](https://github.com/xmake-io/xmake/pull/6977): 重构 Xcode 工具链，并将其集成到针对 Apple 设备的 LLVM 工具链中
+* [#6987](https://github.com/xmake-io/xmake/pull/6987): 添加 Ghostty 终端检测支持
+* [#7003](https://github.com/xmake-io/xmake/pull/7003): 限制在包配置中获取构建环境变量
+* [#7008](https://github.com/xmake-io/xmake/pull/7008): 统一代码格式风格
+* [#7004](https://github.com/xmake-io/xmake/pull/7004): 使用 -r 标志时跳过重建包和 std 模块
+* [#7019](https://github.com/xmake-io/xmake/pull/7019): 改进 xmake.sh/configure 脚本并添加 Ninja 生成器支持
+* [#7023](https://github.com/xmake-io/xmake/pull/7023): 更新 Qt TypeScript 规则
+* [#7022](https://github.com/xmake-io/xmake/pull/7022): 使 zig-cc 工具链继承自 clang
+* [#7027](https://github.com/xmake-io/xmake/pull/7027): 改进 graph 模块性能
+* [#7031](https://github.com/xmake-io/xmake/pull/7031): 改进 require 解析功能
+* [#7032](https://github.com/xmake-io/xmake/pull/7032): 改进符号提取功能
+* [#6952](https://github.com/xmake-io/xmake/pull/6952): 为测试添加实时输出支持
+* [#6998](https://github.com/xmake-io/xmake/pull/6998): 更新 tbox 库以支持 process/argv
+
+### Bugs 修复
+
+* [#6926](https://github.com/xmake-io/xmake/pull/6926): 修复在 Windows 上加载包含 Unicode 字符的主脚本路径问题
+* [#6931](https://github.com/xmake-io/xmake/pull/6931): 修复 C++ 模块：当工具链的 clang-scan-deps 未安装时，自动回退到系统级的 clang-scan-deps
+* [#6937](https://github.com/xmake-io/xmake/pull/6937): 修复目标任务处理问题
+* [#6954](https://github.com/xmake-io/xmake/pull/6954): 修复 vsxmake/vs 生成器的模块支持问题
+* [#6955](https://github.com/xmake-io/xmake/pull/6955): 修复包中构建号的排序问题
+* [#6956](https://github.com/xmake-io/xmake/pull/6956): 修复使用不支持 depfile 的 zigcc 链接器导致的构建失败
+* [#6959](https://github.com/xmake-io/xmake/pull/6959): 修复在动态链接场景下使用 zigcc 与 autotools 的问题
+* [#6983](https://github.com/xmake-io/xmake/pull/6983): 修复模块：为模块重用场景去除 sanitizer 标志
+* [#6984](https://github.com/xmake-io/xmake/pull/6984): 修复已安装的 CMake 导入文件中的 libdir 路径问题
+* [#6993](https://github.com/xmake-io/xmake/pull/6993): 修复 xmake 测试模块相关问题
+* [#6992](https://github.com/xmake-io/xmake/pull/6992): 修复模块：为 clang get_cpp_library_name 添加所有支持的平台
+* [#6999](https://github.com/xmake-io/xmake/pull/6999): 修复 rootdir 处理问题
+* [#7002](https://github.com/xmake-io/xmake/pull/7002): 修复 asn1c：将生成的输出文件作为系统头文件包含
+* [#6996](https://github.com/xmake-io/xmake/pull/6996): 修复 Nimble find_package 以使用最新的包列表格式
+* [#7012](https://github.com/xmake-io/xmake/pull/7012): 修复稀疏检出处理问题
+* [#7013](https://github.com/xmake-io/xmake/pull/7013): 修复打包时移除依赖项的问题
+* [#7017](https://github.com/xmake-io/xmake/pull/7017): 修复 lock_packages 的拼写错误
+* [#7016](https://github.com/xmake-io/xmake/pull/7016): 修复 vsxmake 中的项目默认配置问题
+* [#7018](https://github.com/xmake-io/xmake/pull/7018): 修复构建顺序：仅在禁用依赖链接继承时才禁用构建顺序
 
 ## v3.0.4
 
