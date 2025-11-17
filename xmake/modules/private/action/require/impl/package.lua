@@ -35,108 +35,11 @@ import("private.action.require.impl.check_api")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.search_packages")
 import("private.action.require.impl.utils.requirekey", {alias = "_get_requirekey"})
+import("private.utils.package", {alias = "package_utils"})
 
 -- get memcache
 function _memcache()
     return memcache.cache("require.impl.package")
-end
-
---
--- parse require string
---
--- basic
--- - add_requires("zlib")
---
--- semver
--- - add_requires("tbox >=1.5.1", "zlib >=1.2.11")
--- - add_requires("tbox", {version = ">=1.5.1"})
---
--- git branch/tag
--- - add_requires("zlib master")
---
--- with the given repository
--- - add_requires("xmake-repo@tbox >=1.5.1")
---
--- with the given configs
--- - add_requires("aaa_bbb_ccc >=1.5.1 <1.6.0", {optional = true, alias = "mypkg", debug = true})
--- - add_requires("tbox", {config = {coroutine = true, abc = "xxx"}})
---
--- with namespace and the 3rd package manager
--- - add_requires("xmake::xmake-repo@tbox >=1.5.1")
--- - add_requires("vcpkg::ffmpeg")
--- - add_requires("conan::OpenSSL/1.0.2n@conan/stable")
--- - add_requires("conan::openssl/1.1.1g") -- new
--- - add_requires("brew::pcre2/libpcre2-8 10.x", {alias = "pcre2"})
---
--- clone as a standalone package with the different configs
--- we can install and use these three packages at the same time.
--- - add_requires("zlib")
--- - add_requires("zlib~debug", {debug = true})
--- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
---
--- - add_requires("zlib~label1")
--- - add_requires("zlib", {label = "label2"})
---
--- private package, only for installation, do not export any links/includes and environments to target
--- - add_requires("zlib", {private = true})
---
--- {system = nil/true/false}:
---   nil: get remote or system packages
---   true: only get system package
---   false: only get remote packages
---
--- {build = true}: always build packages, we do not use the precompiled artifacts
---
--- simply configs as string:
---   add_requires("boost[iostreams,system,thread,key=value] >=1.78.0")
---   add_requires("boost[iostreams,thread=n] >=1.78.0")
---   add_requires("libplist[shared,debug,codecs=[foo,bar,zoo]]")
---
-function _parse_require(require_str)
-
-    -- split package and version info
-    local splitinfo = require_str:split('%s+')
-    assert(splitinfo and #splitinfo > 0, "require(\"%s\"): invalid!", require_str)
-
-    -- get package info
-    local packageinfo = splitinfo[1]
-
-    -- get version
-    --
-    -- e.g.
-    --
-    -- latest
-    -- >=1.5.1 <1.6.0
-    -- master || >1.4
-    -- ~1.2.3
-    -- ^1.1
-    --
-    local version = "latest"
-    if #splitinfo > 1 then
-        version = table.concat(table.slice(splitinfo, 2), " ")
-    end
-    assert(version, "require(\"%s\"): unknown version!", require_str)
-
-    -- require third-party packages? e.g. brew::pcre2/libpcre2-8
-    local reponame    = nil
-    local packagename = nil
-    if require_str:find("::", 1, true) then
-        packagename = packageinfo
-    else
-
-        -- get repository name, package name and package url
-        local pos = packageinfo:lastof('@', true)
-        if pos then
-            packagename = packageinfo:sub(pos + 1)
-            reponame = packageinfo:sub(1, pos - 1)
-        else
-            packagename = packageinfo
-        end
-    end
-
-    -- check package name
-    assert(packagename, "require(\"%s\"): the package name not found!", require_str)
-    return packagename, version, reponame
 end
 
 -- load require info
@@ -144,7 +47,7 @@ function _load_require(require_str, requires_extra, opt)
     opt = opt or {}
 
     -- parse require
-    local packagename, version, reponame = _parse_require(require_str)
+    local packagename, version, reponame = package_utils.parse_requirestr(require_str)
 
     -- get require extra
     local require_extra = {}
