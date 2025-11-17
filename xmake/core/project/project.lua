@@ -1153,7 +1153,7 @@ function project.requireconfs_str()
                     end
                     if packageversion then
                         requireconf_extra = requireconf_extra or {configs = {}}
-                        requireconf_extra.configs.version = packageversion
+                        requireconf_extra.version = packageversion
                     end
                     if requireconf_extra then
                         requireconf_extra.override = true
