@@ -42,6 +42,9 @@ function toolchain_clang(version)
         set_toolset("as",      "clang" .. suffix)
         set_toolset("mrc",     "llvm-rc" .. suffix)
         set_toolset("dlltool", "llvm-dlltool" .. suffix)
+        if is_host("macosx") then
+            set_toolset("dsymutil", "dsymutil")
+        end
 
         on_check(function (toolchain)
             if toolchain:is_plat("windows") then
