@@ -203,8 +203,8 @@ function _consume_jobs_loop(state, run_in_remote)
                     if curdir then
                         os.cd(curdir)
                     end
-                    state.finished_count = state.finished_count + 1
                     job_func(job_index, total, {progress = state.progress_wrapper})
+                    state.finished_count = state.finished_count + 1
                 end
                 state.running_jobs_indices[job_index] = nil
                 co_running:data_set("runjobs.running", false)
