@@ -218,7 +218,7 @@ function main()
             jobs = os.default_njob()
         end
         local format_time = os.mclock()
-        runjobs("format", function (index, total, opt)
+        runjobs("clang-format", function (index, total, opt)
             local sourcefile = sourcefiles[index]
             local format_argv = table.join(argv, {sourcefile})
             progress.show(index * 100 / total, "clang-format.formatting %s", sourcefile)
@@ -227,7 +227,5 @@ function main()
         format_time = os.mclock() - format_time
         progress.show(100, "${color.success}clang-format formatted %d files, spent %.3fs", #sourcefiles, format_time / 1000)
     end
-
-    -- done
     os.setenvs(oldenvs)
 end
