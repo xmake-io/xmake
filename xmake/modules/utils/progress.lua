@@ -388,6 +388,11 @@ function show_output(format, ...)
     end
 end
 
+-- check if multirow refresh mode is enabled
+function is_multirow()
+    return _is_multirow_refresh()
+end
+
 -- refresh the multirow progress display to update elapsed time
 -- this is useful for long-running tasks to keep the elapsed time updated
 function refresh()
@@ -396,11 +401,6 @@ function refresh()
         local maxwidth = os.getwinsize().width
         _redraw_multirow_progress(maxwidth)
     end
-end
-
--- check if multirow refresh mode is enabled
-function is_multirow()
-    return _is_multirow_refresh()
 end
 
 -- abort the progress display mode, used for error exit or early termination

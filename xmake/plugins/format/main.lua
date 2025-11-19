@@ -221,9 +221,9 @@ function main()
             comax = jobs,
             showtips = false
         }
-        -- Only set timer for multirow refresh mode
+        -- Only set timer for multirow progress mode
         if progress.is_multirow() then
-            runjobs_opt.timeout = 500
+            runjobs_opt.timeout = 1000
             runjobs_opt.on_timer = function (running_indices)
                 -- Periodically refresh multirow progress to update elapsed time
                 progress.refresh()
