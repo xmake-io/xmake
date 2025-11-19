@@ -153,8 +153,8 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
         table.insert(argv, "--quiet")
     end
 
-    local analyze_time = os.mclock()
     -- run clang-tidy
+    local analyze_time = os.mclock()
     runjobs("checker.tidy", function (index, total, job_opt)
         local sourcefile = sourcefiles[index]
         local tidy_argv = table.join(argv, {sourcefile})
