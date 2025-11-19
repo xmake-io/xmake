@@ -24,6 +24,8 @@ import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("lib.detect.find_tool")
+import("async.runjobs")
+import("utils.progress")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 import("private.action.utils", {alias = "action_utils"})
@@ -174,6 +176,8 @@ function main()
         table.insert(argv, "--verbose")
     end
 
+    -- collect sourcefiles
+    local sourcefiles = {}
     local targetname, group_pattern = action_utils.get_target_and_group()
     local targets = _get_targets(targetname, group_pattern)
     if option.get("files") then
@@ -181,12 +185,12 @@ function main()
         for _, target in ipairs(targets) do
             for _, source in ipairs(target:sourcefiles()) do
                 if _match_sourcefiles(source, filepatterns) then
-                    table.insert(argv, path.join(projectdir, source))
+                    table.insert(sourcefiles, path.join(projectdir, source))
                 end
             end
             for _, header in ipairs(target:headerfiles()) do
                 if _match_sourcefiles(header, filepatterns) then
-                    table.insert(argv, path.join(projectdir, header))
+                    table.insert(sourcefiles, path.join(projectdir, header))
                 end
             end
         end
@@ -195,19 +199,34 @@ function main()
             for _, sourcebatch in pairs(target:sourcebatches()) do
                 if _source_batch_should_format(sourcebatch) then
                     for _, source in ipairs(sourcebatch.sourcefiles) do
-                        table.insert(argv, path.join(projectdir, source))
+                        table.insert(sourcefiles, path.join(projectdir, source))
                     end
                 end
             end
             for _, header in ipairs(target:headerfiles()) do
-                table.insert(argv, path.join(projectdir, header))
+                table.insert(sourcefiles, path.join(projectdir, header))
             end
         end
     end
 
-    -- format files
-    os.vrunv(clang_format.program, argv, {curdir = projectdir})
-    cprint("${color.success}format ok!")
+    -- format files in parallel
+    if #sourcefiles > 0 then
+        local jobs = option.get("jobs")
+        if jobs then
+            jobs = tonumber(jobs)
+        else
+            jobs = os.default_njob()
+        end
+        local format_time = os.mclock()
+        runjobs("format", function (index, total, opt)
+            local sourcefile = sourcefiles[index]
+            local format_argv = table.join(argv, {sourcefile})
+            progress.show(index * 100 / total, "clang-format.formatting %s", sourcefile)
+            os.execv(clang_format.program, format_argv, {curdir = projectdir})
+        end, {total = #sourcefiles, comax = jobs})
+        format_time = os.mclock() - format_time
+        progress.show(100, "${color.success}clang-format formatted %d files, spent %.3fs", #sourcefiles, format_time / 1000)
+    end
 
     -- done
     os.setenvs(oldenvs)
