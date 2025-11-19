@@ -33,6 +33,8 @@
 * [#7032](https://github.com/xmake-io/xmake/pull/7032): Improve symbol extraction
 * [#6952](https://github.com/xmake-io/xmake/pull/6952): Add realtime output support for tests
 * [#6998](https://github.com/xmake-io/xmake/pull/6998): Update tbox library for process/argv support
+* [#7037](https://github.com/xmake-io/xmake/pull/7037): Improve xmake format
+* [#7038](https://github.com/xmake-io/xmake/pull/7038): Improve clang-tidy output handling
 
 ### Bugs fixed
 
@@ -55,6 +57,7 @@
 * [#7017](https://github.com/xmake-io/xmake/pull/7017): Fix lock_packages typo
 * [#7016](https://github.com/xmake-io/xmake/pull/7016): Fix project default configuration in vsxmake
 * [#7018](https://github.com/xmake-io/xmake/pull/7018): Fix build order: only disable when dependency linking inheritance is disabled
+* [#7035](https://github.com/xmake-io/xmake/pull/7035): Fix process redirection issues by updating tbox
 
 ## v3.0.4
 
@@ -2215,6 +2218,8 @@
 * [#7032](https://github.com/xmake-io/xmake/pull/7032): 改进符号提取功能
 * [#6952](https://github.com/xmake-io/xmake/pull/6952): 为测试添加实时输出支持
 * [#6998](https://github.com/xmake-io/xmake/pull/6998): 更新 tbox 库以支持 process/argv
+* [#7037](https://github.com/xmake-io/xmake/pull/7037): 改进 xmake format 功能
+* [#7038](https://github.com/xmake-io/xmake/pull/7038): 改进 clang-tidy 输出处理
 
 ### Bugs 修复
 
@@ -2237,6 +2242,7 @@
 * [#7017](https://github.com/xmake-io/xmake/pull/7017): 修复 lock_packages 的拼写错误
 * [#7016](https://github.com/xmake-io/xmake/pull/7016): 修复 vsxmake 中的项目默认配置问题
 * [#7018](https://github.com/xmake-io/xmake/pull/7018): 修复构建顺序：仅在禁用依赖链接继承时才禁用构建顺序
+* [#7035](https://github.com/xmake-io/xmake/pull/7035): 通过更新 tbox 修复进程重定向问题
 
 ## v3.0.4
 
