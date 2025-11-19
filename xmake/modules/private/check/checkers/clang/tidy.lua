@@ -83,6 +83,48 @@ function _add_target_files(sourcefiles, target)
     end
 end
 
+-- check a single sourcefile
+function _check_sourcefile(clang_tidy, sourcefile, opt)
+    progress.show(opt.progress_percent, "clang-tidy.analyzing %s", sourcefile)
+    try
+    {
+        function ()
+            local outdata, errdata = os.iorunv(clang_tidy.program, opt.tidy_argv, {curdir = opt.projectdir})
+            return (outdata or "") .. (errdata or "")
+        end,
+        catch
+        {
+            function (errors)
+                -- execution failed or returned non-zero
+                local error_text = ""
+                if type(errors) == "table" then
+                    error_text = (errors.stdout or "") .. (errors.stderr or "")
+                    if #error_text:trim() == 0 then
+                        error_text = errors.errors or "check failed"
+                    end
+                else
+                    error_text = tostring(errors)
+                end
+                progress.show_output("${color.error}%s:\n%s", sourcefile, error_text)
+                progress.show_abort()
+                raise(error_text)
+            end
+        },
+        finally
+        {
+            function (ok, outdata, errdata)
+                -- show output if any
+                if ok then
+                    local output = (outdata or "") .. (errdata or "")
+                    if output and #output:trim() > 0 then
+                        progress.show_output("${color.warning}%s:\n%s", sourcefile, output)
+                    end
+                end
+            end
+        }
+    }
+end
+
 -- check sourcefiles
 function _check_sourcefiles(clang_tidy, sourcefiles, opt)
     opt = opt or {}
@@ -113,11 +155,14 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
 
     local analyze_time = os.mclock()
     -- run clang-tidy
-    runjobs("checker.tidy", function (index, total, opt)
+    runjobs("checker.tidy", function (index, total, job_opt)
         local sourcefile = sourcefiles[index]
         local tidy_argv = table.join(argv, {sourcefile})
-        progress.show(index * 100 / total, "clang-tidy.analyzing %s", sourcefile)
-        os.execv(clang_tidy.program, tidy_argv, {curdir = projectdir})
+        _check_sourcefile(clang_tidy, sourcefile, {
+            tidy_argv = tidy_argv,
+            projectdir = projectdir,
+            progress_percent = index * 100 / total
+        })
     end, {total = #sourcefiles, comax = opt.jobs or os.default_njob()})
     analyze_time = os.mclock() - analyze_time
     progress.show(100, "${color.success}clang-tidy analyzed %d files, spent %.3fs", #sourcefiles, analyze_time / 1000)
