@@ -211,10 +211,8 @@ function main()
 
     -- format files in parallel
     if #sourcefiles > 0 then
-        local jobs = option.get("jobs")
-        if jobs then
-            jobs = tonumber(jobs)
-        else
+        local jobs = tonumber(option.get("jobs"))
+        if not jobs or jobs <= 0 then
             jobs = os.default_njob()
         end
         local format_time = os.mclock()
