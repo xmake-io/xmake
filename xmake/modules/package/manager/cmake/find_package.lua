@@ -131,7 +131,8 @@ function _find_package(cmake, name, opt)
     cmakefile:close()
     if option.get("diagnosis") then
         local cmakedata = io.readfile(filepath)
-        cprint("finding it from the generated CMakeLists.txt:\n${dim}%s", cmakedata)
+        cprint("finding it from the generated CMakeLists.txt:")
+        io.write(cmakedata .. "\n")
     end
 
     -- run cmake
@@ -151,7 +152,8 @@ function _find_package(cmake, name, opt)
         local flagsdata = io.readfile(flagsfile)
         if flagsdata then
             if option.get("diagnosis") then
-                cprint("finding includes from %s\n${dim}%s", flagsfile, flagsdata)
+                cprint("finding includes from %s", flagsfile)
+                io.write(flagsdata .. "\n")
             end
             for _, line in ipairs(flagsdata:split("\n", {plain = true})) do
                 if line:find("CXX_INCLUDES =", 1, true) then
@@ -191,7 +193,8 @@ function _find_package(cmake, name, opt)
         local linkdata = io.readfile(linkfile)
         if linkdata then
             if option.get("diagnosis") then
-                cprint("finding links from %s\n${dim}%s", linkfile, linkdata)
+                cprint("finding links from %s", linkfile)
+                io.write(linkdata .. "\n")
             end
             for _, line in ipairs(os.argv(linkdata)) do
                 local is_ldflags = false
