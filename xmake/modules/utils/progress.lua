@@ -202,6 +202,15 @@ function _display_subprocess_lines(order_lineinfos)
             linecount = linecount + 1
         end
     end
+    -- clear the left lines
+    local left_linecount = #order_lineinfos - linecount
+    if left_linecount > 0 then
+        for i = 1, left_linecount do
+            tty.erase_line().cr()
+            print("")
+        end
+        tty.cursor_move_up(left_linecount)
+    end
     _g.linecount = linecount
 end
 
