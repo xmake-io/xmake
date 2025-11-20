@@ -215,7 +215,9 @@ function _display_subprocess_lines(order_lineinfos)
 end
 
 -- redraw the multirow progress area (internal helper)
-function _redraw_multirow_progress(maxwidth)
+-- @param maxwidth: window width
+-- @param current_time: optional current time (to avoid repeated os.mclock() calls)
+function _redraw_multirow_progress(maxwidth, current_time)
     local last_total_progress = _g.last_total_progress
     if not last_total_progress then
         return
@@ -226,7 +228,9 @@ function _redraw_multirow_progress(maxwidth)
     cprint(last_total_progress)
 
     -- build and display the subprocess lines
-    local current_time = os.mclock()
+    if not current_time then
+        current_time = os.mclock()
+    end
     local order_lineinfos = _build_ordered_subprocess_lineinfos(maxwidth, current_time)
     _display_subprocess_lines(order_lineinfos)
     io.flush()
@@ -275,6 +279,7 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     -- save the total progress line and progress value for potential redraw in show_output
     _g.last_total_progress = progress_line
     _g.last_total_progress_value = progress
+    _g.last_show_time = current_time
 
     -- update the current progress info
     local current_lineinfo = progress_lineinfos[running]
@@ -401,16 +406,28 @@ end
 function refresh()
     local refresh_mode = _g.refresh_mode
     if refresh_mode == "multirow" then
+        -- get current time once and reuse it
+        local current_time = os.mclock()
+        
+        -- only refresh if more than 500ms has passed since last show
+        -- this avoids too frequent refreshes
+        local last_show_time = _g.last_show_time
+        if last_show_time then
+            local elapsed = current_time - last_show_time
+            if elapsed <= 500 then
+                return
+            end
+        end
 
         -- move cursor back to the top of progress area to avoid scrolling
         local linecount = _g.linecount or 0
-        if linecount > 0 and not ss then
+        if linecount > 0 then
             tty.cursor_move_up(linecount + 1)
         end
 
-        -- redraw the progress area immediately
+        -- redraw the progress area immediately, passing current_time to avoid repeated calls
         local maxwidth = os.getwinsize().width
-        _redraw_multirow_progress(maxwidth)
+        _redraw_multirow_progress(maxwidth, current_time)
     end
 end
 
