@@ -89,6 +89,8 @@ function _start_timer(state, name, opt)
     if opt.on_timer then
         state.on_timer = opt.on_timer
         state.group_timer = state.group_name .. "/timer"
+        -- create semaphore for timer loop to wait with timeout for quick exit
+        state.timer_semaphore = scheduler.co_semaphore(state.group_name .. "/timer", 0)
         scheduler.co_group_begin(state.group_timer, function (co_group)
             scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, _timer_loop, state)
         end)
@@ -99,6 +101,8 @@ end
 function _start_waiting_indicator_timer(state, name, opt)
     if state.show_waiting_indicator then
         state.group_waiting_indicator_timer = state.group_name .. "/waiting_indicator"
+        -- create semaphore for waiting indicator loop to wait with timeout for quick exit
+        state.waiting_indicator_semaphore = scheduler.co_semaphore(state.group_name .. "/waiting_indicator", 0)
         scheduler.co_group_begin(state.group_waiting_indicator_timer, function (co_group)
             scheduler.co_start_withopt({name = name .. "/waiting_indicator", isolate = opt.isolate}, _waiting_indicator_loop, state)
         end)
@@ -128,8 +132,14 @@ end
 
 -- stop all timers and notify them to exit
 function _stop_timers(state)
-    -- signal progress refresh loop to exit quickly
-    if state.group_progress_refresh_timer and state.progress_refresh_semaphore then
+    -- signal all timer loops to exit quickly
+    if state.timer_semaphore then
+        state.timer_semaphore:post(1)
+    end
+    if state.waiting_indicator_semaphore then
+        state.waiting_indicator_semaphore:post(1)
+    end
+    if state.progress_refresh_semaphore then
         state.progress_refresh_semaphore:post(1)
     end
 end
@@ -164,7 +174,8 @@ end
 function _timer_loop(state)
     local timeout = state.timeout
     while not state.stop do
-        os.sleep(timeout)
+        -- wait for timeout, allows quick exit when state.stop is set via post
+        state.timer_semaphore:wait(timeout)
         if not state.stop then
             local indices
             if state.running_jobs_indices then
@@ -201,7 +212,8 @@ function _waiting_indicator_loop(state)
     local timeout = state.timeout
     local waiting_indicator_helper = state.waiting_indicator_helper
     while not state.stop do
-        os.sleep(timeout)
+        -- wait for timeout, allows quick exit when state.stop is set via post
+        state.waiting_indicator_semaphore:wait(timeout)
         if not state.stop then
 
             -- show waitchars
@@ -324,6 +336,7 @@ function _consume_jobs_loop(state, run_in_remote)
                         end
                     end
 
+                    -- run job
                     job_func(job_index, total, {progress = state.progress_wrapper})
 
                     -- update progress
