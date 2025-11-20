@@ -216,12 +216,25 @@ function main()
             jobs = os.default_njob()
         end
         local format_time = os.mclock()
+        local runjobs_opt = {
+            total = #sourcefiles,
+            comax = jobs,
+            showtips = false
+        }
+        -- Only set timer for multirow progress mode
+        if progress.is_multirow() then
+            runjobs_opt.timeout = 1000
+            runjobs_opt.on_timer = function (running_indices)
+                -- Periodically refresh multirow progress to update elapsed time
+                progress.refresh()
+            end
+        end
         runjobs("clang-format", function (index, total, opt)
             local sourcefile = sourcefiles[index]
             local format_argv = table.join(argv, {sourcefile})
-            progress.show(index * 100 / total, "clang-format.formatting %s", sourcefile)
+            progress.show(opt.progress, "clang-format.formatting %s", sourcefile)
             os.execv(clang_format.program, format_argv, {curdir = projectdir})
-        end, {total = #sourcefiles, comax = jobs})
+        end, runjobs_opt)
         format_time = os.mclock() - format_time
         progress.show(100, "${color.success}clang-format formatted %d files, spent %.3fs", #sourcefiles, format_time / 1000)
     end

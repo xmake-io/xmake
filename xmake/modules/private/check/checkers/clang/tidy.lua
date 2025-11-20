@@ -85,7 +85,7 @@ end
 
 -- check a single sourcefile
 function _check_sourcefile(clang_tidy, sourcefile, opt)
-    progress.show(opt.progress_percent, "clang-tidy.analyzing %s", sourcefile)
+    progress.show(opt.progress, "clang-tidy.analyzing %s", sourcefile)
     try
     {
         function ()
@@ -155,15 +155,28 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
 
     -- run clang-tidy
     local analyze_time = os.mclock()
+    local runjobs_opt = {
+        total = #sourcefiles,
+        comax = opt.jobs or os.default_njob(),
+        showtips = false
+    }
+    -- Only set timer for multirow progress mode
+    if progress.is_multirow() then
+        runjobs_opt.timeout = 1000
+        runjobs_opt.on_timer = function (running_indices)
+            -- Periodically refresh multirow progress to update elapsed time
+            progress.refresh()
+        end
+    end
     runjobs("checker.tidy", function (index, total, job_opt)
         local sourcefile = sourcefiles[index]
         local tidy_argv = table.join(argv, {sourcefile})
         _check_sourcefile(clang_tidy, sourcefile, {
             tidy_argv = tidy_argv,
             projectdir = projectdir,
-            progress_percent = index * 100 / total
+            progress = job_opt.progress
         })
-    end, {total = #sourcefiles, comax = opt.jobs or os.default_njob()})
+    end, runjobs_opt)
     analyze_time = os.mclock() - analyze_time
     progress.show(100, "${color.success}clang-tidy analyzed %d files, spent %.3fs", #sourcefiles, analyze_time / 1000)
 end
