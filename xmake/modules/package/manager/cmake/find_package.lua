@@ -301,7 +301,7 @@ function _find_package(cmake, name, opt)
     os.tryrm(workdir)
 
     -- get results
-    if links or includedirs then
+    if configs.allow_empty_package or links or includedirs then
         local results = {}
         results.links       = table.reverse_unique(links)
         results.ldflags     = table.reverse_unique(ldflags)

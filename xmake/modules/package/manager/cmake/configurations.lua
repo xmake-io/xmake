@@ -29,6 +29,7 @@ function main()
         moduledirs          = {description = "Set the cmake modules directories."},
         presets             = {description = "Set the preset values, e.g. {Boost_USE_STATIC_LIB = true}"},
         envs                = {description = "Set the run environments of cmake, e.g. {CMAKE_PREFIX_PATH = \"xxx\"}"},
+        allow_empty_package = {description = "Accept package even if it doesn't have any include directories or linked libraries"},
     }
 end
 
