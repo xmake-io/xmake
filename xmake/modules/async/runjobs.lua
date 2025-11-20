@@ -170,6 +170,24 @@ function _exit_progress(state)
     progress.show_abort()
 end
 
+-- isolate environments
+function _isolate_environments(state, opt)
+    local co_running = scheduler.co_running()
+    if co_running and opt.isolate then
+        local is_isolated = co_running:is_isolated()
+        co_running:isolate(true)
+        state.isolated_running = co_running
+        state.is_isolated = is_isolated
+    end
+end
+
+-- restore isolated environments
+function _restore_isolated_environments(state, opt)
+    if state.isolated_running and opt.isolate and state.is_isolated ~= nil then
+        state.isolated_running:isolate(state.is_isolated)
+    end
+end
+
 -- the timer loop
 function _timer_loop(state)
     local timeout = state.timeout
@@ -425,6 +443,8 @@ function main(name, jobs, opt)
     state.timeout = opt.timeout or 500
     state.group_name = name
     state.jobs_cb = type(jobs) == "function" and jobs or nil
+    state.stop = false
+    state.running_jobs_indices = {}
     assert(state.timeout < 60000, "runjobs: invalid timeout!")
 
     -- build jobs queue
@@ -441,16 +461,7 @@ function main(name, jobs, opt)
     _init_progress(state, opt)
 
     -- isolate environments
-    local is_isolated = false
-    local co_running = scheduler.co_running()
-    if co_running and opt.isolate then
-        is_isolated = co_running:is_isolated()
-        co_running:isolate(true)
-    end
-
-    -- init timer state
-    state.stop = false
-    state.running_jobs_indices = {}
+    _isolate_environments(state, opt)
 
     -- start all timers
     _start_timers(state, name, opt)
@@ -487,18 +498,16 @@ function main(name, jobs, opt)
 
     -- wait all jobs exited
     scheduler.co_group_wait(state.group_name)
+    state.stop = true
 
     -- stop all timers and notify them to exit
-    state.stop = true
     _stop_timers(state)
     
     -- wait all timer jobs exited
     _wait_timers(state)
 
     -- restore isolated environments
-    if co_running and opt.isolate then
-        co_running:isolate(is_isolated)
-    end
+    _restore_isolated_environments(state, opt)
 
     -- exit progress
     _exit_progress(state)
