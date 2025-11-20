@@ -699,9 +699,9 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
             end
         end
         local module_depname = line:match("import%s+(.+)%s*;")
-        -- we need to parse module interface dep in cxx/impl_unit.cpp, e.g. hello.mpp and hello_impl.cpp
-        -- @see https://github.com/xmake-io/xmake/pull/2664#issuecomment-1213167314
-        if not module_depname and not support.has_module_extension(sourcefile) then
+        -- Normal module implementation units need to reference the module interface unit, module and partition interface units,
+        -- as well as partition implementation units don't have this requirement.
+        if not module_depname and not module_name_export and not internal then
             module_depname = module_name_private
         end
         if module_depname and not module_deps_set:has(module_depname) then
