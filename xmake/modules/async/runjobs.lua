@@ -33,10 +33,10 @@ function _print_backchars(backnum)
     end
 end
 
--- init progress
-function _init_progress(state, opt)
+-- init waiting indicator
+function _init_waiting_indicator(state, opt)
     opt = opt or {}
-
+    
     -- init waiting indicator helper
     -- we need to hide wait characters if is not a tty
     local waiting_indicator_opt = opt.waiting_indicator
@@ -49,6 +49,11 @@ function _init_progress(state, opt)
         end
         state.waiting_indicator_helper = waiting_indicator.new(nil, indicator_opt)
     end
+end
+
+-- init progress
+function _init_progress(state, opt)
+    opt = opt or {}
 
     -- init progress wrapper
     state.progress_finished_count = 0
@@ -77,6 +82,82 @@ function _init_progress(state, opt)
 
     -- init progress refresh timeout (for multirow progress refresh timer)
     state.progress_refresh_timeout = 500
+end
+
+-- start timer (on_timer callback)
+function _start_timer(state, name, opt)
+    if opt.on_timer then
+        state.on_timer = opt.on_timer
+        state.group_timer = state.group_name .. "/timer"
+        scheduler.co_group_begin(state.group_timer, function (co_group)
+            scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, _timer_loop, state)
+        end)
+    end
+end
+
+-- start waiting indicator timer
+function _start_waiting_indicator_timer(state, name, opt)
+    if state.show_waiting_indicator then
+        state.group_waiting_indicator_timer = state.group_name .. "/waiting_indicator"
+        scheduler.co_group_begin(state.group_waiting_indicator_timer, function (co_group)
+            scheduler.co_start_withopt({name = name .. "/waiting_indicator", isolate = opt.isolate}, _waiting_indicator_loop, state)
+        end)
+    end
+end
+
+-- start progress refresh timer for multirow progress
+function _start_progress_refresh_timer(state, name, opt)
+    if opt.progress_refresh and progress.is_multirow() then
+        state.group_progress_refresh_timer = state.group_name .. "/progress_refresh"
+        state.all_tasks_started = false
+        -- create semaphore for refresh loop
+        state.progress_refresh_semaphore = scheduler.co_semaphore(state.group_name .. "/progress_refresh", 0)
+        -- start progress refresh loop
+        scheduler.co_group_begin(state.group_progress_refresh_timer, function (co_group)
+            scheduler.co_start_withopt({name = name .. "/progress_refresh", isolate = opt.isolate}, _progress_refresh_loop, state)
+        end)
+    end
+end
+
+-- start all timers
+function _start_timers(state, name, opt)
+    _start_timer(state, name, opt)
+    _start_waiting_indicator_timer(state, name, opt)
+    _start_progress_refresh_timer(state, name, opt)
+end
+
+-- stop all timers and notify them to exit
+function _stop_timers(state)
+    -- signal progress refresh loop to exit quickly
+    if state.group_progress_refresh_timer and state.progress_refresh_semaphore then
+        state.progress_refresh_semaphore:post(1)
+    end
+end
+
+-- wait all timer jobs exited
+function _wait_timers(state)
+    if state.group_timer then
+        scheduler.co_group_wait(state.group_timer)
+    end
+    if state.group_waiting_indicator_timer then
+        scheduler.co_group_wait(state.group_waiting_indicator_timer)
+    end
+    if state.group_progress_refresh_timer then
+        scheduler.co_group_wait(state.group_progress_refresh_timer)
+    end
+end
+
+-- exit waiting indicator
+function _exit_waiting_indicator(state)
+    if state.show_waiting_indicator then
+        _print_backchars(state.backnum)
+        state.waiting_indicator_helper:stop()
+    end
+end
+
+-- exit progress
+function _exit_progress(state)
+    progress.show_abort()
 end
 
 -- the timer loop
@@ -257,12 +338,9 @@ function _consume_jobs_loop(state, run_in_remote)
                     -- stop timer and disable show waitchars first
                     state.stop = true
 
-                    -- stop progress
-                    progress.show_abort()
-                    if state.show_waiting_indicator then
-                        _print_backchars(state.backnum)
-                        state.waiting_indicator_helper:stop()
-                    end
+                    -- stop progress and waiting indicator
+                    _exit_progress(state)
+                    _exit_waiting_indicator(state)
 
                     -- we need re-throw this errors outside scheduler
                     state.abort = true
@@ -343,7 +421,10 @@ function main(name, jobs, opt)
     assert(jobs, "runjobs: no jobs!")
     state.jobs = jobs
 
-    -- show waiting tips?
+    -- init waiting indicator
+    _init_waiting_indicator(state, opt)
+    
+    -- init progress
     _init_progress(state, opt)
 
     -- isolate environments
@@ -354,30 +435,12 @@ function main(name, jobs, opt)
         co_running:isolate(true)
     end
 
-    -- run timer
+    -- init timer state
     state.stop = false
     state.running_jobs_indices = {}
-    state.all_tasks_started = false
-    local group_timer
-    if opt.on_timer then
-        state.on_timer = opt.on_timer
-        group_timer = state.group_name .. "/timer"
-        scheduler.co_group_begin(group_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, _timer_loop, state)
-        end)
-    elseif state.show_waiting_indicator then
-        group_timer = state.group_name .. "/timer"
-        scheduler.co_group_begin(group_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, _waiting_indicator_loop, state)
-        end)
-    end
 
-    -- start independent refresh timer for multirow progress
-    local group_progress_refresh_timer = nil
-    local need_progress_refresh_timer = opt.progress_refresh and progress.is_multirow()
-    if need_progress_refresh_timer then
-        group_progress_refresh_timer = state.group_name .. "/progress_refresh"
-    end
+    -- start all timers
+    _start_timers(state, name, opt)
 
     -- run jobs
     local distcc = opt.distcc
@@ -391,11 +454,6 @@ function main(name, jobs, opt)
         state.semaphore = scheduler.co_semaphore(state.group_name, 0)
         if distcc then
             state.distcc_semaphore = scheduler.co_semaphore(state.group_name .. "/distcc", 0)
-        end
-        -- create semaphore for refresh loop
-        if need_progress_refresh_timer then
-            -- semaphore to wait for all tasks started and for refresh timer to signal refresh loop
-            state.progress_refresh_semaphore = scheduler.co_semaphore(state.group_name .. "/progress_refresh", 0)
         end
         -- @note we can set `remote_only = true` to run all jobs in remote only
         local local_comax = 0
@@ -414,43 +472,26 @@ function main(name, jobs, opt)
         end
     end)
 
-    -- start refresh loop after semaphore is created
-    if need_progress_refresh_timer then
-        scheduler.co_group_begin(group_progress_refresh_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/progress_refresh", isolate = opt.isolate}, _progress_refresh_loop, state)
-        end)
-    end
-
     -- wait all jobs exited
     scheduler.co_group_wait(state.group_name)
 
-    -- wait timer job exited
-    if group_timer then
-        state.stop = true
-        scheduler.co_group_wait(group_timer)
-    end
-
-    -- wait refresh timer job exited and signal it to exit quickly
-    if group_progress_refresh_timer then
-        state.stop = true
-        -- post signal to refresh loop to wake it up for quick exit
-        if state.progress_refresh_semaphore then
-            state.progress_refresh_semaphore:post(1)
-        end
-        scheduler.co_group_wait(group_progress_refresh_timer)
-    end
+    -- stop all timers and notify them to exit
+    state.stop = true
+    _stop_timers(state)
+    
+    -- wait all timer jobs exited
+    _wait_timers(state)
 
     -- restore isolated environments
     if co_running and opt.isolate then
         co_running:isolate(is_isolated)
     end
 
-    -- stop progress
-    progress.show_abort()
-    if state.show_waiting_indicator then
-        _print_backchars(state.backnum)
-        state.waiting_indicator_helper:stop()
-    end
+    -- exit progress
+    _exit_progress(state)
+
+    -- exit waiting indicator
+    _exit_waiting_indicator(state)
 
     -- do exit callback
     if opt.on_exit then
