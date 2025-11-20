@@ -68,7 +68,7 @@ rule("go.env")
                     if option.get("verbose") then
                         build_task()
                     else
-                        runjobs("build/goenv", build_task, {progress = true})
+                        runjobs("build/goenv", build_task, {waiting_indicator = true})
                     end
                 end
             end

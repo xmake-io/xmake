@@ -21,6 +21,7 @@
 -- imports
 import("core.base.scheduler")
 import("utils.progress")
+import("utils.waiting_indicator")
 
 -- print back characters
 function _print_backchars(backnum)
@@ -36,16 +37,17 @@ end
 function _init_progress(state, opt)
     opt = opt or {}
 
-    -- init progress helper
+    -- init waiting indicator helper
     -- we need to hide wait characters if is not a tty
-    state.show_progress = io.isatty() and (opt.progress or opt.showtips)
+    local waiting_indicator_opt = opt.waiting_indicator
+    state.show_waiting_indicator = io.isatty() and (waiting_indicator_opt == true or type(waiting_indicator_opt) == "table")
     state.backnum = 0
-    if state.show_progress then
-        local progress_opt = nil
-        if type(state.show_progress) == "table" then
-            progress_opt = state.show_progress
+    if state.show_waiting_indicator then
+        local indicator_opt = nil
+        if type(waiting_indicator_opt) == "table" then
+            indicator_opt = waiting_indicator_opt
         end
-        state.progress_helper = progress.new(nil, progress_opt)
+        state.waiting_indicator_helper = waiting_indicator.new(nil, indicator_opt)
     end
 
     -- init progress wrapper
@@ -113,10 +115,10 @@ function _progress_refresh_loop(state)
     end
 end
 
--- the progress loop
-function _progress_loop(state)
+-- the waiting indicator loop
+function _waiting_indicator_loop(state)
     local timeout = state.timeout
-    local progress_helper = state.progress_helper
+    local waiting_indicator_helper = state.waiting_indicator_helper
     while not state.stop do
         os.sleep(timeout)
         if not state.stop then
@@ -146,14 +148,14 @@ function _progress_loop(state)
             end
 
             -- print back characters
-            progress_helper:clear()
+            waiting_indicator_helper:clear()
             _print_backchars(state.backnum)
 
             if tips then
                 cprintf("${dim}%s${clear} ", tips)
                 state.backnum = #tips + 1
             end
-            progress_helper:write()
+            waiting_indicator_helper:write()
         end
     end
 end
@@ -257,9 +259,9 @@ function _consume_jobs_loop(state, run_in_remote)
 
                     -- stop progress
                     progress.show_abort()
-                    if state.show_progress then
+                    if state.show_waiting_indicator then
                         _print_backchars(state.backnum)
-                        state.progress_helper:stop()
+                        state.waiting_indicator_helper:stop()
                     end
 
                     -- we need re-throw this errors outside scheduler
@@ -304,9 +306,9 @@ end
 --
 -- e.g.
 -- runjobs("test", function (index) print("hello") end, {total = 100, comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
--- runjobs("test", function () os.sleep(10000) end, { progress = true })
--- runjobs("test", function () os.sleep(10000) end, { progress = { chars = {'/','\'} } }) -- see module utils.progress
--- runjobs("test", function () os.sleep(10000) end, { progress = true, progress_refresh = true }) -- enable progress refresh timer for multirow progress
+-- runjobs("test", function () os.sleep(10000) end, { waiting_indicator = true })
+-- runjobs("test", function () os.sleep(10000) end, { waiting_indicator = { chars = {'/','\'} } }) -- see module utils.waiting_indicator
+-- runjobs("test", function () os.sleep(10000) end, { waiting_indicator = true, progress_refresh = true }) -- enable progress refresh timer for multirow progress
 --
 -- local jobs = jobpool.new()
 -- local root = jobs:addjob("job/root", function (index, total, opt)
@@ -363,10 +365,10 @@ function main(name, jobs, opt)
         scheduler.co_group_begin(group_timer, function (co_group)
             scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, _timer_loop, state)
         end)
-    elseif state.show_progress then
+    elseif state.show_waiting_indicator then
         group_timer = state.group_name .. "/timer"
         scheduler.co_group_begin(group_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, _progress_loop, state)
+            scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, _waiting_indicator_loop, state)
         end)
     end
 
@@ -445,9 +447,9 @@ function main(name, jobs, opt)
 
     -- stop progress
     progress.show_abort()
-    if state.show_progress then
+    if state.show_waiting_indicator then
         _print_backchars(state.backnum)
-        state.progress_helper:stop()
+        state.waiting_indicator_helper:stop()
     end
 
     -- do exit callback

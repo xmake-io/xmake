@@ -238,7 +238,7 @@ function _install(sourcedir)
     if option.get("verbose") then
         install_task()
     else
-        runjobs("update/install", install_task, {progress = true})
+        runjobs("update/install", install_task, {waiting_indicator = true})
     end
 end
 
@@ -512,7 +512,7 @@ function main()
     if option.get("verbose") then
         download_task()
     else
-        runjobs("update/download", download_task, {progress = true})
+        runjobs("update/download", download_task, {waiting_indicator = true})
     end
 
     -- leave environment
