@@ -72,6 +72,9 @@ function _init_progress(state, opt)
         end
     })
     state.progress_wrapper = progress_wrapper
+    
+    -- init progress refresh timeout (for multirow progress refresh timer)
+    state.progress_refresh_timeout = 500
 end
 
 -- the timer loop
@@ -90,16 +93,21 @@ function _timer_loop(state)
 end
 
 -- the refresh loop for multirow progress (independent timer with its own timeout)
-function _refresh_loop(state)
+function _progress_refresh_loop(state)
     -- wait until all tasks have been started using semaphore
-    if state.refresh_semaphore then
-        state.refresh_semaphore:wait(-1)
+    if state.progress_refresh_semaphore and not state.stop then
+        state.progress_refresh_semaphore:wait(-1)
+    else
+        return
     end
-    -- start refreshing progress with independent timeout
+
+    -- start refreshing progress using semaphore wait with timeout for quick exit
     while not state.stop do
-        os.sleep(state.refresh_timeout)
+        -- wait for refresh timeout, allows quick exit when state.stop is set via post
+        state.progress_refresh_semaphore:wait(state.progress_refresh_timeout)
+
+        -- refresh progress if not stopped
         if not state.stop then
-            -- refresh multirow progress to update elapsed time
             progress.refresh()
         end
     end
@@ -228,8 +236,8 @@ function _consume_jobs_loop(state, run_in_remote)
                     if state.finished_count >= total and not state.all_tasks_started then
                         state.all_tasks_started = true
                         -- notify refresh loop that all tasks have been started
-                        if state.refresh_semaphore then
-                            state.refresh_semaphore:post(1)
+                        if state.progress_refresh_semaphore then
+                            state.progress_refresh_semaphore:post(1)
                         end
                     end
                     
@@ -321,14 +329,9 @@ function main(name, jobs, opt)
     state.total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
     state.comax = opt.comax and tonumber(opt.comax) or math.min(state.total, 4)
     state.timeout = opt.timeout or 500
-    -- this timer only starts after all tasks have been consumed (waiting for completion),
-    -- so a shorter timeout (e.g., 100ms) is acceptable for quick refresh and doesn't affect performance
-    -- @see https://github.com/xmake-io/xmake/issues/7042
-    state.refresh_timeout = opt.refresh_timeout or 100
     state.group_name = name
     state.jobs_cb = type(jobs) == "function" and jobs or nil
     assert(state.timeout < 60000, "runjobs: invalid timeout!")
-    assert(state.refresh_timeout < 60000, "runjobs: invalid refresh_timeout!")
 
     -- build jobs queue
     if type(jobs) == "table" and jobs.build then
@@ -386,9 +389,10 @@ function main(name, jobs, opt)
         if distcc then
             state.distcc_semaphore = scheduler.co_semaphore(state.group_name .. "/distcc", 0)
         end
-        -- create semaphore for refresh loop to wait for all tasks started
+        -- create semaphore for refresh loop
         if need_refresh_timer then
-            state.refresh_semaphore = scheduler.co_semaphore(state.group_name .. "/refresh", 0)
+            -- semaphore to wait for all tasks started and for refresh timer to signal refresh loop
+            state.progress_refresh_semaphore = scheduler.co_semaphore(state.group_name .. "/refresh", 0)
         end
         -- @note we can set `remote_only = true` to run all jobs in remote only
         local local_comax = 0
@@ -407,10 +411,10 @@ function main(name, jobs, opt)
         end
     end)
     
-    -- start refresh timer after semaphore is created
+    -- start refresh loop after semaphore is created
     if need_refresh_timer then
         scheduler.co_group_begin(group_refresh_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/refresh", isolate = opt.isolate}, _refresh_loop, state)
+            scheduler.co_start_withopt({name = name .. "/refresh", isolate = opt.isolate}, _progress_refresh_loop, state)
         end)
     end
 
@@ -423,9 +427,13 @@ function main(name, jobs, opt)
         scheduler.co_group_wait(group_timer)
     end
     
-    -- wait refresh timer job exited
+    -- wait refresh timer job exited and signal it to exit quickly
     if group_refresh_timer then
         state.stop = true
+        -- post signal to refresh loop to wake it up for quick exit
+        if state.progress_refresh_semaphore then
+            state.progress_refresh_semaphore:post(1)
+        end
         scheduler.co_group_wait(group_refresh_timer)
     end
 
