@@ -49,11 +49,11 @@ function _init_progress(state, opt)
     end
 
     -- init progress wrapper
-    state.finished_count = 0
+    state.progress_finished_count = 0
     state.progress_factor = opt.progress_factor or 1.0
     local progress_wrapper = {}
     progress_wrapper.current = function ()
-        return state.finished_count
+        return state.progress_finished_count
     end
     progress_wrapper.total = function ()
         return state.total
@@ -61,7 +61,7 @@ function _init_progress(state, opt)
     progress_wrapper.percent = function ()
         local total = state.total
         if total and total > 0 then
-            return math.floor((state.finished_count * state.progress_factor * 100) / total)
+            return math.floor((state.progress_finished_count * state.progress_factor * 100) / total)
         else
             return 0
         end
@@ -203,8 +203,14 @@ function _consume_jobs_loop(state, run_in_remote)
                     if curdir then
                         os.cd(curdir)
                     end
-                    job_func(job_index, total, {progress = state.progress_wrapper})
+
+                    -- to avoid running the same task repeatedly,
+                    -- we need to update the completion count in advance.
                     state.finished_count = state.finished_count + 1
+                    job_func(job_index, total, {progress = state.progress_wrapper})
+
+                    -- update progress
+                    state.progress_finished_count = state.progress_finished_count + 1
                 end
                 state.running_jobs_indices[job_index] = nil
                 co_running:data_set("runjobs.running", false)
