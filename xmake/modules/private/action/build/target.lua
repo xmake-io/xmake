@@ -799,14 +799,6 @@ function run_targetjobs(targets_root, opt)
             remote_only = opt.remote_only,
             progress_factor = opt.progress_factor
         }
-        -- Only set timer for multirow progress mode
-        if progress_utils.is_multirow() then
-            runjobs_opt.timeout = 1000
-            runjobs_opt.on_timer = function (running_indices)
-                -- Periodically refresh multirow progress to update elapsed time
-                progress_utils.refresh()
-            end
-        end
         async_runjobs(job_kind, jobgraph, runjobs_opt)
         os.cd(curdir)
         return true
@@ -827,14 +819,6 @@ function run_filejobs(targets_root, opt)
             remote_only = opt.remote_only,
             progress_factor = opt.progress_factor
         }
-        -- Only set timer for multirow progress mode
-        if progress_utils.is_multirow() then
-            runjobs_opt.timeout = 1000
-            runjobs_opt.on_timer = function (running_indices)
-                -- Periodically refresh multirow progress to update elapsed time
-                progress_utils.refresh()
-            end
-        end
         async_runjobs(job_kind, jobgraph, runjobs_opt)
         os.cd(curdir)
         return true

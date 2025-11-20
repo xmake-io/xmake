@@ -1110,6 +1110,11 @@ function scheduler:enable(enabled)
     self._ENABLED = enabled
 end
 
+-- cancel all timers
+function scheduler:cancel_timers()
+    self:_timer():kill()
+end
+
 -- stop the scheduler loop
 function scheduler:stop()
     -- mark scheduler status as stopped and spank the poller:wait()

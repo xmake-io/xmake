@@ -160,14 +160,6 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
         comax = opt.jobs or os.default_njob(),
         showtips = false
     }
-    -- Only set timer for multirow progress mode
-    if progress.is_multirow() then
-        runjobs_opt.timeout = 1000
-        runjobs_opt.on_timer = function (running_indices)
-            -- Periodically refresh multirow progress to update elapsed time
-            progress.refresh()
-        end
-    end
     runjobs("checker.tidy", function (index, total, job_opt)
         local sourcefile = sourcefiles[index]
         local tidy_argv = table.join(argv, {sourcefile})
