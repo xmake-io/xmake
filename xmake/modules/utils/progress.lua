@@ -221,12 +221,6 @@ function _redraw_multirow_progress(maxwidth)
         return
     end
 
-    -- move cursor back to the top of progress area to avoid scrolling
-    local linecount = _g.linecount or 0
-    if linecount > 0 then
-        tty.cursor_move_up(linecount + 1)
-    end
-
     -- redraw the total progress line
     tty.erase_line().cr()
     cprint(last_total_progress)
@@ -407,6 +401,14 @@ end
 function refresh()
     local refresh_mode = _g.refresh_mode
     if refresh_mode == "multirow" then
+
+        -- move cursor back to the top of progress area to avoid scrolling
+        local linecount = _g.linecount or 0
+        if linecount > 0 and not ss then
+            tty.cursor_move_up(linecount + 1)
+        end
+
+        -- redraw the progress area immediately
         local maxwidth = os.getwinsize().width
         _redraw_multirow_progress(maxwidth)
     end
