@@ -158,7 +158,8 @@ function _check_sourcefiles(clang_tidy, sourcefiles, opt)
     local runjobs_opt = {
         total = #sourcefiles,
         comax = opt.jobs or os.default_njob(),
-        showtips = false
+        showtips = false,
+        progress_refresh = true
     }
     runjobs("checker.tidy", function (index, total, job_opt)
         local sourcefile = sourcefiles[index]

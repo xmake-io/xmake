@@ -797,7 +797,8 @@ function run_targetjobs(targets_root, opt)
             curdir = curdir,
             distcc = opt.distcc,
             remote_only = opt.remote_only,
-            progress_factor = opt.progress_factor
+            progress_factor = opt.progress_factor,
+            progress_refresh = true
         }
         async_runjobs(job_kind, jobgraph, runjobs_opt)
         os.cd(curdir)
@@ -817,7 +818,8 @@ function run_filejobs(targets_root, opt)
             curdir = curdir,
             distcc = opt.distcc,
             remote_only = opt.remote_only,
-            progress_factor = opt.progress_factor
+            progress_factor = opt.progress_factor,
+            progress_refresh = true
         }
         async_runjobs(job_kind, jobgraph, runjobs_opt)
         os.cd(curdir)

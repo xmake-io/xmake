@@ -72,7 +72,7 @@ function _init_progress(state, opt)
         end
     })
     state.progress_wrapper = progress_wrapper
-    
+
     -- init progress refresh timeout (for multirow progress refresh timer)
     state.progress_refresh_timeout = 500
 end
@@ -231,7 +231,7 @@ function _consume_jobs_loop(state, run_in_remote)
                     -- to avoid running the same task repeatedly,
                     -- we need to update the completion count in advance.
                     state.finished_count = state.finished_count + 1
-                    
+
                     -- check if all tasks have been started (all consumed, but may still be running)
                     if state.finished_count >= total and not state.all_tasks_started then
                         state.all_tasks_started = true
@@ -240,7 +240,7 @@ function _consume_jobs_loop(state, run_in_remote)
                             state.progress_refresh_semaphore:post(1)
                         end
                     end
-                    
+
                     job_func(job_index, total, {progress = state.progress_wrapper})
 
                     -- update progress
@@ -306,6 +306,7 @@ end
 -- runjobs("test", function (index) print("hello") end, {total = 100, comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
 -- runjobs("test", function () os.sleep(10000) end, { progress = true })
 -- runjobs("test", function () os.sleep(10000) end, { progress = { chars = {'/','\'} } }) -- see module utils.progress
+-- runjobs("test", function () os.sleep(10000) end, { progress = true, progress_refresh = true }) -- enable progress refresh timer for multirow progress
 --
 -- local jobs = jobpool.new()
 -- local root = jobs:addjob("job/root", function (index, total, opt)
@@ -368,12 +369,12 @@ function main(name, jobs, opt)
             scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, _progress_loop, state)
         end)
     end
-    
+
     -- start independent refresh timer for multirow progress
-    local group_refresh_timer = nil
-    local need_refresh_timer = progress.is_multirow()
-    if need_refresh_timer then
-        group_refresh_timer = state.group_name .. "/refresh"
+    local group_progress_refresh_timer = nil
+    local need_progress_refresh_timer = opt.progress_refresh and progress.is_multirow()
+    if need_progress_refresh_timer then
+        group_progress_refresh_timer = state.group_name .. "/progress_refresh"
     end
 
     -- run jobs
@@ -390,9 +391,9 @@ function main(name, jobs, opt)
             state.distcc_semaphore = scheduler.co_semaphore(state.group_name .. "/distcc", 0)
         end
         -- create semaphore for refresh loop
-        if need_refresh_timer then
+        if need_progress_refresh_timer then
             -- semaphore to wait for all tasks started and for refresh timer to signal refresh loop
-            state.progress_refresh_semaphore = scheduler.co_semaphore(state.group_name .. "/refresh", 0)
+            state.progress_refresh_semaphore = scheduler.co_semaphore(state.group_name .. "/progress_refresh", 0)
         end
         -- @note we can set `remote_only = true` to run all jobs in remote only
         local local_comax = 0
@@ -410,11 +411,11 @@ function main(name, jobs, opt)
             end
         end
     end)
-    
+
     -- start refresh loop after semaphore is created
-    if need_refresh_timer then
-        scheduler.co_group_begin(group_refresh_timer, function (co_group)
-            scheduler.co_start_withopt({name = name .. "/refresh", isolate = opt.isolate}, _progress_refresh_loop, state)
+    if need_progress_refresh_timer then
+        scheduler.co_group_begin(group_progress_refresh_timer, function (co_group)
+            scheduler.co_start_withopt({name = name .. "/progress_refresh", isolate = opt.isolate}, _progress_refresh_loop, state)
         end)
     end
 
@@ -426,15 +427,15 @@ function main(name, jobs, opt)
         state.stop = true
         scheduler.co_group_wait(group_timer)
     end
-    
+
     -- wait refresh timer job exited and signal it to exit quickly
-    if group_refresh_timer then
+    if group_progress_refresh_timer then
         state.stop = true
         -- post signal to refresh loop to wake it up for quick exit
         if state.progress_refresh_semaphore then
             state.progress_refresh_semaphore:post(1)
         end
-        scheduler.co_group_wait(group_refresh_timer)
+        scheduler.co_group_wait(group_progress_refresh_timer)
     end
 
     -- restore isolated environments

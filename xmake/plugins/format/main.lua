@@ -219,7 +219,8 @@ function main()
         local runjobs_opt = {
             total = #sourcefiles,
             comax = jobs,
-            showtips = false
+            showtips = false,
+            progress_refresh = true
         }
         runjobs("clang-format", function (index, total, opt)
             local sourcefile = sourcefiles[index]
