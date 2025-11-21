@@ -140,7 +140,7 @@ function _find_package(cmake, name, opt)
     envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or _cmake_mode(opt.mode or "release")
     try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs}) end}
 
-    -- pares defines and includedirs for macosx/linux
+    -- parse defines and includedirs for macosx/linux
     local links
     local linkdirs
     local libfiles
