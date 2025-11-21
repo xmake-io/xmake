@@ -193,6 +193,75 @@ function _restore_isolated_environments(state, opt)
     end
 end
 
+-- run jobs and wait for completion
+function _run_jobs(state, name, opt)
+    local distcc = opt.distcc
+    state.abort = false
+    state.abort_errors = nil
+    state.finished_count = 0
+    state.curdir = opt.curdir
+    state.waiting_count = 0
+    state.distcc_waiting_count = 0
+    scheduler.co_group_begin(state.group_name, function (co_group)
+        state.semaphore = scheduler.co_semaphore(state.group_name, 0)
+        if distcc then
+            state.distcc_semaphore = scheduler.co_semaphore(state.group_name .. "/distcc", 0)
+        end
+        -- @note we can set `remote_only = true` to run all jobs in remote only
+        local local_comax = 0
+        if not opt.remote_only then
+            local_comax = math.min(state.total, state.comax)
+            for id = 1, local_comax do
+                scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, false)
+            end
+        end
+        if distcc then
+            local left_comax = state.total - local_comax
+            local remote_comax = math.min(distcc:freejobs(), left_comax)
+            for id = 1, remote_comax do
+                scheduler.co_start_withopt({name = name .. '/distcc/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, true)
+            end
+        end
+    end)
+
+    -- wait all jobs exited
+    scheduler.co_group_wait(state.group_name)
+    state.stop = true
+
+    -- stop all timers and notify them to exit
+    _stop_timers(state)
+    
+    -- wait all timer jobs exited
+    _wait_timers(state)
+end
+
+-- cleanup and handle errors after jobs completion
+function _cleanup_jobs(state, opt)
+    -- restore isolated environments
+    _restore_isolated_environments(state, opt)
+
+    -- exit progress
+    _exit_progress(state)
+
+    -- exit waiting indicator
+    _exit_waiting_indicator(state)
+
+    -- do exit callback
+    if opt.on_exit then
+        opt.on_exit(state.abort_errors)
+    end
+
+    -- re-throw abort errors
+    --
+    -- @note we cannot throw it in coroutine,
+    -- because his causes a direct exit from the entire runloop and
+    -- a quick escape from nested try-catch blocks and coroutines groups.
+    -- so we can not catch runjobs errors, e.g. build fails
+    if state.abort then
+        raise(state.abort_errors)
+    end
+end
+
 -- the timer loop
 function _timer_loop(state)
     local timeout = state.timeout
@@ -471,67 +540,9 @@ function main(name, jobs, opt)
     -- start all timers
     _start_timers(state, name, opt)
 
-    -- run jobs
-    local distcc = opt.distcc
-    state.abort = false
-    state.abort_errors = nil
-    state.finished_count = 0
-    state.curdir = opt.curdir
-    state.waiting_count = 0
-    state.distcc_waiting_count = 0
-    scheduler.co_group_begin(state.group_name, function (co_group)
-        state.semaphore = scheduler.co_semaphore(state.group_name, 0)
-        if distcc then
-            state.distcc_semaphore = scheduler.co_semaphore(state.group_name .. "/distcc", 0)
-        end
-        -- @note we can set `remote_only = true` to run all jobs in remote only
-        local local_comax = 0
-        if not opt.remote_only then
-            local_comax = math.min(state.total, state.comax)
-            for id = 1, local_comax do
-                scheduler.co_start_withopt({name = name .. '/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, false)
-            end
-        end
-        if distcc then
-            local left_comax = state.total - local_comax
-            local remote_comax = math.min(distcc:freejobs(), left_comax)
-            for id = 1, remote_comax do
-                scheduler.co_start_withopt({name = name .. '/distcc/' .. tostring(id), isolate = opt.isolate}, _consume_jobs_loop, state, true)
-            end
-        end
-    end)
+    -- run jobs and wait for completion
+    _run_jobs(state, name, opt)
 
-    -- wait all jobs exited
-    scheduler.co_group_wait(state.group_name)
-    state.stop = true
-
-    -- stop all timers and notify them to exit
-    _stop_timers(state)
-    
-    -- wait all timer jobs exited
-    _wait_timers(state)
-
-    -- restore isolated environments
-    _restore_isolated_environments(state, opt)
-
-    -- exit progress
-    _exit_progress(state)
-
-    -- exit waiting indicator
-    _exit_waiting_indicator(state)
-
-    -- do exit callback
-    if opt.on_exit then
-        opt.on_exit(state.abort_errors)
-    end
-
-    -- re-throw abort errors
-    --
-    -- @note we cannot throw it in coroutine,
-    -- because his causes a direct exit from the entire runloop and
-    -- a quick escape from nested try-catch blocks and coroutines groups.
-    -- so we can not catch runjobs errors, e.g. build fails
-    if state.abort then
-        raise(state.abort_errors)
-    end
+    -- cleanup and handle errors
+    _cleanup_jobs(state, opt)
 end
