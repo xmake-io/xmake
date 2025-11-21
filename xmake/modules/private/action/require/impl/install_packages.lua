@@ -25,7 +25,7 @@ import("core.base.scheduler")
 import("core.project.project")
 import("core.base.tty")
 import("async.runjobs")
-import("utils.progress")
+import("utils.waiting_indicator", {alias = "waiting_indicator"})
 import("net.fasturl")
 import("private.action.require.impl.package")
 import("private.action.require.impl.lock_packages")
@@ -414,7 +414,7 @@ function _do_install_packages(packages_install, packages_download, installdeps)
     local term_mode_stdout = tty.term_mode("stdout")
 
     -- do install
-    local progress_helper = show_wait and progress.new() or nil
+    local waiting_indicator_helper = show_wait and waiting_indicator.new() or nil
     local packages_installing = {}
     local packages_downloading = {}
     local packages_pending = table.copy(packages_install)
@@ -606,7 +606,7 @@ function _do_install_packages(packages_install, packages_download, installdeps)
         end
 
         -- trace
-        progress_helper:clear()
+        waiting_indicator_helper:clear()
         tty.erase_line_to_start().cr()
         cprintf("${yellow}  => ")
         if #downloading > 0 then
@@ -616,7 +616,7 @@ function _do_install_packages(packages_install, packages_download, installdeps)
             cprintf("%sinstalling ${color.dump.string}%s", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
         cprintf(" .. %s", tips and ("${dim}" .. tips .. "${clear} ") or "")
-        progress_helper:write()
+        waiting_indicator_helper:write()
     end, exit = function(errors)
         if errors then
             tty.erase_line_to_start().cr()

@@ -219,16 +219,9 @@ function main()
         local runjobs_opt = {
             total = #sourcefiles,
             comax = jobs,
-            showtips = false
+            showtips = false,
+            progress_refresh = true
         }
-        -- Only set timer for multirow progress mode
-        if progress.is_multirow() then
-            runjobs_opt.timeout = 1000
-            runjobs_opt.on_timer = function (running_indices)
-                -- Periodically refresh multirow progress to update elapsed time
-                progress.refresh()
-            end
-        end
         runjobs("clang-format", function (index, total, opt)
             local sourcefile = sourcefiles[index]
             local format_argv = table.join(argv, {sourcefile})

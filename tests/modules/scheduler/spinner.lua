@@ -4,7 +4,7 @@ function main()
     printf("testing .. ")
     runjobs("test", function ()
         os.sleep(10000)
-    end, {progress = true})
+    end, {waiting_indicator = true})
     print("ok")
 end
 

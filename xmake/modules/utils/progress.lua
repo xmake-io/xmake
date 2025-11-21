@@ -20,63 +20,23 @@
 
 -- imports
 import("core.base.option")
-import("core.base.object")
 import("core.base.colors")
 import("core.base.tty")
 import("core.base.scheduler")
 import("core.theme.theme")
 import("core.project.project")
 
--- define module
-local progress = progress or object { _init = { "_RUNNING", "_INDEX", "_STREAM", "_OPT" } }
-
 -- cache color strings
 local COLOR_SUPERSLOW = "${color.build.progress_superslow}"
 local COLOR_VERYSLOW = "${color.build.progress_veryslow}"
 local COLOR_SLOW = "${color.build.progress_slow}"
 
--- stop the progress indicator, clear written frames
-function progress:stop()
-    if self._RUNNING ~= 0 then
-        self:clear()
-        self._RUNNING = 0
-        self._INDEX = 0
-    end
-end
-
-function progress:_clear()
-    if self._RUNNING == 1 then
-        tty.erase_line_to_end()
-        self._RUNNING = 2
-        return true
-    end
-end
-
--- clear previous frame of the progress indicator
-function progress:clear()
-    if self:_clear() then
-        self._STREAM:flush()
-    end
-end
-
--- write next frame of the progress indicator
-function progress:write()
-    local chars = self._OPT.chars[self._INDEX % #self._OPT.chars + 1]
-    tty.cursor_and_attrs_save()
-    self._STREAM:write(chars)
-    self._STREAM:flush()
-    tty.cursor_and_attrs_restore()
-    self._INDEX = self._INDEX + 1
-    self._RUNNING = 1
-end
-
--- check if the progress indicator is running
-function progress:running()
-    return self._RUNNING and true or false
-end
-
 -- is scroll output?
 function _is_scroll()
+    -- if style is forced, use it
+    if _g.forced_style then
+        return _g.forced_style == "scroll"
+    end
     local is_scroll = _g.is_scroll
     if is_scroll == nil then
         local style = project.policy("build.progress_style") or theme.get("text.build.progress_style") or "scroll"
@@ -90,6 +50,10 @@ end
 
 -- is multi-row refresh output?
 function _is_multirow_refresh()
+    -- if style is forced, use it
+    if _g.forced_style then
+        return _g.forced_style == "multirow"
+    end
     local is_multirow_refresh = _g.is_multirow_refresh
     if is_multirow_refresh == nil then
         local style = project.policy("build.progress_style") or theme.get("text.build.progress_style")
@@ -103,6 +67,10 @@ end
 
 -- is single-row refresh output?
 function _is_singlerow_refresh()
+    -- if style is forced, use it
+    if _g.forced_style then
+        return _g.forced_style == "singlerow"
+    end
     local is_singlerow_refresh = _g.is_singlerow_refresh
     if is_singlerow_refresh == nil then
         local style = project.policy("build.progress_style") or theme.get("text.build.progress_style")
@@ -112,6 +80,39 @@ function _is_singlerow_refresh()
         _g.is_singlerow_refresh = is_singlerow_refresh
     end
     return is_singlerow_refresh
+end
+
+-- set progress style (temporarily override the current style)
+-- @param style "scroll", "singlerow", or "multirow"
+function set_style(style)
+    -- save the original style if not already saved
+    if not _g.saved_style then
+        -- get current effective style
+        if _is_multirow_refresh() then
+            _g.saved_style = "multirow"
+        elseif _is_singlerow_refresh() then
+            _g.saved_style = "singlerow"
+        else
+            _g.saved_style = "scroll"
+        end
+    end
+    
+    -- set forced style
+    _g.forced_style = style
+    -- clear cached flags to force recalculation
+    _g.is_scroll = nil
+    _g.is_multirow_refresh = nil
+    _g.is_singlerow_refresh = nil
+end
+
+-- restore progress style (restore the original style from project policy)
+function restore_style()
+    _g.forced_style = nil
+    _g.saved_style = nil
+    -- clear cached flags to force recalculation
+    _g.is_scroll = nil
+    _g.is_multirow_refresh = nil
+    _g.is_singlerow_refresh = nil
 end
 
 -- get progress prefix
@@ -475,15 +476,3 @@ function text(progress, format, ...)
     end
 end
 
--- build a progress indicator
--- @params stream - stream to write to, will use io.stdout if not provided
--- @params opt - options
---               - chars - an array of chars for progress indicator
-function new(stream, opt)
-    stream = stream or io.stdout
-    opt = opt or {}
-    if opt.chars == nil or #opt.chars == 0 then
-        opt.chars = theme.get("text.spinner.chars")
-    end
-    return progress {_OPT = opt, _STREAM = stream, _RUNNING = 0, _INDEX = 0}
-end

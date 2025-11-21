@@ -25,7 +25,7 @@ import("core.base.scheduler")
 import("core.project.project")
 import("core.base.tty")
 import("async.runjobs")
-import("utils.progress")
+import("utils.waiting_indicator", {alias = "waiting_indicator"})
 import("net.fasturl")
 import("private.action.require.impl.package")
 import("private.action.require.impl.register_packages")
@@ -127,7 +127,7 @@ function _download_packages(packages_download)
     local term_mode_stdout = tty.term_mode("stdout")
 
     -- do download
-    local progress_helper = show_wait and progress.new() or nil
+    local waiting_indicator_helper = show_wait and waiting_indicator.new() or nil
     local packages_downloading = {}
     local packages_pending = table.copy(packages_download)
     local working_count = 0
@@ -215,14 +215,14 @@ function _download_packages(packages_download)
         end
 
         -- trace
-        progress_helper:clear()
+        waiting_indicator_helper:clear()
         tty.erase_line_to_start().cr()
         cprintf("${yellow}  => ")
         if #downloading > 0 then
             cprintf("downloading ${color.dump.string}%s", table.concat(downloading, ", "))
         end
         cprintf(" .. %s", tips and ("${dim}" .. tips .. "${clear} ") or "")
-        progress_helper:write()
+        waiting_indicator_helper:write()
     end, exit = function(errors)
         if errors then
             tty.erase_line_to_start().cr()
