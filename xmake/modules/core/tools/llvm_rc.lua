@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.global")
 import("core.project.policy")
 import("core.project.project")
+import("utils.progress")
 
 -- init it
 function init(self)
@@ -80,7 +81,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
                 -- print some warnings
                 if warnings and #warnings > 0 and policy.build_warnings(opt) then
-                    cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
+                    progress.show_output("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
             end
         }

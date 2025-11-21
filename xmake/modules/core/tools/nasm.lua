@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.policy")
 import("core.language.language")
+import("utils.progress")
 
 -- init it
 function init(self)
@@ -123,7 +124,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 if ok and errdata and policy.build_warnings(opt) then
                     errdata = errdata:trim()
                     if #errdata > 0 then
-                        cprint("${color.warning}%s", errdata)
+                        progress.show_output("${color.warning}%s", errdata)
                     end
                 end
             end

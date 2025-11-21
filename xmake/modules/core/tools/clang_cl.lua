@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.base.tty")
 import("core.base.colors")
 import("core.project.policy")
+import("utils.progress")
 
 -- init it
 function init(self)
@@ -207,7 +208,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
                         local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\n")
-                        cprint("${color.warning}%s", warnings)
+                        progress.show_output("${color.warning}%s", warnings)
                     end
                 end
             end

@@ -22,7 +22,9 @@
 import("core.base.option")
 import("core.base.hashset")
 import("core.project.project")
+import("core.project.policy")
 import("private.tools.vstool")
+import("utils.progress")
 
 -- normailize path of a dependecy
 function _normailize_dep(dep, projectdir)
@@ -113,8 +115,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         finally
         {
             function (ok, warnings)
-                if warnings and #warnings > 0 and option.get("verbose") then
-                    cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
+                if warnings and #warnings > 0 and policy.build_warnings(opt) then
+                    progress.show_output("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
             end
         }
