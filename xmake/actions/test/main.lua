@@ -355,7 +355,8 @@ function _run_tests(tests)
         end
     end, {total = #ordertests,
           comax = jobs,
-          isolate = true})
+          isolate = true,
+          progress_refresh = true})
 
     -- restore the original progress style
     progress.restore_style()

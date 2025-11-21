@@ -80,8 +80,6 @@ function _init_progress(state, opt)
     })
     state.progress_wrapper = progress_wrapper
 
-    -- init progress refresh timeout (for multirow progress refresh timer)
-    state.progress_refresh_timeout = 500
 end
 
 -- start timer (on_timer callback)
@@ -216,7 +214,7 @@ function _progress_refresh_loop(state)
     -- start refreshing progress using semaphore wait with timeout for quick exit
     while not state.stop do
         -- wait for refresh timeout, allows quick exit when state.stop is set via post
-        state.progress_refresh_semaphore:wait(state.progress_refresh_timeout)
+        state.progress_refresh_semaphore:wait(state.timeout)
 
         -- refresh progress if not stopped
         if not state.stop then
