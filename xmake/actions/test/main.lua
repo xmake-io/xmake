@@ -310,6 +310,10 @@ function _run_tests(tests)
         return
     end
 
+    -- temporarily switch to scroll mode to avoid progress refresh interference with test output
+    -- @see https://github.com/xmake-io/xmake/issues/7045
+    progress.set_style("scroll")
+
     -- do test
     local spent = os.mclock()
     print("running tests ...")
@@ -352,6 +356,9 @@ function _run_tests(tests)
     end, {total = #ordertests,
           comax = jobs,
           isolate = true})
+
+    -- restore the original progress style
+    progress.restore_style()
 
     -- generate report
     spent = os.mclock() - spent

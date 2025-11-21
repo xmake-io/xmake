@@ -33,6 +33,10 @@ local COLOR_SLOW = "${color.build.progress_slow}"
 
 -- is scroll output?
 function _is_scroll()
+    -- if style is forced, use it
+    if _g.forced_style then
+        return _g.forced_style == "scroll"
+    end
     local is_scroll = _g.is_scroll
     if is_scroll == nil then
         local style = project.policy("build.progress_style") or theme.get("text.build.progress_style") or "scroll"
@@ -46,6 +50,10 @@ end
 
 -- is multi-row refresh output?
 function _is_multirow_refresh()
+    -- if style is forced, use it
+    if _g.forced_style then
+        return _g.forced_style == "multirow"
+    end
     local is_multirow_refresh = _g.is_multirow_refresh
     if is_multirow_refresh == nil then
         local style = project.policy("build.progress_style") or theme.get("text.build.progress_style")
@@ -59,6 +67,10 @@ end
 
 -- is single-row refresh output?
 function _is_singlerow_refresh()
+    -- if style is forced, use it
+    if _g.forced_style then
+        return _g.forced_style == "singlerow"
+    end
     local is_singlerow_refresh = _g.is_singlerow_refresh
     if is_singlerow_refresh == nil then
         local style = project.policy("build.progress_style") or theme.get("text.build.progress_style")
@@ -68,6 +80,39 @@ function _is_singlerow_refresh()
         _g.is_singlerow_refresh = is_singlerow_refresh
     end
     return is_singlerow_refresh
+end
+
+-- set progress style (temporarily override the current style)
+-- @param style "scroll", "singlerow", or "multirow"
+function set_style(style)
+    -- save the original style if not already saved
+    if not _g.saved_style then
+        -- get current effective style
+        if _is_multirow_refresh() then
+            _g.saved_style = "multirow"
+        elseif _is_singlerow_refresh() then
+            _g.saved_style = "singlerow"
+        else
+            _g.saved_style = "scroll"
+        end
+    end
+    
+    -- set forced style
+    _g.forced_style = style
+    -- clear cached flags to force recalculation
+    _g.is_scroll = nil
+    _g.is_multirow_refresh = nil
+    _g.is_singlerow_refresh = nil
+end
+
+-- restore progress style (restore the original style from project policy)
+function restore_style()
+    _g.forced_style = nil
+    _g.saved_style = nil
+    -- clear cached flags to force recalculation
+    _g.is_scroll = nil
+    _g.is_multirow_refresh = nil
+    _g.is_singlerow_refresh = nil
 end
 
 -- get progress prefix
