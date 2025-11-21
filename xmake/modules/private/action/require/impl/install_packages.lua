@@ -414,7 +414,7 @@ function _do_install_packages(packages_install, packages_download, installdeps)
     local term_mode_stdout = tty.term_mode("stdout")
 
     -- do install
-    local waiting_indicator_instance = show_wait and waiting_indicator.new() or nil
+    local waiting_indicator_helper = show_wait and waiting_indicator.new() or nil
     local packages_installing = {}
     local packages_downloading = {}
     local packages_pending = table.copy(packages_install)
@@ -606,7 +606,7 @@ function _do_install_packages(packages_install, packages_download, installdeps)
         end
 
         -- trace
-        waiting_indicator_instance:clear()
+        waiting_indicator_helper:clear()
         tty.erase_line_to_start().cr()
         cprintf("${yellow}  => ")
         if #downloading > 0 then
@@ -616,7 +616,7 @@ function _do_install_packages(packages_install, packages_download, installdeps)
             cprintf("%sinstalling ${color.dump.string}%s", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
         cprintf(" .. %s", tips and ("${dim}" .. tips .. "${clear} ") or "")
-        waiting_indicator_instance:write()
+        waiting_indicator_helper:write()
     end, exit = function(errors)
         if errors then
             tty.erase_line_to_start().cr()

@@ -40,7 +40,14 @@ function _init_waiting_indicator(state, opt)
     -- init waiting indicator helper
     -- we need to hide wait characters if is not a tty
     local waiting_indicator_opt = opt.waiting_indicator
-    state.show_waiting_indicator = io.isatty() and (waiting_indicator_opt == true or type(waiting_indicator_opt) == "table")
+    
+    -- compatibility: support deprecated opt.progress parameter
+    if opt.progress ~= nil and waiting_indicator_opt == nil then
+        waiting_indicator_opt = opt.progress
+        wprint("opt.progress is deprecated in runjobs, use opt.waiting_indicator instead")
+    end
+    
+    state.show_waiting_indicator = io.isatty() and (waiting_indicator_opt or type(waiting_indicator_opt) == "table")
     state.backnum = 0
     if state.show_waiting_indicator then
         local indicator_opt = nil
