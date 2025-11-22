@@ -1,0 +1,38 @@
+name: DragonflyBSD
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    concurrency:
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-DragonflyBSD
+        cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Tests
+        uses: vmactions/dragonflybsd-vm@v1
+        with:
+          usesh: true
+          mem: 4096
+          copyback: false
+          prepare: |
+            pkg install -y git curl unzip gmake llvm libc++ gsed bash perl5
+          run: |
+            ./configure
+            gmake -j4
+            gmake install
+            export XMAKE_ROOT=y
+            xrepo --version
+            xmake l os.meminfo
+            xmake lua -v -D tests/run.lua
+

@@ -1,0 +1,39 @@
+name: NetBSD
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    concurrency:
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-NetBSD
+        cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Tests
+        uses: vmactions/netbsd-vm@v1
+        with:
+          usesh: true
+          mem: 4096
+          copyback: false
+          prepare: |
+            /usr/sbin/pkg_add curl git unzip gmake llvm libcxx gsed bash perl
+            ln -sf /usr/pkg/bin/gmake /usr/pkg/bin/make
+          run: |
+            ./configure
+            gmake -j4
+            gmake install
+            export XMAKE_ROOT=y
+            xrepo --version
+            xmake l os.meminfo
+            xmake lua -v -D tests/run.lua
+
