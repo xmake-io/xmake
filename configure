@@ -712,7 +712,7 @@ is_host() {
 
 # detect host architecture
 os_arch=`uname -m | tr '[A-Z]' '[a-z]'`
-if test_eq "${os_arch}" "i686" "i86pc"; then
+if test_eq "${os_arch}" "i686" || test_eq "${os_arch}" "i86pc"; then
     os_arch="i386"
 elif test_eq "${os_arch}" "amd64"; then
     os_arch="x86_64"
