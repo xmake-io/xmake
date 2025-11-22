@@ -138,7 +138,15 @@ function _find_package(cmake, name, opt)
     -- run cmake
     local envs = configs.envs or opt.envs or {}
     envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or _cmake_mode(opt.mode or "release")
-    try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs}) end}
+    -- If the generated CMakeLists.txt fails to find the REQUIRED package, CMake will exit
+    -- with code 1, os.vrunv will raise an error and the try{} block will return nil.
+    local ok = try {function()
+        os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs})
+        return true
+    end}
+    if not ok then
+        return
+    end
 
     -- parse defines and includedirs for macosx/linux
     local links
