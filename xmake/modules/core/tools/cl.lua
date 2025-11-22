@@ -661,8 +661,17 @@ function compargv(self, sourcefile, objectfile, flags, opt)
         return _compargv_pch(self, sourcefile, objectfile, flags)
     end
 
+    -- suppress clang-cl warnings
+    -- clang-cl: warning: argument unused during compilation: '-c' [-Wunused-command-line-argument]
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/7049
+    local argv = {}
+    if not (self:name() == "clang_cl" and objectfile:endswith(".pcm")) then
+        table.insert(argv, "-c")
+    end
+
     -- make the compile arguments list
-    local argv = table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
+    table.join2(argv, flags, "-Fo" .. objectfile, sourcefile)
     return self:program(), (opt and opt.rawargs) and argv or winos.cmdargv(argv)
 end
 
