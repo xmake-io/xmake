@@ -104,8 +104,7 @@ function _find_package(cmake, name, opt)
     end
     local testname = "test_" .. name
     cmakefile:print("find_package(%s REQUIRED %s)", requirestr, componentstr)
-    cmakefile:print("if(%s_FOUND)", name)
-    cmakefile:print("   add_executable(%s test.cpp)", testname)
+    cmakefile:print("add_executable(%s test.cpp)", testname)
     -- setup include directories
     local includedirs = ""
     if configs.include_directories then
@@ -114,9 +113,9 @@ function _find_package(cmake, name, opt)
         includedirs = ("${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name, name)
         includedirs = includedirs .. (" ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name:upper(), name:upper())
     end
-    cmakefile:print("   target_include_directories(%s PRIVATE %s)", testname, includedirs)
+    cmakefile:print("target_include_directories(%s PRIVATE %s)", testname, includedirs)
     -- reserved for backword compatibility
-    cmakefile:print("   target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
+    cmakefile:print("target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
         testname, name)
     -- setup link library/target
     local linklibs = ""
@@ -126,8 +125,7 @@ function _find_package(cmake, name, opt)
         linklibs = ("${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS}"):format(name, name, name)
         linklibs = linklibs .. (" ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS}"):format(name:upper(), name:upper(), name:upper())
     end
-    cmakefile:print("   target_link_libraries(%s PRIVATE %s)", testname, linklibs)
-    cmakefile:print("endif(%s_FOUND)", name)
+    cmakefile:print("target_link_libraries(%s PRIVATE %s)", testname, linklibs)
     cmakefile:close()
     if option.get("diagnosis") then
         local cmakedata = io.readfile(filepath)
