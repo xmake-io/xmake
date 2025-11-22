@@ -323,9 +323,43 @@ _os_find() {
     local name="${2}"
     local depth="${3}"
     if test_nz "${depth}"; then
-        _ret=$(find "${dir}" -maxdepth "${depth}" -mindepth "${depth}" -type f -name "${name}" | LC_ALL=C sort)
+        # Solaris find doesn't support -maxdepth/-mindepth, use manual search
+        if is_host "solaris"; then
+            _ret=""
+            _os_find_recursive "${dir}" "${name}" "${depth}" 0
+        else
+            _ret=$(find "${dir}" -maxdepth "${depth}" -mindepth "${depth}" -type f -name "${name}" | LC_ALL=C sort)
+        fi
     else
         _ret=$(find "${dir}" -type f -name "${name}" | LC_ALL=C sort)
+    fi
+}
+
+# recursive find with depth limit (for systems without -maxdepth)
+_os_find_recursive() {
+    local dir="${1}"
+    local name="${2}"
+    local target_depth="${3}"
+    local current_depth="${4}"
+    if test "${current_depth}" -eq "${target_depth}"; then
+        # we're at the target depth, search for files
+        for file in "${dir}"/*; do
+            if test -f "${file}" && test "$(basename "${file}")" = "${name}"; then
+                if test_z "${_ret}"; then
+                    _ret="${file}"
+                else
+                    _ret="${_ret}
+${file}"
+                fi
+            fi
+        done
+    elif test "${current_depth}" -lt "${target_depth}"; then
+        # we need to go deeper
+        for subdir in "${dir}"/*; do
+            if test -d "${subdir}"; then
+                _os_find_recursive "${subdir}" "${name}" "${target_depth}" $((current_depth + 1))
+            fi
+        done
     fi
 }
 
@@ -2800,7 +2834,26 @@ _load_options_and_toolchains() {
         includes "${file}"
     else
         # include all xmake.sh files in next sub-directories
-        local files=`find ${xmake_sh_projectdir} -maxdepth 2 -mindepth 2 -name "xmake.sh"`
+        local files=""
+        # Solaris find doesn't support -maxdepth/-mindepth, use manual search
+        if is_host "solaris"; then
+            for subdir in ${xmake_sh_projectdir}/*; do
+                if test -d "${subdir}"; then
+                    for file in "${subdir}/xmake.sh"; do
+                        if test -f "${file}"; then
+                            if test_z "${files}"; then
+                                files="${file}"
+                            else
+                                files="${files}
+${file}"
+                            fi
+                        fi
+                    done
+                fi
+            done
+        else
+            files=`find ${xmake_sh_projectdir} -maxdepth 2 -mindepth 2 -name "xmake.sh"`
+        fi
         for file in ${files}; do
             includes "${file}"
         done
