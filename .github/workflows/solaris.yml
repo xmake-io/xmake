@@ -1,0 +1,37 @@
+name: Solaris
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    concurrency:
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Solaris
+        cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Tests
+        uses: vmactions/solaris-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            pkgutil -y -i socat git gmake bash gcc4g++ || pkgutil -y -i socat git gmake bash gcc5g++ || pkg install -y developer/gcc || true
+          run: |
+            cd $GITHUB_WORKSPACE
+            bash ./configure
+            gmake -j4
+            gmake install
+            export XMAKE_ROOT=y
+            xrepo --version
+            xmake l os.meminfo
+            xmake lua -v -D tests/run.lua
+

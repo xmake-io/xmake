@@ -187,6 +187,7 @@ $ xmake f --menu
 * NetBSD (i386, x86_64)
 * OpenBSD (i386, x86_64)
 * DragonflyBSD (i386, x86_64)
+* Solaris (i386, x86_64)
 * Android (x86, x86_64, armeabi, armeabi-v7a, arm64-v8a)
 * iOS (armv7, armv7s, arm64, i386, x86_64)
 * WatchOS (armv7k, i386)
