@@ -687,7 +687,11 @@ case "${os_host}" in
     *darwin*) os_host="macosx" ;;
     *linux*) os_host="linux" ;;
     *freebsd*) os_host="freebsd" ;;
+    *netbsd*) os_host="netbsd" ;;
+    *openbsd*) os_host="openbsd" ;;
+    *dragonfly*) os_host="dragonflybsd" ;;
     *bsd*) os_host="bsd" ;;
+    *sunos*) os_host="solaris" ;;
     *haiku*) os_host="haiku" ;;
 esac
 
@@ -724,7 +728,7 @@ fi
 _target_plat_default=${os_host}
 if is_host "msys"; then
     _target_plat_default="mingw"
-elif is_host "freebsd"; then
+elif is_host "freebsd" "openbsd" "dragonflybsd" "netbsd"; then
     _target_plat_default="bsd"
 elif test_nz "${EMSDK}"; then
     _target_plat_default="wasm"
@@ -756,7 +760,7 @@ _target_mode_default="release"
 _target_kind_default="static"
 
 # set the default project generator and build program
-if is_host "freebsd" "bsd"; then
+if is_host "freebsd" "netbsd" "openbsd" "dragonflybsd" "bsd" "solaris"; then
     project_generator="gmake"
     _make_program_default="gmake"
     _ninja_program_default="ninja"

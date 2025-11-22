@@ -53,7 +53,7 @@ target "cli"
     add_options "atomic"
     if is_plat "mingw" "msys" "cygwin"; then
         add_syslinks "ws2_32" "pthread" "m"
-    elif is_plat "bsd"; then
+    elif is_plat "bsd" "solaris"; then
         add_syslinks "pthread" "m"
     elif is_plat "haiku"; then
         add_syslinks "pthread" "network" "m"

@@ -12,7 +12,7 @@ end
 
 function main(t)
     local clang = find_tool("clang")
-    if clang and not is_subhost("windows") then
+    if clang and not is_subhost("windows") and not is_subhost("bsd") then
         os.exec("xmake f --toolchain=clang --runtimes=c++_shared --yes")
         _build()
     end
