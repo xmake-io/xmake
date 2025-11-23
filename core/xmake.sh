@@ -48,8 +48,9 @@ option "curses"
     add_cfuncs "initscr"
     add_cincludes "curses.h"
     before_check "option_find_curses"
-    if ! is_host "solaris"; then
-        add_defines "XM_CONFIG_API_HAVE_CURSES"
+    add_defines "XM_CONFIG_API_HAVE_CURSES"
+    if is_host "solaris"; then
+        set_default "false"
     fi
 option_end
 
