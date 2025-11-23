@@ -47,14 +47,13 @@ option_end
 option "curses"
     add_cfuncs "initscr"
     add_cincludes "curses.h"
-    add_defines "XM_CONFIG_API_HAVE_CURSES"
     before_check "option_find_curses"
+    if ! is_host "solaris"; then
+        add_defines "XM_CONFIG_API_HAVE_CURSES"
+    fi
 option_end
 
 option_find_curses() {
-    if is_plat "solaris"; then
-        return
-    fi
     local ncurses="ncurses"
     if is_plat "mingw"; then
         ncurses="ncursesw"
