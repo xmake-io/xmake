@@ -52,6 +52,9 @@ option "curses"
 option_end
 
 option_find_curses() {
+    if is_plat "solaris"; then
+        return
+    fi
     local ncurses="ncurses"
     if is_plat "mingw"; then
         ncurses="ncursesw"

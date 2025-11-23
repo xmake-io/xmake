@@ -103,7 +103,7 @@ option("curses")
         end
     end)
     after_check(function (option)
-        if option:dep("cosmocc"):enabled() then
+        if option:dep("cosmocc"):enabled() or is_plat("solaris") then
             option:enable(false)
         end
     end)
