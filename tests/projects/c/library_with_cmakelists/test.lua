@@ -2,7 +2,7 @@
 function main(t)
 
     -- freebsd ci is slower
-    if is_host("bsd") then
+    if is_host("bsd", "solaris") then
         return
     end
 

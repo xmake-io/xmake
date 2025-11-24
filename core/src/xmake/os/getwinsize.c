@@ -55,6 +55,8 @@ tb_int_t xm_os_getwinsize(lua_State *lua) {
         w = (tb_int_t)csbi.dwSize.X;
         h = (tb_int_t)csbi.dwSize.Y;
     }
+#elif defined(TB_CONFIG_OS_SOLARIS)
+    // Solaris doesn't support winsize/TIOCGWINSZ, use default values
 #else
     struct winsize size;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0) {

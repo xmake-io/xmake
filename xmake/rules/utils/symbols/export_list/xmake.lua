@@ -66,6 +66,9 @@ rule("utils.symbols.export_list")
                 exportkind = "apple"
                 exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.exp")
                 target:add("shflags", {"-L-exported_symbols_list", "-L" .. exportfile}, {force = true, expand = false})
+            elseif target:is_plat("solaris") then
+                -- Solaris linker does not support --version-script
+                return
             else
                 exportkind = "ver"
                 exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.map")
@@ -85,6 +88,9 @@ rule("utils.symbols.export_list")
             exportkind = "apple"
             exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.exp")
             target:add("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
+        elseif target:is_plat("solaris") then
+            -- Solaris linker does not support --version-script
+            return
         elseif target:has_tool("ld", "gcc", "gxx", "clang", "clangxx") or
                target:has_tool("sh", "gcc", "gxx", "clang", "clangxx") then
             exportkind = "ver"

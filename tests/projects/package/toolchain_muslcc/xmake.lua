@@ -25,7 +25,7 @@ toolchain_end()
 -- add library packages
 -- for testing zlib/xmake, libplist/autoconf, libogg/cmake
 add_requires("zlib", "libogg",  {system = false})
-if is_host("macosx", "linux", "bsd") then
+if is_host("macosx", "linux", "bsd", "solaris") then
     add_requires("libplist", {system = false})
 end
 

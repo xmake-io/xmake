@@ -1,5 +1,5 @@
 function main(t)
-    if is_host("bsd") or is_subhost("msys") then
+    if is_host("bsd", "solaris") or is_subhost("msys") then
         return
     end
 

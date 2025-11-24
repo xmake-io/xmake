@@ -39,13 +39,17 @@
 #include <mach-o/dyld.h>
 #include <signal.h>
 #elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_ANDROID) ||                     \
-    defined(TB_CONFIG_OS_HAIKU)
+    defined(TB_CONFIG_OS_HAIKU) || defined(TB_CONFIG_OS_SOLARIS)
 #include <unistd.h>
 #include <signal.h>
 #endif
 #ifdef TB_CONFIG_OS_BSD
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <signal.h>
+#endif
+#ifdef TB_CONFIG_OS_SOLARIS
+#include <sys/types.h>
 #include <signal.h>
 #endif
 #ifdef TB_CONFIG_OS_HAIKU
@@ -79,6 +83,8 @@
 #else
 #define XM_PROC_SELF_FILE "/proc/curproc/file"
 #endif
+#elif defined(TB_CONFIG_OS_SOLARIS)
+#define XM_PROC_SELF_FILE "/proc/self/path/a.out"
 #endif
 
 // hook lua memory allocator
@@ -1079,6 +1085,8 @@ static tb_void_t xm_engine_init_host(xm_engine_t *engine) {
     syshost = "linux";
 #elif defined(TB_CONFIG_OS_BSD)
     syshost = "bsd";
+#elif defined(TB_CONFIG_OS_SOLARIS)
+    syshost = "solaris";
 #elif defined(TB_CONFIG_OS_IOS)
     syshost = "ios";
 #elif defined(TB_CONFIG_OS_ANDROID)
