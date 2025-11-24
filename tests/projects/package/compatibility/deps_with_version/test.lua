@@ -1,6 +1,6 @@
 function main(t)
     -- freebsd ci is slower
-    if is_host("bsd") then
+    if is_host("bsd", "solaris") then
         return
     end
     -- only for x86/x64, because it will take too long time on ci with arm/mips
