@@ -4,6 +4,8 @@
 
 ### New features
 
+* [#7055](https://github.com/xmake-io/xmake/pull/7055): Add Solaris platform support (i386, x86_64)
+* [#7054](https://github.com/xmake-io/xmake/pull/7054): Add support for additional BSD systems (NetBSD, OpenBSD, DragonflyBSD)
 * [#6929](https://github.com/xmake-io/xmake/pull/6929): Add support for GCC 15 toolchain
 * [#6967](https://github.com/xmake-io/xmake/pull/6967): Add Swift interop support for C++ and Objective-C
 * [#6964](https://github.com/xmake-io/xmake/pull/6964): Support specifying CUDA SDK version via cuda_sdkver
@@ -2189,6 +2191,8 @@
 
 ### 新特性
 
+* [#7055](https://github.com/xmake-io/xmake/pull/7055): 添加 Solaris 平台支持 (i386, x86_64)
+* [#7054](https://github.com/xmake-io/xmake/pull/7054): 添加更多 BSD 系统支持 (NetBSD, OpenBSD, DragonflyBSD)
 * [#6929](https://github.com/xmake-io/xmake/pull/6929): 添加 GCC 15 工具链支持
 * [#6967](https://github.com/xmake-io/xmake/pull/6967): 为 C++ 和 Objective-C 添加 Swift 互操作支持
 * [#6964](https://github.com/xmake-io/xmake/pull/6964): 支持通过 cuda_sdkver 参数指定 CUDA SDK 版本
