@@ -39,6 +39,10 @@ rule("linker.version_scripts")
         if target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
             return
         end
+        -- @note Solaris linker does not support --version-script
+        if target:is_plat("solaris") then
+            return
+        end
         if target:has_tool("ld", "gcc", "gxx", "clang", "clangxx") or
             target:has_tool("sh", "gcc", "gxx", "clang", "clangxx") then
             target:add(target:is_shared() and "shflags" or "ldflags", "-Wl,--version-script=" .. scriptfile, {force = true})
