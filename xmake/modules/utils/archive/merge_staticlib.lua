@@ -43,45 +43,41 @@ function _merge_for_ar_fallback(target, program, outputfile, libraryfiles, opt)
     end
     local tmpdir = os.tmpfile() .. ".dir"
     os.mkdir(tmpdir)
-    local objectfiles = {}
-    local objectfile_set = {}
+    -- check for duplicate object file names and warn
     for idx, libraryfile_abs in ipairs(libraryfiles_abs) do
-        -- list all files in the archive first to avoid overwriting during extraction
         local list = os.iorunv(program, {"-t", libraryfile_abs}, {curdir = tmpdir})
         if list then
-            local file_counter = {}
+            local seen_files = {}
+            local duplicates = {}
             for _, line in ipairs(list:split("\n")) do
                 line = line:trim()
                 if line:endswith(".o") then
-                    local basename = path.basename(line, path.extension(line))
-                    local ext = path.extension(line)
-                    -- count occurrences of this basename in current library
-                    file_counter[basename] = (file_counter[basename] or 0) + 1
-                    local counter = file_counter[basename] - 1
-                    -- generate unique name with library index prefix to avoid conflicts
-                    local unique_name
-                    if counter == 0 then
-                        unique_name = string.format("lib%d_%s%s", idx, basename, ext)
+                    if seen_files[line] then
+                        if not duplicates[line] then
+                            duplicates[line] = {}
+                        end
+                        table.insert(duplicates[line], libraryfile_abs)
                     else
-                        unique_name = string.format("lib%d_%s_%d%s", idx, basename, counter, ext)
-                    end
-                    -- ensure global uniqueness by adding counter if needed
-                    local global_counter = 0
-                    while objectfile_set[unique_name] do
-                        global_counter = global_counter + 1
-                        unique_name = string.format("lib%d_%s_%d_%d%s", idx, basename, counter, global_counter, ext)
-                    end
-                    objectfile_set[unique_name] = true
-                    -- extract single file and rename immediately to avoid overwriting
-                    os.vrunv(program, {"-x", libraryfile_abs, line}, {curdir = tmpdir})
-                    local objfile_path = path.join(tmpdir, line)
-                    local unique_path = path.join(tmpdir, unique_name)
-                    if os.isfile(objfile_path) then
-                        os.mv(objfile_path, unique_path)
-                        table.insert(objectfiles, path.absolute(unique_path))
+                        seen_files[line] = true
                     end
                 end
             end
+            if not table.empty(duplicates) then
+                local dup_names = table.keys(duplicates)
+                wprint("duplicate object file names found in %s: %s (some files may be lost during merge)",
+                    path.filename(libraryfile_abs), table.concat(dup_names, ", "))
+            end
+        end
+    end
+    -- extract and merge all archives
+    local objectfiles = {}
+    for idx, libraryfile_abs in ipairs(libraryfiles_abs) do
+        -- extract all files from this archive
+        os.vrunv(program, {"-x", libraryfile_abs}, {curdir = tmpdir})
+        -- collect extracted object files (duplicate names will be overwritten)
+        for _, objfile in ipairs(os.files(path.join(tmpdir, "*.o"))) do
+            -- use relative path (filename only) since ar will run with curdir = tmpdir
+            table.insert(objectfiles, path.filename(objfile))
         end
     end
     -- create new archive with all object files
@@ -91,6 +87,7 @@ function _merge_for_ar_fallback(target, program, outputfile, libraryfiles, opt)
         -- remove output file if exists to avoid appending
         os.tryrm(outputfile_abs)
         -- create new archive with -c (create) and -r (replace/insert)
+        -- use relative paths for object files since curdir = tmpdir
         os.vrunv(program, table.join("-cr", outputfile_abs, objectfiles), {curdir = tmpdir})
     end
     os.rm(tmpdir)
