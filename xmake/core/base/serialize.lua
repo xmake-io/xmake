@@ -256,6 +256,12 @@ function serialize._make(obj, opt)
         if math.isnan(obj) then -- fix nan for lua 5.3, -nan(ind)
             return "nan"
         end
+        local inf_val = math.isinf(obj)
+        if inf_val == 1 then -- fix huge for Solaris
+            return "inf"
+        elseif inf_val == -1 then -- fix -huge for Solaris
+            return "-inf"
+        end
         return serialize._makedefault(obj, opt)
     elseif type(obj) == "table" then
         return serialize._maketable(obj, opt)
