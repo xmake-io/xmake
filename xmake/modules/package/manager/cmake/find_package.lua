@@ -104,8 +104,7 @@ function _find_package(cmake, name, opt)
     end
     local testname = "test_" .. name
     cmakefile:print("find_package(%s REQUIRED %s)", requirestr, componentstr)
-    cmakefile:print("if(%s_FOUND)", name)
-    cmakefile:print("   add_executable(%s test.cpp)", testname)
+    cmakefile:print("add_executable(%s test.cpp)", testname)
     -- setup include directories
     local includedirs = ""
     if configs.include_directories then
@@ -114,9 +113,9 @@ function _find_package(cmake, name, opt)
         includedirs = ("${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name, name)
         includedirs = includedirs .. (" ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name:upper(), name:upper())
     end
-    cmakefile:print("   target_include_directories(%s PRIVATE %s)", testname, includedirs)
+    cmakefile:print("target_include_directories(%s PRIVATE %s)", testname, includedirs)
     -- reserved for backword compatibility
-    cmakefile:print("   target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
+    cmakefile:print("target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
         testname, name)
     -- setup link library/target
     local linklibs = ""
@@ -126,8 +125,7 @@ function _find_package(cmake, name, opt)
         linklibs = ("${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS}"):format(name, name, name)
         linklibs = linklibs .. (" ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS}"):format(name:upper(), name:upper(), name:upper())
     end
-    cmakefile:print("   target_link_libraries(%s PRIVATE %s)", testname, linklibs)
-    cmakefile:print("endif(%s_FOUND)", name)
+    cmakefile:print("target_link_libraries(%s PRIVATE %s)", testname, linklibs)
     cmakefile:close()
     if option.get("diagnosis") then
         local cmakedata = io.readfile(filepath)
@@ -138,9 +136,17 @@ function _find_package(cmake, name, opt)
     -- run cmake
     local envs = configs.envs or opt.envs or {}
     envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or _cmake_mode(opt.mode or "release")
-    try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs}) end}
+    -- If the generated CMakeLists.txt fails to find the REQUIRED package, CMake will exit
+    -- with code 1, os.vrunv will raise an error and the try{} block will return nil.
+    local ok = try {function()
+        os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs})
+        return true
+    end}
+    if not ok then
+        return
+    end
 
-    -- pares defines and includedirs for macosx/linux
+    -- parse defines and includedirs for macosx/linux
     local links
     local linkdirs
     local libfiles
@@ -301,7 +307,7 @@ function _find_package(cmake, name, opt)
     os.tryrm(workdir)
 
     -- get results
-    if links or includedirs then
+    if configs.allow_empty_package or links or includedirs then
         local results = {}
         results.links       = table.reverse_unique(links)
         results.ldflags     = table.reverse_unique(ldflags)
