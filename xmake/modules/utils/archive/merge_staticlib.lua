@@ -31,60 +31,68 @@ end
 -- Used for platforms where ar does not support -M option (e.g., Solaris)
 function _merge_for_ar_fallback(target, program, outputfile, libraryfiles, opt)
     -- we need to handle duplicate object file names by adding prefixes
+    -- convert all library files to absolute paths before changing directory
+    local libraryfiles_abs = {}
+    for _, libraryfile in ipairs(libraryfiles) do
+        if os.isfile(libraryfile) then
+            table.insert(libraryfiles_abs, path.absolute(libraryfile))
+        end
+    end
+    if #libraryfiles_abs == 0 then
+        return
+    end
     local tmpdir = os.tmpfile() .. ".dir"
     os.mkdir(tmpdir)
-    local oldir = os.cd(tmpdir)
-    local objfiles = {}
-    local objfile_set = {}
-    for idx, libraryfile in ipairs(libraryfiles) do
-        if os.isfile(libraryfile) then
-            -- list all files in the archive first to avoid overwriting during extraction
-            local ok, list = os.iorunv(program, {"-t", path.absolute(libraryfile)})
-            if ok and list then
-                local file_counter = {}
-                for line in list:gmatch("[^\r\n]+") do
-                    line = line:trim()
-                    if line:endswith(".o") then
-                        local basename = path.basename(line, path.extension(line))
-                        local ext = path.extension(line)
-                        -- count occurrences of this basename in current library
-                        file_counter[basename] = (file_counter[basename] or 0) + 1
-                        local counter = file_counter[basename] - 1
-                        -- generate unique name with library index prefix to avoid conflicts
-                        local unique_name
-                        if counter == 0 then
-                            unique_name = string.format("lib%d_%s%s", idx, basename, ext)
-                        else
-                            unique_name = string.format("lib%d_%s_%d%s", idx, basename, counter, ext)
-                        end
-                        -- ensure global uniqueness by adding counter if needed
-                        local global_counter = 0
-                        while objfile_set[unique_name] do
-                            global_counter = global_counter + 1
-                            unique_name = string.format("lib%d_%s_%d_%d%s", idx, basename, counter, global_counter, ext)
-                        end
-                        objfile_set[unique_name] = true
-                        -- extract single file and rename immediately to avoid overwriting
-                        os.vrunv(program, {"-x", path.absolute(libraryfile), line})
-                        if os.isfile(line) then
-                            os.mv(line, unique_name)
-                            table.insert(objfiles, unique_name)
-                        end
+    local objectfiles = {}
+    local objectfile_set = {}
+    for idx, libraryfile_abs in ipairs(libraryfiles_abs) do
+        -- list all files in the archive first to avoid overwriting during extraction
+        local list = os.iorunv(program, {"-t", libraryfile_abs}, {curdir = tmpdir})
+        if list then
+            local file_counter = {}
+            for _, line in ipairs(list:split("\n")) do
+                line = line:trim()
+                if line:endswith(".o") then
+                    local basename = path.basename(line, path.extension(line))
+                    local ext = path.extension(line)
+                    -- count occurrences of this basename in current library
+                    file_counter[basename] = (file_counter[basename] or 0) + 1
+                    local counter = file_counter[basename] - 1
+                    -- generate unique name with library index prefix to avoid conflicts
+                    local unique_name
+                    if counter == 0 then
+                        unique_name = string.format("lib%d_%s%s", idx, basename, ext)
+                    else
+                        unique_name = string.format("lib%d_%s_%d%s", idx, basename, counter, ext)
+                    end
+                    -- ensure global uniqueness by adding counter if needed
+                    local global_counter = 0
+                    while objectfile_set[unique_name] do
+                        global_counter = global_counter + 1
+                        unique_name = string.format("lib%d_%s_%d_%d%s", idx, basename, counter, global_counter, ext)
+                    end
+                    objectfile_set[unique_name] = true
+                    -- extract single file and rename immediately to avoid overwriting
+                    os.vrunv(program, {"-x", libraryfile_abs, line}, {curdir = tmpdir})
+                    local objfile_path = path.join(tmpdir, line)
+                    local unique_path = path.join(tmpdir, unique_name)
+                    if os.isfile(objfile_path) then
+                        os.mv(objfile_path, unique_path)
+                        table.insert(objectfiles, path.absolute(unique_path))
                     end
                 end
             end
         end
     end
     -- create new archive with all object files
-    if #objfiles > 0 then
+    if #objectfiles > 0 then
         os.mkdir(path.directory(outputfile))
         local outputfile_abs = path.absolute(outputfile)
         -- remove output file if exists to avoid appending
         os.tryrm(outputfile_abs)
         -- create new archive with -c (create) and -r (replace/insert)
-        os.vrunv(program, table.join("-cr", outputfile_abs, objfiles))
+        os.vrunv(program, table.join("-cr", outputfile_abs, objectfiles), {curdir = tmpdir})
     end
-    os.cd(oldir)
     os.rm(tmpdir)
 end
 
