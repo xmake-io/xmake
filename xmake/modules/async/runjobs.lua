@@ -36,17 +36,17 @@ end
 -- init waiting indicator
 function _init_waiting_indicator(state, opt)
     opt = opt or {}
-    
+
     -- init waiting indicator helper
     -- we need to hide wait characters if is not a tty
     local waiting_indicator_opt = opt.waiting_indicator
-    
+
     -- compatibility: support deprecated opt.progress parameter
     if opt.progress ~= nil and waiting_indicator_opt == nil then
         waiting_indicator_opt = opt.progress
         wprint("opt.progress is deprecated in runjobs, use opt.waiting_indicator instead")
     end
-    
+
     state.show_waiting_indicator = io.isatty() and (waiting_indicator_opt or type(waiting_indicator_opt) == "table")
     state.backnum = 0
     if state.show_waiting_indicator then
@@ -230,7 +230,7 @@ function _run_jobs(state, name, opt)
 
     -- stop all timers and notify them to exit
     _stop_timers(state)
-    
+
     -- wait all timer jobs exited
     _wait_timers(state)
 end
@@ -530,7 +530,7 @@ function main(name, jobs, opt)
 
     -- init waiting indicator
     _init_waiting_indicator(state, opt)
-    
+
     -- init progress
     _init_progress(state, opt)
 
