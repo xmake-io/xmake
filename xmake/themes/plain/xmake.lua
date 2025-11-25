@@ -45,6 +45,10 @@ theme("plain")
     set_text("build.progress_format", "[%3d%%]")
     set_text("build.progress_style", "scroll")
     set_color("build.progress", "")
+    -- only for multirow_refresh
+    set_color("build.progress_superslow", "")
+    set_color("build.progress_veryslow", "")
+    set_color("build.progress_slow", "")
 
     -- the building object file
     set_color("build.object", "")
