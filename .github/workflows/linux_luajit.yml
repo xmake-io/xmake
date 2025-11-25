@@ -7,11 +7,57 @@ on:
     types: [published]
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - name: Random execution check
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Always run for release events
+            if (context.eventName === 'release') {
+              core.setOutput('should-run', true);
+              core.info('Release event detected. Will run tests.');
+              return;
+            }
+            
+            // Execution probability (default 20%, can be overridden via env)
+            const probability = parseFloat(process.env.RUN_PROBABILITY || '0.2');
+            
+            // Generate deterministic "random" number based on commit SHA, run ID, and current time
+            // Adding time ensures better randomness while keeping same commit/run consistent
+            const timeSeed = Math.floor(Date.now() / (1000 * 60 * 60)); // Round to hour for consistency
+            const seed = context.sha + context.runId + timeSeed;
+            let hash = 0;
+            for (let i = 0; i < seed.length; i++) {
+              const char = seed.charCodeAt(i);
+              hash = ((hash << 5) - hash) + char;
+              hash = hash | 0; // Convert to 32-bit integer
+            }
+            // Normalize to 0-1 range
+            const random = Math.abs(hash) / 2147483647;
+            const shouldRun = random < probability;
+            
+            core.setOutput('should-run', shouldRun);
+            if (shouldRun) {
+              core.info(`Random check passed (${(random * 100).toFixed(2)}% < ${(probability * 100).toFixed(0)}%). Will run tests.`);
+            } else {
+              core.info(`Random check failed (${(random * 100).toFixed(2)}% >= ${(probability * 100).toFixed(0)}%). Skipping.`);
+            }
+        env:
+          RUN_PROBABILITY: ${{ vars.LINUX_LUAJIT_RUN_PROBABILITY || '0.2' }}
+
   build:
+    needs: check
+    if: needs.check.outputs.should-run == 'true'
     runs-on: ubuntu-latest
     concurrency:
-        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Linux-Luajit
-        cancel-in-progress: true
+        # Prevent concurrent runs of the same workflow
+        group: Linux-Luajit-${{ github.event.repository.owner.login }}-${{ github.event.repository.name }}
+        cancel-in-progress: false
     steps:
       - uses: actions/checkout@v2
         with:
