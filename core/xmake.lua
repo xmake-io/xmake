@@ -1,11 +1,7 @@
--- project
 set_project("xmake")
-
--- version
+set_xmakever("3.0.5")
+set_policy("build.progress_style", "multirow")
 set_version("3.0.5", {build = "%Y%m%d"})
-
--- set xmake min version
-set_xmakever("2.8.5")
 
 -- set all warnings as errors
 set_warnings("all", "error")
