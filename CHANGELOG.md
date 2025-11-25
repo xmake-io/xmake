@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v3.0.5
+
 ### New features
 
 * [#7055](https://github.com/xmake-io/xmake/pull/7055): Add Solaris platform support (i386, x86_64)
@@ -2188,6 +2190,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v3.0.5
 
 ### 新特性
 
