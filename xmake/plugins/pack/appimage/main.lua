@@ -55,14 +55,19 @@ function _create_desktop_file(package, appdir, appname, apptitle, appdescription
     if iconname then
         icon_line = string.format("Icon=%s\n", appname)
     end
+    local version_line = ""
+    local version = package:version()
+    if version then
+        version_line = string.format("X-AppImage-Version=%s\n", version)
+    end
     local desktop_content = string.format([[
 [Desktop Entry]
 Type=Application
 Name=%s
 Comment=%s
 Exec=usr/bin/%s
-%sCategories=Utility;
-]], apptitle, appdescription, main_executable, icon_line)
+%s%sCategories=Utility;
+]], apptitle, appdescription, main_executable, icon_line, version_line)
     io.writefile(desktopfile, desktop_content)
 end
 
