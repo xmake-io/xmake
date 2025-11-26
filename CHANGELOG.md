@@ -4,6 +4,7 @@
 
 ### New features
 
+* [#7064](https://github.com/xmake-io/xmake/pull/7064): Add appimage xpack format for Linux application packaging
 * [#7062](https://github.com/xmake-io/xmake/pull/7062): Add dmg xpack format for macOS application packaging
 
 ## v3.0.5
@@ -2197,6 +2198,7 @@
 
 ### 新特性
 
+* [#7064](https://github.com/xmake-io/xmake/pull/7064): 添加 appimage xpack 格式，支持 Linux 应用程序打包
 * [#7062](https://github.com/xmake-io/xmake/pull/7062): 添加 dmg xpack 格式，支持 macOS 应用程序打包
 
 ## v3.0.5
