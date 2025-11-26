@@ -11,7 +11,7 @@ MSVC_MIN_VER = "14.29"
 function _build(check_outdata)
     local flags = ""
     if ci_is_running() then
-     flags = "-vD"
+        flags = "-vD"
     end
     if check_outdata then
         local outdata
@@ -100,6 +100,9 @@ function build_tests(toolchain_name, opt)
     local flags = ""
     if opt.flags then
         flags = " " .. table.concat(opt.flags, " ")
+    end
+    if ci_is_running() then
+        flags = flags .. " -vD"
     end
 
     os.exec("xmake clean -a")

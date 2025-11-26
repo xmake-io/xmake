@@ -57,10 +57,7 @@ toolchain("llvm")
             toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
         end
 
-        local dirs = toolchain_utils.get_llvm_dirs(toolchain)
-        if dirs and dirs.rt then
-            toolchain:add("runenvs", dirs.rt)
-        end
+        toolchain_utils.set_llvm_runenvs(toolchain)
 
         -- add target flags
         local target

@@ -227,17 +227,7 @@ function nf_runtime(self, runtime, opt)
     -- @see https://discourse.llvm.org/t/improve-autolinking-of-compiler-rt-and-libc-on-windows-with-lld-link/71392/10
     -- and need manual setting of libc++ headerdirectory 
     -- @see https://github.com/llvm/llvm-project/issues/79647
-    local llvm_dirs = toolchain_utils.get_llvm_dirs(self)
-
-    if self:is_plat("windows") and runtime == "c++_shared" then
-        if llvm_dirs.bin then
-            self:add("runenvs", "PATHS", llvm_dirs.bin)
-        end
-        if llvm_dirs.rt then
-            self:add("runenvs", "PATHS", llvm_dirs.rt)
-        end
-    end
-
+    local llvm_dirs = toolchain_utils.get_llvm_dirs(self:toolchain())
     -- we will set runtimes in android ndk toolchain
     if not self:is_plat("android") then
         maps = maps or {}
@@ -248,6 +238,7 @@ function nf_runtime(self, runtime, opt)
             maps["stdc++_shared"] = "-stdlib=libstdc++"
             if kind == "cxx" then
                 -- force the toolchain libc++ headers to prevent clang picking the systems one
+                -- @see https://github.com/llvm/llvm-project/issues/79647
                 if llvm_dirs.cxxinclude then
                     maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. llvm_dirs.cxxinclude)
                     maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. llvm_dirs.cxxinclude)
@@ -271,23 +262,19 @@ function nf_runtime(self, runtime, opt)
                     maps[name] = table.join("-resource-dir=" .. llvm_dirs.res, maps[name])
                 end
             end
-
             local is_cxx = target and (target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx"))
             if is_cxx then
                 if llvm_dirs.lib then
                     maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, llvm_dirs.lib))
                     maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, llvm_dirs.lib))
-                    maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, llvm_dirs.lib))
+
                     -- sometimes llvm c++ runtimes are located in c++ subfolder (e.g homebrew llvm)
                     if llvm_dirs.cxxlib then
                         maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, llvm_dirs.cxxlib))
                         maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, llvm_dirs.cxxlib))
-                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, llvm_dirs.cxxlib))
                     end
-                    if llvm_dirs.rt then
-                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, llvm_dirs.rt))
-                    end
-                    -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
+
+                    -- add rpath to avoid the user need to set DYLD_LIBRARY_PATH by hand
                     if target.is_shared and target:is_shared() and target.filename and self:is_plat("macosx", "iphoneos", "watchos") then
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-install_name")
                         maps["c++_shared"] = table.join(maps["c++_shared"], "@rpath/" .. target:filename())
