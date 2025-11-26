@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.base.semver")
 import("core.tool.linker")
+import("core.tool.toolchain", {alias = "_toolchain"})
 import("core.tool.compiler")
 import("core.language.language")
 import("lib.detect.find_tool")
@@ -183,7 +184,9 @@ end
 
 -- get llvm sdk resource directory
 function _get_llvm_resourcedir(toolchain)
-    local llvm_resourcedir = _g._LLVM_RESOURCE_DIR
+    local memcache = _toolchain.memcache()
+    local cachekey = toolchain:cachekey() .. "_get_llvm_resourcedir"
+    local llvm_resourcedir = memcache:get2(cachekey)
     if llvm_resourcedir == nil then
         local outdata = try { function() return os.iorunv(toolchain:tool("cc"), {"-print-resource-dir"}) end }
         if outdata then
@@ -192,14 +195,16 @@ function _get_llvm_resourcedir(toolchain)
                 llvm_resourcedir = nil
             end
         end
-        _g._LLVM_RESOURCE_DIR = llvm_resourcedir or false
+        memcache:set(cachekey, llvm_resourcedir or false)
     end
     return llvm_resourcedir or nil
 end
 
 -- get llvm sdk root directory
 function _get_llvm_rootdir(toolchain)
-    local llvm_rootdir = _g._LLVM_ROOTDIR
+    local memcache = _toolchain.memcache()
+    local cachekey = toolchain:cachekey() .. "_get_llvm_rootdir"
+    local llvm_rootdir = memcache:get2(cachekey, "rootdir")
     if llvm_rootdir == nil then
         local resourcedir = _get_llvm_resourcedir(toolchain)
         if resourcedir then
@@ -208,7 +213,7 @@ function _get_llvm_rootdir(toolchain)
                 llvm_rootdir = nil
             end
         end
-        _g._LLVM_ROOTDIR = llvm_rootdir or false
+        memcache:set(cachekey, llvm_rootdir or false)
     end
     return llvm_rootdir or nil
 end
@@ -254,20 +259,24 @@ end
 
 -- get llvm target triple
 function _get_llvm_target_triple(toolchain)
-    local llvm_targettriple = _g._LLVM_TARGETTRIPLE
+    local memcache = _toolchain.memcache()
+    local cachekey = toolchain:cachekey() .. "_get_llvm_target_triple"
+    local llvm_targettriple = memcache:get(cachekey)
     if llvm_targettriple == nil then
         local outdata = try { function() return os.iorunv(toolchain:tool("cc"), {"-print-target-triple"}) end }
         if outdata then
             llvm_targettriple = outdata:trim()
         end
-        _g._LLVM_TARGETTRIPLE = llvm_targettriple or false
+        memcache:set(cachekey, llvm_targettriple or false)
     end
     return llvm_targettriple or nil
 end
 
 -- get llvm toolchain dirs
 function get_llvm_dirs(toolchain)
-    local llvm_dirs = _g.llvm_dirs
+    local memcache = _toolchain.memcache()
+    local cachekey = toolchain:cachekey() .. "_get_llvm_dirs"
+    local llvm_dirs = memcache:get(cachekey)
     if llvm_dirs == nil then
         local rootdir = toolchain:sdkdir()
         if not rootdir and toolchain:is_plat("windows") then
@@ -313,6 +322,7 @@ function get_llvm_dirs(toolchain)
                      rt = rtdir,
                      rtlib = rtlib,
                      rtlink = rtlink }
+        memcache:set(cachekey, llvm_dirs)
         _g.llvm_dirs = llvm_dirs
       end
       return llvm_dirs
