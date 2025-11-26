@@ -22,8 +22,13 @@
 function main(target, batchcmds, opt)
     local package = opt.package
     
-    -- only for macosx when packing dmg
+    -- only for macosx when packing
     if not target:is_plat("macosx") then
+        return
+    end
+
+    -- only for xpack (package exists)
+    if not package then
         return
     end
 
@@ -44,5 +49,22 @@ function main(target, batchcmds, opt)
     local appname = path.filename(appdir)
     local dstappdir = path.join(installdir, appname)
     batchcmds:cp(appdir, dstappdir, {symlink = true})
+
+    -- install target files (skip binary installation)
+    local srcfiles, dstfiles = target:installfiles(installdir)
+    if srcfiles and dstfiles then
+        for idx, srcfile in ipairs(srcfiles) do
+            batchcmds:cp(srcfile, dstfiles[idx], {symlink = true})
+        end
+    end
+    -- install dependent target files
+    for _, dep in ipairs(target:orderdeps()) do
+        local srcfiles, dstfiles = dep:installfiles(installdir, {interface = true})
+        if srcfiles and dstfiles then
+            for idx, srcfile in ipairs(srcfiles) do
+                batchcmds:cp(srcfile, dstfiles[idx], {symlink = true})
+            end
+        end
+    end
 end
 

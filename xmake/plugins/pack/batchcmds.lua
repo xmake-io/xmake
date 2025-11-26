@@ -334,6 +334,17 @@ function _on_target_installcmd(target, batchcmds_, opt)
         return
     end
 
+    -- check if target rules have on_installcmd, use rule's logic first
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_installcmd = r:script("installcmd")
+        if on_installcmd then
+            on_installcmd(target, batchcmds_, opt)
+            done = true
+        end
+    end
+    if done then return end
+
     -- install target binaries
     local scripts = {
         binary     = _on_target_installcmd_binary,
@@ -415,6 +426,17 @@ function _on_target_uninstallcmd(target, batchcmds_, opt)
         _on_target_uninstallcmd_source(target, batchcmds_, opt)
         return
     end
+
+    -- check if target rules have on_uninstallcmd, use rule's logic first
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_uninstallcmd = r:script("uninstallcmd")
+        if on_uninstallcmd then
+            on_uninstallcmd(target, batchcmds_, opt)
+            done = true
+        end
+    end
+    if done then return end
 
     -- uninstall target binaries
     local scripts = {
