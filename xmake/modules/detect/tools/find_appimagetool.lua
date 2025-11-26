@@ -44,6 +44,8 @@ function main(opt)
 
     -- init options
     opt = opt or {}
+    opt.envs = opt.envs or {}
+    opt.envs.APPIMAGE_EXTRACT_AND_RUN = "1"
 
     -- find program
     local program = find_program(opt.program or "appimagetool", opt)

@@ -19,7 +19,7 @@ target("foo")
     add_packages("zlib")
 
 xpack("test")
-    set_formats("nsis", "srpm", "rpm", "deb", "zip", "targz", "srczip", "srctargz", "runself", "wix", "dmg")
+    set_formats("nsis", "srpm", "rpm", "deb", "zip", "targz", "srczip", "srctargz", "runself", "wix", "dmg", "appimage")
     set_title("hello")
     set_author("ruki <waruqi@gmail.com>")
     set_description("A test installer.")
@@ -30,7 +30,6 @@ xpack("test")
     add_installfiles("src/(assets/*.png)", {prefixdir = "images"})
     add_sourcefiles("(src/**)")
     add_sourcefiles("xmake.lua")
-    set_iconfile("src/assets/xmake.ico")
     add_components("LongPath")
 
     on_load(function (package)
@@ -38,6 +37,13 @@ xpack("test")
             package:set("basename", "test-$(plat)-src-v$(version)")
         else
             package:set("basename", "test-$(plat)-$(arch)-v$(version)")
+        end
+        -- set icon file based on format (use PNG for appimage, ICO for other formats)
+        local scriptdir = os.scriptdir()
+        if package:format() == "appimage" then
+            package:set("iconfile", path.join(scriptdir, "src/assets/xmake.png"))
+        else
+            package:set("iconfile", path.join(scriptdir, "src/assets/xmake.ico"))
         end
     end)
 

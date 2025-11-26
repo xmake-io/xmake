@@ -23,6 +23,61 @@ import("core.base.option")
 import("lib.detect.find_tool")
 import(".batchcmds")
 
+-- handle icon file
+function _handle_icon(package, appdir, appname)
+    local iconname = nil
+    local iconfile = package:get("iconfile")
+    if iconfile then
+        local iconpath = path.absolute(iconfile)
+        if not os.isfile(iconpath) then
+            raise("icon file not found: %s", iconfile)
+        end
+        local ext = path.extension(iconpath)
+        -- AppImage only supports .png, .svg, .xpm
+        if ext ~= ".png" and ext ~= ".svg" and ext ~= ".xpm" then
+            raise("appimage format only supports .png, .svg, or .xpm icon files, but got: %s", ext)
+        end
+        iconname = appname .. ext
+        -- copy to AppDir root (required for AppImage)
+        os.cp(iconpath, path.join(appdir, iconname))
+        -- also copy to standard location
+        local iconsdir = path.join(appdir, "usr", "share", "icons", "hicolor", "256x256", "apps")
+        os.mkdir(iconsdir)
+        os.cp(iconpath, path.join(iconsdir, iconname))
+    end
+    return iconname
+end
+
+-- create desktop file
+function _create_desktop_file(package, appdir, appname, apptitle, appdescription, main_executable, iconname)
+    local desktopfile = path.join(appdir, appname .. ".desktop")
+    local icon_line = ""
+    if iconname then
+        icon_line = string.format("Icon=%s\n", appname)
+    end
+    local desktop_content = string.format([[
+[Desktop Entry]
+Type=Application
+Name=%s
+Comment=%s
+Exec=usr/bin/%s
+%sCategories=Utility;
+]], apptitle, appdescription, main_executable, icon_line)
+    io.writefile(desktopfile, desktop_content)
+end
+
+-- create AppRun script
+function _create_apprun_script(appdir, main_executable)
+    local apprun = path.join(appdir, "AppRun")
+    local apprun_content = string.format([[
+#!/bin/bash
+HERE="$(dirname "$(readlink -f "${0}")")"
+exec "${HERE}/usr/bin/%s" "$@"
+]], main_executable)
+    io.writefile(apprun, apprun_content)
+    os.vrunv("chmod", {"+x", apprun})
+end
+
 -- get main executable from package
 function _get_main_executable(package, usrdir)
     local main_executable = nil
@@ -69,7 +124,7 @@ function _pack_appimage(package)
     assert(package:is_plat("linux"), "appimage format only supports Linux platform!")
 
     -- find appimagetool
-    local appimagetool = find_appimagetool()
+    local appimagetool = find_tool("appimagetool")
     if not appimagetool then
         raise("appimagetool not found! Please install appimagetool.")
     end
@@ -109,50 +164,18 @@ function _pack_appimage(package)
     local appname = package:name()
     local apptitle = package:title() or appname
     local appdescription = package:description() or ""
-    local appversion = package:version() or "1.0.0"
 
-    -- create .desktop file
-    local desktopfile = path.join(appdir, appname .. ".desktop")
-    local desktop_content = string.format([[
-[Desktop Entry]
-Type=Application
-Name=%s
-Comment=%s
-Exec=usr/bin/%s
-Icon=%s
-Categories=Utility;
-Version=%s
-]], apptitle, appdescription, main_executable, appname, appversion)
-    io.writefile(desktopfile, desktop_content)
+    -- handle icon file
+    local iconname = _handle_icon(package, appdir, appname)
 
-    -- copy icon file if exists
-    local iconfile = package:get("iconfile")
-    if iconfile then
-        local iconpath = path.absolute(iconfile)
-        if os.isfile(iconpath) then
-            -- copy to AppDir root (required for AppImage)
-            local ext = path.extension(iconpath)
-            local iconname = appname .. ext
-            os.cp(iconpath, path.join(appdir, iconname))
-            -- also copy to standard location
-            local iconsdir = path.join(appdir, "usr", "share", "icons", "hicolor", "256x256", "apps")
-            os.mkdir(iconsdir)
-            os.cp(iconpath, path.join(iconsdir, iconname))
-        end
-    end
+    -- create desktop file
+    _create_desktop_file(package, appdir, appname, apptitle, appdescription, main_executable, iconname)
 
     -- create AppRun script
-    local apprun = path.join(appdir, "AppRun")
-    local apprun_content = string.format([[
-#!/bin/bash
-HERE="$(dirname "$(readlink -f "${0}")")"
-exec "${HERE}/usr/bin/%s" "$@"
-]], main_executable)
-    io.writefile(apprun, apprun_content)
-    os.vrunv("chmod", {"+x", apprun})
+    _create_apprun_script(appdir, main_executable)
 
     -- create AppImage using appimagetool
-    os.vrunv(appimagetool.program, {appdir, outputfile})
+    os.vrunv(appimagetool.program, {appdir, outputfile}, {envs = {APPIMAGE_EXTRACT_AND_RUN = "1"}})
 
     -- verify AppImage was created
     assert(os.isfile(outputfile), "generate %s failed!", outputfile)
