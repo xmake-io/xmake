@@ -49,21 +49,23 @@ function _pack_dmg(package)
     local outputfile = package:outputfile()
     os.tryrm(outputfile)
 
-    -- create temporary directory for DMG
-    local tmpdir = os.tmpfile() .. ".dir"
-    os.mkdir(tmpdir)
+    -- create directory for DMG in builddir
+    local builddir = package:builddir()
+    local dmgdir = path.join(builddir, "dmg")
+    os.tryrm(dmgdir)
+    os.mkdir(dmgdir)
 
-    -- copy files to temporary directory
+    -- copy files to DMG directory
     local dmgname = path.basename(outputfile, ".dmg")
-    local dmgdir = path.join(tmpdir, dmgname)
-    os.cp(rootdir, dmgdir)
+    local dmgcontentdir = path.join(dmgdir, dmgname)
+    os.cp(rootdir, dmgcontentdir)
 
     -- create DMG using hdiutil
     -- create a read-only DMG with UDZO format (compressed)
     local argv = {
         "create",
         "-volname", package:title() or package:name() or dmgname,
-        "-srcfolder", dmgdir,
+        "-srcfolder", dmgcontentdir,
         "-ov",
         "-format", "UDZO",
         outputfile
@@ -71,9 +73,6 @@ function _pack_dmg(package)
 
     -- run hdiutil
     os.vrunv(hdiutil.program, argv)
-
-    -- clean temporary directory
-    os.rm(tmpdir)
 
     -- verify DMG was created
     assert(os.isfile(outputfile), "generate %s failed!", outputfile)
