@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#7062](https://github.com/xmake-io/xmake/pull/7062): Add dmg xpack format for macOS application packaging
+
 ## v3.0.5
 
 ### New features
@@ -2190,6 +2194,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#7062](https://github.com/xmake-io/xmake/pull/7062): 添加 dmg xpack 格式，支持 macOS 应用程序打包
 
 ## v3.0.5
 

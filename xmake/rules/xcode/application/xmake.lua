@@ -36,6 +36,9 @@ rule("xcode.application")
     -- install application
     on_install("install")
 
+    -- install application for xpack
+    on_installcmd("installcmd")
+
     -- uninstall application
     on_uninstall("uninstall")
 
