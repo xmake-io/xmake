@@ -106,6 +106,14 @@ function _instance:extension()
     return path.extension(self:str())
 end
 
+function _instance:startswith(prefix)
+    return self:str():startswith(tostring(prefix))
+end
+
+function _instance:endswith(suffix)
+    return self:str():endswith(tostring(suffix))
+end
+
 function _instance:directory()
     return path.new(path.directory(self:str()), self._TRANSFORM)
 end
