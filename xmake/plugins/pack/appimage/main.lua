@@ -21,6 +21,8 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
+import("private.action.require.impl.packagenv")
+import("private.action.require.impl.install_packages")
 import(".batchcmds")
 
 -- handle icon file
@@ -83,6 +85,32 @@ exec "${HERE}/usr/bin/%s" "$@"
     os.vrunv("chmod", {"+x", apprun})
 end
 
+-- get the appimagetool
+function _get_appimagetool()
+
+    -- enter the environments of appimagetool
+    local oldenvs = packagenv.enter("appimagetool")
+
+    -- find appimagetool
+    local packages = {}
+    local appimagetool = find_tool("appimagetool")
+    if not appimagetool then
+        table.join2(packages, install_packages("appimagetool"))
+    end
+
+    -- enter the environments of installed packages
+    for _, instance in ipairs(packages) do
+        instance:envs_enter()
+    end
+
+    -- we need to force detect and flush detect cache after loading all environments
+    if not appimagetool then
+        appimagetool = find_tool("appimagetool", {force = true})
+    end
+    assert(appimagetool, "appimagetool not found!")
+    return appimagetool, oldenvs
+end
+
 -- get main executable from package
 function _get_main_executable(package, usrdir)
     local main_executable = nil
@@ -123,16 +151,10 @@ function _get_main_executable(package, usrdir)
 end
 
 -- pack appimage package
-function _pack_appimage(package)
+function _pack_appimage(package, appimagetool)
 
     -- check platform
     assert(package:is_plat("linux"), "appimage format only supports Linux platform!")
-
-    -- find appimagetool
-    local appimagetool = find_tool("appimagetool")
-    if not appimagetool then
-        raise("appimagetool not found! Please install appimagetool.")
-    end
 
     -- archive binary files
     batchcmds.get_installcmds(package):runcmds()
@@ -180,14 +202,28 @@ function _pack_appimage(package)
     _create_apprun_script(appdir, main_executable)
 
     -- create AppImage using appimagetool
-    os.vrunv(appimagetool.program, {appdir, outputfile}, {envs = {APPIMAGE_EXTRACT_AND_RUN = "1"}})
+    os.vrunv(appimagetool, {appdir, outputfile}, {envs = {APPIMAGE_EXTRACT_AND_RUN = "1"}})
 
     -- verify AppImage was created
     assert(os.isfile(outputfile), "generate %s failed!", outputfile)
 end
 
 function main(package)
+
+    -- only for linux
+    if not is_host("linux") then
+        return
+    end
+
     cprint("packing %s .. ", package:outputfile())
-    _pack_appimage(package)
+
+    -- get appimagetool
+    local appimagetool, oldenvs = _get_appimagetool()
+
+    -- pack appimage package
+    _pack_appimage(package, appimagetool.program)
+
+    -- done
+    os.setenvs(oldenvs)
 end
 
