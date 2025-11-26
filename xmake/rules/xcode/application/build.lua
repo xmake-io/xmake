@@ -24,8 +24,6 @@ import("core.theme.theme")
 import("core.project.depend")
 import("private.tools.codesign")
 import("utils.progress")
-
--- main entry
 function main (target, opt)
 
     -- get app and resources directory
