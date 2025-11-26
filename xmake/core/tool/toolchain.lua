@@ -483,7 +483,7 @@ function _instance:_checktool(toolkind, toolpath)
 
     -- get result from cache first
     local cachekey = self:cachekey() .. "_checktool" .. toolkind
-    local result = toolchain._memcache():get3(cachekey, toolkind, toolpath)
+    local result = toolchain.memcache():get3(cachekey, toolkind, toolpath)
     if result then
         return result[1], result[2]
     end
@@ -552,12 +552,12 @@ function _instance:_checktool(toolkind, toolpath)
             utils.cprint("${dim}checking for %s (%s: ${bright}%s${clear}) ... ${color.nothing}${text.nothing}", description, toolkind, toolpath)
         end
     end
-    toolchain._memcache():set3(cachekey, toolkind, toolpath, {program, toolname})
+    toolchain.memcache():set3(cachekey, toolkind, toolpath, {program, toolname})
     return program, toolname
 end
 
 -- get memcache
-function toolchain._memcache()
+function toolchain.memcache()
     return memcache.cache("core.tool.toolchain")
 end
 
@@ -722,7 +722,7 @@ function toolchain.load(name, opt)
     configs.arch = opt.arch or config.get("arch") or os.arch()
 
     -- get cache
-    local cache = toolchain._memcache()
+    local cache = toolchain.memcache()
     local cachekey = toolchain._cachekey(name, configs)
 
     -- get it directly from cache dirst
@@ -787,7 +787,7 @@ function toolchain.load_withinfo(name, info, opt)
     configs.arch = opt.arch or config.get("arch") or os.arch()
 
     -- get cache key
-    local cache = toolchain._memcache()
+    local cache = toolchain.memcache()
     local cachekey = toolchain._cachekey(name, configs)
 
     -- get it directly from cache dirst
@@ -899,7 +899,7 @@ function toolchain.toolconfig(toolchains, name, opt)
     local arch = opt.arch or config.get("arch") or os.arch()
 
     -- get cache and cachekey
-    local cache = toolchain._memcache()
+    local cache = toolchain.memcache()
     local cachekey = "toolconfig_" .. (opt.cachekey or "") .. "_" .. plat .. "_" .. arch
 
     -- get configuration
