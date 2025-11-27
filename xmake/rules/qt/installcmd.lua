@@ -18,6 +18,9 @@
 -- @file        installcmd.lua
 --
 
+-- imports
+import("rules.qt.install.windeployqt", {rootdir = os.programdir()})
+
 -- install application for xpack
 function main(target, batchcmds, opt)
     local package = opt.package
@@ -42,13 +45,37 @@ function main(target, batchcmds, opt)
             local dstappdir = path.join(installdir, appname)
             batchcmds:cp(target_app, dstappdir, {symlink = true})
         end
+    elseif target:is_plat("windows", "mingw") then
+        -- Windows/Mingw: need to run windeployqt to deploy Qt dependencies
+        -- First, copy binary to package bindir (windeployqt needs it there)
+        local package_bindir = package:installdir("bin")
+        batchcmds:mkdir(package_bindir)
+        
+        -- copy target binary to bindir first
+        local targetfile = path.join(package_bindir, target:filename())
+        batchcmds:cp(target:targetfile(), targetfile)
+        
+        -- copy qt.shared deps
+        local installfiles = {targetfile}
+        for _, dep in ipairs(target:orderdeps()) do
+            if dep:rule("qt.shared") then
+                local depfile = path.join(package_bindir, path.filename(dep:targetfile()))
+                batchcmds:cp(dep:targetfile(), depfile)
+                table.insert(installfiles, depfile)
+            end
+        end
+
+        -- reuse existing logic to prepare windeployqt arguments
+        local program, argv, envs = windeployqt.prepare(target, package_bindir, installfiles)
+        if program and argv and envs then
+            batchcmds:vrunv(program, argv, {envs = envs})
+        end
     else
-        -- Windows/Linux: after_install has already run windeployqt which deploys Qt dependencies to bindir
-        -- We need to copy all files from bindir (including plugins, translations, etc.) to the package install directory
+        -- Linux: copy all files from bindir (plugins, translations, etc. should be handled separately)
         local bindir = target:bindir()
         if bindir and os.isdir(bindir) then
             local package_bindir = package:installdir("bin")
-            -- copy all files and directories from bindir (includes deployed Qt dependencies, plugins, translations, etc.)
+            -- copy all files and directories from bindir
             batchcmds:cp(path.join(bindir, "*"), package_bindir, {rootdir = bindir})
         end
     end
