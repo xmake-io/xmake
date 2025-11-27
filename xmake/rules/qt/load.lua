@@ -224,7 +224,7 @@ function main(target, opt)
 
     if qt_sdkver:ge("6.0") then
         -- @see https://github.com/xmake-io/xmake/issues/2071
-        if target:is_plat("windows") then
+        if target:is_plat("windows") and target:has_tool("cxx", "clang_cl", "cl") then
             target:add("cxxflags", "/Zc:__cplusplus")
             target:add("cxxflags", "/permissive-")
         end
