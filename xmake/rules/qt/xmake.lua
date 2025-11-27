@@ -116,6 +116,9 @@ rule("qt.widgetapp")
     after_install("windows", "install.windows")
     after_install("mingw", "install.mingw")
 
+    -- install application for xpack
+    on_installcmd("installcmd")
+
 -- define rule: qt static widgetapp
 rule("qt.widgetapp_static")
     add_deps("qt.ui", "qt.moc", "qt._wasm_app", "qt.qrc", "qt.ts")
@@ -144,6 +147,9 @@ rule("qt.widgetapp_static")
     after_install("windows", "install.windows")
     after_install("mingw", "install.mingw")
 
+    -- install application for xpack
+    on_installcmd("installcmd")
+
 -- define rule: qt quickapp
 rule("qt.quickapp")
     add_deps("qt.qrc", "qt.moc", "qt._wasm_app", "qt.ts")
@@ -165,6 +171,9 @@ rule("qt.quickapp")
     on_install("android", "install.android")
     after_install("windows", "install.windows")
     after_install("mingw", "install.mingw")
+
+    -- install application for xpack
+    on_installcmd("installcmd")
 
 -- define rule: qt static quickapp
 rule("qt.quickapp_static")
@@ -189,6 +198,9 @@ rule("qt.quickapp_static")
     on_install("android", "install.android")
     after_install("windows", "install.windows")
     after_install("mingw", "install.mingw")
+
+    -- install application for xpack
+    on_installcmd("installcmd")
 
 -- define rule: qt qmlplugin
 rule("qt.qmlplugin")
