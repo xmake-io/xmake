@@ -315,7 +315,13 @@ end
 
 -- get stdmodules
 function get_stdmodules(target)
+    if not target:policy("build.c++.modules.std") then
+        return
+    end
     local cpplib = get_cpplibrary_name(target)
+    if not cpplib then
+        return
+    end
     local stdmodules = memcache():get2(cpplib, "c++.modules.stdmodules")
     local stdmodules_set = memcache():get2(cpplib, "c++.modules.stdmodules_set")
     if not stdmodules or not stdmodules_set then

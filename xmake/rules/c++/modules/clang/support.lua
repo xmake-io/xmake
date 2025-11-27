@@ -245,9 +245,6 @@ end
 
 function get_stdmodules(target)
 
-    if not target:policy("build.c++.modules.std") then
-        return
-    end
     local cpplib = get_cpplibrary_name(target)
     if cpplib then
         if cpplib == "c++" then

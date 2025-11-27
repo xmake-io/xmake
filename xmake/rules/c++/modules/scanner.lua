@@ -274,7 +274,7 @@ function _get_targetdeps_modules(target)
             if sourcebatch.sourcefiles then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     modules = modules or {}
-                    if support.is_public(dep, sourcefile) or stdmodules_set:has(sourcefile) then
+                    if support.is_public(dep, sourcefile) or (stdmodules_set and stdmodules_set:has(sourcefile)) then
                         local _fileconfig = dep:fileconfig(sourcefile)
                         local fileconfig = {}
                         if _fileconfig then
