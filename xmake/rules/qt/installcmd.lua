@@ -47,29 +47,32 @@ function main(target, batchcmds, opt)
         end
     elseif target:is_plat("windows", "mingw") then
         -- Windows/Mingw: need to run windeployqt to deploy Qt dependencies
-        -- First, copy binary to package bindir (windeployqt needs it there)
-        local package_bindir = package:installdir("bin")
-        batchcmds:mkdir(package_bindir)
+        -- First, deploy to target bindir, then copy all files to package bindir
+        
+        -- get target bindir for deployment
+        local bindir = assert(target:bindir(), "please use `xmake install -o installdir` or `set_installdir` to set install directory on windows.")
         
         -- copy target binary to bindir first
-        local targetfile = path.join(package_bindir, target:filename())
-        batchcmds:cp(target:targetfile(), targetfile)
+        local targetfile = path.join(bindir, path.filename(target:targetfile()))
+        os.cp(target:targetfile(), targetfile)
         
         -- copy qt.shared deps
         local installfiles = {targetfile}
         for _, dep in ipairs(target:orderdeps()) do
             if dep:rule("qt.shared") then
-                local depfile = path.join(package_bindir, path.filename(dep:targetfile()))
-                batchcmds:cp(dep:targetfile(), depfile)
+                local depfile = path.join(bindir, path.filename(dep:targetfile()))
+                os.cp(dep:targetfile(), depfile)
                 table.insert(installfiles, depfile)
             end
         end
 
-        -- reuse existing logic to prepare windeployqt arguments
-        local program, argv, envs = windeployqt.prepare(target, package_bindir, installfiles)
-        if program and argv and envs then
-            batchcmds:vrunv(program, argv, {envs = envs})
-        end
+        -- run windeployqt to deploy Qt dependencies to bindir
+        windeployqt.run_deploy(target, bindir, installfiles)
+        
+        -- copy all deployed files from bindir to package bindir
+        local package_bindir = package:installdir("bin")
+        batchcmds:mkdir(package_bindir)
+        batchcmds:cp(path.join(bindir, "*"), package_bindir, {rootdir = bindir})
     else
         -- Linux: copy all files from bindir (plugins, translations, etc. should be handled separately)
         local bindir = target:bindir()

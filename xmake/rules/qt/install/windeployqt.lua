@@ -26,12 +26,12 @@ import("lib.detect.find_file")
 import("lib.detect.find_path")
 import("detect.sdks.find_qt")
 
--- prepare windeployqt arguments and environment
-function prepare(target, bindir, installfiles)
+-- run windeployqt to deploy Qt dependencies
+function run_deploy(target, bindir, installfiles)
     -- get qt sdk
     local qt = find_qt()
     if not qt then
-        return nil, nil, nil
+        return
     end
 
     -- get windeployqt
@@ -40,7 +40,7 @@ function prepare(target, bindir, installfiles)
     if qt.bindir then table.insert(search_dirs, qt.bindir) end
     local program = find_file("windeployqt" .. (is_host("windows") and ".exe" or ""), search_dirs)
     if not program or not os.isexec(program) then
-        return nil, nil, nil
+        return
     end
 
     -- find qml directory
@@ -135,6 +135,7 @@ function prepare(target, bindir, installfiles)
     -- windeployqt for both target and its deps
     table.join2(argv, installfiles)
 
-    return program, argv, envs
+    -- run windeployqt
+    os.vrunv(program, argv, {envs = envs})
 end
 

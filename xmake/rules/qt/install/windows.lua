@@ -41,10 +41,6 @@ function main(target, opt)
         end
     end
 
-    -- prepare windeployqt arguments
-    local program, argv, envs = windeployqt.prepare(target, bindir, installfiles)
-    assert(program, "windeployqt.exe not found!")
-
-    -- deploy Qt dependencies
-    os.vrunv(program, argv, {envs = envs})
+    -- run windeployqt to deploy Qt dependencies
+    windeployqt.run_deploy(target, bindir, installfiles)
 end
