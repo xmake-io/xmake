@@ -6,6 +6,7 @@
 
 * [#7064](https://github.com/xmake-io/xmake/pull/7064): Add appimage xpack format for Linux application packaging
 * [#7062](https://github.com/xmake-io/xmake/pull/7062): Add dmg xpack format for macOS application packaging
+* [#7071](https://github.com/xmake-io/xmake/pull/7071): Improve Qt rules: add uninstallcmd support and improve nsis/wix cp command to support directory copying
 
 ## v3.0.5
 
@@ -2200,6 +2201,7 @@
 
 * [#7064](https://github.com/xmake-io/xmake/pull/7064): 添加 appimage xpack 格式，支持 Linux 应用程序打包
 * [#7062](https://github.com/xmake-io/xmake/pull/7062): 添加 dmg xpack 格式，支持 macOS 应用程序打包
+* [#7071](https://github.com/xmake-io/xmake/pull/7071): 改进 Qt 规则：添加 uninstallcmd 支持，改进 nsis/wix cp 命令以支持目录复制
 
 ## v3.0.5
 
