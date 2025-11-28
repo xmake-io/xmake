@@ -93,22 +93,40 @@ function _get_command_strings(package, cmd, opt)
     local kind = cmd.kind
     if kind == "cp" then
         -- https://nsis.sourceforge.io/Reference/File
-        local srcfiles = os.files(cmd.srcpath)
-        for _, srcfile in ipairs(srcfiles) do
-            -- the destination is directory? append the filename
-            local dstfile = _translate_filepath(package, cmd.dstpath)
-            if #srcfiles > 1 or path.islastsep(dstfile) then
+        local srcpath = cmd.srcpath
+        local dstpath = _translate_filepath(package, cmd.dstpath)
+
+        -- match files and directories
+        local srcitems = os.filedirs(srcpath)
+        for _, srcitem in ipairs(srcitems) do
+            if os.isdir(srcitem) then
+                -- copy directory recursively
+                srcitem = path.normalize(srcitem)
+                local dstdir = dstpath
                 if opt.rootdir then
-                    dstfile = path.join(dstfile, path.relative(srcfile, opt.rootdir))
+                    dstdir = path.join(dstdir, path.relative(srcitem, opt.rootdir))
                 else
-                    dstfile = path.join(dstfile, path.filename(srcfile))
+                    dstdir = path.join(dstdir, path.filename(srcitem))
                 end
+                dstdir = path.normalize(dstdir)
+                table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
+                table.insert(result, string.format("File /r \"%s\\*\"", srcitem))
+            else
+                -- copy file
+                local dstfile = dstpath
+                if #srcitems > 1 or path.islastsep(dstfile) then
+                    if opt.rootdir then
+                        dstfile = path.join(dstfile, path.relative(srcitem, opt.rootdir))
+                    else
+                        dstfile = path.join(dstfile, path.filename(srcitem))
+                    end
+                end
+                srcitem = path.normalize(srcitem)
+                local dstname = path.filename(dstfile)
+                local dstdir = path.normalize(path.directory(dstfile))
+                table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
+                table.insert(result, string.format("File \"/oname=%s\" \"%s\"", dstname, srcitem))
             end
-            srcfile = path.normalize(srcfile)
-            local dstname = path.filename(dstfile)
-            local dstdir = path.normalize(path.directory(dstfile))
-            table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
-            table.insert(result, string.format("File \"/oname=%s\" \"%s\"", dstname, srcfile))
         end
     elseif kind == "rm" then
         local filepath = _translate_filepath(package, cmd.filepath)
