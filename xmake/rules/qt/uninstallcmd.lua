@@ -46,15 +46,33 @@ function main(target, batchcmds, opt)
         -- Windows/Mingw: remove all deployed files and directories from install directory
         local installdir = package:installdir()
         
-        -- remove all files and directories deployed by windeployqt
-        -- since we copied everything from deploydir to installdir, we need to remove them
-        -- use os.filedirs to match all files and directories, then remove them
-        for _, item in ipairs(os.filedirs(path.join(installdir, "*"))) do
-            if os.isfile(item) then
-                batchcmds:rm(item, {emptydirs = true})
-            elseif os.isdir(item) then
-                batchcmds:rmdir(item, {emptydirs = true})
+        -- use the same deploydir as installcmd to determine what files were installed
+        -- deploydir exists at build/pack time when uninstallcmd is called
+        local deploydir = path.join(target:autogendir(), "qt", "deploy", target:name())
+        
+        -- if deploydir exists, use it to get the list of files/dirs to remove
+        if os.isdir(deploydir) then
+            -- match all files and directories in deploydir (same as installcmd)
+            for _, item in ipairs(os.filedirs(path.join(deploydir, "*"))) do
+                local relpath = path.relative(item, deploydir)
+                local dstpath = path.join(installdir, relpath)
+                if os.isfile(item) then
+                    batchcmds:rm(dstpath, {emptydirs = true})
+                elseif os.isdir(item) then
+                    batchcmds:rmdir(dstpath, {emptydirs = true})
+                end
             end
+        else
+            -- fallback: if deploydir doesn't exist, remove common Qt deployment items
+            -- this should rarely happen, but provides a safety net
+            batchcmds:rm(path.join(installdir, target:filename()), {emptydirs = true})
+            for _, dep in ipairs(target:orderdeps()) do
+                if dep:rule("qt.shared") then
+                    batchcmds:rm(path.join(installdir, path.filename(dep:targetfile())), {emptydirs = true})
+                end
+            end
+            -- note: we can't easily remove all deployed files without deploydir,
+            -- but at least we remove the main binaries
         end
     else
         -- Linux: remove all files from bin directory
