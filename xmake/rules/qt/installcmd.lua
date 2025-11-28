@@ -47,28 +47,33 @@ function main(target, batchcmds, opt)
         end
     elseif target:is_plat("windows", "mingw") then
         -- Windows/Mingw: need to run windeployqt to deploy Qt dependencies
-        -- First, copy binaries to package bindir, then deploy Qt dependencies
+        -- First, prepare files in a temporary directory, then copy to package bindir via batchcmds
         
-        -- get package bindir for deployment
-        local package_bindir = package:installdir("bin")
-        os.mkdir(package_bindir)
+        -- prepare deployment in a temporary directory
+        local deploydir = path.join(target:autogendir(), "qt", "deploy", target:name())
+        os.mkdir(deploydir)
         
-        -- copy target binary to package bindir first
-        local targetfile = path.join(package_bindir, target:filename())
+        -- copy target binary to deploydir first
+        local targetfile = path.join(deploydir, target:filename())
         os.cp(target:targetfile(), targetfile)
         
         -- copy qt.shared deps
         local installfiles = {targetfile}
         for _, dep in ipairs(target:orderdeps()) do
             if dep:rule("qt.shared") then
-                local depfile = path.join(package_bindir, path.filename(dep:targetfile()))
+                local depfile = path.join(deploydir, path.filename(dep:targetfile()))
                 os.cp(dep:targetfile(), depfile)
                 table.insert(installfiles, depfile)
             end
         end
 
-        -- run windeployqt to deploy Qt dependencies to package bindir
-        windeployqt.run_deploy(target, package_bindir, installfiles)
+        -- run windeployqt to deploy Qt dependencies to deploydir
+        windeployqt.run_deploy(target, deploydir, installfiles)
+        
+        -- copy all deployed files from deploydir to package bindir via batchcmds
+        local package_bindir = package:installdir("bin")
+        batchcmds:mkdir(package_bindir)
+        batchcmds:cp(path.join(deploydir, "*"), package_bindir, {rootdir = deploydir})
     else
         -- Linux: copy all files from bindir (plugins, translations, etc. should be handled separately)
         local bindir = target:bindir()
