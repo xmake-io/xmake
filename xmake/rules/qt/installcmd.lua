@@ -24,7 +24,7 @@ import("rules.qt.install.windeployqt", {rootdir = os.programdir()})
 -- install application for xpack
 function main(target, batchcmds, opt)
     local package = opt.package
-    
+
     -- only for xpack (package exists)
     if not package then
         return
@@ -48,15 +48,15 @@ function main(target, batchcmds, opt)
     elseif target:is_plat("windows", "mingw") then
         -- Windows/Mingw: need to run windeployqt to deploy Qt dependencies
         -- First, prepare files in a temporary directory, then copy to package bindir via batchcmds
-        
+
         -- prepare deployment in a temporary directory
         local deploydir = path.join(target:autogendir(), "qt", "deploy", target:name())
         os.mkdir(deploydir)
-        
+
         -- copy target binary to deploydir first
         local targetfile = path.join(deploydir, target:filename())
         os.cp(target:targetfile(), targetfile)
-        
+
         -- copy qt.shared deps
         local installfiles = {targetfile}
         for _, dep in ipairs(target:orderdeps()) do
@@ -69,11 +69,10 @@ function main(target, batchcmds, opt)
 
         -- run windeployqt to deploy Qt dependencies to deploydir
         windeployqt.run_deploy(target, deploydir, installfiles)
-        
-        -- copy all deployed files from deploydir to package bindir via batchcmds
-        local package_bindir = package:installdir("bin")
-        batchcmds:mkdir(package_bindir)
-        batchcmds:cp(path.join(deploydir, "*"), package_bindir, {rootdir = deploydir})
+
+        -- copy all deployed files and directories from deploydir to root install directory via batchcmds
+        local installdir = package:installdir()
+        batchcmds:cp(path.join(deploydir, "*"), installdir, {rootdir = deploydir})
     else
         -- Linux: copy all files from bindir (plugins, translations, etc. should be handled separately)
         local bindir = target:bindir()
