@@ -243,6 +243,17 @@ function get_clang_scan_deps(target)
     return clang_scan_deps or nil
 end
 
+function parse_link_files(filepath)
+    if not os.islink(filepath) then
+        return filepath
+    end
+    local target = os.readlink(filepath)
+    if path.is_absolute(target) then
+        return target
+    end
+    return path.join(path.directory(filepath), target)
+end
+
 function get_stdmodules(target)
 
     local cpplib = get_cpplibrary_name(target)
@@ -255,7 +266,8 @@ function get_stdmodules(target)
                 if modules_json and modules_json.modules and #modules_json.modules > 0 then
                     local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
                     if not path.is_absolute(std_module_directory) then
-                        std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
+                        local clang_dir = path.directory(parse_link_files(get_clang_path(target)))
+                        std_module_directory = path.join(clang_dir, std_module_directory)
                     end
                     if os.isdir(std_module_directory) then
                         return {path.normalize(path.join(std_module_directory, "std.cppm")), path.normalize(path.join(std_module_directory, "std.compat.cppm"))}
