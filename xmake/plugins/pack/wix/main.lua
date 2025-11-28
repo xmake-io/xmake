@@ -79,26 +79,52 @@ function _get_cp_kind_table(package, cmds, opt)
         end
 
         local option = table.join(cmd.opt or {}, opt)
-        local srcfiles = os.files(cmd.srcpath)
-        for _, srcfile in ipairs(srcfiles) do
-            -- the destination is directory? append the filename
-            local dstfile = cmd.dstpath
-            if #srcfiles > 1 or path.islastsep(dstfile) then
-                if option.rootdir then
-                    dstfile = path.join(dstfile, path.relative(srcfile, option.rootdir))
-                else
-                    dstfile = path.join(dstfile, path.filename(srcfile))
-                end
-            end
-            srcfile = path.normalize(srcfile)
-            local dstname = path.filename(dstfile)
-            local dstdir = path.normalize(path.directory(dstfile))
-            dstdir = _translate_filepath(package, dstdir)
+        -- match files and directories
+        local srcitems = os.filedirs(cmd.srcpath)
+        for _, srcitem in ipairs(srcitems) do
+            if os.isdir(srcitem) then
+                -- for directory, recursively collect all files in it
+                local rootdir = option.rootdir or srcitem
+                local files = os.files(path.join(srcitem, "**"))
+                for _, srcfile in ipairs(files) do
+                    -- the destination is directory? append the relative path
+                    local dstfile = cmd.dstpath
+                    if option.rootdir then
+                        dstfile = path.join(dstfile, path.relative(srcfile, option.rootdir))
+                    else
+                        dstfile = path.join(dstfile, path.relative(srcfile, rootdir))
+                    end
+                    srcfile = path.normalize(srcfile)
+                    local dstname = path.filename(dstfile)
+                    local dstdir = path.normalize(path.directory(dstfile))
+                    dstdir = _translate_filepath(package, dstdir)
 
-            if result[dstdir] then
-                table.insert(result[dstdir], {srcfile, dstname})
+                    if result[dstdir] then
+                        table.insert(result[dstdir], {srcfile, dstname})
+                    else
+                        result[dstdir] = {{srcfile, dstname}}
+                    end
+                end
             else
-                result[dstdir] = {{srcfile, dstname}}
+                -- for file, use the original logic
+                local dstfile = cmd.dstpath
+                if #srcitems > 1 or path.islastsep(dstfile) then
+                    if option.rootdir then
+                        dstfile = path.join(dstfile, path.relative(srcitem, option.rootdir))
+                    else
+                        dstfile = path.join(dstfile, path.filename(srcitem))
+                    end
+                end
+                srcitem = path.normalize(srcitem)
+                local dstname = path.filename(dstfile)
+                local dstdir = path.normalize(path.directory(dstfile))
+                dstdir = _translate_filepath(package, dstdir)
+
+                if result[dstdir] then
+                    table.insert(result[dstdir], {srcitem, dstname})
+                else
+                    result[dstdir] = {{srcitem, dstname}}
+                end
             end
         end
         ::continue::

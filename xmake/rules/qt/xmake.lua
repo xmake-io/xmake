@@ -118,6 +118,7 @@ rule("qt.widgetapp")
 
     -- install application for xpack
     on_installcmd("installcmd")
+    on_uninstallcmd("uninstallcmd")
 
 -- define rule: qt static widgetapp
 rule("qt.widgetapp_static")
@@ -149,6 +150,7 @@ rule("qt.widgetapp_static")
 
     -- install application for xpack
     on_installcmd("installcmd")
+    on_uninstallcmd("uninstallcmd")
 
 -- define rule: qt quickapp
 rule("qt.quickapp")
@@ -174,6 +176,7 @@ rule("qt.quickapp")
 
     -- install application for xpack
     on_installcmd("installcmd")
+    on_uninstallcmd("uninstallcmd")
 
 -- define rule: qt static quickapp
 rule("qt.quickapp_static")
@@ -201,6 +204,7 @@ rule("qt.quickapp_static")
 
     -- install application for xpack
     on_installcmd("installcmd")
+    on_uninstallcmd("uninstallcmd")
 
 -- define rule: qt qmlplugin
 rule("qt.qmlplugin")
