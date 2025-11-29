@@ -122,8 +122,10 @@ end
 
 -- make the link flag
 function nf_link(self, lib)
-    if self:is_plat("windows") then
+    if self:is_plat("windows") and not lib:endswith(".lib") then
         return "-L" .. lib .. ".lib"
+    elseif lib:endswith(".a") or lib:endswith(".so") or lib:endswith(".dylib") or lib:endswith(".lib") then
+        return "-L" .. lib
     else
         return "-L-l" .. lib
     end

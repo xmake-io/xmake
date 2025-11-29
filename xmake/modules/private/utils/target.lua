@@ -165,3 +165,17 @@ function check_target_toolchains()
     end
 end
 
+-- target's toolchain can link library with fullpath?
+-- @see https://github.com/xmake-io/xmake/issues/7000
+function can_link_fullpath(target)
+    local link_filepath = target:_memcache():get("link_filepath")
+    if link_filepath == nil then
+        if target:policy("build.link_target_with_fullpath") and target:has_tool("ld", "gxx", "clangxx", "link") then
+            link_filepath = true
+        end
+        link_filepath = link_filepath or false
+        target:_memcache():set("link_filepath", link_filepath)
+    end
+    return link_filepath
+end
+
