@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13]
+        os: [macos-15-intel]
         arch: [x86_64]
 
     runs-on: ${{ matrix.os }}
@@ -33,10 +33,10 @@ jobs:
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
-      - name: Installation
+      - name: Install dlang toolchain
         run: |
-          brew install dmd
-          brew install dub
+          brew install dmd --HEAD dub
+          dmd --version
 
       - name: Tests
         run: |
