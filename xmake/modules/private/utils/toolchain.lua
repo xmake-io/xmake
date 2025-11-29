@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.base.semver")
 import("core.tool.linker")
+import("core.tool.toolchain", {alias = "_toolchain"})
 import("core.tool.compiler")
 import("core.language.language")
 import("lib.detect.find_tool")
@@ -181,3 +182,173 @@ function map_linkflags_for_package(package, targetkind, sourcekinds, name, value
     return flags
 end
 
+-- get llvm sdk resource directory
+function _get_llvm_resourcedir(toolchain)
+    local memcache = _toolchain.memcache()
+    local cachekey = toolchain:cachekey() .. "_get_llvm_resourcedir"
+    local llvm_resourcedir = memcache:get2(cachekey)
+    if llvm_resourcedir == nil then
+        local outdata = try { function() return os.iorunv(toolchain:tool("cc"), {"-print-resource-dir"}) end }
+        if outdata then
+            llvm_resourcedir = path.normalize(outdata:trim())
+            if not os.isdir(llvm_resourcedir) then
+                llvm_resourcedir = nil
+            end
+        end
+        memcache:set(cachekey, llvm_resourcedir or false)
+    end
+    return llvm_resourcedir or nil
+end
+
+-- get llvm sdk root directory
+function _get_llvm_rootdir(toolchain)
+    local memcache = _toolchain.memcache()
+    local cachekey = toolchain:cachekey() .. "_get_llvm_rootdir"
+    local llvm_rootdir = memcache:get2(cachekey, "rootdir")
+    if llvm_rootdir == nil then
+        local resourcedir = _get_llvm_resourcedir(toolchain)
+        if resourcedir then
+            llvm_rootdir = path.normalize(path.join(resourcedir, "..", "..", ".."))
+            if not os.isdir(llvm_rootdir) then
+                llvm_rootdir = nil
+            end
+        end
+        memcache:set(cachekey, llvm_rootdir or false)
+    end
+    return llvm_rootdir or nil
+end
+
+-- find compiler-rt dir
+function _get_llvm_compiler_rtdir_and_link(toolchain)
+    import("lib.detect.find_tool")
+
+    local cc = toolchain:tool("cc")
+    local cc_tool = find_tool(cc, {version = true})
+    if cc_tool and cc_tool.version then
+        local resdir = _get_llvm_resourcedir(toolchain)
+        if resdir  then
+            local res_libdir = path.join(resdir, "lib")
+            -- when -DLLVM_ENABLE_TARGET_RUNTIME_DIR=OFF rtdir is windows/ and rtlink is clang_rt.builtins_<arch>.lib  
+            -- when ON rtdir is windows/<target-triple> and rtlink is clang_rt.builtins.lib
+            local target_triple = _get_llvm_target_triple(toolchain)
+            local arch = target_triple and target_triple:split("-")[1]
+
+            local plat
+            if toolchain:is_plat("windows") then
+                plat = "windows"
+            elseif toolchain:is_plat("linux") then
+                plat = "linux"
+            elseif toolchain:is_plat("macosx", "ios", "watchos", "appletvos", "applexros") then
+                plat = "darwin"
+            end
+            
+            local tripletdir = target_triple and path.join(res_libdir, "windows", target_triple)
+            tripletdir = os.isdir(tripletdir) or nil
+
+            local rtdir = tripletdir and path.join(plat, target_triple) or plat
+            if os.isdir(path.join(res_libdir, rtdir)) and toolchain:is_plat("windows") then
+                local rtlink = "clang_rt.builtins" .. (tripletdir and ".lib" or ("-" .. arch .. ".lib"))
+                if os.isfile(path.join(res_libdir, rtdir, rtlink)) then
+                    return res_libdir, path.join(rtdir, rtlink), path.join(res_libdir, rtdir)
+                end
+            end
+            return res_libdir, nil, path.join(res_libdir, rtdir)
+        end
+    end
+end
+
+-- get llvm target triple
+function _get_llvm_target_triple(toolchain)
+    local memcache = _toolchain.memcache()
+    local cachekey = toolchain:cachekey() .. "_get_llvm_target_triple"
+    local llvm_targettriple = memcache:get(cachekey)
+    if llvm_targettriple == nil then
+        local outdata = try { function() return os.iorunv(toolchain:tool("cc"), {"-print-target-triple"}) end }
+        if outdata then
+            llvm_targettriple = outdata:trim()
+        end
+        memcache:set(cachekey, llvm_targettriple or false)
+    end
+    return llvm_targettriple or nil
+end
+
+-- get llvm toolchain dirs
+function get_llvm_dirs(toolchain)
+    local memcache = _toolchain.memcache()
+    local cachekey = toolchain:cachekey() .. "_get_llvm_dirs"
+    local llvm_dirs = memcache:get(cachekey)
+    if llvm_dirs == nil then
+        local rootdir = toolchain:sdkdir()
+        if not rootdir and toolchain:is_plat("windows") then
+            rootdir = _get_llvm_rootdir(toolchain)
+        end
+
+        local bindir, libdir, cxxlibdir, includedir, cxxincludedir, resdir, rtdir, rtlink
+        if rootdir then
+            bindir = path.join(rootdir, "bin")
+            bindir = os.isdir(bindir) and bindir or nil
+
+            libdir = path.join(rootdir, "lib")
+            libdir = os.isdir(libdir) and libdir or nil
+
+            if libdir then
+                cxxlibdir = path.join(libdir, "c++")
+                cxxlibdir = os.isdir(cxxlibdir) and cxxlibdir or nil
+                if not cxxlibdir then
+                    cxxlibdir = path.join(libdir, _get_llvm_target_triple(toolchain))
+                    cxxlibdir = os.isdir(cxxlibdir) and cxxlibdir or nil
+                end
+            end
+
+            includedir = path.join(rootdir, "include")
+            includedir = os.isdir(includedir) and includedir or nil
+
+            if includedir then
+                cxxincludedir = path.join(includedir, "c++", "v1")
+                cxxincludedir = os.isdir(cxxincludedir) and cxxincludedir or nil
+            end
+
+            resdir = _get_llvm_resourcedir(toolchain)
+            rtdir, rtlink, rtlib = _get_llvm_compiler_rtdir_and_link(toolchain)
+        end
+
+        llvm_dirs = {root = rootdir,
+                     bin = bindir,
+                     lib = libdir,
+                     cxxlib = cxxlibdir,
+                     include = includedir,
+                     cxxinclude = cxxincludedir,
+                     res = resdir,
+                     rt = rtdir,
+                     rtlib = rtlib,
+                     rtlink = rtlink }
+        memcache:set(cachekey, llvm_dirs)
+        _g.llvm_dirs = llvm_dirs
+      end
+      return llvm_dirs
+end
+
+-- set runenvs for llvm
+function set_llvm_runenvs(toolchain)
+    local dirs = get_llvm_dirs(toolchain)
+    if dirs then
+        if dirs.bin and toolchain:is_plat("windows") then
+            toolchain:add("runenvs", "PATH", dirs.bin)
+        end
+        for _, dir in ipairs({dirs.lib or false, dirs.cxxlib or false, dirs.rtlib or false}) do
+            if dir then
+                if toolchain:is_plat("windows") then
+                    toolchain:add("runenvs", "PATH", dir)
+                elseif toolchain:is_plat("linux", "bsd") then
+                    toolchain:add("runenvs", "LD_LIBRARY_PATH", dir)
+                elseif toolchain:is_plat("macosx") then
+                    -- using use DYLD_FALLBACK_LIBRARY_PATH instead of DYLD_LIBRARY_PATH to avoid symbols error when running homebrew llvm (which is linked to system libc++)
+                    -- e.g dyld[5195]: Symbol not found: __ZnwmSt19__type_descriptor_t
+                    -- Referenced from: <378C7CC2-7CD6-3B88-9C66-FE198E30462B> /usr/local/Cellar/llvm/21.1.5/bin/clang-21
+                    -- Expected as weak-def export from some loaded dylibSymbol not found: __ZnamSt19__type_descriptor_t
+                    toolchain:add("runenvs", "DYLD_FALLBACK_LIBRARY_PATH", dir)
+                end
+            end
+        end
+    end
+end
