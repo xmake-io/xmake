@@ -254,6 +254,13 @@ function parse_link_files(filepath)
     return path.join(path.directory(filepath), target)
 end
 
+function get_original_file(filepath)
+    while os.islink(filepath) do
+        filepath = parse_link_files(filepath)
+    end
+    return filepath
+end
+
 function get_stdmodules(target)
     local cpplib = get_cpplibrary_name(target)
     if cpplib then
@@ -287,7 +294,7 @@ function get_stdmodules(target)
                 return {path.normalize(path.join(try_std_module_directory, "std.cppm")), path.normalize(path.join(try_std_module_directory, "std.compat.cppm"))}
             end
             -- then try the directory relative to clang bin directory
-            try_std_module_directory = path.join(path.directory(parse_link_files(get_clang_path(target))), std_module_directory)
+            try_std_module_directory = path.join(path.directory(get_original_file(get_clang_path(target))), std_module_directory)
             if os.isdir(try_std_module_directory) then
                 return {path.normalize(path.join(try_std_module_directory, "std.cppm")), path.normalize(path.join(try_std_module_directory, "std.compat.cppm"))}
             end
