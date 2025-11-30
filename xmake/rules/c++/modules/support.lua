@@ -157,8 +157,8 @@ function get_headerunit_key(target, sourcefile)
     local undefines = table.wrap(target:get("undefines"))
     local fileconfig = target:fileconfig(sourcefile)
     if fileconfig then
-        table.join(defines, fileconfig.defines or {})
-        table.join(undefines, fileconfig.undefines or {})
+        table.join2(defines, fileconfig.defines or {})
+        table.join2(undefines, fileconfig.undefines or {})
     end
 
     if #defines > 0 then
