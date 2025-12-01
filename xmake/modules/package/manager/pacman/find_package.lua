@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.project.target")
 import("lib.detect.find_tool")
 import("private.core.base.is_cross")
@@ -218,8 +219,6 @@ function main(name, opt)
                 result.libfiles = result.libfiles or {}
                 table.insert(result.libfiles, libfile)
             end
-            -- version should be the same if a pacman package contains multiples .pc
-            result.version = pcresult.version
             result.shared = pcresult.shared
             result.static = pcresult.static
         end
@@ -237,6 +236,15 @@ function main(name, opt)
         end
         if result.links then
             result.links = table.reverse_unique(result.links)
+        end
+
+        -- We should get version from pacman, because if a pacman package contains multiples .pc we may get a wrong version
+        local verstr = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
+        if verstr then
+            local version = semver.match(verstr)
+            if version then
+                result.version = version:rawstr():split('-')[1]
+            end
         end
     else
         -- if there is no .pc, we parse the package content to obtain the data we want
