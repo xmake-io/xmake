@@ -55,7 +55,7 @@ rule("qt.qmltyperegistrar")
         end
 
         -- add qmltypes
-        target:add("installfiles", path.join(target:get("targetdir"), "plugin.qmltypes"), { prefixdir = path.join("bin", table.unpack(importname:split(".", { plain = true }))) })
+        target:add("installfiles", path.join(targetdir, "plugin.qmltypes"), { prefixdir = path.join("bin", table.unpack(importname:split(".", { plain = true }))) })
 
         local genbasename = path.join(target:autogendir(), "rules", "qt", "qmltyperegistrar", target:name())
         local metatypesfile = genbasename .. "_metatypes.json"
@@ -107,8 +107,9 @@ rule("qt.qmltyperegistrar")
         batchcmds:vrunv(moc, table.join(moc_args, metatype_files))
 
         -- gen sourcefile
+        local targetdir = target:targetdir()
         local args = {
-            "--generate-qmltypes=" .. target:get("targetdir") .. "/plugin.qmltypes",
+            "--generate-qmltypes=" .. path(path.join(targetdir, "plugin.qmltypes")),
             "--import-name=" .. importname,
             "--major-version=" .. majorversion,
             "--minor-version=" .. minorversion,
