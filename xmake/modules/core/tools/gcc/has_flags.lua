@@ -22,6 +22,8 @@
 import("core.cache.detectcache")
 import("core.language.language")
 import("core.base.hashset")
+import("core.base.semver")
+import("detect.sdks.find_cuda")
 
 -- is linker?
 function _islinker(flags, opt)
@@ -107,6 +109,29 @@ function _check_try_running(flags, opt, islinker)
     local tmpfile = os.tmpfile()
     if islinker then
         return _try_running(opt.program, table.join(flags, "-o", tmpfile, sourcefile), opt)
+    end
+
+    -- check flags for clang cuda compiler
+    if opt.toolkind == "cu" then
+        local cuda_gpu_flags = false
+        for _, flag in ipairs(flags) do
+            if flag:startswith("--cuda-gpu-arch=") then
+                cuda_gpu_flags = true
+                break
+            end
+        end
+
+        local args = table.join(flags, "-c", "-o", tmpfile, sourcefile)
+        if not cuda_gpu_flags then
+            local cuda = get_config("cuda")
+            local cuda_sdk = find_cuda(cuda)
+            local cuda_sdkver = cuda_sdk and cuda_sdk.sdkver or "7.0"
+            if cuda_sdkver and semver.compare(cuda_sdkver, "12.0") >= 0 then
+                table.insert(args, 1, "--cuda-gpu-arch=sm_80")
+            end
+        end
+
+        return _try_running(opt.program, args, opt)
     end
 
     -- check flags for compiler
