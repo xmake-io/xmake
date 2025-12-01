@@ -457,7 +457,7 @@ target("test")
     set_kind("binary")
     add_files("src/*.cu")
     add_cugencodes("native")
-    add_cugencodes("compute_35")
+    add_cugencodes("compute_75")
 ```
 
 #### WDK/UMDF 驱动程序

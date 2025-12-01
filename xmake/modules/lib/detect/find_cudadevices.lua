@@ -228,6 +228,7 @@ end
 
 function _order_by_flops(devices)
 
+    -- See https://github.com/NVIDIA/cuda-samples/blob/master/Common/helper_cuda_drvapi.h#L100
     local ngpu_arch_cores_per_sm =
     {
         [30] =    192
@@ -248,6 +249,11 @@ function _order_by_flops(devices)
     ,   [87] =    128
     ,   [89] =    128
     ,   [90] =    128
+    ,   [100] =   128
+    ,   [103] =   128
+    ,   [110] =   128
+    ,   [120] =   128
+    ,   [121] =   128
     }
 
     for _, dev in ipairs(devices) do
