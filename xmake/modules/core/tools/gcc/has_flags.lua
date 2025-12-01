@@ -124,7 +124,7 @@ function _check_try_running(flags, opt, islinker)
         local args = table.join(flags, "-c", "-o", tmpfile, sourcefile)
         if not cuda_gpu_flags then
             local cuda = get_config("cuda")
-            local cuda_sdk = find_cuda(cuda and cuda or nil)
+            local cuda_sdk = find_cuda(cuda)
             local cuda_sdkver = cuda_sdk and cuda_sdk.sdkver or "7.0"
             if cuda_sdkver and semver.compare(cuda_sdkver, "12.0") >= 0 then
                 table.insert(args, 1, "--cuda-gpu-arch=sm_80")
