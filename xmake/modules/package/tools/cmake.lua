@@ -882,10 +882,10 @@ function _get_envs_for_flags(package, configs, opt)
         -- use clang-cl or clang, and we need pass --target=xxx flags
         if package:has_tool("cc", "clang", "clang_cl") then
             -- @see https://github.com/xmake-io/xmake-repo/issues/7662
-            platform_envs.CMAKE_C_FLAGS = _get_cflags(package, {cross = true, packagedeps = opt.packagedeps})
+            platform_envs.CMAKE_C_FLAGS = _get_cflags(package, table.join({cross = true}, opt))
         end
         if package:has_tool("cxx", "clang", "clang_cl") then
-            platform_envs.CMAKE_CXX_FLAGS = _get_cxxflags(package, {cross = true, packagedeps = opt.packagedeps})
+            platform_envs.CMAKE_CXX_FLAGS = _get_cxxflags(package, table.join({cross = true}, opt))
         end
     elseif package:is_plat("wasm") then
         -- pass toolchain flags cross-compilation
