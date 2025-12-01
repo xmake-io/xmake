@@ -148,7 +148,7 @@ function policy.policies()
             -- Install packages in the local project folder
             ["package.install_locally"]           = {description = "Install packages in the local project folder.", default = false, type = "boolean"},
             -- Set custom headers when downloading package
-            ["package.download.http_headers"]     = {description = "Set the custom http headers when downloading package."},
+            ["package.download.http_headers"]     = {description = "Set the custom http headers when downloading package.", type = "table"},
             -- Use includes as external header files? e.g. -isystem ..
             ["package.include_external_headers"]  = {description = "Use includes as external headers.", type = "boolean"},
             -- Inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`
