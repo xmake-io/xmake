@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.project.target")
 import("lib.detect.find_tool")
 import("private.core.base.is_cross")
@@ -238,9 +239,13 @@ function main(name, opt)
         end
 
         -- We should get version from pacman, because if a pacman package contains multiples .pc we may get a wrong version
-        local version = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
-        version = version:trim():split('%s+')[2]
-        result.version = version:split('-')[1]
+        local verstr = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
+        if verstr then
+            local version = semver.match(verstr)
+            if version then
+                result.version = version:rawstr():split('-')[1]
+            end
+        end
     else
         -- if there is no .pc, we parse the package content to obtain the data we want
         result = _find_package_from_list(list, name, pacman, opt)
