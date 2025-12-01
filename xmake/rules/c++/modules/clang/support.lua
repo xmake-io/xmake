@@ -243,24 +243,60 @@ function get_clang_scan_deps(target)
     return clang_scan_deps or nil
 end
 
-function get_stdmodules(target)
+function parse_link_files(filepath)
+    if not os.islink(filepath) then
+        return filepath
+    end
+    local target = os.readlink(filepath)
+    if path.is_absolute(target) then
+        return target
+    end
+    return path.join(path.directory(filepath), target)
+end
 
+function get_original_file(filepath)
+    while os.islink(filepath) do
+        filepath = parse_link_files(filepath)
+    end
+    return filepath
+end
+
+function get_stdmodules(target)
     local cpplib = get_cpplibrary_name(target)
     if cpplib then
         if cpplib == "c++" then
             -- libc++ module is found by parsing libc++.modules.json
             local modules_json_path = _get_std_module_manifest_path(target)
-            if modules_json_path then
-                local modules_json = json.decode(io.readfile(modules_json_path))
-                if modules_json and modules_json.modules and #modules_json.modules > 0 then
-                    local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
-                    if not path.is_absolute(std_module_directory) then
-                        std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
-                    end
-                    if os.isdir(std_module_directory) then
-                        return {path.normalize(path.join(std_module_directory, "std.cppm")), path.normalize(path.join(std_module_directory, "std.compat.cppm"))}
-                    end
+            if not modules_json_path then
+                wprint("libc++.modules.json not found! maybe try to add --sdk=<PATH/TO/LLVM> or install libc++")
+                return
+            end
+            local modules_json = json.decode(io.readfile(modules_json_path))
+            if not (modules_json and modules_json.modules and #modules_json.modules > 0) then
+                wprint("libc++.modules.json is invalid! path: %s", path.normalize(modules_json_path))
+                return
+            end
+            local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
+            -- check absolute path first
+            if path.is_absolute(std_module_directory) then
+                if os.isdir(std_module_directory) then
+                    return {path.normalize(path.join(std_module_directory, "std.cppm")), path.normalize(path.join(std_module_directory, "std.compat.cppm"))}
+                else
+                    wprint("std module directory not found: %s which defined in %s", path.normalize(std_module_directory), path.normalize(modules_json_path))
+                    return
                 end
+            end
+            -- otherwise try to resolve relative path
+            local try_std_module_directory
+            -- first try the directory relative to libc++.modules.json
+            try_std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
+            if os.isdir(try_std_module_directory) then
+                return {path.normalize(path.join(try_std_module_directory, "std.cppm")), path.normalize(path.join(try_std_module_directory, "std.compat.cppm"))}
+            end
+            -- then try the directory relative to clang bin directory
+            try_std_module_directory = path.join(path.directory(get_original_file(get_clang_path(target))), std_module_directory)
+            if os.isdir(try_std_module_directory) then
+                return {path.normalize(path.join(try_std_module_directory, "std.cppm")), path.normalize(path.join(try_std_module_directory, "std.compat.cppm"))}
             end
         elseif cpplib == "stdc++" then
             -- dont be greedy and don't enable stdc++ std module support for llvm < 19
