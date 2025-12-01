@@ -153,12 +153,12 @@ end
 
 -- extract defines from flags
 function get_headerunit_key(target, sourcefile)
-    local defines = target:get("defines") or {}
-    local undefines = target:get("undefines") or {}
+    local defines = table.wrap(target:get("defines"))
+    local undefines = table.wrap(target:get("undefines"))
     local fileconfig = target:fileconfig(sourcefile)
     if fileconfig then
-        table.join(defines, fileconfig.defines or {})
-        table.join(undefines, fileconfig.undefines or {})
+        table.join2(defines, fileconfig.defines or {})
+        table.join2(undefines, fileconfig.undefines or {})
     end
 
     if #defines > 0 then
