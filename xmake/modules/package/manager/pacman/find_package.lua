@@ -218,8 +218,6 @@ function main(name, opt)
                 result.libfiles = result.libfiles or {}
                 table.insert(result.libfiles, libfile)
             end
-            -- version should be the same if a pacman package contains multiples .pc
-            result.version = pcresult.version
             result.shared = pcresult.shared
             result.static = pcresult.static
         end
@@ -238,6 +236,11 @@ function main(name, opt)
         if result.links then
             result.links = table.reverse_unique(result.links)
         end
+
+        -- We should get version from pacman, because if a pacman package contains multiples .pc we may get a wrong version
+        local version = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
+        version = version:trim():split('%s+')[2]
+        result.version = version:split('-')[1]
     else
         -- if there is no .pc, we parse the package content to obtain the data we want
         result = _find_package_from_list(list, name, pacman, opt)
