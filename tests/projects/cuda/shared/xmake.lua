@@ -1,7 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
 -- generate PTX code for the virtual architecture to guarantee compatibility
-add_cugencodes("compute_30")
+add_cugencodes("compute_75")
 
 target("lib")
     set_kind("shared")
