@@ -15,18 +15,23 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        main.lua
 --
 
--- define rule: c.build.optimization
-rule("c.build.optimization")
-    on_config(function (target)
-        import("config")(target, "cc")
-    end)
+-- imports
+import("rules.objc++.config.basic", {rootdir = os.programdir(), alias = "config_basic"})
+import("rules.c++.config.optimization", {rootdir = os.programdir(), alias = "config_optimization"})
+import("rules.c++.config.sanitizer", {rootdir = os.programdir(), alias = "config_sanitizer"})
 
--- define rule: c++.build.optimization
-rule("c++.build.optimization")
-    on_config(function (target)
-        import("config")(target, "cxx")
-    end)
+-- main entry
+function main(target, sourcekind)
+    -- handle objc++ basic configs
+    config_basic(target, sourcekind)
+
+    -- handle optimization.lto
+    config_optimization(target, sourcekind)
+
+    -- handle sanitizer
+    config_sanitizer(target, sourcekind)
+end
 

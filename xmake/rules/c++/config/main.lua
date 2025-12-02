@@ -15,30 +15,24 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        main.lua
 --
 
--- define rule: c.build.sanitizer
-rule("c.build.sanitizer")
-    on_config(function (target)
-        import("config")(target, "cc")
-    end)
+-- imports
+import("basic", {alias = "config_basic"})
+import("optimization", {alias = "config_optimization"})
+import("sanitizer", {alias = "config_sanitizer"})
 
--- define rule: c++.build.sanitizer
-rule("c++.build.sanitizer")
-    on_config(function (target)
-        import("config")(target, "cxx")
-    end)
+-- main entry
+function main(target, sourcekind)
 
--- define rule: objc.build.sanitizer
-rule("objc.build.sanitizer")
-    on_config(function (target)
-        import("config")(target, "mm")
-    end)
+    -- config basic configs
+    config_basic(target, sourcekind)
 
--- define rule: objc++.build.sanitizer
-rule("objc++.build.sanitizer")
-    on_config(function (target)
-        import("config")(target, "mxx")
-    end)
+    -- config optimization configs
+    config_optimization(target, sourcekind)
+
+    -- config sanitizer configs
+    config_sanitizer(target, sourcekind)
+end
 
