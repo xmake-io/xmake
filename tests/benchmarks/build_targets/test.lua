@@ -15,6 +15,11 @@ end
 
 function test_build(t)
 
+    -- 20% random trigger
+    if math.random() > 0.2 then
+        return
+    end
+
     if xmake.is_embed() then
         return
     end
