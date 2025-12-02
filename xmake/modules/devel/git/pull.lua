@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("devel.git.remote")
 import("lib.detect.find_tool")
 import("net.proxy")
 
@@ -77,18 +78,9 @@ function main(opt)
     local proxy_conf = proxy.config()
     if proxy_conf then
         -- get proxy configuration from the current remote url
-        local remoteinfo = try { function() return os.iorunv(git.program, {"remote", "-v"}, {curdir = opt.repodir}) end }
-        if remoteinfo then
-            for _, line in ipairs(remoteinfo:split('\n', {plain = true})) do
-                local splitinfo = line:split("%s+")
-                if #splitinfo > 1 and splitinfo[1] == (opt.remote or "origin") then
-                    local url = splitinfo[2]
-                    if url then
-                        proxy_conf = proxy.config(url)
-                    end
-                    break
-                end
-            end
+        local url = remote.get_url({remote = opt.remote or "origin", repodir = opt.repodir})
+        if url then
+            proxy_conf = proxy.config(url)
         end
         envs = {ALL_PROXY = proxy_conf}
     end
