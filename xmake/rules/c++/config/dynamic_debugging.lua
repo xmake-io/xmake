@@ -83,6 +83,11 @@ function main(target, sourcekind)
         wprint("C++ Dynamic Debugging is incompatible with optimize=\"smallest\" (which adds /GL flag), consider using optimize=\"fastest\" or optimize=\"faster\" instead")
     end
 
+    -- /dynamicdeopt requires debug symbols (/Zi or /Z7)
+    if not target:get("symbols") then
+        target:set("symbols", "debug")
+    end
+
     -- get flag name for sourcekind (only support cc and cxx)
     local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
 
