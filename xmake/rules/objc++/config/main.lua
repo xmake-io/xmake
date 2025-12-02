@@ -20,14 +20,18 @@
 
 -- imports
 import("rules.objc++.config.basic", {rootdir = os.programdir(), alias = "config_basic"})
-import("rules.c++.config", {rootdir = os.programdir(), alias = "config_cxx"})
+import("rules.c++.config.optimization", {rootdir = os.programdir(), alias = "config_optimization"})
+import("rules.c++.config.sanitizer", {rootdir = os.programdir(), alias = "config_sanitizer"})
 
 -- main entry
 function main(target, sourcekind)
     -- handle objc++ basic configs
     config_basic(target, sourcekind)
 
-    -- handle c++ configs (optimization, sanitizer, etc.)
-    config_cxx(target, sourcekind)
+    -- handle optimization.lto
+    config_optimization(target, sourcekind)
+
+    -- handle sanitizer
+    config_sanitizer(target, sourcekind)
 end
 

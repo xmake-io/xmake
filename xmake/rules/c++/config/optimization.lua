@@ -23,14 +23,16 @@ import("core.tool.compiler")
 import("core.project.project")
 
 -- add lto optimization
-function main(target, sourcekind)
-    if not (target:policy("build.optimization.lto") or project.policy("build.optimization.lto")) then
-        return
-    end
-
+function _add_lto_optimization(target, sourcekind)
     -- add cflags
     local _, cc = target:tool(sourcekind)
-    local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
+    local flagnames = {
+        cc = "cflags",
+        cxx = "cxxflags",
+        mm = "mflags",
+        mxx = "mxxflags"
+    }
+    local cflag = flagnames[sourcekind] or (sourcekind == "cxx" and "cxxflags" or "cflags")
     if cc == "cl" then
         target:add(cflag, "-GL")
     elseif cc == "clang" or cc == "clangxx" or cc == "clang_cl" then
@@ -70,7 +72,14 @@ function main(target, sourcekind)
         -- @see https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
         local optimize = target:get("optimize")
         if optimize then
-            local optimize_flags = compiler.map_flags(sourcekind == "cc" and "c" or "cxx", "optimize", optimize)
+            local lang_map = {
+                cc = "c",
+                cxx = "cxx",
+                mm = "c",
+                mxx = "cxx"
+            }
+            local lang = lang_map[sourcekind] or "cxx"
+            local optimize_flags = compiler.map_flags(lang, "optimize", optimize)
             target:add("ldflags", optimize_flags)
             target:add("shflags", optimize_flags)
         end
@@ -87,6 +96,14 @@ function main(target, sourcekind)
             wprint([[Unsupported toolset(%s) for lto, please use `set_toolset("ar", "llvm-ar")`]], ar)
             target:set("toolset", "ar", "llvm-ar")
         end
+    end
+end
+
+-- main entry
+function main(target, sourcekind)
+    -- handle lto optimization
+    if target:policy("build.optimization.lto") or project.policy("build.optimization.lto") then
+        _add_lto_optimization(target, sourcekind)
     end
 end
 

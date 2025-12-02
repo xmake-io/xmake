@@ -20,13 +20,12 @@
 
 -- define rule: c.openmp
 rule("c.openmp")
-    on_load(function (target)
+    on_config(function (target)
         import("load")(target, "cc")
     end)
 
 -- define rule: c++.openmp
 rule("c++.openmp")
-    on_load(function (target)
+    on_config(function (target)
         import("load")(target, "cxx")
     end)
-

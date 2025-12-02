@@ -39,4 +39,3 @@ function main(target, sourcekind)
         target:add(flag_name, "-Qopenmp")
     end
 end
-

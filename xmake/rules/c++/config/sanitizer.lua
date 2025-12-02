@@ -22,7 +22,6 @@
 import("core.project.project")
 import("lib.detect.find_tool")
 import("core.base.semver")
-import("core.base.path")
 
 -- add build sanitizer
 function _add_build_sanitizer(target, sourcekind, checkmode)
@@ -47,7 +46,6 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
     end
 end
 
--- main entry
 function main(target, sourcekind)
     local sanitizer = false
     for _, checkmode in ipairs({"address", "thread", "memory", "leak", "undefined"}) do
