@@ -21,7 +21,6 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
-import("core.project.config")
 import("core.project.project")
 import("actions.build.build_files", {rootdir = os.programdir(), alias = "build_files"})
 import("actions.build.build", {rootdir = os.programdir(), alias = "build"})
@@ -129,18 +128,18 @@ function main(argv)
     -- lock the whole project
     project.lock()
 
-    -- enable syntax-only policy and disable ccache via config
-    config.set("policies", "build.c++.syntax_only,build.ccache:n")
-    
     -- config it first
     task.run("config", {}, {disable_dump = true})
+
+    -- enable syntax-only policy and disable ccache
+    project.policy_set("build.c++.syntax_only", true)
+    project.policy_set("build.ccache", false)
 
     -- enter project directory
     local oldir = os.cd(project.directory())
 
     -- validate targets before checking
     if _validate_targets(args) then
-        -- do check
         _check(args)
     end
 

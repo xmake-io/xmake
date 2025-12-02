@@ -67,6 +67,7 @@ sandbox_core_project.requireconfs_str     = project.requireconfs_str
 sandbox_core_project.requireslock         = project.requireslock
 sandbox_core_project.requireslock_version = project.requireslock_version
 sandbox_core_project.policy               = project.policy
+sandbox_core_project.policy_set           = project.policy_set
 sandbox_core_project.tmpdir               = project.tmpdir
 sandbox_core_project.tmpfile              = project.tmpfile
 sandbox_core_project.is_loaded            = project.is_loaded
