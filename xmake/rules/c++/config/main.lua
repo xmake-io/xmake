@@ -20,9 +20,10 @@
 
 -- imports
 import("rules.c++.config.basic", {rootdir = os.programdir(), alias = "config_basic"})
+import("rules.c++.config.dynamic_debugging", {rootdir = os.programdir(), alias = "config_dynamic_debugging"})
+import("rules.c++.config.syntax_only", {rootdir = os.programdir(), alias = "config_syntax_only"})
 import("rules.c++.config.optimization", {rootdir = os.programdir(), alias = "config_optimization"})
 import("rules.c++.config.sanitizer", {rootdir = os.programdir(), alias = "config_sanitizer"})
-import("rules.c++.config.dynamic_debugging", {rootdir = os.programdir(), alias = "config_dynamic_debugging"})
 
 -- main entry
 function main(target, sourcekind)
@@ -32,6 +33,9 @@ function main(target, sourcekind)
 
     -- config dynamic debugging configs (must be before optimization to disable incompatible flags)
     config_dynamic_debugging(target, sourcekind)
+
+    -- config syntax only configs (must be before optimization to disable incompatible flags)
+    config_syntax_only(target, sourcekind)
 
     -- config optimization configs
     config_optimization(target, sourcekind)

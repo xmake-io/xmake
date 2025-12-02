@@ -110,6 +110,8 @@ function policy.policies()
             ["build.c++.msvc.runtime"]            = {description = "Set the default vs runtime.", type = "string", values = {"MT", "MD"}},
             -- Enable C++ Dynamic Debugging for MSVC (requires MSVC toolset 14.44+, x64 only, incompatible with LTCG/PGO/OPT-ICF).
             ["build.c++.dynamic_debugging"]       = {description = "Enable C++ Dynamic Debugging for MSVC (requires MSVC toolset 14.44+, x64 only, incompatible with LTCG/PGO/OPT-ICF).", type = "boolean"},
+            -- Enable syntax-only check for C/C++ building.
+            ["build.c++.syntax_only"]             = {description = "Enable syntax-only check for C/C++ building.", type = "boolean"},
             -- Enable cuda device link
             ["build.cuda.devlink"]                = {description = "Enable Cuda devlink.", type = "boolean"},
             -- Enable linker output, e.g. show -Wl,--print-memory-usage output for gcc/g++

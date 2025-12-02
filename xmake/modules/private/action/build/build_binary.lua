@@ -23,6 +23,7 @@ import("build_object")
 import("private.action.build.target", {alias = "target_buildutils"})
 
 function main(jobgraph, target, opt)
+    opt = opt or {}
     local objects_group = target:fullname() .. "/objects"
     local jobsize = jobgraph:size()
     jobgraph:group(objects_group, function ()
@@ -30,13 +31,16 @@ function main(jobgraph, target, opt)
     end)
     local has_object_jobs = jobgraph:size() > jobsize
 
-    -- @note We always need the link task, even if the current target does not have any object files
-    -- https://github.com/xmake-io/xmake-repo/pull/7479#issuecomment-3007049158
-    local link_group = target:fullname() .. "/link"
-    jobgraph:group(link_group, function ()
-        target_buildutils.add_linkjobs(jobgraph, target, opt)
-    end)
-    if has_object_jobs then
-        jobgraph:add_orders(objects_group, link_group)
+    -- skip link jobs if linkjobs is disabled
+    if opt.linkjobs ~= false then
+        -- @note We always need the link task, even if the current target does not have any object files
+        -- https://github.com/xmake-io/xmake-repo/pull/7479#issuecomment-3007049158
+        local link_group = target:fullname() .. "/link"
+        jobgraph:group(link_group, function ()
+            target_buildutils.add_linkjobs(jobgraph, target, opt)
+        end)
+        if has_object_jobs then
+            jobgraph:add_orders(objects_group, link_group)
+        end
     end
 end
