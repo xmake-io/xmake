@@ -84,11 +84,6 @@ function set_url(url, opt)
     -- init arguments
     local argv = {"remote", "set-url", opt.remote or "origin", url}
 
-    -- trace
-    if option.get("verbose") then
-        print("%s %s", git.program, os.args(argv))
-    end
-
     -- set remote url
     os.vrunv(git.program, argv, {curdir = opt.repodir})
 end
