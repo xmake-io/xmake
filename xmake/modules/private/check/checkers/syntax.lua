@@ -39,6 +39,71 @@ local options = {
                                     "    - xmake check syntax [targets]"}
 }
 
+-- check if target has C++ rules
+function _has_cpp_rules(target)
+    for _, ruleinst in ipairs(target:orderules()) do
+        local rulename = ruleinst:name()
+        if rulename == "c++.build" or rulename == "c.build" or
+           rulename == "objc++.build" or rulename == "objc.build" then
+            return true
+        end
+    end
+    return false
+end
+
+-- check if compiler supports syntax-only check
+function _check_compiler_support(target)
+    local has_support = false
+    if target:has_tool("cc", "gcc", "clang") or target:has_tool("cxx", "gxx", "clangxx") then
+        -- gcc/clang: -fsyntax-only
+        has_support = true
+    elseif target:has_tool("cc", "cl") or target:has_tool("cxx", "cl") then
+        -- MSVC: /Zs
+        has_support = true
+    end
+    return has_support
+end
+
+-- validate targets before checking
+function _validate_targets(opt)
+    opt = opt or {}
+    local targets = {}
+    if opt.targets then
+        for _, targetname in ipairs(opt.targets) do
+            local target = project.target(targetname)
+            if target then
+                table.insert(targets, target)
+            end
+        end
+    else
+        for _, target in pairs(project.targets()) do
+            if target:is_enabled() and (target:is_default() or option.get("all")) then
+                table.insert(targets, target)
+            end
+        end
+    end
+
+    -- check if any target has C++ rules
+    local has_cpp_target = false
+    for _, target in ipairs(targets) do
+        if _has_cpp_rules(target) then
+            has_cpp_target = true
+            -- check if compiler supports syntax-only check
+            if not _check_compiler_support(target) then
+                wprint("target(%s): current compiler does not support syntax-only check", target:name())
+            end
+        else
+            wprint("target(%s): syntax check currently only supports C/C++ targets", target:name())
+        end
+    end
+
+    -- if no C++ target found, return false to skip checking
+    if not has_cpp_target then
+        return false
+    end
+    return true
+end
+
 -- do check
 function _check(opt)
     opt = opt or {}
@@ -73,8 +138,11 @@ function main(argv)
     -- enter project directory
     local oldir = os.cd(project.directory())
 
-    -- do check
-    _check(args)
+    -- validate targets before checking
+    if _validate_targets(args) then
+        -- do check
+        _check(args)
+    end
 
     -- leave project directory
     os.cd(oldir)
