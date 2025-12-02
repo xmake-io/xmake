@@ -25,8 +25,9 @@ add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", "-Wno-
 add_defines("_GNU_SOURCE=1", "_FILE_OFFSET_BITS=64", "_LARGEFILE_SOURCE")
 
 -- ensure POSIX/XOPEN features are available on Solaris (for setenv, unsetenv, clock_gettime, etc.)
+-- _XOPEN_SOURCE=600 implicitly sets _POSIX_C_SOURCE=200112L
 if is_plat("solaris") then
-    add_defines("_POSIX_C_SOURCE=200112L", "_XOPEN_SOURCE=600")
+    add_defines("_XOPEN_SOURCE=600")
 end
 
 -- add vectorexts
