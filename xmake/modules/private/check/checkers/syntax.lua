@@ -32,6 +32,8 @@ local options = {
                                     "e.g.",
                                     "    - xmake check syntax -f src/foo.cpp",
                                     "    - xmake check syntax -f 'src/*.cpp'"},
+    {"j", "jobs",       "kv", tostring(os.default_njob()),
+                                    "Set the number of parallel check jobs."},
     {nil, "targets",    "vs", nil,   "Check the sourcefiles of the given target.",
                                     "e.g.",
                                     "    - xmake check syntax",
@@ -109,11 +111,18 @@ function _check(opt)
 
     local sourcefiles = opt.files
     local targetnames = opt.targets
+    local jobs = opt.jobs and tonumber(opt.jobs) or nil
+    
     local check_time = os.mclock()
+    local build_opt = {linkjobs = false}
+    if jobs then
+        build_opt.jobs = jobs
+    end
     if sourcefiles then
-        build_files(targetnames, {sourcefiles = sourcefiles, linkjobs = false})
+        build_opt.sourcefiles = sourcefiles
+        build_files(targetnames, build_opt)
     else
-        build(targetnames, {linkjobs = false})
+        build(targetnames, build_opt)
     end
     check_time = os.mclock() - check_time
     progress.show(100, "${color.success}syntax check ok, spent %.3fs", check_time / 1000)
