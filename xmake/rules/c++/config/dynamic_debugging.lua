@@ -17,7 +17,6 @@
 -- @author      ruki
 -- @file        dynamic_debugging.lua
 --
--- @see https://devblogs.microsoft.com/cppblog/cpp-dynamic-debugging-full-debuggability-for-optimized-builds/
 
 -- imports
 import("core.project.project")
@@ -25,6 +24,8 @@ import("core.tool.toolchain")
 import("core.base.semver")
 
 -- add dynamic debugging support
+-- @see https://devblogs.microsoft.com/cppblog/cpp-dynamic-debugging-full-debuggability-for-optimized-builds/
+-- https://github.com/xmake-io/xmake/issues/6258
 function main(target, sourcekind)
     -- check if dynamic debugging is enabled
     local enabled = target:policy("build.c++.dynamic_debugging")
@@ -51,7 +52,7 @@ function main(target, sourcekind)
         return
     end
 
-    -- check MSVC version (requires 19.44+)
+    -- check MSVC version (requires Visual Studio 2022 Version 17.14 Preview 2+, toolset 14.44+)
     local msvc = target:toolchain("msvc")
     if not msvc or not msvc:check() then
         wprint("MSVC toolchain not found for C++ Dynamic Debugging")
@@ -65,8 +66,8 @@ function main(target, sourcekind)
     end
 
     local version = vcvars.VCToolsVersion
-    if not version or semver.compare(version, "19.44") < 0 then
-        wprint("C++ Dynamic Debugging requires MSVC 19.44+, found: %s", version or "unknown")
+    if not version or semver.compare(version, "14.44") < 0 then
+        wprint("C++ Dynamic Debugging requires Visual Studio 2022 Version 17.14 Preview 2+ (MSVC toolset 14.44+), found: %s", version or "unknown")
         return
     end
 

@@ -108,8 +108,8 @@ function policy.policies()
             ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc. (deprecated)", type = "boolean"},
             -- Set the default vs runtime, e.g. MT, MD
             ["build.c++.msvc.runtime"]            = {description = "Set the default vs runtime.", type = "string", values = {"MT", "MD"}},
-            -- Enable C++ Dynamic Debugging for MSVC (requires MSVC 19.44+, x64 only, incompatible with LTCG/PGO/OPT-ICF).
-            ["build.c++.dynamic_debugging"]       = {description = "Enable C++ Dynamic Debugging for MSVC (requires MSVC 19.44+, x64 only, incompatible with LTCG/PGO/OPT-ICF).", type = "boolean"},
+            -- Enable C++ Dynamic Debugging for MSVC (requires MSVC toolset 14.44+, x64 only, incompatible with LTCG/PGO/OPT-ICF).
+            ["build.c++.dynamic_debugging"]       = {description = "Enable C++ Dynamic Debugging for MSVC (requires MSVC toolset 14.44+, x64 only, incompatible with LTCG/PGO/OPT-ICF).", type = "boolean"},
             -- Enable cuda device link
             ["build.cuda.devlink"]                = {description = "Enable Cuda devlink.", type = "boolean"},
             -- Enable linker output, e.g. show -Wl,--print-memory-usage output for gcc/g++
