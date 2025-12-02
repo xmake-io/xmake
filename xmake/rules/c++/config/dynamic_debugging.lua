@@ -65,7 +65,7 @@ function main(target, sourcekind)
     end
 
     local version = vcvars.VCToolsVersion
-    if not version or not semver.compare(version, "19.44") >= 0 then
+    if not version or semver.compare(version, "19.44") < 0 then
         wprint("C++ Dynamic Debugging requires MSVC 19.44+, found: %s", version or "unknown")
         return
     end
