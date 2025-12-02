@@ -15,18 +15,24 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        basic.lua
 --
 
--- define rule: c.openmp
-rule("c.openmp")
-    on_load(function (target)
-        import("load")(target, "cc")
-    end)
+-- main entry
+function main(target, sourcekind)
+    -- enable c++ exceptions by default on Windows
+    if sourcekind == "cxx" and target:is_plat("windows") and not target:get("exceptions") then
+        target:set("exceptions", "cxx")
+    end
 
--- define rule: c++.openmp
-rule("c++.openmp")
-    on_load(function (target)
-        import("load")(target, "cxx")
-    end)
+    -- https://github.com/xmake-io/xmake/issues/4621
+    -- tcc on Windows static library needs special handling
+    if target:is_plat("windows") and target:is_static() then
+        local toolname = sourcekind == "cxx" and "cxx" or "cc"
+        if target:has_tool(toolname, "tcc") then
+            target:set("extension", ".a")
+            target:set("prefixname", "lib")
+        end
+    end
+end
 

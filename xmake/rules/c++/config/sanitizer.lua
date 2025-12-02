@@ -15,18 +15,17 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
--- @file        config.lua
+-- @file        sanitizer.lua
 --
 
 -- imports
-import("core.tool.compiler")
 import("core.project.project")
 import("lib.detect.find_tool")
 import("core.base.semver")
+import("core.base.path")
 
 -- add build sanitizer
 function _add_build_sanitizer(target, sourcekind, checkmode)
-
     -- add cflags
     local _, cc = target:tool(sourcekind)
     local flagnames = {
@@ -48,6 +47,7 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
     end
 end
 
+-- main entry
 function main(target, sourcekind)
     local sanitizer = false
     for _, checkmode in ipairs({"address", "thread", "memory", "leak", "undefined"}) do
@@ -62,7 +62,6 @@ function main(target, sourcekind)
     end
 
     if sanitizer then
-
         -- enable the debug symbols for sanitizer
         if not target:get("symbols") then
             target:set("symbols", "debug")
