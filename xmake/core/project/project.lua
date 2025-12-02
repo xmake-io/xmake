@@ -964,6 +964,24 @@ function project.policy(name)
     return policy.check(name, policies and policies[name])
 end
 
+-- set the project policy in memory
+function project.policy_set(name, value)
+    -- get current policies from cache or initialize
+    local policies = project._memcache():get("policies")
+    if not policies then
+        -- force initialization by calling policy() once
+        project.policy(name)
+        policies = project._memcache():get("policies")
+    end
+    policies = policies or {}
+    
+    -- set the policy value
+    policies[name] = value
+    
+    -- update cache
+    project._memcache():set("policies", policies)
+end
+
 -- project has been loaded?
 function project.is_loaded()
     return project._memcache():get("targets_loaded")

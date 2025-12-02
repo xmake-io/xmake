@@ -59,7 +59,9 @@ function checkers()
             -- cuda checkers
             ["cuda.devlink"]             = {description = "Check devlink for targets.", build_failure = true},
             -- clang tidy checker
-            ["clang.tidy"]               = {description = "Check project code using clang-tidy.", showstats = false}
+            ["clang.tidy"]               = {description = "Check project code using clang-tidy.", showstats = false},
+            -- syntax checker
+            ["syntax"]                   = {description = "Check the project sourcecode syntax without linking.", showstats = false}
         }
         _g._CHECKERS = checkers
     end

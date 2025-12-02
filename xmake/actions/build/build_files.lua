@@ -30,6 +30,9 @@ import("deprecated.build_files", {alias = "deprecated_build_files"})
 -- convert all sourcefiles to lua pattern
 function _get_file_patterns(sourcefiles)
     local patterns = {}
+    if not sourcefiles then
+        return patterns
+    end
     for _, sourcefile in ipairs(path.splitenv(sourcefiles)) do
 
         -- get the excludes
@@ -90,7 +93,11 @@ function _build_files(targets_root, opt)
         opt.distcc = distcc_build_client.singleton()
     end
     if not target_buildutils.run_filejobs(targets_root, opt) then
-        wprint("%s not found!", opt.sourcefiles)
+        if opt.sourcefiles then
+            wprint("%s not found!", opt.sourcefiles)
+        else
+            wprint("no files found!")
+        end
     end
 end
 

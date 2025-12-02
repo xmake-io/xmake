@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.global")
 import("core.base.hashset")
+import("core.cache.memcache")
 import("core.project.project")
 import("core.project.policy")
 import("core.language.language")
@@ -91,6 +92,11 @@ function init(self)
         -- others
     ,   ["-ftrapv"]                 = ""
     })
+end
+
+-- is syntax check enabled?
+function _is_syntax_check()
+    return memcache.get("syntax_check", "enabled") or false
 end
 
 -- make the symbol flags
@@ -654,11 +660,19 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags, opt)
+    opt = opt or {}
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
         return _compargv_pch(self, sourcefile, objectfile, flags)
+    end
+
+    -- if syntax-only, add /Zs and skip -c and -Fo
+    if _is_syntax_check() then
+        table.insert(flags, "/Zs")
+        local argv = table.join(flags, sourcefile)
+        return self:program(), (opt and opt.rawargs) and argv or winos.cmdargv(argv)
     end
 
     -- suppress clang-cl warnings
