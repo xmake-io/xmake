@@ -18,22 +18,16 @@
 -- @file        basic.lua
 --
 
--- main entry
 function main(target, sourcekind)
-    -- objc basic configs
-    if sourcekind == "mm" then
-        -- deprecated, we only need to use `add_mflags("-fno-objc-arc")` to override it
-        if target:values("objc.build.arc") == false then
-            target:add("mflags", "-fno-objc-arc")
+    if sourcekind == "mm" or sourcekind == "mxx" then
+        -- deprecated, we only need to use `add_mflags("-fno-objc-arc")` or `add_mxxflags("-fno-objc-arc")` to override it
+        local arc_value = sourcekind == "mm" and target:values("objc.build.arc") or target:values("objc++.build.arc")
+        if arc_value == false then
+            local flag_name = sourcekind == "mm" and "mflags" or "mxxflags"
+            target:add(flag_name, "-fno-objc-arc")
         end
-        if target:is_plat("macosx", "iphoneos", "watchos") then
-            target:add("frameworks", "Foundation", "CoreFoundation")
-        end
-    elseif sourcekind == "mxx" then
-        -- deprecated, we only need to use `add_mxxflags("-fno-objc-arc")` to override it
-        if target:values("objc++.build.arc") == false then
-            target:add("mxxflags", "-fno-objc-arc")
-        end
+
+        -- add frameworks for Apple platforms
         if target:is_plat("macosx", "iphoneos", "watchos") then
             target:add("frameworks", "Foundation", "CoreFoundation")
         end
