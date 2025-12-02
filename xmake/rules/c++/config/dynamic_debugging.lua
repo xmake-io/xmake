@@ -27,9 +27,9 @@ import("core.base.semver")
 -- add dynamic debugging support
 function main(target, sourcekind)
     -- check if dynamic debugging is enabled
-    local enabled = target:policy("build.dynamic_debugging")
+    local enabled = target:policy("build.c++.dynamic_debugging")
     if enabled == nil then
-        enabled = project.policy("build.dynamic_debugging")
+        enabled = project.policy("build.c++.dynamic_debugging")
     end
     if not enabled then
         return
