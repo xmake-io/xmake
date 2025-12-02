@@ -20,7 +20,9 @@
 
 -- imports
 import("core.base.option")
+import("devel.git.remote")
 import("lib.detect.find_tool")
+import("net.proxy")
 import("branch", {alias = "git_branch"})
 
 -- push to given remote url and branch
@@ -58,9 +60,27 @@ function main(url, opt)
         branch = branch .. ":" .. opt.remote_branch
     end
     table.insert(argv, branch)
+
+    -- use proxy?
+    local envs
+    local proxy_conf = proxy.config()
+    if proxy_conf then
+        -- get proxy configuration from the remote url
+        -- if url is a remote name, get its URL; otherwise use url directly
+        local remote_url = url
+        if not url:find("://") and not url:find("@") then
+            -- looks like a remote name, get its URL
+            remote_url = remote.get_url({remote = url, repodir = opt.repodir})
+        end
+        if remote_url then
+            proxy_conf = proxy.config(remote_url)
+        end
+        envs = {ALL_PROXY = proxy_conf}
+    end
+
     if opt.verbose then
-        os.execv(git.program, argv, {curdir = opt.repodir})
+        os.execv(git.program, argv, {envs = envs, curdir = opt.repodir})
     else
-        os.vrunv(git.program, argv, {curdir = opt.repodir})
+        os.vrunv(git.program, argv, {envs = envs, curdir = opt.repodir})
     end
 end

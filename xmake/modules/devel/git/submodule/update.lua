@@ -20,7 +20,9 @@
 
 -- imports
 import("core.base.option")
+import("devel.git.remote")
 import("lib.detect.find_tool")
+import("net.proxy")
 
 -- update submodule
 --
@@ -70,6 +72,18 @@ function main(opt)
         table.join2(argv, opt.paths)
     end
 
+    -- use proxy?
+    local envs
+    local proxy_conf = proxy.config()
+    if proxy_conf then
+        -- get proxy configuration from the current remote url
+        local url = remote.get_url({remote = opt.remote or "origin", repodir = opt.repodir})
+        if url then
+            proxy_conf = proxy.config(url)
+        end
+        envs = {ALL_PROXY = proxy_conf}
+    end
+
     -- update it
-    os.vrunv(git.program, argv, {curdir = opt.repodir})
+    os.vrunv(git.program, argv, {envs = envs, curdir = opt.repodir})
 end

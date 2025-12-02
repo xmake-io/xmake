@@ -127,6 +127,13 @@ function _update()
                 if os.isdir(repodir) then
                     -- only update the local repository with the remote url
                     if not os.isdir(repo:url()) then
+                        -- check and update remote URL if it differs from repo:url()
+                        local current_url = git.remote.get_url({repodir = repodir})
+                        local expected_url = repo:url()
+                        if current_url ~= expected_url then
+                            vprint("updating remote URL for repository(%s): %s -> %s", repo:name(), current_url or "<none>", expected_url)
+                            git.remote.set_url(expected_url, {repodir = repodir})
+                        end
                         vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
                         git.reset({verbose = option.get("verbose"), repodir = repodir, hard = true})
                         git.pull({verbose = option.get("verbose"), branch = repo:branch(), repodir = repodir, force = true})
