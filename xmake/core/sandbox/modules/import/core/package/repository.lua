@@ -26,6 +26,7 @@ local global        = require("base/global")
 local project       = require("project/project")
 local localcache    = require("cache/localcache")
 local repository    = require("package/repository")
+local os            = require("base/os")
 local raise         = require("sandbox/modules/raise")
 local import        = require("sandbox/modules/import")
 
@@ -113,29 +114,31 @@ function sandbox_core_package_repository.repositories(is_global)
             network = global.get("network")
         end
 
-        -- add artifacts urls
-        local artifacts_urls = os.getenv("XMAKE_BINARY_REPO")
-        if artifacts_urls then
-            artifacts_urls = {artifacts_urls}
-        else
-            artifacts_urls = localcache.cache("repository"):get("artifacts_urls")
-            if not artifacts_urls then
-                artifacts_urls = {"https://github.com/xmake-mirror/build-artifacts.git",
-                                  "https://gitlab.com/xmake-mirror/build-artifacts.git",
-                                  "https://gitee.com/xmake-mirror/build-artifacts.git"}
-                if network ~= "private" then
-                    import("net.fasturl")
-                    fasturl.add(artifacts_urls)
-                    artifacts_urls = fasturl.sort(artifacts_urls)
-                    localcache.cache("repository"):set("artifacts_urls", artifacts_urls)
-                    localcache.cache("repository"):save()
+        -- add artifacts urls (only on Windows)
+        if os.is_host("windows") then
+            local artifacts_urls = os.getenv("XMAKE_BINARY_REPO")
+            if artifacts_urls then
+                artifacts_urls = {artifacts_urls}
+            else
+                artifacts_urls = localcache.cache("repository"):get("artifacts_urls")
+                if not artifacts_urls then
+                    artifacts_urls = {"https://github.com/xmake-mirror/build-artifacts.git",
+                                      "https://gitlab.com/xmake-mirror/build-artifacts.git",
+                                      "https://gitee.com/xmake-mirror/build-artifacts.git"}
+                    if network ~= "private" then
+                        import("net.fasturl")
+                        fasturl.add(artifacts_urls)
+                        artifacts_urls = fasturl.sort(artifacts_urls)
+                        localcache.cache("repository"):set("artifacts_urls", artifacts_urls)
+                        localcache.cache("repository"):save()
+                    end
                 end
             end
-        end
-        if #artifacts_urls > 0 then
-            local repo = repository.load("build-artifacts", artifacts_urls[1], "main", true)
-            if repo then
-                table.insert(repositories, repo)
+            if #artifacts_urls > 0 then
+                local repo = repository.load("build-artifacts", artifacts_urls[1], "main", true)
+                if repo then
+                    table.insert(repositories, repo)
+                end
             end
         end
 
