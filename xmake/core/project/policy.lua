@@ -58,6 +58,8 @@ function policy.policies()
             ["build.warning"]                     = {description = "Enable build warning output.", default = true, type = "boolean"},
             -- Enable LTO linker-time optimization for c/c++ building.
             ["build.optimization.lto"]            = {description = "Enable LTO linker-time optimization for c/c++ building.", type = "boolean"},
+            -- Enable C++ Dynamic Debugging for MSVC (requires MSVC 19.44+, x64 only, incompatible with LTCG/PGO/OPT-ICF).
+            ["build.dynamic_debugging"]           = {description = "Enable C++ Dynamic Debugging for MSVC (requires MSVC 19.44+, x64 only, incompatible with LTCG/PGO/OPT-ICF).", type = "boolean"},
             -- Enable address sanitizer for c/c++ building.
             ["build.sanitizer.address"]           = {description = "Enable address sanitizer for c/c++ building.", type = "boolean"},
             -- Enable thread sanitizer for c/c++ building.
