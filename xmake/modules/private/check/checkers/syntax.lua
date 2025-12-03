@@ -157,9 +157,6 @@ function main(argv)
     -- lock the whole project
     project.lock()
 
-    -- config it first
-    task.run("config", {}, {disable_dump = true})
-
     -- disable ccache after config
     project.policy_set("build.ccache", false)
 
