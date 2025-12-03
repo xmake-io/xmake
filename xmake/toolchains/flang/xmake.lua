@@ -65,7 +65,7 @@ toolchain("flang")
             
             -- only add --target on platforms that need it (Linux, Windows)
             -- macOS flang may work without explicit target
-            if target and (toolchain:is_plat("linux") or toolchain:is_plat("windows", "mingw")) then
+            if toolchain:is_plat("linux", "windows", "mingw") then
                 toolchain:add("fcflags",   "--target=" .. target)
                 toolchain:add("fcshflags", "--target=" .. target)
                 toolchain:add("fcldflags", "--target=" .. target)
