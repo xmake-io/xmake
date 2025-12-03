@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
+import("core.cache.memcache")
 import("core.project.project")
 import("actions.build.build_files", {rootdir = os.programdir(), alias = "build_files"})
 import("actions.build.build", {rootdir = os.programdir(), alias = "build"})
@@ -65,8 +66,8 @@ function _check_compiler_support(target)
     return has_support
 end
 
--- validate targets before checking
-function _validate_targets(opt)
+-- validate targets and enable syntax-only
+function _validate_and_enable_targets(opt)
     opt = opt or {}
     local targets = {}
     if opt.targets then
@@ -84,22 +85,28 @@ function _validate_targets(opt)
         end
     end
 
-    -- check if any target has C++ rules
-    local has_cpp_target = false
+    -- check if any target has C++ rules and enable syntax-only
+    local cpp_targets = {}
     for _, target in ipairs(targets) do
         if _has_cpp_rules(target) then
-            has_cpp_target = true
             -- check if compiler supports syntax-only check
             if not _check_compiler_support(target) then
                 wprint("target(%s): current compiler does not support syntax-only check", target:name())
+            else
+                table.insert(cpp_targets, target)
             end
         else
             wprint("target(%s): syntax check currently only supports C/C++ targets", target:name())
         end
     end
 
+    -- enable syntax-only via memcache
+    if #cpp_targets > 0 then
+        memcache.set("syntax_check", "enabled", true)
+    end
+
     -- if no C++ target found, return false to skip checking
-    if not has_cpp_target then
+    if #cpp_targets == 0 then
         return false
     end
     return true
@@ -140,15 +147,14 @@ function main(argv)
     -- config it first
     task.run("config", {}, {disable_dump = true})
 
-    -- enable syntax-only policy and disable ccache
-    project.policy_set("build.c++.syntax_only", true)
+    -- disable ccache after config
     project.policy_set("build.ccache", false)
 
     -- enter project directory
     local oldir = os.cd(project.directory())
 
-    -- validate targets before checking
-    if _validate_targets(args) then
+    -- validate targets and enable syntax-only
+    if _validate_and_enable_targets(args) then
         _check(args)
     end
 
