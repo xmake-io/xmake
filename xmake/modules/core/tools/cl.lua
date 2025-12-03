@@ -671,7 +671,8 @@ function compargv(self, sourcefile, objectfile, flags, opt)
     -- if syntax-only, add /Zs and skip -c and -Fo
     if _is_syntax_check() then
         table.insert(flags, "/Zs")
-        return self:program(), (opt and opt.rawargs) and flags or winos.cmdargv(flags, sourcefile)
+        local argv = table.join(flags, sourcefile)
+        return self:program(), (opt and opt.rawargs) and argv or winos.cmdargv(argv)
     end
 
     -- suppress clang-cl warnings
