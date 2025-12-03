@@ -277,6 +277,7 @@ dmd           D Programming Language Compiler
 ldc           The LLVM-based D Compiler
 gdc           The GNU D Compiler (GDC)
 gfortran      GNU Fortran Programming Language Compiler
+flang         LLVM Fortran Compiler
 zig           Zig Programming Language Compiler
 sdcc          Small Device C Compiler
 cuda          CUDA Toolkit (nvcc, nvc, nvc++, nvfortran)
