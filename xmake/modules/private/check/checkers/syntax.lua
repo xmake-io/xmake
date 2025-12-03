@@ -35,6 +35,8 @@ local options = {
                                     "    - xmake check syntax -f 'src/*.cpp'"},
     {"j", "jobs",       "kv", tostring(os.default_njob()),
                                     "Set the number of parallel check jobs."},
+    {"v", "verbose",    "k",  nil,   "Print lots of verbose information for users."},
+    {"D", "diagnosis",  "k",  nil,   "Print lots of diagnosis information (backtrace, check info ..) only for developers."},
     {nil, "targets",    "vs", nil,   "Check the sourcefiles of the given target.",
                                     "e.g.",
                                     "    - xmake check syntax",
@@ -141,6 +143,17 @@ function main(argv)
                                            , ""
                                            , "Usage: xmake check syntax [options]")
 
+    -- save option context
+    option.save()
+
+    -- set verbose and diagnosis if specified
+    if args.verbose then
+        option.set("verbose", true)
+    end
+    if args.diagnosis then
+        option.set("diagnosis", true)
+    end
+
     -- lock the whole project
     project.lock()
 
@@ -163,5 +176,8 @@ function main(argv)
 
     -- unlock the whole project
     project.unlock()
+
+    -- restore option context
+    option.restore()
 end
 

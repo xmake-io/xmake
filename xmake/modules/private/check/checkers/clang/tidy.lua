@@ -36,6 +36,8 @@ local options = {
     {"j", "jobs",       "kv", tostring(os.default_njob()),
                                     "Set the number of parallel check jobs."},
     {"q", "quiet",      "k",  nil,  "Run clang-tidy in quiet mode."},
+    {"v", "verbose",    "k",  nil,  "Print lots of verbose information for users."},
+    {"D", "diagnosis",  "k",  nil,  "Print lots of diagnosis information (backtrace, check info ..) only for developers."},
     {nil, "fix",        "k",  nil,  "Apply suggested fixes."},
     {nil, "fix_errors", "k",  nil,  "Apply suggested errors fixes."},
     {nil, "fix_notes",  "k",  nil,  "Apply suggested notes fixes."},
@@ -242,6 +244,17 @@ function main(argv)
                                            , ""
                                            , "Usage: xmake check clang.tidy [options]")
 
+    -- save option context
+    option.save()
+
+    -- set verbose and diagnosis if specified
+    if args.verbose then
+        option.set("verbose", true)
+    end
+    if args.diagnosis then
+        option.set("diagnosis", true)
+    end
+
     -- enter the environments of llvm
     local oldenvs = packagenv.enter("llvm")
 
@@ -272,4 +285,7 @@ function main(argv)
         _check(clang_tidy, args)
     end
     os.setenvs(oldenvs)
+
+    -- restore option context
+    option.restore()
 end
