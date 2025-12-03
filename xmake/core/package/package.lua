@@ -83,7 +83,7 @@ function _instance.new(name, info, opt)
 end
 
 -- get memcache
-function _instance:_memcache()
+function _instance:memcache()
     local cache = self._MEMCACHE
     if not cache then
         cache = memcache.cache("core.package.package." .. tostring(self))
@@ -484,13 +484,13 @@ end
 -- get library dep
 function _instance:librarydep(name, opt)
     local key = "librarydeps_map_" .. ((opt and opt.private) and "private" or "")
-    local librarydeps_map = self:_memcache():get(key)
+    local librarydeps_map = self:memcache():get(key)
     if not librarydeps_map then
         librarydeps_map = {}
         for _, dep in ipairs(self:librarydeps()) do
             librarydeps_map[dep:name()] = dep
         end
-        self:_memcache():set(key, librarydeps_map)
+        self:memcache():set(key, librarydeps_map)
     end
     return librarydeps_map[name]
 end
@@ -1298,7 +1298,7 @@ end
 
 -- get runtimes
 function _instance:runtimes()
-    local runtimes = self:_memcache():get("runtimes")
+    local runtimes = self:memcache():get("runtimes")
     if runtimes == nil then
         runtimes = self:config("runtimes")
         if runtimes then
@@ -1306,17 +1306,17 @@ function _instance:runtimes()
             runtimes = table.unwrap(runtimes_current)
         end
         runtimes = runtimes or false
-        self:_memcache():set("runtimes", runtimes)
+        self:memcache():set("runtimes", runtimes)
     end
     return runtimes or nil
 end
 
 -- has the given runtime for the current toolchains?
 function _instance:has_runtime(...)
-    local runtimes_set = self:_memcache():get("runtimes_set")
+    local runtimes_set = self:memcache():get("runtimes_set")
     if runtimes_set == nil then
         runtimes_set = hashset.from(table.wrap(self:runtimes()))
-        self:_memcache():set("runtimes_set", runtimes_set)
+        self:memcache():set("runtimes_set", runtimes_set)
     end
     for _, v in ipairs(table.pack(...)) do
         if runtimes_set:has(v) then
@@ -1327,7 +1327,7 @@ end
 
 -- get the given toolchain
 function _instance:toolchain(name)
-    local toolchains_map = self:_memcache():get("toolchains_map")
+    local toolchains_map = self:memcache():get("toolchains_map")
     if toolchains_map == nil then
         toolchains_map = {}
         local toolchains = self:toolchains()
@@ -1336,7 +1336,7 @@ function _instance:toolchain(name)
                 toolchains_map[toolchain_inst:name()] = toolchain_inst
             end
         end
-        self:_memcache():set("toolchains_map", toolchains_map)
+        self:memcache():set("toolchains_map", toolchains_map)
     end
     if not toolchains_map[name] then
         toolchains_map[name] = toolchain.load(name, {plat = self:plat(), arch = self:arch()})
@@ -1391,7 +1391,7 @@ end
 
 -- get the package compiler
 function _instance:compiler(sourcekind)
-    local compilerinst = self:_memcache():get2("compiler", sourcekind)
+    local compilerinst = self:memcache():get2("compiler", sourcekind)
     if not compilerinst then
         if not sourcekind then
             os.raise("please pass sourcekind to the first argument of package:compiler(), e.g. cc, cxx, as")
@@ -1401,14 +1401,14 @@ function _instance:compiler(sourcekind)
             os.raise(errors)
         end
         compilerinst = instance
-        self:_memcache():set2("compiler", sourcekind, compilerinst)
+        self:memcache():set2("compiler", sourcekind, compilerinst)
     end
     return compilerinst
 end
 
 -- get the package linker
 function _instance:linker(targetkind, sourcekinds)
-    local linkerinst = self:_memcache():get3("linker", targetkind, sourcekinds)
+    local linkerinst = self:memcache():get3("linker", targetkind, sourcekinds)
     if not linkerinst then
         if not sourcekinds then
             os.raise("please pass sourcekinds to the second argument of package:linker(), e.g. cc, cxx, as")
@@ -1418,7 +1418,7 @@ function _instance:linker(targetkind, sourcekinds)
             os.raise(errors)
         end
         linkerinst = instance
-        self:_memcache():set3("linker", targetkind, sourcekinds, linkerinst)
+        self:memcache():set3("linker", targetkind, sourcekinds, linkerinst)
     end
     return linkerinst
 end

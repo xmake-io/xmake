@@ -98,6 +98,16 @@ function _instance:fullname()
     return namespace and namespace .. "::" .. name or name
 end
 
+-- get memcache
+function _instance:memcache()
+    local cache = self._MEMCACHE
+    if not cache then
+        cache = memcache.cache("core.tool.toolchain." .. self:cachekey())
+        self._MEMCACHE = cache
+    end
+    return cache
+end
+
 -- get toolchain platform
 function _instance:plat()
     return self._PLAT or self:config("plat")
@@ -482,8 +492,7 @@ end
 function _instance:_checktool(toolkind, toolpath)
 
     -- get result from cache first
-    local cachekey = self:cachekey() .. "_checktool" .. toolkind
-    local result = toolchain._memcache():get3(cachekey, toolkind, toolpath)
+    local result = self:memcache():get2("checktool_" .. toolkind, toolpath)
     if result then
         return result[1], result[2]
     end
@@ -526,6 +535,7 @@ function _instance:_checktool(toolkind, toolpath)
     end
 
     -- find tool program
+    local cachekey = self:cachekey() .. "_checktool" .. toolkind
     local tool = find_tool(toolpath, {toolchain = self,
         cachekey = cachekey,
         program = program or toolpath,
@@ -552,7 +562,7 @@ function _instance:_checktool(toolkind, toolpath)
             utils.cprint("${dim}checking for %s (%s: ${bright}%s${clear}) ... ${color.nothing}${text.nothing}", description, toolkind, toolpath)
         end
     end
-    toolchain._memcache():set3(cachekey, toolkind, toolpath, {program, toolname})
+    self:memcache():set2("checktool_" .. toolkind, toolpath, {program, toolname})
     return program, toolname
 end
 
