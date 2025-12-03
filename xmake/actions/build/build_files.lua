@@ -96,7 +96,7 @@ function _build_files(targets_root, opt)
         if opt.sourcefiles then
             wprint("%s not found!", opt.sourcefiles)
         else
-            wprint("no any files found!")
+            wprint("no files found!")
         end
     end
 end
