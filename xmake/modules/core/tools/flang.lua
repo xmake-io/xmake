@@ -89,18 +89,8 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     -- add install_name for macOS shared libraries
     local flags_extra = {}
     if targetkind == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
-        -- check if install_name is already in flags
-        local has_install_name = false
-        for i, flag in ipairs(flags) do
-            if flag == "-install_name" or flag:startswith("-Wl,-install_name") then
-                has_install_name = true
-                break
-            end
-        end
-        if not has_install_name then
-            table.insert(flags_extra, "-Wl,-install_name")
-            table.insert(flags_extra, "-Wl,@rpath/" .. path.filename(targetfile))
-        end
+        table.insert(flags_extra, "-Wl,-install_name")
+        table.insert(flags_extra, "-Wl,@rpath/" .. path.filename(targetfile))
     end
 
     -- init arguments
