@@ -82,12 +82,29 @@ function nf_symbol(self, level)
 end
 
 -- make the link arguments list
--- flang doesn't support -install_name, so we don't add it
+-- flang needs to pass install_name through -Wl, for macOS shared libraries
 function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
 
+    -- add install_name for macOS shared libraries
+    local flags_extra = {}
+    if targetkind == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
+        -- check if install_name is already in flags
+        local has_install_name = false
+        for i, flag in ipairs(flags) do
+            if flag == "-install_name" or flag:startswith("-Wl,-install_name") then
+                has_install_name = true
+                break
+            end
+        end
+        if not has_install_name then
+            table.insert(flags_extra, "-Wl,-install_name")
+            table.insert(flags_extra, "-Wl,@rpath/" .. path.filename(targetfile))
+        end
+    end
+
     -- init arguments
-    local argv = table.join("-o", targetfile, objectfiles, flags)
+    local argv = table.join("-o", targetfile, objectfiles, flags, flags_extra)
     if is_host("windows") and not opt.rawargs then
         argv = winos.cmdargv(argv, {escape = true})
     end
