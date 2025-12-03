@@ -121,7 +121,7 @@ function _check(opt)
     local sourcefiles = opt.files
     local targetnames = opt.targets
     local jobs = opt.jobs and tonumber(opt.jobs) or nil
-    
+
     local check_time = os.mclock()
     local build_opt = {linkjobs = false}
     if jobs then
