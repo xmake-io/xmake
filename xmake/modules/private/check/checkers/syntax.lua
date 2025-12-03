@@ -163,6 +163,9 @@ function main(argv)
     -- enter project directory
     local oldir = os.cd(project.directory())
 
+    -- it will call on_config
+    project.load_targets()
+
     -- validate targets and enable syntax-only
     if _validate_and_enable_targets(args) then
         _check(args)
