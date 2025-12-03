@@ -42,6 +42,10 @@ function main(opt)
 
     -- find program
     local program = find_program(opt.program or "flang", opt)
+    if not program and is_host("linux") then
+        -- on Linux, flang might be named as flang-new
+        program = find_program("flang-new", opt)
+    end
 
     -- find program version
     local version = nil

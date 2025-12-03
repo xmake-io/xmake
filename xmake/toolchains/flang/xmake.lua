@@ -41,16 +41,35 @@ toolchain("flang")
 
     -- on load
     on_load(function (toolchain)
-        local march
-        if toolchain:is_arch("x86_64", "x64", "arm64") then
-            march = "-m64"
+        -- flang doesn't support -m64/-m32, use --target instead (especially on Linux)
+        local target
+        if toolchain:is_arch("x86_64", "x64") then
+            target = "x86_64"
         elseif toolchain:is_arch("i386", "x86", "i686") then
-            march = "-m32"
+            target = "i686"
+        elseif toolchain:is_arch("arm64", "aarch64") then
+            target = "aarch64"
+        elseif toolchain:is_arch("arm") then
+            target = "armv7"
         end
-        if march then
-            toolchain:add("fcflags",   march)
-            toolchain:add("fcshflags", march)
-            toolchain:add("fcldflags", march)
+        
+        if target then
+            -- add target suffix based on platform
+            if toolchain:is_plat("linux") then
+                target = target .. "-linux-gnu"
+            elseif toolchain:is_plat("windows") then
+                target = target .. "-windows-msvc"
+            elseif toolchain:is_plat("mingw") then
+                target = target .. "-w64-windows-gnu"
+            end
+            
+            -- only add --target on platforms that need it (Linux, Windows)
+            -- macOS flang may work without explicit target
+            if target and (toolchain:is_plat("linux") or toolchain:is_plat("windows", "mingw")) then
+                toolchain:add("fcflags",   "--target=" .. target)
+                toolchain:add("fcshflags", "--target=" .. target)
+                toolchain:add("fcldflags", "--target=" .. target)
+            end
         end
     end)
 

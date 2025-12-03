@@ -42,8 +42,26 @@ function init(self)
     self:set("mapflags",
     {
         -- visibility flags (not supported by Fortran)
-        ["-fvisibility=.*"] = ""
+        ["-fvisibility=.*"] = "",
+        -- strip flags (not supported by flang, use nf_strip instead)
+        ["^-s$"] = ""
     })
+end
+
+-- make the strip flag
+-- flang doesn't support -s directly, use -Wl,-s for linker
+function nf_strip(self, level)
+    local maps = {
+        debug = "-Wl,-S"
+    ,   all   = "-Wl,-s"
+    }
+    if self:is_plat("macosx", "iphoneos", "watchos", "appletvos", "applexros") then
+        maps.all = {"-Wl,-x", "-Wl,-dead_strip"}
+    elseif self:is_plat("windows") then
+        -- flang doesn't support strip on windows
+        maps = {}
+    end
+    return maps[level]
 end
 
 -- make the symbol flag
