@@ -163,7 +163,7 @@ function main(argv)
     -- enter project directory
     local oldir = os.cd(project.directory())
 
-    -- it will call on_config
+    -- it will call on_config to add some missing flags in rules
     project.load_targets()
 
     -- validate targets and enable syntax-only
