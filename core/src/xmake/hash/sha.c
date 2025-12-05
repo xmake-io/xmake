@@ -123,6 +123,13 @@ tb_int_t xm_hash_sha(lua_State *lua) {
     }
     if (!ok) {
         lua_pushnil(lua);
+        // check if file exists to provide more specific error message
+        if (!tb_file_info(filename, tb_null)) {
+            lua_pushfstring(lua, "file not found: %s", filename);
+        } else {
+            lua_pushfstring(lua, "failed to read file: %s", filename);
+        }
+        return 2;
     }
     return 1;
 }
