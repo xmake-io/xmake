@@ -32,34 +32,20 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    -- Go build flags for optimization
     local maps = {
         none = "-gcflags=-N"
     }
     return maps[level]
 end
 
--- make the symbol flag
-function nf_symbol(self, level, opt)
-    -- Go doesn't use separate symbol flags like C/C++
-    return
-end
 
 -- make the strip flag
 function nf_strip(self, level)
-    -- Go uses -ldflags="-s -w" for stripping
-    -- -ldflags needs to be passed as separate arguments: -ldflags and the value
     local maps = {
         debug = {"-ldflags", "-s"}
     ,   all   = {"-ldflags", "-s -w"}
     }
     return maps[level]
-end
-
--- make the includedir flag
-function nf_includedir(self, dir)
-    -- Go doesn't use -I flags, but we can use build tags or build constraints
-    return
 end
 
 -- make the sysincludedir flag
@@ -69,9 +55,6 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    -- Go uses -L flag for linker search paths via -ldflags
-    -- -ldflags needs to be passed as separate arguments: -ldflags and the value
-    -- Note: -L must be inside the -ldflags value, not as a separate argument
     return {"-ldflags", "-L " .. dir}
 end
 
@@ -79,34 +62,20 @@ end
 -- Modern Go uses "go build" command for both compilation and linking
 function buildargv(self, sourcefiles, targetkind, targetfile, flags)
     local argv = {"build"}
-    
-    -- add build flags
     if flags then
         table.join2(argv, flags)
     end
-    
-    -- set output file
     table.insert(argv, "-o")
     table.insert(argv, targetfile)
-    
+
     -- for static library, use buildmode=archive
     if targetkind == "static" then
         table.insert(argv, "-buildmode=archive")
     end
-    
+
     -- add source files (Go supports building from source file list)
-    -- The caller should change to the source directory before calling build
-    if sourcefiles and #sourcefiles > 0 then
-        -- convert source files to relative paths from current directory
-        -- or use absolute paths if needed
-        for _, sourcefile in ipairs(sourcefiles) do
-            table.insert(argv, sourcefile)
-        end
-    else
-        -- fallback to current package if no source files
-        table.insert(argv, ".")
-    end
-    
+    table.join2(argv, sourcefiles)
+
     return self:program(), argv
 end
 

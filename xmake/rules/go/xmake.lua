@@ -31,9 +31,5 @@ rule("go.build")
     on_build("build.target")
 
 rule("go")
-
-    -- add build rules
     add_deps("go.build")
-
-    -- inherit links and linkdirs of all dependent targets by default
     add_deps("utils.inherit.links")

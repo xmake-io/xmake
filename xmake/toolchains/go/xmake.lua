@@ -34,30 +34,30 @@ toolchain("go")
     -- on load
     on_load(function (toolchain)
         import("private.tools.go.goenv")
-        
+
         -- set GOOS and GOARCH for cross-compilation
         local goos = goenv.GOOS(toolchain:plat())
         if goos then
             toolchain:add("runenvs", "GOOS", goos)
         end
-        
+
         local goarch = goenv.GOARCH(toolchain:arch())
         if goarch then
             toolchain:add("runenvs", "GOARCH", goarch)
         end
-        
+
         -- Set CGO_ENABLED=0 by default for better cross-compilation support
         -- Users can override this if they need CGO
         if not os.getenv("CGO_ENABLED") then
             toolchain:add("runenvs", "CGO_ENABLED", "0")
         end
-        
+
         -- Disable Go modules mode to use GOPATH mode
         -- This allows Go to find packages using GOPATH
         if not os.getenv("GO111MODULE") then
             toolchain:add("runenvs", "GO111MODULE", "off")
         end
-        
+
         -- Set GOPATH to project directory if not already set
         -- This allows Go to find packages in the project
         if not os.getenv("GOPATH") then
@@ -66,7 +66,7 @@ toolchain("go")
                 toolchain:add("runenvs", "GOPATH", projectdir)
             end
         end
-        
+
         -- set default flags
         toolchain:set("gcldflags", "")
         toolchain:set("gcarflags", "")
