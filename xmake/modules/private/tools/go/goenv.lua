@@ -21,26 +21,88 @@
 -- imports
 import("lib.detect.find_tool")
 
+-- Map xmake platform to Go OS
 function GOOS(plat)
-    local goos
-    if plat == "windows" or plat == "mingw" or plat == "msys" or plat == "cygwin" then
-        goos = "windows"
-    elseif plat == "linux" then
-        goos = "linux"
-    elseif plat == "macosx" then
-        goos = "darwin"
-    end
-    return goos
+    local goos_map = {
+        windows = "windows",
+        mingw = "windows",
+        msys = "windows",
+        cygwin = "windows",
+        linux = "linux",
+        macosx = "darwin",
+        android = "android",
+        ios = "ios",
+        freebsd = "freebsd",
+        netbsd = "netbsd",
+        openbsd = "openbsd",
+        dragonfly = "dragonfly",
+        solaris = "solaris",
+        aix = "aix",
+        plan9 = "plan9"
+    }
+    return goos_map[plat]
 end
 
+-- Map xmake architecture to Go architecture
 function GOARCH(arch)
-    return (arch == "x86" or arch == "i386") and "386" or "amd64"
+    local goarch_map = {
+        x86 = "386",
+        i386 = "386",
+        x64 = "amd64",
+        x86_64 = "amd64",
+        amd64 = "amd64",
+        arm = "arm",
+        armv7 = "arm",
+        armv7s = "arm",
+        arm64 = "arm64",
+        aarch64 = "arm64",
+        mips = "mips",
+        mips64 = "mips64",
+        mips64le = "mips64le",
+        mipsle = "mipsle",
+        ppc = "ppc",
+        ppc64 = "ppc64",
+        ppc64le = "ppc64le",
+        riscv64 = "riscv64",
+        s390x = "s390x",
+        wasm = "wasm"
+    }
+    
+    -- try direct match first
+    if goarch_map[arch] then
+        return goarch_map[arch]
+    end
+    
+    -- try pattern matching for arm variants
+    if arch:match("^arm") then
+        if arch:match("64") or arch:match("aarch64") then
+            return "arm64"
+        else
+            return "arm"
+        end
+    end
+    
+    -- try pattern matching for x86 variants
+    if arch:match("^x86") or arch:match("^i386") or arch:match("^i686") then
+        return "386"
+    end
+    
+    if arch:match("^x64") or arch:match("^amd64") or arch:match("^x86_64") then
+        return "amd64"
+    end
+    
+    return nil
 end
 
+-- Get GOROOT from Go installation
 function GOROOT(toolchain)
     local go = find_tool("go")
     if go then
-        local gorootdir = try { function() return os.iorunv(go.program, {"env", "GOROOT"}) end }
+        local gorootdir = try { 
+            function() 
+                return os.iorunv(go.program, {"env", "GOROOT"}, {envs = toolchain and toolchain:get("runenvs") or nil}) 
+            end 
+        }
         if gorootdir then
             return gorootdir:trim()
         end

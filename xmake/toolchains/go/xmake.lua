@@ -26,23 +26,48 @@ toolchain("go")
     set_description("Go Programming Language Compiler")
 
     -- set toolset
-    set_toolset("gc",   "$(env GC)", "go", "gccgo")
-    set_toolset("gcld", "$(env GC)", "go", "gccgo")
-    set_toolset("gcar", "$(env GC)", "go", "gccgo")
+    -- Modern Go uses "go" command for all operations
+    set_toolset("gc",   "$(env GC)", "go")
+    set_toolset("gcld", "$(env GC)", "go")
+    set_toolset("gcar", "$(env GC)", "go")
 
     -- on load
     on_load(function (toolchain)
-        if not toolchain:is_plat(os.host()) or not toolchain:is_arch(os.arch()) then
-            import("private.tools.go.goenv")
-            local goos = goenv.GOOS(toolchain:plat())
-            if goos then
-                toolchain:add("runenvs", "GOOS", goos)
-            end
-            local goarch = goenv.GOARCH(toolchain:arch())
-            if goarch then
-                toolchain:add("runenvs", "GOARCH", goarch)
+        import("private.tools.go.goenv")
+
+        -- set GOOS and GOARCH for cross-compilation
+        local goos = goenv.GOOS(toolchain:plat())
+        if goos then
+            toolchain:add("runenvs", "GOOS", goos)
+        end
+
+        local goarch = goenv.GOARCH(toolchain:arch())
+        if goarch then
+            toolchain:add("runenvs", "GOARCH", goarch)
+        end
+
+        -- Set CGO_ENABLED=0 by default for better cross-compilation support
+        -- Users can override this if they need CGO
+        if not os.getenv("CGO_ENABLED") then
+            toolchain:add("runenvs", "CGO_ENABLED", "0")
+        end
+
+        -- Disable Go modules mode to use GOPATH mode
+        -- This allows Go to find packages using GOPATH
+        if not os.getenv("GO111MODULE") then
+            toolchain:add("runenvs", "GO111MODULE", "off")
+        end
+
+        -- Set GOPATH to project directory if not already set
+        -- This allows Go to find packages in the project
+        if not os.getenv("GOPATH") then
+            local projectdir = os.projectdir()
+            if projectdir then
+                toolchain:add("runenvs", "GOPATH", projectdir)
             end
         end
-        toolchain:set("gcldflags", "")
-    end)
 
+        -- set default flags
+        toolchain:set("gcldflags", "")
+        toolchain:set("gcarflags", "")
+    end)

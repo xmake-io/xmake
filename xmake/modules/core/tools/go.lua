@@ -18,6 +18,7 @@
 -- @file        go.lua
 --
 
+
 -- imports
 import("core.base.option")
 import("core.project.config")
@@ -26,45 +27,25 @@ import("core.language.language")
 
 -- init it
 function init(self)
-    self:set("gcarflags", "grc")
+    self:set("gcarflags", "")
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    -- only for source kind
-    local kind = self:kind()
-    if language.sourcekinds()[kind] then
-        local maps = {
-            none = "-N"
-        }
-        return maps[level]
-    end
-end
-
--- make the symbol flag
-function nf_symbol(self, level, opt)
-    local targetkind = opt.targetkind
-    if targetkind ~= "object" then
-        return
-    end
     local maps = {
-        debug = "-E"
+        none = "-gcflags=-N"
     }
     return maps[level]
 end
+
 
 -- make the strip flag
 function nf_strip(self, level)
     local maps = {
-        debug = "-s"
-    ,   all   = "-s"
+        debug = {"-ldflags", "-s"}
+    ,   all   = {"-ldflags", "-s -w"}
     }
     return maps[level]
-end
-
--- make the includedir flag
-function nf_includedir(self, dir)
-    return {"-I", dir}
 end
 
 -- make the sysincludedir flag
@@ -74,34 +55,33 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return {"-L", dir}
+    return {"-ldflags", "-L " .. dir}
 end
 
--- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
-    if targetkind == "static" then
-        return self:program(), table.join("tool", "pack", flags, targetfile, objectfiles)
-    else
-        return self:program(), table.join("tool", "link", flags, "-o", targetfile, objectfiles)
+-- make the build arguments list
+-- Modern Go uses "go build" command for both compilation and linking
+function buildargv(self, sourcefiles, targetkind, targetfile, flags)
+    local argv = {"build"}
+    if flags then
+        table.join2(argv, flags)
     end
+    table.insert(argv, "-o")
+    table.insert(argv, targetfile)
+
+    -- for static library, use buildmode=archive
+    if targetkind == "static" then
+        table.insert(argv, "-buildmode=archive")
+    end
+
+    -- add source files (Go supports building from source file list)
+    table.join2(argv, sourcefiles)
+
+    return self:program(), argv
 end
 
--- link the target file
-function link(self, objectfiles, targetkind, targetfile, flags)
+-- build the target file (compile and link in one step)
+function build(self, sourcefiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
-    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+    local program, argv = buildargv(self, sourcefiles, targetkind, targetfile, flags)
     os.runv(program, argv, {envs = self:runenvs()})
 end
-
--- make the compile arguments list
-function compargv(self, sourcefiles, objectfile, flags)
-    return self:program(), table.join("tool", "compile", flags, "-o", objectfile, sourcefiles)
-end
-
--- compile the source file
-function compile(self, sourcefiles, objectfile, dependinfo, flags)
-    os.mkdir(path.directory(objectfile))
-    local program, argv = compargv(self, sourcefiles, objectfile, flags)
-    os.runv(program, argv, {envs = self:runenvs()})
-end
-

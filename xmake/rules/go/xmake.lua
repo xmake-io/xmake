@@ -20,7 +20,6 @@
 
 rule("go.build")
     set_sourcekinds("gc")
-    add_deps("go.env")
     on_load(function (target)
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         target:set("policy", "build.fence", true)
@@ -29,12 +28,8 @@ rule("go.build")
             target:set("prefixname", "")
         end
     end)
-    on_build_files("build.object")
+    on_build("build.target")
 
 rule("go")
-
-    -- add build rules
     add_deps("go.build")
-
-    -- inherit links and linkdirs of all dependent targets by default
     add_deps("utils.inherit.links")

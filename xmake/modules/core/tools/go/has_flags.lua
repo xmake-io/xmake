@@ -24,24 +24,31 @@ import("core.language.language")
 
 -- is linker?
 function _islinker(flags, opt)
-
     -- the tool kind is gcld or gcsh?
     local toolkind = opt.toolkind or ""
     return toolkind:endswith("ld") or toolkind:endswith("sh")
 end
 
 -- try running
-function _try_running(...)
-
-    local argv = {...}
+function _try_running(program, argv, opt)
     local errors = nil
-    return try { function () os.runv(table.unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
+    local ok = try { 
+        function () 
+            os.runv(program, argv, opt)
+            return true 
+        end, 
+        catch { 
+            function (errs) 
+                errors = (errs or ""):trim() 
+            end 
+        }
+    }
+    return ok, errors
 end
 
 -- attempt to check it from the argument list
 function _check_from_arglist(flags, opt, islinker)
-
-    -- only for compiler
+    -- only for compiler and single flag
     if islinker or #flags > 1 then
         return
     end
@@ -55,66 +62,67 @@ function _check_from_arglist(flags, opt, islinker)
     -- get all flags from argument list
     local allflags = detectcache:get2(key, flagskey)
     if not allflags then
-
-        -- attempt to get argument list from the error info (help menu)
         allflags = {}
-        try
-        {
-            function () os.runv(opt.program, {"tool", "compile", "--help"}) end,
-            catch
-            {
-                function (errors)
-                    local arglist = errors
-                    if arglist then
-                        for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
-                            allflags[arg] = true
-                        end
-                    end
-                end
-            }
+        
+        -- try to get help from "go help build"
+        local help_output = try { 
+            function () 
+                return os.iorunv(opt.program, {"help", "build"}, {envs = opt.envs}) 
+            end 
         }
+        
+        if help_output then
+            -- parse flags from help output
+            for flag in help_output:gmatch("%s+(%-[%-%a%d=]+)%s+") do
+                allflags[flag] = true
+            end
+        end
+        
+        -- also try "go build -h" for more detailed flags
+        local build_help = try { 
+            function () 
+                return os.iorunv(opt.program, {"build", "-h"}, {envs = opt.envs}) 
+            end 
+        }
+        
+        if build_help then
+            for flag in build_help:gmatch("%s+(%-[%-%a%d=]+)%s+") do
+                allflags[flag] = true
+            end
+        end
 
         -- save cache
         detectcache:set2(key, flagskey, allflags)
     end
+    
     return allflags[flags[1]]
 end
 
 -- try running to check flags
 function _check_try_running(flags, opt, islinker)
-
     -- make an stub source file
     local sourcefile = path.join(os.tmpdir(), "detect", "go_has_flags.go")
-    local objectfile = path.join(os.tmpdir(), "detect", "go_has_flags.o")
-    local targetfile = path.join(os.tmpdir(), "detect", "go_has_flags.bin")
     if not os.isfile(sourcefile) then
-        io.writefile(sourcefile, "package main\nfunc main() {\n}")
+        io.writefile(sourcefile, "package main\n\nfunc main() {\n}\n")
     end
 
-    -- check flags for linker
-    if islinker then
-
-        -- compile a object file first
-        if not os.isfile(objectfile) and not _try_running(opt.program, table.join("tool", "compile", "-o", objectfile, sourcefile)) then
-            return false
-        end
-
-        -- check it
-        return _try_running(opt.program, table.join("tool", "link", flags, "-o", targetfile, objectfile))
-    end
-
-    -- check flags for compiler
-    return _try_running(opt.program, table.join("tool", "compile", flags, "-o", objectfile, sourcefile))
+    -- check flags for linker or compiler
+    -- Modern Go uses "go build" for both compilation and linking
+    local argv = {"build", "-o", os.tmpfile()}
+    table.join2(argv, flags)
+    table.insert(argv, sourcefile)
+    
+    local ok, errors = _try_running(opt.program, argv, {envs = opt.envs})
+    return ok == true
 end
 
 -- has_flags(flags)?
 --
--- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|mm|mxx]"}
+-- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "[gc|gcld|gcar]"}
 --
 -- @return      true or false
 --
 function main(flags, opt)
-
     -- is linker?
     local islinker = _islinker(flags, opt)
 
@@ -126,4 +134,3 @@ function main(flags, opt)
     -- try running to check it
     return _check_try_running(flags, opt, islinker)
 end
-
