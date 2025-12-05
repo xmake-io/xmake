@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 target("module")
     set_kind("static")
-    add_files("src/test/*.go")
+    add_files("src/module/*.go")
 
 target("test")
     set_kind("binary")
