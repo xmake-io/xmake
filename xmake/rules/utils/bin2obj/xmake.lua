@@ -21,11 +21,11 @@
 rule("utils.bin2obj")
     set_extensions(".bin")
     add_orders("utils.bin2obj", "c++.build.modules.builder")
-    on_preparecmd_file(function (target, batchcmds, sourcefile_bin, opt)
+    on_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
 
         -- get object file
         local objectfile = path.join(target:objectdir(), path.basename(sourcefile_bin) .. ".o")
-        target:add("objectfiles", objectfile)
+        table.insert(target:objectfiles(), objectfile)
 
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.bin2obj %s", sourcefile_bin)
