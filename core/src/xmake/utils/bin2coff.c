@@ -154,7 +154,6 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     tb_char_t symbol_name[256] = {0};
     tb_char_t symbol_start[256] = {0};
     tb_char_t symbol_end[256] = {0};
-    tb_char_t symbol_size[256] = {0};
 
     // use basename or default to "data"
     if (!basename || !basename[0]) {
@@ -177,29 +176,23 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
 
     tb_snprintf(symbol_start, sizeof(symbol_start), "%s_start", symbol_name);
     tb_snprintf(symbol_end, sizeof(symbol_end), "%s_end", symbol_name);
-    tb_snprintf(symbol_size, sizeof(symbol_size), "%s_size", symbol_name);
 
     // calculate offsets
-    // Note: we append the size value (4 bytes) at the end of data section
     tb_uint32_t header_size = sizeof(xm_coff_header_t);
     tb_uint32_t section_header_size = sizeof(xm_coff_section_t);
     tb_uint32_t section_data_ofs = header_size + section_header_size;
-    tb_uint32_t section_data_size = datasize + 4; // data + size value
+    tb_uint32_t section_data_size = datasize;
     tb_uint32_t symbol_table_ofs = section_data_ofs + ((section_data_size + 3) & ~3); // align to 4 bytes
     tb_uint32_t string_table_size = 4; // initial 4-byte size field
 
     // calculate string table size
     tb_size_t start_len = tb_strlen(symbol_start);
     tb_size_t end_len = tb_strlen(symbol_end);
-    tb_size_t size_len = tb_strlen(symbol_size);
     if (start_len > 8) {
         string_table_size += (tb_uint32_t)(start_len + 1);
     }
     if (end_len > 8) {
         string_table_size += (tb_uint32_t)(end_len + 1);
-    }
-    if (size_len > 8) {
-        string_table_size += (tb_uint32_t)(size_len + 1);
     }
 
     // write COFF header
@@ -209,7 +202,7 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     header.nsects = 1;
     header.time = 0;
     header.symtabofs = symbol_table_ofs;
-    header.nsyms = 5; // .rdata section symbol (1) + auxiliary entry (1) + 3 data symbols (3)
+    header.nsyms = 4; // .rdata section symbol (1) + auxiliary entry (1) + 2 data symbols (start, end)
     header.opthdr = 0;
     header.flags = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&header, sizeof(header))) {
@@ -220,9 +213,9 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     xm_coff_section_t section;
     tb_memset(&section, 0, sizeof(section));
     tb_strncpy(section.name, ".rdata", 8);
-    section.vsize = section_data_size; // include size value
+    section.vsize = datasize;
     section.vaddr = 0;
-    section.size = section_data_size; // include size value
+    section.size = datasize;
     section.ofs = section_data_ofs;
     section.relocofs = 0;
     section.linenoofs = 0;
@@ -247,15 +240,10 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
         left -= to_read;
     }
 
-    // align data to 4 bytes
-    tb_uint32_t padding = (4 - (datasize & 3)) & 3;
+    // align to 4 bytes
+    tb_uint32_t padding = (4 - (section_data_size & 3)) & 3;
     if (padding > 0) {
         xm_utils_bin2coff_write_padding(ostream, padding);
-    }
-
-    // append size value at the end of data section
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&datasize, 4)) {
-        return tb_false;
     }
 
     // write symbol table
@@ -273,7 +261,7 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     }
     // auxiliary entry for section (18 bytes total)
     // format: 4 bytes size, 2 bytes nreloc, 2 bytes nlineno, 10 bytes unused
-    tb_uint32_t aux_section_size = section_data_size;
+    tb_uint32_t aux_section_size = datasize;
     tb_uint16_t aux_section_nreloc = 0;
     tb_uint16_t aux_section_nlineno = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&aux_section_size, 4) ||
@@ -314,22 +302,6 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
         return tb_false;
     }
 
-    // symbol 3: _binary_xxx_size
-    // Note: point to the size value appended at the end of data section
-    xm_utils_bin2coff_write_symbol_name(ostream, symbol_size, &strtab_offset);
-    tb_uint32_t sym_size_value = ((datasize + padding + 3) & ~3); // offset to size value (aligned)
-    tb_int16_t sym_size_sect = 1; // same section as data
-    tb_uint16_t sym_size_type = 0;
-    tb_uint8_t sym_size_scl = 2; // IMAGE_SYM_CLASS_EXTERNAL
-    tb_uint8_t sym_size_naux = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_value, 4) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_sect, 2) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_type, 2) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_scl, 1) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_naux, 1)) {
-        return tb_false;
-    }
-
     // write string table
     tb_stream_bwrit(ostream, (tb_byte_t const *)&string_table_size, 4);
     if (tb_strlen(symbol_start) > 8) {
@@ -339,11 +311,6 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     }
     if (tb_strlen(symbol_end) > 8) {
         xm_utils_bin2coff_write_string(ostream, symbol_end, 0);
-        tb_byte_t null = 0;
-        tb_stream_bwrit(ostream, &null, 1);
-    }
-    if (tb_strlen(symbol_size) > 8) {
-        xm_utils_bin2coff_write_string(ostream, symbol_size, 0);
         tb_byte_t null = 0;
         tb_stream_bwrit(ostream, &null, 1);
     }
