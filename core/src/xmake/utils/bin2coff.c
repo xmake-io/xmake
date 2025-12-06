@@ -155,26 +155,26 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     tb_char_t symbol_start[256] = {0};
     tb_char_t symbol_end[256] = {0};
     tb_char_t symbol_size[256] = {0};
-    
+
     // use basename or default to "data"
     if (!basename || !basename[0]) {
         basename = "data";
     }
-    
+
     // build symbol name
     if (symbol_prefix) {
         tb_snprintf(symbol_name, sizeof(symbol_name), "%s%s", symbol_prefix, basename);
     } else {
         tb_snprintf(symbol_name, sizeof(symbol_name), "_binary_%s", basename);
     }
-    
+
     // replace non-alphanumeric with underscore
     for (tb_size_t i = 0; symbol_name[i]; i++) {
         if (!tb_isalpha(symbol_name[i]) && !tb_isdigit(symbol_name[i]) && symbol_name[i] != '_') {
             symbol_name[i] = '_';
         }
     }
-    
+
     tb_snprintf(symbol_start, sizeof(symbol_start), "%s_start", symbol_name);
     tb_snprintf(symbol_end, sizeof(symbol_end), "%s_end", symbol_name);
     tb_snprintf(symbol_size, sizeof(symbol_size), "%s_size", symbol_name);
