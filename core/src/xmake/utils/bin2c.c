@@ -60,6 +60,7 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
                                      tb_bool_t       nozeroend) {
     
     tb_bool_t first = tb_true;
+    tb_bool_t zero_pending = tb_false;
     tb_byte_t data[XM_BIN2C_DATA_SIZE];
     tb_char_t line[XM_BIN2C_LINE_SIZE];
     tb_size_t linesize = 0;
@@ -68,23 +69,37 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
     tb_size_t data_size = 0;
     tb_assert_and_check_return_val(linewidth > 0 && linewidth <= XM_BIN2C_LINEWIDTH_MAX, tb_false);
     
-    while (!tb_stream_beof(istream) || data_pos < data_size) {
+    while (!tb_stream_beof(istream) || data_pos < data_size || zero_pending) {
         // read a large chunk of data if buffer is empty
         if (data_pos >= data_size) {
-            tb_hong_t left = tb_stream_left(istream);
-            tb_size_t to_read = (tb_size_t)tb_min(left, (tb_hong_t)XM_BIN2C_DATA_SIZE);
-            tb_check_break(to_read);
-            
-            if (!tb_stream_bread(istream, data, to_read)) {
-                break;
-            }
-            data_size = to_read;
-            data_pos = 0;
-            
-            // add zero terminator at the end if needed
-            if (!nozeroend && tb_stream_beof(istream)) {
-                if (data_size < XM_BIN2C_DATA_SIZE) {
-                    data[data_size++] = '\0';
+            // handle pending zero terminator
+            if (zero_pending) {
+                data[0] = '\0';
+                data_size = 1;
+                data_pos = 0;
+                zero_pending = tb_false;
+            } else {
+                tb_hong_t left = tb_stream_left(istream);
+                tb_size_t to_read = (tb_size_t)tb_min(left, (tb_hong_t)XM_BIN2C_DATA_SIZE);
+                if (!to_read) {
+                    break;
+                }
+                
+                if (!tb_stream_bread(istream, data, to_read)) {
+                    break;
+                }
+                data_size = to_read;
+                data_pos = 0;
+                
+                // check if we need to add zero terminator at the end
+                if (!nozeroend && tb_stream_beof(istream)) {
+                    if (data_size < XM_BIN2C_DATA_SIZE) {
+                        // can add directly to current buffer
+                        data[data_size++] = '\0';
+                    } else {
+                        // buffer is full, need to add zero in next iteration
+                        zero_pending = tb_true;
+                    }
                 }
             }
         }
