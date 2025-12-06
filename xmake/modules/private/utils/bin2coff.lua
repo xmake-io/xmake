@@ -52,10 +52,7 @@ function _do_bin2coff(binarypath, outputpath, opt)
 
     -- do dump
     if utils.bin2coff then
-        local ok, err = utils.bin2coff(binarypath, outputpath, symbol_prefix, arch, basename)
-        if not ok then
-            raise(err or "bin2coff: conversion failed")
-        end
+        utils.bin2coff(binarypath, outputpath, symbol_prefix, arch, basename)
     else
         raise("bin2coff: utils.bin2coff not available (C implementation not compiled)")
     end
