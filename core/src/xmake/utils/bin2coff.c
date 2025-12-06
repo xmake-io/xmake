@@ -208,7 +208,7 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     header.nsects = 1;
     header.time = 0;
     header.symtabofs = symbol_table_ofs;
-    header.nsyms = 4; // .rdata section symbol + 3 data symbols
+    header.nsyms = 5; // .rdata section symbol (1) + auxiliary entry (1) + 3 data symbols (3)
     header.opthdr = 0;
     header.flags = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&header, sizeof(header))) {
@@ -265,12 +265,17 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_section, sizeof(sym_section))) {
         return tb_false;
     }
-    // auxiliary entry for section
+    // auxiliary entry for section (18 bytes total)
+    // format: 4 bytes size, 2 bytes nreloc, 2 bytes nlineno, 10 bytes unused
     tb_uint32_t aux_section_size = datasize;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&aux_section_size, 4)) {
+    tb_uint16_t aux_section_nreloc = 0;
+    tb_uint16_t aux_section_nlineno = 0;
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&aux_section_size, 4) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&aux_section_nreloc, 2) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&aux_section_nlineno, 2)) {
         return tb_false;
     }
-    xm_utils_bin2coff_write_padding(ostream, 14); // rest of auxiliary entry
+    xm_utils_bin2coff_write_padding(ostream, 10); // rest of auxiliary entry (unused)
 
     // symbol 1: _binary_xxx_start
     tb_uint32_t strtab_offset = 4; // start after size field
