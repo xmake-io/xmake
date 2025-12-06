@@ -309,11 +309,12 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     }
 
     // symbol 3: _binary_xxx_size
+    // Note: use section symbol instead of absolute symbol to avoid relocation issues
     xm_utils_bin2coff_write_symbol_name(ostream, symbol_size, &strtab_offset);
     tb_uint32_t sym_size_value = datasize;
-    tb_int16_t sym_size_sect = -1; // absolute symbol
+    tb_int16_t sym_size_sect = 1; // same section as data
     tb_uint16_t sym_size_type = 0;
-    tb_uint8_t sym_size_scl = 2;
+    tb_uint8_t sym_size_scl = 2; // IMAGE_SYM_CLASS_EXTERNAL
     tb_uint8_t sym_size_naux = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_value, 4) ||
         !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_sect, 2) ||
