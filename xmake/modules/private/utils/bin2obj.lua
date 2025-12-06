@@ -38,8 +38,8 @@ function _do_bin2obj_coff(binarypath, outputpath, opt)
 
     -- get basename from binary path
     local basename = path.basename(binarypath)
-    -- remove extension
-    basename = basename:gsub("%.[^%.]+$", "")
+    -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
+    basename = basename:gsub("%.", "_")
 
     -- trace
     print("converting binary file %s to COFF object file %s ..", binarypath, outputpath)
