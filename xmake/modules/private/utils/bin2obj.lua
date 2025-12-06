@@ -36,10 +36,10 @@ function _do_bin2obj_coff(binarypath, outputpath, opt)
     -- get architecture
     local arch = opt.arch
 
-    -- get basename from binary path
-    local basename = path.basename(binarypath)
+    -- get filename from binary path (with extension, dots replaced with underscores)
+    local filename = path.filename(binarypath)
     -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
-    basename = basename:gsub("%.", "_")
+    local basename = filename:gsub("%.", "_")
 
     -- trace
     print("converting binary file %s to COFF object file %s ..", binarypath, outputpath)
