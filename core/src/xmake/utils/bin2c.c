@@ -58,7 +58,7 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
                                      tb_stream_ref_t ostream,
                                      tb_int_t        linewidth,
                                      tb_bool_t       nozeroend) {
-    
+
     tb_bool_t first = tb_true;
     tb_bool_t zero_pending = tb_false;
     tb_byte_t data[XM_BIN2C_DATA_SIZE];
@@ -68,7 +68,7 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
     tb_size_t data_pos = 0;
     tb_size_t data_size = 0;
     tb_assert_and_check_return_val(linewidth > 0 && linewidth <= XM_BIN2C_LINEWIDTH_MAX, tb_false);
-    
+
     while (!tb_stream_beof(istream) || data_pos < data_size || zero_pending) {
         // read a large chunk of data if buffer is empty
         if (data_pos >= data_size) {
@@ -84,13 +84,13 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
                 if (!to_read) {
                     break;
                 }
-                
+
                 if (!tb_stream_bread(istream, data, to_read)) {
                     break;
                 }
                 data_size = to_read;
                 data_pos = 0;
-                
+
                 // check if we need to add zero terminator at the end
                 if (!nozeroend && tb_stream_beof(istream)) {
                     if (data_size < XM_BIN2C_DATA_SIZE) {
@@ -103,7 +103,7 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
                 }
             }
         }
-        
+
         // process bytes from buffer
         while (data_pos < data_size) {
             // check if we need a new line
@@ -112,12 +112,12 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
                 if (tb_stream_bwrit_line(ostream, line, linesize) < 0) {
                     return tb_false;
                 }
-                
+
                 linesize = 0;
                 bytes_in_line = 0;
                 first = tb_false;
             }
-            
+
             // ensure we have enough space in line buffer (6 chars per byte: ", 0xXX")
             if (linesize + 6 > sizeof(line)) {
                 // flush partial line if buffer is full
@@ -128,19 +128,15 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
                     linesize = 0;
                 }
             }
-            
+
             // add separator
-            if (bytes_in_line == 0) {
-                if (first) {
-                    line[linesize++] = ' ';
-                    first = tb_false;
-                } else {
-                    line[linesize++] = ',';
-                }
+            if (bytes_in_line == 0 && first) {
+                line[linesize++] = ' ';
+                first = tb_false;
             } else {
                 line[linesize++] = ',';
             }
-            
+
             // write hex value (inline for performance)
             xm_utils_bin2c_write_hex(line + linesize, data[data_pos]);
             linesize += 5;
@@ -148,7 +144,7 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
             data_pos++;
         }
     }
-    
+
     // flush remaining line
     if (linesize > 0) {
         // write line (tb_stream_bwrit_line will add newline automatically)
@@ -156,7 +152,7 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
             return tb_false;
         }
     }
-    
+
     return tb_stream_beof(istream);
 }
 
