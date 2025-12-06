@@ -185,7 +185,6 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     tb_uint32_t section_data_ofs = header_size + section_header_size;
     tb_uint32_t section_data_size = datasize;
     tb_uint32_t symbol_table_ofs = section_data_ofs + ((section_data_size + 3) & ~3); // align to 4 bytes
-    tb_uint32_t string_table_ofs = 0;
     tb_uint32_t string_table_size = 4; // initial 4-byte size field
 
     // calculate string table size
@@ -275,41 +274,47 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
 
     // symbol 1: _binary_xxx_start
     tb_uint32_t strtab_offset = 4; // start after size field
-    xm_coff_symbol_t sym_start;
-    tb_memset(&sym_start, 0, sizeof(sym_start));
     xm_utils_bin2coff_write_symbol_name(ostream, symbol_start, &strtab_offset);
-    sym_start.value = 0;
-    sym_start.sect = 1;
-    sym_start.type = 0;
-    sym_start.scl = 2; // IMAGE_SYM_CLASS_EXTERNAL
-    sym_start.naux = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start.value, sizeof(sym_start) - 8)) {
+    tb_uint32_t sym_start_value = 0;
+    tb_int16_t sym_start_sect = 1;
+    tb_uint16_t sym_start_type = 0;
+    tb_uint8_t sym_start_scl = 2; // IMAGE_SYM_CLASS_EXTERNAL
+    tb_uint8_t sym_start_naux = 0;
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_value, 4) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_sect, 2) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_type, 2) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_scl, 1) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_naux, 1)) {
         return tb_false;
     }
 
     // symbol 2: _binary_xxx_end
-    xm_coff_symbol_t sym_end;
-    tb_memset(&sym_end, 0, sizeof(sym_end));
     xm_utils_bin2coff_write_symbol_name(ostream, symbol_end, &strtab_offset);
-    sym_end.value = datasize;
-    sym_end.sect = 1;
-    sym_end.type = 0;
-    sym_end.scl = 2;
-    sym_end.naux = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end.value, sizeof(sym_end) - 8)) {
+    tb_uint32_t sym_end_value = datasize;
+    tb_int16_t sym_end_sect = 1;
+    tb_uint16_t sym_end_type = 0;
+    tb_uint8_t sym_end_scl = 2;
+    tb_uint8_t sym_end_naux = 0;
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_value, 4) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_sect, 2) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_type, 2) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_scl, 1) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_naux, 1)) {
         return tb_false;
     }
 
     // symbol 3: _binary_xxx_size
-    xm_coff_symbol_t sym_size;
-    tb_memset(&sym_size, 0, sizeof(sym_size));
     xm_utils_bin2coff_write_symbol_name(ostream, symbol_size, &strtab_offset);
-    sym_size.value = datasize;
-    sym_size.sect = -1; // absolute symbol
-    sym_size.type = 0;
-    sym_size.scl = 2;
-    sym_size.naux = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size.value, sizeof(sym_size) - 8)) {
+    tb_uint32_t sym_size_value = datasize;
+    tb_int16_t sym_size_sect = -1; // absolute symbol
+    tb_uint16_t sym_size_type = 0;
+    tb_uint8_t sym_size_scl = 2;
+    tb_uint8_t sym_size_naux = 0;
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_value, 4) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_sect, 2) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_type, 2) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_scl, 1) ||
+        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_size_naux, 1)) {
         return tb_false;
     }
 
