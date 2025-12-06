@@ -23,14 +23,6 @@ rule("utils.bin2obj")
     add_orders("utils.bin2obj", "c++.build.modules.builder")
     on_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
 
-        -- get object file
-        local objectfile = path.join(target:objectdir(), path.basename(sourcefile_bin) .. ".o")
-        table.insert(target:objectfiles(), objectfile)
-
-        -- add commands
-        batchcmds:show_progress(opt.progress, "${color.build.object}generating.bin2obj %s", sourcefile_bin)
-        batchcmds:mkdir(path.directory(objectfile))
-
         -- get format (default: auto-detect from platform)
         local format = target:extraconf("rules", "utils.bin2obj", "format")
         if not format then
@@ -42,6 +34,15 @@ rule("utils.bin2obj")
                 format = "elf"
             end
         end
+
+        -- get object file (use .obj for COFF, .o for others)
+        local objext = (format == "coff") and ".obj" or ".o"
+        local objectfile = path.join(target:objectdir(), path.basename(sourcefile_bin) .. objext)
+        table.insert(target:objectfiles(), objectfile)
+
+        -- add commands
+        batchcmds:show_progress(opt.progress, "${color.build.object}generating.bin2obj %s", sourcefile_bin)
+        batchcmds:mkdir(path.directory(objectfile))
 
         -- get symbol prefix (default: _binary_)
         local symbol_prefix = target:extraconf("rules", "utils.bin2obj", "symbol_prefix") or "_binary_"
