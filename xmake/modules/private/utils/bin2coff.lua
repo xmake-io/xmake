@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.option")
-import("core.base.path")
 
 local options = {
     {'i', "binarypath", "kv", nil,   "Set the binary file path."},
