@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
--- @file        bin2coff.lua
+-- @file        bin2obj.lua
 --
 
 -- imports
@@ -24,18 +24,12 @@ import("core.base.option")
 local options = {
     {'i', "binarypath", "kv", nil,   "Set the binary file path."},
     {'o', "outputpath", "kv", nil,   "Set the output object file path."},
+    {'f', "format",    "kv", nil,   "Set the object file format (coff, elf, macho)."},
     {nil, "symbol-prefix", "kv", nil, "Set the symbol prefix (default: _binary_)."},
     {'a', "arch",       "kv", nil,   "Set the target architecture."}
 }
 
-function _do_bin2coff(binarypath, outputpath, opt)
-
-    -- init source directory and options
-    opt = opt or {}
-    binarypath = path.absolute(binarypath)
-    outputpath = path.absolute(outputpath)
-    assert(os.isfile(binarypath), "%s not found!", binarypath)
-
+function _do_bin2obj_coff(binarypath, outputpath, opt)
     -- get symbol prefix
     local symbol_prefix = opt["symbol-prefix"] or opt.symbol_prefix or "_binary_"
 
@@ -54,22 +48,57 @@ function _do_bin2coff(binarypath, outputpath, opt)
     if utils.bin2coff then
         utils.bin2coff(binarypath, outputpath, symbol_prefix, arch, basename)
     else
-        raise("bin2coff: utils.bin2coff not available (C implementation not compiled)")
+        raise("bin2obj: utils.bin2coff not available (C implementation not compiled)")
     end
 
     -- trace
     cprint("${bright}%s generated!", outputpath)
 end
 
+function _do_bin2obj_elf(binarypath, outputpath, opt)
+    raise("bin2obj: ELF format not yet implemented")
+end
+
+function _do_bin2obj_macho(binarypath, outputpath, opt)
+    raise("bin2obj: Mach-O format not yet implemented")
+end
+
+function _do_bin2obj(binarypath, outputpath, opt)
+
+    -- init source directory and options
+    opt = opt or {}
+    binarypath = path.absolute(binarypath)
+    outputpath = path.absolute(outputpath)
+    assert(os.isfile(binarypath), "%s not found!", binarypath)
+
+    -- get format (default: coff)
+    local format = opt.format or "coff"
+    format = format:lower()
+
+    -- validate format
+    if format ~= "coff" and format ~= "elf" and format ~= "macho" then
+        raise("bin2obj: unsupported format '%s' (supported: coff, elf, macho)", format)
+    end
+
+    -- do conversion based on format
+    if format == "coff" then
+        _do_bin2obj_coff(binarypath, outputpath, opt)
+    elseif format == "elf" then
+        _do_bin2obj_elf(binarypath, outputpath, opt)
+    elseif format == "macho" then
+        _do_bin2obj_macho(binarypath, outputpath, opt)
+    end
+end
+
 function main(...)
 
     -- parse arguments
     local argv = {...}
-    local opt  = option.parse(argv, options, "Convert binary file to COFF object file for direct linking."
+    local opt  = option.parse(argv, options, "Convert binary file to object file for direct linking."
                                                    , ""
-                                                   , "Usage: xmake l private.utils.bin2coff [options]")
+                                                   , "Usage: xmake l private.utils.bin2obj [options]")
 
-    -- do bin2coff
-    _do_bin2coff(opt.binarypath, opt.outputpath, opt)
+    -- do bin2obj
+    _do_bin2obj(opt.binarypath, opt.outputpath, opt)
 end
 
