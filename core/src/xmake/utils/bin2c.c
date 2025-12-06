@@ -93,22 +93,8 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
         while (data_pos < data_size) {
             // check if we need a new line
             if (bytes_in_line >= (tb_size_t)linewidth) {
-                // ensure we have space for newline
-                if (linesize + 2 > sizeof(line)) {
-                    // flush line if buffer is full
-                    if (!tb_stream_bwrit(ostream, (tb_byte_t *)line, linesize)) {
-                        return tb_false;
-                    }
-                    linesize = 0;
-                }
-                // add newline
-            #ifdef TB_CONFIG_OS_WINDOWS
-                line[linesize++] = '\r';
-            #endif
-                line[linesize++] = '\n';
-                
-                // write line
-                if (!tb_stream_bwrit(ostream, (tb_byte_t *)line, linesize)) {
+                // write line (tb_stream_bwrit_line will add newline automatically)
+                if (tb_stream_bwrit_line(ostream, line, linesize) < 0) {
                     return tb_false;
                 }
                 
@@ -150,18 +136,8 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
     
     // flush remaining line
     if (linesize > 0) {
-        // ensure we have space for newline
-        if (linesize + 2 > sizeof(line)) {
-            if (!tb_stream_bwrit(ostream, (tb_byte_t *)line, linesize)) {
-                return tb_false;
-            }
-            linesize = 0;
-        }
-    #ifdef TB_CONFIG_OS_WINDOWS
-        line[linesize++] = '\r';
-    #endif
-        line[linesize++] = '\n';
-        if (!tb_stream_bwrit(ostream, (tb_byte_t *)line, linesize)) {
+        // write line (tb_stream_bwrit_line will add newline automatically)
+        if (tb_stream_bwrit_line(ostream, line, linesize) < 0) {
             return tb_false;
         }
     }
