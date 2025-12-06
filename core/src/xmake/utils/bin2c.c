@@ -31,62 +31,125 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+
+#define XM_BIN2C_DATA_SIZE      (8 * 1024)
+#define XM_BIN2C_LINE_SIZE      (4 * 1024)
+#define XM_BIN2C_LINEWIDTH_MAX  ((XM_BIN2C_LINE_SIZE - 2) / 6)
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static __tb_inline__ tb_size_t xm_utils_bin2c_hex2str(tb_char_t str[5], tb_byte_t value) {
-    static tb_char_t const *digits_table = "0123456789ABCDEF";
-    str[0]                               = ' ';
-    str[1]                               = '0';
-    str[2]                               = 'x';
-    str[3]                               = digits_table[(value >> 4) & 15];
-    str[4]                               = digits_table[value & 15];
-    return 5;
+
+// optimized hex conversion table
+static tb_char_t const *xm_utils_bin2c_digits = "0123456789ABCDEF";
+
+// inline hex conversion for better performance
+static __tb_inline__ tb_void_t xm_utils_bin2c_write_hex(tb_char_t *str, tb_byte_t value) {
+    str[0] = ' ';
+    str[1] = '0';
+    str[2] = 'x';
+    str[3] = xm_utils_bin2c_digits[(value >> 4) & 15];
+    str[4] = xm_utils_bin2c_digits[value & 15];
 }
 
 static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
                                      tb_stream_ref_t ostream,
                                      tb_int_t        linewidth,
                                      tb_bool_t       nozeroend) {
-    tb_bool_t first = tb_true;
-    tb_hong_t i     = 0;
-    tb_hong_t left  = 0;
-    tb_char_t line[4096];
-    tb_byte_t data[512];
-    tb_size_t linesize = 0;
-    tb_size_t need     = 0;
-    tb_assert_and_check_return_val(linewidth < sizeof(data), tb_false);
-    while (!tb_stream_beof(istream)) {
-        linesize = 0;
-        left     = tb_stream_left(istream);
-        need     = (tb_size_t)tb_min(left, linewidth);
-        if (need) {
-            if (!tb_stream_bread(istream, data, need))
-                break;
 
-            if (!nozeroend && tb_stream_beof(istream)) {
-                tb_assert_and_check_break(need + 1 < sizeof(data));
-                data[need++] = '\0';
+    tb_bool_t first = tb_true;
+    tb_bool_t zero_pending = tb_false;
+    tb_byte_t data[XM_BIN2C_DATA_SIZE];
+    tb_char_t line[XM_BIN2C_LINE_SIZE];
+    tb_size_t linesize = 0;
+    tb_size_t bytes_in_line = 0;
+    tb_size_t data_pos = 0;
+    tb_size_t data_size = 0;
+    tb_assert_and_check_return_val(linewidth > 0 && linewidth <= XM_BIN2C_LINEWIDTH_MAX, tb_false);
+
+    while (!tb_stream_beof(istream) || data_pos < data_size || zero_pending) {
+        // read a large chunk of data if buffer is empty
+        if (data_pos >= data_size) {
+            // handle pending zero terminator
+            if (zero_pending) {
+                data[0] = '\0';
+                data_size = 1;
+                data_pos = 0;
+                zero_pending = tb_false;
+            } else {
+                tb_hong_t left = tb_stream_left(istream);
+                tb_size_t to_read = (tb_size_t)tb_min(left, (tb_hong_t)XM_BIN2C_DATA_SIZE);
+                if (!to_read) {
+                    break;
+                }
+
+                if (!tb_stream_bread(istream, data, to_read)) {
+                    break;
+                }
+                data_size = to_read;
+                data_pos = 0;
+
+                // check if we need to add zero terminator at the end
+                if (!nozeroend && tb_stream_beof(istream)) {
+                    if (data_size < XM_BIN2C_DATA_SIZE) {
+                        // can add directly to current buffer
+                        data[data_size++] = '\0';
+                    } else {
+                        // buffer is full, need to add zero in next iteration
+                        zero_pending = tb_true;
+                    }
+                }
+            }
+        }
+
+        // process bytes from buffer
+        while (data_pos < data_size) {
+            // check if we need a new line
+            if (bytes_in_line >= (tb_size_t)linewidth) {
+                // write line (tb_stream_bwrit_line will add newline automatically)
+                if (tb_stream_bwrit_line(ostream, line, linesize) < 0) {
+                    return tb_false;
+                }
+
+                linesize = 0;
+                bytes_in_line = 0;
+                first = tb_false;
             }
 
-            tb_assert_and_check_break(linesize + 6 * need < sizeof(line));
+            // ensure we have enough space in line buffer (6 chars per byte: ", 0xXX")
+            if (linesize + 6 > sizeof(line)) {
+                // flush partial line if buffer is full
+                if (linesize > 0) {
+                    if (!tb_stream_bwrit(ostream, (tb_byte_t *)line, linesize)) {
+                        return tb_false;
+                    }
+                    linesize = 0;
+                }
+            }
 
-            i = 0;
-            if (first) {
-                first            = tb_false;
+            // add separator
+            if (bytes_in_line == 0 && first) {
                 line[linesize++] = ' ';
+                first = tb_false;
             } else {
                 line[linesize++] = ',';
             }
-            linesize += xm_utils_bin2c_hex2str(line + linesize, data[i]);
 
-            for (i = 1; i < need; i++) {
-                line[linesize++] = ',';
-                linesize += xm_utils_bin2c_hex2str(line + linesize, data[i]);
-            }
-            tb_assert_and_check_break(i == need && linesize && linesize < sizeof(line));
+            // write hex value (inline for performance)
+            xm_utils_bin2c_write_hex(line + linesize, data[data_pos]);
+            linesize += 5;
+            bytes_in_line++;
+            data_pos++;
+        }
+    }
 
-            if (tb_stream_bwrit_line(ostream, line, linesize) < 0)
-                break;
+    // flush remaining line
+    if (linesize > 0) {
+        // write line (tb_stream_bwrit_line will add newline automatically)
+        if (tb_stream_bwrit_line(ostream, line, linesize) < 0) {
+            return tb_false;
         }
     }
 
@@ -147,12 +210,14 @@ tb_int_t xm_utils_bin2c(lua_State *lua) {
 
     } while (0);
 
-    if (istream)
+    if (istream) {
         tb_stream_clos(istream);
+    }
     istream = tb_null;
 
-    if (ostream)
+    if (ostream) {
         tb_stream_clos(ostream);
+    }
     ostream = tb_null;
 
     return ok ? 1 : 2;
