@@ -23,6 +23,7 @@ import("core.tool.compiler")
 import("core.project.project")
 import("core.language.language")
 import("private.utils.target", {alias = "target_utils"})
+import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 
 -- make the object
 function _make_object(target, flags, sourcefile, objectfile)
