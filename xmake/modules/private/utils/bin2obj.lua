@@ -60,7 +60,29 @@ function _do_bin2obj_elf(binarypath, outputpath, opt)
 end
 
 function _do_bin2obj_macho(binarypath, outputpath, opt)
-    raise("bin2obj: Mach-O format not yet implemented")
+    -- get symbol prefix
+    local symbol_prefix = opt["symbol-prefix"] or "_binary_"
+
+    -- get architecture
+    local arch = opt.arch
+
+    -- get filename from binary path (with extension, dots replaced with underscores)
+    local filename = path.filename(binarypath)
+    -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
+    local basename = filename:gsub("%.", "_")
+
+    -- trace
+    print("converting binary file %s to Mach-O object file %s ..", binarypath, outputpath)
+
+    -- do dump
+    if utils.bin2macho then
+        utils.bin2macho(binarypath, outputpath, symbol_prefix, arch, basename)
+    else
+        raise("bin2obj: utils.bin2macho not available (C implementation not compiled)")
+    end
+
+    -- trace
+    cprint("${bright}%s generated!", outputpath)
 end
 
 function _do_bin2obj(binarypath, outputpath, opt)

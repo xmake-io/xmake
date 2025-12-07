@@ -168,6 +168,16 @@ if utils.bin2coff then
     end
 end
 
+-- generate Mach-O object file from the binary file
+if utils.bin2macho then
+    function sandbox_utils.bin2macho(binaryfile, outputfile, symbol_prefix, arch, basename)
+        local ok, errors = utils.bin2macho(binaryfile, outputfile, symbol_prefix, arch, basename)
+        if not ok then
+            os.raise(errors)
+        end
+    end
+end
+
 -- return module
 return sandbox_utils
 
