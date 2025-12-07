@@ -43,8 +43,9 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
-#pragma pack(push, 1)
-typedef struct {
+#include "tbox/prefix/packed.h"
+typedef struct __xm_coff_header_t
+{
     tb_uint16_t machine;
     tb_uint16_t nsects;
     tb_uint32_t time;
@@ -52,9 +53,10 @@ typedef struct {
     tb_uint32_t nsyms;
     tb_uint16_t opthdr;
     tb_uint16_t flags;
-} xm_coff_header_t;
+} __tb_packed__ xm_coff_header_t;
 
-typedef struct {
+typedef struct __xm_coff_section_t
+{
     tb_char_t name[8];
     tb_uint32_t vsize;
     tb_uint32_t vaddr;
@@ -65,9 +67,10 @@ typedef struct {
     tb_uint16_t nreloc;
     tb_uint16_t nlineno;
     tb_uint32_t flags;
-} xm_coff_section_t;
+} __tb_packed__ xm_coff_section_t;
 
-typedef struct {
+typedef struct __xm_coff_symbol_t
+{
     union {
         struct {
             tb_char_t name[8];
@@ -82,23 +85,25 @@ typedef struct {
     tb_uint16_t type;
     tb_uint8_t scl;
     tb_uint8_t naux;
-} xm_coff_symbol_t;
+} __tb_packed__ xm_coff_symbol_t;
 
-typedef struct {
+typedef struct __xm_coff_aux_section_t
+{
     tb_uint32_t length;
     tb_uint16_t nreloc;
     tb_uint16_t nlineno;
     tb_uint8_t reserved[10];
-} xm_coff_aux_section_t;
+} __tb_packed__ xm_coff_aux_section_t;
 
-typedef struct {
+typedef struct __xm_coff_symbol_tail_t
+{
     tb_uint32_t value;
     tb_int16_t  sect;
     tb_uint16_t type;
     tb_uint8_t  scl;
     tb_uint8_t  naux;
-} xm_coff_symbol_tail_t;
-#pragma pack(pop)
+} __tb_packed__ xm_coff_symbol_tail_t;
+#include "tbox/prefix/packed.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
