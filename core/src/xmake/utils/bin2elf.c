@@ -164,7 +164,7 @@ static tb_bool_t xm_utils_bin2elf_dump(tb_stream_ref_t istream,
     // calculate offsets
     tb_uint32_t header_size = sizeof(xm_elf64_header_t);
     tb_uint32_t section_header_size = sizeof(xm_elf64_section_t);
-    tb_uint32_t section_count = 5; // NULL, .rodata, .symtab, .strtab, .shstrtab
+    tb_uint32_t section_count = 6; // NULL, .rodata, .symtab, .strtab, .shstrtab, .note.GNU-stack
     tb_uint32_t section_headers_ofs = header_size;
     tb_uint32_t rodata_ofs = section_headers_ofs + section_count * section_header_size;
     tb_uint32_t rodata_size = datasize;
@@ -188,6 +188,7 @@ static tb_bool_t xm_utils_bin2elf_dump(tb_stream_ref_t istream,
     shstrtab_size += 8; // ".symtab\0" (7 + 1)
     shstrtab_size += 8; // ".strtab\0" (7 + 1)
     shstrtab_size += 10; // ".shstrtab\0" (9 + 1)
+    shstrtab_size += 16; // ".note.GNU-stack\0" (15 + 1)
     tb_uint32_t shstrtab_ofs = strtab_ofs + strtab_size + strtab_padding;
 
     // write ELF header
@@ -269,6 +270,19 @@ static tb_bool_t xm_utils_bin2elf_dump(tb_stream_ref_t istream,
     section_shstrtab.sh_size = shstrtab_size; // size includes initial null and all strings
     section_shstrtab.sh_addralign = 1;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_shstrtab, sizeof(section_shstrtab))) {
+        return tb_false;
+    }
+
+    // write .note.GNU-stack section header (empty section to mark stack as non-executable)
+    xm_elf64_section_t section_note_gnu_stack;
+    tb_memset(&section_note_gnu_stack, 0, sizeof(section_note_gnu_stack));
+    section_note_gnu_stack.sh_name = 35; // ".note.GNU-stack" in shstrtab (25 + 10)
+    section_note_gnu_stack.sh_type = XM_ELF_SHT_PROGBITS;
+    section_note_gnu_stack.sh_flags = 0; // no flags
+    section_note_gnu_stack.sh_offset = shstrtab_ofs + shstrtab_size; // after .shstrtab
+    section_note_gnu_stack.sh_size = 0; // empty section
+    section_note_gnu_stack.sh_addralign = 1;
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_note_gnu_stack, sizeof(section_note_gnu_stack))) {
         return tb_false;
     }
 
@@ -387,6 +401,12 @@ static tb_bool_t xm_utils_bin2elf_dump(tb_stream_ref_t istream,
         return tb_false;
     }
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)".shstrtab", 9)) {
+        return tb_false;
+    }
+    if (!tb_stream_bwrit(ostream, &null, 1)) {
+        return tb_false;
+    }
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)".note.GNU-stack", 15)) {
         return tb_false;
     }
     if (!tb_stream_bwrit(ostream, &null, 1)) {
