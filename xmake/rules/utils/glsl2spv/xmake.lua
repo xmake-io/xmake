@@ -27,10 +27,18 @@
 -- compile *.vert/*.frag and generate binary c header files
 --   add_rules("utils.glsl2spv", {bin2c = true})
 --
--- in c code:
+-- compile *.vert/*.frag and generate object files for direct linking
+--   add_rules("utils.glsl2spv", {bin2obj = true})
+--
+-- in c code (bin2c):
 --   static unsigned char g_test_frag_spv_data[] = {
 --      #include "test.frag.spv.h"
 --   };
+--
+-- in c code (bin2obj):
+--   extern const uint8_t _binary_test_frag_spv_start[];
+--   extern const uint8_t _binary_test_frag_spv_end[];
+--   const uint32_t size = (uint32_t)(_binary_test_frag_spv_end - _binary_test_frag_spv_start);
 --
 --
 rule("utils.glsl2spv")
@@ -47,6 +55,7 @@ rule("utils.glsl2spv")
     end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_glsl, opt)
         import("lib.detect.find_tool")
+        import("rules.utils.bin2obj.utils", {alias = "bin2obj_utils", rootdir = os.programdir()})
 
         -- get glslangValidator
         local glslc
@@ -74,9 +83,10 @@ rule("utils.glsl2spv")
             batchcmds:vrunv(glslc.program, {"--target-env", targetenv, "-o", path(spvfilepath), path(sourcefile_glsl)})
         end
 
-        -- do bin2c
+        -- do bin2c or bin2obj
         local outputfile = spvfilepath
         local is_bin2c = target:extraconf("rules", "utils.glsl2spv", "bin2c")
+        local is_bin2obj = target:extraconf("rules", "utils.glsl2spv", "bin2obj")
         if is_bin2c then
             -- get header file
             local headerdir = outputdir
@@ -87,6 +97,13 @@ rule("utils.glsl2spv")
             -- add commands
             local argv = {"--nozeroend", "-i", path(spvfilepath), "-o", path(headerfile)}
             batchcmds:vlua("utils.binary.bin2c", argv)
+        elseif is_bin2obj then
+            -- convert to object file using bin2obj
+            local objectfile = bin2obj_utils.generate_objectfile(target, batchcmds, spvfilepath, {
+                progress = opt.progress,
+                zeroend = true  -- default enable zeroend for shader data
+            })
+            outputfile = objectfile
         end
 
         -- add deps
