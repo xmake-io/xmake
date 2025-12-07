@@ -113,6 +113,8 @@ static tb_uint16_t xm_utils_bin2coff_get_machine(tb_char_t const *arch) {
         return XM_COFF_MACHINE_ARM64;
     } else if (tb_strcmp(arch, "arm") == 0) {
         return XM_COFF_MACHINE_ARM;
+    } else if (tb_strcmp(arch, "i386") == 0 || tb_strcmp(arch, "x86") == 0) {
+        return XM_COFF_MACHINE_I386;
     }
     return XM_COFF_MACHINE_I386;
 }
