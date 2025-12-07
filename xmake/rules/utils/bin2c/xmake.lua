@@ -44,7 +44,13 @@ rule("utils.bin2c")
             table.insert(argv, "-w")
             table.insert(argv, tostring(linewidth))
         end
-        local nozeroend = target:extraconf("rules", "utils.bin2c", "nozeroend")
+        -- get nozeroend (check file-level config first, then rule-level config)
+        local fileconfig = target:fileconfig(sourcefile_bin)
+        local nozeroend = (fileconfig and fileconfig.nozeroend) or target:extraconf("rules", "utils.bin2c", "nozeroend") or false
+        -- also support zeroend (inverse of nozeroend)
+        if fileconfig and fileconfig.zeroend ~= nil then
+            nozeroend = not fileconfig.zeroend
+        end
         if nozeroend then
             table.insert(argv, "--nozeroend")
         end
