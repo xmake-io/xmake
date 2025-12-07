@@ -122,8 +122,9 @@ function main(...)
     local argv = {...}
     local opt  = option.parse(argv, options, "Print c/c++ code files from the given binary file."
                                            , ""
-                                           , "Usage: xmake l private.utils.bin2c [options]")
+                                           , "Usage: xmake l utils.binary.bin2c [options]")
 
     -- do bin2c
     _do_bin2c(opt.binarypath, opt.outputpath, opt)
 end
+

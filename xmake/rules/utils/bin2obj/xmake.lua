@@ -89,7 +89,7 @@ rule("utils.bin2obj")
         if zeroend then
             table.insert(argv, "--zeroend")
         end
-        batchcmds:vlua("private.utils.bin2obj", argv)
+        batchcmds:vlua("utils.binary.bin2obj", argv)
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_bin)

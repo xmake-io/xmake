@@ -22,15 +22,15 @@
 import("core.base.option")
 
 local options = {
-    {'i', "binarypath", "kv", nil,   "Set the binary file path."},
-    {'o', "outputpath", "kv", nil,   "Set the output object file path."},
-    {'f', "format",    "kv", nil,   "Set the object file format (coff, elf, macho)."},
-    {nil, "symbol_prefix", "kv", nil, "Set the symbol prefix (default: _binary_)."},
-    {'a', "arch",       "kv", nil,   "Set the target architecture."},
-    {'p', "plat",       "kv", nil,   "Set the target platform (macosx, iphoneos, etc.)."},
-    {nil, "target_minver", "kv", nil, "Set the target minimum version (e.g., 10.0, 18.2)."},
-    {nil, "xcode_sdkver", "kv", nil, "Set the Xcode SDK version (e.g., 10.0, 18.2)."},
-    {nil, "zeroend",      "k",  nil, "Append a null terminator ('\\0') at the end of data."}
+    {'i', "binarypath",    "kv", nil,   "Set the binary file path."},
+    {'o', "outputpath",    "kv", nil,   "Set the output object file path."},
+    {'f', "format",        "kv", nil,   "Set the object file format (coff, elf, macho)."},
+    {nil, "symbol_prefix", "kv", nil,   "Set the symbol prefix (default: _binary_)."},
+    {'a', "arch",          "kv", nil,   "Set the target architecture."},
+    {'p', "plat",          "kv", nil,   "Set the target platform (macosx, iphoneos, etc.)."},
+    {nil, "target_minver", "kv", nil,   "Set the target minimum version (e.g., 10.0, 18.2)."},
+    {nil, "xcode_sdkver",  "kv", nil,   "Set the Xcode SDK version (e.g., 10.0, 18.2)."},
+    {nil, "zeroend",       "k",  nil,   "Append a null terminator ('\\0') at the end of data."}
 }
 
 function _do_bin2obj_coff(binarypath, outputpath, opt)
@@ -162,7 +162,7 @@ function main(...)
     local argv = {...}
     local opt  = option.parse(argv, options, "Convert binary file to object file for direct linking."
                                                    , ""
-                                                   , "Usage: xmake l private.utils.bin2obj [options]")
+                                                   , "Usage: xmake l utils.binary.bin2obj [options]")
 
     -- do bin2obj
     _do_bin2obj(opt.binarypath, opt.outputpath, opt)
