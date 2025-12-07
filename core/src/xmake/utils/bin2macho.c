@@ -300,7 +300,8 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
                                              tb_char_t const *arch,
                                              tb_char_t const *basename,
                                              tb_uint32_t minos,
-                                             tb_uint32_t sdk) {
+                                             tb_uint32_t sdk,
+                                             tb_bool_t zeroend) {
     tb_assert_and_check_return_val(istream && ostream, tb_false);
 
     // get file size
@@ -309,6 +310,13 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
         return tb_false;
     }
     tb_uint32_t datasize = (tb_uint32_t)filesize;
+    // add null terminator if zeroend is true
+    if (zeroend) {
+        if (datasize >= 0xffffffffU) {
+            return tb_false; // would overflow
+        }
+        datasize++;
+    }
 
     // generate symbol names from filename
     tb_char_t symbol_name[256] = {0};
@@ -458,6 +466,13 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
         }
         left -= to_read;
     }
+    // append null terminator if zeroend is true
+    if (zeroend) {
+        tb_byte_t zero = 0;
+        if (!tb_stream_bwrit(ostream, &zero, 1)) {
+            return tb_false;
+        }
+    }
 
     // align to 8 bytes
     padding = symtab_offset - data_end_offset;
@@ -539,9 +554,10 @@ static tb_bool_t xm_utils_bin2macho_dump(tb_stream_ref_t istream,
                                          tb_char_t const *arch,
                                          tb_char_t const *basename,
                                          tb_uint32_t minos,
-                                         tb_uint32_t sdk) {
+                                         tb_uint32_t sdk,
+                                         tb_bool_t zeroend) {
     if (xm_utils_bin2macho_is_64bit(arch)) {
-        return xm_utils_bin2macho_dump_64(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk);
+        return xm_utils_bin2macho_dump_64(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend);
     } else {
         // 32-bit not implemented yet
         return tb_false;
@@ -587,6 +603,9 @@ tb_int_t xm_utils_bin2macho(lua_State *lua) {
     tb_char_t const *sdk_str = lua_isstring(lua, 8) ? lua_tostring(lua, 8) : tb_null;
     tb_uint32_t sdk = xm_utils_bin2macho_parse_version(sdk_str);
 
+    // get zeroend (optional, default: false)
+    tb_bool_t zeroend = lua_toboolean(lua, 9);
+
     // do dump
     tb_bool_t ok = tb_false;
     tb_stream_ref_t istream = tb_stream_init_from_file(binaryfile, TB_FILE_MODE_RO);
@@ -605,7 +624,7 @@ tb_int_t xm_utils_bin2macho(lua_State *lua) {
             break;
         }
 
-        if (!xm_utils_bin2macho_dump(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk)) {
+        if (!xm_utils_bin2macho_dump(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend)) {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "bin2macho: dump data failed");
             break;

@@ -155,7 +155,8 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
                                         tb_stream_ref_t ostream,
                                         tb_char_t const *symbol_prefix,
                                         tb_char_t const *arch,
-                                        tb_char_t const *basename) {
+                                        tb_char_t const *basename,
+                                        tb_bool_t zeroend) {
     tb_assert_and_check_return_val(istream && ostream, tb_false);
 
     // get file size
@@ -164,6 +165,13 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
         return tb_false;
     }
     tb_uint32_t datasize = (tb_uint32_t)filesize;
+    // add null terminator if zeroend is true
+    if (zeroend) {
+        if (datasize >= 0xffffffffU) {
+            return tb_false; // would overflow
+        }
+        datasize++;
+    }
 
     // generate symbol names from filename
     tb_char_t symbol_name[256] = {0};
@@ -253,6 +261,13 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
             return tb_false;
         }
         left -= to_read;
+    }
+    // append null terminator if zeroend is true
+    if (zeroend) {
+        tb_byte_t zero = 0;
+        if (!tb_stream_bwrit(ostream, &zero, 1)) {
+            return tb_false;
+        }
     }
 
     // align to 4 bytes
@@ -351,6 +366,12 @@ tb_int_t xm_utils_bin2coff(lua_State *lua) {
     // get basename (optional)
     tb_char_t const *basename = lua_isstring(lua, 5) ? lua_tostring(lua, 5) : tb_null;
 
+    // get platform (optional, not used but passed for consistency)
+    tb_char_t const *plat = lua_isstring(lua, 6) ? lua_tostring(lua, 6) : tb_null;
+
+    // get zeroend (optional, default: false)
+    tb_bool_t zeroend = lua_toboolean(lua, 7);
+
     // do dump
     tb_bool_t ok = tb_false;
     tb_stream_ref_t istream = tb_stream_init_from_file(binaryfile, TB_FILE_MODE_RO);
@@ -369,7 +390,7 @@ tb_int_t xm_utils_bin2coff(lua_State *lua) {
             break;
         }
 
-        if (!xm_utils_bin2coff_dump(istream, ostream, symbol_prefix, arch, basename)) {
+        if (!xm_utils_bin2coff_dump(istream, ostream, symbol_prefix, arch, basename, zeroend)) {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "bin2coff: dump data failed");
             break;

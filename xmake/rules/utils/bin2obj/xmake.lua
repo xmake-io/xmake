@@ -47,6 +47,9 @@ rule("utils.bin2obj")
         -- get symbol prefix (default: _binary_)
         local symbol_prefix = target:extraconf("rules", "utils.bin2obj", "symbol_prefix") or "_binary_"
 
+        -- get zeroend (default: false)
+        local zeroend = target:extraconf("rules", "utils.bin2obj", "zeroend") or false
+
         -- get architecture
         local arch = target:arch()
 
@@ -80,6 +83,9 @@ rule("utils.bin2obj")
         end
         if xcode_sdkver then
             table.insert(argv, "--xcode_sdkver=" .. xcode_sdkver)
+        end
+        if zeroend then
+            table.insert(argv, "--zeroend")
         end
         batchcmds:vlua("private.utils.bin2obj", argv)
 

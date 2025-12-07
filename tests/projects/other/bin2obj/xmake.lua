@@ -6,4 +6,3 @@ target("test")
     add_files("src/*.c")
     add_files("src/*.bin")
     add_files("src/*.png")
-

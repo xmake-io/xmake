@@ -160,8 +160,8 @@ end
 
 -- generate COFF object file from the binary file
 if utils.bin2coff then
-    function sandbox_utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename)
-        local ok, errors = utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename)
+    function sandbox_utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename, plat, zeroend)
+        local ok, errors = utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename, plat, zeroend)
         if not ok then
             os.raise(errors)
         end
@@ -170,8 +170,8 @@ end
 
 -- generate Mach-O object file from the binary file
 if utils.bin2macho then
-    function sandbox_utils.bin2macho(binaryfile, outputfile, symbol_prefix, plat, arch, basename, target_minver, xcode_sdkver)
-        local ok, errors = utils.bin2macho(binaryfile, outputfile, symbol_prefix, plat, arch, basename, target_minver, xcode_sdkver)
+    function sandbox_utils.bin2macho(binaryfile, outputfile, symbol_prefix, plat, arch, basename, target_minver, xcode_sdkver, zeroend)
+        local ok, errors = utils.bin2macho(binaryfile, outputfile, symbol_prefix, plat, arch, basename, target_minver, xcode_sdkver, zeroend)
         if not ok then
             os.raise(errors)
         end
