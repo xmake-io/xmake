@@ -26,6 +26,7 @@ local colors     = require("base/colors")
 local option     = require("base/option")
 local log        = require("base/log")
 local deprecated = require("base/deprecated")
+local binutils   = require("base/binutils")
 local try        = require("sandbox/modules/try")
 local catch      = require("sandbox/modules/catch")
 local vformat    = require("sandbox/modules/vformat")
@@ -148,6 +149,11 @@ function sandbox_utils.assert(value, format, ...)
     return value
 end
 
+-- generate c/c++ code from the binary file (deprecated, use binutils.bin2c instead)
+function sandbox_utils.bin2c(binaryfile, outputfile, opt)
+    deprecated.add("binutils.bin2c", "utils.bin2c")
+    return binutils.bin2c(binaryfile, outputfile, opt)
+end
 
 -- return module
 return sandbox_utils
