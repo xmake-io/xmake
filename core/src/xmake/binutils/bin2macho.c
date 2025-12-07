@@ -191,7 +191,7 @@ typedef struct __xm_macho_nlist_64_t {
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_uint32_t xm_utils_bin2macho_get_cputype(tb_char_t const *arch) {
+static tb_uint32_t xm_binutils_bin2macho_get_cputype(tb_char_t const *arch) {
     if (!arch) {
         return XM_MACHO_CPU_TYPE_X86_64;
     }
@@ -207,7 +207,7 @@ static tb_uint32_t xm_utils_bin2macho_get_cputype(tb_char_t const *arch) {
     return XM_MACHO_CPU_TYPE_X86_64;
 }
 
-static tb_uint32_t xm_utils_bin2macho_get_cpusubtype(tb_char_t const *arch) {
+static tb_uint32_t xm_binutils_bin2macho_get_cpusubtype(tb_char_t const *arch) {
     if (!arch) {
         return XM_MACHO_CPU_SUBTYPE_X86_64;
     }
@@ -223,7 +223,7 @@ static tb_uint32_t xm_utils_bin2macho_get_cpusubtype(tb_char_t const *arch) {
     return XM_MACHO_CPU_SUBTYPE_X86_64;
 }
 
-static tb_bool_t xm_utils_bin2macho_is_64bit(tb_char_t const *arch) {
+static tb_bool_t xm_binutils_bin2macho_is_64bit(tb_char_t const *arch) {
     if (!arch) {
         return tb_true;
     }
@@ -239,11 +239,11 @@ static tb_bool_t xm_utils_bin2macho_is_64bit(tb_char_t const *arch) {
     return tb_true;
 }
 
-static tb_uint32_t xm_utils_bin2macho_align(tb_uint32_t value, tb_uint32_t align) {
+static tb_uint32_t xm_binutils_bin2macho_align(tb_uint32_t value, tb_uint32_t align) {
     return ((value + align - 1) & ~(align - 1));
 }
 
-static tb_uint32_t xm_utils_bin2macho_get_platform(tb_char_t const *platform) {
+static tb_uint32_t xm_binutils_bin2macho_get_platform(tb_char_t const *platform) {
     if (!platform) {
         return XM_MACHO_PLATFORM_MACOS;
     }
@@ -261,7 +261,7 @@ static tb_uint32_t xm_utils_bin2macho_get_platform(tb_char_t const *platform) {
 
 // parse version string (e.g., "10.0" or "18.2") to Mach-O format (0x000a0000)
 // format: (major << 16) | (minor << 8) | patch
-static tb_uint32_t xm_utils_bin2macho_parse_version(tb_char_t const *version_str) {
+static tb_uint32_t xm_binutils_bin2macho_parse_version(tb_char_t const *version_str) {
     if (!version_str || !version_str[0]) {
         return 0x000a0000; // default: 10.0.0
     }
@@ -293,7 +293,7 @@ static tb_uint32_t xm_utils_bin2macho_parse_version(tb_char_t const *version_str
     return (major << 16) | (minor << 8) | patch;
 }
 
-static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
+static tb_bool_t xm_binutils_bin2macho_dump_64(tb_stream_ref_t istream,
                                              tb_stream_ref_t ostream,
                                              tb_char_t const *symbol_prefix,
                                              tb_char_t const *plat,
@@ -354,10 +354,10 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     tb_uint32_t symtab_cmd_size = sizeof(xm_macho_symtab_command_t);
     tb_uint32_t build_version_cmd_size = sizeof(xm_macho_build_version_command_t);
     tb_uint32_t segment_cmd_total_size = segment_cmd_size + section_size;
-    tb_uint32_t data_offset = xm_utils_bin2macho_align(header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size, 8);
+    tb_uint32_t data_offset = xm_binutils_bin2macho_align(header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size, 8);
     tb_uint32_t data_size = datasize;
     tb_uint32_t data_end_offset = data_offset + data_size;
-    tb_uint32_t symtab_offset = xm_utils_bin2macho_align(data_end_offset, 8);
+    tb_uint32_t symtab_offset = xm_binutils_bin2macho_align(data_end_offset, 8);
     tb_uint32_t nlist_size = sizeof(xm_macho_nlist_64_t);
     tb_uint32_t nlist_count = 2; // start, end
     tb_uint32_t strtab_offset = symtab_offset + nlist_size * nlist_count;
@@ -366,14 +366,14 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     tb_size_t end_len = tb_strlen(symbol_end);
     strtab_size += (tb_uint32_t)(start_len + 1);
     strtab_size += (tb_uint32_t)(end_len + 1);
-    strtab_size = xm_utils_bin2macho_align(strtab_size, 8);
+    strtab_size = xm_binutils_bin2macho_align(strtab_size, 8);
 
     // write Mach-O header
     xm_macho_header_64_t header;
     tb_memset(&header, 0, sizeof(header));
     header.magic = XM_MACHO_MAGIC_64;
-    header.cputype = xm_utils_bin2macho_get_cputype(arch);
-    header.cpusubtype = xm_utils_bin2macho_get_cpusubtype(arch);
+    header.cputype = xm_binutils_bin2macho_get_cputype(arch);
+    header.cpusubtype = xm_binutils_bin2macho_get_cpusubtype(arch);
     header.filetype = XM_MACHO_FILE_TYPE_OBJECT;
     header.ncmds = 3; // segment + symtab + build_version
     header.sizeofcmds = segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size;
@@ -434,7 +434,7 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     tb_memset(&build_version, 0, sizeof(build_version));
     build_version.cmd = XM_MACHO_LC_BUILD_VERSION;
     build_version.cmdsize = build_version_cmd_size;
-    build_version.platform = xm_utils_bin2macho_get_platform(plat);
+    build_version.platform = xm_binutils_bin2macho_get_platform(plat);
     build_version.minos = minos;
     build_version.sdk = sdk;
     build_version.ntools = 0;
@@ -454,7 +454,7 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     }
 
     // write section data
-    if (!xm_utils_stream_copy(istream, ostream, filesize)) {
+    if (!xm_binutils_stream_copy(istream, ostream, filesize)) {
         return tb_false;
     }
     // append null terminator if zeroend is true
@@ -538,7 +538,7 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     return tb_true;
 }
 
-static tb_bool_t xm_utils_bin2macho_dump_32(tb_stream_ref_t istream,
+static tb_bool_t xm_binutils_bin2macho_dump_32(tb_stream_ref_t istream,
                                              tb_stream_ref_t ostream,
                                              tb_char_t const *symbol_prefix,
                                              tb_char_t const *plat,
@@ -599,10 +599,10 @@ static tb_bool_t xm_utils_bin2macho_dump_32(tb_stream_ref_t istream,
     tb_uint32_t symtab_cmd_size = sizeof(xm_macho_symtab_command_t);
     tb_uint32_t build_version_cmd_size = sizeof(xm_macho_build_version_command_t);
     tb_uint32_t segment_cmd_total_size = segment_cmd_size + section_size;
-    tb_uint32_t data_offset = xm_utils_bin2macho_align(header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size, 4);
+    tb_uint32_t data_offset = xm_binutils_bin2macho_align(header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size, 4);
     tb_uint32_t data_size = datasize;
     tb_uint32_t data_end_offset = data_offset + data_size;
-    tb_uint32_t symtab_offset = xm_utils_bin2macho_align(data_end_offset, 4);
+    tb_uint32_t symtab_offset = xm_binutils_bin2macho_align(data_end_offset, 4);
     tb_uint32_t nlist_size = sizeof(xm_macho_nlist_t);
     tb_uint32_t nlist_count = 2; // start, end
     tb_uint32_t strtab_offset = symtab_offset + nlist_size * nlist_count;
@@ -611,14 +611,14 @@ static tb_bool_t xm_utils_bin2macho_dump_32(tb_stream_ref_t istream,
     tb_size_t end_len = tb_strlen(symbol_end);
     strtab_size += (tb_uint32_t)(start_len + 1);
     strtab_size += (tb_uint32_t)(end_len + 1);
-    strtab_size = xm_utils_bin2macho_align(strtab_size, 4);
+    strtab_size = xm_binutils_bin2macho_align(strtab_size, 4);
 
     // write Mach-O header
     xm_macho_header_t header;
     tb_memset(&header, 0, sizeof(header));
     header.magic = XM_MACHO_MAGIC_32;
-    header.cputype = xm_utils_bin2macho_get_cputype(arch);
-    header.cpusubtype = xm_utils_bin2macho_get_cpusubtype(arch);
+    header.cputype = xm_binutils_bin2macho_get_cputype(arch);
+    header.cpusubtype = xm_binutils_bin2macho_get_cpusubtype(arch);
     header.filetype = XM_MACHO_FILE_TYPE_OBJECT;
     header.ncmds = 3; // segment + symtab + build_version
     header.sizeofcmds = segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size;
@@ -681,7 +681,7 @@ static tb_bool_t xm_utils_bin2macho_dump_32(tb_stream_ref_t istream,
     tb_memset(&build_version, 0, sizeof(build_version));
     build_version.cmd = XM_MACHO_LC_BUILD_VERSION;
     build_version.cmdsize = build_version_cmd_size;
-    build_version.platform = xm_utils_bin2macho_get_platform(plat);
+    build_version.platform = xm_binutils_bin2macho_get_platform(plat);
     build_version.minos = minos;
     build_version.sdk = sdk;
     build_version.ntools = 0;
@@ -701,7 +701,7 @@ static tb_bool_t xm_utils_bin2macho_dump_32(tb_stream_ref_t istream,
     }
 
     // write section data
-    if (!xm_utils_stream_copy(istream, ostream, filesize)) {
+    if (!xm_binutils_stream_copy(istream, ostream, filesize)) {
         return tb_false;
     }
     // append null terminator if zeroend is true
@@ -785,7 +785,7 @@ static tb_bool_t xm_utils_bin2macho_dump_32(tb_stream_ref_t istream,
     return tb_true;
 }
 
-static tb_bool_t xm_utils_bin2macho_dump(tb_stream_ref_t istream,
+static tb_bool_t xm_binutils_bin2macho_dump(tb_stream_ref_t istream,
                                          tb_stream_ref_t ostream,
                                          tb_char_t const *symbol_prefix,
                                          tb_char_t const *plat,
@@ -794,10 +794,10 @@ static tb_bool_t xm_utils_bin2macho_dump(tb_stream_ref_t istream,
                                          tb_uint32_t minos,
                                          tb_uint32_t sdk,
                                          tb_bool_t zeroend) {
-    if (xm_utils_bin2macho_is_64bit(arch)) {
-        return xm_utils_bin2macho_dump_64(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend);
+    if (xm_binutils_bin2macho_is_64bit(arch)) {
+        return xm_binutils_bin2macho_dump_64(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend);
     } else {
-        return xm_utils_bin2macho_dump_32(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend);
+        return xm_binutils_bin2macho_dump_32(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend);
     }
 }
 
@@ -807,9 +807,9 @@ static tb_bool_t xm_utils_bin2macho_dump(tb_stream_ref_t istream,
 
 /* generate Mach-O object file from binary file
  *
- * local ok, errors = utils.bin2macho(binaryfile, outputfile, symbol_prefix, plat, arch, basename)
+ * local ok, errors = binutils.bin2macho(binaryfile, outputfile, symbol_prefix, plat, arch, basename)
  */
-tb_int_t xm_utils_bin2macho(lua_State *lua) {
+tb_int_t xm_binutils_bin2macho(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the binaryfile
@@ -834,11 +834,11 @@ tb_int_t xm_utils_bin2macho(lua_State *lua) {
 
     // get minos version string (optional)
     tb_char_t const *minos_str = lua_isstring(lua, 7) ? lua_tostring(lua, 7) : tb_null;
-    tb_uint32_t minos = xm_utils_bin2macho_parse_version(minos_str);
+    tb_uint32_t minos = xm_binutils_bin2macho_parse_version(minos_str);
 
     // get sdk version string (optional)
     tb_char_t const *sdk_str = lua_isstring(lua, 8) ? lua_tostring(lua, 8) : tb_null;
-    tb_uint32_t sdk = xm_utils_bin2macho_parse_version(sdk_str);
+    tb_uint32_t sdk = xm_binutils_bin2macho_parse_version(sdk_str);
 
     // get zeroend (optional, default: false)
     tb_bool_t zeroend = lua_toboolean(lua, 9);
@@ -861,7 +861,7 @@ tb_int_t xm_utils_bin2macho(lua_State *lua) {
             break;
         }
 
-        if (!xm_utils_bin2macho_dump(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend)) {
+        if (!xm_binutils_bin2macho_dump(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend)) {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "bin2macho: dump data failed");
             break;

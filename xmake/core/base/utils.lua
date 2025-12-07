@@ -30,8 +30,6 @@ local io     = require("base/io")
 local dump   = require("base/dump")
 local text   = require("base/text")
 
--- save original interfaces
-utils._bin2c = utils._bin2c or utils.bin2c
 
 -- dump values
 function utils.dump(...)
@@ -335,12 +333,6 @@ end
 
 function utils.vtable(data, opt)
     utils.vprintf(text.table(data, opt))
-end
-
--- generate c/c++ code from the binary file
-function utils.bin2c(binaryfile, outputfile, opt)
-    opt = opt or {}
-    return utils._bin2c(binaryfile, outputfile, opt.linewidth or 32, opt.nozeroend or false)
 end
 
 -- return module

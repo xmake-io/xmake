@@ -21,6 +21,7 @@
 -- imports
 import("core.base.bytes")
 import("core.base.option")
+import("core.base.binutils")
 
 local options = {
     {'w', "linewidth",  "kv", nil,   "Set the line width"},
@@ -98,8 +99,8 @@ function _do_bin2c(binarypath, outputpath, opt)
     end
 
     -- do dump
-    if utils.bin2c then
-        utils.bin2c(binarypath, outputpath, opt)
+    if binutils.bin2c then
+        binutils.bin2c(binarypath, outputpath, opt)
     else
         local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
         local outputfile = io.open(outputpath, 'w')

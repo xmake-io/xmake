@@ -18,8 +18,8 @@
  * @file        prefix.h
  *
  */
-#ifndef XM_UTILS_PREFIX_H
-#define XM_UTILS_PREFIX_H
+#ifndef XM_BINUTILS_PREFIX_H
+#define XM_BINUTILS_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -38,7 +38,7 @@
  *
  * @return           tb_true on success, tb_false on failure
  */
-static __tb_inline__ tb_bool_t xm_utils_stream_copy(tb_stream_ref_t istream, tb_stream_ref_t ostream, tb_hize_t size) {
+static __tb_inline__ tb_bool_t xm_binutils_stream_copy(tb_stream_ref_t istream, tb_stream_ref_t ostream, tb_hize_t size) {
     tb_assert_and_check_return_val(istream && ostream && size > 0, tb_false);
 
     tb_byte_t data[TB_STREAM_BLOCK_MAXN];
@@ -67,3 +67,4 @@ static __tb_inline__ tb_bool_t xm_utils_stream_copy(tb_stream_ref_t istream, tb_
 }
 
 #endif
+

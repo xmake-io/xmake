@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.binutils")
 
 local options = {
     {'i', "binarypath",    "kv", nil,   "Set the binary file path."},
@@ -34,28 +35,23 @@ local options = {
 }
 
 function _do_bin2obj_coff(binarypath, outputpath, opt)
-    -- get symbol prefix
-    local symbol_prefix = opt.symbol_prefix or "_binary_"
-
-    -- get architecture (default: x86_64)
-    local arch = opt.arch or "x86_64"
-
-    -- get zeroend (default: false)
-    local zeroend = opt.zeroend or false
-
     -- get filename from binary path (with extension, dots replaced with underscores)
     local filename = path.filename(binarypath)
     -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
     local basename = filename:gsub("%.", "_")
 
+    -- prepare opt
+    opt = opt or {}
+    opt.basename = basename
+
     -- trace
     print("converting binary file %s to COFF object file %s ..", binarypath, outputpath)
 
     -- do dump
-    if utils.bin2coff then
-        utils.bin2coff(binarypath, outputpath, symbol_prefix, arch, basename, zeroend)
+    if binutils.bin2coff then
+        binutils.bin2coff(binarypath, outputpath, opt)
     else
-        raise("bin2obj: utils.bin2coff not available (C implementation not compiled)")
+        raise("bin2obj: binutils.bin2coff not available (C implementation not compiled)")
     end
 
     -- trace
@@ -63,28 +59,23 @@ function _do_bin2obj_coff(binarypath, outputpath, opt)
 end
 
 function _do_bin2obj_elf(binarypath, outputpath, opt)
-    -- get symbol prefix
-    local symbol_prefix = opt.symbol_prefix or "_binary_"
-
-    -- get architecture (default: x86_64)
-    local arch = opt.arch or "x86_64"
-
-    -- get zeroend (default: false)
-    local zeroend = opt.zeroend or false
-
     -- get filename from binary path (with extension, dots replaced with underscores)
     local filename = path.filename(binarypath)
     -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
     local basename = filename:gsub("%.", "_")
 
+    -- prepare opt
+    opt = opt or {}
+    opt.basename = basename
+
     -- trace
     print("converting binary file %s to ELF object file %s ..", binarypath, outputpath)
 
     -- do dump
-    if utils.bin2elf then
-        utils.bin2elf(binarypath, outputpath, symbol_prefix, arch, basename, zeroend)
+    if binutils.bin2elf then
+        binutils.bin2elf(binarypath, outputpath, opt)
     else
-        raise("bin2obj: utils.bin2elf not available (C implementation not compiled)")
+        raise("bin2obj: binutils.bin2elf not available (C implementation not compiled)")
     end
 
     -- trace
@@ -92,37 +83,23 @@ function _do_bin2obj_elf(binarypath, outputpath, opt)
 end
 
 function _do_bin2obj_macho(binarypath, outputpath, opt)
-    -- get symbol prefix
-    local symbol_prefix = opt.symbol_prefix or "_binary_"
-
-    -- get platform (default: macosx)
-    local plat = opt.plat or "macosx"
-
-    -- get architecture (default: x86_64)
-    local arch = opt.arch or "x86_64"
-
-    -- get target minimum version (default: nil, will use default 10.0.0 in C)
-    local target_minver = opt.target_minver
-
-    -- get xcode sdk version (default: nil, will use default 10.0.0 in C)
-    local xcode_sdkver = opt.xcode_sdkver
-
-    -- get zeroend (default: false)
-    local zeroend = opt.zeroend or false
-
     -- get filename from binary path (with extension, dots replaced with underscores)
     local filename = path.filename(binarypath)
     -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
     local basename = filename:gsub("%.", "_")
 
+    -- prepare opt
+    opt = opt or {}
+    opt.basename = basename
+
     -- trace
     print("converting binary file %s to Mach-O object file %s ..", binarypath, outputpath)
 
     -- do dump
-    if utils.bin2macho then
-        utils.bin2macho(binarypath, outputpath, symbol_prefix, plat, arch, basename, target_minver, xcode_sdkver, zeroend)
+    if binutils.bin2macho then
+        binutils.bin2macho(binarypath, outputpath, opt)
     else
-        raise("bin2obj: utils.bin2macho not available (C implementation not compiled)")
+        raise("bin2obj: binutils.bin2macho not available (C implementation not compiled)")
     end
 
     -- trace

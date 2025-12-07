@@ -103,7 +103,7 @@ typedef struct __xm_coff_symbol_tail_t {
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_uint16_t xm_utils_bin2coff_get_machine(tb_char_t const *arch) {
+static tb_uint16_t xm_binutils_bin2coff_get_machine(tb_char_t const *arch) {
     if (!arch) {
         return XM_COFF_MACHINE_I386;
     }
@@ -119,7 +119,7 @@ static tb_uint16_t xm_utils_bin2coff_get_machine(tb_char_t const *arch) {
     return XM_COFF_MACHINE_I386;
 }
 
-static tb_void_t xm_utils_bin2coff_write_string(tb_stream_ref_t ostream, tb_char_t const *str, tb_size_t len) {
+static tb_void_t xm_binutils_bin2coff_write_string(tb_stream_ref_t ostream, tb_char_t const *str, tb_size_t len) {
     tb_assert_and_check_return(ostream && str);
     if (len == 0) {
         len = tb_strlen(str);
@@ -127,7 +127,7 @@ static tb_void_t xm_utils_bin2coff_write_string(tb_stream_ref_t ostream, tb_char
     tb_stream_bwrit(ostream, (tb_byte_t const *)str, len);
 }
 
-static tb_void_t xm_utils_bin2coff_write_padding(tb_stream_ref_t ostream, tb_size_t count) {
+static tb_void_t xm_binutils_bin2coff_write_padding(tb_stream_ref_t ostream, tb_size_t count) {
     tb_assert_and_check_return(ostream);
     tb_byte_t zero = 0;
     while (count-- > 0) {
@@ -135,14 +135,14 @@ static tb_void_t xm_utils_bin2coff_write_padding(tb_stream_ref_t ostream, tb_siz
     }
 }
 
-static tb_void_t xm_utils_bin2coff_write_symbol_name(tb_stream_ref_t ostream, tb_char_t const *name, tb_uint32_t *strtab_offset) {
+static tb_void_t xm_binutils_bin2coff_write_symbol_name(tb_stream_ref_t ostream, tb_char_t const *name, tb_uint32_t *strtab_offset) {
     tb_assert_and_check_return(ostream && name && strtab_offset);
     tb_size_t len = tb_strlen(name);
     if (len <= 8) {
         // short name: store directly in symbol name field
-        xm_utils_bin2coff_write_string(ostream, name, len);
+        xm_binutils_bin2coff_write_string(ostream, name, len);
         if (len < 8) {
-            xm_utils_bin2coff_write_padding(ostream, 8 - len);
+            xm_binutils_bin2coff_write_padding(ostream, 8 - len);
         }
     } else {
         // long name: store offset in string table
@@ -153,7 +153,7 @@ static tb_void_t xm_utils_bin2coff_write_symbol_name(tb_stream_ref_t ostream, tb
     }
 }
 
-static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
+static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
                                         tb_stream_ref_t ostream,
                                         tb_char_t const *symbol_prefix,
                                         tb_char_t const *arch,
@@ -223,7 +223,7 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     // write COFF header
     xm_coff_header_t header;
     tb_memset(&header, 0, sizeof(header));
-    header.machine = xm_utils_bin2coff_get_machine(arch);
+    header.machine = xm_binutils_bin2coff_get_machine(arch);
     header.nsects = 1;
     header.time = 0;
     header.symtabofs = symbol_table_ofs;
@@ -252,7 +252,7 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     }
 
     // write section data
-    if (!xm_utils_stream_copy(istream, ostream, filesize)) {
+    if (!xm_binutils_stream_copy(istream, ostream, filesize)) {
         return tb_false;
     }
     // append null terminator if zeroend is true
@@ -266,7 +266,7 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     // align to 4 bytes
     tb_uint32_t padding = (4 - (section_data_size & 3)) & 3;
     if (padding > 0) {
-        xm_utils_bin2coff_write_padding(ostream, padding);
+        xm_binutils_bin2coff_write_padding(ostream, padding);
     }
 
     // write symbol table
@@ -294,7 +294,7 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
 
     // symbol 1: _binary_xxx_start
     tb_uint32_t strtab_offset = 4; // start after size field
-    xm_utils_bin2coff_write_symbol_name(ostream, symbol_start, &strtab_offset);
+    xm_binutils_bin2coff_write_symbol_name(ostream, symbol_start, &strtab_offset);
     xm_coff_symbol_tail_t sym_start_tail;
     tb_memset(&sym_start_tail, 0, sizeof(sym_start_tail));
     sym_start_tail.value = 0;
@@ -305,7 +305,7 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     }
 
     // symbol 2: _binary_xxx_end
-    xm_utils_bin2coff_write_symbol_name(ostream, symbol_end, &strtab_offset);
+    xm_binutils_bin2coff_write_symbol_name(ostream, symbol_end, &strtab_offset);
     xm_coff_symbol_tail_t sym_end_tail;
     tb_memset(&sym_end_tail, 0, sizeof(sym_end_tail));
     sym_end_tail.value = datasize;
@@ -318,12 +318,12 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     // write string table
     tb_stream_bwrit(ostream, (tb_byte_t const *)&string_table_size, 4);
     if (start_len > 8) {
-        xm_utils_bin2coff_write_string(ostream, symbol_start, start_len);
+        xm_binutils_bin2coff_write_string(ostream, symbol_start, start_len);
         tb_byte_t null = 0;
         tb_stream_bwrit(ostream, &null, 1);
     }
     if (end_len > 8) {
-        xm_utils_bin2coff_write_string(ostream, symbol_end, end_len);
+        xm_binutils_bin2coff_write_string(ostream, symbol_end, end_len);
         tb_byte_t null = 0;
         tb_stream_bwrit(ostream, &null, 1);
     }
@@ -337,9 +337,9 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
 
 /* generate COFF object file from binary file
  *
- * local ok, errors = utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename)
+ * local ok, errors = binutils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename)
  */
-tb_int_t xm_utils_bin2coff(lua_State *lua) {
+tb_int_t xm_binutils_bin2coff(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the binaryfile
@@ -380,7 +380,7 @@ tb_int_t xm_utils_bin2coff(lua_State *lua) {
             break;
         }
 
-        if (!xm_utils_bin2coff_dump(istream, ostream, symbol_prefix, arch, basename, zeroend)) {
+        if (!xm_binutils_bin2coff_dump(istream, ostream, symbol_prefix, arch, basename, zeroend)) {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "bin2coff: dump data failed");
             break;

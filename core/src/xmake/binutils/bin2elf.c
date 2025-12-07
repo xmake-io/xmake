@@ -135,7 +135,7 @@ typedef struct __xm_elf64_symbol_t {
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_uint16_t xm_utils_bin2elf_get_machine(tb_char_t const *arch) {
+static tb_uint16_t xm_binutils_bin2elf_get_machine(tb_char_t const *arch) {
     if (!arch) {
         return XM_ELF_MACHINE_X86_64;
     }
@@ -153,7 +153,7 @@ static tb_uint16_t xm_utils_bin2elf_get_machine(tb_char_t const *arch) {
     return XM_ELF_MACHINE_X86_64;
 }
 
-static tb_bool_t xm_utils_bin2elf_is_64bit(tb_char_t const *arch) {
+static tb_bool_t xm_binutils_bin2elf_is_64bit(tb_char_t const *arch) {
     if (!arch) {
         return tb_true;
     }
@@ -165,7 +165,7 @@ static tb_bool_t xm_utils_bin2elf_is_64bit(tb_char_t const *arch) {
     return tb_false;
 }
 
-static tb_bool_t xm_utils_bin2elf_dump_32(tb_stream_ref_t istream,
+static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
                                           tb_stream_ref_t ostream,
                                           tb_char_t const *symbol_prefix,
                                           tb_char_t const *arch,
@@ -256,7 +256,7 @@ static tb_bool_t xm_utils_bin2elf_dump_32(tb_stream_ref_t istream,
     header.e_ident[6] = 1; // EV_CURRENT
     header.e_ident[7] = 0; // ELFOSABI_SYSV
     header.e_type = 1; // ET_REL
-    header.e_machine = xm_utils_bin2elf_get_machine(arch);
+    header.e_machine = xm_binutils_bin2elf_get_machine(arch);
     header.e_version = 1;
     header.e_shoff = section_headers_ofs;
     header.e_ehsize = header_size;
@@ -340,7 +340,7 @@ static tb_bool_t xm_utils_bin2elf_dump_32(tb_stream_ref_t istream,
     }
 
     // write .rodata section data
-    if (!xm_utils_stream_copy(istream, ostream, filesize)) {
+    if (!xm_binutils_stream_copy(istream, ostream, filesize)) {
         return tb_false;
     }
     // append null terminator if zeroend is true
@@ -469,7 +469,7 @@ static tb_bool_t xm_utils_bin2elf_dump_32(tb_stream_ref_t istream,
     return tb_true;
 }
 
-static tb_bool_t xm_utils_bin2elf_dump_64(tb_stream_ref_t istream,
+static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
                                           tb_stream_ref_t ostream,
                                           tb_char_t const *symbol_prefix,
                                           tb_char_t const *arch,
@@ -560,7 +560,7 @@ static tb_bool_t xm_utils_bin2elf_dump_64(tb_stream_ref_t istream,
     header.e_ident[6] = 1; // EV_CURRENT
     header.e_ident[7] = 0; // ELFOSABI_SYSV
     header.e_type = 1; // ET_REL
-    header.e_machine = xm_utils_bin2elf_get_machine(arch);
+    header.e_machine = xm_binutils_bin2elf_get_machine(arch);
     header.e_version = 1;
     header.e_shoff = section_headers_ofs;
     header.e_ehsize = header_size;
@@ -644,7 +644,7 @@ static tb_bool_t xm_utils_bin2elf_dump_64(tb_stream_ref_t istream,
     }
 
     // write .rodata section data
-    if (!xm_utils_stream_copy(istream, ostream, filesize)) {
+    if (!xm_binutils_stream_copy(istream, ostream, filesize)) {
         return tb_false;
     }
     // append null terminator if zeroend is true
@@ -779,9 +779,9 @@ static tb_bool_t xm_utils_bin2elf_dump_64(tb_stream_ref_t istream,
 
 /* generate ELF object file from binary file
  *
- * local ok, errors = utils.bin2elf(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
+ * local ok, errors = binutils.bin2elf(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
  */
-tb_int_t xm_utils_bin2elf(lua_State *lua) {
+tb_int_t xm_binutils_bin2elf(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the binaryfile
@@ -823,15 +823,15 @@ tb_int_t xm_utils_bin2elf(lua_State *lua) {
         }
 
         // choose 32-bit or 64-bit ELF based on architecture
-        tb_bool_t is_64bit = xm_utils_bin2elf_is_64bit(arch);
+        tb_bool_t is_64bit = xm_binutils_bin2elf_is_64bit(arch);
         if (is_64bit) {
-            if (!xm_utils_bin2elf_dump_64(istream, ostream, symbol_prefix, arch, basename, zeroend)) {
+            if (!xm_binutils_bin2elf_dump_64(istream, ostream, symbol_prefix, arch, basename, zeroend)) {
                 lua_pushboolean(lua, tb_false);
                 lua_pushfstring(lua, "bin2elf: dump data failed");
                 break;
             }
         } else {
-            if (!xm_utils_bin2elf_dump_32(istream, ostream, symbol_prefix, arch, basename, zeroend)) {
+            if (!xm_binutils_bin2elf_dump_32(istream, ostream, symbol_prefix, arch, basename, zeroend)) {
                 lua_pushboolean(lua, tb_false);
                 lua_pushfstring(lua, "bin2elf: dump data failed");
                 break;

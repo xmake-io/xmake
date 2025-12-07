@@ -148,45 +148,6 @@ function sandbox_utils.assert(value, format, ...)
     return value
 end
 
--- generate c/c++ code from the binary file
-if utils._bin2c then
-    function sandbox_utils.bin2c(binaryfile, outputfile, opt)
-        local ok, errors = utils.bin2c(binaryfile, outputfile, opt)
-        if not ok then
-            os.raise(errors)
-        end
-    end
-end
-
--- generate COFF object file from the binary file
-if utils.bin2coff then
-    function sandbox_utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
-        local ok, errors = utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
-        if not ok then
-            os.raise(errors)
-        end
-    end
-end
-
--- generate Mach-O object file from the binary file
-if utils.bin2macho then
-    function sandbox_utils.bin2macho(binaryfile, outputfile, symbol_prefix, plat, arch, basename, target_minver, xcode_sdkver, zeroend)
-        local ok, errors = utils.bin2macho(binaryfile, outputfile, symbol_prefix, plat, arch, basename, target_minver, xcode_sdkver, zeroend)
-        if not ok then
-            os.raise(errors)
-        end
-    end
-end
-
--- generate ELF object file from the binary file
-if utils.bin2elf then
-    function sandbox_utils.bin2elf(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
-        local ok, errors = utils.bin2elf(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
-        if not ok then
-            os.raise(errors)
-        end
-    end
-end
 
 -- return module
 return sandbox_utils
