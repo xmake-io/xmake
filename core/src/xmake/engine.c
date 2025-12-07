@@ -338,6 +338,7 @@ tb_int_t xm_package_loadxmi(lua_State *lua);
 tb_int_t xm_utils_bin2c(lua_State *lua);
 tb_int_t xm_utils_bin2coff(lua_State *lua);
 tb_int_t xm_utils_bin2macho(lua_State *lua);
+tb_int_t xm_utils_bin2elf(lua_State *lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses functions
@@ -659,6 +660,7 @@ static luaL_Reg const g_utils_functions[] = {
     { "bin2c", xm_utils_bin2c },
     { "bin2coff", xm_utils_bin2coff },
     { "bin2macho", xm_utils_bin2macho },
+    { "bin2elf", xm_utils_bin2elf },
     { tb_null, tb_null },
 };
 

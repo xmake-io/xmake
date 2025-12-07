@@ -178,6 +178,16 @@ if utils.bin2macho then
     end
 end
 
+-- generate ELF object file from the binary file
+if utils.bin2elf then
+    function sandbox_utils.bin2elf(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
+        local ok, errors = utils.bin2elf(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
+        if not ok then
+            os.raise(errors)
+        end
+    end
+end
+
 -- return module
 return sandbox_utils
 

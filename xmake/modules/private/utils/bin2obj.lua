@@ -63,7 +63,32 @@ function _do_bin2obj_coff(binarypath, outputpath, opt)
 end
 
 function _do_bin2obj_elf(binarypath, outputpath, opt)
-    raise("bin2obj: ELF format not yet implemented")
+    -- get symbol prefix
+    local symbol_prefix = opt.symbol_prefix or "_binary_"
+
+    -- get architecture (default: x86_64)
+    local arch = opt.arch or "x86_64"
+
+    -- get zeroend (default: false)
+    local zeroend = opt.zeroend or false
+
+    -- get filename from binary path (with extension, dots replaced with underscores)
+    local filename = path.filename(binarypath)
+    -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
+    local basename = filename:gsub("%.", "_")
+
+    -- trace
+    print("converting binary file %s to ELF object file %s ..", binarypath, outputpath)
+
+    -- do dump
+    if utils.bin2elf then
+        utils.bin2elf(binarypath, outputpath, symbol_prefix, arch, basename, zeroend)
+    else
+        raise("bin2obj: utils.bin2elf not available (C implementation not compiled)")
+    end
+
+    -- trace
+    cprint("${bright}%s generated!", outputpath)
 end
 
 function _do_bin2obj_macho(binarypath, outputpath, opt)
