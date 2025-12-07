@@ -48,7 +48,9 @@ rule("utils.bin2obj")
         local symbol_prefix = target:extraconf("rules", "utils.bin2obj", "symbol_prefix") or "_binary_"
 
         -- get zeroend (default: false)
-        local zeroend = target:extraconf("rules", "utils.bin2obj", "zeroend") or false
+        -- check file-level config first, then rule-level config
+        local fileconfig = target:fileconfig(sourcefile_bin)
+        local zeroend = (fileconfig and fileconfig.zeroend) or target:extraconf("rules", "utils.bin2obj", "zeroend") or false
 
         -- get architecture
         local arch = target:arch()

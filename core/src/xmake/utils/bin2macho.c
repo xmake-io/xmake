@@ -534,7 +534,7 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     tb_stream_bwrit(ostream, &null, 1);
 
     // align string table to 8 bytes
-    padding = strtab_size - (4 + start_len + 1 + end_len + 1);
+    padding = strtab_size - (4 + (tb_uint32_t)start_len + 1 + (tb_uint32_t)end_len + 1);
     if (padding > 0) {
         tb_byte_t zero = 0;
         while (padding-- > 0) {
