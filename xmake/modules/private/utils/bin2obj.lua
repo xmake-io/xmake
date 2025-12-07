@@ -25,14 +25,16 @@ local options = {
     {'i', "binarypath", "kv", nil,   "Set the binary file path."},
     {'o', "outputpath", "kv", nil,   "Set the output object file path."},
     {'f', "format",    "kv", nil,   "Set the object file format (coff, elf, macho)."},
-    {nil, "symbol-prefix", "kv", nil, "Set the symbol prefix (default: _binary_)."},
+    {nil, "symbol_prefix", "kv", nil, "Set the symbol prefix (default: _binary_)."},
     {'a', "arch",       "kv", nil,   "Set the target architecture."},
-    {'p', "plat",       "kv", nil,   "Set the target platform (macosx, iphoneos, etc.)."}
+    {'p', "plat",       "kv", nil,   "Set the target platform (macosx, iphoneos, etc.)."},
+    {nil, "target_minver", "kv", nil, "Set the target minimum version (e.g., 10.0, 18.2)."},
+    {nil, "xcode_sdkver", "kv", nil, "Set the Xcode SDK version (e.g., 10.0, 18.2)."}
 }
 
 function _do_bin2obj_coff(binarypath, outputpath, opt)
     -- get symbol prefix
-    local symbol_prefix = opt["symbol-prefix"] or "_binary_"
+    local symbol_prefix = opt.symbol_prefix or "_binary_"
 
     -- get architecture (default: x86_64)
     local arch = opt.arch or "x86_64"
@@ -65,13 +67,19 @@ end
 
 function _do_bin2obj_macho(binarypath, outputpath, opt)
     -- get symbol prefix
-    local symbol_prefix = opt["symbol-prefix"] or "_binary_"
+    local symbol_prefix = opt.symbol_prefix or "_binary_"
 
     -- get platform (default: macosx)
     local plat = opt.plat or "macosx"
 
     -- get architecture (default: x86_64)
     local arch = opt.arch or "x86_64"
+
+    -- get target minimum version (default: nil, will use default 10.0.0 in C)
+    local target_minver = opt.target_minver
+
+    -- get xcode sdk version (default: nil, will use default 10.0.0 in C)
+    local xcode_sdkver = opt.xcode_sdkver
 
     -- get filename from binary path (with extension, dots replaced with underscores)
     local filename = path.filename(binarypath)
@@ -83,7 +91,7 @@ function _do_bin2obj_macho(binarypath, outputpath, opt)
 
     -- do dump
     if utils.bin2macho then
-        utils.bin2macho(binarypath, outputpath, symbol_prefix, plat, arch, basename)
+        utils.bin2macho(binarypath, outputpath, symbol_prefix, plat, arch, basename, target_minver, xcode_sdkver)
     else
         raise("bin2obj: utils.bin2macho not available (C implementation not compiled)")
     end

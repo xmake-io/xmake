@@ -53,6 +53,17 @@ rule("utils.bin2obj")
         -- get platform
         local plat = target:plat()
 
+        -- get target_minver and xcode_sdkver from xcode toolchain (if available)
+        local target_minver = nil
+        local xcode_sdkver = nil
+        if format == "macho" then
+            local toolchain = target:toolchain("xcode")
+            if toolchain then
+                target_minver = toolchain:config("target_minver")
+                xcode_sdkver = toolchain:config("xcode_sdkver")
+            end
+        end
+
         -- convert binary file to object file
         local argv = {
             "-i", path(sourcefile_bin),
@@ -62,8 +73,13 @@ rule("utils.bin2obj")
             "-p", plat
         }
         if symbol_prefix ~= "_binary_" then
-            table.insert(argv, "--symbol-prefix")
-            table.insert(argv, symbol_prefix)
+            table.insert(argv, "--symbol_prefix=" .. symbol_prefix)
+        end
+        if target_minver then
+            table.insert(argv, "--target_minver=" .. target_minver)
+        end
+        if xcode_sdkver then
+            table.insert(argv, "--xcode_sdkver=" .. xcode_sdkver)
         end
         batchcmds:vlua("private.utils.bin2obj", argv)
 
