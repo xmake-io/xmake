@@ -54,6 +54,11 @@
 #define XM_MACHO_LC_SYMTAB           0x2
 #define XM_MACHO_LC_BUILD_VERSION    0x32
 
+#define XM_MACHO_PLATFORM_MACOS      1
+#define XM_MACHO_PLATFORM_IOS        2
+#define XM_MACHO_PLATFORM_TVOS       3
+#define XM_MACHO_PLATFORM_WATCHOS    4
+
 #define XM_MACHO_SECT_TYPE_REGULAR   0x0
 #define XM_MACHO_SECT_ATTR_SOME_INITS 0x400
 #define XM_MACHO_SECT_ATTR_PURE_INSTRUCTIONS 0x80000000
@@ -234,9 +239,26 @@ static tb_uint32_t xm_utils_bin2macho_align(tb_uint32_t value, tb_uint32_t align
     return ((value + align - 1) & ~(align - 1));
 }
 
+static tb_uint32_t xm_utils_bin2macho_get_platform(tb_char_t const *platform) {
+    if (!platform) {
+        return XM_MACHO_PLATFORM_MACOS;
+    }
+    if (tb_strcmp(platform, "macosx") == 0 || tb_strcmp(platform, "macos") == 0) {
+        return XM_MACHO_PLATFORM_MACOS;
+    } else if (tb_strcmp(platform, "iphoneos") == 0 || tb_strcmp(platform, "ios") == 0) {
+        return XM_MACHO_PLATFORM_IOS;
+    } else if (tb_strcmp(platform, "appletvos") == 0 || tb_strcmp(platform, "tvos") == 0) {
+        return XM_MACHO_PLATFORM_TVOS;
+    } else if (tb_strcmp(platform, "watchos") == 0) {
+        return XM_MACHO_PLATFORM_WATCHOS;
+    }
+    return XM_MACHO_PLATFORM_MACOS;
+}
+
 static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
                                              tb_stream_ref_t ostream,
                                              tb_char_t const *symbol_prefix,
+                                             tb_char_t const *plat,
                                              tb_char_t const *arch,
                                              tb_char_t const *basename) {
     tb_assert_and_check_return_val(istream && ostream, tb_false);
@@ -364,7 +386,7 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     tb_memset(&build_version, 0, sizeof(build_version));
     build_version.cmd = XM_MACHO_LC_BUILD_VERSION;
     build_version.cmdsize = build_version_cmd_size;
-    build_version.platform = 1; // PLATFORM_MACOS
+    build_version.platform = xm_utils_bin2macho_get_platform(plat);
     build_version.minos = 0x000a0000; // 10.0.0
     build_version.sdk = 0x000a0000; // 10.0.0
     build_version.ntools = 0;
@@ -473,10 +495,11 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
 static tb_bool_t xm_utils_bin2macho_dump(tb_stream_ref_t istream,
                                          tb_stream_ref_t ostream,
                                          tb_char_t const *symbol_prefix,
+                                         tb_char_t const *plat,
                                          tb_char_t const *arch,
                                          tb_char_t const *basename) {
     if (xm_utils_bin2macho_is_64bit(arch)) {
-        return xm_utils_bin2macho_dump_64(istream, ostream, symbol_prefix, arch, basename);
+        return xm_utils_bin2macho_dump_64(istream, ostream, symbol_prefix, plat, arch, basename);
     } else {
         // 32-bit not implemented yet
         return tb_false;
@@ -489,7 +512,7 @@ static tb_bool_t xm_utils_bin2macho_dump(tb_stream_ref_t istream,
 
 /* generate Mach-O object file from binary file
  *
- * local ok, errors = utils.bin2macho(binaryfile, outputfile, symbol_prefix, arch, basename)
+ * local ok, errors = utils.bin2macho(binaryfile, outputfile, symbol_prefix, plat, arch, basename)
  */
 tb_int_t xm_utils_bin2macho(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
@@ -505,11 +528,14 @@ tb_int_t xm_utils_bin2macho(lua_State *lua) {
     // get symbol prefix (optional)
     tb_char_t const *symbol_prefix = lua_isstring(lua, 3) ? lua_tostring(lua, 3) : tb_null;
 
+    // get plat (optional)
+    tb_char_t const *plat = lua_isstring(lua, 4) ? lua_tostring(lua, 4) : tb_null;
+
     // get arch (optional)
-    tb_char_t const *arch = lua_isstring(lua, 4) ? lua_tostring(lua, 4) : tb_null;
+    tb_char_t const *arch = lua_isstring(lua, 5) ? lua_tostring(lua, 5) : tb_null;
 
     // get basename (optional)
-    tb_char_t const *basename = lua_isstring(lua, 5) ? lua_tostring(lua, 5) : tb_null;
+    tb_char_t const *basename = lua_isstring(lua, 6) ? lua_tostring(lua, 6) : tb_null;
 
     // do dump
     tb_bool_t ok = tb_false;
@@ -529,7 +555,7 @@ tb_int_t xm_utils_bin2macho(lua_State *lua) {
             break;
         }
 
-        if (!xm_utils_bin2macho_dump(istream, ostream, symbol_prefix, arch, basename)) {
+        if (!xm_utils_bin2macho_dump(istream, ostream, symbol_prefix, plat, arch, basename)) {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "bin2macho: dump data failed");
             break;

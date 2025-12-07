@@ -26,15 +26,19 @@ local options = {
     {'o', "outputpath", "kv", nil,   "Set the output object file path."},
     {'f', "format",    "kv", nil,   "Set the object file format (coff, elf, macho)."},
     {nil, "symbol-prefix", "kv", nil, "Set the symbol prefix (default: _binary_)."},
-    {'a', "arch",       "kv", nil,   "Set the target architecture."}
+    {'a', "arch",       "kv", nil,   "Set the target architecture."},
+    {'p', "plat",       "kv", nil,   "Set the target platform (macosx, iphoneos, etc.)."}
 }
 
 function _do_bin2obj_coff(binarypath, outputpath, opt)
     -- get symbol prefix
     local symbol_prefix = opt["symbol-prefix"] or "_binary_"
 
-    -- get architecture
-    local arch = opt.arch
+    -- get architecture (default: x86_64)
+    local arch = opt.arch or "x86_64"
+
+    -- get platform (not used for COFF, but passed for consistency)
+    local platform = opt.plat
 
     -- get filename from binary path (with extension, dots replaced with underscores)
     local filename = path.filename(binarypath)
@@ -63,8 +67,11 @@ function _do_bin2obj_macho(binarypath, outputpath, opt)
     -- get symbol prefix
     local symbol_prefix = opt["symbol-prefix"] or "_binary_"
 
-    -- get architecture
-    local arch = opt.arch
+    -- get platform (default: macosx)
+    local plat = opt.plat or "macosx"
+
+    -- get architecture (default: x86_64)
+    local arch = opt.arch or "x86_64"
 
     -- get filename from binary path (with extension, dots replaced with underscores)
     local filename = path.filename(binarypath)
@@ -76,7 +83,7 @@ function _do_bin2obj_macho(binarypath, outputpath, opt)
 
     -- do dump
     if utils.bin2macho then
-        utils.bin2macho(binarypath, outputpath, symbol_prefix, arch, basename)
+        utils.bin2macho(binarypath, outputpath, symbol_prefix, plat, arch, basename)
     else
         raise("bin2obj: utils.bin2macho not available (C implementation not compiled)")
     end

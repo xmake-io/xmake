@@ -50,12 +50,16 @@ rule("utils.bin2obj")
         -- get architecture
         local arch = target:arch()
 
+        -- get platform
+        local plat = target:plat()
+
         -- convert binary file to object file
         local argv = {
             "-i", path(sourcefile_bin),
             "-o", path(objectfile),
             "-f", format,
-            "-a", arch
+            "-a", arch,
+            "-p", plat
         }
         if symbol_prefix ~= "_binary_" then
             table.insert(argv, "--symbol-prefix")
