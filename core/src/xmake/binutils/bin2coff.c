@@ -175,7 +175,7 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
         datasize++;
     }
 
-    // Determine if this is i386 architecture (for symbol prefix adjustment)
+    // determine architecture for symbol prefix adjustment
     tb_uint16_t machine = xm_binutils_bin2coff_get_machine(arch);
     tb_bool_t is_i386 = (machine == XM_COFF_MACHINE_I386);
 
@@ -190,9 +190,9 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     }
 
     // build symbol name
-    // Note: On i386 Windows, C compiler automatically adds an underscore prefix to external symbols
-    // So if we use "_binary_", the actual symbol becomes "__binary_" after compilation
-    // To match, we need to ensure the prefix has two underscores for i386
+    // note: on i386 Windows, C compiler automatically adds an underscore prefix to external symbols
+    // so if we use "_binary_", the actual symbol becomes "__binary_" after compilation
+    // to match, we need to ensure the prefix has two underscores for i386
     if (symbol_prefix) {
         if (is_i386 && symbol_prefix[0] == '_' && symbol_prefix[1] != '_') {
             // i386: if prefix starts with single underscore, add another one
@@ -242,16 +242,16 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     // write COFF header
     xm_coff_header_t header;
     tb_memset(&header, 0, sizeof(header));
-    header.machine = xm_binutils_bin2coff_get_machine(arch);
+    header.machine = machine;
     header.nsects = 1;
     header.time = 0;
     header.symtabofs = symbol_table_ofs;
-    // Note: COFF spec says nsyms is the number of symbol table entries (including aux entries)
-    // - Section symbol (1) + aux entry (1) + start symbol (1) + end symbol (1) = 4 entries
-    // - Total size: 4 * 18 = 72 bytes
-    // - i386 linker: calculates string table as symtabofs + nsyms * 18 = symtabofs + 72 (correct)
-    // - When reading symbols, linker follows naux fields to skip aux entries correctly
-    // - From mingw i386 analysis: section symbols MUST have aux entry (naux=1)
+    // note: COFF spec says nsyms is the number of symbol table entries (including aux entries)
+    // section symbol (1) + aux entry (1) + start symbol (1) + end symbol (1) = 4 entries
+    // total size: 4 * 18 = 72 bytes
+    // i386 linker calculates string table as symtabofs + nsyms * 18 = symtabofs + 72 (correct)
+    // when reading symbols, linker follows naux fields to skip aux entries correctly
+    // from mingw i386 analysis: section symbols MUST have aux entry (naux=1)
     header.nsyms = 4; // 3 symbols + 1 aux entry
     header.opthdr = 0;
     header.flags = 0;
@@ -302,7 +302,7 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     sym_section.sect = 1; // section index (1-based)
     sym_section.type = 0; // IMAGE_SYM_TYPE_NULL
     sym_section.scl = 3; // IMAGE_SYM_CLASS_STATIC
-    // Section symbol MUST have auxiliary entry for i386 compatibility (as seen in mingw-generated files)
+    // section symbol MUST have auxiliary entry for i386 compatibility (as seen in mingw-generated files)
     sym_section.naux = 1; // auxiliary entry (required for i386)
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_section, sizeof(sym_section))) {
         return tb_false;
@@ -317,7 +317,7 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
         return tb_false;
     }
 
-    // symbol 1: _binary_xxx_start
+    // symbol 1: _binary_xxx_start (or __binary_xxx_start for i386)
     tb_uint32_t strtab_offset = 4; // start after size field
     xm_binutils_bin2coff_write_symbol_name(ostream, symbol_start, &strtab_offset);
     xm_coff_symbol_tail_t sym_start_tail;
@@ -331,7 +331,7 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
         return tb_false;
     }
 
-    // symbol 2: _binary_xxx_end
+    // symbol 2: _binary_xxx_end (or __binary_xxx_end for i386)
     xm_binutils_bin2coff_write_symbol_name(ostream, symbol_end, &strtab_offset);
     xm_coff_symbol_tail_t sym_end_tail;
     tb_memset(&sym_end_tail, 0, sizeof(sym_end_tail));
@@ -345,8 +345,8 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     }
 
     // write string table
-    // Symbol table size: section symbol (18) + aux entry (18) + start symbol (18) + end symbol (18) = 72 bytes
-    // String table starts at symtabofs + 72, which matches nsyms * 18 = 4 * 18 = 72
+    // symbol table size: section symbol (18) + aux entry (18) + start symbol (18) + end symbol (18) = 72 bytes
+    // string table starts at symtabofs + 72, which matches nsyms * 18 = 4 * 18 = 72
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&string_table_size, 4)) {
         return tb_false;
     }
@@ -370,7 +370,8 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
 
 /* generate COFF object file from binary file
  *
- * local ok, errors = binutils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename)
+ * @param lua the lua state
+ * @return 1 on success, 2 on failure (with error message on stack)
  */
 tb_int_t xm_binutils_bin2coff(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
