@@ -392,8 +392,8 @@ static tb_bool_t xm_binutils_bin2macho_dump_64(tb_stream_ref_t istream,
     segment.vmsize = data_size;
     segment.fileoff = data_offset;
     segment.filesize = data_size;
-    segment.maxprot = XM_MACHO_VM_PROT_READ; // VM_PROT_READ (read-only)
-    segment.initprot = XM_MACHO_VM_PROT_READ; // VM_PROT_READ (read-only)
+    segment.maxprot = XM_MACHO_VM_PROT_READ | XM_MACHO_VM_PROT_EXECUTE; // VM_PROT_READ | VM_PROT_EXECUTE (r-x)
+    segment.initprot = XM_MACHO_VM_PROT_READ | XM_MACHO_VM_PROT_EXECUTE; // VM_PROT_READ | VM_PROT_EXECUTE (r-x)
     segment.nsects = 1;
     segment.flags = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&segment, sizeof(segment))) {
@@ -637,8 +637,8 @@ static tb_bool_t xm_binutils_bin2macho_dump_32(tb_stream_ref_t istream,
     segment.vmsize = data_size;
     segment.fileoff = data_offset;
     segment.filesize = data_size;
-    segment.maxprot = XM_MACHO_VM_PROT_READ; // VM_PROT_READ (read-only)
-    segment.initprot = XM_MACHO_VM_PROT_READ; // VM_PROT_READ (read-only)
+    segment.maxprot = XM_MACHO_VM_PROT_READ | XM_MACHO_VM_PROT_EXECUTE; // VM_PROT_READ | VM_PROT_EXECUTE (r-x)
+    segment.initprot = XM_MACHO_VM_PROT_READ | XM_MACHO_VM_PROT_EXECUTE; // VM_PROT_READ | VM_PROT_EXECUTE (r-x)
     segment.nsects = 1;
     segment.flags = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&segment, sizeof(segment))) {
