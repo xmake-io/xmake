@@ -454,17 +454,8 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     }
 
     // write section data
-    tb_byte_t buffer[8192];
-    tb_hong_t left = filesize;
-    while (left > 0) {
-        tb_size_t to_read = (tb_size_t)tb_min(left, (tb_hong_t)sizeof(buffer));
-        if (!tb_stream_bread(istream, buffer, to_read)) {
-            return tb_false;
-        }
-        if (!tb_stream_bwrit(ostream, buffer, to_read)) {
-            return tb_false;
-        }
-        left -= to_read;
+    if (!xm_utils_stream_copy(istream, ostream, filesize)) {
+        return tb_false;
     }
     // append null terminator if zeroend is true
     if (zeroend) {

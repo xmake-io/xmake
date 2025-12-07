@@ -40,9 +40,6 @@ function _do_bin2obj_coff(binarypath, outputpath, opt)
     -- get architecture (default: x86_64)
     local arch = opt.arch or "x86_64"
 
-    -- get platform (not used for COFF, but passed for consistency)
-    local platform = opt.plat
-
     -- get zeroend (default: false)
     local zeroend = opt.zeroend or false
 
@@ -56,7 +53,7 @@ function _do_bin2obj_coff(binarypath, outputpath, opt)
 
     -- do dump
     if utils.bin2coff then
-        utils.bin2coff(binarypath, outputpath, symbol_prefix, arch, basename, platform, zeroend)
+        utils.bin2coff(binarypath, outputpath, symbol_prefix, arch, basename, zeroend)
     else
         raise("bin2obj: utils.bin2coff not available (C implementation not compiled)")
     end

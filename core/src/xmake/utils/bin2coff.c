@@ -250,17 +250,8 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
     }
 
     // write section data
-    tb_byte_t buffer[8192];
-    tb_hong_t left = filesize;
-    while (left > 0) {
-        tb_size_t to_read = (tb_size_t)tb_min(left, (tb_hong_t)sizeof(buffer));
-        if (!tb_stream_bread(istream, buffer, to_read)) {
-            return tb_false;
-        }
-        if (!tb_stream_bwrit(ostream, buffer, to_read)) {
-            return tb_false;
-        }
-        left -= to_read;
+    if (!xm_utils_stream_copy(istream, ostream, filesize)) {
+        return tb_false;
     }
     // append null terminator if zeroend is true
     if (zeroend) {
@@ -366,11 +357,8 @@ tb_int_t xm_utils_bin2coff(lua_State *lua) {
     // get basename (optional)
     tb_char_t const *basename = lua_isstring(lua, 5) ? lua_tostring(lua, 5) : tb_null;
 
-    // get platform (optional, not used but passed for consistency)
-    tb_char_t const *plat = lua_isstring(lua, 6) ? lua_tostring(lua, 6) : tb_null;
-
     // get zeroend (optional, default: false)
-    tb_bool_t zeroend = lua_toboolean(lua, 7);
+    tb_bool_t zeroend = lua_toboolean(lua, 6);
 
     // do dump
     tb_bool_t ok = tb_false;

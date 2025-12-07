@@ -160,8 +160,8 @@ end
 
 -- generate COFF object file from the binary file
 if utils.bin2coff then
-    function sandbox_utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename, plat, zeroend)
-        local ok, errors = utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename, plat, zeroend)
+    function sandbox_utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
+        local ok, errors = utils.bin2coff(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
         if not ok then
             os.raise(errors)
         end
