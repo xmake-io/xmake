@@ -334,8 +334,11 @@ tb_int_t xm_tty_term_mode(lua_State *lua);
 // the package functions
 tb_int_t xm_package_loadxmi(lua_State *lua);
 
-// the utils functions
-tb_int_t xm_utils_bin2c(lua_State *lua);
+// the binutils functions
+tb_int_t xm_binutils_bin2c(lua_State *lua);
+tb_int_t xm_binutils_bin2coff(lua_State *lua);
+tb_int_t xm_binutils_bin2macho(lua_State *lua);
+tb_int_t xm_binutils_bin2elf(lua_State *lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses functions
@@ -652,9 +655,12 @@ static luaL_Reg const g_package_functions[] = {
     { tb_null, tb_null },
 };
 
-// the utils functions
-static luaL_Reg const g_utils_functions[] = {
-    { "bin2c", xm_utils_bin2c },
+// the binutils functions
+static luaL_Reg const g_binutils_functions[] = {
+    { "bin2c", xm_binutils_bin2c },
+    { "bin2coff", xm_binutils_bin2coff },
+    { "bin2macho", xm_binutils_bin2macho },
+    { "bin2elf", xm_binutils_bin2elf },
     { tb_null, tb_null },
 };
 
@@ -1555,8 +1561,8 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
         // bind package functions
         xm_lua_register(engine->lua, "package", g_package_functions);
 
-        // bind utils functions
-        xm_lua_register(engine->lua, "utils", g_utils_functions);
+        // bind binutils functions
+        xm_lua_register(engine->lua, "binutils", g_binutils_functions);
 
         // bind thread functions
         xm_lua_register(engine->lua, "thread", g_thread_functions);

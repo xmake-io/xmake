@@ -2,13 +2,11 @@
 #include <stdint.h>
 #include <ctype.h>
 
-static unsigned char g_bin_data[] = {
-    #include "data.bin.h"
-};
+extern const uint8_t _binary_data_bin_start[];
+extern const uint8_t _binary_data_bin_end[];
 
-static unsigned char g_ico_data[] = {
-    #include "xmake.ico.h"
-};
+extern const uint8_t _binary_xmake_ico_start[];
+extern const uint8_t _binary_xmake_ico_end[];
 
 static void hexdump(const char* name, const uint8_t* data, uint32_t size) {
     printf("%s: size: %u bytes\n", name, (unsigned int)size);
@@ -89,10 +87,12 @@ static void hexdump(const char* name, const uint8_t* data, uint32_t size) {
     }
 }
 
-int main(int argc, char** argv)
-{
-    hexdump("data.bin", g_bin_data, (uint32_t)sizeof(g_bin_data));
+int main(int argc, char** argv) {
+    const uint32_t _binary_data_bin_size = (uint32_t)(_binary_data_bin_end - _binary_data_bin_start);
+    const uint32_t _binary_xmake_ico_size = (uint32_t)(_binary_xmake_ico_end - _binary_xmake_ico_start);
+
+    hexdump("data.bin", _binary_data_bin_start, _binary_data_bin_size);
     printf("\n");
-    hexdump("xmake.ico", g_ico_data, (uint32_t)sizeof(g_ico_data));
+    hexdump("xmake.ico", _binary_xmake_ico_start, _binary_xmake_ico_size);
     return 0;
 }

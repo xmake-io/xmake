@@ -86,7 +86,7 @@ rule("utils.hlsl2spv")
 
             -- add commands
             local argv = {"--nozeroend", "-i", path(spvfilepath), "-o", path(headerfile)}
-            batchcmds:vlua("private.utils.bin2c", argv)
+            batchcmds:vlua("utils.binary.bin2c", argv)
         end
 
         batchcmds:add_depfiles(sourcefile_hlsl)

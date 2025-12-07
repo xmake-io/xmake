@@ -43,21 +43,21 @@
  */
 
 // optimized hex conversion table
-static tb_char_t const *xm_utils_bin2c_digits = "0123456789ABCDEF";
+static tb_char_t const *xm_binutils_bin2c_digits = "0123456789ABCDEF";
 
 // inline hex conversion for better performance
-static __tb_inline__ tb_void_t xm_utils_bin2c_write_hex(tb_char_t *str, tb_byte_t value) {
+static __tb_inline__ tb_void_t xm_binutils_bin2c_write_hex(tb_char_t *str, tb_byte_t value) {
     str[0] = ' ';
     str[1] = '0';
     str[2] = 'x';
-    str[3] = xm_utils_bin2c_digits[(value >> 4) & 15];
-    str[4] = xm_utils_bin2c_digits[value & 15];
+    str[3] = xm_binutils_bin2c_digits[(value >> 4) & 15];
+    str[4] = xm_binutils_bin2c_digits[value & 15];
 }
 
-static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
-                                     tb_stream_ref_t ostream,
-                                     tb_int_t        linewidth,
-                                     tb_bool_t       nozeroend) {
+static tb_bool_t xm_binutils_bin2c_dump(tb_stream_ref_t istream,
+                                        tb_stream_ref_t ostream,
+                                        tb_int_t        linewidth,
+                                        tb_bool_t       nozeroend) {
 
     tb_bool_t first = tb_true;
     tb_bool_t zero_pending = tb_false;
@@ -81,9 +81,7 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
             } else {
                 tb_hong_t left = tb_stream_left(istream);
                 tb_size_t to_read = (tb_size_t)tb_min(left, (tb_hong_t)XM_BIN2C_DATA_SIZE);
-                if (!to_read) {
-                    break;
-                }
+                tb_check_break(to_read);
 
                 if (!tb_stream_bread(istream, data, to_read)) {
                     break;
@@ -138,7 +136,7 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
             }
 
             // write hex value (inline for performance)
-            xm_utils_bin2c_write_hex(line + linesize, data[data_pos]);
+            xm_binutils_bin2c_write_hex(line + linesize, data[data_pos]);
             linesize += 5;
             bytes_in_line++;
             data_pos++;
@@ -162,9 +160,9 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream,
 
 /* generate c/c++ code from the binary file
  *
- * local ok, errors = utils.bin2c(binaryfile, outputfile, linewidth, nozeroend)
+ * local ok, errors = binutils.bin2c(binaryfile, outputfile, linewidth, nozeroend)
  */
-tb_int_t xm_utils_bin2c(lua_State *lua) {
+tb_int_t xm_binutils_bin2c(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
     // get the binaryfile
@@ -199,7 +197,7 @@ tb_int_t xm_utils_bin2c(lua_State *lua) {
             break;
         }
 
-        if (!xm_utils_bin2c_dump(istream, ostream, linewidth, nozeroend)) {
+        if (!xm_binutils_bin2c_dump(istream, ostream, linewidth, nozeroend)) {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "bin2c: dump data failed");
             break;
