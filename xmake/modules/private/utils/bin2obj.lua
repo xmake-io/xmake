@@ -31,7 +31,7 @@ local options = {
 
 function _do_bin2obj_coff(binarypath, outputpath, opt)
     -- get symbol prefix
-    local symbol_prefix = opt["symbol-prefix"] or opt.symbol_prefix or "_binary_"
+    local symbol_prefix = opt["symbol-prefix"] or "_binary_"
 
     -- get architecture
     local arch = opt.arch

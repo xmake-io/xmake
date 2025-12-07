@@ -145,7 +145,7 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
 
     // get file size
     tb_hong_t filesize = tb_stream_size(istream);
-    if (filesize < 0) {
+    if (filesize < 0 || filesize > 0xffffffffU) {
         return tb_false;
     }
     tb_uint32_t datasize = (tb_uint32_t)filesize;
@@ -304,13 +304,13 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
 
     // write string table
     tb_stream_bwrit(ostream, (tb_byte_t const *)&string_table_size, 4);
-    if (tb_strlen(symbol_start) > 8) {
-        xm_utils_bin2coff_write_string(ostream, symbol_start, 0);
+    if (start_len > 8) {
+        xm_utils_bin2coff_write_string(ostream, symbol_start, start_len);
         tb_byte_t null = 0;
         tb_stream_bwrit(ostream, &null, 1);
     }
-    if (tb_strlen(symbol_end) > 8) {
-        xm_utils_bin2coff_write_string(ostream, symbol_end, 0);
+    if (end_len > 8) {
+        xm_utils_bin2coff_write_string(ostream, symbol_end, end_len);
         tb_byte_t null = 0;
         tb_stream_bwrit(ostream, &null, 1);
     }
