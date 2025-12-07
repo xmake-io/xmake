@@ -56,6 +56,7 @@ rule("utils.glsl2spv")
     before_buildcmd_file(function (target, batchcmds, sourcefile_glsl, opt)
         import("lib.detect.find_tool")
         import("rules.utils.bin2obj.utils", {alias = "bin2obj_utils", rootdir = os.programdir()})
+        import("rules.utils.bin2c.utils", {alias = "bin2c_utils", rootdir = os.programdir()})
 
         -- get glslangValidator
         local glslc
@@ -88,15 +89,13 @@ rule("utils.glsl2spv")
         local is_bin2c = target:extraconf("rules", "utils.glsl2spv", "bin2c")
         local is_bin2obj = target:extraconf("rules", "utils.glsl2spv", "bin2obj")
         if is_bin2c then
-            -- get header file
-            local headerdir = outputdir
-            local headerfile = path.join(headerdir, path.filename(spvfilepath) .. ".h")
-            target:add("includedirs", headerdir)
+            -- generate header file
+            local headerfile = bin2c_utils.generate_headerfile(target, batchcmds, spvfilepath, {
+                progress = opt.progress,
+                headerdir = outputdir,
+                zeroend = true  -- default enable zeroend for shader data
+            })
             outputfile = headerfile
-
-            -- add commands
-            local argv = {"--nozeroend", "-i", path(spvfilepath), "-o", path(headerfile)}
-            batchcmds:vlua("utils.binary.bin2c", argv)
         elseif is_bin2obj then
             -- convert to object file using bin2obj
             local objectfile = bin2obj_utils.generate_objectfile(target, batchcmds, spvfilepath, {
