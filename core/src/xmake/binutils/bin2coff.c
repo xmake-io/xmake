@@ -175,6 +175,10 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
         datasize++;
     }
 
+    // Determine if this is i386 architecture (for symbol prefix adjustment)
+    tb_uint16_t machine = xm_binutils_bin2coff_get_machine(arch);
+    tb_bool_t is_i386 = (machine == XM_COFF_MACHINE_I386);
+
     // generate symbol names from filename
     tb_char_t symbol_name[256] = {0};
     tb_char_t symbol_start[256] = {0};
@@ -186,10 +190,22 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     }
 
     // build symbol name
+    // Note: On i386 Windows, C compiler automatically adds an underscore prefix to external symbols
+    // So if we use "_binary_", the actual symbol becomes "__binary_" after compilation
+    // To match, we need to ensure the prefix has two underscores for i386
     if (symbol_prefix) {
-        tb_snprintf(symbol_name, sizeof(symbol_name), "%s%s", symbol_prefix, basename);
+        if (is_i386 && symbol_prefix[0] == '_' && symbol_prefix[1] != '_') {
+            // i386: if prefix starts with single underscore, add another one
+            tb_snprintf(symbol_name, sizeof(symbol_name), "_%s%s", symbol_prefix, basename);
+        } else {
+            tb_snprintf(symbol_name, sizeof(symbol_name), "%s%s", symbol_prefix, basename);
+        }
     } else {
-        tb_snprintf(symbol_name, sizeof(symbol_name), "_binary_%s", basename);
+        if (is_i386) {
+            tb_snprintf(symbol_name, sizeof(symbol_name), "__binary_%s", basename);
+        } else {
+            tb_snprintf(symbol_name, sizeof(symbol_name), "_binary_%s", basename);
+        }
     }
 
     // replace non-alphanumeric with underscore
@@ -207,18 +223,21 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     tb_uint32_t section_header_size = sizeof(xm_coff_section_t);
     tb_uint32_t section_data_ofs = header_size + section_header_size;
     tb_uint32_t section_data_size = datasize;
-    tb_uint32_t symbol_table_ofs = section_data_ofs + ((section_data_size + 3) & ~3); // align to 4 bytes
-    tb_uint32_t string_table_size = 4; // initial 4-byte size field
-
-    // calculate string table size
+    tb_uint32_t section_data_padding = (4 - (section_data_size & 3)) & 3;
+    tb_uint32_t symbol_table_ofs = section_data_ofs + section_data_size + section_data_padding;
+    
+    // calculate string table size (content only, excluding the 4-byte size field)
+    tb_uint32_t string_table_content_size = 0;
     tb_size_t start_len = tb_strlen(symbol_start);
     tb_size_t end_len = tb_strlen(symbol_end);
     if (start_len > 8) {
-        string_table_size += (tb_uint32_t)(start_len + 1);
+        string_table_content_size += (tb_uint32_t)(start_len + 1);
     }
     if (end_len > 8) {
-        string_table_size += (tb_uint32_t)(end_len + 1);
+        string_table_content_size += (tb_uint32_t)(end_len + 1);
     }
+    // string table size field should include the size field itself
+    tb_uint32_t string_table_size = 4 + string_table_content_size;
 
     // write COFF header
     xm_coff_header_t header;
@@ -227,12 +246,13 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     header.nsects = 1;
     header.time = 0;
     header.symtabofs = symbol_table_ofs;
-    // Note: nsyms should count all symbol table entries including auxiliary entries
-    // Symbol 0: section symbol (1 entry) + auxiliary entry (1 entry) = 2 entries
-    // Symbol 1: _binary_xxx_start (1 entry)
-    // Symbol 2: _binary_xxx_end (1 entry)
-    // Total: 4 entries
-    header.nsyms = 4;
+    // Note: COFF spec says nsyms is the number of symbol table entries (including aux entries)
+    // - Section symbol (1) + aux entry (1) + start symbol (1) + end symbol (1) = 4 entries
+    // - Total size: 4 * 18 = 72 bytes
+    // - i386 linker: calculates string table as symtabofs + nsyms * 18 = symtabofs + 72 (correct)
+    // - When reading symbols, linker follows naux fields to skip aux entries correctly
+    // - From mingw i386 analysis: section symbols MUST have aux entry (naux=1)
+    header.nsyms = 4; // 3 symbols + 1 aux entry
     header.opthdr = 0;
     header.flags = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&header, sizeof(header))) {
@@ -269,9 +289,8 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     }
 
     // align to 4 bytes
-    tb_uint32_t padding = (4 - (section_data_size & 3)) & 3;
-    if (padding > 0) {
-        xm_binutils_bin2coff_write_padding(ostream, padding);
+    if (section_data_padding > 0) {
+        xm_binutils_bin2coff_write_padding(ostream, section_data_padding);
     }
 
     // write symbol table
@@ -283,7 +302,8 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     sym_section.sect = 1; // section index (1-based)
     sym_section.type = 0; // IMAGE_SYM_TYPE_NULL
     sym_section.scl = 3; // IMAGE_SYM_CLASS_STATIC
-    sym_section.naux = 1; // auxiliary entry
+    // Section symbol MUST have auxiliary entry for i386 compatibility (as seen in mingw-generated files)
+    sym_section.naux = 1; // auxiliary entry (required for i386)
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_section, sizeof(sym_section))) {
         return tb_false;
     }
@@ -325,7 +345,11 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     }
 
     // write string table
-    tb_stream_bwrit(ostream, (tb_byte_t const *)&string_table_size, 4);
+    // Symbol table size: section symbol (18) + aux entry (18) + start symbol (18) + end symbol (18) = 72 bytes
+    // String table starts at symtabofs + 72, which matches nsyms * 18 = 4 * 18 = 72
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&string_table_size, 4)) {
+        return tb_false;
+    }
     if (start_len > 8) {
         xm_binutils_bin2coff_write_string(ostream, symbol_start, start_len);
         tb_byte_t null = 0;
