@@ -83,6 +83,21 @@ typedef struct {
     tb_uint8_t scl;
     tb_uint8_t naux;
 } xm_coff_symbol_t;
+
+typedef struct {
+    tb_uint32_t length;
+    tb_uint16_t nreloc;
+    tb_uint16_t nlineno;
+    tb_uint8_t reserved[10];
+} xm_coff_aux_section_t;
+
+typedef struct {
+    tb_uint32_t value;
+    tb_int16_t  sect;
+    tb_uint16_t type;
+    tb_uint8_t  scl;
+    tb_uint8_t  naux;
+} xm_coff_symbol_tail_t;
 #pragma pack(pop)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -260,45 +275,35 @@ static tb_bool_t xm_utils_bin2coff_dump(tb_stream_ref_t istream,
         return tb_false;
     }
     // auxiliary entry for section (18 bytes total)
-    // format: 4 bytes size, 2 bytes nreloc, 2 bytes nlineno, 10 bytes unused
-    tb_uint32_t aux_section_size = datasize;
-    tb_uint16_t aux_section_nreloc = 0;
-    tb_uint16_t aux_section_nlineno = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&aux_section_size, 4) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&aux_section_nreloc, 2) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&aux_section_nlineno, 2)) {
+    xm_coff_aux_section_t aux_section;
+    tb_memset(&aux_section, 0, sizeof(aux_section));
+    aux_section.length = datasize;
+    aux_section.nreloc = 0;
+    aux_section.nlineno = 0;
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&aux_section, sizeof(aux_section))) {
         return tb_false;
     }
-    xm_utils_bin2coff_write_padding(ostream, 10); // rest of auxiliary entry (unused)
 
     // symbol 1: _binary_xxx_start
     tb_uint32_t strtab_offset = 4; // start after size field
     xm_utils_bin2coff_write_symbol_name(ostream, symbol_start, &strtab_offset);
-    tb_uint32_t sym_start_value = 0;
-    tb_int16_t sym_start_sect = 1;
-    tb_uint16_t sym_start_type = 0;
-    tb_uint8_t sym_start_scl = 2; // IMAGE_SYM_CLASS_EXTERNAL
-    tb_uint8_t sym_start_naux = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_value, 4) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_sect, 2) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_type, 2) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_scl, 1) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_naux, 1)) {
+    xm_coff_symbol_tail_t sym_start_tail;
+    tb_memset(&sym_start_tail, 0, sizeof(sym_start_tail));
+    sym_start_tail.value = 0;
+    sym_start_tail.sect = 1;
+    sym_start_tail.scl = 2; // IMAGE_SYM_CLASS_EXTERNAL
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_tail, sizeof(sym_start_tail))) {
         return tb_false;
     }
 
     // symbol 2: _binary_xxx_end
     xm_utils_bin2coff_write_symbol_name(ostream, symbol_end, &strtab_offset);
-    tb_uint32_t sym_end_value = datasize;
-    tb_int16_t sym_end_sect = 1;
-    tb_uint16_t sym_end_type = 0;
-    tb_uint8_t sym_end_scl = 2;
-    tb_uint8_t sym_end_naux = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_value, 4) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_sect, 2) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_type, 2) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_scl, 1) ||
-        !tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_naux, 1)) {
+    xm_coff_symbol_tail_t sym_end_tail;
+    tb_memset(&sym_end_tail, 0, sizeof(sym_end_tail));
+    sym_end_tail.value = datasize;
+    sym_end_tail.sect = 1;
+    sym_end_tail.scl = 2; // IMAGE_SYM_CLASS_EXTERNAL
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_tail, sizeof(sym_end_tail))) {
         return tb_false;
     }
 
