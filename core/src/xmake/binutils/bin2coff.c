@@ -225,7 +225,7 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     tb_uint32_t section_data_size = datasize;
     tb_uint32_t section_data_padding = (4 - (section_data_size & 3)) & 3;
     tb_uint32_t symbol_table_ofs = section_data_ofs + section_data_size + section_data_padding;
-    
+
     // calculate string table size (content only, excluding the 4-byte size field)
     tb_uint32_t string_table_content_size = 0;
     tb_size_t start_len = tb_strlen(symbol_start);
