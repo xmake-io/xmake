@@ -47,6 +47,7 @@
 #define XM_ELF_MACHINE_X86_64    0x3e
 #define XM_ELF_MACHINE_RISCV     0xf3
 #define XM_ELF_MACHINE_ARM64     0xb7
+#define XM_ELF_MACHINE_WASM      0xe7
 #define XM_ELF_MACHINE_LOONGARCH 0x102
 
 #define XM_ELF_SHT_PROGBITS      0x1
@@ -196,6 +197,10 @@ static tb_uint16_t xm_binutils_bin2elf_get_machine(tb_char_t const *arch) {
     else if (tb_strncmp(arch, "loongarch", 9) == 0 || tb_strncmp(arch, "loong64", 7) == 0) {
         return XM_ELF_MACHINE_LOONGARCH;
     }
+    // WebAssembly (WASM and WASM64 use same machine type, distinguished by ELF class)
+    else if (tb_strncmp(arch, "wasm", 4) == 0) {
+        return XM_ELF_MACHINE_WASM;
+    }
     // SuperH
     else if (tb_strncmp(arch, "sh", 2) == 0 || tb_strncmp(arch, "superh", 6) == 0) {
         return XM_ELF_MACHINE_SUPERH;
@@ -243,6 +248,10 @@ static tb_bool_t xm_binutils_bin2elf_is_64bit(tb_char_t const *arch) {
     }
     // LoongArch64
     else if (tb_strncmp(arch, "loongarch64", 11) == 0) {
+        return tb_true;
+    }
+    // WebAssembly 64
+    else if (tb_strcmp(arch, "wasm64") == 0) {
         return tb_true;
     }
     // IA-64
