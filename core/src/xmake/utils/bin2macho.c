@@ -52,6 +52,7 @@
 #define XM_MACHO_LC_SEGMENT          0x1
 #define XM_MACHO_LC_SEGMENT_64       0x19
 #define XM_MACHO_LC_SYMTAB           0x2
+#define XM_MACHO_LC_BUILD_VERSION    0x32
 
 #define XM_MACHO_SECT_TYPE_REGULAR   0x0
 #define XM_MACHO_SECT_ATTR_SOME_INITS 0x400
@@ -151,6 +152,15 @@ typedef struct __xm_macho_symtab_command_t {
     tb_uint32_t stroff;
     tb_uint32_t strsize;
 } __tb_packed__ xm_macho_symtab_command_t;
+
+typedef struct __xm_macho_build_version_command_t {
+    tb_uint32_t cmd;
+    tb_uint32_t cmdsize;
+    tb_uint32_t platform;
+    tb_uint32_t minos;
+    tb_uint32_t sdk;
+    tb_uint32_t ntools;
+} __tb_packed__ xm_macho_build_version_command_t;
 
 typedef struct __xm_macho_nlist_t {
     tb_uint32_t strx;
@@ -272,8 +282,9 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     tb_uint32_t segment_cmd_size = sizeof(xm_macho_segment_command_64_t);
     tb_uint32_t section_size = sizeof(xm_macho_section_64_t);
     tb_uint32_t symtab_cmd_size = sizeof(xm_macho_symtab_command_t);
+    tb_uint32_t build_version_cmd_size = sizeof(xm_macho_build_version_command_t);
     tb_uint32_t segment_cmd_total_size = segment_cmd_size + section_size;
-    tb_uint32_t data_offset = xm_utils_bin2macho_align(header_size + segment_cmd_total_size + symtab_cmd_size, 8);
+    tb_uint32_t data_offset = xm_utils_bin2macho_align(header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size, 8);
     tb_uint32_t data_size = datasize;
     tb_uint32_t data_end_offset = data_offset + data_size;
     tb_uint32_t symtab_offset = xm_utils_bin2macho_align(data_end_offset, 8);
@@ -294,8 +305,8 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
     header.cputype = xm_utils_bin2macho_get_cputype(arch);
     header.cpusubtype = xm_utils_bin2macho_get_cpusubtype(arch);
     header.filetype = XM_MACHO_FILE_TYPE_OBJECT;
-    header.ncmds = 2; // segment + symtab
-    header.sizeofcmds = segment_cmd_total_size + symtab_cmd_size;
+    header.ncmds = 3; // segment + symtab + build_version
+    header.sizeofcmds = segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size;
     header.flags = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&header, sizeof(header))) {
         return tb_false;
@@ -348,8 +359,21 @@ static tb_bool_t xm_utils_bin2macho_dump_64(tb_stream_ref_t istream,
         return tb_false;
     }
 
+    // write build version command
+    xm_macho_build_version_command_t build_version;
+    tb_memset(&build_version, 0, sizeof(build_version));
+    build_version.cmd = XM_MACHO_LC_BUILD_VERSION;
+    build_version.cmdsize = build_version_cmd_size;
+    build_version.platform = 1; // PLATFORM_MACOS
+    build_version.minos = 0x000a0000; // 10.0.0
+    build_version.sdk = 0x000a0000; // 10.0.0
+    build_version.ntools = 0;
+    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&build_version, sizeof(build_version))) {
+        return tb_false;
+    }
+
     // align to 8 bytes
-    tb_uint32_t padding = data_offset - (header_size + segment_cmd_total_size + symtab_cmd_size);
+    tb_uint32_t padding = data_offset - (header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size);
     if (padding > 0) {
         tb_byte_t zero = 0;
         while (padding-- > 0) {
