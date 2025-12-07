@@ -227,7 +227,7 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     header.nsects = 1;
     header.time = 0;
     header.symtabofs = symbol_table_ofs;
-    header.nsyms = 4; // .rdata section symbol (1) + auxiliary entry (1) + 2 data symbols (start, end)
+    header.nsyms = 3; // .rdata section symbol (1) + 2 data symbols (start, end) - auxiliary entries are not counted
     header.opthdr = 0;
     header.flags = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&header, sizeof(header))) {
