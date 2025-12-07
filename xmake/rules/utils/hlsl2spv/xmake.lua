@@ -89,17 +89,19 @@ rule("utils.hlsl2spv")
         local is_bin2obj = target:extraconf("rules", "utils.hlsl2spv", "bin2obj")
         if is_bin2c then
             -- generate header file
+            -- note: explicitly disable zeroend (SPIR-V is binary format, not null-terminated string)
             local headerfile = bin2c_utils.generate_headerfile(target, batchcmds, spvfilepath, {
                 progress = opt.progress,
                 headerdir = outputdir,
-                zeroend = true  -- default enable zeroend for shader data
+                zeroend = false  -- SPIR-V is binary format, not null-terminated string
             })
             outputfile = headerfile
         elseif is_bin2obj then
             -- convert to object file using bin2obj
+            -- note: zeroend is false by default (SPIR-V is binary format, not null-terminated string)
             local objectfile = bin2obj_utils.generate_objectfile(target, batchcmds, spvfilepath, {
                 progress = opt.progress,
-                zeroend = true  -- default enable zeroend for shader data
+                rulename = "utils.hlsl2spv"  -- pass current rule name for config lookup
             })
             outputfile = objectfile
         end
