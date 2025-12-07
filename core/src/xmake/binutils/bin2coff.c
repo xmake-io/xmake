@@ -227,7 +227,12 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     header.nsects = 1;
     header.time = 0;
     header.symtabofs = symbol_table_ofs;
-    header.nsyms = 3; // .rdata section symbol (1) + 2 data symbols (start, end) - auxiliary entries are not counted
+    // Note: nsyms should count all symbol table entries including auxiliary entries
+    // Symbol 0: section symbol (1 entry) + auxiliary entry (1 entry) = 2 entries
+    // Symbol 1: _binary_xxx_start (1 entry)
+    // Symbol 2: _binary_xxx_end (1 entry)
+    // Total: 4 entries
+    header.nsyms = 4;
     header.opthdr = 0;
     header.flags = 0;
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&header, sizeof(header))) {
@@ -299,7 +304,9 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     tb_memset(&sym_start_tail, 0, sizeof(sym_start_tail));
     sym_start_tail.value = 0;
     sym_start_tail.sect = 1;
+    sym_start_tail.type = 0; // IMAGE_SYM_TYPE_NULL
     sym_start_tail.scl = 2; // IMAGE_SYM_CLASS_EXTERNAL
+    sym_start_tail.naux = 0; // no auxiliary entry
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start_tail, sizeof(sym_start_tail))) {
         return tb_false;
     }
@@ -310,7 +317,9 @@ static tb_bool_t xm_binutils_bin2coff_dump(tb_stream_ref_t istream,
     tb_memset(&sym_end_tail, 0, sizeof(sym_end_tail));
     sym_end_tail.value = datasize;
     sym_end_tail.sect = 1;
+    sym_end_tail.type = 0; // IMAGE_SYM_TYPE_NULL
     sym_end_tail.scl = 2; // IMAGE_SYM_CLASS_EXTERNAL
+    sym_end_tail.naux = 0; // no auxiliary entry
     if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end_tail, sizeof(sym_end_tail))) {
         return tb_false;
     }
