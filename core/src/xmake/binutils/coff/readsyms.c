@@ -84,6 +84,17 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
             }
             continue;
         }
+        
+        // skip internal symbols (starting with .)
+        if (name[0] == '.') {
+            sym_index++;
+            if (sym.naux > 0) {
+                sym_index += sym.naux; // skip auxiliary entries
+                // skip auxiliary data
+                tb_stream_seek(istream, tb_stream_offset(istream) + sym.naux * 18);
+            }
+            continue;
+        }
 
         // create symbol table entry
         lua_pushinteger(lua, sym_count + 1);
@@ -104,9 +115,11 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
         lua_pushinteger(lua, sym.sect);
         lua_settable(lua, -3);
 
-        // type
+        // type (nm-style: T/t/D/d/B/b/U)
+        tb_char_t type_char = xm_binutils_coff_get_symbol_type_char(sym.scl, sym.sect);
+        tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
-        lua_pushstring(lua, xm_binutils_coff_get_symbol_type(sym.scl));
+        lua_pushstring(lua, type_str);
         lua_settable(lua, -3);
 
         // storage class

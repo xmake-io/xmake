@@ -303,21 +303,35 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_read_string(tb_stream_ref_t istre
     return tb_true;
 }
 
-/* get symbol type string from ELF symbol info
+/* get symbol type character (nm-style) from ELF symbol
  *
- * @param st_info the symbol info byte
- * @return         the type string
+ * @param st_info  the symbol info byte
+ * @param st_shndx the section index (0 = undefined)
+ * @return         the type character (T/t/D/d/B/b/U)
  */
-static __tb_inline__ tb_char_t const *xm_binutils_elf_get_symbol_type(tb_uint8_t st_info) {
-    tb_uint8_t type = st_info & 0xf;
-    switch (type) {
-    case 0: return "notype";
-    case 1: return "object";
-    case 2: return "func";
-    case 3: return "section";
-    case 4: return "file";
-    default: return "unknown";
+static __tb_inline__ tb_char_t xm_binutils_elf_get_symbol_type_char(tb_uint8_t st_info, tb_uint16_t st_shndx) {
+    // undefined symbol
+    if (st_shndx == 0) {
+        return 'U';
     }
+    
+    // check bind (global = uppercase, local = lowercase)
+    tb_uint8_t bind = (st_info >> 4) & 0xf;
+    tb_bool_t is_global = (bind == 1); // STB_GLOBAL
+    
+    // check type
+    tb_uint8_t type = st_info & 0xf;
+    if (type == 2) { // STT_FUNC
+        return is_global ? 'T' : 't';  // text (function)
+    } else if (type == 1) { // STT_OBJECT
+        // For object symbols, we need section info to determine data/bss
+        // For simplicity, we'll use 'D' for data, 'B' for bss
+        // This is a heuristic - in practice, we'd need to check section flags
+        return is_global ? 'D' : 'd';  // data (assume data section)
+    }
+    
+    // other types
+    return is_global ? 'S' : 's';  // other section
 }
 
 /* get symbol bind string from ELF symbol info

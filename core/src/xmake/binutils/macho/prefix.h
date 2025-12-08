@@ -358,17 +358,41 @@ static __tb_inline__ tb_bool_t xm_binutils_macho_read_string(tb_stream_ref_t ist
     return tb_true;
 }
 
-/* get symbol type string from Mach-O symbol type
+/* get symbol type character (nm-style) from Mach-O symbol
  *
- * @param type the symbol type byte
- * @return      the type string
+ * @param type  the symbol type byte
+ * @param sect  the section number (0 = undefined)
+ * @return      the type character (T/t/D/d/B/b/U)
  */
-static __tb_inline__ tb_char_t const *xm_binutils_macho_get_symbol_type(tb_uint8_t type) {
-    tb_uint8_t n_type = type & XM_MACHO_N_TYPE_MASK;
-    switch (n_type) {
-    case XM_MACHO_N_TYPE_SECT: return "section";
-    default: return "unknown";
+static __tb_inline__ tb_char_t xm_binutils_macho_get_symbol_type_char(tb_uint8_t type, tb_uint8_t sect) {
+    // undefined symbol
+    if (sect == 0) {
+        return 'U';
     }
+    
+    // check if external
+    tb_bool_t is_external = (type & XM_MACHO_N_EXT) != 0;
+    
+    // check if in section
+    tb_uint8_t n_type = type & XM_MACHO_N_TYPE_MASK;
+    if (n_type == XM_MACHO_N_TYPE_SECT) {
+        // section 1 is usually __TEXT,__text (text)
+        // section 2 is usually __DATA,__data (data)
+        // section 3 is usually __DATA,__bss (bss)
+        // For simplicity, we'll use section number to determine type
+        // This is a heuristic and may not be 100% accurate
+        if (sect == 1) {
+            return is_external ? 'T' : 't';  // text section
+        } else if (sect == 2) {
+            return is_external ? 'D' : 'd';  // data section
+        } else if (sect == 3) {
+            return is_external ? 'B' : 'b';  // bss section
+        } else {
+            return is_external ? 'S' : 's';  // other section
+        }
+    }
+    
+    return '?';  // unknown
 }
 
 /* get symbol bind string from Mach-O symbol type

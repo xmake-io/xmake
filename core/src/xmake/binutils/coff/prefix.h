@@ -258,20 +258,31 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_get_symbol_name(tb_stream_ref_t 
     }
 }
 
-/* get symbol type string from storage class
+/* get symbol type character (nm-style) from COFF symbol
  *
- * @param scl the storage class
- * @return    the type string
+ * @param scl  the storage class
+ * @param sect the section number (0 = undefined)
+ * @return     the type character (T/t/D/d/B/b/U)
  */
-static __tb_inline__ tb_char_t const *xm_binutils_coff_get_symbol_type(tb_uint8_t scl) {
-    // IMAGE_SYM_CLASS_EXTERNAL = 2
-    // IMAGE_SYM_CLASS_STATIC = 3
-    // IMAGE_SYM_CLASS_LABEL = 6
-    switch (scl) {
-    case 2: return "external";
-    case 3: return "static";
-    case 6: return "label";
-    default: return "unknown";
+static __tb_inline__ tb_char_t xm_binutils_coff_get_symbol_type_char(tb_uint8_t scl, tb_int16_t sect) {
+    // undefined symbol
+    if (sect == 0) {
+        return 'U';
+    }
+    
+    // check if external
+    tb_bool_t is_external = (scl == 2); // IMAGE_SYM_CLASS_EXTERNAL
+    
+    // For COFF, section 1 is usually .text, section 2 is .data, section 3 is .bss
+    // This is a heuristic and may not be 100% accurate
+    if (sect == 1) {
+        return is_external ? 'T' : 't';  // text section
+    } else if (sect == 2) {
+        return is_external ? 'D' : 'd';  // data section
+    } else if (sect == 3) {
+        return is_external ? 'B' : 'b';  // bss section
+    } else {
+        return is_external ? 'S' : 's';  // other section
     }
 }
 

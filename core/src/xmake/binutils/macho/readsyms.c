@@ -110,6 +110,11 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
             continue;
         }
         
+        // skip internal symbols (starting with .)
+        if (name[0] == '.') {
+            continue;
+        }
+        
         // create symbol table entry
         lua_pushinteger(lua, result_count + 1);
         lua_newtable(lua);
@@ -129,9 +134,11 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
         lua_pushinteger(lua, nlist.sect);
         lua_settable(lua, -3);
         
-        // type
+        // type (nm-style: T/t/D/d/B/b/U)
+        tb_char_t type_char = xm_binutils_macho_get_symbol_type_char(nlist.type, nlist.sect);
+        tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
-        lua_pushstring(lua, xm_binutils_macho_get_symbol_type(nlist.type));
+        lua_pushstring(lua, type_str);
         lua_settable(lua, -3);
         
         // bind
@@ -222,6 +229,11 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
             continue;
         }
         
+        // skip internal symbols (starting with .)
+        if (name[0] == '.') {
+            continue;
+        }
+        
         // create symbol table entry
         lua_pushinteger(lua, result_count + 1);
         lua_newtable(lua);
@@ -241,9 +253,11 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
         lua_pushinteger(lua, nlist.sect);
         lua_settable(lua, -3);
         
-        // type
+        // type (nm-style: T/t/D/d/B/b/U)
+        tb_char_t type_char = xm_binutils_macho_get_symbol_type_char(nlist.type, nlist.sect);
+        tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
-        lua_pushstring(lua, xm_binutils_macho_get_symbol_type(nlist.type));
+        lua_pushstring(lua, type_str);
         lua_settable(lua, -3);
         
         // bind

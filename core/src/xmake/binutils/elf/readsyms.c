@@ -117,9 +117,20 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
             continue;
         }
 
+        // skip section and file symbols
+        tb_uint8_t type = sym.st_info & 0xf;
+        if (type == 3 || type == 4) { // STT_SECTION or STT_FILE
+            continue;
+        }
+
         // get symbol name
         tb_char_t name[256];
         if (!xm_binutils_elf_read_string(istream, strtab_section.sh_offset, sym.st_name, name, sizeof(name)) || !name[0]) {
+            continue;
+        }
+        
+        // skip internal symbols (starting with .)
+        if (name[0] == '.') {
             continue;
         }
 
@@ -147,9 +158,11 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
         lua_pushinteger(lua, sym.st_shndx);
         lua_settable(lua, -3);
 
-        // type
+        // type (nm-style: T/t/D/d/B/b/U)
+        tb_char_t type_char = xm_binutils_elf_get_symbol_type_char(sym.st_info, sym.st_shndx);
+        tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
-        lua_pushstring(lua, xm_binutils_elf_get_symbol_type(sym.st_info));
+        lua_pushstring(lua, type_str);
         lua_settable(lua, -3);
 
         // bind
@@ -245,9 +258,20 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lu
             continue;
         }
 
+        // skip section and file symbols
+        tb_uint8_t type = sym.st_info & 0xf;
+        if (type == 3 || type == 4) { // STT_SECTION or STT_FILE
+            continue;
+        }
+
         // get symbol name
         tb_char_t name[256];
         if (!xm_binutils_elf_read_string(istream, strtab_section.sh_offset, sym.st_name, name, sizeof(name)) || !name[0]) {
+            continue;
+        }
+        
+        // skip internal symbols (starting with .)
+        if (name[0] == '.') {
             continue;
         }
 
@@ -275,9 +299,11 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lu
         lua_pushinteger(lua, sym.st_shndx);
         lua_settable(lua, -3);
 
-        // type
+        // type (nm-style: T/t/D/d/B/b/U)
+        tb_char_t type_char = xm_binutils_elf_get_symbol_type_char(sym.st_info, sym.st_shndx);
+        tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
-        lua_pushstring(lua, xm_binutils_elf_get_symbol_type(sym.st_info));
+        lua_pushstring(lua, type_str);
         lua_settable(lua, -3);
 
         // bind
