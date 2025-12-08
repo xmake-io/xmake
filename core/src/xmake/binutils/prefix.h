@@ -29,10 +29,11 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
-#define XM_BINUTILS_FORMAT_COFF    0
-#define XM_BINUTILS_FORMAT_ELF     1
-#define XM_BINUTILS_FORMAT_MACHO   2
-#define XM_BINUTILS_FORMAT_UNKNOWN 3
+#define XM_BINUTILS_FORMAT_COFF    1
+#define XM_BINUTILS_FORMAT_ELF     2
+#define XM_BINUTILS_FORMAT_MACHO   3
+#define XM_BINUTILS_FORMAT_AR      4
+#define XM_BINUTILS_FORMAT_UNKNOWN 0
 
 /* COFF machine types (for format detection) */
 #define XM_BINUTILS_COFF_MACHINE_I386    0x014c
@@ -73,10 +74,21 @@ static __tb_inline__ tb_bool_t xm_binutils_read_magic(tb_stream_ref_t istream, t
  *
  * @param istream the input stream
  * @return        XM_BINUTILS_FORMAT_COFF, XM_BINUTILS_FORMAT_ELF, XM_BINUTILS_FORMAT_MACHO,
- *                 XM_BINUTILS_FORMAT_UNKNOWN, or -1 on error
+ *                 XM_BINUTILS_FORMAT_AR, XM_BINUTILS_FORMAT_UNKNOWN, or -1 on error
  */
 static __tb_inline__ tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream) {
     tb_assert_and_check_return_val(istream, -1);
+
+    // check AR archive format first (!<arch>\n)
+    tb_uint8_t ar_magic[8];
+    if (xm_binutils_read_magic(istream, ar_magic, 8)) {
+        if (ar_magic[0] == '!' && ar_magic[1] == '<' && ar_magic[2] == 'a' &&
+            ar_magic[3] == 'r' && ar_magic[4] == 'c' && ar_magic[5] == 'h' &&
+            (ar_magic[6] == '>' || ar_magic[6] == '\n') &&
+            (ar_magic[7] == '\n' || ar_magic[7] == '\r')) {
+            return XM_BINUTILS_FORMAT_AR;
+        }
+    }
 
     // read magic bytes
     tb_uint8_t magic[4];

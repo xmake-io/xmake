@@ -75,6 +75,7 @@ target "xmake"
     add_files "binutils/coff/*.c"
     add_files "binutils/macho/*.c"
     add_files "binutils/elf/*.c"
+    add_files "binutils/ar/*.c"
     add_files "thread/*.c"
     if is_plat "mingw"; then
         add_files "winos/*.c"

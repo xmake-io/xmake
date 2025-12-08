@@ -39,6 +39,7 @@
 extern tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua);
 extern tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, lua_State *lua);
 extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, lua_State *lua);
+extern tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, lua_State *lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -81,7 +82,14 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
         }
 
         // read symbols based on format
-        if (format == XM_BINUTILS_FORMAT_COFF) {
+        if (format == XM_BINUTILS_FORMAT_AR) {
+            // AR archive (.a or .lib)
+            if (!xm_binutils_ar_read_symbols(istream, lua)) {
+                lua_pushboolean(lua, tb_false);
+                lua_pushfstring(lua, "readsyms: read AR archive symbols failed");
+                break;
+            }
+        } else if (format == XM_BINUTILS_FORMAT_COFF) {
             // COFF
             if (!xm_binutils_coff_read_symbols(istream, lua)) {
                 lua_pushboolean(lua, tb_false);

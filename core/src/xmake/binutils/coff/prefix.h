@@ -99,6 +99,7 @@ typedef struct __xm_coff_symbol_tail_t {
     tb_uint8_t  scl;
     tb_uint8_t  naux;
 } __tb_packed__ xm_coff_symbol_tail_t;
+#include "tbox/prefix/packed.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * inline implementation

@@ -182,6 +182,7 @@ typedef struct __xm_macho_nlist_64_t {
     tb_uint16_t desc;
     tb_uint64_t value;
 } __tb_packed__ xm_macho_nlist_64_t;
+#include "tbox/prefix/packed.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * inline implementation

@@ -137,6 +137,7 @@ typedef struct __xm_elf64_symbol_t {
     tb_uint64_t st_value;
     tb_uint64_t st_size;
 } __tb_packed__ xm_elf64_symbol_t;
+#include "tbox/prefix/packed.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * inline implementation
