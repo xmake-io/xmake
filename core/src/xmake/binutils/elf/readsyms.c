@@ -129,8 +129,14 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
             continue;
         }
         
-        // skip internal symbols (starting with .)
-        if (name[0] == '.') {
+        // skip internal symbols (starting with . or $)
+        if (name[0] == '.' || name[0] == '$') {
+            continue;
+        }
+        
+        // skip local symbols (unless undefined)
+        tb_uint8_t bind = (sym.st_info >> 4) & 0xf;
+        if (bind == 0 && sym.st_shndx != 0) { // STB_LOCAL and not undefined
             continue;
         }
 
@@ -250,8 +256,14 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lu
             continue;
         }
         
-        // skip internal symbols (starting with .)
-        if (name[0] == '.') {
+        // skip internal symbols (starting with . or $)
+        if (name[0] == '.' || name[0] == '$') {
+            continue;
+        }
+        
+        // skip local symbols (unless undefined)
+        tb_uint8_t bind = (sym.st_info >> 4) & 0xf;
+        if (bind == 0 && sym.st_shndx != 0) { // STB_LOCAL and not undefined
             continue;
         }
 
