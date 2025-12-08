@@ -326,7 +326,7 @@ static __tb_inline__ tb_uint32_t xm_binutils_macho_parse_version(tb_char_t const
  *
  * @param istream       the input stream
  * @param strtab_offset the string table offset
- * @param offset        the string offset (relative to string table content, after size field)
+ * @param offset        the string offset (nlist.strx, relative to string table start, including 4-byte size field)
  * @param name          the buffer to store the string
  * @param name_size     the size of the buffer
  * @return              tb_true on success, tb_false on failure
@@ -335,8 +335,8 @@ static __tb_inline__ tb_bool_t xm_binutils_macho_read_string(tb_stream_ref_t ist
     tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
     
     tb_hize_t saved_pos = tb_stream_offset(istream);
-    // string table starts with 4-byte size field, so offset is from after that
-    if (!tb_stream_seek(istream, strtab_offset + 4 + offset)) {
+    // nlist.strx is offset from string table start (including 4-byte size field)
+    if (!tb_stream_seek(istream, strtab_offset + offset)) {
         return tb_false;
     }
     

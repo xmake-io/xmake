@@ -82,14 +82,12 @@ function dump(binaryfile)
         -- print header
         print("")
         print("Symbols:")
-        local header_format = string.format("  %%-%ds  %%-%ds  %%-%ds  %%-%ds  %%-%ds  %%s",
-            value_width, type_width, bind_width, section_width, size_width)
+        local header_format = "  %-" .. value_width .. "s  %-" .. type_width .. "s  %-" .. bind_width .. "s  %-" .. section_width .. "s  %-" .. size_width .. "s  %s"
         print(string.format(header_format, "VALUE", "TYPE", "BIND", "SECTION", "SIZE", "NAME"))
         print(string.rep("-", 80))
         
         -- print symbols
-        local format_str = string.format("  %%-%ds  %%-%ds  %%-%ds  %%-%ds  %%-%ds  %%s",
-            value_width, type_width, bind_width, section_width, size_width)
+        local format_str = "  %-" .. value_width .. "s  %-" .. type_width .. "s  %-" .. bind_width .. "s  %-" .. section_width .. "s  %-" .. size_width .. "s  %s"
 
         for i, sym in ipairs(symbols) do
             local value_str = sym.value and string.format("0x%x", sym.value) or ""
