@@ -143,31 +143,11 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
         lua_pushstring(lua, name);
         lua_settable(lua, -3);
 
-        // value
-        lua_pushstring(lua, "value");
-        lua_pushinteger(lua, sym.st_value);
-        lua_settable(lua, -3);
-
-        // size
-        lua_pushstring(lua, "size");
-        lua_pushinteger(lua, sym.st_size);
-        lua_settable(lua, -3);
-
-        // section
-        lua_pushstring(lua, "section");
-        lua_pushinteger(lua, sym.st_shndx);
-        lua_settable(lua, -3);
-
         // type (nm-style: T/t/D/d/B/b/U)
         tb_char_t type_char = xm_binutils_elf_get_symbol_type_char(sym.st_info, sym.st_shndx);
         tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
         lua_pushstring(lua, type_str);
-        lua_settable(lua, -3);
-
-        // bind
-        lua_pushstring(lua, "bind");
-        lua_pushstring(lua, xm_binutils_elf_get_symbol_bind(sym.st_info));
         lua_settable(lua, -3);
 
         lua_settable(lua, -3);
@@ -284,31 +264,11 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lu
         lua_pushstring(lua, name);
         lua_settable(lua, -3);
 
-        // value
-        lua_pushstring(lua, "value");
-        lua_pushinteger(lua, sym.st_value);
-        lua_settable(lua, -3);
-
-        // size
-        lua_pushstring(lua, "size");
-        lua_pushinteger(lua, sym.st_size);
-        lua_settable(lua, -3);
-
-        // section
-        lua_pushstring(lua, "section");
-        lua_pushinteger(lua, sym.st_shndx);
-        lua_settable(lua, -3);
-
         // type (nm-style: T/t/D/d/B/b/U)
         tb_char_t type_char = xm_binutils_elf_get_symbol_type_char(sym.st_info, sym.st_shndx);
         tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
         lua_pushstring(lua, type_str);
-        lua_settable(lua, -3);
-
-        // bind
-        lua_pushstring(lua, "bind");
-        lua_pushstring(lua, xm_binutils_elf_get_symbol_bind(sym.st_info));
         lua_settable(lua, -3);
 
         lua_settable(lua, -3);

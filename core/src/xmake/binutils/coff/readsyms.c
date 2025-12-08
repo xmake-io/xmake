@@ -58,8 +58,30 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
     // read string table offset (after symbol table)
     tb_uint32_t strtab_offset = header.symtabofs + header.nsyms * 18; // each symbol is 18 bytes
 
+    // read section headers to determine section types
+    xm_coff_section_t *sections = tb_null;
+    if (header.nsects > 0) {
+        sections = (xm_coff_section_t*)tb_malloc(header.nsects * sizeof(xm_coff_section_t));
+        if (sections) {
+            tb_hize_t saved_pos = tb_stream_offset(istream);
+            // section headers are after COFF header and optional header
+            tb_uint32_t section_offset = sizeof(xm_coff_header_t) + (header.opthdr > 0 ? header.opthdr : 0);
+            if (tb_stream_seek(istream, section_offset)) {
+                for (tb_uint16_t i = 0; i < header.nsects; i++) {
+                    if (!tb_stream_bread(istream, (tb_byte_t*)&sections[i], sizeof(xm_coff_section_t))) {
+                        break;
+                    }
+                }
+            }
+            tb_stream_seek(istream, saved_pos);
+        }
+    }
+
     // read symbols
     if (!tb_stream_seek(istream, header.symtabofs)) {
+        if (sections) {
+            tb_free(sections);
+        }
         return tb_false;
     }
 
@@ -84,9 +106,23 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
             }
             continue;
         }
-        
+
         // skip internal symbols (starting with .)
         if (name[0] == '.') {
+            sym_index++;
+            if (sym.naux > 0) {
+                sym_index += sym.naux; // skip auxiliary entries
+                // skip auxiliary data
+                tb_stream_seek(istream, tb_stream_offset(istream) + sym.naux * 18);
+            }
+            continue;
+        }
+
+        // skip compiler-generated symbols (containing $ or .constprop or .startup, etc.)
+        if (tb_strchr(name, '$') != tb_null ||
+            tb_strstr(name, ".constprop") != tb_null ||
+            tb_strstr(name, ".startup") != tb_null ||
+            tb_strstr(name, "ta$") != tb_null) {
             sym_index++;
             if (sym.naux > 0) {
                 sym_index += sym.naux; // skip auxiliary entries
@@ -105,26 +141,11 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
         lua_pushstring(lua, name);
         lua_settable(lua, -3);
 
-        // value
-        lua_pushstring(lua, "value");
-        lua_pushinteger(lua, sym.value);
-        lua_settable(lua, -3);
-
-        // section
-        lua_pushstring(lua, "section");
-        lua_pushinteger(lua, sym.sect);
-        lua_settable(lua, -3);
-
         // type (nm-style: T/t/D/d/B/b/U)
-        tb_char_t type_char = xm_binutils_coff_get_symbol_type_char(sym.scl, sym.sect);
+        tb_char_t type_char = xm_binutils_coff_get_symbol_type_char(sym.scl, sym.sect, sections, header.nsects);
         tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
         lua_pushstring(lua, type_str);
-        lua_settable(lua, -3);
-
-        // storage class
-        lua_pushstring(lua, "storage_class");
-        lua_pushinteger(lua, sym.scl);
         lua_settable(lua, -3);
 
         lua_settable(lua, -3);
@@ -140,6 +161,10 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
                 return tb_false;
             }
         }
+    }
+
+    if (sections) {
+        tb_free(sections);
     }
 
     return tb_true;

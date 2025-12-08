@@ -34,6 +34,11 @@
 #define XM_COFF_MACHINE_ARM     0x01c0
 #define XM_COFF_MACHINE_ARM64   0xaa64
 
+// COFF section flags
+#define XM_COFF_SCN_CNT_CODE                0x20  // IMAGE_SCN_CNT_CODE
+#define XM_COFF_SCN_CNT_INITIALIZED_DATA     0x40  // IMAGE_SCN_CNT_INITIALIZED_DATA
+#define XM_COFF_SCN_CNT_UNINITIALIZED_DATA   0x80  // IMAGE_SCN_CNT_UNINITIALIZED_DATA
+
 #define XM_COFF_SECTION_RDATA   0x40000040  // IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -178,14 +183,18 @@ static __tb_inline__ tb_void_t xm_binutils_coff_write_symbol_name(tb_stream_ref_
 /* read string from COFF string table
  *
  * @param istream       the input stream
- * @param strtab_offset the string table offset
- * @param offset        the string offset (relative to string table content, after size field)
+ * @param strtab_offset the string table offset (including 4-byte size field)
+ * @param offset        the string offset (from start of string table content, after size field)
  * @return              the string (static buffer, valid until next call)
  */
 static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istream, tb_uint32_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
     tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
     
-    // read string table size
+    // In COFF format, the offset in symbol table is from the start of string table
+    // (including the 4-byte size field). So offset=4 points to the first string after
+    // the size field, offset=74 points to a string at position 74 from the start.
+    
+    // read string table size first to validate offset
     tb_uint32_t strtab_size = 0;
     tb_hize_t saved_pos = tb_stream_offset(istream);
     if (!tb_stream_seek(istream, strtab_offset)) {
@@ -196,14 +205,17 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istr
         return tb_false;
     }
     
-    // check offset (offset is relative to start of string table, after the 4-byte size field)
-    if (offset >= strtab_size - 4) {
+    // check offset (must be >= 4 to skip the size field, and < strtab_size)
+    if (offset < 4 || offset >= strtab_size) {
         tb_stream_seek(istream, saved_pos);
         return tb_false;
     }
     
-    // seek to string position (offset is from start of string table content, after size field)
-    if (!tb_stream_seek(istream, strtab_offset + 4 + offset)) {
+    // seek to string position (offset is from start of string table, including size field)
+    // strtab_offset points to the start of string table (including 4-byte size field)
+    // offset is from the start of string table (including size field)
+    // So we use strtab_offset + offset directly
+    if (!tb_stream_seek(istream, strtab_offset + offset)) {
         tb_stream_seek(istream, saved_pos);
         return tb_false;
     }
@@ -260,11 +272,13 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_get_symbol_name(tb_stream_ref_t 
 
 /* get symbol type character (nm-style) from COFF symbol
  *
- * @param scl  the storage class
- * @param sect the section number (0 = undefined)
- * @return     the type character (T/t/D/d/B/b/U)
+ * @param scl      the storage class
+ * @param sect     the section number (0 = undefined, 1-based)
+ * @param sections the section headers array
+ * @param nsects   the number of sections
+ * @return         the type character (T/t/D/d/B/b/U)
  */
-static __tb_inline__ tb_char_t xm_binutils_coff_get_symbol_type_char(tb_uint8_t scl, tb_int16_t sect) {
+static __tb_inline__ tb_char_t xm_binutils_coff_get_symbol_type_char(tb_uint8_t scl, tb_int16_t sect, xm_coff_section_t const *sections, tb_uint16_t nsects) {
     // undefined symbol
     if (sect == 0) {
         return 'U';
@@ -273,17 +287,33 @@ static __tb_inline__ tb_char_t xm_binutils_coff_get_symbol_type_char(tb_uint8_t 
     // check if external
     tb_bool_t is_external = (scl == 2); // IMAGE_SYM_CLASS_EXTERNAL
     
-    // For COFF, section 1 is usually .text, section 2 is .data, section 3 is .bss
-    // This is a heuristic and may not be 100% accurate
+    // check section flags to determine type
+    if (sections && sect > 0 && sect <= nsects) {
+        tb_uint32_t flags = sections[sect - 1].flags; // section numbers are 1-based
+        // IMAGE_SCN_CNT_CODE (0x20) - code section
+        if (flags & XM_COFF_SCN_CNT_CODE) {
+            return is_external ? 'T' : 't';  // text section
+        }
+        // IMAGE_SCN_CNT_UNINITIALIZED_DATA (0x80) - bss section
+        if (flags & XM_COFF_SCN_CNT_UNINITIALIZED_DATA) {
+            return is_external ? 'B' : 'b';  // bss section
+        }
+        // IMAGE_SCN_CNT_INITIALIZED_DATA (0x40) - data section
+        if (flags & XM_COFF_SCN_CNT_INITIALIZED_DATA) {
+            return is_external ? 'D' : 'd';  // data section
+        }
+    }
+    
+    // fallback: use section number heuristic
     if (sect == 1) {
         return is_external ? 'T' : 't';  // text section
     } else if (sect == 2) {
         return is_external ? 'D' : 'd';  // data section
     } else if (sect == 3) {
         return is_external ? 'B' : 'b';  // bss section
-    } else {
-        return is_external ? 'S' : 's';  // other section
     }
+    
+    return is_external ? 'S' : 's';  // other section
 }
 
 #endif

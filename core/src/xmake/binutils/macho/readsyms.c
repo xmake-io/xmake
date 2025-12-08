@@ -124,26 +124,11 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
         lua_pushstring(lua, name);
         lua_settable(lua, -3);
         
-        // value
-        lua_pushstring(lua, "value");
-        lua_pushinteger(lua, nlist.value);
-        lua_settable(lua, -3);
-        
-        // section
-        lua_pushstring(lua, "section");
-        lua_pushinteger(lua, nlist.sect);
-        lua_settable(lua, -3);
-        
         // type (nm-style: T/t/D/d/B/b/U)
         tb_char_t type_char = xm_binutils_macho_get_symbol_type_char(nlist.type, nlist.sect);
         tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
         lua_pushstring(lua, type_str);
-        lua_settable(lua, -3);
-        
-        // bind
-        lua_pushstring(lua, "bind");
-        lua_pushstring(lua, xm_binutils_macho_get_symbol_bind(nlist.type));
         lua_settable(lua, -3);
         
         lua_settable(lua, -3);
@@ -243,26 +228,11 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
         lua_pushstring(lua, name);
         lua_settable(lua, -3);
         
-        // value
-        lua_pushstring(lua, "value");
-        lua_pushinteger(lua, nlist.value);
-        lua_settable(lua, -3);
-        
-        // section
-        lua_pushstring(lua, "section");
-        lua_pushinteger(lua, nlist.sect);
-        lua_settable(lua, -3);
-        
         // type (nm-style: T/t/D/d/B/b/U)
         tb_char_t type_char = xm_binutils_macho_get_symbol_type_char(nlist.type, nlist.sect);
         tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
         lua_pushstring(lua, type_str);
-        lua_settable(lua, -3);
-        
-        // bind
-        lua_pushstring(lua, "bind");
-        lua_pushstring(lua, xm_binutils_macho_get_symbol_bind(nlist.type));
         lua_settable(lua, -3);
         
         lua_settable(lua, -3);

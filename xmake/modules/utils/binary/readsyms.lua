@@ -41,63 +41,37 @@ function dump(binaryfile)
     local symbols = _get_symbols(binaryfile)
     if symbols and #symbols > 0 then
         -- calculate column widths for alignment
-        local max_value_len = 0
         local max_name_len = 0
         local max_type_len = 0
-        local max_bind_len = 0
-        local max_section_len = 0
-        local max_size_len = 0
 
         for i, sym in ipairs(symbols) do
-            if sym.value then
-                local value_str = string.format("0x%x", sym.value)
-                max_value_len = math.max(max_value_len, #value_str)
-            end
             if sym.name then
                 max_name_len = math.max(max_name_len, #sym.name)
             end
             if sym.type then
                 max_type_len = math.max(max_type_len, #sym.type)
             end
-            if sym.bind then
-                max_bind_len = math.max(max_bind_len, #sym.bind)
-            end
-            if sym.section then
-                local section_str = tostring(sym.section)
-                max_section_len = math.max(max_section_len, #section_str)
-            end
-            if sym.size then
-                local size_str = tostring(sym.size)
-                max_size_len = math.max(max_size_len, #size_str)
-            end
         end
 
         -- calculate column widths
-        local value_width = math.max(max_value_len, 10)
         local type_width = math.max(max_type_len, 4)
-        local bind_width = math.max(max_bind_len, 4)
-        local section_width = math.max(max_section_len, 7)
-        local size_width = math.max(max_size_len, 4)
+        local name_width = math.max(max_name_len, 4)
         
         -- print header
         print("")
         print("Symbols:")
-        local header_format = "  %-" .. value_width .. "s  %-" .. type_width .. "s  %-" .. bind_width .. "s  %-" .. section_width .. "s  %-" .. size_width .. "s  %s"
-        print(string.format(header_format, "VALUE", "TYPE", "BIND", "SECTION", "SIZE", "NAME"))
+        local header_format = "  %-" .. type_width .. "s  %s"
+        print(string.format(header_format, "TYPE", "NAME"))
         print(string.rep("-", 80))
         
         -- print symbols
-        local format_str = "  %-" .. value_width .. "s  %-" .. type_width .. "s  %-" .. bind_width .. "s  %-" .. section_width .. "s  %-" .. size_width .. "s  %s"
+        local format_str = "  %-" .. type_width .. "s  %s"
 
         for i, sym in ipairs(symbols) do
-            local value_str = sym.value and string.format("0x%x", sym.value) or ""
-            local type_str = sym.type or ""
-            local bind_str = sym.bind or ""
-            local section_str = sym.section and sym.section > 0 and tostring(sym.section) or ""
-            local size_str = sym.size and tostring(sym.size) or ""
+            local type_str = sym.type or "unknown"
             local name_str = sym.name or ""
 
-            print(string.format(format_str, value_str, type_str, bind_str, section_str, size_str, name_str))
+            print(string.format(format_str, type_str, name_str))
         end
         print("")
         cprint("${bright}%d symbols found!", #symbols)
