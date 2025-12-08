@@ -333,13 +333,13 @@ static __tb_inline__ tb_uint32_t xm_binutils_macho_parse_version(tb_char_t const
  */
 static __tb_inline__ tb_bool_t xm_binutils_macho_read_string(tb_stream_ref_t istream, tb_uint32_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
     tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
-    
+
     tb_hize_t saved_pos = tb_stream_offset(istream);
     // nlist.strx is offset from string table start (including 4-byte size field)
     if (!tb_stream_seek(istream, strtab_offset + offset)) {
         return tb_false;
     }
-    
+
     tb_size_t pos = 0;
     tb_byte_t c;
     while (pos < name_size - 1) {
@@ -353,7 +353,7 @@ static __tb_inline__ tb_bool_t xm_binutils_macho_read_string(tb_stream_ref_t ist
         name[pos++] = (tb_char_t)c;
     }
     name[pos] = '\0';
-    
+
     tb_stream_seek(istream, saved_pos);
     return tb_true;
 }
@@ -369,10 +369,10 @@ static __tb_inline__ tb_char_t xm_binutils_macho_get_symbol_type_char(tb_uint8_t
     if (sect == 0) {
         return 'U';
     }
-    
+
     // check if external
     tb_bool_t is_external = (type & XM_MACHO_N_EXT) != 0;
-    
+
     // check if in section
     tb_uint8_t n_type = type & XM_MACHO_N_TYPE_MASK;
     if (n_type == XM_MACHO_N_TYPE_SECT) {
@@ -391,7 +391,7 @@ static __tb_inline__ tb_char_t xm_binutils_macho_get_symbol_type_char(tb_uint8_t
             return is_external ? 'S' : 's';  // other section
         }
     }
-    
+
     return '?';  // unknown
 }
 

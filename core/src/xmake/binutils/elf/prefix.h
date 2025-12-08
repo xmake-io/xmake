@@ -279,12 +279,12 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_is_64bit(tb_char_t const *arch) {
  */
 static __tb_inline__ tb_bool_t xm_binutils_elf_read_string(tb_stream_ref_t istream, tb_uint32_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
     tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
-    
+
     tb_hize_t saved_pos = tb_stream_offset(istream);
     if (!tb_stream_seek(istream, strtab_offset + offset)) {
         return tb_false;
     }
-    
+
     tb_size_t pos = 0;
     tb_byte_t c;
     while (pos < name_size - 1) {
@@ -298,7 +298,7 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_read_string(tb_stream_ref_t istre
         name[pos++] = (tb_char_t)c;
     }
     name[pos] = '\0';
-    
+
     tb_stream_seek(istream, saved_pos);
     return tb_true;
 }
@@ -314,11 +314,11 @@ static __tb_inline__ tb_char_t xm_binutils_elf_get_symbol_type_char(tb_uint8_t s
     if (st_shndx == 0) {
         return 'U';
     }
-    
+
     // check bind (global = uppercase, local = lowercase)
     tb_uint8_t bind = (st_info >> 4) & 0xf;
     tb_bool_t is_global = (bind == 1); // STB_GLOBAL
-    
+
     // check type
     tb_uint8_t type = st_info & 0xf;
     if (type == 2) { // STT_FUNC
@@ -329,7 +329,7 @@ static __tb_inline__ tb_char_t xm_binutils_elf_get_symbol_type_char(tb_uint8_t s
         // This is a heuristic - in practice, we'd need to check section flags
         return is_global ? 'D' : 'd';  // data (assume data section)
     }
-    
+
     // other types
     return is_global ? 'S' : 's';  // other section
 }

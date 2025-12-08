@@ -189,11 +189,11 @@ static __tb_inline__ tb_void_t xm_binutils_coff_write_symbol_name(tb_stream_ref_
  */
 static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istream, tb_uint32_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
     tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
-    
+
     // In COFF format, the offset in symbol table is from the start of string table
     // (including the 4-byte size field). So offset=4 points to the first string after
     // the size field, offset=74 points to a string at position 74 from the start.
-    
+
     // read string table size first to validate offset
     tb_uint32_t strtab_size = 0;
     tb_hize_t saved_pos = tb_stream_offset(istream);
@@ -204,13 +204,13 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istr
         tb_stream_seek(istream, saved_pos);
         return tb_false;
     }
-    
+
     // check offset (must be >= 4 to skip the size field, and < strtab_size)
     if (offset < 4 || offset >= strtab_size) {
         tb_stream_seek(istream, saved_pos);
         return tb_false;
     }
-    
+
     // seek to string position (offset is from start of string table, including size field)
     // strtab_offset points to the start of string table (including 4-byte size field)
     // offset is from the start of string table (including size field)
@@ -219,7 +219,7 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istr
         tb_stream_seek(istream, saved_pos);
         return tb_false;
     }
-    
+
     // read string
     tb_size_t pos = 0;
     tb_byte_t c;
@@ -234,7 +234,7 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istr
         name[pos++] = (tb_char_t)c;
     }
     name[pos] = '\0';
-    
+
     // restore position
     tb_stream_seek(istream, saved_pos);
     return tb_true;
@@ -251,7 +251,7 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istr
  */
 static __tb_inline__ tb_bool_t xm_binutils_coff_get_symbol_name(tb_stream_ref_t istream, xm_coff_symbol_t const *sym, tb_uint32_t strtab_offset, tb_char_t *name, tb_size_t name_size) {
     tb_assert_and_check_return_val(istream && sym && name && name_size > 0, tb_false);
-    
+
     // check if it's a long name (first 4 bytes are zeros)
     if (sym->n.longname.zeros == 0) {
         // long name: read from string table
@@ -283,10 +283,10 @@ static __tb_inline__ tb_char_t xm_binutils_coff_get_symbol_type_char(tb_uint8_t 
     if (sect == 0) {
         return 'U';
     }
-    
+
     // check if external
     tb_bool_t is_external = (scl == 2); // IMAGE_SYM_CLASS_EXTERNAL
-    
+
     // check section flags to determine type
     if (sections && sect > 0 && sect <= nsects) {
         tb_uint32_t flags = sections[sect - 1].flags; // section numbers are 1-based
@@ -303,7 +303,7 @@ static __tb_inline__ tb_char_t xm_binutils_coff_get_symbol_type_char(tb_uint8_t 
             return is_external ? 'D' : 'd';  // data section
         }
     }
-    
+
     // fallback: use section number heuristic
     if (sect == 1) {
         return is_external ? 'T' : 't';  // text section
@@ -312,7 +312,7 @@ static __tb_inline__ tb_char_t xm_binutils_coff_get_symbol_type_char(tb_uint8_t 
     } else if (sect == 3) {
         return is_external ? 'B' : 'b';  // bss section
     }
-    
+
     return is_external ? 'S' : 's';  // other section
 }
 

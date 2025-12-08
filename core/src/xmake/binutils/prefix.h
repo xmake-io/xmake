@@ -54,17 +54,17 @@
  */
 static __tb_inline__ tb_bool_t xm_binutils_read_magic(tb_stream_ref_t istream, tb_uint8_t *magic, tb_size_t size) {
     tb_assert_and_check_return_val(istream && magic && size > 0, tb_false);
-    
+
     tb_hize_t saved_pos = tb_stream_offset(istream);
     if (!tb_stream_seek(istream, 0)) {
         return tb_false;
     }
-    
+
     tb_bool_t ok = tb_false;
     if (tb_stream_bread(istream, magic, size)) {
         ok = tb_true;
     }
-    
+
     tb_stream_seek(istream, saved_pos);
     return ok;
 }
@@ -72,25 +72,25 @@ static __tb_inline__ tb_bool_t xm_binutils_read_magic(tb_stream_ref_t istream, t
 /* detect object file format from stream
  *
  * @param istream the input stream
- * @return        XM_BINUTILS_FORMAT_COFF, XM_BINUTILS_FORMAT_ELF, XM_BINUTILS_FORMAT_MACHO, 
+ * @return        XM_BINUTILS_FORMAT_COFF, XM_BINUTILS_FORMAT_ELF, XM_BINUTILS_FORMAT_MACHO,
  *                 XM_BINUTILS_FORMAT_UNKNOWN, or -1 on error
  */
 static __tb_inline__ tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream) {
     tb_assert_and_check_return_val(istream, -1);
-    
+
     // read magic bytes
     tb_uint8_t magic[4];
     if (!xm_binutils_read_magic(istream, magic, 4)) {
         return -1;
     }
-    
+
     // check ELF magic (0x7f 'E' 'L' 'F')
     if (magic[0] == 0x7f && magic[1] == 'E' && magic[2] == 'L' && magic[3] == 'F') {
         return XM_BINUTILS_FORMAT_ELF;
     }
-    
+
     // check Mach-O magic
-    if (magic[0] == 0xfe && magic[1] == 0xed && magic[2] == 0xfa && 
+    if (magic[0] == 0xfe && magic[1] == 0xed && magic[2] == 0xfa &&
         (magic[3] == 0xce || magic[3] == 0xcf)) {
         return XM_BINUTILS_FORMAT_MACHO; // Mach-O 32/64 (big endian)
     }
@@ -100,7 +100,7 @@ static __tb_inline__ tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream)
     if (magic[0] == 0xcf && magic[1] == 0xfa && magic[2] == 0xed && magic[3] == 0xfe) {
         return XM_BINUTILS_FORMAT_MACHO; // Mach-O 64 (little endian)
     }
-    
+
     // check COFF (object files start with machine type, not a magic number)
     // COFF header: machine (2 bytes) + nsects (2 bytes) + time (4 bytes) + ...
     // Read machine type to verify if it's a valid COFF file
@@ -114,15 +114,15 @@ static __tb_inline__ tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream)
         return -1;
     }
     tb_stream_seek(istream, saved_pos);
-    
+
     // check if it's a valid COFF machine type
-    if (machine == XM_BINUTILS_COFF_MACHINE_I386 || 
-        machine == XM_BINUTILS_COFF_MACHINE_AMD64 || 
-        machine == XM_BINUTILS_COFF_MACHINE_ARM || 
+    if (machine == XM_BINUTILS_COFF_MACHINE_I386 ||
+        machine == XM_BINUTILS_COFF_MACHINE_AMD64 ||
+        machine == XM_BINUTILS_COFF_MACHINE_ARM ||
         machine == XM_BINUTILS_COFF_MACHINE_ARM64) {
         return XM_BINUTILS_FORMAT_COFF;
     }
-    
+
     // unknown format
     return XM_BINUTILS_FORMAT_UNKNOWN;
 }
