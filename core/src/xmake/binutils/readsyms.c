@@ -51,11 +51,11 @@ extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, lua_Sta
  */
 tb_int_t xm_binutils_readsyms(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
-    
+
     // get the object file path
     tb_char_t const *objectfile = luaL_checkstring(lua, 1);
     tb_check_return_val(objectfile, 0);
-    
+
     // open file
     tb_stream_ref_t istream = tb_stream_init_from_file(objectfile, TB_FILE_MODE_RO);
     if (!istream) {
@@ -63,7 +63,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
         lua_pushfstring(lua, "readsyms: open %s failed", objectfile);
         return 2;
     }
-    
+
     tb_bool_t ok = tb_false;
     do {
         if (!tb_stream_open(istream)) {
@@ -71,7 +71,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
             lua_pushfstring(lua, "readsyms: open %s failed", objectfile);
             break;
         }
-        
+
         // detect format
         tb_int_t format = xm_binutils_detect_format(istream);
         if (format < 0) {
@@ -79,7 +79,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
             lua_pushfstring(lua, "readsyms: cannot detect file format");
             break;
         }
-        
+
         // read symbols based on format
         if (format == XM_BINUTILS_FORMAT_COFF) {
             // COFF
@@ -108,15 +108,15 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
             lua_pushfstring(lua, "readsyms: unsupported or unknown file format");
             break;
         }
-        
+
         ok = tb_true;
     } while (0);
-    
+
     if (istream) {
         tb_stream_clos(istream);
     }
     istream = tb_null;
-    
+
     return ok ? 1 : 2;
 }
 
