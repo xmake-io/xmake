@@ -29,32 +29,12 @@ rule("utils.bin2c")
         target:add("includedirs", headerdir)
     end)
     on_preparecmd_file(function (target, batchcmds, sourcefile_bin, opt)
+        import("rules.utils.bin2c.utils", {alias = "bin2c_utils", rootdir = os.programdir()})
 
-        -- get header file
-        local headerdir = path.join(target:autogendir(), "rules", "utils", "bin2c")
-        local headerfile = path.join(headerdir, path.filename(sourcefile_bin) .. ".h")
-        target:add("includedirs", headerdir)
-
-        -- add commands
-        batchcmds:show_progress(opt.progress, "${color.build.object}generating.bin2c %s", sourcefile_bin)
-        batchcmds:mkdir(headerdir)
-        local argv = {"-i", path(sourcefile_bin), "-o", path(headerfile)}
-        local linewidth = target:extraconf("rules", "utils.bin2c", "linewidth")
-        if linewidth then
-            table.insert(argv, "-w")
-            table.insert(argv, tostring(linewidth))
-        end
-        -- get nozeroend (check file-level config first, then rule-level config)
-        local fileconfig = target:fileconfig(sourcefile_bin)
-        local nozeroend = (fileconfig and fileconfig.nozeroend) or target:extraconf("rules", "utils.bin2c", "nozeroend") or false
-        -- also support zeroend (inverse of nozeroend)
-        if fileconfig and fileconfig.zeroend ~= nil then
-            nozeroend = not fileconfig.zeroend
-        end
-        if nozeroend then
-            table.insert(argv, "--nozeroend")
-        end
-        batchcmds:vlua("utils.binary.bin2c", argv)
+        -- generate header file
+        local headerfile = bin2c_utils.generate_headerfile(target, batchcmds, sourcefile_bin, {
+            progress = opt.progress
+        })
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_bin)
