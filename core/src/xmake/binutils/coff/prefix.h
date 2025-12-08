@@ -171,5 +171,109 @@ static __tb_inline__ tb_void_t xm_binutils_coff_write_symbol_name(tb_stream_ref_
     }
 }
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * readsyms inline implementation
+ */
+
+/* read string from COFF string table
+ *
+ * @param istream       the input stream
+ * @param strtab_offset the string table offset
+ * @param offset        the string offset (relative to string table content, after size field)
+ * @return              the string (static buffer, valid until next call)
+ */
+static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istream, tb_uint32_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
+    tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
+    
+    // read string table size
+    tb_uint32_t strtab_size = 0;
+    tb_hize_t saved_pos = tb_stream_offset(istream);
+    if (!tb_stream_seek(istream, strtab_offset)) {
+        return tb_false;
+    }
+    if (!tb_stream_bread(istream, (tb_byte_t*)&strtab_size, 4)) {
+        tb_stream_seek(istream, saved_pos);
+        return tb_false;
+    }
+    
+    // check offset (offset is relative to start of string table, after the 4-byte size field)
+    if (offset >= strtab_size - 4) {
+        tb_stream_seek(istream, saved_pos);
+        return tb_false;
+    }
+    
+    // seek to string position (offset is from start of string table content, after size field)
+    if (!tb_stream_seek(istream, strtab_offset + 4 + offset)) {
+        tb_stream_seek(istream, saved_pos);
+        return tb_false;
+    }
+    
+    // read string
+    tb_size_t pos = 0;
+    tb_byte_t c;
+    while (pos < name_size - 1) {
+        if (!tb_stream_bread(istream, &c, 1)) {
+            tb_stream_seek(istream, saved_pos);
+            return tb_false;
+        }
+        if (c == 0) {
+            break;
+        }
+        name[pos++] = (tb_char_t)c;
+    }
+    name[pos] = '\0';
+    
+    // restore position
+    tb_stream_seek(istream, saved_pos);
+    return tb_true;
+}
+
+/* get symbol name from COFF symbol entry
+ *
+ * @param istream       the input stream
+ * @param sym           the symbol entry
+ * @param strtab_offset the string table offset
+ * @param name          the buffer to store the symbol name
+ * @param name_size     the size of the buffer
+ * @return              tb_true on success, tb_false on failure
+ */
+static __tb_inline__ tb_bool_t xm_binutils_coff_get_symbol_name(tb_stream_ref_t istream, xm_coff_symbol_t const *sym, tb_uint32_t strtab_offset, tb_char_t *name, tb_size_t name_size) {
+    tb_assert_and_check_return_val(istream && sym && name && name_size > 0, tb_false);
+    
+    // check if it's a long name (first 4 bytes are zeros)
+    if (sym->n.longname.zeros == 0) {
+        // long name: read from string table
+        return xm_binutils_coff_read_string(istream, strtab_offset, sym->n.longname.offset, name, name_size);
+    } else {
+        // short name: use directly
+        tb_size_t len = tb_min(8, name_size - 1);
+        tb_strncpy(name, sym->n.shortname.name, len);
+        name[len] = '\0';
+        // trim trailing nulls
+        while (len > 0 && name[len - 1] == '\0') {
+            len--;
+        }
+        name[len] = '\0';
+        return tb_true;
+    }
+}
+
+/* get symbol type string from storage class
+ *
+ * @param scl the storage class
+ * @return    the type string
+ */
+static __tb_inline__ tb_char_t const *xm_binutils_coff_get_symbol_type(tb_uint8_t scl) {
+    // IMAGE_SYM_CLASS_EXTERNAL = 2
+    // IMAGE_SYM_CLASS_STATIC = 3
+    // IMAGE_SYM_CLASS_LABEL = 6
+    switch (scl) {
+    case 2: return "external";
+    case 3: return "static";
+    case 6: return "label";
+    default: return "unknown";
+    }
+}
+
 #endif
 

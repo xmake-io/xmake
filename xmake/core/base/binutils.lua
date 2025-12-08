@@ -26,6 +26,7 @@ binutils._bin2c = binutils._bin2c or binutils.bin2c
 binutils._bin2coff = binutils._bin2coff or binutils.bin2coff
 binutils._bin2macho = binutils._bin2macho or binutils.bin2macho
 binutils._bin2elf = binutils._bin2elf or binutils.bin2elf
+binutils._readsyms = binutils._readsyms or binutils.readsyms
 
 -- generate c/c++ code from the binary file
 function binutils.bin2c(binaryfile, outputfile, opt)
@@ -54,6 +55,15 @@ end
 function binutils.bin2elf(binaryfile, outputfile, opt)
     opt = opt or {}
     return binutils._bin2elf(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.arch or "x86_64", opt.basename, opt.zeroend or false)
+end
+
+-- read symbols from object file (auto-detect format: COFF, ELF, or Mach-O)
+function binutils.readsyms(binaryfile)
+    if binutils._readsyms then
+        return binutils._readsyms(binaryfile)
+    else
+        return nil, "readsyms: C implementation not available"
+    end
 end
 
 -- return module

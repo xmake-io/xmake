@@ -57,6 +57,16 @@ function sandbox_core_base_binutils.bin2elf(binaryfile, outputfile, opt)
     end
 end
 
+-- read symbols from object file (auto-detect format: ELF, COFF, Mach-O)
+function sandbox_core_base_binutils.readsyms(binaryfile)
+    local symbols, errors = binutils.readsyms(binaryfile)
+    if symbols then
+        return symbols
+    else
+        raise("readsyms: %s", errors or "unknown errors")
+    end
+end
+
 -- return module
 return sandbox_core_base_binutils
 

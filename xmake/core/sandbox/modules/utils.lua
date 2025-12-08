@@ -150,7 +150,7 @@ function sandbox_utils.assert(value, format, ...)
 end
 
 -- generate c/c++ code from the binary file (deprecated, use binutils.bin2c instead)
-function sandbox_utils.bin2c(binaryfile, outputfile, opt)
+    function sandbox_utils.bin2c(binaryfile, outputfile, opt)
     deprecated.add("binutils.bin2c", "utils.bin2c")
     return binutils.bin2c(binaryfile, outputfile, opt)
 end

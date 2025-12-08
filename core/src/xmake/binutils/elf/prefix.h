@@ -266,5 +266,74 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_is_64bit(tb_char_t const *arch) {
     return tb_false;
 }
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * readsyms inline implementation
+ */
+
+/* read string from ELF string table
+ *
+ * @param istream       the input stream
+ * @param strtab_offset the string table offset
+ * @param offset        the string offset
+ * @return              the string (static buffer, valid until next call)
+ */
+static __tb_inline__ tb_bool_t xm_binutils_elf_read_string(tb_stream_ref_t istream, tb_uint32_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
+    tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
+    
+    tb_hize_t saved_pos = tb_stream_offset(istream);
+    if (!tb_stream_seek(istream, strtab_offset + offset)) {
+        return tb_false;
+    }
+    
+    tb_size_t pos = 0;
+    tb_byte_t c;
+    while (pos < name_size - 1) {
+        if (!tb_stream_bread(istream, &c, 1)) {
+            tb_stream_seek(istream, saved_pos);
+            return tb_false;
+        }
+        if (c == 0) {
+            break;
+        }
+        name[pos++] = (tb_char_t)c;
+    }
+    name[pos] = '\0';
+    
+    tb_stream_seek(istream, saved_pos);
+    return tb_true;
+}
+
+/* get symbol type string from ELF symbol info
+ *
+ * @param st_info the symbol info byte
+ * @return         the type string
+ */
+static __tb_inline__ tb_char_t const *xm_binutils_elf_get_symbol_type(tb_uint8_t st_info) {
+    tb_uint8_t type = st_info & 0xf;
+    switch (type) {
+    case 0: return "notype";
+    case 1: return "object";
+    case 2: return "func";
+    case 3: return "section";
+    case 4: return "file";
+    default: return "unknown";
+    }
+}
+
+/* get symbol bind string from ELF symbol info
+ *
+ * @param st_info the symbol info byte
+ * @return         the bind string
+ */
+static __tb_inline__ tb_char_t const *xm_binutils_elf_get_symbol_bind(tb_uint8_t st_info) {
+    tb_uint8_t bind = (st_info >> 4) & 0xf;
+    switch (bind) {
+    case 0: return "local";
+    case 1: return "global";
+    case 2: return "weak";
+    default: return "unknown";
+    }
+}
+
 #endif
 
