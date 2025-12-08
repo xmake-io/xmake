@@ -27,20 +27,11 @@ import("core.base.binutils")
 -- @return            the symbols table
 function _get_symbols(binaryfile)
     assert(binaryfile, "usage: xmake l utils.binary.readsyms <binaryfile>")
-    
+
     binaryfile = path.absolute(binaryfile)
     assert(os.isfile(binaryfile), "%s not found!", binaryfile)
-        
-    if binutils.readsyms then
-        local ok, symbols = binutils.readsyms(binaryfile)
-        if ok then
-            return symbols
-        else
-            raise("readsyms: %s", symbols or "unknown error")
-        end
-    else
-        raise("readsyms: binutils.readsyms not available (C implementation not compiled)")
-    end
+
+    return binutils.readsyms(binaryfile)
 end
 
 -- dump symbols to console
