@@ -23,9 +23,9 @@ import("lib.detect.find_tool")
 import("core.tool.toolchain")
 import("core.base.option")
 import("core.base.hashset")
-import("core.base.binutils")
 import("core.project.depend")
 import("utils.progress")
+import("utils.binary.readsyms")
 
 -- It is not very accurate because some rules automatically
 -- generate objectfiles and do not save the corresponding sourcefiles.
@@ -157,33 +157,39 @@ function _get_allsymbols_by_readsyms(target, opt)
     if export_filter then
         _get_sourcefiles_map(target, sourcefiles_map)
     end
-    for _, objectfile in ipairs(target:objectfiles()) do
-        local symbols, errors = binutils.readsyms(objectfile)
-        if symbols then
-            local sourcefile = sourcefiles_map[objectfile]
-            for _, sym in ipairs(symbols) do
-                if sym.name and sym.type then
-                    -- only export function symbols (T/t) for DLL exports
-                    -- skip data (D/d), bss (B/b), other sections (S/s), and undefined (U) symbols
-                    if sym.type == "T" or sym.type == "t" then
-                        local symbol = sym.name
-                        -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
-                        if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
-                            symbol = symbol:sub(2)
-                        end
-                        if export_filter then
-                            if export_filter(symbol, {objectfile = objectfile, sourcefile = sourcefile}) then
-                                allsymbols:insert(symbol)
+    local objectfiles = target:objectfiles()
+    local symbols = readsyms(objectfiles)
+    if symbols then
+        for _, sym in ipairs(symbols) do
+            if sym.name and sym.type then
+                -- only export function symbols (T/t) for DLL exports
+                -- skip data (D/d), bss (B/b), other sections (S/s), and undefined (U) symbols
+                if sym.type == "T" or sym.type == "t" then
+                    local symbol = sym.name
+                    -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
+                    if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
+                        symbol = symbol:sub(2)
+                    end
+                    if export_filter then
+                        -- find sourcefile for this symbol (approximate match)
+                        local sourcefile = nil
+                        for objfile, srcfile in pairs(sourcefiles_map) do
+                            if objfile:find(path.basename(symbol), 1, true) then
+                                sourcefile = srcfile
+                                break
                             end
-                        elseif not symbol:startswith("__") then
-                            if export_classes or not symbol:startswith("?") then
-                                if export_classes then
-                                    if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
-                                        allsymbols:insert(symbol)
-                                    end
-                                else
+                        end
+                        if export_filter(symbol, {sourcefile = sourcefile}) then
+                            allsymbols:insert(symbol)
+                        end
+                    elseif not symbol:startswith("__") then
+                        if export_classes or not symbol:startswith("?") then
+                            if export_classes then
+                                if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
                                     allsymbols:insert(symbol)
                                 end
+                            else
+                                allsymbols:insert(symbol)
                             end
                         end
                     end

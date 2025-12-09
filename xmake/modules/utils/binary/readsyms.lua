@@ -81,11 +81,28 @@ function dump(binaryfile)
     end
 end
 
--- read symbols from object file (auto-detect format: ELF, COFF, Mach-O)
+-- read symbols from object file(s) (auto-detect format: ELF, COFF, Mach-O)
 --
--- @param binaryfile  the object file path (required)
--- @return           the symbols table
+-- @param binaryfile  the object file path or table of object files (required)
+-- @return           the symbols table (all symbols from all files if table is provided)
 function main(binaryfile)
-    return _get_symbols(binaryfile)
+    assert(binaryfile, "usage: xmake l utils.binary.readsyms <binaryfile> or readsyms(binaryfiles)")
+
+    local all_symbols = {}
+    if type(binaryfile) == "string" then
+        -- single file
+        return _get_symbols(binaryfile)
+    else
+        -- multiple files
+        for _, objectfile in ipairs(binaryfile) do
+            local symbols = _get_symbols(objectfile)
+            if symbols then
+                for _, sym in ipairs(symbols) do
+                    table.insert(all_symbols, sym)
+                end
+            end
+        end
+        return all_symbols
+    end
 end
 
