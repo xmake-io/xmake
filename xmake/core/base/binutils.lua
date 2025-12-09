@@ -30,6 +30,7 @@ binutils._bin2coff = binutils._bin2coff or binutils.bin2coff
 binutils._bin2macho = binutils._bin2macho or binutils.bin2macho
 binutils._bin2elf = binutils._bin2elf or binutils.bin2elf
 binutils._readsyms = binutils._readsyms or binutils.readsyms
+binutils._extractlib = binutils._extractlib or binutils.extractlib
 
 -- generate c/c++ code from the binary file
 function binutils.bin2c(binaryfile, outputfile, opt)
@@ -97,6 +98,24 @@ function binutils.readsyms(binaryfile)
         return binutils._readsyms(binaryfile)
     else
         return nil, "readsyms: C implementation not available"
+    end
+end
+
+-- extract static library to directory
+-- Supports AR format (.a) and MSVC lib format (.lib)
+-- @param libraryfile the static library file path (.a or .lib)
+-- @param outputdir    the output directory to extract object files
+-- @return             true on success, false and error message on failure
+function binutils.extractlib(libraryfile, outputdir)
+    if binutils._extractlib then
+        local ok, errors = binutils._extractlib(libraryfile, outputdir)
+        if ok then
+            return true
+        else
+            return false, errors or "extractlib: unknown error"
+        end
+    else
+        return false, "extractlib: C implementation not available"
     end
 end
 

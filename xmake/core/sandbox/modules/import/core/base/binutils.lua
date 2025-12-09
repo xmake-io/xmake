@@ -52,6 +52,14 @@ function sandbox_core_base_binutils.readsyms(binaryfile)
     end
 end
 
+-- extract static library to directory
+function sandbox_core_base_binutils.extractlib(libraryfile, outputdir)
+    local ok, errors = binutils.extractlib(libraryfile, outputdir)
+    if not ok then
+        raise("extractlib: %s", errors or "unknown errors")
+    end
+end
+
 -- return module
 return sandbox_core_base_binutils
 
