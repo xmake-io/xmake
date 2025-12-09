@@ -325,6 +325,40 @@ static __tb_inline__ tb_uint32_t xm_binutils_macho_parse_version(tb_char_t const
  * readsyms inline implementation
  */
 
+/* detect Mach-O format from magic bytes
+ *
+ * @param magic_bytes  the magic bytes (4 bytes)
+ * @param is_32bit     output: tb_true if 32-bit, tb_false if 64-bit
+ * @param swap_bytes   output: tb_true if byte-swapping needed (big-endian), tb_false otherwise
+ * @return             tb_true if valid Mach-O magic, tb_false otherwise
+ */
+static __tb_inline__ tb_bool_t xm_binutils_macho_detect_format(tb_uint8_t const *magic_bytes, tb_bool_t *is_32bit, tb_bool_t *swap_bytes) {
+    tb_assert_and_check_return_val(magic_bytes && is_32bit && swap_bytes, tb_false);
+    
+    // check for little-endian magic numbers
+    if (magic_bytes[0] == 0xce && magic_bytes[1] == 0xfa && magic_bytes[2] == 0xed && magic_bytes[3] == 0xfe) {
+        *is_32bit = tb_true;
+        *swap_bytes = tb_false;
+        return tb_true;
+    } else if (magic_bytes[0] == 0xcf && magic_bytes[1] == 0xfa && magic_bytes[2] == 0xed && magic_bytes[3] == 0xfe) {
+        *is_32bit = tb_false;
+        *swap_bytes = tb_false;
+        return tb_true;
+    }
+    // check for big-endian magic numbers
+    else if (magic_bytes[0] == 0xfe && magic_bytes[1] == 0xed && magic_bytes[2] == 0xfa && magic_bytes[3] == 0xce) {
+        *is_32bit = tb_true;
+        *swap_bytes = tb_true;
+        return tb_true;
+    } else if (magic_bytes[0] == 0xfe && magic_bytes[1] == 0xed && magic_bytes[2] == 0xfa && magic_bytes[3] == 0xcf) {
+        *is_32bit = tb_false;
+        *swap_bytes = tb_true;
+        return tb_true;
+    }
+    
+    return tb_false;
+}
+
 /* read string from Mach-O string table
  *
  * @param istream       the input stream

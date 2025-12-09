@@ -319,37 +319,18 @@ tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, lua_State *lua
         return tb_false;
     }
     
-    // check magic bytes directly (byte order independent)
-    tb_bool_t swap_bytes = tb_false;
+    // detect Mach-O format
     tb_bool_t is_32bit = tb_false;
-    tb_bool_t is_64bit = tb_false;
-    
-    // check for little-endian magic numbers
-    if (magic_bytes[0] == 0xce && magic_bytes[1] == 0xfa && magic_bytes[2] == 0xed && magic_bytes[3] == 0xfe) {
-        is_32bit = tb_true;
-        swap_bytes = tb_false;
-    } else if (magic_bytes[0] == 0xcf && magic_bytes[1] == 0xfa && magic_bytes[2] == 0xed && magic_bytes[3] == 0xfe) {
-        is_64bit = tb_true;
-        swap_bytes = tb_false;
-    }
-    // check for big-endian magic numbers
-    else if (magic_bytes[0] == 0xfe && magic_bytes[1] == 0xed && magic_bytes[2] == 0xfa && magic_bytes[3] == 0xce) {
-        is_32bit = tb_true;
-        swap_bytes = tb_true;
-    } else if (magic_bytes[0] == 0xfe && magic_bytes[1] == 0xed && magic_bytes[2] == 0xfa && magic_bytes[3] == 0xcf) {
-        is_64bit = tb_true;
-        swap_bytes = tb_true;
-    } else {
+    tb_bool_t swap_bytes = tb_false;
+    if (!xm_binutils_macho_detect_format(magic_bytes, &is_32bit, &swap_bytes)) {
         return tb_false;
     }
     
     if (is_32bit) {
         return xm_binutils_macho_read_symbols_32(istream, lua, swap_bytes);
-    } else if (is_64bit) {
+    } else {
         return xm_binutils_macho_read_symbols_64(istream, lua, swap_bytes);
     }
-    
-    return tb_false;
 }
 
 
