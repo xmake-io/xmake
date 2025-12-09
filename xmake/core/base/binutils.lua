@@ -39,23 +39,46 @@ function binutils.bin2c(binaryfile, outputfile, opt)
     end
 end
 
--- generate COFF object file from the binary file
-function binutils.bin2coff(binaryfile, outputfile, opt)
+-- generate object file from the binary file
+-- @param binaryfile  the binary file path
+-- @param outputfile  the output object file path
+-- @param opt         the options
+--                      - format: the object file format (coff, elf, macho), required
+--                      - symbol_prefix: the symbol prefix (default: _binary_)
+--                      - arch: the target architecture (default: x86_64)
+--                      - plat: the target platform (default: macosx, only for macho)
+--                      - basename: the base name for symbols
+--                      - target_minver: the target minimum version (only for macho)
+--                      - xcode_sdkver: the Xcode SDK version (only for macho)
+--                      - zeroend: append null terminator (default: false)
+function binutils.bin2obj(binaryfile, outputfile, opt)
     opt = opt or {}
-    return binutils._bin2coff(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.arch or "x86_64", opt.basename, opt.zeroend or false)
+    local format = opt.format
+    if not format then
+        return nil, "bin2obj: format is required (coff, elf, or macho)"
+    end
+    format = format:lower()
+
+    if format == "coff" then
+        if not binutils._bin2coff then
+            return nil, "bin2obj: binutils._bin2coff not available (C implementation not compiled)"
+        end
+        return binutils._bin2coff(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.arch or "x86_64", opt.basename, opt.zeroend or false)
+    elseif format == "macho" then
+        if not binutils._bin2macho then
+            return nil, "bin2obj: binutils._bin2macho not available (C implementation not compiled)"
+        end
+        return binutils._bin2macho(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.plat or "macosx", opt.arch or "x86_64", opt.basename, opt.target_minver, opt.xcode_sdkver, opt.zeroend or false)
+    elseif format == "elf" then
+        if not binutils._bin2elf then
+            return nil, "bin2obj: binutils._bin2elf not available (C implementation not compiled)"
+        end
+        return binutils._bin2elf(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.arch or "x86_64", opt.basename, opt.zeroend or false)
+    else
+        return nil, string.format("bin2obj: unsupported format '%s' (supported: coff, elf, macho)", format)
+    end
 end
 
--- generate Mach-O object file from the binary file
-function binutils.bin2macho(binaryfile, outputfile, opt)
-    opt = opt or {}
-    return binutils._bin2macho(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.plat or "macosx", opt.arch or "x86_64", opt.basename, opt.target_minver, opt.xcode_sdkver, opt.zeroend or false)
-end
-
--- generate ELF object file from the binary file
-function binutils.bin2elf(binaryfile, outputfile, opt)
-    opt = opt or {}
-    return binutils._bin2elf(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.arch or "x86_64", opt.basename, opt.zeroend or false)
-end
 
 -- read symbols from object file (auto-detect format: COFF, ELF, or Mach-O)
 function binutils.readsyms(binaryfile)

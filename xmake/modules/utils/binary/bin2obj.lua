@@ -34,85 +34,18 @@ local options = {
     {nil, "zeroend",       "k",  nil,   "Append a null terminator ('\\0') at the end of data."}
 }
 
-function _do_bin2obj_coff(binarypath, outputpath, opt)
-    -- get filename from binary path (with extension, dots replaced with underscores)
-    local filename = path.filename(binarypath)
-    -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
-    local basename = filename:gsub("%.", "_")
-
-    -- prepare opt
-    opt = opt or {}
-    opt.basename = basename
-
-    -- trace
-    print("converting binary file %s to COFF object file %s ..", binarypath, outputpath)
-
-    -- do dump
-    if binutils.bin2coff then
-        binutils.bin2coff(binarypath, outputpath, opt)
-    else
-        raise("bin2obj: binutils.bin2coff not available (C implementation not compiled)")
-    end
-
-    -- trace
-    cprint("${bright}%s generated!", outputpath)
-end
-
-function _do_bin2obj_elf(binarypath, outputpath, opt)
-    -- get filename from binary path (with extension, dots replaced with underscores)
-    local filename = path.filename(binarypath)
-    -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
-    local basename = filename:gsub("%.", "_")
-
-    -- prepare opt
-    opt = opt or {}
-    opt.basename = basename
-
-    -- trace
-    print("converting binary file %s to ELF object file %s ..", binarypath, outputpath)
-
-    -- do dump
-    if binutils.bin2elf then
-        binutils.bin2elf(binarypath, outputpath, opt)
-    else
-        raise("bin2obj: binutils.bin2elf not available (C implementation not compiled)")
-    end
-
-    -- trace
-    cprint("${bright}%s generated!", outputpath)
-end
-
-function _do_bin2obj_macho(binarypath, outputpath, opt)
-    -- get filename from binary path (with extension, dots replaced with underscores)
-    local filename = path.filename(binarypath)
-    -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
-    local basename = filename:gsub("%.", "_")
-
-    -- prepare opt
-    opt = opt or {}
-    opt.basename = basename
-
-    -- trace
-    print("converting binary file %s to Mach-O object file %s ..", binarypath, outputpath)
-
-    -- do dump
-    if binutils.bin2macho then
-        binutils.bin2macho(binarypath, outputpath, opt)
-    else
-        raise("bin2obj: binutils.bin2macho not available (C implementation not compiled)")
-    end
-
-    -- trace
-    cprint("${bright}%s generated!", outputpath)
-end
-
 function _do_bin2obj(binarypath, outputpath, opt)
-
     -- init source directory and options
     opt = opt or {}
     binarypath = path.absolute(binarypath)
     outputpath = path.absolute(outputpath)
     assert(os.isfile(binarypath), "%s not found!", binarypath)
+
+    -- get filename from binary path (with extension, dots replaced with underscores)
+    local filename = path.filename(binarypath)
+    -- replace dots with underscores for symbol name (e.g., data.bin -> data_bin)
+    local basename = filename:gsub("%.", "_")
+    opt.basename = basename
 
     -- get format (default: coff)
     local format = opt.format or "coff"
@@ -123,14 +56,14 @@ function _do_bin2obj(binarypath, outputpath, opt)
         raise("bin2obj: unsupported format '%s' (supported: coff, elf, macho)", format)
     end
 
-    -- do conversion based on format
-    if format == "coff" then
-        _do_bin2obj_coff(binarypath, outputpath, opt)
-    elseif format == "elf" then
-        _do_bin2obj_elf(binarypath, outputpath, opt)
-    elseif format == "macho" then
-        _do_bin2obj_macho(binarypath, outputpath, opt)
-    end
+    -- trace
+    print("converting binary file %s to %s object file %s ..", binarypath, format, outputpath)
+
+    -- do conversion
+    binutils.bin2obj(binarypath, outputpath, opt)
+
+    -- trace
+    cprint("${bright}%s generated!", outputpath)
 end
 
 function main(...)
