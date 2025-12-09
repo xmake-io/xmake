@@ -90,10 +90,8 @@ function main(binaryfiles)
 
     local all_symbols = {}
     if type(binaryfiles) == "string" then
-        -- single file
         return _get_symbols(binaryfiles)
     else
-        -- multiple files
         for _, binaryfile in ipairs(binaryfiles) do
             local symbols = _get_symbols(binaryfile)
             if symbols then
