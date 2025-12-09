@@ -56,14 +56,14 @@ function dump(binaryfile)
         -- calculate column widths
         local type_width = math.max(max_type_len, 4)
         local name_width = math.max(max_name_len, 4)
-        
+
         -- print header
         print("")
         print("Symbols:")
         local header_format = "  %-" .. type_width .. "s  %s"
         print(string.format(header_format, "TYPE", "NAME"))
         print(string.rep("-", 80))
-        
+
         -- print symbols
         local format_str = "  %-" .. type_width .. "s  %s"
 
