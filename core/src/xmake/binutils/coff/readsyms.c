@@ -91,73 +91,50 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
         // read symbol
         xm_coff_symbol_t sym;
         if (!tb_stream_bread(istream, (tb_byte_t*)&sym, sizeof(sym))) {
+            if (sections) tb_free(sections);
             return tb_false;
         }
 
-        // get symbol name
-        tb_char_t name[256];
+        tb_bool_t skip = tb_false;
+        tb_char_t name[256] = {0};
         if (!xm_binutils_coff_get_symbol_name(istream, &sym, strtab_offset, name, sizeof(name)) || !name[0]) {
-            // skip empty names
-            sym_index++;
-            if (sym.naux > 0) {
-                sym_index += sym.naux; // skip auxiliary entries
-                // skip auxiliary data
-                tb_stream_seek(istream, tb_stream_offset(istream) + sym.naux * 18);
-            }
-            continue;
+            skip = tb_true;
+        } else if (name[0] == '.') {
+            skip = tb_true;
+        } else if (tb_strchr(name, '$') != tb_null ||
+                   tb_strstr(name, ".constprop") != tb_null ||
+                   tb_strstr(name, ".startup") != tb_null ||
+                   tb_strstr(name, "ta$") != tb_null) {
+            skip = tb_true;
         }
 
-        // skip internal symbols (starting with .)
-        if (name[0] == '.') {
-            sym_index++;
-            if (sym.naux > 0) {
-                sym_index += sym.naux; // skip auxiliary entries
-                // skip auxiliary data
-                tb_stream_seek(istream, tb_stream_offset(istream) + sym.naux * 18);
-            }
-            continue;
+        if (!skip) {
+            // create symbol table entry
+            lua_pushinteger(lua, sym_count + 1);
+            lua_newtable(lua);
+
+            // name
+            lua_pushstring(lua, "name");
+            lua_pushstring(lua, name);
+            lua_settable(lua, -3);
+
+            // type (nm-style: T/t/D/d/B/b/U)
+            tb_char_t type_char = xm_binutils_coff_get_symbol_type_char(sym.scl, sym.sect, sections, header.nsects);
+            tb_char_t type_str[2] = {type_char, '\0'};
+            lua_pushstring(lua, "type");
+            lua_pushstring(lua, type_str);
+            lua_settable(lua, -3);
+
+            lua_settable(lua, -3);
+            sym_count++;
         }
 
-        // skip compiler-generated symbols (containing $ or .constprop or .startup, etc.)
-        if (tb_strchr(name, '$') != tb_null ||
-            tb_strstr(name, ".constprop") != tb_null ||
-            tb_strstr(name, ".startup") != tb_null ||
-            tb_strstr(name, "ta$") != tb_null) {
-            sym_index++;
-            if (sym.naux > 0) {
-                sym_index += sym.naux; // skip auxiliary entries
-                // skip auxiliary data
-                tb_stream_seek(istream, tb_stream_offset(istream) + sym.naux * 18);
-            }
-            continue;
-        }
-
-        // create symbol table entry
-        lua_pushinteger(lua, sym_count + 1);
-        lua_newtable(lua);
-
-        // name
-        lua_pushstring(lua, "name");
-        lua_pushstring(lua, name);
-        lua_settable(lua, -3);
-
-        // type (nm-style: T/t/D/d/B/b/U)
-        tb_char_t type_char = xm_binutils_coff_get_symbol_type_char(sym.scl, sym.sect, sections, header.nsects);
-        tb_char_t type_str[2] = {type_char, '\0'};
-        lua_pushstring(lua, "type");
-        lua_pushstring(lua, type_str);
-        lua_settable(lua, -3);
-
-        lua_settable(lua, -3);
-
-        sym_count++;
+        // skip to the next symbol, including auxiliary entries
         sym_index++;
-
-        // skip auxiliary entries
         if (sym.naux > 0) {
             sym_index += sym.naux;
-            // skip auxiliary data
             if (!tb_stream_seek(istream, tb_stream_offset(istream) + sym.naux * 18)) {
+                if (sections) tb_free(sections);
                 return tb_false;
             }
         }
