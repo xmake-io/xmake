@@ -35,7 +35,7 @@ jobs:
 
       - name: Install dlang toolchain
         run: |
-          brew install dmd --HEAD dub
+          brew install dmd
           dmd --version
 
       - name: Tests
