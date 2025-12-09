@@ -31,267 +31,8 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * macros
- */
-#define XM_MACHO_MAGIC_32        0xfeedface
-#define XM_MACHO_MAGIC_64        0xfeedfacf
-#define XM_MACHO_MAGIC_FAT       0xcafebabe
-
-#define XM_MACHO_CPU_TYPE_X86    7
-#define XM_MACHO_CPU_TYPE_X86_64 0x01000007
-#define XM_MACHO_CPU_TYPE_ARM   12
-#define XM_MACHO_CPU_TYPE_ARM64  0x0100000c
-
-#define XM_MACHO_CPU_SUBTYPE_X86     3
-#define XM_MACHO_CPU_SUBTYPE_X86_64  3
-#define XM_MACHO_CPU_SUBTYPE_ARM     9
-#define XM_MACHO_CPU_SUBTYPE_ARM64   0
-
-#define XM_MACHO_FILE_TYPE_OBJECT   1
-
-#define XM_MACHO_LC_SEGMENT          0x1
-#define XM_MACHO_LC_SEGMENT_64       0x19
-#define XM_MACHO_LC_SYMTAB           0x2
-#define XM_MACHO_LC_BUILD_VERSION    0x32
-
-#define XM_MACHO_PLATFORM_MACOS      1
-#define XM_MACHO_PLATFORM_IOS        2
-#define XM_MACHO_PLATFORM_TVOS       3
-#define XM_MACHO_PLATFORM_WATCHOS    4
-
-#define XM_MACHO_SECT_TYPE_REGULAR   0x0
-#define XM_MACHO_SECT_ATTR_SOME_INITS 0x400
-#define XM_MACHO_SECT_ATTR_PURE_INSTRUCTIONS 0x80000000
-
-#define XM_MACHO_N_TYPE_MASK        0x0e
-#define XM_MACHO_N_TYPE_SECT        0x0e
-#define XM_MACHO_N_EXT               0x01
-
-#define XM_MACHO_VM_PROT_READ       1
-#define XM_MACHO_VM_PROT_WRITE      2
-#define XM_MACHO_VM_PROT_EXECUTE    4
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * types
- */
-#include "tbox/prefix/packed.h"
-typedef struct __xm_macho_header_t {
-    tb_uint32_t magic;
-    tb_uint32_t cputype;
-    tb_uint32_t cpusubtype;
-    tb_uint32_t filetype;
-    tb_uint32_t ncmds;
-    tb_uint32_t sizeofcmds;
-    tb_uint32_t flags;
-} __tb_packed__ xm_macho_header_t;
-
-typedef struct __xm_macho_header_64_t {
-    tb_uint32_t magic;
-    tb_uint32_t cputype;
-    tb_uint32_t cpusubtype;
-    tb_uint32_t filetype;
-    tb_uint32_t ncmds;
-    tb_uint32_t sizeofcmds;
-    tb_uint32_t flags;
-    tb_uint32_t reserved;
-} __tb_packed__ xm_macho_header_64_t;
-
-typedef struct __xm_macho_segment_command_t {
-    tb_uint32_t cmd;
-    tb_uint32_t cmdsize;
-    tb_char_t segname[16];
-    tb_uint32_t vmaddr;
-    tb_uint32_t vmsize;
-    tb_uint32_t fileoff;
-    tb_uint32_t filesize;
-    tb_uint32_t maxprot;
-    tb_uint32_t initprot;
-    tb_uint32_t nsects;
-    tb_uint32_t flags;
-} __tb_packed__ xm_macho_segment_command_t;
-
-typedef struct __xm_macho_segment_command_64_t {
-    tb_uint32_t cmd;
-    tb_uint32_t cmdsize;
-    tb_char_t segname[16];
-    tb_uint64_t vmaddr;
-    tb_uint64_t vmsize;
-    tb_uint64_t fileoff;
-    tb_uint64_t filesize;
-    tb_uint32_t maxprot;
-    tb_uint32_t initprot;
-    tb_uint32_t nsects;
-    tb_uint32_t flags;
-} __tb_packed__ xm_macho_segment_command_64_t;
-
-typedef struct __xm_macho_section_t {
-    tb_char_t sectname[16];
-    tb_char_t segname[16];
-    tb_uint32_t addr;
-    tb_uint32_t size;
-    tb_uint32_t offset;
-    tb_uint32_t align;
-    tb_uint32_t reloff;
-    tb_uint32_t nreloc;
-    tb_uint32_t flags;
-    tb_uint32_t reserved1;
-    tb_uint32_t reserved2;
-} __tb_packed__ xm_macho_section_t;
-
-typedef struct __xm_macho_section_64_t {
-    tb_char_t sectname[16];
-    tb_char_t segname[16];
-    tb_uint64_t addr;
-    tb_uint64_t size;
-    tb_uint32_t offset;
-    tb_uint32_t align;
-    tb_uint32_t reloff;
-    tb_uint32_t nreloc;
-    tb_uint32_t flags;
-    tb_uint32_t reserved1;
-    tb_uint32_t reserved2;
-    tb_uint32_t reserved3;
-} __tb_packed__ xm_macho_section_64_t;
-
-typedef struct __xm_macho_symtab_command_t {
-    tb_uint32_t cmd;
-    tb_uint32_t cmdsize;
-    tb_uint32_t symoff;
-    tb_uint32_t nsyms;
-    tb_uint32_t stroff;
-    tb_uint32_t strsize;
-} __tb_packed__ xm_macho_symtab_command_t;
-
-typedef struct __xm_macho_build_version_command_t {
-    tb_uint32_t cmd;
-    tb_uint32_t cmdsize;
-    tb_uint32_t platform;
-    tb_uint32_t minos;
-    tb_uint32_t sdk;
-    tb_uint32_t ntools;
-} __tb_packed__ xm_macho_build_version_command_t;
-
-typedef struct __xm_macho_nlist_t {
-    tb_uint32_t strx;
-    tb_uint8_t type;
-    tb_uint8_t sect;
-    tb_int16_t desc;
-    tb_uint32_t value;
-} __tb_packed__ xm_macho_nlist_t;
-
-typedef struct __xm_macho_nlist_64_t {
-    tb_uint32_t strx;
-    tb_uint8_t type;
-    tb_uint8_t sect;
-    tb_uint16_t desc;
-    tb_uint64_t value;
-} __tb_packed__ xm_macho_nlist_64_t;
-#include "tbox/prefix/packed.h"
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_uint32_t xm_binutils_bin2macho_get_cputype(tb_char_t const *arch) {
-    if (!arch) {
-        return XM_MACHO_CPU_TYPE_X86_64;
-    }
-    if (tb_strcmp(arch, "x86_64") == 0 || tb_strcmp(arch, "x64") == 0) {
-        return XM_MACHO_CPU_TYPE_X86_64;
-    } else if (tb_strcmp(arch, "arm64") == 0 || tb_strcmp(arch, "aarch64") == 0) {
-        return XM_MACHO_CPU_TYPE_ARM64;
-    } else if (tb_strcmp(arch, "arm") == 0) {
-        return XM_MACHO_CPU_TYPE_ARM;
-    } else if (tb_strcmp(arch, "x86") == 0 || tb_strcmp(arch, "i386") == 0) {
-        return XM_MACHO_CPU_TYPE_X86;
-    }
-    return XM_MACHO_CPU_TYPE_X86_64;
-}
-
-static tb_uint32_t xm_binutils_bin2macho_get_cpusubtype(tb_char_t const *arch) {
-    if (!arch) {
-        return XM_MACHO_CPU_SUBTYPE_X86_64;
-    }
-    if (tb_strcmp(arch, "x86_64") == 0 || tb_strcmp(arch, "x64") == 0) {
-        return XM_MACHO_CPU_SUBTYPE_X86_64;
-    } else if (tb_strcmp(arch, "arm64") == 0 || tb_strcmp(arch, "aarch64") == 0) {
-        return XM_MACHO_CPU_SUBTYPE_ARM64;
-    } else if (tb_strcmp(arch, "arm") == 0) {
-        return XM_MACHO_CPU_SUBTYPE_ARM;
-    } else if (tb_strcmp(arch, "x86") == 0 || tb_strcmp(arch, "i386") == 0) {
-        return XM_MACHO_CPU_SUBTYPE_X86;
-    }
-    return XM_MACHO_CPU_SUBTYPE_X86_64;
-}
-
-static tb_bool_t xm_binutils_bin2macho_is_64bit(tb_char_t const *arch) {
-    if (!arch) {
-        return tb_true;
-    }
-    if (tb_strcmp(arch, "x86_64") == 0 || tb_strcmp(arch, "x64") == 0) {
-        return tb_true;
-    } else if (tb_strcmp(arch, "arm64") == 0 || tb_strcmp(arch, "aarch64") == 0) {
-        return tb_true;
-    } else if (tb_strcmp(arch, "arm") == 0) {
-        return tb_false;
-    } else if (tb_strcmp(arch, "x86") == 0 || tb_strcmp(arch, "i386") == 0) {
-        return tb_false;
-    }
-    return tb_true;
-}
-
-static tb_uint32_t xm_binutils_bin2macho_align(tb_uint32_t value, tb_uint32_t align) {
-    return ((value + align - 1) & ~(align - 1));
-}
-
-static tb_uint32_t xm_binutils_bin2macho_get_platform(tb_char_t const *platform) {
-    if (!platform) {
-        return XM_MACHO_PLATFORM_MACOS;
-    }
-    if (tb_strcmp(platform, "macosx") == 0 || tb_strcmp(platform, "macos") == 0) {
-        return XM_MACHO_PLATFORM_MACOS;
-    } else if (tb_strcmp(platform, "iphoneos") == 0 || tb_strcmp(platform, "ios") == 0) {
-        return XM_MACHO_PLATFORM_IOS;
-    } else if (tb_strcmp(platform, "appletvos") == 0 || tb_strcmp(platform, "tvos") == 0) {
-        return XM_MACHO_PLATFORM_TVOS;
-    } else if (tb_strcmp(platform, "watchos") == 0) {
-        return XM_MACHO_PLATFORM_WATCHOS;
-    }
-    return XM_MACHO_PLATFORM_MACOS;
-}
-
-// parse version string (e.g., "10.0" or "18.2") to Mach-O format (0x000a0000)
-// format: (major << 16) | (minor << 8) | patch
-static tb_uint32_t xm_binutils_bin2macho_parse_version(tb_char_t const *version_str) {
-    if (!version_str || !version_str[0]) {
-        return 0x000a0000; // default: 10.0.0
-    }
-    tb_uint32_t major = 0;
-    tb_uint32_t minor = 0;
-    tb_uint32_t patch = 0;
-    tb_char_t const *p = version_str;
-    // parse major
-    while (*p && tb_isdigit(*p)) {
-        major = major * 10 + (*p - '0');
-        p++;
-    }
-    if (*p == '.') {
-        p++;
-        // parse minor
-        while (*p && tb_isdigit(*p)) {
-            minor = minor * 10 + (*p - '0');
-            p++;
-        }
-        if (*p == '.') {
-            p++;
-            // parse patch
-            while (*p && tb_isdigit(*p)) {
-                patch = patch * 10 + (*p - '0');
-                p++;
-            }
-        }
-    }
-    return (major << 16) | (minor << 8) | patch;
-}
 
 static tb_bool_t xm_binutils_bin2macho_dump_64(tb_stream_ref_t istream,
                                              tb_stream_ref_t ostream,
@@ -354,10 +95,10 @@ static tb_bool_t xm_binutils_bin2macho_dump_64(tb_stream_ref_t istream,
     tb_uint32_t symtab_cmd_size = sizeof(xm_macho_symtab_command_t);
     tb_uint32_t build_version_cmd_size = sizeof(xm_macho_build_version_command_t);
     tb_uint32_t segment_cmd_total_size = segment_cmd_size + section_size;
-    tb_uint32_t data_offset = xm_binutils_bin2macho_align(header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size, 8);
+    tb_uint32_t data_offset = xm_binutils_macho_align(header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size, 8);
     tb_uint32_t data_size = datasize;
     tb_uint32_t data_end_offset = data_offset + data_size;
-    tb_uint32_t symtab_offset = xm_binutils_bin2macho_align(data_end_offset, 8);
+    tb_uint32_t symtab_offset = xm_binutils_macho_align(data_end_offset, 8);
     tb_uint32_t nlist_size = sizeof(xm_macho_nlist_64_t);
     tb_uint32_t nlist_count = 2; // start, end
     tb_uint32_t strtab_offset = symtab_offset + nlist_size * nlist_count;
@@ -366,14 +107,14 @@ static tb_bool_t xm_binutils_bin2macho_dump_64(tb_stream_ref_t istream,
     tb_size_t end_len = tb_strlen(symbol_end);
     strtab_size += (tb_uint32_t)(start_len + 1);
     strtab_size += (tb_uint32_t)(end_len + 1);
-    strtab_size = xm_binutils_bin2macho_align(strtab_size, 8);
+    strtab_size = xm_binutils_macho_align(strtab_size, 8);
 
     // write Mach-O header
     xm_macho_header_64_t header;
     tb_memset(&header, 0, sizeof(header));
     header.magic = XM_MACHO_MAGIC_64;
-    header.cputype = xm_binutils_bin2macho_get_cputype(arch);
-    header.cpusubtype = xm_binutils_bin2macho_get_cpusubtype(arch);
+    header.cputype = xm_binutils_macho_get_cputype(arch);
+    header.cpusubtype = xm_binutils_macho_get_cpusubtype(arch);
     header.filetype = XM_MACHO_FILE_TYPE_OBJECT;
     header.ncmds = 3; // segment + symtab + build_version
     header.sizeofcmds = segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size;
@@ -434,7 +175,7 @@ static tb_bool_t xm_binutils_bin2macho_dump_64(tb_stream_ref_t istream,
     tb_memset(&build_version, 0, sizeof(build_version));
     build_version.cmd = XM_MACHO_LC_BUILD_VERSION;
     build_version.cmdsize = build_version_cmd_size;
-    build_version.platform = xm_binutils_bin2macho_get_platform(plat);
+    build_version.platform = xm_binutils_macho_get_platform(plat);
     build_version.minos = minos;
     build_version.sdk = sdk;
     build_version.ntools = 0;
@@ -599,10 +340,10 @@ static tb_bool_t xm_binutils_bin2macho_dump_32(tb_stream_ref_t istream,
     tb_uint32_t symtab_cmd_size = sizeof(xm_macho_symtab_command_t);
     tb_uint32_t build_version_cmd_size = sizeof(xm_macho_build_version_command_t);
     tb_uint32_t segment_cmd_total_size = segment_cmd_size + section_size;
-    tb_uint32_t data_offset = xm_binutils_bin2macho_align(header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size, 4);
+    tb_uint32_t data_offset = xm_binutils_macho_align(header_size + segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size, 4);
     tb_uint32_t data_size = datasize;
     tb_uint32_t data_end_offset = data_offset + data_size;
-    tb_uint32_t symtab_offset = xm_binutils_bin2macho_align(data_end_offset, 4);
+    tb_uint32_t symtab_offset = xm_binutils_macho_align(data_end_offset, 4);
     tb_uint32_t nlist_size = sizeof(xm_macho_nlist_t);
     tb_uint32_t nlist_count = 2; // start, end
     tb_uint32_t strtab_offset = symtab_offset + nlist_size * nlist_count;
@@ -611,14 +352,14 @@ static tb_bool_t xm_binutils_bin2macho_dump_32(tb_stream_ref_t istream,
     tb_size_t end_len = tb_strlen(symbol_end);
     strtab_size += (tb_uint32_t)(start_len + 1);
     strtab_size += (tb_uint32_t)(end_len + 1);
-    strtab_size = xm_binutils_bin2macho_align(strtab_size, 4);
+    strtab_size = xm_binutils_macho_align(strtab_size, 4);
 
     // write Mach-O header
     xm_macho_header_t header;
     tb_memset(&header, 0, sizeof(header));
     header.magic = XM_MACHO_MAGIC_32;
-    header.cputype = xm_binutils_bin2macho_get_cputype(arch);
-    header.cpusubtype = xm_binutils_bin2macho_get_cpusubtype(arch);
+    header.cputype = xm_binutils_macho_get_cputype(arch);
+    header.cpusubtype = xm_binutils_macho_get_cpusubtype(arch);
     header.filetype = XM_MACHO_FILE_TYPE_OBJECT;
     header.ncmds = 3; // segment + symtab + build_version
     header.sizeofcmds = segment_cmd_total_size + symtab_cmd_size + build_version_cmd_size;
@@ -681,7 +422,7 @@ static tb_bool_t xm_binutils_bin2macho_dump_32(tb_stream_ref_t istream,
     tb_memset(&build_version, 0, sizeof(build_version));
     build_version.cmd = XM_MACHO_LC_BUILD_VERSION;
     build_version.cmdsize = build_version_cmd_size;
-    build_version.platform = xm_binutils_bin2macho_get_platform(plat);
+    build_version.platform = xm_binutils_macho_get_platform(plat);
     build_version.minos = minos;
     build_version.sdk = sdk;
     build_version.ntools = 0;
@@ -794,7 +535,7 @@ static tb_bool_t xm_binutils_bin2macho_dump(tb_stream_ref_t istream,
                                          tb_uint32_t minos,
                                          tb_uint32_t sdk,
                                          tb_bool_t zeroend) {
-    if (xm_binutils_bin2macho_is_64bit(arch)) {
+    if (xm_binutils_macho_is_64bit(arch)) {
         return xm_binutils_bin2macho_dump_64(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend);
     } else {
         return xm_binutils_bin2macho_dump_32(istream, ostream, symbol_prefix, plat, arch, basename, minos, sdk, zeroend);
@@ -834,11 +575,11 @@ tb_int_t xm_binutils_bin2macho(lua_State *lua) {
 
     // get minos version string (optional)
     tb_char_t const *minos_str = lua_isstring(lua, 7) ? lua_tostring(lua, 7) : tb_null;
-    tb_uint32_t minos = xm_binutils_bin2macho_parse_version(minos_str);
+    tb_uint32_t minos = xm_binutils_macho_parse_version(minos_str);
 
     // get sdk version string (optional)
     tb_char_t const *sdk_str = lua_isstring(lua, 8) ? lua_tostring(lua, 8) : tb_null;
-    tb_uint32_t sdk = xm_binutils_bin2macho_parse_version(sdk_str);
+    tb_uint32_t sdk = xm_binutils_macho_parse_version(sdk_str);
 
     // get zeroend (optional, default: false)
     tb_bool_t zeroend = lua_toboolean(lua, 9);

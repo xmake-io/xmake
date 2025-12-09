@@ -25,6 +25,7 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.depend")
 import("utils.progress")
+import("utils.binary.readsyms")
 
 -- It is not very accurate because some rules automatically
 -- generate objectfiles and do not save the corresponding sourcefiles.
@@ -146,6 +147,59 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
     return allsymbols
 end
 
+-- use readsyms to get all symbols from object files
+function _get_allsymbols_by_readsyms(target, opt)
+    opt = opt or {}
+    local allsymbols = hashset.new()
+    local export_classes = opt.export_classes
+    local export_filter = opt.export_filter
+    local sourcefiles_map = {}
+    if export_filter then
+        _get_sourcefiles_map(target, sourcefiles_map)
+    end
+    local objectfiles = target:objectfiles()
+    local symbols = readsyms(objectfiles)
+    if symbols then
+        for _, sym in ipairs(symbols) do
+            if sym.name and sym.type then
+                -- only export function symbols (T/t) for DLL exports
+                -- skip data (D/d), bss (B/b), other sections (S/s), and undefined (U) symbols
+                if sym.type == "T" or sym.type == "t" then
+                    local symbol = sym.name
+                    -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
+                    if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
+                        symbol = symbol:sub(2)
+                    end
+                    if export_filter then
+                        -- find sourcefile for this symbol (approximate match)
+                        local sourcefile = nil
+                        for objfile, srcfile in pairs(sourcefiles_map) do
+                            if objfile:find(path.basename(symbol), 1, true) then
+                                sourcefile = srcfile
+                                break
+                            end
+                        end
+                        if export_filter(symbol, {sourcefile = sourcefile}) then
+                            allsymbols:insert(symbol)
+                        end
+                    elseif not symbol:startswith("__") then
+                        if export_classes or not symbol:startswith("?") then
+                            if export_classes then
+                                if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
+                                    allsymbols:insert(symbol)
+                                end
+                            else
+                                allsymbols:insert(symbol)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return allsymbols
+end
+
 -- export all symbols for dynamic library
 function main(target, opt)
 
@@ -177,7 +231,7 @@ function main(target, opt)
                 export_classes = export_classes,
                 export_filter = export_filter})
         end
-        if not allsymbols then
+        if not allsymbols or allsymbols:empty() then
             local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
             if msvc:check() then
                 local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
@@ -186,9 +240,15 @@ function main(target, opt)
                     export_filter = export_filter})
             end
         end
+        -- fallback to readsyms if still no symbols found
+        if not allsymbols or allsymbols:empty() then
+            allsymbols = _get_allsymbols_by_readsyms(target, {
+                export_classes = export_classes,
+                export_filter = export_filter})
+        end
 
         -- export all symbols
-        if allsymbols and allsymbols:size() > 0 then
+        if allsymbols and not allsymbols:empty() then
             local allsymbols_file = io.open(allsymbols_filepath, 'w')
             allsymbols_file:print("EXPORTS")
             for _, symbol in allsymbols:keys() do

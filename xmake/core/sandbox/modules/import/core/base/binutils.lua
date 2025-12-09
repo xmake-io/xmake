@@ -33,27 +33,22 @@ function sandbox_core_base_binutils.bin2c(binaryfile, outputfile, opt)
     end
 end
 
--- generate COFF object file from the binary file
-function sandbox_core_base_binutils.bin2coff(binaryfile, outputfile, opt)
-    local ok, errors = binutils.bin2coff(binaryfile, outputfile, opt)
+-- generate object file from the binary file
+function sandbox_core_base_binutils.bin2obj(binaryfile, outputfile, opt)
+    local ok, errors = binutils.bin2obj(binaryfile, outputfile, opt)
     if not ok then
-        raise("bin2coff: %s", errors or "unknown errors")
+        raise("bin2obj: %s", errors or "unknown errors")
     end
 end
 
--- generate Mach-O object file from the binary file
-function sandbox_core_base_binutils.bin2macho(binaryfile, outputfile, opt)
-    local ok, errors = binutils.bin2macho(binaryfile, outputfile, opt)
-    if not ok then
-        raise("bin2macho: %s", errors or "unknown errors")
-    end
-end
 
--- generate ELF object file from the binary file
-function sandbox_core_base_binutils.bin2elf(binaryfile, outputfile, opt)
-    local ok, errors = binutils.bin2elf(binaryfile, outputfile, opt)
-    if not ok then
-        raise("bin2elf: %s", errors or "unknown errors")
+-- read symbols from object file (auto-detect format: ELF, COFF, Mach-O)
+function sandbox_core_base_binutils.readsyms(binaryfile)
+    local symbols, errors = binutils.readsyms(binaryfile)
+    if symbols then
+        return symbols
+    else
+        raise("readsyms: %s", errors or "unknown errors")
     end
 end
 
