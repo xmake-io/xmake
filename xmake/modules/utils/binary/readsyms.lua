@@ -83,19 +83,19 @@ end
 
 -- read symbols from object file(s) (auto-detect format: ELF, COFF, Mach-O)
 --
--- @param binaryfile  the object file path or table of object files (required)
--- @return           the symbols table (all symbols from all files if table is provided)
-function main(binaryfile)
-    assert(binaryfile, "usage: xmake l utils.binary.readsyms <binaryfile> or readsyms(binaryfiles)")
+-- @param binaryfiles  the object file path or table of object files (required)
+-- @return            the symbols table (all symbols from all files if table is provided)
+function main(binaryfiles)
+    assert(binaryfiles, "usage: xmake l utils.binary.readsyms <binaryfile> or readsyms(binaryfiles)")
 
     local all_symbols = {}
-    if type(binaryfile) == "string" then
+    if type(binaryfiles) == "string" then
         -- single file
-        return _get_symbols(binaryfile)
+        return _get_symbols(binaryfiles)
     else
         -- multiple files
-        for _, objectfile in ipairs(binaryfile) do
-            local symbols = _get_symbols(objectfile)
+        for _, binaryfile in ipairs(binaryfiles) do
+            local symbols = _get_symbols(binaryfile)
             if symbols then
                 for _, sym in ipairs(symbols) do
                     table.insert(all_symbols, sym)

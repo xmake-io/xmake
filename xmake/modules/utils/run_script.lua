@@ -198,7 +198,7 @@ function main(script, opt)
             table.insert(argv, arg)
         end
         local thread_opt = {
-            curdir = curdir,
+            curdir = opt.curdir,
             command = opt.command,
             deserialize = opt.deserialize,
             arguments = argv,
