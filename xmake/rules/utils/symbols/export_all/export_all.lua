@@ -163,8 +163,9 @@ function _get_allsymbols_by_readsyms(target, opt)
             local sourcefile = sourcefiles_map[objectfile]
             for _, sym in ipairs(symbols) do
                 if sym.name and sym.type then
-                    -- only export defined symbols (not undefined 'U')
-                    if sym.type ~= "U" then
+                    -- only export function symbols (T/t) for DLL exports
+                    -- skip data (D/d), bss (B/b), other sections (S/s), and undefined (U) symbols
+                    if sym.type == "T" or sym.type == "t" then
                         local symbol = sym.name
                         -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
                         if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
