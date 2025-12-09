@@ -21,6 +21,9 @@
 -- define module
 local binutils = binutils or {}
 
+-- load modules
+local os = require("base/os")
+
 -- save original interfaces
 binutils._bin2c = binutils._bin2c or binutils.bin2c
 binutils._bin2coff = binutils._bin2coff or binutils.bin2coff
@@ -55,7 +58,15 @@ function binutils.bin2obj(binaryfile, outputfile, opt)
     opt = opt or {}
     local format = opt.format
     if not format then
-        return nil, "bin2obj: format is required (coff, elf, or macho)"
+        -- auto-detect format based on host platform
+        local host = os.host()
+        if host == "windows" or host == "mingw" or host == "msys" or host == "cygwin" then
+            format = "coff"
+        elseif host == "macosx" or host == "iphoneos" or host == "watchos" or host == "appletvos" then
+            format = "macho"
+        else
+            format = "elf"
+        end
     end
     format = format:lower()
 

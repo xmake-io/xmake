@@ -278,7 +278,7 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_is_64bit(tb_char_t const *arch) {
  * @param offset        the string offset
  * @return              the string (static buffer, valid until next call)
  */
-static __tb_inline__ tb_bool_t xm_binutils_elf_read_string(tb_stream_ref_t istream, tb_uint32_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
+static __tb_inline__ tb_bool_t xm_binutils_elf_read_string(tb_stream_ref_t istream, tb_uint64_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
     tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
 
     tb_hize_t saved_pos = tb_stream_offset(istream);

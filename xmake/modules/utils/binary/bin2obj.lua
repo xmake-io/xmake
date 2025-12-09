@@ -47,17 +47,17 @@ function _do_bin2obj(binarypath, outputpath, opt)
     local basename = filename:gsub("%.", "_")
     opt.basename = basename
 
-    -- get format (default: coff)
-    local format = opt.format or "coff"
-    format = format:lower()
-
     -- validate format
-    if format ~= "coff" and format ~= "elf" and format ~= "macho" then
-        raise("bin2obj: unsupported format '%s' (supported: coff, elf, macho)", format)
+    local format = opt.format
+    if format then
+        format = format:lower()
+        if format ~= "coff" and format ~= "elf" and format ~= "macho" then
+            raise("bin2obj: unsupported format '%s' (supported: coff, elf, macho)", format)
+        end
     end
 
     -- trace
-    print("converting binary file %s to %s object file %s ..", binarypath, format, outputpath)
+    print("converting binary file %s to %s object file %s ..", binarypath, format or "coff", outputpath)
 
     -- do conversion
     binutils.bin2obj(binarypath, outputpath, opt)
