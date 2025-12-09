@@ -29,8 +29,10 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
-#define XM_MACHO_MAGIC_32        0xfeedface
-#define XM_MACHO_MAGIC_64        0xfeedfacf
+#define XM_MACHO_MAGIC_32        0xfeedface  /* MH_MAGIC - little endian */
+#define XM_MACHO_MAGIC_64        0xfeedfacf  /* MH_MAGIC_64 - little endian */
+#define XM_MACHO_MAGIC_32_BE     0xcefaedfe  /* MH_CIGAM - big endian */
+#define XM_MACHO_MAGIC_64_BE     0xcffaedfe  /* MH_CIGAM_64 - big endian */
 #define XM_MACHO_MAGIC_FAT       0xcafebabe
 
 #define XM_MACHO_CPU_TYPE_X86    7

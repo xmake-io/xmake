@@ -29,12 +29,70 @@
  * includes
  */
 #include "prefix.h"
+#include "tbox/utils/bits.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
 
-tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *lua) {
+/* byte-swap Mach-O header fields if needed */
+static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_32(xm_macho_header_t *header, tb_bool_t swap) {
+    if (swap) {
+        header->magic = tb_bits_swap_u32(header->magic);
+        header->cputype = tb_bits_swap_u32(header->cputype);
+        header->cpusubtype = tb_bits_swap_u32(header->cpusubtype);
+        header->filetype = tb_bits_swap_u32(header->filetype);
+        header->ncmds = tb_bits_swap_u32(header->ncmds);
+        header->sizeofcmds = tb_bits_swap_u32(header->sizeofcmds);
+        header->flags = tb_bits_swap_u32(header->flags);
+    }
+}
+
+/* byte-swap Mach-O header 64 fields if needed */
+static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_64(xm_macho_header_64_t *header, tb_bool_t swap) {
+    if (swap) {
+        header->magic = tb_bits_swap_u32(header->magic);
+        header->cputype = tb_bits_swap_u32(header->cputype);
+        header->cpusubtype = tb_bits_swap_u32(header->cpusubtype);
+        header->filetype = tb_bits_swap_u32(header->filetype);
+        header->ncmds = tb_bits_swap_u32(header->ncmds);
+        header->sizeofcmds = tb_bits_swap_u32(header->sizeofcmds);
+        header->flags = tb_bits_swap_u32(header->flags);
+        header->reserved = tb_bits_swap_u32(header->reserved);
+    }
+}
+
+/* byte-swap symtab command fields if needed */
+static __tb_inline__ tb_void_t xm_binutils_macho_swap_symtab_command(xm_macho_symtab_command_t *cmd, tb_bool_t swap) {
+    if (swap) {
+        cmd->cmd = tb_bits_swap_u32(cmd->cmd);
+        cmd->cmdsize = tb_bits_swap_u32(cmd->cmdsize);
+        cmd->symoff = tb_bits_swap_u32(cmd->symoff);
+        cmd->nsyms = tb_bits_swap_u32(cmd->nsyms);
+        cmd->stroff = tb_bits_swap_u32(cmd->stroff);
+        cmd->strsize = tb_bits_swap_u32(cmd->strsize);
+    }
+}
+
+/* byte-swap nlist 32 fields if needed */
+static __tb_inline__ tb_void_t xm_binutils_macho_swap_nlist_32(xm_macho_nlist_t *nlist, tb_bool_t swap) {
+    if (swap) {
+        nlist->strx = tb_bits_swap_u32(nlist->strx);
+        nlist->desc = tb_bits_swap_u16(nlist->desc);
+        nlist->value = tb_bits_swap_u32(nlist->value);
+    }
+}
+
+/* byte-swap nlist 64 fields if needed */
+static __tb_inline__ tb_void_t xm_binutils_macho_swap_nlist_64(xm_macho_nlist_64_t *nlist, tb_bool_t swap) {
+    if (swap) {
+        nlist->strx = tb_bits_swap_u32(nlist->strx);
+        nlist->desc = tb_bits_swap_u16(nlist->desc);
+        nlist->value = tb_bits_swap_u64(nlist->value);
+    }
+}
+
+tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *lua, tb_bool_t swap_bytes) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
     
     // read Mach-O header
@@ -45,6 +103,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
     if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
         return tb_false;
     }
+    xm_binutils_macho_swap_header_32(&header, swap_bytes);
     
     // find LC_SYMTAB command
     xm_macho_symtab_command_t symtab_cmd;
@@ -98,6 +157,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
         if (!tb_stream_bread(istream, (tb_byte_t*)&nlist, sizeof(nlist))) {
             return tb_false;
         }
+        xm_binutils_macho_swap_nlist_32(&nlist, swap_bytes);
         
         // skip NULL symbols
         if (nlist.strx == 0) {
@@ -138,7 +198,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
     return tb_true;
 }
 
-tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *lua) {
+tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *lua, tb_bool_t swap_bytes) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
     
     // read Mach-O header
@@ -149,6 +209,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
     if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
         return tb_false;
     }
+    xm_binutils_macho_swap_header_64(&header, swap_bytes);
     
     // find LC_SYMTAB command
     xm_macho_symtab_command_t symtab_cmd;
@@ -169,6 +230,11 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
             return tb_false;
         }
         
+        if (swap_bytes) {
+            cmd = tb_bits_swap_u32(cmd);
+            cmdsize = tb_bits_swap_u32(cmdsize);
+        }
+        
         if (cmd == XM_MACHO_LC_SYMTAB) {
             if (!tb_stream_seek(istream, offset)) {
                 return tb_false;
@@ -176,6 +242,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
             if (!tb_stream_bread(istream, (tb_byte_t*)&symtab_cmd, sizeof(symtab_cmd))) {
                 return tb_false;
             }
+            xm_binutils_macho_swap_symtab_command(&symtab_cmd, swap_bytes);
             found_symtab = tb_true;
             break;
         }
@@ -202,6 +269,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
         if (!tb_stream_bread(istream, (tb_byte_t*)&nlist, sizeof(nlist))) {
             return tb_false;
         }
+        xm_binutils_macho_swap_nlist_64(&nlist, swap_bytes);
         
         // skip NULL symbols
         if (nlist.strx == 0) {
@@ -251,16 +319,34 @@ tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, lua_State *lua
         return tb_false;
     }
     
-    // convert to uint32_t (little endian, Mach-O uses native endian)
-    tb_uint32_t magic = (tb_uint32_t)magic_bytes[0] | 
-                        ((tb_uint32_t)magic_bytes[1] << 8) |
-                        ((tb_uint32_t)magic_bytes[2] << 16) |
-                        ((tb_uint32_t)magic_bytes[3] << 24);
+    // check magic bytes directly (byte order independent)
+    tb_bool_t swap_bytes = tb_false;
+    tb_bool_t is_32bit = tb_false;
+    tb_bool_t is_64bit = tb_false;
     
-    if (magic == XM_MACHO_MAGIC_32) {
-        return xm_binutils_macho_read_symbols_32(istream, lua);
-    } else if (magic == XM_MACHO_MAGIC_64) {
-        return xm_binutils_macho_read_symbols_64(istream, lua);
+    // check for little-endian magic numbers
+    if (magic_bytes[0] == 0xce && magic_bytes[1] == 0xfa && magic_bytes[2] == 0xed && magic_bytes[3] == 0xfe) {
+        is_32bit = tb_true;
+        swap_bytes = tb_false;
+    } else if (magic_bytes[0] == 0xcf && magic_bytes[1] == 0xfa && magic_bytes[2] == 0xed && magic_bytes[3] == 0xfe) {
+        is_64bit = tb_true;
+        swap_bytes = tb_false;
+    }
+    // check for big-endian magic numbers
+    else if (magic_bytes[0] == 0xfe && magic_bytes[1] == 0xed && magic_bytes[2] == 0xfa && magic_bytes[3] == 0xce) {
+        is_32bit = tb_true;
+        swap_bytes = tb_true;
+    } else if (magic_bytes[0] == 0xfe && magic_bytes[1] == 0xed && magic_bytes[2] == 0xfa && magic_bytes[3] == 0xcf) {
+        is_64bit = tb_true;
+        swap_bytes = tb_true;
+    } else {
+        return tb_false;
+    }
+    
+    if (is_32bit) {
+        return xm_binutils_macho_read_symbols_32(istream, lua, swap_bytes);
+    } else if (is_64bit) {
+        return xm_binutils_macho_read_symbols_64(istream, lua, swap_bytes);
     }
     
     return tb_false;
