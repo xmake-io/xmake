@@ -33,11 +33,6 @@ jobs:
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
-      - name: Install dlang toolchain
-        run: |
-          brew install dmd
-          dmd --version
-
       - name: Tests
         run: |
           xmake lua -v -D tests/run.lua
