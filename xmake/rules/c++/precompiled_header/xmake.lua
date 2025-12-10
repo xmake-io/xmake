@@ -23,7 +23,9 @@ rule("c.build.pcheader")
         import("private.action.build.pcheader").config(target, "c", opt)
     end)
     before_prepare(function (target, jobgraph, opt)
-        import("private.action.build.pcheader").build(target, jobgraph, "c", opt)
+        if not os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR") then
+            import("private.action.build.pcheader").build(target, jobgraph, "c", opt)
+        end
     end, {jobgraph = true})
 
 rule("c++.build.pcheader")
@@ -32,6 +34,8 @@ rule("c++.build.pcheader")
         import("private.action.build.pcheader").config(target, "cxx", opt)
     end)
     before_prepare(function (target, jobgraph, opt)
-        import("private.action.build.pcheader").build(target, jobgraph, "cxx", opt)
+        if not os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR") then
+            import("private.action.build.pcheader").build(target, jobgraph, "cxx", opt)
+        end
     end, {jobgraph = true})
 
