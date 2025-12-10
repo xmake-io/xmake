@@ -339,7 +339,7 @@ test -f "%s" && source "%s"
                     file = file .. "\n"
                 end
             end
-            file = file .. "# >>> xmake >>>\n" .. command .. "\n# <<< xmake <<<"
+            file = file .. "# >>> xmake >>>\n" .. command .. "\n# <<< xmake <<<\n"
             io.writefile(target, file)
             return true
         end,
