@@ -1,5 +1,4 @@
 #include "test.h"
 
-void test3()
-{
+void test3() {
 }
