@@ -161,8 +161,13 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
     }
     
     // ensure output directory exists
-    if (!tb_directory_create(outputdir)) {
-        return tb_false;
+    // check if directory already exists
+    tb_file_info_t dir_info;
+    if (!tb_file_info(outputdir, &dir_info)) {
+        // directory doesn't exist, create it
+        if (!tb_directory_create(outputdir)) {
+            return tb_false;
+        }
     }
     
     tb_bool_t ok = tb_true;
@@ -186,26 +191,57 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         // get member name
         tb_char_t member_name[256] = {0};
         tb_size_t name_len = 0;
-        if (!xm_binutils_ar_get_member_name(istream, &header, member_name, sizeof(member_name), &name_len)) {
-            // skip this member
-            if (member_size > 0) {
-                tb_stream_seek(istream, tb_stream_offset(istream) + (tb_hize_t)member_size);
+        tb_hize_t name_bytes_read = 0;
+        
+        // check if extended name format (#N/L) was used
+        if (header.name[0] == '#' && header.name[1] == '/') {
+            // extended name: name is read from stream, so we need to track bytes read
+            if (!xm_binutils_ar_get_member_name(istream, &header, member_name, sizeof(member_name), &name_len)) {
+                // skip this member
+                if (member_size > 0) {
+                    if (!tb_stream_seek(istream, tb_stream_offset(istream) + (tb_hize_t)member_size)) {
+                        ok = tb_false;
+                        break;
+                    }
+                }
+                continue;
             }
-            continue;
+            // name was read from stream, adjust member_size
+            name_bytes_read = (tb_hize_t)name_len;
+        } else {
+            // regular name: name is in header, not read from stream
+            if (!xm_binutils_ar_get_member_name(istream, &header, member_name, sizeof(member_name), &name_len)) {
+                // skip this member
+                if (member_size > 0) {
+                    if (!tb_stream_seek(istream, tb_stream_offset(istream) + (tb_hize_t)member_size)) {
+                        ok = tb_false;
+                        break;
+                    }
+                }
+                continue;
+            }
         }
         
         // skip symbol tables
         if (xm_binutils_ar_is_symbol_table(member_name)) {
-            if (member_size > 0) {
-                tb_stream_seek(istream, tb_stream_offset(istream) + (tb_hize_t)member_size);
+            if (member_size > name_bytes_read) {
+                tb_hize_t data_size = (tb_hize_t)member_size - name_bytes_read;
+                if (!tb_stream_seek(istream, tb_stream_offset(istream) + data_size)) {
+                    ok = tb_false;
+                    break;
+                }
             }
             continue;
         }
         
         // only extract object files
         if (!xm_binutils_ar_is_object_file(member_name)) {
-            if (member_size > 0) {
-                tb_stream_seek(istream, tb_stream_offset(istream) + (tb_hize_t)member_size);
+            if (member_size > name_bytes_read) {
+                tb_hize_t data_size = (tb_hize_t)member_size - name_bytes_read;
+                if (!tb_stream_seek(istream, tb_stream_offset(istream) + data_size)) {
+                    ok = tb_false;
+                    break;
+                }
             }
             continue;
         }
@@ -259,8 +295,9 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         }
         
         // copy member data to output file
+        // member_size includes the name if extended format was used, so subtract name_bytes_read
         tb_byte_t buffer[4096];
-        tb_hize_t remaining = (tb_hize_t)member_size;
+        tb_hize_t remaining = (tb_hize_t)member_size - name_bytes_read;
         while (remaining > 0) {
             tb_size_t to_read = (tb_size_t)tb_min(remaining, (tb_hize_t)sizeof(buffer));
             if (!tb_stream_bread(istream, buffer, to_read)) {
