@@ -19,15 +19,9 @@
 --
 
 -- imports
-import("core.base.option")
 import("core.base.binutils")
 
-local options = {
-    {'i', "libraryfile", "kv", nil,   "Set the static library file path (.a or .lib)."},
-    {'o', "outputdir",   "kv", nil,   "Set the output directory to extract object files."}
-}
-
-function _do_extractlib(libraryfile, outputdir)
+function main(libraryfile, outputdir)
     -- init paths
     libraryfile = path.absolute(libraryfile)
     outputdir = path.absolute(outputdir)
@@ -46,16 +40,5 @@ function _do_extractlib(libraryfile, outputdir)
 
     -- trace
     cprint("${bright}extraction completed!")
-end
-
-function main(...)
-    -- parse arguments
-    local argv = {...}
-    local opt  = option.parse(argv, options, "Extract object files from static library (AR or MSVC lib format)."
-                                                   , ""
-                                                   , "Usage: xmake l utils.binary.extractlib [options]")
-
-    -- do extractlib
-    _do_extractlib(opt.libraryfile, opt.outputdir)
 end
 

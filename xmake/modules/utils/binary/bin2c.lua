@@ -20,15 +20,7 @@
 
 -- imports
 import("core.base.bytes")
-import("core.base.option")
 import("core.base.binutils")
-
-local options = {
-    {'w', "linewidth",  "kv", nil,   "Set the line width"},
-    {nil, "nozeroend",  "k",  false, "Disable to patch zero terminating character"},
-    {'i', "binarypath", "kv", nil,   "Set the binary file path."},
-    {'o', "outputpath", "kv", nil,   "Set the output file path."}
-}
 
 function _do_dump(binarydata, outputfile, opt)
     local i = 0
@@ -71,7 +63,7 @@ function _do_dump(binarydata, outputfile, opt)
     end
 end
 
-function _do_bin2c(binarypath, outputpath, opt)
+function main(binarypath, outputpath, opt)
 
     -- init source directory and options
     opt = opt or {}
@@ -115,17 +107,5 @@ function _do_bin2c(binarypath, outputpath, opt)
 
     -- trace
     cprint("${bright}%s generated!", outputpath)
-end
-
-function main(...)
-
-    -- parse arguments
-    local argv = {...}
-    local opt  = option.parse(argv, options, "Print c/c++ code files from the given binary file."
-                                           , ""
-                                           , "Usage: xmake l utils.binary.bin2c [options]")
-
-    -- do bin2c
-    _do_bin2c(opt.binarypath, opt.outputpath, opt)
 end
 

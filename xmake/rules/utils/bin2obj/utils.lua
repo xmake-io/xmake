@@ -108,7 +108,7 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
     if zeroend then
         table.insert(argv, "--zeroend")
     end
-    batchcmds:vlua("utils.binary.bin2obj", argv)
+    batchcmds:vlua("cli.binutils.bin2obj", argv)
 
     return objectfile
 end

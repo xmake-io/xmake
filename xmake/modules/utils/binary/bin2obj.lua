@@ -19,22 +19,9 @@
 --
 
 -- imports
-import("core.base.option")
 import("core.base.binutils")
 
-local options = {
-    {'i', "binarypath",    "kv", nil,   "Set the binary file path."},
-    {'o', "outputpath",    "kv", nil,   "Set the output object file path."},
-    {'f', "format",        "kv", nil,   "Set the object file format (coff, elf, macho)."},
-    {nil, "symbol_prefix", "kv", nil,   "Set the symbol prefix (default: _binary_)."},
-    {'a', "arch",          "kv", nil,   "Set the target architecture."},
-    {'p', "plat",          "kv", nil,   "Set the target platform (macosx, iphoneos, etc.)."},
-    {nil, "target_minver", "kv", nil,   "Set the target minimum version (e.g., 10.0, 18.2)."},
-    {nil, "xcode_sdkver",  "kv", nil,   "Set the Xcode SDK version (e.g., 10.0, 18.2)."},
-    {nil, "zeroend",       "k",  nil,   "Append a null terminator ('\\0') at the end of data."}
-}
-
-function _do_bin2obj(binarypath, outputpath, opt)
+function main(binarypath, outputpath, opt)
     -- init source directory and options
     opt = opt or {}
     binarypath = path.absolute(binarypath)
@@ -64,17 +51,5 @@ function _do_bin2obj(binarypath, outputpath, opt)
 
     -- trace
     cprint("${bright}%s generated!", outputpath)
-end
-
-function main(...)
-
-    -- parse arguments
-    local argv = {...}
-    local opt  = option.parse(argv, options, "Convert binary file to object file for direct linking."
-                                                   , ""
-                                                   , "Usage: xmake l utils.binary.bin2obj [options]")
-
-    -- do bin2obj
-    _do_bin2obj(opt.binarypath, opt.outputpath, opt)
 end
 
