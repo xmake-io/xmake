@@ -29,7 +29,7 @@ rule("android.cpp")
             local android_assets = conf.android_assets
             local keystore = assert(conf.keystore, "android.cpp rule requires `keystore` to be set")
             local keystore_pass = assert(conf.keystore_pass, "android.cpp rule requires `keystore_pass` to be set")
-            local apk_output_path = conf.apk_output_path or "."
+            local apk_output_path = conf.apk_output_path or "build"
             local attachedjar = conf.attachedjar
 
             assert(android_sdk_version, "android sdk version not set")
