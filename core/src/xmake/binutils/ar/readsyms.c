@@ -158,6 +158,216 @@ static __tb_inline__ tb_bool_t xm_binutils_ar_is_object_file(tb_char_t const* na
  * implementation
  */
 
+/* parse BSD symbol table (__.SYMDEF or __.SYMDEF SORTED)
+ *
+ * Header:
+ * - ranlib_size (uint32_t)
+ * - ranlibs (struct ranlib[ranlib_size/8])
+ * - strtab_size (uint32_t)
+ * - strtab (char[strtab_size])
+ *
+ * struct ranlib {
+ *     uint32_t ran_strx; // offset into string table
+ *     uint32_t ran_off;  // offset into archive
+ * };
+ */
+static tb_bool_t xm_binutils_ar_parse_bsd_symdef(tb_stream_ref_t istream, tb_hize_t member_size, lua_State* lua, int map_idx) {
+    tb_hize_t start_pos = tb_stream_offset(istream);
+
+    // read size of ranlib array
+    tb_uint32_t ranlib_size = 0;
+    if (!tb_stream_bread_u32_le(istream, &ranlib_size)) return tb_false;
+
+    // sanity check
+    if (ranlib_size == 0 || ranlib_size >= member_size) {
+        tb_stream_seek(istream, start_pos);
+        return tb_false;
+    }
+
+    // read ranlib array
+    tb_size_t num_ranlibs = ranlib_size / 8;
+    
+    // allocate buffers
+    tb_uint32_t* ran_strx = tb_nalloc_type(num_ranlibs, tb_uint32_t);
+    tb_uint32_t* ran_off = tb_nalloc_type(num_ranlibs, tb_uint32_t);
+    
+    if (!ran_strx || !ran_off) {
+        if (ran_strx) tb_free(ran_strx);
+        if (ran_off) tb_free(ran_off);
+        tb_stream_seek(istream, start_pos);
+        return tb_false;
+    }
+
+    tb_size_t i;
+    for (i = 0; i < num_ranlibs; i++) {
+        if (!tb_stream_bread_u32_le(istream, &ran_strx[i]) ||
+            !tb_stream_bread_u32_le(istream, &ran_off[i])) {
+            tb_free(ran_strx);
+            tb_free(ran_off);
+            tb_stream_seek(istream, start_pos);
+            return tb_false;
+        }
+    }
+
+    // read string table size
+    tb_uint32_t strtab_size = 0;
+    if (!tb_stream_bread_u32_le(istream, &strtab_size)) {
+        tb_free(ran_strx);
+        tb_free(ran_off);
+        tb_stream_seek(istream, start_pos);
+        return tb_false;
+    }
+
+    // read string table
+    tb_char_t* strtab = (tb_char_t*)tb_malloc_bytes(strtab_size);
+    if (!strtab) {
+        tb_free(ran_strx);
+        tb_free(ran_off);
+        tb_stream_seek(istream, start_pos);
+        return tb_false;
+    }
+    if (!tb_stream_bread(istream, (tb_byte_t*)strtab, strtab_size)) {
+        tb_free(strtab);
+        tb_free(ran_strx);
+        tb_free(ran_off);
+        tb_stream_seek(istream, start_pos);
+        return tb_false;
+    }
+
+    // populate map
+    for (i = 0; i < num_ranlibs; i++) {
+        tb_uint32_t off = ran_off[i];
+        tb_uint32_t strx = ran_strx[i];
+        
+        if (strx < strtab_size) {
+            tb_char_t* name = strtab + strx;
+            
+            // add to map: map[off] = { {name=name, type="T"}, ... }
+            lua_pushinteger(lua, off);
+            lua_rawget(lua, map_idx);
+            if (lua_isnil(lua, -1)) {
+                lua_pop(lua, 1);
+                lua_newtable(lua);
+                lua_pushinteger(lua, off);
+                lua_pushvalue(lua, -2);
+                lua_rawset(lua, map_idx);
+            }
+            
+            int count = (int)lua_objlen(lua, -1);
+            lua_newtable(lua);
+            lua_pushstring(lua, "name");
+            lua_pushstring(lua, name);
+            lua_settable(lua, -3);
+            lua_pushstring(lua, "type");
+            lua_pushstring(lua, "T"); 
+            lua_settable(lua, -3);
+            
+            lua_rawseti(lua, -2, count + 1);
+            lua_pop(lua, 1); // pop list
+        }
+    }
+
+    tb_free(strtab);
+    tb_free(ran_strx);
+    tb_free(ran_off);
+    return tb_true;
+}
+
+/* parse SysV symbol table (/)
+ *
+ * Header:
+ * - num_symbols (uint32_t BE)
+ * - offsets (uint32_t[num_symbols] BE)
+ * - string table (null-terminated strings)
+ */
+static tb_bool_t xm_binutils_ar_parse_sysv_symdef(tb_stream_ref_t istream, tb_hize_t member_size, lua_State* lua, int map_idx) {
+    tb_hize_t start_pos = tb_stream_offset(istream);
+
+    // read number of symbols
+    tb_uint32_t num_symbols = 0;
+    if (!tb_stream_bread_u32_be(istream, &num_symbols)) return tb_false;
+
+    // sanity check
+    if (num_symbols == 0 || num_symbols * 4 >= member_size) {
+        tb_stream_seek(istream, start_pos);
+        return tb_false;
+    }
+
+    // read offsets
+    tb_uint32_t* offsets = tb_nalloc_type(num_symbols, tb_uint32_t);
+    if (!offsets) {
+        tb_stream_seek(istream, start_pos);
+        return tb_false;
+    }
+
+    tb_size_t i;
+    for (i = 0; i < num_symbols; i++) {
+        if (!tb_stream_bread_u32_be(istream, &offsets[i])) {
+            tb_free(offsets);
+            tb_stream_seek(istream, start_pos);
+            return tb_false;
+        }
+    }
+
+    // read string table
+    tb_hize_t current = tb_stream_offset(istream);
+    tb_hize_t strtab_size = member_size - (current - start_pos);
+    
+    tb_char_t* strtab = (tb_char_t*)tb_malloc_bytes((tb_size_t)strtab_size);
+    if (!strtab) {
+        tb_free(offsets);
+        tb_stream_seek(istream, start_pos);
+        return tb_false;
+    }
+    if (!tb_stream_bread(istream, (tb_byte_t*)strtab, (tb_size_t)strtab_size)) {
+        tb_free(strtab);
+        tb_free(offsets);
+        tb_stream_seek(istream, start_pos);
+        return tb_false;
+    }
+
+    // populate map
+    tb_char_t* p = strtab;
+    tb_char_t* end = strtab + strtab_size;
+    
+    for (i = 0; i < num_symbols; i++) {
+        if (p >= end) break;
+        
+        tb_char_t* name = p;
+        tb_size_t len = tb_strlen(name);
+        p += len + 1;
+        
+        tb_uint32_t off = offsets[i];
+        
+        // add to map
+        lua_pushinteger(lua, off);
+        lua_rawget(lua, map_idx);
+        if (lua_isnil(lua, -1)) {
+            lua_pop(lua, 1);
+            lua_newtable(lua);
+            lua_pushinteger(lua, off);
+            lua_pushvalue(lua, -2);
+            lua_rawset(lua, map_idx);
+        }
+        
+        int count = (int)lua_objlen(lua, -1);
+        lua_newtable(lua);
+        lua_pushstring(lua, "name");
+        lua_pushstring(lua, name);
+        lua_settable(lua, -3);
+        lua_pushstring(lua, "type");
+        lua_pushstring(lua, "T"); 
+        lua_settable(lua, -3);
+        
+        lua_rawseti(lua, -2, count + 1);
+        lua_pop(lua, 1); // pop list
+    }
+
+    tb_free(strtab);
+    tb_free(offsets);
+    return tb_true;
+}
+
 /* read symbols from AR archive
  *
  * @param istream     the input stream
@@ -173,11 +383,21 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
         return tb_false;
     }
 
+    // get result list index
+    int list_idx = lua_gettop(lua);
+
+    // init map table for symbol table
+    lua_newtable(lua);
+    int map_idx = lua_gettop(lua);
+
     tb_bool_t ok = tb_true;
     tb_size_t object_count = 0;
 
     // iterate through AR members
     while (ok) {
+        // save member header position
+        tb_hize_t member_header_pos = tb_stream_offset(istream);
+
         // read AR header
         // AR header is exactly 60 bytes: name[16] + date[12] + uid[6] + gid[6] + mode[8] + size[10] + fmag[2]
         xm_ar_header_t header;
@@ -204,7 +424,19 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
             skip = tb_true;
         } else {
             if (xm_binutils_ar_is_symbol_table(member_name)) {
-                // skip symbol tables
+                // parse symbol table
+                //
+                // The symbol table in the archive only contains symbol names and their offsets, 
+                // but lacks detailed symbol type information (e.g., distinguishing between code and data).
+                // However, for object files that cannot be parsed (e.g., LTO bitcode) or unknown formats, 
+                // parsing the symbol table serves as a robust fallback to ensure symbols are extracted.
+                tb_hize_t current = tb_stream_offset(istream);
+                if (tb_strcmp(member_name, "/") == 0) {
+                    xm_binutils_ar_parse_sysv_symdef(istream, member_size, lua, map_idx);
+                } else if (tb_strcmp(member_name, "//") != 0) {
+                    xm_binutils_ar_parse_bsd_symdef(istream, member_size, lua, map_idx);
+                }
+                tb_stream_seek(istream, current); // restore position for skip
                 skip = tb_true;
             } else if (!xm_binutils_ar_is_object_file(member_name)) {
                  // only extract object files
@@ -228,7 +460,7 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
         
         // detect format
         tb_int_t format = xm_binutils_detect_format(istream);
-        if (format != XM_BINUTILS_FORMAT_UNKNOWN && format != XM_BINUTILS_FORMAT_AR) {
+        if (format != XM_BINUTILS_FORMAT_AR) {
             // create entry table
             lua_newtable(lua);
 
@@ -248,9 +480,25 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
                 read_ok = xm_binutils_macho_read_symbols(istream, current_pos, lua);
             }
 
+            if (!read_ok) {
+                // try get from map
+                //
+                // If parsing the object file fails (e.g. for LTO bitcode or unsupported formats),
+                // we fall back to using the symbols parsed from the archive symbol table.
+                // Although the type information is less accurate (defaulting to "T"), 
+                // it guarantees that symbols are not lost.
+                lua_pushinteger(lua, member_header_pos);
+                lua_rawget(lua, map_idx);
+                if (!lua_isnil(lua, -1)) {
+                    read_ok = tb_true;
+                } else {
+                    lua_pop(lua, 1);
+                }
+            }
+
             if (read_ok) {
                 lua_settable(lua, -3);
-                lua_rawseti(lua, -2, (int)(++object_count));
+                lua_rawseti(lua, list_idx, (int)(++object_count));
             } else {
                 lua_pop(lua, 2); // pop symbols key and entry table
             }
@@ -276,5 +524,6 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
         }
     }
 
+    lua_remove(lua, map_idx);
     return ok;
 }
