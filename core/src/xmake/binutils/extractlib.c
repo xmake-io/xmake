@@ -85,9 +85,18 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
         // extract based on format
         if (format == XM_BINUTILS_FORMAT_AR) {
             // AR archive format (.a or .lib in AR format)
-            if (!xm_binutils_ar_extract(istream, outputdir)) {
-                error_msg = "extract AR archive failed";
-                break;
+            // if the file extension is .lib, we use the msvc lib extractor to support long paths and subdirectories
+            tb_size_t n = tb_strlen(libraryfile);
+            if (n > 4 && !tb_strnicmp(libraryfile + n - 4, ".lib", 4)) {
+                if (!xm_binutils_mslib_extract(istream, outputdir)) {
+                    error_msg = "extract MSVC lib failed";
+                    break;
+                }
+            } else {
+                if (!xm_binutils_ar_extract(istream, outputdir)) {
+                    error_msg = "extract AR archive failed";
+                    break;
+                }
             }
             ok = tb_true;
         } else if (format == XM_BINUTILS_FORMAT_COFF) {
