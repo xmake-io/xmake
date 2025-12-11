@@ -46,7 +46,7 @@ function main(...)
     if not opt.binarypath or not opt.outputpath then
         cprint("${bright}Usage: $${clear}xmake l cli.binutils.bin2obj [options]")
         option.show_options(options, "bin2obj")
-        return 
+        return
     end
 
     -- do bin2obj
