@@ -36,7 +36,7 @@
  * forward declarations
  */
 extern tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outputdir);
-extern tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *outputdir);
+extern tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *outputdir, tb_bool_t plain);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -46,6 +46,11 @@ extern tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t co
  * Supports AR format (.a) and MSVC lib format (.lib)
  *
  * @param lua the lua state
+ *
+ * libraryfile = lua[1]
+ * outputdir   = lua[2]
+ * plain       = lua[3] (optional, default: true)
+ *
  * @return 1 on success, 2 on failure (with error message)
  */
 tb_int_t xm_binutils_extractlib(lua_State *lua) {
@@ -58,6 +63,12 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
     // get the output directory
     tb_char_t const *outputdir = luaL_checkstring(lua, 2);
     tb_check_return_val(outputdir, 0);
+
+    // get the plain mode (optional)
+    tb_bool_t plain = tb_true;
+    if (lua_gettop(lua) >= 3 && !lua_isnil(lua, 3)) {
+        plain = lua_toboolean(lua, 3);
+    }
 
     // open library file
     tb_stream_ref_t istream = tb_stream_init_from_file(libraryfile, TB_FILE_MODE_RO);
@@ -88,7 +99,7 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
             // if the file extension is .lib, we use the msvc lib extractor to support long paths and subdirectories
             tb_size_t n = tb_strlen(libraryfile);
             if (n > 4 && !tb_strnicmp(libraryfile + n - 4, ".lib", 4)) {
-                if (!xm_binutils_mslib_extract(istream, outputdir)) {
+                if (!xm_binutils_mslib_extract(istream, outputdir, plain)) {
                     error_msg = "extract MSVC lib failed";
                     break;
                 }
@@ -105,7 +116,7 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
             // MSVC lib files can be:
             // 1. Import libraries (different format)
             // 2. Static libraries (COFF archive format, similar to AR but different)
-            if (!xm_binutils_mslib_extract(istream, outputdir)) {
+            if (!xm_binutils_mslib_extract(istream, outputdir, plain)) {
                 error_msg = "extract MSVC lib failed";
                 break;
             }

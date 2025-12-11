@@ -34,13 +34,49 @@
  * implementation
  */
 
+/* generate unique name for output file
+ *
+ * @param base_name      the base name
+ * @param id             the unique id
+ * @param output         output buffer
+ * @param output_size    output buffer size
+ * @param output_len     output: actual output length
+ * @return               tb_true on success, tb_false on failure
+ */
+static tb_bool_t xm_binutils_mslib_generate_unique_name(tb_char_t const *base_name, tb_uint32_t id, tb_char_t *output, tb_size_t output_size, tb_size_t* output_len) {
+    tb_assert_and_check_return_val(base_name && output && output_size > 0 && output_len, tb_false);
+
+    // find the last dot for extension
+    tb_char_t const *ext = tb_strrchr(base_name, '.');
+    tb_long_t n = -1;
+    if (ext) {
+        tb_size_t base_len = (tb_size_t)(ext - base_name);
+        tb_size_t ext_len = tb_strlen(ext);
+        if (base_len + ext_len + 16 < output_size) {
+            n = tb_snprintf(output, output_size, "%.*s_%u%s", (tb_int_t)base_len, base_name, id, ext);
+        }
+    } else {
+        // no extension
+        if (tb_strlen(base_name) + 16 < output_size) {
+            n = tb_snprintf(output, output_size, "%s_%u", base_name, id);
+        }
+    }
+
+    if (n >= 0) {
+        *output_len = (tb_size_t)n;
+        return tb_true;
+    }
+    return tb_false;
+}
+
 /* extract MSVC lib archive to directory
  *
  * @param istream    the input stream
  * @param outputdir  the output directory
+ * @param plain      extract all object files to the same directory
  * @return           tb_true on success, tb_false on failure
  */
-tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *outputdir) {
+tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *outputdir, tb_bool_t plain) {
     tb_assert_and_check_return_val(istream && outputdir, tb_false);
 
     // check magic (!<arch>\n)
@@ -158,11 +194,53 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
 
         // check output path length
         tb_char_t output_path[1024];
-        if (tb_strlen(outputdir) + 1 + name_len >= sizeof(output_path)) {
-             ok = tb_false;
-             break;
+        if (plain) {
+            // get filename only
+            tb_char_t const* name = tb_strrchr(member_name, '/');
+            if (name) name++;
+            else name = member_name;
+
+            // check conflicts
+            tb_char_t output_name[512];
+            tb_size_t output_name_len = tb_strlen(name);
+            tb_size_t outputdir_len = tb_strlen(outputdir);
+
+            if (outputdir_len + 1 + output_name_len >= sizeof(output_path)) {
+                 ok = tb_false;
+                 break;
+            }
+            tb_snprintf(output_path, sizeof(output_path), "%s/%s", outputdir, name);
+
+            if (tb_file_info(output_path, tb_null)) {
+                // name conflict, try different IDs
+                tb_uint32_t conflict_id = 1;
+                while (conflict_id < 10000) {
+                    if (!xm_binutils_mslib_generate_unique_name(name, conflict_id, output_name, sizeof(output_name), &output_name_len)) {
+                        ok = tb_false;
+                        break;
+                    }
+                    if (outputdir_len + 1 + output_name_len >= sizeof(output_path)) {
+                         ok = tb_false;
+                         break;
+                    }
+                    tb_snprintf(output_path, sizeof(output_path), "%s/%s", outputdir, output_name);
+                    if (!tb_file_info(output_path, tb_null)) {
+                        break;
+                    }
+                    conflict_id++;
+                }
+                if (!ok || conflict_id >= 10000) {
+                    ok = tb_false;
+                    break;
+                }
+            }
+        } else {
+            if (tb_strlen(outputdir) + 1 + name_len >= sizeof(output_path)) {
+                 ok = tb_false;
+                 break;
+            }
+            tb_snprintf(output_path, sizeof(output_path), "%s/%s", outputdir, member_name);
         }
-        tb_snprintf(output_path, sizeof(output_path), "%s/%s", outputdir, member_name);
 
         // ensure directory exists
         tb_char_t const* p = tb_strrchr(output_path, '/');

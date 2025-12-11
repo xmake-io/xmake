@@ -105,10 +105,12 @@ end
 -- Supports AR format (.a) and MSVC lib format (.lib)
 -- @param libraryfile the static library file path (.a or .lib)
 -- @param outputdir    the output directory to extract object files
+-- @param opt          the options (optional)
+--                       - plain: extract all object files to the same directory (default: true)
 -- @return             true on success, false and error message on failure
-function binutils.extractlib(libraryfile, outputdir)
+function binutils.extractlib(libraryfile, outputdir, opt)
     if binutils._extractlib then
-        local ok, errors = binutils._extractlib(libraryfile, outputdir)
+        local ok, errors = binutils._extractlib(libraryfile, outputdir, opt and opt.plain)
         if ok then
             return true
         else

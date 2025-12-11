@@ -21,7 +21,14 @@
 -- imports
 import("core.base.binutils")
 
-function main(libraryfile, outputdir)
+-- extract static library to directory
+--
+-- @param libraryfile   the static library file path (.a or .lib)
+-- @param outputdir     the output directory to extract object files
+-- @param opt           the options (optional)
+--                        - plain: extract all object files to the same directory (default: true)
+--
+function main(libraryfile, outputdir, opt)
     -- init paths
     libraryfile = path.absolute(libraryfile)
     outputdir = path.absolute(outputdir)
@@ -36,7 +43,7 @@ function main(libraryfile, outputdir)
     print("extracting static library %s to %s ..", libraryfile, outputdir)
 
     -- do extraction
-    binutils.extractlib(libraryfile, outputdir)
+    binutils.extractlib(libraryfile, outputdir, opt)
 
     -- trace
     cprint("${bright}extraction completed!")
