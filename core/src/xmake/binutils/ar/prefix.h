@@ -78,5 +78,25 @@ static __tb_inline__ tb_int64_t xm_binutils_ar_parse_decimal(tb_char_t const *st
     return result;
 }
 
-#endif
+/* check AR magic (!<arch>\n)
+ *
+ * @param istream    the input stream
+ * @return           tb_true on success, tb_false on failure
+ */
+static __tb_inline__ tb_bool_t xm_binutils_ar_check_magic(tb_stream_ref_t istream) {
+    tb_uint8_t magic[8];
+    if (!tb_stream_seek(istream, 0)) {
+        return tb_false;
+    }
+    if (!tb_stream_bread(istream, magic, 8)) {
+        return tb_false;
+    }
+    if (magic[0] != '!' || magic[1] != '<' || magic[2] != 'a' || magic[3] != 'r' ||
+        magic[4] != 'c' || magic[5] != 'h' || (magic[6] != '>' && magic[6] != '\n') ||
+        (magic[7] != '\n' && magic[7] != '\r')) {
+        return tb_false;
+    }
+    return tb_true;
+}
 
+#endif
