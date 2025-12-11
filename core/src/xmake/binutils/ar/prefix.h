@@ -64,7 +64,7 @@ typedef struct __xm_ar_header_t {
  */
 static __tb_inline__ tb_int64_t xm_binutils_ar_parse_decimal(tb_char_t const *str, tb_size_t len) {
     tb_assert_and_check_return_val(str && len > 0, -1);
-    
+
     tb_int64_t result = 0;
     for (tb_size_t i = 0; i < len; i++) {
         if (str[i] == ' ' || str[i] == '\0') {

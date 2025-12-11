@@ -334,7 +334,7 @@ static __tb_inline__ tb_uint32_t xm_binutils_macho_parse_version(tb_char_t const
  */
 static __tb_inline__ tb_bool_t xm_binutils_macho_detect_format(tb_uint8_t const *magic_bytes, tb_bool_t *is_32bit, tb_bool_t *swap_bytes) {
     tb_assert_and_check_return_val(magic_bytes && is_32bit && swap_bytes, tb_false);
-    
+
     // check for little-endian magic numbers
     if (magic_bytes[0] == 0xce && magic_bytes[1] == 0xfa && magic_bytes[2] == 0xed && magic_bytes[3] == 0xfe) {
         *is_32bit = tb_true;
@@ -355,7 +355,7 @@ static __tb_inline__ tb_bool_t xm_binutils_macho_detect_format(tb_uint8_t const 
         *swap_bytes = tb_true;
         return tb_true;
     }
-    
+
     return tb_false;
 }
 
