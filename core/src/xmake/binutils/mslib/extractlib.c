@@ -147,8 +147,13 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         }
 
         if (is_longname_table) {
-            longnames = (tb_char_t*)tb_ralloc(longnames, (tb_size_t)member_size + 1);
-            if (!longnames || !tb_stream_bread(istream, (tb_byte_t*)longnames, (tb_size_t)member_size)) {
+            tb_char_t* new_longnames = (tb_char_t*)tb_ralloc(longnames, (tb_size_t)member_size + 1);
+            if (!new_longnames) {
+                ok = tb_false;
+                break;
+            }
+            longnames = new_longnames;
+            if (!tb_stream_bread(istream, (tb_byte_t*)longnames, (tb_size_t)member_size)) {
                 ok = tb_false;
                 break;
             }
@@ -266,22 +271,18 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
 
         // write file
         tb_stream_ref_t ostream = tb_stream_init_from_file(output_path, TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC);
-        if (!ostream) {
-            ok = tb_false;
-            break;
-        }
-
-        if (!tb_stream_open(ostream)) {
+        if (ostream) {
+            if (tb_stream_open(ostream)) {
+                if (!xm_binutils_stream_copy(istream, ostream, member_size)) {
+                    ok = tb_false;
+                }
+            } else {
+                ok = tb_false;
+            }
             tb_stream_exit(ostream);
-            ok = tb_false;
-            break;
-        }
-
-        // copy data
-        if (!xm_binutils_stream_copy(istream, ostream, member_size)) {
+        } else {
             ok = tb_false;
         }
-        tb_stream_exit(ostream);
         tb_check_break(ok);
 
         // align to 2-byte boundary
