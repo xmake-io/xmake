@@ -165,7 +165,9 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, tb_hize_t base_
         // read symbol
         xm_coff_symbol_t sym;
         if (!tb_stream_bread(istream, (tb_byte_t*)&sym, sizeof(sym))) {
-            if (sections) tb_free(sections);
+            if (sections) {
+                tb_free(sections);
+            }
             return tb_false;
         }
 
@@ -208,7 +210,9 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, tb_hize_t base_
         if (sym.naux > 0) {
             sym_index += sym.naux;
             if (!tb_stream_seek(istream, tb_stream_offset(istream) + sym.naux * 18)) {
-                if (sections) tb_free(sections);
+                if (sections) {
+                    tb_free(sections);
+                }
                 return tb_false;
             }
         }

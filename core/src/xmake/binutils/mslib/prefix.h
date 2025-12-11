@@ -31,6 +31,7 @@
  */
 
 // MSVC lib header
+#include "tbox/prefix/packed.h"
 typedef struct __xm_mslib_header_t {
     tb_char_t   name[16];
     tb_char_t   date[12];
@@ -39,7 +40,8 @@ typedef struct __xm_mslib_header_t {
     tb_char_t   mode[8];
     tb_char_t   size[10];
     tb_char_t   fmag[2];
-} xm_mslib_header_t;
+} __tb_packed__ xm_mslib_header_t;
+#include "tbox/prefix/packed.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -49,7 +51,9 @@ static __tb_inline__ tb_int64_t xm_binutils_mslib_parse_decimal(tb_char_t const 
     tb_assert_and_check_return_val(p && n > 0, -1);
     tb_int64_t v = 0;
     tb_char_t const* e = p + n;
-    while (p < e && *p == ' ') p++;
+    while (p < e && *p == ' ') {
+        p++;
+    }
     while (p < e && *p >= '0' && *p <= '9') {
         v = v * 10 + (*p - '0');
         p++;
@@ -59,7 +63,9 @@ static __tb_inline__ tb_int64_t xm_binutils_mslib_parse_decimal(tb_char_t const 
 
 static __tb_inline__ tb_bool_t xm_binutils_mslib_check_magic(tb_stream_ref_t istream) {
     tb_char_t magic[8];
-    if (!tb_stream_bread(istream, (tb_byte_t*)magic, 8)) return tb_false;
+    if (!tb_stream_bread(istream, (tb_byte_t*)magic, 8)) {
+        return tb_false;
+    }
     return tb_strncmp(magic, "!<arch>\n", 8) == 0;
 }
 

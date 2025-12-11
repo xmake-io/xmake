@@ -51,10 +51,14 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
     do {
         // read number of members
         tb_uint32_t num_members = 0;
-        if (!tb_stream_bread_u32_le(istream, &num_members)) break;
+        if (!tb_stream_bread_u32_le(istream, &num_members)) {
+            break;
+        }
 
         // sanity check
-        if (num_members == 0 || num_members > 65536 || num_members * 4 >= member_size) break;
+        if (num_members == 0 || num_members > 65536 || num_members * 4 >= member_size) {
+            break;
+        }
 
         // read offsets
         offsets = tb_nalloc_type(num_members, tb_uint32_t);
@@ -62,24 +66,36 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
 
         tb_size_t i;
         for (i = 0; i < num_members; i++) {
-            if (!tb_stream_bread_u32_le(istream, &offsets[i])) break;
+            if (!tb_stream_bread_u32_le(istream, &offsets[i])) {
+                break;
+            }
         }
-        if (i < num_members) break;
+        if (i < num_members) {
+            break;
+        }
 
         // read number of symbols
         tb_uint32_t num_symbols = 0;
-        if (!tb_stream_bread_u32_le(istream, &num_symbols)) break;
+        if (!tb_stream_bread_u32_le(istream, &num_symbols)) {
+            break;
+        }
 
-        if (num_symbols == 0 || num_symbols > 1000000) break;
+        if (num_symbols == 0 || num_symbols > 1000000) {
+            break;
+        }
 
         // read indices
         indices = tb_nalloc_type(num_symbols, tb_uint16_t);
         tb_check_break(indices);
 
         for (i = 0; i < num_symbols; i++) {
-            if (!tb_stream_bread_u16_le(istream, &indices[i])) break;
+            if (!tb_stream_bread_u16_le(istream, &indices[i])) {
+                break;
+            }
         }
-        if (i < num_symbols) break;
+        if (i < num_symbols) {
+            break;
+        }
 
         // read string table
         tb_hize_t current = tb_stream_offset(istream);
@@ -88,14 +104,18 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
         string_table = (tb_char_t*)tb_malloc_bytes((tb_size_t)string_table_size);
         tb_check_break(string_table);
 
-        if (!tb_stream_bread(istream, (tb_byte_t*)string_table, (tb_size_t)string_table_size)) break;
+        if (!tb_stream_bread(istream, (tb_byte_t*)string_table, (tb_size_t)string_table_size)) {
+            break;
+        }
 
         // populate map
         tb_char_t* p = string_table;
         tb_char_t* end = string_table + string_table_size;
 
         for (i = 0; i < num_symbols; i++) {
-            if (p >= end) break;
+            if (p >= end) {
+                break;
+            }
 
             tb_char_t* sym_name = p;
             tb_size_t sym_len = tb_strlen(sym_name);
@@ -124,9 +144,15 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
 
     } while (0);
 
-    if (offsets) tb_free(offsets);
-    if (indices) tb_free(indices);
-    if (string_table) tb_free(string_table);
+    if (offsets) {
+        tb_free(offsets);
+    }
+    if (indices) {
+        tb_free(indices);
+    }
+    if (string_table) {
+        tb_free(string_table);
+    }
 
     if (!ok) {
         tb_stream_seek(istream, start_pos);
@@ -368,7 +394,9 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
         }
     }
 
-    if (longnames) tb_free(longnames);
+    if (longnames) {
+        tb_free(longnames);
+    }
     lua_remove(lua, map_idx);
     return ok;
 }

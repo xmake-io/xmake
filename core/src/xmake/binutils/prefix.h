@@ -145,7 +145,10 @@ static __tb_inline__ tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream)
  * @return           tb_true on success, tb_false on failure
  */
 static __tb_inline__ tb_bool_t xm_binutils_stream_copy(tb_stream_ref_t istream, tb_stream_ref_t ostream, tb_hize_t size) {
-    tb_assert_and_check_return_val(istream && ostream && size > 0, tb_false);
+    tb_assert_and_check_return_val(istream && ostream, tb_false);
+    if (size == 0) {
+        return tb_true;
+    }
 
     tb_byte_t data[TB_STREAM_BLOCK_MAXN];
     tb_hize_t writ = 0;
@@ -166,6 +169,20 @@ static __tb_inline__ tb_bool_t xm_binutils_stream_copy(tb_stream_ref_t istream, 
 
     return tb_true;
 }
+
+/* sanitize symbol name (replace non-alphanumeric characters with underscores)
+ *
+ * @param name       the symbol name
+ */
+static __tb_inline__ void xm_binutils_sanitize_symbol_name(tb_char_t* name) {
+    tb_assert_and_check_return(name);
+    for (tb_size_t i = 0; name[i]; i++) {
+        if (!tb_isalpha(name[i]) && !tb_isdigit(name[i]) && name[i] != '_') {
+            name[i] = '_';
+        }
+    }
+}
+
 
 #endif
 

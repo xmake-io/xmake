@@ -120,9 +120,14 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
             // object name
             lua_pushstring(lua, "objectfile");
             tb_char_t const* name = tb_strrchr(objectfile, '/');
-            if (!name) name = tb_strrchr(objectfile, '\\');
-            if (!name) name = objectfile;
-            else name++;
+            if (!name) {
+                name = tb_strrchr(objectfile, '\\');
+            }
+            if (!name) {
+                name = objectfile;
+            } else {
+                name++;
+            }
             lua_pushstring(lua, name);
             lua_settable(lua, -3);
 

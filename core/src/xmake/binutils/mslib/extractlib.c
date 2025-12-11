@@ -198,7 +198,9 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
          */
         tb_size_t name_len = tb_strlen(member_name);
         for (tb_size_t i = 0; i < name_len; i++) {
-            if (member_name[i] == '\\') member_name[i] = '/';
+            if (member_name[i] == '\\') {
+                member_name[i] = '/';
+            }
         }
 
         // check output path length
@@ -206,8 +208,11 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         if (plain) {
             // get filename only
             tb_char_t const* name = tb_strrchr(member_name, '/');
-            if (name) name++;
-            else name = member_name;
+            if (name) {
+                name++;
+            } else {
+                name = member_name;
+            }
 
             // check conflicts
             tb_char_t output_name[512];
@@ -294,6 +299,8 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         }
     }
 
-    if (longnames) tb_free(longnames);
+    if (longnames) {
+        tb_free(longnames);
+    }
     return ok;
 }
