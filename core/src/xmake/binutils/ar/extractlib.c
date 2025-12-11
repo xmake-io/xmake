@@ -205,7 +205,7 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
     tb_size_t outputdir_len = tb_strlen(outputdir);
 
     // check AR magic (!<arch>\n)
-    if (!xm_binutils_ar_check_magic(istream)) {
+    if (!xm_binutils_ar_check_magic(istream, 0)) {
         return tb_false;
     }
 

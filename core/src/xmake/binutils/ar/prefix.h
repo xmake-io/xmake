@@ -32,9 +32,9 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * forward declarations
  */
-extern tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua);
-extern tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, lua_State *lua);
-extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, lua_State *lua);
+extern tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
+extern tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
+extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 extern tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -81,11 +81,12 @@ static __tb_inline__ tb_int64_t xm_binutils_ar_parse_decimal(tb_char_t const *st
 /* check AR magic (!<arch>\n)
  *
  * @param istream    the input stream
+ * @param base_offset the base offset
  * @return           tb_true on success, tb_false on failure
  */
-static __tb_inline__ tb_bool_t xm_binutils_ar_check_magic(tb_stream_ref_t istream) {
+static __tb_inline__ tb_bool_t xm_binutils_ar_check_magic(tb_stream_ref_t istream, tb_hize_t base_offset) {
     tb_uint8_t magic[8];
-    if (!tb_stream_seek(istream, 0)) {
+    if (!tb_stream_seek(istream, base_offset)) {
         return tb_false;
     }
     if (!tb_stream_bread(istream, magic, 8)) {

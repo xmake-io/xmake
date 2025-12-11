@@ -34,7 +34,7 @@
  * private implementation
  */
 
-static tb_bool_t xm_binutils_coff_read_import_symbols(tb_stream_ref_t istream, lua_State *lua, xm_coff_header_t const* header) {
+static tb_bool_t xm_binutils_coff_read_import_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua, xm_coff_header_t const* header) {
 
     // create result table
     lua_newtable(lua);
@@ -52,7 +52,7 @@ static tb_bool_t xm_binutils_coff_read_import_symbols(tb_stream_ref_t istream, l
          * because it does not contain the symbol table.
          */
         xm_coff_anon_header_t anon_header;
-        if (!tb_stream_seek(istream, 0)) {
+        if (!tb_stream_seek(istream, base_offset)) {
             return tb_false;
         }
         if (!tb_stream_bread(istream, (tb_byte_t*)&anon_header, sizeof(anon_header))) {
@@ -61,7 +61,7 @@ static tb_bool_t xm_binutils_coff_read_import_symbols(tb_stream_ref_t istream, l
     } else {
         // import header
         xm_coff_import_header_t import_header;
-        if (!tb_stream_seek(istream, 0)) {
+        if (!tb_stream_seek(istream, base_offset)) {
             return tb_false;
         }
         if (!tb_stream_bread(istream, (tb_byte_t*)&import_header, sizeof(import_header))) {
@@ -103,12 +103,12 @@ static tb_bool_t xm_binutils_coff_read_import_symbols(tb_stream_ref_t istream, l
     return tb_true;
 }
 
-tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua) {
+tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
     // read COFF header
     xm_coff_header_t header;
-    if (!tb_stream_seek(istream, 0)) {
+    if (!tb_stream_seek(istream, base_offset)) {
         return tb_false;
     }
     if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
@@ -117,7 +117,7 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
 
     // check if it is an import object
     if (header.machine == 0 && header.nsects == 0xffff) {
-        return xm_binutils_coff_read_import_symbols(istream, lua, &header);
+        return xm_binutils_coff_read_import_symbols(istream, base_offset, lua, &header);
     }
 
     // check if there are symbols
@@ -140,7 +140,7 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
             tb_hize_t saved_pos = tb_stream_offset(istream);
             // section headers are after COFF header and optional header
             tb_uint32_t section_offset = sizeof(xm_coff_header_t) + (header.opthdr > 0 ? header.opthdr : 0);
-            if (tb_stream_seek(istream, section_offset)) {
+            if (tb_stream_seek(istream, base_offset + section_offset)) {
                 for (tb_uint16_t i = 0; i < header.nsects; i++) {
                     if (!tb_stream_bread(istream, (tb_byte_t*)&sections[i], sizeof(xm_coff_section_t))) {
                         break;
@@ -152,7 +152,7 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
     }
 
     // read symbols
-    if (!tb_stream_seek(istream, header.symtabofs)) {
+    if (!tb_stream_seek(istream, base_offset + header.symtabofs)) {
         if (sections) {
             tb_free(sections);
         }
@@ -171,7 +171,7 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
 
         tb_bool_t skip = tb_false;
         tb_char_t name[256] = {0};
-        if (!xm_binutils_coff_get_symbol_name(istream, &sym, strtab_offset, name, sizeof(name)) || !name[0]) {
+        if (!xm_binutils_coff_get_symbol_name(istream, &sym, base_offset + strtab_offset, name, sizeof(name)) || !name[0]) {
             skip = tb_true;
         } else if (name[0] == '.') {
             skip = tb_true;

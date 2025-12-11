@@ -92,12 +92,12 @@ static __tb_inline__ tb_void_t xm_binutils_macho_swap_nlist_64(xm_macho_nlist_64
     }
 }
 
-tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *lua, tb_bool_t swap_bytes) {
+tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua, tb_bool_t swap_bytes) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
     // read Mach-O header
     xm_macho_header_t header;
-    if (!tb_stream_seek(istream, 0)) {
+    if (!tb_stream_seek(istream, base_offset)) {
         return tb_false;
     }
     if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
@@ -114,7 +114,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
         tb_uint32_t cmd;
         tb_uint32_t cmdsize;
 
-        if (!tb_stream_seek(istream, offset)) {
+        if (!tb_stream_seek(istream, base_offset + offset)) {
             return tb_false;
         }
         if (!tb_stream_bread(istream, (tb_byte_t*)&cmd, 4)) {
@@ -125,7 +125,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
         }
 
         if (cmd == XM_MACHO_LC_SYMTAB) {
-            if (!tb_stream_seek(istream, offset)) {
+            if (!tb_stream_seek(istream, base_offset + offset)) {
                 return tb_false;
             }
             if (!tb_stream_bread(istream, (tb_byte_t*)&symtab_cmd, sizeof(symtab_cmd))) {
@@ -147,7 +147,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
     lua_newtable(lua);
 
     // read symbols
-    if (!tb_stream_seek(istream, symtab_cmd.symoff)) {
+    if (!tb_stream_seek(istream, base_offset + symtab_cmd.symoff)) {
         return tb_false;
     }
 
@@ -166,7 +166,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
 
         // get symbol name
         tb_char_t name[256];
-        if (!xm_binutils_macho_read_string(istream, symtab_cmd.stroff, nlist.strx, name, sizeof(name)) || !name[0]) {
+        if (!xm_binutils_macho_read_string(istream, base_offset + symtab_cmd.stroff, nlist.strx, name, sizeof(name)) || !name[0]) {
             continue;
         }
 
@@ -198,12 +198,12 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, lua_State *
     return tb_true;
 }
 
-tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *lua, tb_bool_t swap_bytes) {
+tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua, tb_bool_t swap_bytes) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
     // read Mach-O header
     xm_macho_header_64_t header;
-    if (!tb_stream_seek(istream, 0)) {
+    if (!tb_stream_seek(istream, base_offset)) {
         return tb_false;
     }
     if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
@@ -220,7 +220,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
         tb_uint32_t cmd;
         tb_uint32_t cmdsize;
 
-        if (!tb_stream_seek(istream, offset)) {
+        if (!tb_stream_seek(istream, base_offset + offset)) {
             return tb_false;
         }
         if (!tb_stream_bread(istream, (tb_byte_t*)&cmd, 4)) {
@@ -236,7 +236,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
         }
 
         if (cmd == XM_MACHO_LC_SYMTAB) {
-            if (!tb_stream_seek(istream, offset)) {
+            if (!tb_stream_seek(istream, base_offset + offset)) {
                 return tb_false;
             }
             if (!tb_stream_bread(istream, (tb_byte_t*)&symtab_cmd, sizeof(symtab_cmd))) {
@@ -259,7 +259,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
     lua_newtable(lua);
 
     // read symbols
-    if (!tb_stream_seek(istream, symtab_cmd.symoff)) {
+    if (!tb_stream_seek(istream, base_offset + symtab_cmd.symoff)) {
         return tb_false;
     }
 
@@ -278,7 +278,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
 
         // get symbol name
         tb_char_t name[256];
-        if (!xm_binutils_macho_read_string(istream, symtab_cmd.stroff, nlist.strx, name, sizeof(name)) || !name[0]) {
+        if (!xm_binutils_macho_read_string(istream, base_offset + symtab_cmd.stroff, nlist.strx, name, sizeof(name)) || !name[0]) {
             continue;
         }
 
@@ -310,8 +310,12 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, lua_State *
     return tb_true;
 }
 
-tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, lua_State *lua) {
+tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
+
+    if (!tb_stream_seek(istream, base_offset)) {
+        return tb_false;
+    }
 
     // read and check magic
     tb_uint8_t magic_bytes[4];
@@ -327,9 +331,9 @@ tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, lua_State *lua
     }
 
     if (is_32bit) {
-        return xm_binutils_macho_read_symbols_32(istream, lua, swap_bytes);
+        return xm_binutils_macho_read_symbols_32(istream, base_offset, lua, swap_bytes);
     } else {
-        return xm_binutils_macho_read_symbols_64(istream, lua, swap_bytes);
+        return xm_binutils_macho_read_symbols_64(istream, base_offset, lua, swap_bytes);
     }
 }
 

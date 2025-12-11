@@ -38,69 +38,62 @@ end
 --
 -- @param binaryfile  the object file path (required)
 function dump(binaryfile)
-    local symbols = _get_symbols(binaryfile)
-    if symbols and #symbols > 0 then
-        -- calculate column widths for alignment
-        local max_name_len = 0
-        local max_type_len = 0
+    local objects = _get_symbols(binaryfile)
+    if objects and #objects > 0 then
+        for _, obj in ipairs(objects) do
+            local symbols = obj.symbols
+            if symbols and #symbols > 0 then
+                -- print object file
+                print("")
+                cprint("${bright}Object: %s", obj.objectfile)
+                print(string.rep("-", 80))
 
-        for i, sym in ipairs(symbols) do
-            if sym.name then
-                max_name_len = math.max(max_name_len, #sym.name)
-            end
-            if sym.type then
-                max_type_len = math.max(max_type_len, #sym.type)
+                -- calculate column widths for alignment
+                local max_name_len = 0
+                local max_type_len = 0
+
+                for i, sym in ipairs(symbols) do
+                    if sym.name then
+                        max_name_len = math.max(max_name_len, #sym.name)
+                    end
+                    if sym.type then
+                        max_type_len = math.max(max_type_len, #sym.type)
+                    end
+                end
+
+                -- calculate column widths
+                local type_width = math.max(max_type_len, 4)
+                local name_width = math.max(max_name_len, 4)
+
+                -- print header
+                local header_format = "  %-" .. type_width .. "s  %s"
+                print(string.format(header_format, "TYPE", "NAME"))
+
+                -- print symbols
+                local format_str = "  %-" .. type_width .. "s  %s"
+
+                for i, sym in ipairs(symbols) do
+                    local type_str = sym.type or "unknown"
+                    local name_str = sym.name or ""
+
+                    print(string.format(format_str, type_str, name_str))
+                end
+                print("")
+                cprint("${bright}%d symbols found!", #symbols)
             end
         end
-
-        -- calculate column widths
-        local type_width = math.max(max_type_len, 4)
-        local name_width = math.max(max_name_len, 4)
-
-        -- print header
-        print("")
-        print("Symbols:")
-        local header_format = "  %-" .. type_width .. "s  %s"
-        print(string.format(header_format, "TYPE", "NAME"))
-        print(string.rep("-", 80))
-
-        -- print symbols
-        local format_str = "  %-" .. type_width .. "s  %s"
-
-        for i, sym in ipairs(symbols) do
-            local type_str = sym.type or "unknown"
-            local name_str = sym.name or ""
-
-            print(string.format(format_str, type_str, name_str))
-        end
-        print("")
-        cprint("${bright}%d symbols found!", #symbols)
     else
         print("")
         cprint("${bright}No symbols found!")
     end
 end
 
--- read symbols from object file(s) (auto-detect format: ELF, COFF, Mach-O)
+-- read symbols from object file (auto-detect format: ELF, COFF, Mach-O)
 --
--- @param binaryfiles  the object file path or table of object files (required)
--- @return            the symbols table (all symbols from all files if table is provided)
-function main(binaryfiles)
-    assert(binaryfiles, "usage: xmake l utils.binary.readsyms <binaryfile> or readsyms(binaryfiles)")
-
-    local all_symbols = {}
-    if type(binaryfiles) == "string" then
-        return _get_symbols(binaryfiles)
-    else
-        for _, binaryfile in ipairs(binaryfiles) do
-            local symbols = _get_symbols(binaryfile)
-            if symbols then
-                for _, sym in ipairs(symbols) do
-                    table.insert(all_symbols, sym)
-                end
-            end
-        end
-        return all_symbols
-    end
+-- @param binaryfile  the object file path (required)
+-- @return            the symbols table
+function main(binaryfile)
+    assert(binaryfile, "usage: xmake l utils.binary.readsyms <binaryfile>")
+    return _get_symbols(binaryfile)
 end
 
