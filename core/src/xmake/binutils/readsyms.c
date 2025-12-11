@@ -81,8 +81,6 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
             break;
         }
         
-        // printf("readsyms: detected format %d\n", format);
-
         // create result list
         lua_newtable(lua);
 
