@@ -95,7 +95,6 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
     }
 
     tb_bool_t ok = tb_true;
-    tb_byte_t* buffer = tb_null;
     tb_char_t* longnames = tb_null;
     tb_size_t  longnames_size = 0;
 
@@ -234,7 +233,8 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
                     }
                     conflict_id++;
                 }
-                if (!ok || conflict_id >= 10000) {
+                tb_check_break(ok);
+                if (conflict_id >= 10000) {
                     ok = tb_false;
                     break;
                 }
@@ -278,28 +278,11 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         }
 
         // copy data
-        if (!buffer) buffer = tb_malloc_bytes(TB_STREAM_BLOCK_MAXN);
-        if (!buffer) {
-            tb_stream_exit(ostream);
+        if (!xm_binutils_stream_copy(istream, ostream, member_size)) {
             ok = tb_false;
-            break;
-        }
-
-        tb_hize_t remaining = member_size;
-        while (remaining > 0) {
-             tb_size_t to_read = (tb_size_t)tb_min(remaining, TB_STREAM_BLOCK_MAXN);
-             if (!tb_stream_bread(istream, buffer, to_read)) {
-                 ok = tb_false;
-                 break;
-             }
-             if (!tb_stream_bwrit(ostream, buffer, to_read)) {
-                 ok = tb_false;
-                 break;
-             }
-             remaining -= to_read;
         }
         tb_stream_exit(ostream);
-        if (!ok) break;
+        tb_check_break(ok);
 
         // align to 2-byte boundary
         if (member_size % 2) {
@@ -310,7 +293,6 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         }
     }
 
-    if (buffer) tb_free(buffer);
     if (longnames) tb_free(longnames);
     return ok;
 }

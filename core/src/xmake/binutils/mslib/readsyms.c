@@ -43,119 +43,95 @@ extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize
 static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream, tb_hize_t member_size, lua_State* lua, int map_idx) {
     // try to parse as Second Linker Member (LE)
     tb_hize_t start_pos = tb_stream_offset(istream);
+    tb_uint32_t* offsets = tb_null;
+    tb_uint16_t* indices = tb_null;
+    tb_char_t* string_table = tb_null;
+    tb_bool_t ok = tb_false;
 
-    // read number of members
-    tb_uint32_t num_members = 0;
-    if (!tb_stream_bread_u32_le(istream, &num_members)) return tb_false;
+    do {
+        // read number of members
+        tb_uint32_t num_members = 0;
+        if (!tb_stream_bread_u32_le(istream, &num_members)) break;
 
-    // sanity check
-    if (num_members == 0 || num_members > 65536 || num_members * 4 >= member_size) {
-        tb_stream_seek(istream, start_pos);
-        return tb_false;
-    }
+        // sanity check
+        if (num_members == 0 || num_members > 65536 || num_members * 4 >= member_size) break;
 
-    // read offsets
-    tb_uint32_t* offsets = tb_nalloc_type(num_members, tb_uint32_t);
-    if (!offsets) {
-        tb_stream_seek(istream, start_pos);
-        return tb_false;
-    }
+        // read offsets
+        offsets = tb_nalloc_type(num_members, tb_uint32_t);
+        tb_check_break(offsets);
 
-    tb_size_t i;
-    for (i = 0; i < num_members; i++) {
-        if (!tb_stream_bread_u32_le(istream, &offsets[i])) {
-            tb_free(offsets);
-            tb_stream_seek(istream, start_pos);
-            return tb_false;
+        tb_size_t i;
+        for (i = 0; i < num_members; i++) {
+            if (!tb_stream_bread_u32_le(istream, &offsets[i])) break;
         }
-    }
+        if (i < num_members) break;
 
-    // read number of symbols
-    tb_uint32_t num_symbols = 0;
-    if (!tb_stream_bread_u32_le(istream, &num_symbols)) {
-        tb_free(offsets);
-        tb_stream_seek(istream, start_pos);
-        return tb_false;
-    }
+        // read number of symbols
+        tb_uint32_t num_symbols = 0;
+        if (!tb_stream_bread_u32_le(istream, &num_symbols)) break;
 
-    if (num_symbols == 0 || num_symbols > 1000000) {
-        tb_free(offsets);
-        tb_stream_seek(istream, start_pos);
-        return tb_false;
-    }
+        if (num_symbols == 0 || num_symbols > 1000000) break;
 
-    // read indices
-    tb_uint16_t* indices = tb_nalloc_type(num_symbols, tb_uint16_t);
-    if (!indices) {
-        tb_free(offsets);
-        tb_stream_seek(istream, start_pos);
-        return tb_false;
-    }
+        // read indices
+        indices = tb_nalloc_type(num_symbols, tb_uint16_t);
+        tb_check_break(indices);
 
-    for (i = 0; i < num_symbols; i++) {
-        if (!tb_stream_bread_u16_le(istream, &indices[i])) {
-            tb_free(indices);
-            tb_free(offsets);
-            tb_stream_seek(istream, start_pos);
-            return tb_false;
+        for (i = 0; i < num_symbols; i++) {
+            if (!tb_stream_bread_u16_le(istream, &indices[i])) break;
         }
-    }
+        if (i < num_symbols) break;
 
-    // read string table
-    tb_hize_t current = tb_stream_offset(istream);
-    tb_hize_t string_table_size = member_size - (current - start_pos);
+        // read string table
+        tb_hize_t current = tb_stream_offset(istream);
+        tb_hize_t string_table_size = member_size - (current - start_pos);
 
-    tb_char_t* string_table = (tb_char_t*)tb_malloc_bytes((tb_size_t)string_table_size);
-    if (!string_table) {
-        tb_free(indices);
-        tb_free(offsets);
-        tb_stream_seek(istream, start_pos);
-        return tb_false;
-    }
+        string_table = (tb_char_t*)tb_malloc_bytes((tb_size_t)string_table_size);
+        tb_check_break(string_table);
 
-    if (!tb_stream_bread(istream, (tb_byte_t*)string_table, (tb_size_t)string_table_size)) {
-        tb_free(string_table);
-        tb_free(indices);
-        tb_free(offsets);
-        tb_stream_seek(istream, start_pos);
-        return tb_false;
-    }
+        if (!tb_stream_bread(istream, (tb_byte_t*)string_table, (tb_size_t)string_table_size)) break;
 
-    // populate map
-    tb_char_t* p = string_table;
-    tb_char_t* end = string_table + string_table_size;
+        // populate map
+        tb_char_t* p = string_table;
+        tb_char_t* end = string_table + string_table_size;
 
-    for (i = 0; i < num_symbols; i++) {
-        if (p >= end) break;
+        for (i = 0; i < num_symbols; i++) {
+            if (p >= end) break;
 
-        tb_char_t* sym_name = p;
-        tb_size_t sym_len = tb_strlen(sym_name);
-        p += sym_len + 1;
+            tb_char_t* sym_name = p;
+            tb_size_t sym_len = tb_strlen(sym_name);
+            p += sym_len + 1;
 
-        tb_uint16_t idx = indices[i];
-        if (idx > 0 && idx <= num_members) {
-            tb_uint32_t offset = offsets[idx - 1];
+            tb_uint16_t idx = indices[i];
+            if (idx > 0 && idx <= num_members) {
+                tb_uint32_t offset = offsets[idx - 1];
 
-            lua_pushinteger(lua, offset);
-            lua_rawget(lua, map_idx);
-            if (lua_isnil(lua, -1)) {
-                lua_pop(lua, 1);
-                lua_newtable(lua);
                 lua_pushinteger(lua, offset);
-                lua_pushvalue(lua, -2);
-                lua_rawset(lua, map_idx);
+                lua_rawget(lua, map_idx);
+                if (lua_isnil(lua, -1)) {
+                    lua_pop(lua, 1);
+                    lua_newtable(lua);
+                    lua_pushinteger(lua, offset);
+                    lua_pushvalue(lua, -2);
+                    lua_rawset(lua, map_idx);
+                }
+                int count = (int)lua_objlen(lua, -1);
+                lua_pushstring(lua, sym_name);
+                lua_rawseti(lua, -2, count + 1);
+                lua_pop(lua, 1); // pop list
             }
-            int count = (int)lua_objlen(lua, -1);
-            lua_pushstring(lua, sym_name);
-            lua_rawseti(lua, -2, count + 1);
-            lua_pop(lua, 1); // pop list
         }
-    }
+        ok = tb_true;
 
-    tb_free(string_table);
-    tb_free(indices);
-    tb_free(offsets);
-    return tb_true;
+    } while (0);
+
+    if (offsets) tb_free(offsets);
+    if (indices) tb_free(indices);
+    if (string_table) tb_free(string_table);
+
+    if (!ok) {
+        tb_stream_seek(istream, start_pos);
+    }
+    return ok;
 }
 
 /* read symbols from MSVC lib archive
