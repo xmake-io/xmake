@@ -70,7 +70,7 @@ static tb_bool_t xm_binutils_ar_get_member_name(tb_stream_ref_t istream, xm_ar_h
             // parse the number after '/' (total length)
             tb_int64_t total_length = xm_binutils_ar_parse_decimal(header->name + slash_pos + 1, 16 - slash_pos - 1);
 
-            if (first_num <= 0 || total_length <= 0 || total_length >= (tb_int64_t)name_size) {
+            if (first_num <= 0 || total_length <= 0) {
                 return tb_false;
             }
 
@@ -163,26 +163,31 @@ static __tb_inline__ tb_bool_t xm_binutils_ar_is_object_file(tb_char_t const *na
  * @param id         the unique ID
  * @param output     output buffer
  * @param output_size size of output buffer
+ * @param output_len output: actual output length
  * @return           tb_true on success
  */
-static tb_bool_t xm_binutils_ar_generate_unique_name(tb_char_t const *base_name, tb_uint32_t id, tb_char_t *output, tb_size_t output_size) {
-    tb_assert_and_check_return_val(base_name && output && output_size > 0, tb_false);
+static tb_bool_t xm_binutils_ar_generate_unique_name(tb_char_t const *base_name, tb_uint32_t id, tb_char_t *output, tb_size_t output_size, tb_size_t* output_len) {
+    tb_assert_and_check_return_val(base_name && output && output_size > 0 && output_len, tb_false);
 
     // find the last dot for extension
     tb_char_t const *ext = tb_strrchr(base_name, '.');
+    tb_long_t n = -1;
     if (ext) {
         tb_size_t base_len = (tb_size_t)(ext - base_name);
         tb_size_t ext_len = tb_strlen(ext);
         if (base_len + ext_len + 16 < output_size) {
-            tb_snprintf(output, output_size, "%.*s_%u%s", (tb_int_t)base_len, base_name, id, ext);
-            return tb_true;
+            n = tb_snprintf(output, output_size, "%.*s_%u%s", (tb_int_t)base_len, base_name, id, ext);
         }
     } else {
         // no extension
         if (tb_strlen(base_name) + 16 < output_size) {
-            tb_snprintf(output, output_size, "%s_%u", base_name, id);
-            return tb_true;
+            n = tb_snprintf(output, output_size, "%s_%u", base_name, id);
         }
+    }
+
+    if (n >= 0) {
+        *output_len = (tb_size_t)n;
+        return tb_true;
     }
     return tb_false;
 }
@@ -195,6 +200,9 @@ static tb_bool_t xm_binutils_ar_generate_unique_name(tb_char_t const *base_name,
  */
 tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outputdir) {
     tb_assert_and_check_return_val(istream && outputdir, tb_false);
+
+    // get output directory length
+    tb_size_t outputdir_len = tb_strlen(outputdir);
 
     // check AR magic (!<arch>\n)
     if (!xm_binutils_ar_check_magic(istream)) {
@@ -261,14 +269,25 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         // handle name conflicts by checking if file exists and renaming with ID
         tb_char_t output_name[512] = {0};
         tb_char_t output_path_check[1024] = {0};
+        if (outputdir_len + 1 + name_len >= sizeof(output_path_check)) {
+            tb_trace_e("output path is too long!");
+            ok = tb_false;
+            break;
+        }
         tb_snprintf(output_path_check, sizeof(output_path_check), "%s/%s", outputdir, member_name);
 
         // check if file already exists
         tb_uint32_t conflict_id = 1;
+        tb_size_t output_name_len = name_len;
         if (tb_file_info(output_path_check, tb_null)) {
             // name conflict, try different IDs until we find an available name
             while (conflict_id < 10000) {  // reasonable limit
-                if (!xm_binutils_ar_generate_unique_name(member_name, conflict_id, output_name, sizeof(output_name))) {
+                if (!xm_binutils_ar_generate_unique_name(member_name, conflict_id, output_name, sizeof(output_name), &output_name_len)) {
+                    ok = tb_false;
+                    break;
+                }
+                if (outputdir_len + 1 + output_name_len >= sizeof(output_path_check)) {
+                    tb_trace_e("output path is too long!");
                     ok = tb_false;
                     break;
                 }
@@ -290,6 +309,11 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
 
         // build output path
         tb_char_t output_path[1024] = {0};
+        if (outputdir_len + 1 + output_name_len >= sizeof(output_path)) {
+            tb_trace_e("output path is too long!");
+            ok = tb_false;
+            break;
+        }
         tb_snprintf(output_path, sizeof(output_path), "%s/%s", outputdir, output_name);
 
         // create output file
