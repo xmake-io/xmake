@@ -34,46 +34,38 @@
  * private implementation
  */
 
-tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua) {
-    tb_assert_and_check_return_val(istream && lua, tb_false);
+static tb_bool_t xm_binutils_coff_read_import_symbols(tb_stream_ref_t istream, lua_State *lua, xm_coff_header_t const* header) {
 
-    // read COFF header
-    xm_coff_header_t header;
-    if (!tb_stream_seek(istream, 0)) {
-        return tb_false;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
-        return tb_false;
-    }
+    // create result table
+    lua_newtable(lua);
 
-    // check if it is an import object
-    if (header.machine == 0 && header.nsects == 0xffff) {
-        // create result table
-        lua_newtable(lua);
-
-        // check version
-        // version is the low 16 bits of the time field (offset 4)
-        // xm_coff_header_t: machine(2), nsects(2), time(4)
-        // xm_coff_import_header_t: sig1(2), sig2(2), version(2), machine(2)
-        tb_uint16_t version = header.time & 0xffff;
-        if (version == 1) {
-             // anonymous object header (used for CLSID)
-             xm_coff_anon_header_t anon_header;
-             if (!tb_stream_seek(istream, 0)) {
-                 return tb_false;
-             }
-             if (!tb_stream_bread(istream, (tb_byte_t*)&anon_header, sizeof(anon_header))) {
-                 return tb_false;
-             }
-        } else {
-            // import header
-            xm_coff_import_header_t import_header;
-            if (!tb_stream_seek(istream, 0)) {
-                 return tb_false;
-            }
-            if (!tb_stream_bread(istream, (tb_byte_t*)&import_header, sizeof(import_header))) {
-                 return tb_false;
-            }
+    /* check version
+     * version is the low 16 bits of the time field (offset 4)
+     * xm_coff_header_t: machine(2), nsects(2), time(4)
+     * xm_coff_import_header_t: sig1(2), sig2(2), version(2), machine(2)
+     */
+    tb_uint16_t version = header->time & 0xffff;
+    if (version == 1) {
+        // anonymous object header (used for CLSID)
+        /*
+         * @note we can not read symbols from the anonymous object (LTO/GL/LTCG),
+         * because it does not contain the symbol table.
+         */
+        xm_coff_anon_header_t anon_header;
+        if (!tb_stream_seek(istream, 0)) {
+            return tb_false;
+        }
+        if (!tb_stream_bread(istream, (tb_byte_t*)&anon_header, sizeof(anon_header))) {
+            return tb_false;
+        }
+    } else {
+        // import header
+        xm_coff_import_header_t import_header;
+        if (!tb_stream_seek(istream, 0)) {
+            return tb_false;
+        }
+        if (!tb_stream_bread(istream, (tb_byte_t*)&import_header, sizeof(import_header))) {
+            return tb_false;
         }
 
         // read symbol name (it follows the header)
@@ -92,22 +84,40 @@ tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua)
         name[pos] = '\0';
 
         if (name[0]) {
-             lua_pushinteger(lua, 1);
-             lua_newtable(lua);
+            lua_pushinteger(lua, 1);
+            lua_newtable(lua);
 
-             // name
-             lua_pushstring(lua, "name");
-             lua_pushstring(lua, name);
-             lua_settable(lua, -3);
+            // name
+            lua_pushstring(lua, "name");
+            lua_pushstring(lua, name);
+            lua_settable(lua, -3);
 
-             // type
-             lua_pushstring(lua, "type");
-             lua_pushstring(lua, "I");
-             lua_settable(lua, -3);
-             
-             lua_settable(lua, -3);
+            // type
+            lua_pushstring(lua, "type");
+            lua_pushstring(lua, "I");
+            lua_settable(lua, -3);
+
+            lua_settable(lua, -3);
         }
-        return tb_true;
+    }
+    return tb_true;
+}
+
+tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua) {
+    tb_assert_and_check_return_val(istream && lua, tb_false);
+
+    // read COFF header
+    xm_coff_header_t header;
+    if (!tb_stream_seek(istream, 0)) {
+        return tb_false;
+    }
+    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
+        return tb_false;
+    }
+
+    // check if it is an import object
+    if (header.machine == 0 && header.nsects == 0xffff) {
+        return xm_binutils_coff_read_import_symbols(istream, lua, &header);
     }
 
     // check if there are symbols

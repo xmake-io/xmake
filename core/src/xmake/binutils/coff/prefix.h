@@ -76,8 +76,6 @@ typedef struct __xm_coff_anon_header_t {
     tb_uint32_t size;     // size of data
 } __tb_packed__ xm_coff_anon_header_t;
 
-
-
 typedef struct __xm_coff_section_t {
     tb_char_t name[8];
     tb_uint32_t vsize;

@@ -48,8 +48,6 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         return tb_false;
     }
 
-    tb_trace_d("extracting mslib to %s", outputdir);
-
     // ensure output directory exists
     // check if directory already exists
     if (!tb_file_info(outputdir, tb_null)) {
@@ -83,12 +81,11 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         // parse member name
         tb_char_t member_name[256] = {0};
         tb_bool_t is_longname_table = tb_false;
-        
+
         if (header.name[0] == '/') {
             if (header.name[1] == '/') {
                 // long name table (//)
                 is_longname_table = tb_true;
-                tb_trace_d("found longname table, size: %lld", member_size);
             } else if (tb_isdigit(header.name[1])) {
                 // offset into long name table (/123)
                 tb_long_t offset = xm_binutils_mslib_parse_decimal(header.name + 1, 15);
@@ -120,7 +117,7 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
             }
             longnames[member_size] = '\0';
             longnames_size = (tb_size_t)member_size;
-            
+
             // align
             if (member_size % 2) {
                  if (!tb_stream_skip(istream, 1)) {
@@ -132,12 +129,10 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         }
 
         // check if we should extract
-        // skip empty names, symbol tables (/), long name table (//) - handled above, 
+        // skip empty names, symbol tables (/), long name table (//) - handled above,
         // and __.SYMDEF (SysV/BSD style symbol table, just in case)
         if (member_name[0] == '\0' || tb_strcmp(member_name, "/") == 0 || tb_strcmp(member_name, "//") == 0 ||
             tb_strncmp(member_name, "__.SYMDEF", 9) == 0) {
-            
-            tb_trace_d("skipping member: %s", member_name);
 
             // skip member data
             if (!tb_stream_skip(istream, member_size)) {
@@ -164,13 +159,10 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         // check output path length
         tb_char_t output_path[1024];
         if (tb_strlen(outputdir) + 1 + name_len >= sizeof(output_path)) {
-             tb_trace_e("output path is too long!");
              ok = tb_false;
              break;
         }
         tb_snprintf(output_path, sizeof(output_path), "%s/%s", outputdir, member_name);
-        
-        tb_trace_d("extracting member: %s to %s", member_name, output_path);
 
         // ensure directory exists
         tb_char_t const* p = tb_strrchr(output_path, '/');
@@ -195,7 +187,7 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
             ok = tb_false;
             break;
         }
-        
+
         if (!tb_stream_open(ostream)) {
             tb_stream_exit(ostream);
             ok = tb_false;
