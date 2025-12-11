@@ -212,8 +212,7 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
     
     // ensure output directory exists
     // check if directory already exists
-    tb_file_info_t dir_info;
-    if (!tb_file_info(outputdir, &dir_info)) {
+    if (!tb_file_info(outputdir, tb_null)) {
         // directory doesn't exist, create it
         if (!tb_directory_create(outputdir)) {
             return tb_false;
@@ -221,6 +220,7 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
     }
     
     tb_bool_t ok = tb_true;
+    tb_byte_t* buffer = tb_null;
     
     // iterate through AR members
     while (ok) {
@@ -245,64 +245,25 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         tb_hize_t name_bytes_read = 0;
         
         // get member name (handles both regular and extended name formats)
+        tb_bool_t skip = tb_false;
         if (!xm_binutils_ar_get_member_name(istream, &header, member_name, sizeof(member_name), &name_len, &name_bytes_read)) {
-            // skip this member using sequential read
-            if (member_size > name_bytes_read) {
-                tb_hize_t data_size = (tb_hize_t)member_size - name_bytes_read;
-                if (!tb_stream_skip(istream, data_size)) {
-                    ok = tb_false;
-                    break;
-                }
-            }
-            continue;
+            skip = tb_true;
+        } else if (xm_binutils_ar_is_symbol_table(member_name)) {
+            // skip symbol tables
+            skip = tb_true;
+        } else if (!xm_binutils_ar_is_object_file(member_name)) {
+             // only extract object files
+            skip = tb_true;
         }
-        
-        // check if extended name format was used (name starts with '#' and was read from stream)
-        // In extended format, the name is read from the stream, so we need to track bytes read
-        if (header.name[0] == '#') {
-            // find the '/' separator to confirm it's extended format
-            tb_size_t slash_pos = 0;
-            for (tb_size_t i = 1; i < 16; i++) {
-                if (header.name[i] == '/') {
-                    slash_pos = i;
-                    break;
-                }
+
+        if (skip) {
+            // skip remaining data + padding using sequential read
+            tb_hize_t skip_size = (tb_hize_t)member_size - name_bytes_read;
+            if (member_size % 2) skip_size++; // add padding
+            if (!tb_stream_skip(istream, skip_size)) {
+                ok = tb_false;
+                break;
             }
-            if (slash_pos > 0) {
-                // extended name: name was read from stream
-                // name_bytes_read is already set by xm_binutils_ar_get_member_name
-            }
-        }
-        
-        // skip symbol tables
-        if (xm_binutils_ar_is_symbol_table(member_name)) {
-            // Skip remaining data using sequential read
-            // member_size is the total size including the name section
-            // name_bytes_read is the size of the name section (from #N/L format)
-            // So we need to skip: member_size - name_bytes_read
-            if (member_size > name_bytes_read) {
-                tb_hize_t data_size = (tb_hize_t)member_size - name_bytes_read;
-                if (!tb_stream_skip(istream, data_size)) {
-                    ok = tb_false;
-                    break;
-                }
-            }
-            // AR format requires 2-byte alignment, but member_size already accounts for this
-            // So we don't need additional alignment here
-            continue;
-        }
-        
-        // only extract object files
-        if (!xm_binutils_ar_is_object_file(member_name)) {
-            // Skip remaining data using sequential read
-            if (member_size > name_bytes_read) {
-                tb_hize_t data_size = (tb_hize_t)member_size - name_bytes_read;
-                if (!tb_stream_skip(istream, data_size)) {
-                    ok = tb_false;
-                    break;
-                }
-            }
-            // AR format requires 2-byte alignment, but member_size already accounts for this
             continue;
         }
         
@@ -312,9 +273,8 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         tb_snprintf(output_path_check, sizeof(output_path_check), "%s/%s", outputdir, member_name);
         
         // check if file already exists
-        tb_file_info_t info;
         tb_uint32_t conflict_id = 1;
-        if (tb_file_info(output_path_check, &info)) {
+        if (tb_file_info(output_path_check, tb_null)) {
             // name conflict, try different IDs until we find an available name
             while (conflict_id < 10000) {  // reasonable limit
                 if (!xm_binutils_ar_generate_unique_name(member_name, conflict_id, output_name, sizeof(output_name))) {
@@ -322,7 +282,7 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
                     break;
                 }
                 tb_snprintf(output_path_check, sizeof(output_path_check), "%s/%s", outputdir, output_name);
-                if (!tb_file_info(output_path_check, &info)) {
+                if (!tb_file_info(output_path_check, tb_null)) {
                     // found available name
                     break;
                 }
@@ -356,10 +316,16 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         
         // copy member data to output file
         // member_size includes the name if extended format was used, so subtract name_bytes_read
-        tb_byte_t buffer[4096];
+        if (!buffer) buffer = tb_malloc_bytes(TB_STREAM_BLOCK_MAXN);
+        if (!buffer) {
+            tb_stream_exit(ostream);
+            ok = tb_false;
+            break;
+        }
+
         tb_hize_t remaining = (tb_hize_t)member_size - name_bytes_read;
         while (remaining > 0) {
-            tb_size_t to_read = (tb_size_t)tb_min(remaining, (tb_hize_t)sizeof(buffer));
+            tb_size_t to_read = (tb_size_t)tb_min(remaining, (tb_hize_t)TB_STREAM_BLOCK_MAXN);
             if (!tb_stream_bread(istream, buffer, to_read)) {
                 ok = tb_false;
                 break;
@@ -379,18 +345,14 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         }
         
         // align to 2-byte boundary (AR format requirement)
-        tb_hize_t current_pos = tb_stream_offset(istream);
-        if (current_pos & 1) {
-            tb_byte_t padding;
-            if (!tb_stream_bread(istream, &padding, 1)) {
+        if (member_size % 2) {
+             if (!tb_stream_skip(istream, 1)) {
                 ok = tb_false;
                 break;
             }
         }
-        
     }
     
+    if (buffer) tb_free(buffer);
     return ok;
 }
-
-
