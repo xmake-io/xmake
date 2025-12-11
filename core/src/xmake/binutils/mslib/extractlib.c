@@ -124,8 +124,8 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
                 is_longname_table = tb_true;
             } else if (tb_isdigit(header.name[1])) {
                 // offset into long name table (/123)
-                tb_long_t offset = xm_binutils_mslib_parse_decimal(header.name + 1, 15);
-                if (offset >= 0 && offset < longnames_size) {
+                tb_int64_t offset = xm_binutils_mslib_parse_decimal(header.name + 1, 15);
+                if (offset >= 0 && (tb_size_t)offset < longnames_size) {
                     // copy from longnames
                     // names in longnames are null-terminated
                     tb_strlcpy(member_name, longnames + offset, sizeof(member_name));
