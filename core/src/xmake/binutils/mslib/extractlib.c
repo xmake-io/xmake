@@ -84,8 +84,9 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         return tb_false;
     }
 
-    // ensure output directory exists
-    // check if directory already exists
+    /* ensure output directory exists
+     * check if directory already exists
+     */
     if (!tb_file_info(outputdir, tb_null)) {
         // directory doesn't exist, create it
         if (!tb_directory_create(outputdir)) {
@@ -126,13 +127,15 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
                 // offset into long name table (/123)
                 tb_int64_t offset = xm_binutils_mslib_parse_decimal(header.name + 1, 15);
                 if (offset >= 0 && (tb_size_t)offset < longnames_size) {
-                    // copy from longnames
-                    // names in longnames are null-terminated
+                    /* copy from longnames
+                     * names in longnames are null-terminated
+                     */
                     tb_strlcpy(member_name, longnames + offset, sizeof(member_name));
                 }
             } else {
-                 // symbol table or other special member (/)
-                 // usually symbol table is just "/"
+                 /* symbol table or other special member (/)
+                  * usually symbol table is just "/"
+                  */
                  tb_strlcpy(member_name, "/", sizeof(member_name));
             }
         } else {
@@ -164,9 +167,10 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
             continue;
         }
 
-        // check if we should extract
-        // skip empty names, symbol tables (/), long name table (//) - handled above,
-        // and __.SYMDEF (SysV/BSD style symbol table, just in case)
+        /* check if we should extract
+         * skip empty names, symbol tables (/), long name table (//) - handled above,
+         * and __.SYMDEF (SysV/BSD style symbol table, just in case)
+         */
         if (member_name[0] == '\0' || tb_strcmp(member_name, "/") == 0 || tb_strcmp(member_name, "//") == 0 ||
             tb_strncmp(member_name, "__.SYMDEF", 9) == 0) {
 
@@ -185,8 +189,9 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
             continue;
         }
 
-        // construct output path
-        // replace \ with /
+        /* construct output path
+         * replace \ with /
+         */
         tb_size_t name_len = tb_strlen(member_name);
         for (tb_size_t i = 0; i < name_len; i++) {
             if (member_name[i] == '\\') member_name[i] = '/';

@@ -66,8 +66,9 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t bas
             symtab_section = section;
             found_symtab = tb_true;
         } else if (section.sh_type == XM_ELF_SHT_STRTAB && section.sh_link == 0) {
-            // .strtab is linked from .symtab, but we need to find it
-            // check if this is the string table for symbols
+            /* .strtab is linked from .symtab, but we need to find it
+             * check if this is the string table for symbols
+             */
             if (found_symtab && symtab_section.sh_link == i) {
                 strtab_section = section;
                 found_strtab = tb_true;

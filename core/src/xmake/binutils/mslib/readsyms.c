@@ -210,13 +210,15 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
                 // offset into long name table (/123)
                 tb_int64_t offset = xm_binutils_mslib_parse_decimal(header.name + 1, 15);
                 if (offset >= 0 && (tb_size_t)offset < longnames_size) {
-                    // copy from longnames
-                    // names in longnames are null-terminated
+                    /* copy from longnames
+                     * names in longnames are null-terminated
+                     */
                     tb_strlcpy(member_name, longnames + offset, sizeof(member_name));
                 }
             } else {
-                 // symbol table or other special member (/)
-                 // usually symbol table is just "/"
+                 /* symbol table or other special member (/)
+                  * usually symbol table is just "/"
+                  */
                  tb_strlcpy(member_name, "/", sizeof(member_name));
             }
         } else {
@@ -249,8 +251,9 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
         }
 
         // check if we should process
-        // skip empty names, long name table (//) - handled above,
-        // and __.SYMDEF (SysV/BSD style symbol table, just in case)
+        /* skip empty names, long name table (//) - handled above,
+         * and __.SYMDEF (SysV/BSD style symbol table, just in case)
+         */
         if (member_name[0] == '\0' || tb_strcmp(member_name, "//") == 0 ||
             tb_strncmp(member_name, "__.SYMDEF", 9) == 0) {
 

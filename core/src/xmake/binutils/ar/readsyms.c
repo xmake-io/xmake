@@ -45,12 +45,13 @@ static tb_bool_t xm_binutils_ar_get_member_name(tb_stream_ref_t istream, xm_ar_h
     tb_assert_and_check_return_val(istream && header && name && name_size > 0 && name_len && bytes_read, tb_false);
     *bytes_read = 0;
 
-    // check for extended name format (#N/L or #1/N)
-    // In BSD AR format:
-    // - #1/N means name is directly after header, N is total length (including name)
-    // - #N/L means name length is N, total length is L
-    // - #1/N can also mean name is in long name table at offset 1
-    // We'll try to read the name directly from stream first
+    /* check for extended name format (#N/L or #1/N)
+     * In BSD AR format:
+     * - #1/N means name is directly after header, N is total length (including name)
+     * - #N/L means name length is N, total length is L
+     * - #1/N can also mean name is in long name table at offset 1
+     * We'll try to read the name directly from stream first
+     */
     if (header->name[0] == '#') {
         // find the '/' separator
         tb_size_t slash_pos = 0;
@@ -71,9 +72,10 @@ static tb_bool_t xm_binutils_ar_get_member_name(tb_stream_ref_t istream, xm_ar_h
                 return tb_false;
             }
 
-            // In BSD AR format, extended name is directly after header
-            // The name data starts immediately after the header, no newline
-            // Read exactly total_length bytes for the name section
+            /* In BSD AR format, extended name is directly after header
+             * The name data starts immediately after the header, no newline
+             * Read exactly total_length bytes for the name section
+             */
             tb_byte_t c;
             tb_size_t name_bytes = 0;
             tb_hize_t bytes_read_so_far = 0;
@@ -398,8 +400,9 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
         // save member header position
         tb_hize_t member_header_pos = tb_stream_offset(istream);
 
-        // read AR header
-        // AR header is exactly 60 bytes: name[16] + date[12] + uid[6] + gid[6] + mode[8] + size[10] + fmag[2]
+        /* read AR header
+         * AR header is exactly 60 bytes: name[16] + date[12] + uid[6] + gid[6] + mode[8] + size[10] + fmag[2]
+         */
         xm_ar_header_t header;
         if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
             // end of file
@@ -424,12 +427,13 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
             skip = tb_true;
         } else {
             if (xm_binutils_ar_is_symbol_table(member_name)) {
-                // parse symbol table
-                //
-                // The symbol table in the archive only contains symbol names and their offsets, 
-                // but lacks detailed symbol type information (e.g., distinguishing between code and data).
-                // However, for object files that cannot be parsed (e.g., LTO bitcode) or unknown formats, 
-                // parsing the symbol table serves as a robust fallback to ensure symbols are extracted.
+                /* parse symbol table
+                 *
+                 * The symbol table in the archive only contains symbol names and their offsets, 
+                 * but lacks detailed symbol type information (e.g., distinguishing between code and data).
+                 * However, for object files that cannot be parsed (e.g., LTO bitcode) or unknown formats, 
+                 * parsing the symbol table serves as a robust fallback to ensure symbols are extracted.
+                 */
                 tb_hize_t current = tb_stream_offset(istream);
                 if (tb_strcmp(member_name, "/") == 0) {
                     xm_binutils_ar_parse_sysv_symdef(istream, member_size, lua, map_idx);
@@ -481,15 +485,16 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
             }
 
             if (!read_ok) {
-                // try get from map
-                //
-                // If parsing the object file fails (e.g. for LTO bitcode or unsupported formats),
-                // we fall back to using the symbols parsed from the archive symbol table.
-                // Although the type information is less accurate (defaulting to "T"), 
-                // it guarantees that symbols are not lost.
-                // 
-                // cast to lua_Integer to avoid warning C4244 on 32-bit MSVC
-                // member_header_pos is tb_hize_t (64-bit), but AR offsets are usually 32-bit
+                /* try get from map
+                 *
+                 * If parsing the object file fails (e.g. for LTO bitcode or unsupported formats),
+                 * we fall back to using the symbols parsed from the archive symbol table.
+                 * Although the type information is less accurate (defaulting to "T"), 
+                 * it guarantees that symbols are not lost.
+                 * 
+                 * cast to lua_Integer to avoid warning C4244 on 32-bit MSVC
+                 * member_header_pos is tb_hize_t (64-bit), but AR offsets are usually 32-bit
+                 */
                 lua_pushinteger(lua, (lua_Integer)member_header_pos);
                 lua_rawget(lua, map_idx);
                 if (!lua_isnil(lua, -1)) {
@@ -518,8 +523,9 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
                 break;
             }
         } else if (remaining_size < 0) {
-            // should not happen if readsyms functions respect boundaries, but just in case
-            // seek back to correct position
+            /* should not happen if readsyms functions respect boundaries, but just in case
+             * seek back to correct position
+             */
              if (!tb_stream_seek(istream, current_pos + (tb_hize_t)member_size - name_bytes_read + (member_size % 2))) {
                 ok = tb_false;
                 break;
