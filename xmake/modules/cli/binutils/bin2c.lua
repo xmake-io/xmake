@@ -37,6 +37,13 @@ function main(...)
                                            , ""
                                            , "Usage: xmake l cli.binutils.bin2c [options]")
 
+    -- check arguments
+    if not opt.binarypath or not opt.outputpath then
+        cprint("${bright}Usage: $${clear}xmake l cli.binutils.bin2c [options]")
+        option.show_options(options, "bin2c")
+        return 
+    end
+
     -- do bin2c
     bin2c.main(opt.binarypath, opt.outputpath, opt)
 end
