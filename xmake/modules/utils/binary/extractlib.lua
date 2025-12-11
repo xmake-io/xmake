@@ -42,10 +42,7 @@ function _do_extractlib(libraryfile, outputdir)
     print("extracting static library %s to %s ..", libraryfile, outputdir)
 
     -- do extraction
-    local ok, errors = binutils.extractlib(libraryfile, outputdir)
-    if not ok then
-        raise("extractlib: %s", errors or "unknown error")
-    end
+    binutils.extractlib(libraryfile, outputdir)
 
     -- trace
     cprint("${bright}extraction completed!")

@@ -110,10 +110,6 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
             break;
         }
         
-        if (ok) {
-            lua_pushboolean(lua, ok);
-        }
-        
     } while (0);
     
     if (istream) {
@@ -121,6 +117,12 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
         tb_stream_exit(istream);
     }
     
-    return ok ? 1 : 2;
+    if (ok) {
+        lua_pushboolean(lua, tb_true);
+        return 1;
+    } else {
+        // error message should already be pushed
+        return 2;
+    }
 }
 
