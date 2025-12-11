@@ -19,8 +19,7 @@ function main(target, android_sdk_version, android_manifest, android_res, androi
     if os.exists(source_lib) then
         os.mv(source_lib, dest_lib)
     else
-        cprint("${red}can't find source lib " .. source_lib)
-        exit(1)
+        os.raise("can't find source lib: " .. source_lib)
     end
 
     import("core.tool.toolchain")
@@ -66,8 +65,8 @@ function main(target, android_sdk_version, android_manifest, android_res, androi
 
     --------------------------------------- pack libs 
     local curdir = os.cd(outputpath)
-    os.vrunv(aapt, {"add", "temp/res_only.apk", "lib/arm64-v8a/libmain.so"})
-    cprint("${green}[Android][Packing library]${white} Adding lib/arm64-v8a/libmain.so to res_only.apk...")
+    os.vrunv(aapt, {"add", "temp/res_only.apk", path.join("lib", target:arch(), "libmain.so")})
+    cprint("${green}[Android][Packing library]${white} Adding lib/" .. target:arch() .. "/libmain.so to res_only.apk...")
     os.cd(curdir)
 
     --------------------------------------- align apk

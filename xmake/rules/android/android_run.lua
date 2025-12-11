@@ -1,7 +1,7 @@
 function main(target, apk_output_path, package_name, activity_name)
     import("core.tool.toolchain")
     local toolchain_ndk = toolchain.load("ndk", {plat = target:plat(), arch = target:arch()})
-    local android_sdkdir = path.translate(toolchain_ndk:config("android_sdk"))
+    local android_sdkdir = path.translate(assert(toolchain_ndk:config("android_sdk"), "please run `xmake f --android_sdk=xxx` to set the android sdk directory!"))
     local adb = path.join(android_sdkdir, "platform-tools", "adb" .. (is_host("windows") and ".exe" or ""))
 
     local outputpath = path.join("build", "android", "output")

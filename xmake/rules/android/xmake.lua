@@ -15,9 +15,8 @@ rule("android.cpp")
             local native_app_glue_path = path.join(ndk_root, "sources", "android", "native_app_glue")
             
             -- Add glue file and jni interface file to target
-            local conf = target:extraconf("rules", "android.cpp") 
-            local jni_inferface = conf.jni_interface
-            target:add("files", jni_inferface)
+            local conf = target:extraconf("rules", "android.cpp")
+            target:add("files", conf.jni_interface)
             target:add("files", path.join(native_app_glue_path, "android_native_app_glue.c"))
             target:add("includedirs", native_app_glue_path)
         end)
@@ -28,8 +27,8 @@ rule("android.cpp")
             local android_manifest = conf.android_manifest
             local android_res = conf.android_res
             local android_assets = conf.android_assets
-            local keystore = conf.keystore
-            local keystore_pass = conf.keystore_pass or "123456"
+            local keystore = assert(conf.keystore, "android.cpp rule requires `keystore` to be set")
+            local keystore_pass = assert(conf.keystore_pass, "android.cpp rule requires `keystore_pass` to be set")
             local apk_output_path = conf.apk_output_path or "."
             local attachedjar = conf.attachedjar
 
