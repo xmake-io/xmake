@@ -55,6 +55,29 @@ typedef struct __xm_coff_header_t {
     tb_uint16_t flags;
 } __tb_packed__ xm_coff_header_t;
 
+typedef struct __xm_coff_import_header_t {
+    tb_uint16_t sig1;     // 0
+    tb_uint16_t sig2;     // 0xffff
+    tb_uint16_t version;
+    tb_uint16_t machine;
+    tb_uint32_t time;
+    tb_uint32_t size;     // size of data
+    tb_uint16_t ordinal;  // ordinal or hint
+    tb_uint16_t type;     // type
+} __tb_packed__ xm_coff_import_header_t;
+
+typedef struct __xm_coff_anon_header_t {
+    tb_uint16_t sig1;     // 0
+    tb_uint16_t sig2;     // 0xffff
+    tb_uint16_t version;
+    tb_uint16_t machine;
+    tb_uint32_t time;
+    tb_uint8_t  clsid[16];
+    tb_uint32_t size;     // size of data
+} __tb_packed__ xm_coff_anon_header_t;
+
+
+
 typedef struct __xm_coff_section_t {
     tb_char_t name[8];
     tb_uint32_t vsize;

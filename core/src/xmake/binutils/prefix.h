@@ -79,55 +79,52 @@ static __tb_inline__ tb_bool_t xm_binutils_read_magic(tb_stream_ref_t istream, t
 static __tb_inline__ tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream) {
     tb_assert_and_check_return_val(istream, -1);
 
-    // check AR archive format first (!<arch>\n)
-    tb_uint8_t ar_magic[8];
-    if (xm_binutils_read_magic(istream, ar_magic, 8)) {
-        if (ar_magic[0] == '!' && ar_magic[1] == '<' && ar_magic[2] == 'a' &&
-            ar_magic[3] == 'r' && ar_magic[4] == 'c' && ar_magic[5] == 'h' &&
-            (ar_magic[6] == '>' || ar_magic[6] == '\n') &&
-            (ar_magic[7] == '\n' || ar_magic[7] == '\r')) {
-            return XM_BINUTILS_FORMAT_AR;
-        }
-    }
-
-    // read magic bytes
-    tb_uint8_t magic[4];
-    if (!xm_binutils_read_magic(istream, magic, 4)) {
+    // peek first 8 bytes
+    tb_byte_t* p = tb_null;
+    if (!tb_stream_peek(istream, &p, 8)) {
         return -1;
     }
 
+    // check AR archive format first (!<arch>\n)
+    if (p[0] == '!' && p[1] == '<' && p[2] == 'a' &&
+        p[3] == 'r' && p[4] == 'c' && p[5] == 'h' &&
+        (p[6] == '>' || p[6] == '\n') &&
+        (p[7] == '\n' || p[7] == '\r')) {
+        return XM_BINUTILS_FORMAT_AR;
+    }
+
     // check ELF magic (0x7f 'E' 'L' 'F')
-    if (magic[0] == 0x7f && magic[1] == 'E' && magic[2] == 'L' && magic[3] == 'F') {
+    if (p[0] == 0x7f && p[1] == 'E' && p[2] == 'L' && p[3] == 'F') {
         return XM_BINUTILS_FORMAT_ELF;
     }
 
     // check Mach-O magic
-    if (magic[0] == 0xfe && magic[1] == 0xed && magic[2] == 0xfa &&
-        (magic[3] == 0xce || magic[3] == 0xcf)) {
+    if (p[0] == 0xfe && p[1] == 0xed && p[2] == 0xfa &&
+        (p[3] == 0xce || p[3] == 0xcf)) {
         return XM_BINUTILS_FORMAT_MACHO; // Mach-O 32/64 (big endian)
     }
-    if (magic[0] == 0xce && magic[1] == 0xfa && magic[2] == 0xed && magic[3] == 0xfe) {
+    if (p[0] == 0xce && p[1] == 0xfa && p[2] == 0xed && p[3] == 0xfe) {
         return XM_BINUTILS_FORMAT_MACHO; // Mach-O 32 (little endian)
     }
-    if (magic[0] == 0xcf && magic[1] == 0xfa && magic[2] == 0xed && magic[3] == 0xfe) {
+    if (p[0] == 0xcf && p[1] == 0xfa && p[2] == 0xed && p[3] == 0xfe) {
         return XM_BINUTILS_FORMAT_MACHO; // Mach-O 64 (little endian)
     }
 
     // check COFF (object files start with machine type, not a magic number)
     // COFF header: machine (2 bytes) + nsects (2 bytes) + time (4 bytes) + ...
     // Read machine type to verify if it's a valid COFF file
-    tb_hize_t saved_pos = tb_stream_offset(istream);
-    tb_uint16_t machine;
-    if (!tb_stream_seek(istream, 0)) {
-        return -1;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&machine, 2)) {
-        tb_stream_seek(istream, saved_pos);
-        return -1;
-    }
-    tb_stream_seek(istream, saved_pos);
+    tb_uint16_t machine = (p[1] << 8) | p[0];
 
     // check if it's a valid COFF machine type
+    // Import header: 0x0000 0xffff
+    if (machine == 0x0000) {
+        // read second word to check if it is import header
+        tb_uint16_t machine2 = (p[3] << 8) | p[2];
+        if (machine2 == 0xffff) {
+             return XM_BINUTILS_FORMAT_COFF;
+        }
+    }
+
     if (machine == XM_BINUTILS_COFF_MACHINE_I386 ||
         machine == XM_BINUTILS_COFF_MACHINE_AMD64 ||
         machine == XM_BINUTILS_COFF_MACHINE_ARM ||
