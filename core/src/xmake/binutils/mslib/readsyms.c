@@ -43,7 +43,7 @@ extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize
 static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream, tb_hize_t member_size, lua_State* lua, int map_idx) {
     // try to parse as Second Linker Member (LE)
     tb_hize_t start_pos = tb_stream_offset(istream);
-    
+
     // read number of members
     tb_uint32_t num_members = 0;
     if (!tb_stream_bread_u32_le(istream, &num_members)) return tb_false;
@@ -51,7 +51,7 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
     // sanity check
     if (num_members == 0 || num_members > 65536 || num_members * 4 >= member_size) {
         tb_stream_seek(istream, start_pos);
-        return tb_false; 
+        return tb_false;
     }
 
     // read offsets
@@ -60,7 +60,7 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
         tb_stream_seek(istream, start_pos);
         return tb_false;
     }
-    
+
     tb_size_t i;
     for (i = 0; i < num_members; i++) {
         if (!tb_stream_bread_u32_le(istream, &offsets[i])) {
@@ -77,8 +77,8 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
         tb_stream_seek(istream, start_pos);
         return tb_false;
     }
-    
-    if (num_symbols == 0 || num_symbols > 1000000) { 
+
+    if (num_symbols == 0 || num_symbols > 1000000) {
         tb_free(offsets);
         tb_stream_seek(istream, start_pos);
         return tb_false;
@@ -104,7 +104,7 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
     // read string table
     tb_hize_t current = tb_stream_offset(istream);
     tb_hize_t string_table_size = member_size - (current - start_pos);
-    
+
     tb_char_t* string_table = (tb_char_t*)tb_malloc_bytes((tb_size_t)string_table_size);
     if (!string_table) {
         tb_free(indices);
@@ -124,10 +124,10 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
     // populate map
     tb_char_t* p = string_table;
     tb_char_t* end = string_table + string_table_size;
-    
+
     for (i = 0; i < num_symbols; i++) {
         if (p >= end) break;
-        
+
         tb_char_t* sym_name = p;
         tb_size_t sym_len = tb_strlen(sym_name);
         p += sym_len + 1;
@@ -135,7 +135,7 @@ static tb_bool_t xm_binutils_mslib_parse_archive_symbols(tb_stream_ref_t istream
         tb_uint16_t idx = indices[i];
         if (idx > 0 && idx <= num_members) {
             tb_uint32_t offset = offsets[idx - 1];
-            
+
             lua_pushinteger(lua, offset);
             lua_rawget(lua, map_idx);
             if (lua_isnil(lua, -1)) {
@@ -231,8 +231,7 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
         }
 
         if (is_longname_table) {
-            if (longnames) tb_free(longnames);
-            longnames = (tb_char_t*)tb_malloc_bytes((tb_size_t)member_size + 1);
+            longnames = (tb_char_t*)tb_ralloc(longnames, (tb_size_t)member_size + 1);
             if (!longnames || !tb_stream_bread(istream, (tb_byte_t*)longnames, (tb_size_t)member_size)) {
                 ok = tb_false;
                 break;
@@ -242,7 +241,7 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
 
             // align
             if (member_size % 2) {
-                 if (!tb_stream_skip(istream, 1)) {
+                if (!tb_stream_skip(istream, 1)) {
                     ok = tb_false;
                     break;
                 }
@@ -262,6 +261,7 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
                 ok = tb_false;
                 break;
             }
+
              // align
             if (member_size % 2) {
                  if (!tb_stream_skip(istream, 1)) {
@@ -294,7 +294,7 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
         // save current position
         tb_hize_t current_pos = tb_stream_offset(istream);
         tb_hize_t header_offset = current_pos - sizeof(xm_mslib_header_t);
-        
+
         // detect format
         tb_int_t format = xm_binutils_detect_format(istream);
         if (format != XM_BINUTILS_FORMAT_UNKNOWN && format != XM_BINUTILS_FORMAT_AR) {
@@ -343,11 +343,11 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
                             lua_pushstring(lua, "name");
                             lua_pushstring(lua, name);
                             lua_settable(lua, -3);
-                            
+
                             lua_pushstring(lua, "type");
                             lua_pushstring(lua, "T");
                             lua_settable(lua, -3);
-                            
+
                             lua_rawseti(lua, -3, i);
                         }
                         lua_pop(lua, 1); // pop name
@@ -382,7 +382,7 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
                 break;
              }
         }
-        
+
         // align to 2-byte boundary
         if (member_size % 2) {
              if (!tb_stream_skip(istream, 1)) {

@@ -48,12 +48,13 @@ static tb_bool_t xm_binutils_ar_get_member_name(tb_stream_ref_t istream, xm_ar_h
     tb_assert_and_check_return_val(istream && header && name && name_size > 0 && name_len && bytes_read, tb_false);
     *bytes_read = 0;
 
-    // check for extended name format (#N/L or #1/N)
-    // In BSD AR format:
-    // - #1/N means name is directly after header, N is total length (including name)
-    // - #N/L means name length is N, total length is L
-    // - #1/N can also mean name is in long name table at offset 1
-    // We'll try to read the name directly from stream first
+    /* check for extended name format (#N/L or #1/N)
+     * In BSD AR format:
+     * - #1/N means name is directly after header, N is total length (including name)
+     * - #N/L means name length is N, total length is L
+     * - #1/N can also mean name is in long name table at offset 1
+     * We'll try to read the name directly from stream first
+     */
     if (header->name[0] == '#') {
         // find the '/' separator
         tb_size_t slash_pos = 0;
@@ -74,9 +75,10 @@ static tb_bool_t xm_binutils_ar_get_member_name(tb_stream_ref_t istream, xm_ar_h
                 return tb_false;
             }
 
-            // In BSD AR format, extended name is directly after header
-            // The name data starts immediately after the header, no newline
-            // Read exactly total_length bytes for the name section
+            /* In BSD AR format, extended name is directly after header
+             * The name data starts immediately after the header, no newline
+             * Read exactly total_length bytes for the name section
+             */
             tb_byte_t c;
             tb_size_t name_bytes = 0;
             tb_hize_t bytes_read_so_far = 0;
@@ -270,7 +272,6 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         tb_char_t output_name[512] = {0};
         tb_char_t output_path_check[1024] = {0};
         if (outputdir_len + 1 + name_len >= sizeof(output_path_check)) {
-            tb_trace_e("output path is too long!");
             ok = tb_false;
             break;
         }
@@ -287,7 +288,6 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
                     break;
                 }
                 if (outputdir_len + 1 + output_name_len >= sizeof(output_path_check)) {
-                    tb_trace_e("output path is too long!");
                     ok = tb_false;
                     break;
                 }
@@ -310,7 +310,6 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         // build output path
         tb_char_t output_path[1024] = {0};
         if (outputdir_len + 1 + output_name_len >= sizeof(output_path)) {
-            tb_trace_e("output path is too long!");
             ok = tb_false;
             break;
         }
@@ -355,9 +354,7 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
         tb_stream_clos(ostream);
         tb_stream_exit(ostream);
 
-        if (!ok) {
-            break;
-        }
+        tb_check_break(ok);
 
         // align to 2-byte boundary (AR format requirement)
         if (member_size % 2) {

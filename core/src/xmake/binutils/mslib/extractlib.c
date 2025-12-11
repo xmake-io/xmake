@@ -148,10 +148,9 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
         }
 
         if (is_longname_table) {
-                if (longnames) tb_free(longnames);
-                longnames = (tb_char_t*)tb_malloc_bytes((tb_size_t)member_size + 1);
-                if (!longnames || !tb_stream_bread(istream, (tb_byte_t*)longnames, (tb_size_t)member_size)) {
-                    ok = tb_false;
+            longnames = (tb_char_t*)tb_ralloc(longnames, (tb_size_t)member_size + 1);
+            if (!longnames || !tb_stream_bread(istream, (tb_byte_t*)longnames, (tb_size_t)member_size)) {
+                ok = tb_false;
                 break;
             }
             longnames[member_size] = '\0';
@@ -159,7 +158,7 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
 
             // align
             if (member_size % 2) {
-                 if (!tb_stream_skip(istream, 1)) {
+                if (!tb_stream_skip(istream, 1)) {
                     ok = tb_false;
                     break;
                 }
@@ -179,6 +178,7 @@ tb_bool_t xm_binutils_mslib_extract(tb_stream_ref_t istream, tb_char_t const *ou
                 ok = tb_false;
                 break;
             }
+
              // align
             if (member_size % 2) {
                  if (!tb_stream_skip(istream, 1)) {

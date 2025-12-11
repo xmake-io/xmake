@@ -188,11 +188,11 @@ static tb_bool_t xm_binutils_ar_parse_bsd_symdef(tb_stream_ref_t istream, tb_hiz
 
     // read ranlib array
     tb_size_t num_ranlibs = ranlib_size / 8;
-    
+
     // allocate buffers
     tb_uint32_t* ran_strx = tb_nalloc_type(num_ranlibs, tb_uint32_t);
     tb_uint32_t* ran_off = tb_nalloc_type(num_ranlibs, tb_uint32_t);
-    
+
     if (!ran_strx || !ran_off) {
         if (ran_strx) tb_free(ran_strx);
         if (ran_off) tb_free(ran_off);
@@ -240,10 +240,10 @@ static tb_bool_t xm_binutils_ar_parse_bsd_symdef(tb_stream_ref_t istream, tb_hiz
     for (i = 0; i < num_ranlibs; i++) {
         tb_uint32_t off = ran_off[i];
         tb_uint32_t strx = ran_strx[i];
-        
+
         if (strx < strtab_size) {
             tb_char_t* name = strtab + strx;
-            
+
             // add to map: map[off] = { {name=name, type="T"}, ... }
             lua_pushinteger(lua, off);
             lua_rawget(lua, map_idx);
@@ -254,16 +254,16 @@ static tb_bool_t xm_binutils_ar_parse_bsd_symdef(tb_stream_ref_t istream, tb_hiz
                 lua_pushvalue(lua, -2);
                 lua_rawset(lua, map_idx);
             }
-            
+
             int count = (int)lua_objlen(lua, -1);
             lua_newtable(lua);
             lua_pushstring(lua, "name");
             lua_pushstring(lua, name);
             lua_settable(lua, -3);
             lua_pushstring(lua, "type");
-            lua_pushstring(lua, "T"); 
+            lua_pushstring(lua, "T");
             lua_settable(lua, -3);
-            
+
             lua_rawseti(lua, -2, count + 1);
             lua_pop(lua, 1); // pop list
         }
@@ -314,7 +314,7 @@ static tb_bool_t xm_binutils_ar_parse_sysv_symdef(tb_stream_ref_t istream, tb_hi
     // read string table
     tb_hize_t current = tb_stream_offset(istream);
     tb_hize_t strtab_size = member_size - (current - start_pos);
-    
+
     tb_char_t* strtab = (tb_char_t*)tb_malloc_bytes((tb_size_t)strtab_size);
     if (!strtab) {
         tb_free(offsets);
@@ -331,16 +331,16 @@ static tb_bool_t xm_binutils_ar_parse_sysv_symdef(tb_stream_ref_t istream, tb_hi
     // populate map
     tb_char_t* p = strtab;
     tb_char_t* end = strtab + strtab_size;
-    
+
     for (i = 0; i < num_symbols; i++) {
         if (p >= end) break;
-        
+
         tb_char_t* name = p;
         tb_size_t len = tb_strlen(name);
         p += len + 1;
-        
+
         tb_uint32_t off = offsets[i];
-        
+
         // add to map
         lua_pushinteger(lua, off);
         lua_rawget(lua, map_idx);
@@ -351,16 +351,16 @@ static tb_bool_t xm_binutils_ar_parse_sysv_symdef(tb_stream_ref_t istream, tb_hi
             lua_pushvalue(lua, -2);
             lua_rawset(lua, map_idx);
         }
-        
+
         int count = (int)lua_objlen(lua, -1);
         lua_newtable(lua);
         lua_pushstring(lua, "name");
         lua_pushstring(lua, name);
         lua_settable(lua, -3);
         lua_pushstring(lua, "type");
-        lua_pushstring(lua, "T"); 
+        lua_pushstring(lua, "T");
         lua_settable(lua, -3);
-        
+
         lua_rawseti(lua, -2, count + 1);
         lua_pop(lua, 1); // pop list
     }
@@ -429,9 +429,9 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
             if (xm_binutils_ar_is_symbol_table(member_name)) {
                 /* parse symbol table
                  *
-                 * The symbol table in the archive only contains symbol names and their offsets, 
+                 * The symbol table in the archive only contains symbol names and their offsets,
                  * but lacks detailed symbol type information (e.g., distinguishing between code and data).
-                 * However, for object files that cannot be parsed (e.g., LTO bitcode) or unknown formats, 
+                 * However, for object files that cannot be parsed (e.g., LTO bitcode) or unknown formats,
                  * parsing the symbol table serves as a robust fallback to ensure symbols are extracted.
                  */
                 tb_hize_t current = tb_stream_offset(istream);
@@ -461,7 +461,7 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
 
         // save current position
         tb_hize_t current_pos = tb_stream_offset(istream);
-        
+
         // detect format
         tb_int_t format = xm_binutils_detect_format(istream);
         if (format != XM_BINUTILS_FORMAT_AR) {
@@ -489,9 +489,9 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
                  *
                  * If parsing the object file fails (e.g. for LTO bitcode or unsupported formats),
                  * we fall back to using the symbols parsed from the archive symbol table.
-                 * Although the type information is less accurate (defaulting to "T"), 
+                 * Although the type information is less accurate (defaulting to "T"),
                  * it guarantees that symbols are not lost.
-                 * 
+                 *
                  * cast to lua_Integer to avoid warning C4244 on 32-bit MSVC
                  * member_header_pos is tb_hize_t (64-bit), but AR offsets are usually 32-bit
                  */
