@@ -319,7 +319,7 @@ tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize_t base
 
     // read and check magic
     tb_uint8_t magic_bytes[4];
-    if (!xm_binutils_read_magic(istream, magic_bytes, 4)) {
+    if (!tb_stream_bread(istream, magic_bytes, 4)) {
         return tb_false;
     }
 

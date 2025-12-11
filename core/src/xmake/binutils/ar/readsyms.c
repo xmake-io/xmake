@@ -19,6 +19,9 @@
  *
  */
 
+#define TB_TRACE_MODULE_NAME "readsyms_ar"
+#define TB_TRACE_MODULE_DEBUG (1)
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
@@ -199,12 +202,17 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
         tb_bool_t skip = tb_false;
         if (!xm_binutils_ar_get_member_name(istream, &header, member_name, sizeof(member_name), &name_len, &name_bytes_read)) {
             skip = tb_true;
-        } else if (xm_binutils_ar_is_symbol_table(member_name)) {
-            // skip symbol tables
-            skip = tb_true;
-        } else if (!xm_binutils_ar_is_object_file(member_name)) {
-             // only extract object files
-            skip = tb_true;
+        } else {
+            tb_trace_d("member: %s, size: %lld", member_name, member_size);
+            if (xm_binutils_ar_is_symbol_table(member_name)) {
+                // skip symbol tables
+                skip = tb_true;
+                tb_trace_d("skipping symbol table");
+            } else if (!xm_binutils_ar_is_object_file(member_name)) {
+                 // only extract object files
+                skip = tb_true;
+                tb_trace_d("skipping non-object file");
+            }
         }
 
         if (skip) {
@@ -223,6 +231,7 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
         
         // detect format
         tb_int_t format = xm_binutils_detect_format(istream);
+        tb_trace_d("format: %d", format);
         if (format != XM_BINUTILS_FORMAT_UNKNOWN && format != XM_BINUTILS_FORMAT_AR) {
             // create entry table
             lua_newtable(lua);

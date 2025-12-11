@@ -80,6 +80,8 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
             lua_pushfstring(lua, "readsyms: cannot detect file format");
             break;
         }
+        
+        // printf("readsyms: detected format %d\n", format);
 
         // create result list
         lua_newtable(lua);
