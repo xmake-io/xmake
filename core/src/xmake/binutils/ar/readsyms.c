@@ -487,7 +487,10 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
                 // we fall back to using the symbols parsed from the archive symbol table.
                 // Although the type information is less accurate (defaulting to "T"), 
                 // it guarantees that symbols are not lost.
-                lua_pushinteger(lua, member_header_pos);
+                // 
+                // cast to lua_Integer to avoid warning C4244 on 32-bit MSVC
+                // member_header_pos is tb_hize_t (64-bit), but AR offsets are usually 32-bit
+                lua_pushinteger(lua, (lua_Integer)member_header_pos);
                 lua_rawget(lua, map_idx);
                 if (!lua_isnil(lua, -1)) {
                     read_ok = tb_true;
