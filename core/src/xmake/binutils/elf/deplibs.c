@@ -46,6 +46,30 @@ static tb_bool_t xm_binutils_elf_deplibs_32(tb_stream_ref_t istream, tb_hize_t b
         return tb_false;
     }
 
+    tb_size_t result_count = 0;
+
+    // find program interpreter (PT_INTERP)
+    if (header.e_phoff != 0 && header.e_phnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header.e_phoff)) {
+            for (tb_uint16_t i = 0; i < header.e_phnum; i++) {
+                xm_elf32_phdr_t phdr;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) {
+                    break;
+                }
+                if (phdr.p_type == XM_ELF_PT_INTERP) {
+                    tb_char_t name[256];
+                    if (xm_binutils_read_string(istream, base_offset + phdr.p_offset, name, sizeof(name)) && name[0]) {
+                        lua_pushinteger(lua, result_count + 1);
+                        lua_pushstring(lua, name);
+                        lua_settable(lua, -3);
+                        result_count++;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
     // find .dynamic section
     xm_elf32_section_t dynamic_section;
     tb_bool_t found_dynamic = tb_false;
@@ -87,7 +111,6 @@ static tb_bool_t xm_binutils_elf_deplibs_32(tb_stream_ref_t istream, tb_hize_t b
         return tb_false;
     }
 
-    tb_size_t result_count = 0;
     for (tb_uint32_t i = 0; i < count; i++) {
         xm_elf32_dynamic_t dyn;
         if (!tb_stream_bread(istream, (tb_byte_t*)&dyn, sizeof(dyn))) {
@@ -98,7 +121,7 @@ static tb_bool_t xm_binutils_elf_deplibs_32(tb_stream_ref_t istream, tb_hize_t b
             break;
         }
 
-        if (dyn.d_tag == XM_ELF_DT_NEEDED) {
+        if (dyn.d_tag == XM_ELF_DT_NEEDED || dyn.d_tag == XM_ELF_DT_SONAME) {
              tb_char_t name[256];
              if (xm_binutils_elf_read_string(istream, base_offset + strtab_section.sh_offset, dyn.d_un.d_val, name, sizeof(name)) && name[0]) {
                  lua_pushinteger(lua, result_count + 1);
@@ -122,6 +145,30 @@ static tb_bool_t xm_binutils_elf_deplibs_64(tb_stream_ref_t istream, tb_hize_t b
     }
     if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
         return tb_false;
+    }
+
+    tb_size_t result_count = 0;
+
+    // find program interpreter (PT_INTERP)
+    if (header.e_phoff != 0 && header.e_phnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header.e_phoff)) {
+            for (tb_uint16_t i = 0; i < header.e_phnum; i++) {
+                xm_elf64_phdr_t phdr;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) {
+                    break;
+                }
+                if (phdr.p_type == XM_ELF_PT_INTERP) {
+                    tb_char_t name[256];
+                    if (xm_binutils_read_string(istream, base_offset + phdr.p_offset, name, sizeof(name)) && name[0]) {
+                        lua_pushinteger(lua, result_count + 1);
+                        lua_pushstring(lua, name);
+                        lua_settable(lua, -3);
+                        result_count++;
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     // find .dynamic section
@@ -165,7 +212,6 @@ static tb_bool_t xm_binutils_elf_deplibs_64(tb_stream_ref_t istream, tb_hize_t b
         return tb_false;
     }
 
-    tb_size_t result_count = 0;
     for (tb_uint32_t i = 0; i < count; i++) {
         xm_elf64_dynamic_t dyn;
         if (!tb_stream_bread(istream, (tb_byte_t*)&dyn, sizeof(dyn))) {
@@ -176,7 +222,7 @@ static tb_bool_t xm_binutils_elf_deplibs_64(tb_stream_ref_t istream, tb_hize_t b
             break;
         }
 
-        if (dyn.d_tag == XM_ELF_DT_NEEDED) {
+        if (dyn.d_tag == XM_ELF_DT_NEEDED || dyn.d_tag == XM_ELF_DT_SONAME) {
              tb_char_t name[256];
              if (xm_binutils_elf_read_string(istream, base_offset + strtab_section.sh_offset, (tb_uint32_t)dyn.d_un.d_val, name, sizeof(name)) && name[0]) {
                  lua_pushinteger(lua, result_count + 1);

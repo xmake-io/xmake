@@ -51,10 +51,15 @@
 #define XM_ELF_SHT_STRTAB        0x3
 #define XM_ELF_SHT_DYNAMIC       0x6
 
+#define XM_ELF_PT_LOAD           1
+#define XM_ELF_PT_DYNAMIC        2
+#define XM_ELF_PT_INTERP         3
+
 #define XM_ELF_DT_NULL           0
 #define XM_ELF_DT_NEEDED         1
 #define XM_ELF_DT_STRTAB         5
 #define XM_ELF_DT_STRSZ          10
+#define XM_ELF_DT_SONAME         14
 
 #define XM_ELF_SHF_ALLOC         0x2
 #define XM_ELF_SHF_WRITE         0x1
@@ -105,6 +110,17 @@ typedef struct __xm_elf32_symbol_t {
     tb_uint16_t st_shndx;
 } __tb_packed__ xm_elf32_symbol_t;
 
+typedef struct __xm_elf32_phdr_t {
+    tb_uint32_t p_type;
+    tb_uint32_t p_offset;
+    tb_uint32_t p_vaddr;
+    tb_uint32_t p_paddr;
+    tb_uint32_t p_filesz;
+    tb_uint32_t p_memsz;
+    tb_uint32_t p_flags;
+    tb_uint32_t p_align;
+} __tb_packed__ xm_elf32_phdr_t;
+
 typedef struct __xm_elf64_header_t {
     tb_uint8_t  e_ident[16];
     tb_uint16_t e_type;
@@ -143,6 +159,17 @@ typedef struct __xm_elf64_symbol_t {
     tb_uint64_t st_value;
     tb_uint64_t st_size;
 } __tb_packed__ xm_elf64_symbol_t;
+
+typedef struct __xm_elf64_phdr_t {
+    tb_uint32_t p_type;
+    tb_uint32_t p_flags;
+    tb_uint64_t p_offset;
+    tb_uint64_t p_vaddr;
+    tb_uint64_t p_paddr;
+    tb_uint64_t p_filesz;
+    tb_uint64_t p_memsz;
+    tb_uint64_t p_align;
+} __tb_packed__ xm_elf64_phdr_t;
 
 typedef struct __xm_elf32_dynamic_t {
     tb_int32_t  d_tag;
