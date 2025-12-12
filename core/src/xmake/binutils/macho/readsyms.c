@@ -29,68 +29,10 @@
  * includes
  */
 #include "prefix.h"
-#include "tbox/utils/bits.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-
-/* byte-swap Mach-O header fields if needed */
-static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_32(xm_macho_header_t *header, tb_bool_t swap) {
-    if (swap) {
-        header->magic = tb_bits_swap_u32(header->magic);
-        header->cputype = tb_bits_swap_u32(header->cputype);
-        header->cpusubtype = tb_bits_swap_u32(header->cpusubtype);
-        header->filetype = tb_bits_swap_u32(header->filetype);
-        header->ncmds = tb_bits_swap_u32(header->ncmds);
-        header->sizeofcmds = tb_bits_swap_u32(header->sizeofcmds);
-        header->flags = tb_bits_swap_u32(header->flags);
-    }
-}
-
-/* byte-swap Mach-O header 64 fields if needed */
-static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_64(xm_macho_header_64_t *header, tb_bool_t swap) {
-    if (swap) {
-        header->magic = tb_bits_swap_u32(header->magic);
-        header->cputype = tb_bits_swap_u32(header->cputype);
-        header->cpusubtype = tb_bits_swap_u32(header->cpusubtype);
-        header->filetype = tb_bits_swap_u32(header->filetype);
-        header->ncmds = tb_bits_swap_u32(header->ncmds);
-        header->sizeofcmds = tb_bits_swap_u32(header->sizeofcmds);
-        header->flags = tb_bits_swap_u32(header->flags);
-        header->reserved = tb_bits_swap_u32(header->reserved);
-    }
-}
-
-/* byte-swap symtab command fields if needed */
-static __tb_inline__ tb_void_t xm_binutils_macho_swap_symtab_command(xm_macho_symtab_command_t *cmd, tb_bool_t swap) {
-    if (swap) {
-        cmd->cmd = tb_bits_swap_u32(cmd->cmd);
-        cmd->cmdsize = tb_bits_swap_u32(cmd->cmdsize);
-        cmd->symoff = tb_bits_swap_u32(cmd->symoff);
-        cmd->nsyms = tb_bits_swap_u32(cmd->nsyms);
-        cmd->stroff = tb_bits_swap_u32(cmd->stroff);
-        cmd->strsize = tb_bits_swap_u32(cmd->strsize);
-    }
-}
-
-/* byte-swap nlist 32 fields if needed */
-static __tb_inline__ tb_void_t xm_binutils_macho_swap_nlist_32(xm_macho_nlist_t *nlist, tb_bool_t swap) {
-    if (swap) {
-        nlist->strx = tb_bits_swap_u32(nlist->strx);
-        nlist->desc = tb_bits_swap_u16(nlist->desc);
-        nlist->value = tb_bits_swap_u32(nlist->value);
-    }
-}
-
-/* byte-swap nlist 64 fields if needed */
-static __tb_inline__ tb_void_t xm_binutils_macho_swap_nlist_64(xm_macho_nlist_64_t *nlist, tb_bool_t swap) {
-    if (swap) {
-        nlist->strx = tb_bits_swap_u32(nlist->strx);
-        nlist->desc = tb_bits_swap_u16(nlist->desc);
-        nlist->value = tb_bits_swap_u64(nlist->value);
-    }
-}
 
 tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua, tb_bool_t swap_bytes) {
     tb_assert_and_check_return_val(istream && lua, tb_false);

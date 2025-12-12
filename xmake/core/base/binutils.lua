@@ -30,6 +30,7 @@ binutils._bin2coff = binutils._bin2coff or binutils.bin2coff
 binutils._bin2macho = binutils._bin2macho or binutils.bin2macho
 binutils._bin2elf = binutils._bin2elf or binutils.bin2elf
 binutils._readsyms = binutils._readsyms or binutils.readsyms
+binutils._deplibs = binutils._deplibs or binutils.deplibs
 binutils._extractlib = binutils._extractlib or binutils.extractlib
 
 -- generate c/c++ code from the binary file
@@ -98,6 +99,15 @@ function binutils.readsyms(binaryfile)
         return binutils._readsyms(binaryfile)
     else
         return nil, "readsyms: C implementation not available"
+    end
+end
+
+-- get dependent libraries from binary file (auto-detect format: COFF, ELF, or Mach-O)
+function binutils.deplibs(binaryfile)
+    if binutils._deplibs then
+        return binutils._deplibs(binaryfile)
+    else
+        return nil, "deplibs: C implementation not available"
     end
 end
 

@@ -25,6 +25,11 @@ import("core.base.hashset")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
 import("utils.binary.rpath", {alias = "rpath_utils"})
+import("core.base.binutils")
+
+function _get_depends_by_binutils(binaryfile, opt)
+    return binutils.deplibs(binaryfile)
+end
 
 function _get_depends_by_dumpbin(binaryfile, opt)
     local depends
@@ -215,7 +220,8 @@ function _get_depends(binaryfile, opt)
     opt = opt or {}
     local ops = {
         _get_depends_by_objdump,
-        _get_depends_by_readelf
+        _get_depends_by_readelf,
+        _get_depends_by_binutils
     }
     if is_host("windows") then
         table.insert(ops, 1, _get_depends_by_dumpbin)

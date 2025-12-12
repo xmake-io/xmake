@@ -34,6 +34,10 @@
 #define XM_COFF_MACHINE_ARM     0x01c0
 #define XM_COFF_MACHINE_ARM64   0xaa64
 
+/* PE Optional Header Magic */
+#define XM_PE32_MAGIC           0x10b
+#define XM_PE32P_MAGIC          0x20b
+
 // COFF section flags
 #define XM_COFF_SCN_CNT_CODE                0x20  // IMAGE_SCN_CNT_CODE
 #define XM_COFF_SCN_CNT_INITIALIZED_DATA     0x40  // IMAGE_SCN_CNT_INITIALIZED_DATA
@@ -233,33 +237,9 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istr
         return tb_false;
     }
 
-    // seek to string position (offset is from start of string table, including size field)
-    // strtab_offset points to the start of string table (including 4-byte size field)
-    // offset is from the start of string table (including size field)
-    // So we use strtab_offset + offset directly
-    if (!tb_stream_seek(istream, strtab_offset + offset)) {
-        tb_stream_seek(istream, saved_pos);
-        return tb_false;
-    }
-
-    // read string
-    tb_size_t pos = 0;
-    tb_byte_t c;
-    while (pos < name_size - 1) {
-        if (!tb_stream_bread(istream, &c, 1)) {
-            tb_stream_seek(istream, saved_pos);
-            return tb_false;
-        }
-        if (c == 0) {
-            break;
-        }
-        name[pos++] = (tb_char_t)c;
-    }
-    name[pos] = '\0';
-
-    // restore position
+    // restore position and use common implementation
     tb_stream_seek(istream, saved_pos);
-    return tb_true;
+    return xm_binutils_read_string(istream, strtab_offset + offset, name, name_size);
 }
 
 /* get symbol name from COFF symbol entry
