@@ -61,11 +61,11 @@ target("xmake")
     end
 
     -- embed all script files
-    add_rules("utils.bin2c", {linewidth = 16, extensions = ".xmz"})
+    add_rules("utils.bin2obj", {extensions = ".xmz"})
     on_config(function (target)
         import("utils.archive.archive")
         if has_config("embed") then
-            local archivefile = path.join(target:autogendir(), "bin2c", "xmake.xmz")
+            local archivefile = path.join(target:autogendir(), "bin2obj", "xmake.xmz")
             print("archiving %s ..", archivefile)
             os.tryrm(archivefile)
             local rootdir = path.normalize(path.join(os.projectdir(), "..", "xmake"))

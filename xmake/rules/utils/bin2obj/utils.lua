@@ -36,10 +36,15 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
     local rulename = opt.rulename or "utils.bin2obj"
     local progress = opt.progress
 
+    -- check for cosmocc toolchain
+    local is_cosmocc = target:toolchain("cosmocc") or (target:has_tool("cc", "cosmocc") and target:has_tool("ar", "cosmoar"))
+
     -- get format (default: auto-detect from platform)
     local format = opt.format or target:extraconf("rules", rulename, "format")
     if not format then
-        if target:is_plat("windows", "mingw", "msys", "cygwin") then
+        if is_cosmocc then
+            format = "elf"
+        elseif target:is_plat("windows", "mingw", "msys", "cygwin") then
             format = "coff"
         elseif target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
             format = "macho"
@@ -77,6 +82,8 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
     local arch = target:arch()
     local plat = target:plat()
 
+
+
     -- get target_minver and xcode_sdkver from xcode toolchain (if available)
     local target_minver = nil
     local xcode_sdkver = nil
@@ -109,6 +116,37 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
         table.insert(argv, "--zeroend")
     end
     batchcmds:vlua("cli.binutils.bin2obj", argv)
+
+    -- generate concomitant object file for cosmocc
+    if is_cosmocc then
+        local arch_concomitant
+        local objectfile_concomitant
+        if arch == "x86_64" or arch == "x64" then
+            arch_concomitant = "aarch64"
+            objectfile_concomitant = path.join(path.directory(objectfile), ".aarch64", path.filename(objectfile))
+        elseif arch == "aarch64" or arch == "arm64" then
+            arch_concomitant = "x86_64"
+            objectfile_concomitant = path.join(path.directory(objectfile), ".x86_64", path.filename(objectfile))
+        end
+
+        if arch_concomitant and objectfile_concomitant then
+            batchcmds:mkdir(path.directory(objectfile_concomitant))
+            local argv_concomitant = {
+                "-i", path(binaryfile),
+                "-o", path(objectfile_concomitant),
+                "-f", format,
+                "-a", arch_concomitant,
+                "-p", plat
+            }
+            if symbol_prefix ~= "_binary_" then
+                table.insert(argv_concomitant, "--symbol_prefix=" .. symbol_prefix)
+            end
+            if zeroend then
+                table.insert(argv_concomitant, "--zeroend")
+            end
+            batchcmds:vlua("cli.binutils.bin2obj", argv_concomitant)
+        end
+    end
 
     return objectfile
 end
