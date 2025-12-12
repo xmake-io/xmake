@@ -34,12 +34,12 @@
  * private implementation
  */
 
-tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lua) {
+tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
     // read ELF header
     xm_elf32_header_t header;
-    if (!tb_stream_seek(istream, 0)) {
+    if (!tb_stream_seek(istream, base_offset)) {
         return tb_false;
     }
     if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
@@ -52,7 +52,7 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
     tb_bool_t found_symtab = tb_false;
     tb_bool_t found_strtab = tb_false;
 
-    if (!tb_stream_seek(istream, header.e_shoff)) {
+    if (!tb_stream_seek(istream, base_offset + header.e_shoff)) {
         return tb_false;
     }
 
@@ -66,8 +66,9 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
             symtab_section = section;
             found_symtab = tb_true;
         } else if (section.sh_type == XM_ELF_SHT_STRTAB && section.sh_link == 0) {
-            // .strtab is linked from .symtab, but we need to find it
-            // check if this is the string table for symbols
+            /* .strtab is linked from .symtab, but we need to find it
+             * check if this is the string table for symbols
+             */
             if (found_symtab && symtab_section.sh_link == i) {
                 strtab_section = section;
                 found_strtab = tb_true;
@@ -82,7 +83,7 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
 
     // find string table
     if (!found_strtab && symtab_section.sh_link < header.e_shnum) {
-        if (!tb_stream_seek(istream, header.e_shoff + symtab_section.sh_link * sizeof(xm_elf32_section_t))) {
+        if (!tb_stream_seek(istream, base_offset + header.e_shoff + symtab_section.sh_link * sizeof(xm_elf32_section_t))) {
             return tb_false;
         }
         if (!tb_stream_bread(istream, (tb_byte_t*)&strtab_section, sizeof(strtab_section))) {
@@ -101,7 +102,7 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
 
     // read symbols
     tb_uint32_t sym_count = symtab_section.sh_size / sizeof(xm_elf32_symbol_t);
-    if (!tb_stream_seek(istream, symtab_section.sh_offset)) {
+    if (!tb_stream_seek(istream, base_offset + symtab_section.sh_offset)) {
         return tb_false;
     }
 
@@ -125,15 +126,15 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
 
         // get symbol name
         tb_char_t name[256];
-        if (!xm_binutils_elf_read_string(istream, strtab_section.sh_offset, sym.st_name, name, sizeof(name)) || !name[0]) {
+        if (!xm_binutils_elf_read_string(istream, base_offset + strtab_section.sh_offset, sym.st_name, name, sizeof(name)) || !name[0]) {
             continue;
         }
-        
+
         // skip internal symbols (starting with . or $)
         if (name[0] == '.' || name[0] == '$') {
             continue;
         }
-        
+
         // skip local symbols (unless undefined)
         tb_uint8_t bind = (sym.st_info >> 4) & 0xf;
         if (bind == 0 && sym.st_shndx != 0) { // STB_LOCAL and not undefined
@@ -163,12 +164,12 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, lua_State *lu
     return tb_true;
 }
 
-tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lua) {
+tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
     // read ELF header
     xm_elf64_header_t header;
-    if (!tb_stream_seek(istream, 0)) {
+    if (!tb_stream_seek(istream, base_offset)) {
         return tb_false;
     }
     if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
@@ -181,7 +182,7 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lu
     tb_bool_t found_symtab = tb_false;
     tb_bool_t found_strtab = tb_false;
 
-    if (!tb_stream_seek(istream, header.e_shoff)) {
+    if (!tb_stream_seek(istream, base_offset + header.e_shoff)) {
         return tb_false;
     }
 
@@ -209,7 +210,7 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lu
 
     // find string table
     if (!found_strtab && symtab_section.sh_link < header.e_shnum) {
-        if (!tb_stream_seek(istream, header.e_shoff + symtab_section.sh_link * sizeof(xm_elf64_section_t))) {
+        if (!tb_stream_seek(istream, base_offset + header.e_shoff + symtab_section.sh_link * sizeof(xm_elf64_section_t))) {
             return tb_false;
         }
         if (!tb_stream_bread(istream, (tb_byte_t*)&strtab_section, sizeof(strtab_section))) {
@@ -228,7 +229,7 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lu
 
     // read symbols
     tb_uint32_t sym_count = (tb_uint32_t)(symtab_section.sh_size / sizeof(xm_elf64_symbol_t));
-    if (!tb_stream_seek(istream, symtab_section.sh_offset)) {
+    if (!tb_stream_seek(istream, base_offset + symtab_section.sh_offset)) {
         return tb_false;
     }
 
@@ -252,15 +253,15 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lu
 
         // get symbol name
         tb_char_t name[256];
-        if (!xm_binutils_elf_read_string(istream, strtab_section.sh_offset, sym.st_name, name, sizeof(name)) || !name[0]) {
+        if (!xm_binutils_elf_read_string(istream, base_offset + strtab_section.sh_offset, sym.st_name, name, sizeof(name)) || !name[0]) {
             continue;
         }
-        
+
         // skip internal symbols (starting with . or $)
         if (name[0] == '.' || name[0] == '$') {
             continue;
         }
-        
+
         // skip local symbols (unless undefined)
         tb_uint8_t bind = (sym.st_info >> 4) & 0xf;
         if (bind == 0 && sym.st_shndx != 0) { // STB_LOCAL and not undefined
@@ -290,12 +291,15 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, lua_State *lu
     return tb_true;
 }
 
-tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, lua_State *lua) {
+tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
     // read and check ELF magic
     tb_uint8_t magic[4];
-    if (!xm_binutils_read_magic(istream, magic, 4)) {
+    if (!tb_stream_seek(istream, base_offset)) {
+        return tb_false;
+    }
+    if (!tb_stream_bread(istream, magic, 4)) {
         return tb_false;
     }
     if (magic[0] != 0x7f || magic[1] != 'E' || magic[2] != 'L' || magic[3] != 'F') {
@@ -304,7 +308,7 @@ tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, lua_State *lua) 
 
     // check ELF class (32-bit or 64-bit)
     tb_uint8_t elf_class;
-    if (!tb_stream_seek(istream, 4)) {
+    if (!tb_stream_seek(istream, base_offset + 4)) {
         return tb_false;
     }
     if (!tb_stream_bread(istream, (tb_byte_t*)&elf_class, 1)) {
@@ -312,9 +316,9 @@ tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, lua_State *lua) 
     }
 
     if (elf_class == 1) {
-        return xm_binutils_elf_read_symbols_32(istream, lua);
+        return xm_binutils_elf_read_symbols_32(istream, base_offset, lua);
     } else if (elf_class == 2) {
-        return xm_binutils_elf_read_symbols_64(istream, lua);
+        return xm_binutils_elf_read_symbols_64(istream, base_offset, lua);
     }
 
     return tb_false;

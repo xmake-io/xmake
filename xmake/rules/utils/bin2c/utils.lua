@@ -91,7 +91,7 @@ function generate_headerfile(target, batchcmds, binaryfile, opt)
         table.insert(argv, "--nozeroend")
     end
 
-    batchcmds:vlua("utils.binary.bin2c", argv)
+    batchcmds:vlua("cli.binutils.bin2c", argv)
 
     return headerfile
 end

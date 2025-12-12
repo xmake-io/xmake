@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.binutils")
 import("private.tools.vstool")
 
 -- merge *.a archive libraries using libtool
@@ -30,56 +31,20 @@ end
 -- merge *.a archive libraries using fallback method (extract and repack)
 -- Used for platforms where ar does not support -M option (e.g., Solaris)
 function _merge_for_ar_fallback(target, program, outputfile, libraryfiles, opt)
-    -- we need to handle duplicate object file names by adding prefixes
-    -- convert all library files to absolute paths before changing directory
-    local libraryfiles_abs = {}
-    for _, libraryfile in ipairs(libraryfiles) do
-        if os.isfile(libraryfile) then
-            table.insert(libraryfiles_abs, path.absolute(libraryfile))
-        end
-    end
-    if #libraryfiles_abs == 0 then
-        return
-    end
+
+    -- extract all archives to the temporary directory
     local tmpdir = os.tmpfile() .. ".dir"
     os.mkdir(tmpdir)
-    -- check for duplicate object file names and warn
-    for idx, libraryfile_abs in ipairs(libraryfiles_abs) do
-        local list = os.iorunv(program, {"-t", libraryfile_abs}, {curdir = tmpdir})
-        if list then
-            local seen_files = {}
-            local duplicates = {}
-            for _, line in ipairs(list:split("\n")) do
-                line = line:trim()
-                if line:endswith(".o") then
-                    if seen_files[line] then
-                        if not duplicates[line] then
-                            duplicates[line] = {}
-                        end
-                        table.insert(duplicates[line], libraryfile_abs)
-                    else
-                        seen_files[line] = true
-                    end
-                end
-            end
-            if not table.empty(duplicates) then
-                local dup_names = table.keys(duplicates)
-                wprint("duplicate object file names found in %s: %s (some files may be lost during merge)",
-                    path.filename(libraryfile_abs), table.concat(dup_names, ", "))
-            end
-        end
+    for _, libraryfile in ipairs(libraryfiles) do
+        binutils.extractlib(libraryfile, tmpdir)
     end
-    -- extract and merge all archives
+
+    -- collect all object files
     local objectfiles = {}
-    for idx, libraryfile_abs in ipairs(libraryfiles_abs) do
-        -- extract all files from this archive
-        os.vrunv(program, {"-x", libraryfile_abs}, {curdir = tmpdir})
-        -- collect extracted object files (duplicate names will be overwritten)
-        for _, objfile in ipairs(os.files(path.join(tmpdir, "*.o"))) do
-            -- use relative path (filename only) since ar will run with curdir = tmpdir
-            table.insert(objectfiles, path.filename(objfile))
-        end
+    for _, objectfile in ipairs(os.files(path.join(tmpdir, "*.o"))) do
+        table.insert(objectfiles, path.filename(objectfile))
     end
+
     -- create new archive with all object files
     if #objectfiles > 0 then
         os.mkdir(path.directory(outputfile))

@@ -158,38 +158,38 @@ function _get_allsymbols_by_readsyms(target, opt)
         _get_sourcefiles_map(target, sourcefiles_map)
     end
     local objectfiles = target:objectfiles()
-    local symbols = readsyms(objectfiles)
-    if symbols then
-        for _, sym in ipairs(symbols) do
-            if sym.name and sym.type then
-                -- only export function symbols (T/t) for DLL exports
-                -- skip data (D/d), bss (B/b), other sections (S/s), and undefined (U) symbols
-                if sym.type == "T" or sym.type == "t" then
-                    local symbol = sym.name
-                    -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
-                    if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
-                        symbol = symbol:sub(2)
-                    end
-                    if export_filter then
-                        -- find sourcefile for this symbol (approximate match)
-                        local sourcefile = nil
-                        for objfile, srcfile in pairs(sourcefiles_map) do
-                            if objfile:find(path.basename(symbol), 1, true) then
-                                sourcefile = srcfile
-                                break
-                            end
-                        end
-                        if export_filter(symbol, {sourcefile = sourcefile}) then
-                            allsymbols:insert(symbol)
-                        end
-                    elseif not symbol:startswith("__") then
-                        if export_classes or not symbol:startswith("?") then
-                            if export_classes then
-                                if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
-                                    allsymbols:insert(symbol)
+    for _, objectfile in ipairs(objectfiles) do
+        local objects = readsyms(objectfile)
+        if objects then
+            local sourcefile = sourcefiles_map[objectfile]
+            for _, obj in ipairs(objects) do
+                local symbols = obj.symbols
+                if symbols then
+                    for _, sym in ipairs(symbols) do
+                        if sym.name and sym.type then
+                            -- only export function symbols (T/t) for DLL exports
+                            -- skip data (D/d), bss (B/b), other sections (S/s), and undefined (U) symbols
+                            if sym.type == "T" or sym.type == "t" then
+                                local symbol = sym.name
+                                -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
+                                if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
+                                    symbol = symbol:sub(2)
                                 end
-                            else
-                                allsymbols:insert(symbol)
+                                if export_filter then
+                                    if export_filter(symbol, {sourcefile = sourcefile}) then
+                                        allsymbols:insert(symbol)
+                                    end
+                                elseif not symbol:startswith("__") then
+                                    if export_classes or not symbol:startswith("?") then
+                                        if export_classes then
+                                            if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
+                                                allsymbols:insert(symbol)
+                                            end
+                                        else
+                                            allsymbols:insert(symbol)
+                                        end
+                                    end
+                                end
                             end
                         end
                     end

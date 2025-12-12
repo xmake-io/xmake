@@ -55,6 +55,27 @@ typedef struct __xm_coff_header_t {
     tb_uint16_t flags;
 } __tb_packed__ xm_coff_header_t;
 
+typedef struct __xm_coff_import_header_t {
+    tb_uint16_t sig1;     // 0
+    tb_uint16_t sig2;     // 0xffff
+    tb_uint16_t version;
+    tb_uint16_t machine;
+    tb_uint32_t time;
+    tb_uint32_t size;     // size of data
+    tb_uint16_t ordinal;  // ordinal or hint
+    tb_uint16_t type;     // type
+} __tb_packed__ xm_coff_import_header_t;
+
+typedef struct __xm_coff_anon_header_t {
+    tb_uint16_t sig1;     // 0
+    tb_uint16_t sig2;     // 0xffff
+    tb_uint16_t version;
+    tb_uint16_t machine;
+    tb_uint32_t time;
+    tb_uint8_t  clsid[16];
+    tb_uint32_t size;     // size of data
+} __tb_packed__ xm_coff_anon_header_t;
+
 typedef struct __xm_coff_section_t {
     tb_char_t name[8];
     tb_uint32_t vsize;
@@ -188,7 +209,7 @@ static __tb_inline__ tb_void_t xm_binutils_coff_write_symbol_name(tb_stream_ref_
  * @param offset        the string offset (from start of string table content, after size field)
  * @return              the string (static buffer, valid until next call)
  */
-static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istream, tb_uint32_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
+static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istream, tb_hize_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
     tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
 
     // In COFF format, the offset in symbol table is from the start of string table
@@ -250,7 +271,7 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istr
  * @param name_size     the size of the buffer
  * @return              tb_true on success, tb_false on failure
  */
-static __tb_inline__ tb_bool_t xm_binutils_coff_get_symbol_name(tb_stream_ref_t istream, xm_coff_symbol_t const *sym, tb_uint32_t strtab_offset, tb_char_t *name, tb_size_t name_size) {
+static __tb_inline__ tb_bool_t xm_binutils_coff_get_symbol_name(tb_stream_ref_t istream, xm_coff_symbol_t const *sym, tb_hize_t strtab_offset, tb_char_t *name, tb_size_t name_size) {
     tb_assert_and_check_return_val(istream && sym && name && name_size > 0, tb_false);
 
     // check if it's a long name (first 4 bytes are zeros)

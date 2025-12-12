@@ -36,10 +36,11 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * forward declarations
  */
-extern tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, lua_State *lua);
-extern tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, lua_State *lua);
-extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, lua_State *lua);
-extern tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, lua_State *lua);
+extern tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
+extern tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
+extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
+extern tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
+extern tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -80,41 +81,76 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
             lua_pushfstring(lua, "readsyms: cannot detect file format");
             break;
         }
+        
+        // create result list
+        lua_newtable(lua);
 
         // read symbols based on format
         if (format == XM_BINUTILS_FORMAT_AR) {
             // AR archive (.a or .lib)
-            if (!xm_binutils_ar_read_symbols(istream, lua)) {
-                lua_pushboolean(lua, tb_false);
-                lua_pushfstring(lua, "readsyms: read AR archive symbols failed");
-                break;
+            tb_bool_t is_mslib = tb_false;
+            if (objectfile) {
+                tb_size_t len = tb_strlen(objectfile);
+                if (len > 4 && tb_stricmp(objectfile + len - 4, ".lib") == 0) {
+                    is_mslib = tb_true;
+                }
             }
-        } else if (format == XM_BINUTILS_FORMAT_COFF) {
-            // COFF
-            if (!xm_binutils_coff_read_symbols(istream, lua)) {
-                lua_pushboolean(lua, tb_false);
-                lua_pushfstring(lua, "readsyms: read COFF symbols failed");
-                break;
-            }
-        } else if (format == XM_BINUTILS_FORMAT_ELF) {
-            // ELF
-            if (!xm_binutils_elf_read_symbols(istream, lua)) {
-                lua_pushboolean(lua, tb_false);
-                lua_pushfstring(lua, "readsyms: read ELF symbols failed");
-                break;
-            }
-        } else if (format == XM_BINUTILS_FORMAT_MACHO) {
-            // Mach-O
-            if (!xm_binutils_macho_read_symbols(istream, lua)) {
-                lua_pushboolean(lua, tb_false);
-                lua_pushfstring(lua, "readsyms: read Mach-O symbols failed");
-                break;
+
+            if (is_mslib) {
+                 if (!xm_binutils_mslib_read_symbols(istream, 0, lua)) {
+                     // fallback to ar
+                     if (!xm_binutils_ar_read_symbols(istream, 0, lua)) {
+                        lua_pushboolean(lua, tb_false);
+                        lua_pushfstring(lua, "readsyms: read AR/MSLIB archive symbols failed");
+                        break;
+                     }
+                 }
+            } else {
+                if (!xm_binutils_ar_read_symbols(istream, 0, lua)) {
+                    lua_pushboolean(lua, tb_false);
+                    lua_pushfstring(lua, "readsyms: read AR archive symbols failed");
+                    break;
+                }
             }
         } else {
-            // unknown or unsupported format
-            lua_pushboolean(lua, tb_false);
-            lua_pushfstring(lua, "readsyms: unsupported or unknown file format");
-            break;
+            // single object file (COFF, ELF, Mach-O)
+            // create entry table
+            lua_newtable(lua);
+
+            // object name
+            lua_pushstring(lua, "objectfile");
+            tb_char_t const* name = tb_strrchr(objectfile, '/');
+            if (!name) {
+                name = tb_strrchr(objectfile, '\\');
+            }
+            if (!name) {
+                name = objectfile;
+            } else {
+                name++;
+            }
+            lua_pushstring(lua, name);
+            lua_settable(lua, -3);
+
+            // symbols
+            lua_pushstring(lua, "symbols");
+            tb_bool_t read_ok = tb_false;
+            if (format == XM_BINUTILS_FORMAT_COFF) {
+                read_ok = xm_binutils_coff_read_symbols(istream, 0, lua);
+            } else if (format == XM_BINUTILS_FORMAT_ELF) {
+                read_ok = xm_binutils_elf_read_symbols(istream, 0, lua);
+            } else if (format == XM_BINUTILS_FORMAT_MACHO) {
+                read_ok = xm_binutils_macho_read_symbols(istream, 0, lua);
+            }
+
+            if (read_ok) {
+                lua_settable(lua, -3);
+                lua_rawseti(lua, -2, 1);
+            } else {
+                lua_pop(lua, 2); // pop entry table and result list
+                lua_pushboolean(lua, tb_false);
+                lua_pushfstring(lua, "readsyms: read symbols failed");
+                break;
+            }
         }
 
         ok = tb_true;

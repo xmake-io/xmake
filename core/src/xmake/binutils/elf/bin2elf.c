@@ -74,11 +74,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     }
 
     // replace non-alphanumeric with underscore
-    for (tb_size_t i = 0; symbol_name[i]; i++) {
-        if (!tb_isalpha(symbol_name[i]) && !tb_isdigit(symbol_name[i]) && symbol_name[i] != '_') {
-            symbol_name[i] = '_';
-        }
-    }
+    xm_binutils_sanitize_symbol_name(symbol_name);
 
     tb_snprintf(symbol_start, sizeof(symbol_start), "%s_start", symbol_name);
     tb_snprintf(symbol_end, sizeof(symbol_end), "%s_end", symbol_name);
@@ -378,11 +374,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     }
 
     // replace non-alphanumeric with underscore
-    for (tb_size_t i = 0; symbol_name[i]; i++) {
-        if (!tb_isalpha(symbol_name[i]) && !tb_isdigit(symbol_name[i]) && symbol_name[i] != '_') {
-            symbol_name[i] = '_';
-        }
-    }
+    xm_binutils_sanitize_symbol_name(symbol_name);
 
     tb_snprintf(symbol_start, sizeof(symbol_start), "%s_start", symbol_name);
     tb_snprintf(symbol_end, sizeof(symbol_end), "%s_end", symbol_name);
