@@ -52,6 +52,16 @@ function sandbox_core_base_binutils.readsyms(binaryfile)
     end
 end
 
+-- get dependent libraries from binary file (auto-detect format: ELF, COFF, Mach-O)
+function sandbox_core_base_binutils.deplibs(binaryfile)
+    local libs, errors = binutils.deplibs(binaryfile)
+    if libs then
+        return libs
+    else
+        raise("deplibs: %s", errors or "unknown errors")
+    end
+end
+
 -- extract static library to directory
 function sandbox_core_base_binutils.extractlib(libraryfile, outputdir, opt)
     local ok, errors = binutils.extractlib(libraryfile, outputdir, opt)

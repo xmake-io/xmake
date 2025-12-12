@@ -49,6 +49,12 @@
 #define XM_ELF_SHT_PROGBITS      0x1
 #define XM_ELF_SHT_SYMTAB        0x2
 #define XM_ELF_SHT_STRTAB        0x3
+#define XM_ELF_SHT_DYNAMIC       0x6
+
+#define XM_ELF_DT_NULL           0
+#define XM_ELF_DT_NEEDED         1
+#define XM_ELF_DT_STRTAB         5
+#define XM_ELF_DT_STRSZ          10
 
 #define XM_ELF_SHF_ALLOC         0x2
 #define XM_ELF_SHF_WRITE         0x1
@@ -137,6 +143,22 @@ typedef struct __xm_elf64_symbol_t {
     tb_uint64_t st_value;
     tb_uint64_t st_size;
 } __tb_packed__ xm_elf64_symbol_t;
+
+typedef struct __xm_elf32_dynamic_t {
+    tb_int32_t  d_tag;
+    union {
+        tb_uint32_t d_val;
+        tb_uint32_t d_ptr;
+    } d_un;
+} __tb_packed__ xm_elf32_dynamic_t;
+
+typedef struct __xm_elf64_dynamic_t {
+    tb_int64_t  d_tag;
+    union {
+        tb_uint64_t d_val;
+        tb_uint64_t d_ptr;
+    } d_un;
+} __tb_packed__ xm_elf64_dynamic_t;
 #include "tbox/prefix/packed.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
