@@ -67,7 +67,6 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
             if (tb_stream_bread(istream, (tb_byte_t*)&magic, 2)) {
                 // magic is little endian
                 magic = tb_bits_le_to_ne_u16(magic);
-                // tb_printf("magic: %x\n", magic);
                 
                 tb_uint32_t data_dir_offset = 0;
                 if (magic == XM_PE32_MAGIC) {
@@ -78,7 +77,6 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
                 
                 // check if optional header is large enough to contain import directory entry (index 1)
                 // export(0) + import(1) -> 2 entries -> 16 bytes
-                // tb_printf("opthdr: %d, data_dir_offset: %d\n", header.opthdr, data_dir_offset);
                 if (data_dir_offset != 0 && header.opthdr >= data_dir_offset + 16) {
                     // seek to Import Directory (Index 1)
                     // Data Directory Array starts at optional_header_start + data_dir_offset
@@ -86,7 +84,6 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
                     if (tb_stream_seek(istream, base_offset + sizeof(xm_coff_header_t) + data_dir_offset + 8)) {
                         if (tb_stream_bread(istream, (tb_byte_t*)&import_rva, 4)) {
                             import_rva = tb_bits_le_to_ne_u32(import_rva);
-                            // tb_printf("import_rva: %x\n", import_rva);
                         }
                     }
                 }
