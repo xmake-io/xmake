@@ -714,9 +714,8 @@ static lua_State *g_lua = tb_null;
 
 // the xmake script files data
 #ifdef XM_EMBED_ENABLE
-static tb_byte_t g_xmake_xmz_data[] = {
-#include "xmake.xmz.h"
-};
+extern tb_byte_t _binary_xmake_xmz_start[];
+extern tb_byte_t _binary_xmake_xmz_end[];
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -1401,8 +1400,8 @@ static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t *engine,
 static tb_bool_t xm_engine_extract_programfiles(xm_engine_t *engine, tb_char_t const *programdir) {
     tb_file_info_t info = { 0 };
     if (!tb_file_info(programdir, &info)) {
-        tb_byte_t const *data = g_xmake_xmz_data;
-        tb_size_t size = sizeof(g_xmake_xmz_data);
+        tb_byte_t const *data = _binary_xmake_xmz_start;
+        tb_size_t size = _binary_xmake_xmz_end - _binary_xmake_xmz_start;
         if (!xm_engine_extract_programfiles_impl(engine, programdir, data, size)) {
             return tb_false;
         }
