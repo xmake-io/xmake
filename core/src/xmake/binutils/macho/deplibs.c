@@ -104,12 +104,14 @@ tb_bool_t xm_binutils_macho_deplibs(tb_stream_ref_t istream, tb_hize_t base_offs
         }
         xm_binutils_macho_swap_load_command(&lc, swap);
 
-        // check for LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, LC_REEXPORT_DYLIB
-        // LC_LOAD_DYLIB = 0xc
-        // LC_LOAD_WEAK_DYLIB = 0x18 | 0x80000000
-        // LC_REEXPORT_DYLIB = 0x1f | 0x80000000
+        /* check for LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, LC_REEXPORT_DYLIB, LC_ID_DYLIB
+         * LC_LOAD_DYLIB = 0xc
+         * LC_ID_DYLIB = 0xd
+         * LC_LOAD_WEAK_DYLIB = 0x18 | 0x80000000
+         * LC_REEXPORT_DYLIB = 0x1f | 0x80000000
+         */
 
-        if (lc.cmd == 0xc || lc.cmd == (0x18 | 0x80000000) || lc.cmd == (0x1f | 0x80000000)) {
+        if (lc.cmd == 0xc || lc.cmd == 0xd || lc.cmd == (0x18 | 0x80000000) || lc.cmd == (0x1f | 0x80000000)) {
             
             xm_macho_dylib_command_t dc;
             if (tb_stream_seek(istream, current_cmd_offset)) {
