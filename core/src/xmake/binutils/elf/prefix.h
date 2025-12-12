@@ -241,52 +241,7 @@ static __tb_inline__ tb_uint16_t xm_binutils_elf_get_machine(tb_char_t const *ar
  * @return        tb_true if 64-bit, tb_false otherwise
  */
 static __tb_inline__ tb_bool_t xm_binutils_elf_is_64bit(tb_char_t const *arch) {
-    if (!arch) {
-        return tb_true;
-    }
-    // x86_64
-    if (tb_strcmp(arch, "x86_64") == 0 || tb_strcmp(arch, "x64") == 0) {
-        return tb_true;
-    }
-    // ARM64
-    else if (tb_strcmp(arch, "arm64") == 0 || tb_strcmp(arch, "aarch64") == 0 ||
-             tb_strcmp(arch, "arm64-v8a") == 0) {
-        return tb_true;
-    }
-    // MIPS64
-    else if (tb_strncmp(arch, "mips64", 6) == 0) {
-        return tb_true;
-    }
-    // PowerPC64
-    else if (tb_strncmp(arch, "ppc64", 5) == 0 || tb_strncmp(arch, "powerpc64", 9) == 0) {
-        return tb_true;
-    }
-    // RISC-V 64
-    else if (tb_strncmp(arch, "riscv64", 7) == 0 ||
-             (tb_strncmp(arch, "riscv", 5) == 0 && tb_strstr(arch, "64"))) {
-        return tb_true;
-    }
-    // SPARC64
-    else if (tb_strncmp(arch, "sparc64", 7) == 0) {
-        return tb_true;
-    }
-    // s390x
-    else if (tb_strcmp(arch, "s390x") == 0) {
-        return tb_true;
-    }
-    // LoongArch64
-    else if (tb_strncmp(arch, "loongarch64", 11) == 0) {
-        return tb_true;
-    }
-    // WebAssembly 64
-    else if (tb_strcmp(arch, "wasm64") == 0) {
-        return tb_true;
-    }
-    // IA-64
-    else if (tb_strcmp(arch, "ia64") == 0 || tb_strcmp(arch, "itanium") == 0) {
-        return tb_true;
-    }
-    return tb_false;
+    return xm_binutils_arch_is_64bit(arch);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -301,29 +256,7 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_is_64bit(tb_char_t const *arch) {
  * @return              the string (static buffer, valid until next call)
  */
 static __tb_inline__ tb_bool_t xm_binutils_elf_read_string(tb_stream_ref_t istream, tb_uint64_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
-    tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
-
-    tb_hize_t saved_pos = tb_stream_offset(istream);
-    if (!tb_stream_seek(istream, strtab_offset + offset)) {
-        return tb_false;
-    }
-
-    tb_size_t pos = 0;
-    tb_byte_t c;
-    while (pos < name_size - 1) {
-        if (!tb_stream_bread(istream, &c, 1)) {
-            tb_stream_seek(istream, saved_pos);
-            return tb_false;
-        }
-        if (c == 0) {
-            break;
-        }
-        name[pos++] = (tb_char_t)c;
-    }
-    name[pos] = '\0';
-
-    tb_stream_seek(istream, saved_pos);
-    return tb_true;
+    return xm_binutils_read_string(istream, strtab_offset + offset, name, name_size);
 }
 
 /* get symbol type character (nm-style) from ELF symbol

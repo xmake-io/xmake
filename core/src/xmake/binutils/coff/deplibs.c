@@ -60,27 +60,29 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
     if (header.opthdr > 0) {
         // save pos
         tb_hize_t saved_pos = tb_stream_offset(istream);
-        
+
         // seek to optional header
         if (tb_stream_seek(istream, base_offset + sizeof(xm_coff_header_t))) {
             tb_uint16_t magic = 0;
             if (tb_stream_bread(istream, (tb_byte_t*)&magic, 2)) {
                 // magic is little endian
                 magic = tb_bits_le_to_ne_u16(magic);
-                
+
                 tb_uint32_t data_dir_offset = 0;
                 if (magic == XM_PE32_MAGIC) {
                     data_dir_offset = 96;
                 } else if (magic == XM_PE32P_MAGIC) {
                     data_dir_offset = 112;
                 }
-                
-                // check if optional header is large enough to contain import directory entry (index 1)
-                // export(0) + import(1) -> 2 entries -> 16 bytes
+
+                /* check if optional header is large enough to contain import directory entry (index 1)
+                 * export(0) + import(1) -> 2 entries -> 16 bytes
+                 */
                 if (data_dir_offset != 0 && header.opthdr >= data_dir_offset + 16) {
-                    // seek to Import Directory (Index 1)
-                    // Data Directory Array starts at optional_header_start + data_dir_offset
-                    // Index 1 is at + 8 bytes (sizeof(IMAGE_DATA_DIRECTORY) * 1)
+                    /* seek to Import Directory (Index 1)
+                     * Data Directory Array starts at optional_header_start + data_dir_offset
+                     * Index 1 is at + 8 bytes (sizeof(IMAGE_DATA_DIRECTORY) * 1)
+                     */
                     if (tb_stream_seek(istream, base_offset + sizeof(xm_coff_header_t) + data_dir_offset + 8)) {
                         if (tb_stream_bread(istream, (tb_byte_t*)&import_rva, 4)) {
                             import_rva = tb_bits_le_to_ne_u32(import_rva);
@@ -118,20 +120,22 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
         }
 
         if (found_idt) {
-            // read import directory table
-            // The .idata section contains the Import Directory Table.
-            // Each entry is 20 bytes (IMAGE_IMPORT_DESCRIPTOR).
-            // The table ends with a null entry.
-            
-            // We need to iterate over IMAGE_IMPORT_DESCRIPTOR entries.
-            // struct IMAGE_IMPORT_DESCRIPTOR {
-            //     DWORD   OriginalFirstThunk; // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
-            //     DWORD   TimeDateStamp;      // 0 if not bound,
-            //     DWORD   ForwarderChain;     // -1 if no forwarders
-            //     DWORD   Name;               // RVA to DLL name
-            //     DWORD   FirstThunk;         // RVA to IAT (if bound this IAT has actual addresses)
-            // };
-            
+            /* read import directory table
+             * The .idata section contains the Import Directory Table.
+             * Each entry is 20 bytes (IMAGE_IMPORT_DESCRIPTOR).
+             * The table ends with a null entry.
+             */
+
+            /* We need to iterate over IMAGE_IMPORT_DESCRIPTOR entries.
+             * struct IMAGE_IMPORT_DESCRIPTOR {
+             *     DWORD   OriginalFirstThunk; // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+             *     DWORD   TimeDateStamp;      // 0 if not bound,
+             *     DWORD   ForwarderChain;     // -1 if no forwarders
+             *     DWORD   Name;               // RVA to DLL name
+             *     DWORD   FirstThunk;         // RVA to IAT (if bound this IAT has actual addresses)
+             * };
+             */
+
             if (!tb_stream_seek(istream, idt_offset)) {
                 return tb_false;
             }
@@ -143,36 +147,38 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
                 tb_uint32_t name_rva;
                 tb_uint32_t first_thunk;
 
-                if (!tb_stream_bread(istream, (tb_byte_t*)&original_first_thunk, 4)) break;
-                if (!tb_stream_bread(istream, (tb_byte_t*)&time_date_stamp, 4)) break;
-                if (!tb_stream_bread(istream, (tb_byte_t*)&forwarder_chain, 4)) break;
-                if (!tb_stream_bread(istream, (tb_byte_t*)&name_rva, 4)) break;
-                if (!tb_stream_bread(istream, (tb_byte_t*)&first_thunk, 4)) break;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&original_first_thunk, 4)) { break; }
+                if (!tb_stream_bread(istream, (tb_byte_t*)&time_date_stamp, 4)) { break; }
+                if (!tb_stream_bread(istream, (tb_byte_t*)&forwarder_chain, 4)) { break; }
+                if (!tb_stream_bread(istream, (tb_byte_t*)&name_rva, 4)) { break; }
+                if (!tb_stream_bread(istream, (tb_byte_t*)&first_thunk, 4)) { break; }
 
                 // check for null entry (end of table)
                 if (original_first_thunk == 0 && name_rva == 0) {
                     break;
                 }
-                
+
                 name_rva = tb_bits_le_to_ne_u32(name_rva);
 
                 if (name_rva != 0) {
-                    // map RVA to file offset to read the name
-                    // We need to find the section that contains this RVA.
-                    // Since we are iterating sections, we might need to seek back to read section headers again or cache them.
-                    // For simplicity, we assume the name string is within the same .idata section or we can find it by scanning sections.
-                    
-                    // To do this correctly, we should scan all sections to find which one contains the RVA.
-                    // But here we are inside a loop iterating sections.
-                    // We can save current position and iterate sections from the beginning (or cached) to find the RVA.
-                    
+                    /* map RVA to file offset to read the name
+                     * We need to find the section that contains this RVA.
+                     * Since we are iterating sections, we might need to seek back to read section headers again or cache them.
+                     * For simplicity, we assume the name string is within the same .idata section or we can find it by scanning sections.
+                     */
+
+                    /* To do this correctly, we should scan all sections to find which one contains the RVA.
+                     * But here we are inside a loop iterating sections.
+                     * We can save current position and iterate sections from the beginning (or cached) to find the RVA.
+                     */
+
                     // Optimization: usually the name is in the same .idata section or a nearby .rdata section.
-                    
+
                     tb_hize_t saved_pos_inner = tb_stream_offset(istream);
-                    
+
                     // Find the section containing name_rva
                     tb_uint32_t name_file_offset = 0;
-                    
+
                     // check current section first
                     if (name_rva >= section.vaddr && name_rva < section.vaddr + section.vsize) {
                         name_file_offset = section.ofs + (name_rva - section.vaddr);
@@ -195,32 +201,22 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
                     }
 
                     if (name_file_offset != 0) {
-                         if (tb_stream_seek(istream, name_file_offset)) {
-                             tb_char_t dll_name[256];
-                             tb_size_t pos = 0;
-                             tb_byte_t c;
-                             while (pos < sizeof(dll_name) - 1) {
-                                 if (!tb_stream_bread(istream, &c, 1)) break;
-                                 if (c == 0) break;
-                                 dll_name[pos++] = (tb_char_t)c;
-                             }
-                             dll_name[pos] = '\0';
-                             
-                             if (pos > 0) {
-                                 lua_pushinteger(lua, result_count + 1);
-                                 lua_pushstring(lua, dll_name);
-                                 lua_settable(lua, -3);
-                                 result_count++;
-                             }
+                         tb_char_t dll_name[256];
+                         if (xm_binutils_read_string(istream, name_file_offset, dll_name, sizeof(dll_name)) && dll_name[0]) {
+                             lua_pushinteger(lua, result_count + 1);
+                             lua_pushstring(lua, dll_name);
+                             lua_settable(lua, -3);
+                             result_count++;
                          }
                     }
-                    
+
                     tb_stream_seek(istream, saved_pos_inner);
                 }
             }
-            // We found .idata and processed it. Usually there is only one import table.
-            // But we should continue just in case or break?
-            // Typically break is enough after processing the import table.
+            /* We found .idata and processed it. Usually there is only one import table.
+             * But we should continue just in case or break?
+             * Typically break is enough after processing the import table.
+             */
             break;
         }
     }
