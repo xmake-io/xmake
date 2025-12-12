@@ -55,6 +55,47 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
         return tb_false;
     }
 
+    // try to get import directory rva from optional header
+    tb_uint32_t import_rva = 0;
+    if (header.opthdr > 0) {
+        // save pos
+        tb_hize_t saved_pos = tb_stream_offset(istream);
+        
+        // seek to optional header
+        if (tb_stream_seek(istream, base_offset + sizeof(xm_coff_header_t))) {
+            tb_uint16_t magic = 0;
+            if (tb_stream_bread(istream, (tb_byte_t*)&magic, 2)) {
+                // magic is little endian
+                magic = tb_bits_le_to_ne_u16(magic);
+                // tb_printf("magic: %x\n", magic);
+                
+                tb_uint32_t data_dir_offset = 0;
+                if (magic == XM_PE32_MAGIC) {
+                    data_dir_offset = 96;
+                } else if (magic == XM_PE32P_MAGIC) {
+                    data_dir_offset = 112;
+                }
+                
+                // check if optional header is large enough to contain import directory entry (index 1)
+                // export(0) + import(1) -> 2 entries -> 16 bytes
+                // tb_printf("opthdr: %d, data_dir_offset: %d\n", header.opthdr, data_dir_offset);
+                if (data_dir_offset != 0 && header.opthdr >= data_dir_offset + 16) {
+                    // seek to Import Directory (Index 1)
+                    // Data Directory Array starts at optional_header_start + data_dir_offset
+                    // Index 1 is at + 8 bytes (sizeof(IMAGE_DATA_DIRECTORY) * 1)
+                    if (tb_stream_seek(istream, base_offset + sizeof(xm_coff_header_t) + data_dir_offset + 8)) {
+                        if (tb_stream_bread(istream, (tb_byte_t*)&import_rva, 4)) {
+                            import_rva = tb_bits_le_to_ne_u32(import_rva);
+                            // tb_printf("import_rva: %x\n", import_rva);
+                        }
+                    }
+                }
+            }
+        }
+        // restore pos
+        tb_stream_seek(istream, saved_pos);
+    }
+
     tb_size_t result_count = 0;
     for (tb_uint16_t i = 0; i < header.nsects; i++) {
         xm_coff_section_t section;
@@ -63,20 +104,27 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
         }
 
         // check if it is .idata section (import directory table)
-        // section name is 8 bytes, null-padded if shorter, or starts with '/' for long names
-        // standard import section is named ".idata"
-        if (tb_strncmp(section.name, ".idata", 6) == 0) {
+        tb_bool_t found_idt = tb_false;
+        tb_uint32_t idt_offset = 0;
+        if (import_rva != 0) {
+            // check if import rva is in this section
+            if (import_rva >= section.vaddr && import_rva < section.vaddr + section.vsize) {
+                idt_offset = section.ofs + (import_rva - section.vaddr);
+                found_idt = tb_true;
+            }
+        } else {
+            // fallback to check section name
+            if (tb_strncmp(section.name, ".idata", 6) == 0) {
+                idt_offset = section.ofs;
+                found_idt = tb_true;
+            }
+        }
+
+        if (found_idt) {
             // read import directory table
             // The .idata section contains the Import Directory Table.
             // Each entry is 20 bytes (IMAGE_IMPORT_DESCRIPTOR).
             // The table ends with a null entry.
-
-            // The .idata section usually contains multiple parts.
-            // We need to parse the Import Directory Table which is typically at the beginning of the section data.
-            // However, the section data might be raw data at 'ofs'
-            
-            // The VirtualAddress (vaddr) in the section header is the RVA where the section is loaded.
-            // The PointerToRawData (ofs) is the file offset.
             
             // We need to iterate over IMAGE_IMPORT_DESCRIPTOR entries.
             // struct IMAGE_IMPORT_DESCRIPTOR {
@@ -87,14 +135,7 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
             //     DWORD   FirstThunk;         // RVA to IAT (if bound this IAT has actual addresses)
             // };
             
-            // We need to map RVA to file offset.
-            // RVA = vaddr + offset_in_section
-            // FileOffset = ofs + offset_in_section
-            // So, offset_in_section = RVA - vaddr
-            // FileOffset = ofs + (RVA - vaddr)
-            
-            tb_uint32_t import_descriptors_offset = section.ofs;
-            if (!tb_stream_seek(istream, base_offset + import_descriptors_offset)) {
+            if (!tb_stream_seek(istream, idt_offset)) {
                 return tb_false;
             }
 
@@ -115,6 +156,8 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
                 if (original_first_thunk == 0 && name_rva == 0) {
                     break;
                 }
+                
+                name_rva = tb_bits_le_to_ne_u32(name_rva);
 
                 if (name_rva != 0) {
                     // map RVA to file offset to read the name
@@ -155,7 +198,7 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
                     }
 
                     if (name_file_offset != 0) {
-                         if (tb_stream_seek(istream, base_offset + name_file_offset)) {
+                         if (tb_stream_seek(istream, name_file_offset)) {
                              tb_char_t dll_name[256];
                              tb_size_t pos = 0;
                              tb_byte_t c;

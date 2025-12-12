@@ -33,6 +33,7 @@
 #define XM_BINUTILS_FORMAT_ELF     2
 #define XM_BINUTILS_FORMAT_MACHO   3
 #define XM_BINUTILS_FORMAT_AR      4
+#define XM_BINUTILS_FORMAT_PE      5
 #define XM_BINUTILS_FORMAT_UNKNOWN 0
 
 /* COFF machine types (for format detection) */
@@ -91,6 +92,11 @@ static __tb_inline__ tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream)
         (p[6] == '>' || p[6] == '\n') &&
         (p[7] == '\n' || p[7] == '\r')) {
         return XM_BINUTILS_FORMAT_AR;
+    }
+
+    // check PE/DOS magic (0x5A4D 'M' 'Z')
+    if (p[0] == 'M' && p[1] == 'Z') {
+        return XM_BINUTILS_FORMAT_PE;
     }
 
     // check ELF magic (0x7f 'E' 'L' 'F')

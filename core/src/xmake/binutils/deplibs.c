@@ -91,11 +91,32 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
                  lua_pushfstring(lua, "deplibs: failed to parse COFF");
                  break;
             }
-        } else if (format == XM_BINUTILS_FORMAT_ELF) {
-            if (!xm_binutils_elf_deplibs(istream, 0, lua)) {
+        } else if (format == XM_BINUTILS_FORMAT_PE) {
+            // seek to e_lfanew
+            if (!tb_stream_seek(istream, 0x3c)) {
                  lua_pop(lua, 1); // pop table
                  lua_pushboolean(lua, tb_false);
-                 lua_pushfstring(lua, "deplibs: failed to parse ELF");
+                 lua_pushfstring(lua, "deplibs: failed to seek to e_lfanew");
+                 break;
+            }
+
+            // read e_lfanew
+            tb_uint32_t e_lfanew = 0;
+            if (!tb_stream_bread(istream, (tb_byte_t*)&e_lfanew, 4)) {
+                 lua_pop(lua, 1); // pop table
+                 lua_pushboolean(lua, tb_false);
+                 lua_pushfstring(lua, "deplibs: failed to read e_lfanew");
+                 break;
+            }
+
+            // e_lfanew is little endian
+            e_lfanew = tb_bits_le_to_ne_u32(e_lfanew);
+
+            // call coff deplibs with offset = e_lfanew + 4 (skip PE signature)
+            if (!xm_binutils_coff_deplibs(istream, e_lfanew + 4, lua)) {
+                 lua_pop(lua, 1); // pop table
+                 lua_pushboolean(lua, tb_false);
+                 lua_pushfstring(lua, "deplibs: failed to parse PE/COFF");
                  break;
             }
         } else if (format == XM_BINUTILS_FORMAT_MACHO) {
@@ -103,6 +124,13 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
                  lua_pop(lua, 1); // pop table
                  lua_pushboolean(lua, tb_false);
                  lua_pushfstring(lua, "deplibs: failed to parse Mach-O");
+                 break;
+            }
+        } else if (format == XM_BINUTILS_FORMAT_ELF) {
+            if (!xm_binutils_elf_deplibs(istream, 0, lua)) {
+                 lua_pop(lua, 1); // pop table
+                 lua_pushboolean(lua, tb_false);
+                 lua_pushfstring(lua, "deplibs: failed to parse ELF");
                  break;
             }
         } else {

@@ -34,6 +34,10 @@
 #define XM_COFF_MACHINE_ARM     0x01c0
 #define XM_COFF_MACHINE_ARM64   0xaa64
 
+/* PE Optional Header Magic */
+#define XM_PE32_MAGIC           0x10b
+#define XM_PE32P_MAGIC          0x20b
+
 // COFF section flags
 #define XM_COFF_SCN_CNT_CODE                0x20  // IMAGE_SCN_CNT_CODE
 #define XM_COFF_SCN_CNT_INITIALIZED_DATA     0x40  // IMAGE_SCN_CNT_INITIALIZED_DATA
