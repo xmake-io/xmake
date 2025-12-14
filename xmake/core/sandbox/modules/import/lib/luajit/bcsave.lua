@@ -24,6 +24,7 @@ local string    = require("base/string")
 local raise     = require("sandbox/modules/raise")
 
 if not xmake._LUAJIT then
+    print(debug.traceback())
     return
 end
 
