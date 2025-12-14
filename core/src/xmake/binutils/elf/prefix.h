@@ -60,6 +60,8 @@
 #define XM_ELF_DT_STRTAB         5
 #define XM_ELF_DT_STRSZ          10
 #define XM_ELF_DT_SONAME         14
+#define XM_ELF_DT_RPATH          15
+#define XM_ELF_DT_RUNPATH        29
 #define XM_ELF_DT_AUXILIARY      0x7ffffffd
 #define XM_ELF_DT_FILTER         0x7fffffff
 
