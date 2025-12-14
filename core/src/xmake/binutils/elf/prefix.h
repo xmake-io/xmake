@@ -277,17 +277,6 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_is_64bit(tb_char_t const *arch) {
  * readsyms inline implementation
  */
 
-/* read string from ELF string table
- *
- * @param istream       the input stream
- * @param strtab_offset the string table offset
- * @param offset        the string offset
- * @return              the string (static buffer, valid until next call)
- */
-static __tb_inline__ tb_bool_t xm_binutils_elf_read_string(tb_stream_ref_t istream, tb_uint64_t strtab_offset, tb_uint32_t offset, tb_char_t *name, tb_size_t name_size) {
-    return xm_binutils_read_string(istream, strtab_offset + offset, name, name_size);
-}
-
 /* get symbol type character (nm-style) from ELF symbol
  *
  * @param st_info  the symbol info byte

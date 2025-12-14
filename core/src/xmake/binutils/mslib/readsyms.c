@@ -331,7 +331,7 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
 
             if (!has_symbols) {
                 // check map
-                lua_pushinteger(lua, header_offset);
+                lua_pushinteger(lua, (lua_Integer)header_offset);
                 lua_rawget(lua, map_idx);
                 if (lua_istable(lua, -1)) {
                     // convert list of names to list of {name=..., type="global"}

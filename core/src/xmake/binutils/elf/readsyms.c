@@ -126,7 +126,7 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t bas
 
         // get symbol name
         tb_char_t name[256];
-        if (!xm_binutils_elf_read_string(istream, base_offset + strtab_section.sh_offset, sym.st_name, name, sizeof(name)) || !name[0]) {
+        if (!xm_binutils_read_string(istream, base_offset + strtab_section.sh_offset + sym.st_name, name, sizeof(name)) || !name[0]) {
             continue;
         }
 
@@ -253,7 +253,7 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, tb_hize_t bas
 
         // get symbol name
         tb_char_t name[256];
-        if (!xm_binutils_elf_read_string(istream, base_offset + strtab_section.sh_offset, sym.st_name, name, sizeof(name)) || !name[0]) {
+        if (!xm_binutils_read_string(istream, base_offset + strtab_section.sh_offset + sym.st_name, name, sizeof(name)) || !name[0]) {
             continue;
         }
 

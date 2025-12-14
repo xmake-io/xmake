@@ -173,7 +173,7 @@ static tb_bool_t xm_binutils_elf_deplibs_32(tb_stream_ref_t istream, tb_hize_t b
 
         if (dyn.d_tag == XM_ELF_DT_NEEDED || dyn.d_tag == XM_ELF_DT_SONAME || dyn.d_tag == XM_ELF_DT_AUXILIARY || dyn.d_tag == XM_ELF_DT_FILTER) {
              tb_char_t name[256];
-             if (xm_binutils_elf_read_string(istream, base_offset + strtab_offset, dyn.d_un.d_val, name, sizeof(name)) && name[0]) {
+             if (xm_binutils_read_string(istream, base_offset + strtab_offset + dyn.d_un.d_val, name, sizeof(name)) && name[0]) {
                  lua_pushinteger(lua, result_count + 1);
                  lua_pushstring(lua, name);
                  lua_settable(lua, -3);
@@ -324,7 +324,7 @@ static tb_bool_t xm_binutils_elf_deplibs_64(tb_stream_ref_t istream, tb_hize_t b
 
         if (dyn.d_tag == XM_ELF_DT_NEEDED || dyn.d_tag == XM_ELF_DT_SONAME || dyn.d_tag == XM_ELF_DT_AUXILIARY || dyn.d_tag == XM_ELF_DT_FILTER) {
              tb_char_t name[256];
-             if (xm_binutils_elf_read_string(istream, base_offset + strtab_offset, (tb_uint32_t)dyn.d_un.d_val, name, sizeof(name)) && name[0]) {
+             if (xm_binutils_read_string(istream, base_offset + strtab_offset + (tb_uint32_t)dyn.d_un.d_val, name, sizeof(name)) && name[0]) {
                  lua_pushinteger(lua, result_count + 1);
                  lua_pushstring(lua, name);
                  lua_settable(lua, -3);
