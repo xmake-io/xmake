@@ -100,7 +100,7 @@ tb_bool_t xm_binutils_macho_deplibs(tb_stream_ref_t istream, tb_hize_t base_offs
         tb_hize_t current_cmd_offset = tb_stream_offset(istream);
         
         if (!tb_stream_bread(istream, (tb_byte_t*)&lc, sizeof(lc))) {
-            break;
+            return tb_false;
         }
         xm_binutils_macho_swap_load_command(&lc, swap);
 

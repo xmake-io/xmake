@@ -99,11 +99,8 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
     
     if (!sections) {
         if (header.nsects > 0) return tb_false;
-        lua_newtable(lua);
         return tb_true;
     }
-
-    lua_newtable(lua);
     tb_size_t result_count = 0;
     for (tb_uint16_t i = 0; i < header.nsects; i++) {
         xm_coff_section_t* section = &sections[i];
@@ -143,7 +140,8 @@ tb_bool_t xm_binutils_coff_deplibs(tb_stream_ref_t istream, tb_hize_t base_offse
              */
 
             if (!tb_stream_seek(istream, idt_offset)) {
-                break;
+                if (sections) tb_free(sections);
+                return tb_false;
             }
 
             while (1) {
