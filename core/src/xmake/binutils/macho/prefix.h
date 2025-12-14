@@ -50,6 +50,10 @@
 #define XM_MACHO_LC_SEGMENT          0x1
 #define XM_MACHO_LC_SEGMENT_64       0x19
 #define XM_MACHO_LC_SYMTAB           0x2
+#define XM_MACHO_LC_LOAD_DYLIB       0xc
+#define XM_MACHO_LC_ID_DYLIB         0xd
+#define XM_MACHO_LC_LOAD_WEAK_DYLIB  (0x18 | 0x80000000)
+#define XM_MACHO_LC_REEXPORT_DYLIB   (0x1f | 0x80000000)
 #define XM_MACHO_LC_BUILD_VERSION    0x32
 
 #define XM_MACHO_PLATFORM_MACOS      1
