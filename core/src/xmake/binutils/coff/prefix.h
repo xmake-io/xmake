@@ -34,6 +34,10 @@
 #define XM_COFF_MACHINE_ARM     0x01c0
 #define XM_COFF_MACHINE_ARM64   0xaa64
 
+/* PE Optional Header Magic */
+#define XM_PE32_MAGIC           0x10b
+#define XM_PE32P_MAGIC          0x20b
+
 // COFF section flags
 #define XM_COFF_SCN_CNT_CODE                0x20  // IMAGE_SCN_CNT_CODE
 #define XM_COFF_SCN_CNT_INITIALIZED_DATA     0x40  // IMAGE_SCN_CNT_INITIALIZED_DATA
@@ -54,6 +58,86 @@ typedef struct __xm_coff_header_t {
     tb_uint16_t opthdr;
     tb_uint16_t flags;
 } __tb_packed__ xm_coff_header_t;
+
+typedef struct __xm_pe32_data_directory_t {
+    tb_uint32_t vaddr;
+    tb_uint32_t size;
+} __tb_packed__ xm_pe32_data_directory_t;
+
+typedef struct __xm_pe32_opt_header_t {
+    tb_uint16_t magic;
+    tb_uint8_t  major_linker_version;
+    tb_uint8_t  minor_linker_version;
+    tb_uint32_t size_of_code;
+    tb_uint32_t size_of_initialized_data;
+    tb_uint32_t size_of_uninitialized_data;
+    tb_uint32_t address_of_entry_point;
+    tb_uint32_t base_of_code;
+    tb_uint32_t base_of_data;
+    tb_uint32_t image_base;
+    tb_uint32_t section_alignment;
+    tb_uint32_t file_alignment;
+    tb_uint16_t major_operating_system_version;
+    tb_uint16_t minor_operating_system_version;
+    tb_uint16_t major_image_version;
+    tb_uint16_t minor_image_version;
+    tb_uint16_t major_subsystem_version;
+    tb_uint16_t minor_subsystem_version;
+    tb_uint32_t win32_version_value;
+    tb_uint32_t size_of_image;
+    tb_uint32_t size_of_headers;
+    tb_uint32_t checksum;
+    tb_uint16_t subsystem;
+    tb_uint16_t dll_characteristics;
+    tb_uint32_t size_of_stack_reserve;
+    tb_uint32_t size_of_stack_commit;
+    tb_uint32_t size_of_heap_reserve;
+    tb_uint32_t size_of_heap_commit;
+    tb_uint32_t loader_flags;
+    tb_uint32_t number_of_rva_and_sizes;
+    xm_pe32_data_directory_t data_directory[16];
+} __tb_packed__ xm_pe32_opt_header_t;
+
+typedef struct __xm_pe32p_opt_header_t {
+    tb_uint16_t magic;
+    tb_uint8_t  major_linker_version;
+    tb_uint8_t  minor_linker_version;
+    tb_uint32_t size_of_code;
+    tb_uint32_t size_of_initialized_data;
+    tb_uint32_t size_of_uninitialized_data;
+    tb_uint32_t address_of_entry_point;
+    tb_uint32_t base_of_code;
+    tb_uint64_t image_base;
+    tb_uint32_t section_alignment;
+    tb_uint32_t file_alignment;
+    tb_uint16_t major_operating_system_version;
+    tb_uint16_t minor_operating_system_version;
+    tb_uint16_t major_image_version;
+    tb_uint16_t minor_image_version;
+    tb_uint16_t major_subsystem_version;
+    tb_uint16_t minor_subsystem_version;
+    tb_uint32_t win32_version_value;
+    tb_uint32_t size_of_image;
+    tb_uint32_t size_of_headers;
+    tb_uint32_t checksum;
+    tb_uint16_t subsystem;
+    tb_uint16_t dll_characteristics;
+    tb_uint64_t size_of_stack_reserve;
+    tb_uint64_t size_of_stack_commit;
+    tb_uint64_t size_of_heap_reserve;
+    tb_uint64_t size_of_heap_commit;
+    tb_uint32_t loader_flags;
+    tb_uint32_t number_of_rva_and_sizes;
+    xm_pe32_data_directory_t data_directory[16];
+} __tb_packed__ xm_pe32p_opt_header_t;
+
+typedef struct __xm_coff_import_directory_table_t {
+    tb_uint32_t original_first_thunk; // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+    tb_uint32_t time_date_stamp;      // 0 if not bound, -1 if bound, and real date\time stamp in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND) O.W. date/time stamp of DLL bound to (Old BIND)
+    tb_uint32_t forwarder_chain;      // -1 if no forwarders
+    tb_uint32_t name_rva;             // RVA to name
+    tb_uint32_t first_thunk;          // RVA to IAT (if bound this IAT has actual addresses)
+} __tb_packed__ xm_coff_import_directory_table_t;
 
 typedef struct __xm_coff_import_header_t {
     tb_uint16_t sig1;     // 0
@@ -233,33 +317,9 @@ static __tb_inline__ tb_bool_t xm_binutils_coff_read_string(tb_stream_ref_t istr
         return tb_false;
     }
 
-    // seek to string position (offset is from start of string table, including size field)
-    // strtab_offset points to the start of string table (including 4-byte size field)
-    // offset is from the start of string table (including size field)
-    // So we use strtab_offset + offset directly
-    if (!tb_stream_seek(istream, strtab_offset + offset)) {
-        tb_stream_seek(istream, saved_pos);
-        return tb_false;
-    }
-
-    // read string
-    tb_size_t pos = 0;
-    tb_byte_t c;
-    while (pos < name_size - 1) {
-        if (!tb_stream_bread(istream, &c, 1)) {
-            tb_stream_seek(istream, saved_pos);
-            return tb_false;
-        }
-        if (c == 0) {
-            break;
-        }
-        name[pos++] = (tb_char_t)c;
-    }
-    name[pos] = '\0';
-
-    // restore position
+    // restore position and use common implementation
     tb_stream_seek(istream, saved_pos);
-    return tb_true;
+    return xm_binutils_read_string(istream, strtab_offset + offset, name, name_size);
 }
 
 /* get symbol name from COFF symbol entry

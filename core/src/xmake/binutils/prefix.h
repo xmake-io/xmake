@@ -33,6 +33,7 @@
 #define XM_BINUTILS_FORMAT_ELF     2
 #define XM_BINUTILS_FORMAT_MACHO   3
 #define XM_BINUTILS_FORMAT_AR      4
+#define XM_BINUTILS_FORMAT_PE      5
 #define XM_BINUTILS_FORMAT_UNKNOWN 0
 
 /* COFF machine types (for format detection) */
@@ -91,6 +92,11 @@ static __tb_inline__ tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream)
         (p[6] == '>' || p[6] == '\n') &&
         (p[7] == '\n' || p[7] == '\r')) {
         return XM_BINUTILS_FORMAT_AR;
+    }
+
+    // check PE/DOS magic (0x5A4D 'M' 'Z')
+    if (p[0] == 'M' && p[1] == 'Z') {
+        return XM_BINUTILS_FORMAT_PE;
     }
 
     // check ELF magic (0x7f 'E' 'L' 'F')
@@ -181,6 +187,95 @@ static __tb_inline__ void xm_binutils_sanitize_symbol_name(tb_char_t* name) {
             name[i] = '_';
         }
     }
+}
+
+/* read string from stream at specified offset
+ *
+ * @param istream    the input stream
+ * @param offset     the offset to read from
+ * @param name       the buffer to store the string
+ * @param name_size  the size of the buffer
+ *
+ * @return           tb_true on success, tb_false on failure
+ */
+static __tb_inline__ tb_bool_t xm_binutils_read_string(tb_stream_ref_t istream, tb_hize_t offset, tb_char_t *name, tb_size_t name_size) {
+    tb_assert_and_check_return_val(istream && name && name_size > 0, tb_false);
+
+    tb_hize_t saved_pos = tb_stream_offset(istream);
+    if (!tb_stream_seek(istream, offset)) {
+        return tb_false;
+    }
+
+    tb_size_t pos = 0;
+    tb_byte_t c;
+    while (pos < name_size - 1) {
+        if (!tb_stream_bread(istream, &c, 1)) {
+            tb_stream_seek(istream, saved_pos);
+            return tb_false;
+        }
+        if (c == 0) {
+            break;
+        }
+        name[pos++] = (tb_char_t)c;
+    }
+    name[pos] = '\0';
+
+    tb_stream_seek(istream, saved_pos);
+    return tb_true;
+}
+
+/* check if architecture is 64-bit
+ *
+ * @param arch    the architecture string
+ * @return        tb_true if 64-bit, tb_false otherwise
+ */
+static __tb_inline__ tb_bool_t xm_binutils_arch_is_64bit(tb_char_t const *arch) {
+    if (!arch) {
+        return tb_true;
+    }
+    // x86_64
+    if (tb_strcmp(arch, "x86_64") == 0 || tb_strcmp(arch, "x64") == 0) {
+        return tb_true;
+    }
+    // ARM64
+    else if (tb_strcmp(arch, "arm64") == 0 || tb_strcmp(arch, "aarch64") == 0 ||
+             tb_strcmp(arch, "arm64-v8a") == 0) {
+        return tb_true;
+    }
+    // MIPS64
+    else if (tb_strncmp(arch, "mips64", 6) == 0) {
+        return tb_true;
+    }
+    // PowerPC64
+    else if (tb_strncmp(arch, "ppc64", 5) == 0 || tb_strncmp(arch, "powerpc64", 9) == 0) {
+        return tb_true;
+    }
+    // RISC-V 64
+    else if (tb_strncmp(arch, "riscv64", 7) == 0 ||
+             (tb_strncmp(arch, "riscv", 5) == 0 && tb_strstr(arch, "64"))) {
+        return tb_true;
+    }
+    // SPARC64
+    else if (tb_strncmp(arch, "sparc64", 7) == 0) {
+        return tb_true;
+    }
+    // s390x
+    else if (tb_strcmp(arch, "s390x") == 0) {
+        return tb_true;
+    }
+    // LoongArch64
+    else if (tb_strncmp(arch, "loongarch64", 11) == 0) {
+        return tb_true;
+    }
+    // WebAssembly 64
+    else if (tb_strcmp(arch, "wasm64") == 0) {
+        return tb_true;
+    }
+    // IA-64
+    else if (tb_strcmp(arch, "ia64") == 0 || tb_strcmp(arch, "itanium") == 0) {
+        return tb_true;
+    }
+    return tb_false;
 }
 
 
