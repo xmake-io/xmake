@@ -26,6 +26,7 @@ local io = require("base/io")
 
 -- save metatable and builtin functions
 tty._term_mode = tty._term_mode or tty.term_mode
+tty._session_id = tty._session_id or tty.session_id
 
 -- @see https://www2.ccs.neu.edu/research/gpc/VonaUtils/vona/terminal/vtansi.htm
 -- http://www.termsys.demon.co.uk/vtansi.htm
@@ -536,6 +537,25 @@ function tty.term_mode(stdtype, newmode)
         end
     end
     return oldmode
+end
+
+-- get session id
+function tty.session_id()
+    local session_id = tty._SESSION_ID
+    if session_id == nil then
+        if tty._session_id then
+            local sid = tty._session_id()
+            if sid then
+                local hash = require("base/hash")
+                session_id = hash.strhash32(sid)
+            end
+        end
+        if not session_id then
+            session_id = "00000000"
+        end
+        tty._SESSION_ID = session_id
+    end
+    return session_id
 end
 
 -- return module
