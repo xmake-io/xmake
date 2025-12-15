@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.tty")
 import("core.base.option")
 import("core.base.task")
 import("core.base.hashset")
@@ -98,7 +99,7 @@ end
 
 -- enter the working project
 function _enter_project()
-    local workdir = path.join(os.tmpdir(), "xrepo", "working")
+    local workdir = path.join(os.tmpdir(), "xrepo", "working-" .. tty.session_id())
     if not os.isdir(workdir) then
         os.mkdir(workdir)
         os.cd(workdir)
