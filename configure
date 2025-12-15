@@ -4295,7 +4295,11 @@ _gmake_add_build_target() {
     # link target
     echo "${target}: ${targetfile}" >> "${xmake_sh_makefile}"
     echo "${targetfile}: ${depfiles}${objectfiles}" >> "${xmake_sh_makefile}"
-    print "\t@echo linking.${_target_mode} ${targetfile}" >> "${xmake_sh_makefile}"
+    if test_eq "${targetkind}" "static"; then
+        print "\t@echo archiving.${_target_mode} ${targetfile}" >> "${xmake_sh_makefile}"
+    else
+        print "\t@echo linking.${_target_mode} ${targetfile}" >> "${xmake_sh_makefile}"
+    fi
     case "${toolname}" in
         gcc) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         gxx) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
