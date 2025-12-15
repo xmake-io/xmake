@@ -55,6 +55,8 @@ jobs:
           RUN_PROBABILITY: ${{ vars.COSMOCC_RUN_PROBABILITY || '0.5' }}
 
   build:
+    needs: check
+    if: needs.check.outputs.should-run == 'true'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-15-intel]
