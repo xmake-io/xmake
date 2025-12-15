@@ -550,7 +550,10 @@ function tty.session_id()
                 session_id = hash.strhash32(sid)
             end
         end
-        tty._SESSION_ID = session_id or 0
+        if not session_id then
+            session_id = "00000000"
+        end
+        tty._SESSION_ID = session_id
     end
     return session_id
 end
