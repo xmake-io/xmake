@@ -49,6 +49,35 @@ function main(binarypath, outputpath, opt)
     -- do conversion
     binutils.bin2obj(binarypath, outputpath, opt)
 
+    -- generate concomitant object file for cosmocc
+    if opt.cosmocc then
+        local arch = opt.arch or "x86_64"
+        local arch_concomitant
+        local objectfile_concomitant
+        if arch == "x86_64" or arch == "x64" then
+            arch_concomitant = "aarch64"
+            objectfile_concomitant = path.join(path.directory(outputpath), ".aarch64", path.filename(outputpath))
+        elseif arch == "aarch64" or arch == "arm64" then
+            arch_concomitant = "x86_64"
+            objectfile_concomitant = path.join(path.directory(outputpath), ".x86_64", path.filename(outputpath))
+        end
+
+        if arch_concomitant and objectfile_concomitant then
+
+            -- clone options for concomitant
+            local opt_concomitant = table.clone(opt)
+            opt_concomitant.arch = arch_concomitant
+            opt_concomitant.cosmocc = false
+
+            -- trace
+            print("converting binary file %s to %s object file %s ..", binarypath, format or "coff", objectfile_concomitant)
+
+            -- do conversion
+            os.mkdir(path.directory(objectfile_concomitant))
+            binutils.bin2obj(binarypath, objectfile_concomitant, opt_concomitant)
+        end
+    end
+
     -- trace
     cprint("${bright}%s generated!", outputpath)
 end

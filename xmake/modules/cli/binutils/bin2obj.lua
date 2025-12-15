@@ -31,7 +31,8 @@ local options = {
     {'p', "plat",          "kv", nil,   "Set the target platform (macosx, iphoneos, etc.)."},
     {nil, "target_minver", "kv", nil,   "Set the target minimum version (e.g., 10.0, 18.2)."},
     {nil, "xcode_sdkver",  "kv", nil,   "Set the Xcode SDK version (e.g., 10.0, 18.2)."},
-    {nil, "zeroend",       "k",  nil,   "Append a null terminator ('\\0') at the end of data."}
+    {nil, "zeroend",       "k",  nil,   "Append a null terminator ('\\0') at the end of data."},
+    {nil, "cosmocc",       "k",  nil,   "Enable cosmocc support (generate concomitant object file)."}
 }
 
 function main(...)
