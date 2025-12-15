@@ -243,10 +243,12 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
     -- generate the dependent includes
     if dependinfo and outdata then
-        if depfile and os.isfile(depfile) then
-            dependinfo.depfiles_format = depfile_format
-            dependinfo.depfiles = io.readfile(depfile)
-            os.tryrm(depfile)
+        if depfile then
+            if os.isfile(depfile) then
+                dependinfo.depfiles_format = depfile_format
+                dependinfo.depfiles = io.readfile(depfile)
+                os.tryrm(depfile)
+            end
         elseif depfile_format == "cl" then
             dependinfo.depfiles_format = "cl"
             dependinfo.depfiles = outdata
