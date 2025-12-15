@@ -41,7 +41,11 @@ function _do_link_target(target, opt)
         if target:namespace() then
             filename = target:namespace() .. "::" .. filename
         end
-        progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", filename)
+        if target:is_static() then
+            progress.show(opt.progress, "${color.build.target}archiving.$(mode) %s", filename)
+        else
+            progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", filename)
+        end
 
         local targetfile = target:targetfile()
         local objectfiles = target:objectfiles()
