@@ -151,8 +151,9 @@ function _has_clang_mmd(self)
         if self:has_flags({"/clang:-MMD", "/clang:-MF", "/clang:" .. depfile}, "cxflags", {flagskey = "clang_mmd"}) then
             has_clang_mmd = true
         end
+        has_clang_mmd = has_clang_mmd or false
+        _g._HAS_CLANG_MMD = has_clang_mmd
         os.tryrm(depfile)
-        _g._HAS_CLANG_MMD = has_clang_mmd or false
     end
     return has_clang_mmd
 end
