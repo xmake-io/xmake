@@ -330,6 +330,7 @@ tb_int_t xm_libc_setbyte(lua_State *lua);
 
 // the tty functions
 tb_int_t xm_tty_term_mode(lua_State *lua);
+tb_int_t xm_tty_session_id(lua_State *lua);
 
 // the package functions
 tb_int_t xm_package_loadxmi(lua_State *lua);
@@ -649,6 +650,7 @@ static luaL_Reg const g_libc_functions[] = {
 // the tty functions
 static luaL_Reg const g_tty_functions[] = {
     { "term_mode", xm_tty_term_mode },
+    { "session_id", xm_tty_session_id },
     { tb_null, tb_null },
 };
 
