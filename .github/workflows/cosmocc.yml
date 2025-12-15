@@ -113,7 +113,6 @@ jobs:
         run: |
           ls -l core/build/
           cmake --version
-          c++ version
           core/build/xmake --version
           core/build/xmake lua -v -D tests/run.lua
 
