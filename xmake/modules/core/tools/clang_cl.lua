@@ -143,6 +143,21 @@ function nf_pcxxheader(self, pcheaderfile, opt)
     end
 end
 
+-- has /clang:-MMD -MF depfile?
+function _has_clang_mmd(self)
+    local has_clang_mmd = _g._HAS_CLANG_MMD
+    if has_clang_mmd == nil then
+        local depfile = os.tmpfile()
+        if self:has_flags({"/clang:-MMD", "/clang:-MF", "/clang:" .. depfile}, "cxflags", {flagskey = "clang_mmd"}) then
+            has_clang_mmd = true
+        end
+        has_clang_mmd = has_clang_mmd or false
+        _g._HAS_CLANG_MMD = has_clang_mmd
+        os.tryrm(depfile)
+    end
+    return has_clang_mmd
+end
+
 -- compile the source file
 function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
@@ -150,6 +165,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
+    local depfile
+    local depfile_format
     local outdata = try
     {
         function ()
@@ -157,7 +174,14 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             -- generate includes file
             local compflags = flags
             if dependinfo then
-                compflags = table.join(flags, "-showIncludes")
+                if _has_clang_mmd(self) then
+                    depfile = os.tmpfile()
+                    compflags = table.join(flags, "/clang:-MMD", "/clang:-MF", "/clang:" .. depfile)
+                    depfile_format = "gcc"
+                else
+                    compflags = table.join(flags, "-showIncludes")
+                    depfile_format = "cl"
+                end
             end
 
             -- has color diagnostics? enable it
@@ -176,6 +200,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
                 -- try removing the old object file for forcing to rebuild this source file
                 os.tryrm(objectfile)
+                if depfile then
+                    os.tryrm(depfile)
+                end
 
                 -- parse and strip errors
                 local lines = errors and tostring(errors):split('\n', {plain = true}) or {}
@@ -217,7 +244,15 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
     -- generate the dependent includes
     if dependinfo and outdata then
-        dependinfo.depfiles_format = "cl"
-        dependinfo.depfiles = outdata
+        if depfile then
+            if os.isfile(depfile) then
+                dependinfo.depfiles_format = depfile_format
+                dependinfo.depfiles = io.readfile(depfile)
+                os.tryrm(depfile)
+            end
+        elseif depfile_format == "cl" then
+            dependinfo.depfiles_format = "cl"
+            dependinfo.depfiles = outdata
+        end
     end
 end
