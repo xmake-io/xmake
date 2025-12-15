@@ -14,14 +14,13 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      Xmake Open Source Community
--- @file        xmake.lua
+-- @author      keosu
+-- @file        package.lua
 --
-
 import("core.tool.toolchain")
 
 function main(target)
-    local conf = target:extraconf("rules", "android.native_app") 
+    local conf = target:extraconf("rules", "android.native_app")
     local android_sdk_version = conf.android_sdk_version
     local android_manifest = conf.android_manifest
     local android_res = conf.android_res
@@ -32,66 +31,65 @@ function main(target)
     assert(android_sdk_version, "android sdk version not set")
     assert(android_manifest, "android manifest not set")
 
-    cprint("${green}[Android][Package]${white} Starting...")
+    cprint("${color.success}[Android][Package]${clear} Starting...")
 
     local tmp_path = path.join(target:targetdir(), "temp")
-    os.mkdir(tmp_path) 
-    os.mkdir(path.join(tmp_path, "lib")) 
+    os.mkdir(tmp_path)
+    os.mkdir(path.join(tmp_path, "lib"))
     os.mkdir(path.join(tmp_path, "lib", target:arch()))
 
     -- copy the target library to temp folder with name libmain.so
     local libfile = path.join(tmp_path, "lib", target:arch(), "libmain.so")
     os.cp(target:targetfile(), libfile)
 
-  
     -- get android tool path
     local android_sdkdir = target:toolchain("ndk"):config("android_sdk")
     local android_build_toolver = target:toolchain("ndk"):config("build_toolver")
     local sdk_tool_path = path.join(android_sdkdir, "build-tools", android_build_toolver)
 
-    local aapt = path.join(sdk_tool_path, "aapt" .. (is_host("windows") and ".exe" or ""))    
+    local aapt = path.join(sdk_tool_path, "aapt" .. (is_host("windows") and ".exe" or ""))
     local zipalign = path.join(sdk_tool_path, "zipalign" .. (is_host("windows") and ".exe" or ""))
     local apksigner = path.join(sdk_tool_path, "apksigner" .. (is_host("windows") and ".bat" or ""))
 
     -- pack resources 
-    local resonly_apk = path.join(tmp_path, "res_only.apk")    
+    local resonly_apk = path.join(tmp_path, "res_only.apk")
     local androidjar = path.join(android_sdkdir, "platforms", string.format("android-%s", android_sdk_version),
         "android.jar")
     assert(os.exists(androidjar), "%s not found", androidjar)
     local aapt_argv = {"package", "-f", "-M", android_manifest, "-I", androidjar, "-F", resonly_apk}
 
-    if android_res ~= nil and os.exists(android_res) then
+    if android_res and not os.emptydir(android_res) then
         table.insert(aapt_argv, "-S")
         table.insert(aapt_argv, android_res)
     end
 
-    if android_assets ~= nil and os.exists(android_assets) and os.emptydir(android_assets) == false then
+    if android_assets and not os.emptydir(android_assets) then
         table.insert(aapt_argv, "-A")
         table.insert(aapt_argv, android_assets)
     end
 
-    cprint("${green}[Android][Packing resources]${white} Create a resource only apk...")
+    cprint("${color.success}[Android][Packing resources]${clear} Create a resource only apk...")
     os.vrunv(aapt, aapt_argv)
 
     -- pack libs
-    cprint("${green}[Android][Packing library]${white} Adding library to res_only.apk...")
+    cprint("${color.success}[Android][Packing library]${clear} Adding library to res_only.apk...")
     os.vrunv(aapt, {"add", "res_only.apk", "lib/" .. target:arch() .."/libmain.so"},  {curdir = tmp_path})
 
     -- align apk
-    local aligned_apk = path.join(tmp_path, "unsigned.apk") 
+    local aligned_apk = path.join(tmp_path, "unsigned.apk")
     local zipalign_argv = {"-f", "4", "res_only.apk", "unsigned.apk"}
 
-    cprint("${green}[Android][Align apk]${white} Save to " .. aligned_apk .. "...")
-    os.vrunv(zipalign, zipalign_argv,  {curdir = tmp_path})
+    cprint("${color.success}[Android][Align apk]${clear} Save to " .. aligned_apk .. "...")
+    os.vrunv(zipalign, zipalign_argv, {curdir = tmp_path})
 
     -- sign apk
     local final_apk = path.join(target:targetdir(), target:basename() .. ".apk")
 
     local apksigner_argv = {"sign", "--ks", keystore, "--ks-pass", string.format("pass:%s", keystore_pass), "--out",
                             final_apk, "--in", aligned_apk}
-    cprint("${green}[Android][Signing apk]${white} Save to " .. final_apk .. "...")
+    cprint("${color.success}[Android][Signing apk]${clear} Save to " .. final_apk .. "...")
     os.vrunv(apksigner, apksigner_argv)
 
-    cprint("${green}[Android][Package]${white} Done!")
-    
+    cprint("${color.success}[Android][Package]${clear} Done!")
+
 end

@@ -14,11 +14,9 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      Xmake Open Source Community
--- @file        xmake.lua
+-- @author      keosu
+-- @file        load.lua
 --
-
-import("core.tool.toolchain")
 
 -- main entry
 function main (target)
@@ -30,10 +28,8 @@ function main (target)
         raise("NDK path not set! Please set NDK path properly.")
     end
 
-    local native_app_glue_file = path.join(ndk_root, "sources", "android", "native_app_glue", "android_native_app_glue.c")
-
     -- Add glue file to target
-    local conf = target:extraconf("rules", "android.native_app")
+    local native_app_glue_file = path.join(ndk_root, "sources", "android", "native_app_glue", "android_native_app_glue.c")
     target:add("files", native_app_glue_file)
     target:add("includedirs", native_app_glue_path)
 

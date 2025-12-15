@@ -14,8 +14,8 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      Xmake Open Source Community
--- @file        xmake.lua
+-- @author      keosu
+-- @file        run.lua
 --
 
 function main(target)
@@ -29,7 +29,7 @@ function main(target)
 
     local run_argv = {"shell", "am", "start", "-n", package_name .. "/" .. activity_name}
 
-    cprint("${green}[Android] Starting app ...")
+    cprint("${color.success}[Android] Starting app ...")
     os.vrunv(adb, run_argv)
 
 end

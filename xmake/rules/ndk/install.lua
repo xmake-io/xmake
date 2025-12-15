@@ -14,8 +14,8 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      Xmake Open Source Community
--- @file        xmake.lua
+-- @author      keosu
+-- @file        install.lua
 --
 
 function main(target)
@@ -26,9 +26,9 @@ function main(target)
     local final_apk = path.join(target:targetdir(), target:basename() .. ".apk")
     assert(os.exists(final_apk)) 
 
-    cprint("${green}[Android][Install] try to install apk ...")
+    cprint("${color.success}[Android][Install] try to install apk ...")
     os.vrunv(adb, {"install", final_apk})
 
-    cprint("${green}[Android][Install] done.")
+    cprint("${color.success}[Android][Install] done.")
 
 end

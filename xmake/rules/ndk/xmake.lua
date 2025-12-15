@@ -14,20 +14,23 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      Xmake Open Source Community
+-- @author      keosu
 -- @file        xmake.lua
 --
 
 -- define rule: build android native app with NDK
 rule("android.native_app")
-    -- we must set_kind and add some glue files to target 
-    on_load("load")
+    -- this rule only for android target
+    if is_plat("android") then
+        -- we must set_kind and add some glue files to target 
+        on_load("load")
 
-    -- generate android apk package
-    on_package("package")
+        -- generate android apk package
+        on_package("package")
 
-    -- install android package with adb
-    on_install("install") 
+        -- install android package with adb
+        on_install("install") 
 
-    -- run android app through adb
-    after_install("run")
+        -- run android app through adb
+        after_install("run")
+    end
