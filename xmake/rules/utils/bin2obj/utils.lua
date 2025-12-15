@@ -82,8 +82,6 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
     local arch = target:arch()
     local plat = target:plat()
 
-
-
     -- get target_minver and xcode_sdkver from xcode toolchain (if available)
     local target_minver = nil
     local xcode_sdkver = nil
