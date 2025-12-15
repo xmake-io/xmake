@@ -102,15 +102,9 @@ jobs:
           sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev
           clang --version
 
-      - name: Prepare (macOS)
-        if: matrix.os == 'macos-13'
-        run: |
-          brew install dmd
-          brew install dub
-
       # In the tests, cmake tries to use make from the cosmopolitan toolchain and fails, so uninstall it
       - name: Remove cosmocc
-        if: matrix.os == 'macos-13'
+        if: startsWith(matrix.os, 'macos')
         run: |
           INSTALL_DIR="${{runner.temp}}/cosmocc-4.0.2"
           echo "Removing cosmocc from PATH"
@@ -120,6 +114,7 @@ jobs:
       - name: Tests
         run: |
           ls -l core/build/
+          cmake --version
           core/build/xmake --version
           core/build/xmake lua -v -D tests/run.lua
 

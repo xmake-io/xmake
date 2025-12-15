@@ -36,10 +36,15 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
     local rulename = opt.rulename or "utils.bin2obj"
     local progress = opt.progress
 
+    -- check for cosmocc toolchain
+    local is_cosmocc = target:toolchain("cosmocc") or (target:has_tool("cc", "cosmocc") and target:has_tool("ar", "cosmoar"))
+
     -- get format (default: auto-detect from platform)
     local format = opt.format or target:extraconf("rules", rulename, "format")
     if not format then
-        if target:is_plat("windows", "mingw", "msys", "cygwin") then
+        if is_cosmocc then
+            format = "elf"
+        elseif target:is_plat("windows", "mingw", "msys", "cygwin") then
             format = "coff"
         elseif target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
             format = "macho"
@@ -107,6 +112,9 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
     end
     if zeroend then
         table.insert(argv, "--zeroend")
+    end
+    if is_cosmocc then
+        table.insert(argv, "--cosmocc")
     end
     batchcmds:vlua("cli.binutils.bin2obj", argv)
 
