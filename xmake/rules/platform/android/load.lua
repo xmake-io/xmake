@@ -37,8 +37,15 @@ function main(target)
     target:set("kind", "shared")
 
     -- add glue file to target
-    local native_app_glue_file = path.join(ndk_root, "sources", "android", "native_app_glue", "android_native_app_glue.c")
-    local native_app_glue_dir = path.directory(native_app_glue_file)
-    target:add("files", native_app_glue_file)
-    target:add("includedirs", native_app_glue_dir)
+    local extraconf = target:extraconf("rules", "android.native_app")
+    local native_app_glue = true
+    if extraconf and extraconf.native_app_glue ~= nil then
+        native_app_glue = extraconf.native_app_glue
+    end
+    if native_app_glue then
+        local native_app_glue_file = path.join(ndk_root, "sources", "android", "native_app_glue", "android_native_app_glue.c")
+        local native_app_glue_dir = path.directory(native_app_glue_file)
+        target:add("files", native_app_glue_file)
+        target:add("includedirs", native_app_glue_dir)
+    end
 end
