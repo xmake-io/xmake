@@ -1,25 +1,23 @@
-#include "android_native_app_glue.h"
-#include <android/log.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <jni.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/resource.h>
+#include <android/log.h>
+#include <stdlib.h>
+#include "android_native_app_glue.h"
 
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "raydemo_custom_glue", __VA_ARGS__))
 #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "raydemo_custom_glue", __VA_ARGS__))
-
-/* For debug builds, always enable the debug traces in this library */
-#ifndef NDEBUG
-#  define LOGV(...)  ((void)__android_log_print(ANDROID_LOG_VERBOSE, "raydemo_custom_glue", __VA_ARGS__))
-#else
-#  define LOGV(...)  ((void)0)
-#endif
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "raydemo_custom_glue", __VA_ARGS__))
+#define LOGV(...) ((void)__android_log_print(ANDROID_LOG_VERBOSE, "raydemo_custom_glue", __VA_ARGS__))
 
 static void free_saved_state(struct android_app* android_app) {
     pthread_mutex_lock(&android_app->mutex);
-    if (android_app->stateSaved) {
-        android_app->stateSaved = 0;
-        pthread_cond_broadcast(&android_app->cond);
+    if (android_app->savedState != NULL) {
+        free(android_app->savedState);
+        android_app->savedState = NULL;
+        android_app->savedStateSize = 0;
     }
     pthread_mutex_unlock(&android_app->mutex);
 }
@@ -33,8 +31,9 @@ int8_t android_app_read_cmd(struct android_app* android_app) {
                 break;
         }
         return cmd;
+    } else {
+        LOGE("No data on command pipe!");
     }
-    LOGE("No data on command pipe!");
     return -1;
 }
 
@@ -42,9 +41,9 @@ static void print_cur_config(struct android_app* android_app) {
     char lang[2], country[2];
     AConfiguration_getLanguage(android_app->config, lang);
     AConfiguration_getCountry(android_app->config, country);
-
+    
     LOGV("Config: mcc=%d mnc=%d lang=%c%c cnt=%c%c orien=%d touch=%d dens=%d "
-            "keys=%d nav=%d keyshid=%d navhid=%d sdk=%d size=%d long=%d "
+            "keys=%d nav=%d keysHid=%d navHid=%d sdk=%d size=%d long=%d "
             "modetype=%d modenight=%d",
             AConfiguration_getMcc(android_app->config),
             AConfiguration_getMnc(android_app->config),
