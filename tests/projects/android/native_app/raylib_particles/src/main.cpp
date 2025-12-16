@@ -70,8 +70,16 @@ int main(int argc, char** argv) {
             DrawCircleV(p.position, p.size, Fade(p.color, p.life));
         }
         
-        DrawText("Touch to create particles!", 10, 40, 20, WHITE);
-        DrawFPS(10, 10);
+        // Draw FPS
+        const char* fpsText = TextFormat("%2i FPS", GetFPS());
+        int fpsWidth = MeasureText(fpsText, 40);
+        DrawText(fpsText, GetScreenWidth() / 2 - fpsWidth / 2, 30, 40, GREEN);
+
+        // Draw centered instructions
+        int fontSize = 40;
+        const char* text = "Touch to create particles!";
+        int textWidth = MeasureText(text, fontSize);
+        DrawText(text, GetScreenWidth() / 2 - textWidth / 2, 80, fontSize, WHITE);
 
         EndDrawing();
     }

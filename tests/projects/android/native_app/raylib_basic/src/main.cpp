@@ -12,7 +12,18 @@ int main(int argc, char** argv) {
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawText("Hello, xmake for raylib android!", 250, 250, 25, BLUE);
+
+        // Draw FPS
+        const char* fpsText = TextFormat("%2i FPS", GetFPS());
+        int fpsWidth = MeasureText(fpsText, 40);
+        DrawText(fpsText, GetScreenWidth() / 2 - fpsWidth / 2, 30, 40, GREEN);
+
+        // Draw centered text
+        int fontSize = 50;
+        const char* text = "Hello, xmake for raylib android!";
+        int textWidth = MeasureText(text, fontSize);
+        DrawText(text, GetScreenWidth() / 2 - textWidth / 2, 100, fontSize, BLUE);
+
         EndDrawing();
     }
 
