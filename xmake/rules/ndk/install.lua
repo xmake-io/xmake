@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("run", {alias = "run_app"})
 
 -- main entry
 function main(target)
@@ -33,7 +32,4 @@ function main(target)
     cprint("installing %s ...", final_apk)
     os.vrunv(adb, {"install", "-r", final_apk})
     cprint("install ok")
-
-    -- run it
-    run_app(target)
 end

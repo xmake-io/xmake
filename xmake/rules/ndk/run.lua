@@ -20,9 +20,13 @@
 
 -- imports
 import("core.base.tty")
+import("install", {alias = "install_app"})
 
 -- main entry
 function main(target)
+
+    -- install it first
+    install_app(target)
 
     local conf = target:extraconf("rules", "android.native_app")
     local package_name = conf.package_name
