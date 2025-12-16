@@ -19,6 +19,21 @@
 --
 
 -- define rule: build android native app with NDK
+--
+-- @code
+-- target("test")
+--     set_kind("binary")
+--     add_rules("android.native_app", {
+--        android_sdk_version = "35",
+--        android_manifest = "android/AndroidManifest.xml",
+--        android_res = "android/res",
+--        android_assets = "android/assets",
+--        keystore = "android/debug.jks",
+--        keystore_pass = "123456",
+--        package_name = "com.raylib.demo"
+--     })
+-- @endcode
+--
 rule("android.native_app")
 
     -- we must set_kind and add some glue files to target
@@ -30,5 +45,8 @@ rule("android.native_app")
     -- install android package with adb
     on_install("install")
 
+    -- uninstall android package with adb
+    on_uninstall("uninstall")
+
     -- run android app through adb
-    after_install("run")
+    on_run("run")

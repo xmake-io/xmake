@@ -35,8 +35,6 @@ function main(target)
     assert(android_sdk_version, "android sdk version not set")
     assert(android_manifest, "android manifest not set")
 
-    cprint("${color.success}[Android][Package]${clear} Starting...")
-
     local tmp_path = path.join(target:targetdir(), "temp")
     os.mkdir(tmp_path)
     os.mkdir(path.join(tmp_path, "lib"))
@@ -72,18 +70,18 @@ function main(target)
         table.insert(aapt_argv, android_assets)
     end
 
-    cprint("${color.success}[Android][Packing resources]${clear} Create a resource only apk...")
+    cprint("packing resources ...")
     os.vrunv(aapt, aapt_argv)
 
     -- pack libs
-    cprint("${color.success}[Android][Packing library]${clear} Adding library to res_only.apk...")
+    cprint("packing library ...")
     os.vrunv(aapt, {"add", "res_only.apk", "lib/" .. target:arch() .."/libmain.so"},  {curdir = tmp_path})
 
     -- align apk
     local aligned_apk = path.join(tmp_path, "unsigned.apk")
     local zipalign_argv = {"-f", "4", "res_only.apk", "unsigned.apk"}
 
-    cprint("${color.success}[Android][Align apk]${clear} Save to " .. aligned_apk .. "...")
+    cprint("aligning apk ...")
     os.vrunv(zipalign, zipalign_argv, {curdir = tmp_path})
 
     -- sign apk
@@ -91,8 +89,7 @@ function main(target)
 
     local apksigner_argv = {"sign", "--ks", keystore, "--ks-pass", string.format("pass:%s", keystore_pass), "--out",
                             final_apk, "--in", aligned_apk}
-    cprint("${color.success}[Android][Signing apk]${clear} Save to " .. final_apk .. "...")
+    cprint("packing %s ...", final_apk)
     os.vrunv(apksigner, apksigner_argv)
-
-    cprint("${color.success}[Android][Package]${clear} Done!")
+    cprint("pack ok")
 end

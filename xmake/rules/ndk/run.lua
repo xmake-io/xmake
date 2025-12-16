@@ -30,6 +30,6 @@ function main(target)
 
     local run_argv = {"shell", "am", "start", "-n", package_name .. "/" .. activity_name}
 
-    cprint("${color.success}[Android] Starting app ...")
+    cprint("running %s ...", package_name)
     os.vrunv(adb, run_argv)
 end

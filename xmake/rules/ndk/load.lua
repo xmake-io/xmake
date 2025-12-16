@@ -34,11 +34,11 @@ function main(target)
         raise("NDK path not set! Please set NDK path properly.")
     end
 
+    target:set("kind", "shared")
+
     -- add glue file to target
     local native_app_glue_file = path.join(ndk_root, "sources", "android", "native_app_glue", "android_native_app_glue.c")
     local native_app_glue_dir = path.directory(native_app_glue_file)
     target:add("files", native_app_glue_file)
     target:add("includedirs", native_app_glue_dir)
-
-    target:set("kind", "shared")
 end

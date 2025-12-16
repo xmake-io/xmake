@@ -15,25 +15,19 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      keosu
--- @file        install.lua
+-- @file        uninstall.lua
 --
-
--- imports
-import("run", {alias = "run_app"})
 
 -- main entry
 function main(target)
 
+    local conf = target:extraconf("rules", "android.native_app")
+    local package_name = conf.package_name
+
     local android_sdkdir = target:toolchain("ndk"):config("android_sdk")
     local adb = path.join(android_sdkdir, "platform-tools", "adb")
 
-    local final_apk = path.join(target:targetdir(), target:basename() .. ".apk")
-    assert(os.exists(final_apk))
-
-    cprint("installing %s ...", final_apk)
-    os.vrunv(adb, {"install", final_apk})
-    cprint("install ok")
-
-    -- run it
-    run_app(target)
+    cprint("uninstalling %s ...", package_name)
+    os.vrunv(adb, {"uninstall", package_name})
+    cprint("uninstall ok")
 end
