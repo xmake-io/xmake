@@ -1,4 +1,4 @@
--- !A cross-platform build utility based on Lua
+--!A cross-platform build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@
 -- @file        run.lua
 --
 
+-- main entry
 function main(target)
 
-    local conf = target:extraconf("rules", "android.native_app") 
+    local conf = target:extraconf("rules", "android.native_app")
     local package_name = conf.package_name
     local activity_name = conf.activity_name or "android.app.NativeActivity"
 
@@ -31,5 +32,4 @@ function main(target)
 
     cprint("${color.success}[Android] Starting app ...")
     os.vrunv(adb, run_argv)
-
 end

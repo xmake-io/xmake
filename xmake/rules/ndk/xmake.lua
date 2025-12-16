@@ -20,17 +20,15 @@
 
 -- define rule: build android native app with NDK
 rule("android.native_app")
-    -- this rule only for android target
-    if is_plat("android") then
-        -- we must set_kind and add some glue files to target 
-        on_load("load")
 
-        -- generate android apk package
-        on_package("package")
+    -- we must set_kind and add some glue files to target
+    on_load("load")
 
-        -- install android package with adb
-        on_install("install") 
+    -- generate android apk package
+    on_package("package")
 
-        -- run android app through adb
-        after_install("run")
-    end
+    -- install android package with adb
+    on_install("install")
+
+    -- run android app through adb
+    after_install("run")

@@ -1,4 +1,4 @@
--- !A cross-platform build utility based on Lua
+--!A cross-platform build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -17,9 +17,13 @@
 -- @author      keosu
 -- @file        package.lua
 --
+
+-- imports
 import("core.tool.toolchain")
 
+-- main entry
 function main(target)
+
     local conf = target:extraconf("rules", "android.native_app")
     local android_sdk_version = conf.android_sdk_version
     local android_manifest = conf.android_manifest
@@ -51,7 +55,7 @@ function main(target)
     local zipalign = path.join(sdk_tool_path, "zipalign" .. (is_host("windows") and ".exe" or ""))
     local apksigner = path.join(sdk_tool_path, "apksigner" .. (is_host("windows") and ".bat" or ""))
 
-    -- pack resources 
+    -- pack resources
     local resonly_apk = path.join(tmp_path, "res_only.apk")
     local androidjar = path.join(android_sdkdir, "platforms", string.format("android-%s", android_sdk_version),
         "android.jar")
@@ -91,5 +95,4 @@ function main(target)
     os.vrunv(apksigner, apksigner_argv)
 
     cprint("${color.success}[Android][Package]${clear} Done!")
-
 end

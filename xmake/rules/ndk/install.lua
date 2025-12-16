@@ -1,4 +1,4 @@
--- !A cross-platform build utility based on Lua
+--!A cross-platform build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -18,17 +18,17 @@
 -- @file        install.lua
 --
 
+-- main entry
 function main(target)
 
     local android_sdkdir = target:toolchain("ndk"):config("android_sdk")
     local adb = path.join(android_sdkdir, "platform-tools", "adb")
 
     local final_apk = path.join(target:targetdir(), target:basename() .. ".apk")
-    assert(os.exists(final_apk)) 
+    assert(os.exists(final_apk))
 
     cprint("${color.success}[Android][Install] try to install apk ...")
     os.vrunv(adb, {"install", final_apk})
 
     cprint("${color.success}[Android][Install] done.")
-
 end

@@ -1,4 +1,4 @@
--- !A cross-platform build utility based on Lua
+--!A cross-platform build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -19,20 +19,26 @@
 --
 
 -- main entry
-function main (target)
+function main(target)
+
+    -- only for android target
+    if not target:is_plat("android") then
+        wprint("rule(android.native_app): only for android system!")
+        target:rule_enable("android.native_app", false)
+        return
+    end
 
     local toolchain_ndk = target:toolchain("ndk")
-
     local ndk_root = toolchain_ndk:config("ndk")
     if not ndk_root then
         raise("NDK path not set! Please set NDK path properly.")
     end
 
-    -- Add glue file to target
+    -- add glue file to target
     local native_app_glue_file = path.join(ndk_root, "sources", "android", "native_app_glue", "android_native_app_glue.c")
+    local native_app_glue_dir = path.directory(native_app_glue_file)
     target:add("files", native_app_glue_file)
-    target:add("includedirs", native_app_glue_path)
+    target:add("includedirs", native_app_glue_dir)
 
     target:set("kind", "shared")
-
 end
