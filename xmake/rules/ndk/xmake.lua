@@ -40,7 +40,7 @@ rule("android.native_app")
     on_load("load")
 
     -- generate android apk package
-    on_package("package")
+    after_build("package")
 
     -- install android package with adb
     on_install("install")

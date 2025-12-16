@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.tool.toolchain")
 import("run", {alias = "run_app"})
 
 -- main entry
@@ -28,10 +29,10 @@ function main(target)
     local adb = path.join(android_sdkdir, "platform-tools", "adb")
 
     local final_apk = path.join(target:targetdir(), target:basename() .. ".apk")
-    assert(os.exists(final_apk))
+    assert(os.isfile(final_apk), "apk file %s not found!", final_apk)
 
     cprint("installing %s ...", final_apk)
-    os.vrunv(adb, {"install", final_apk})
+    os.vrunv(adb, {"install", "-r", final_apk})
     cprint("install ok")
 
     -- run it

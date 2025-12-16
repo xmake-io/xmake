@@ -20,9 +20,10 @@
 
 -- imports
 import("core.tool.toolchain")
+import("utils.progress")
 
 -- main entry
-function main(target)
+function main(target, opt)
 
     local conf = target:extraconf("rules", "android.native_app")
     local android_sdk_version = conf.android_sdk_version
@@ -34,6 +35,9 @@ function main(target)
 
     assert(android_sdk_version, "android sdk version not set")
     assert(android_manifest, "android manifest not set")
+
+    local final_apk = path.join(target:targetdir(), target:basename() .. ".apk")
+    progress.show(opt.progress, "${color.build.target}packing.apk %s", final_apk)
 
     local tmp_path = path.join(target:targetdir(), "temp")
     os.mkdir(tmp_path)
@@ -70,26 +74,19 @@ function main(target)
         table.insert(aapt_argv, android_assets)
     end
 
-    cprint("packing resources ...")
     os.vrunv(aapt, aapt_argv)
 
     -- pack libs
-    cprint("packing library ...")
     os.vrunv(aapt, {"add", "res_only.apk", "lib/" .. target:arch() .."/libmain.so"},  {curdir = tmp_path})
 
     -- align apk
     local aligned_apk = path.join(tmp_path, "unsigned.apk")
     local zipalign_argv = {"-f", "4", "res_only.apk", "unsigned.apk"}
 
-    cprint("aligning apk ...")
     os.vrunv(zipalign, zipalign_argv, {curdir = tmp_path})
 
     -- sign apk
-    local final_apk = path.join(target:targetdir(), target:basename() .. ".apk")
-
     local apksigner_argv = {"sign", "--ks", keystore, "--ks-pass", string.format("pass:%s", keystore_pass), "--out",
                             final_apk, "--in", aligned_apk}
-    cprint("packing %s ...", final_apk)
     os.vrunv(apksigner, apksigner_argv)
-    cprint("pack ok")
 end
