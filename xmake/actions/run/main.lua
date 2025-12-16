@@ -145,6 +145,18 @@ function _run(target)
     os.setenvs(oldenvs)
 end
 
+-- check if the target is runnable
+function _is_runnable(target)
+    if target:is_binary() or target:script("run") then
+        return true
+    end
+    for _, r in ipairs(target:orderules()) do
+        if r:script("run") then
+            return true
+        end
+    end
+end
+
 -- check targets
 function _check_targets(targetname, group_pattern)
 
@@ -155,7 +167,7 @@ function _check_targets(targetname, group_pattern)
         table.insert(targets, target)
     else
         for _, target in ipairs(project.ordertargets()) do
-            if target:is_binary() or target:script("run") then
+            if _is_runnable(target) then
                 local group = target:get("group")
                 if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
                     table.insert(targets, target)
@@ -216,7 +228,7 @@ function main()
     else
         local targets = {}
         for _, target in ipairs(project.ordertargets()) do
-            if target:is_binary() or target:script("run") then
+            if _is_runnable(target) then
                 local group = target:get("group")
                 if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
                     table.insert(targets, target)
