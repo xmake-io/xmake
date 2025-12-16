@@ -10,9 +10,12 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 
 static lv_display_t * display = NULL;
+static lv_indev_t * indev = NULL;
+static void * disp_buf = NULL;
 static ANativeWindow * native_window = NULL;
 static int32_t window_width = 0;
 static int32_t window_height = 0;
+static lv_obj_t * label_fps = NULL;
 
 static bool touch_down = false;
 static int32_t touch_x = 0;
@@ -60,7 +63,7 @@ static void create_ui(void) {
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 50);
 
     // FPS label
-    lv_obj_t * label_fps = lv_label_create(lv_screen_active());
+    label_fps = lv_label_create(lv_screen_active());
     lv_label_set_text(label_fps, "FPS: 0");
     lv_obj_set_style_text_font(label_fps, &lv_font_montserrat_14, 0);
     lv_obj_align(label_fps, LV_ALIGN_TOP_MID, 0, 100);
@@ -81,10 +84,10 @@ static void handle_cmd(struct android_app* app, int32_t cmd) {
                 lv_display_set_flush_cb(display, my_flush_cb);
 
                 size_t buf_size = window_width * window_height * 4;
-                void * buf = malloc(buf_size);
-                lv_display_set_buffers(display, buf, NULL, buf_size, LV_DISPLAY_RENDER_MODE_FULL);
+                disp_buf = malloc(buf_size);
+                lv_display_set_buffers(display, disp_buf, NULL, buf_size, LV_DISPLAY_RENDER_MODE_FULL);
 
-                lv_indev_t * indev = lv_indev_create();
+                indev = lv_indev_create();
                 lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
                 lv_indev_set_read_cb(indev, my_input_read);
 
@@ -96,6 +99,20 @@ static void handle_cmd(struct android_app* app, int32_t cmd) {
             break;
         case APP_CMD_TERM_WINDOW:
             native_window = NULL;
+            break;
+        case APP_CMD_DESTROY:
+            if (display) {
+                lv_display_delete(display);
+                display = NULL;
+            }
+            if (indev) {
+                lv_indev_delete(indev);
+                indev = NULL;
+            }
+            if (disp_buf) {
+                free(disp_buf);
+                disp_buf = NULL;
+            }
             break;
     }
 }
@@ -142,7 +159,6 @@ void android_main(struct android_app* app) {
         frame_count++;
         time_t current_time = time(NULL);
         if (current_time - last_time >= 1) {
-             lv_obj_t * label_fps = lv_obj_get_child(lv_screen_active(), 1); // 0: label, 1: fps
              if (label_fps) {
                  lv_label_set_text_fmt(label_fps, "FPS: %d", frame_count);
              }
