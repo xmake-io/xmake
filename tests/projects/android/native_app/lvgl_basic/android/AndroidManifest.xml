@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+          xmlns:tools="http://schemas.android.com/tools"
+    package="com.lvgl.basic"
+		  
+	android:versionCode="15"
+    android:versionName="1.5">
+	
+	<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="30" />
+	
+	<uses-permission android:name="android.permission.SET_RELEASE_APP"/>
+
+    <application 
+        android:label="LvglBasic" android:debuggable="true" android:hasCode="false"          
+        tools:replace="android:icon,android:theme,android:allowBackup,label" 
+        android:icon="@mipmap/icon">
+
+        <activity android:name="android.app.NativeActivity"
+                  android:label="LvglBasic"
+                  android:configChanges="orientation|keyboardHidden|screenSize|screenLayout"
+                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            <meta-data android:name="android.app.lib_name"
+                       android:value="main" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
