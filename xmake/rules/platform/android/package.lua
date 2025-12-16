@@ -35,6 +35,19 @@ function main(target, opt)
     assert(android_sdk_version, "android sdk version not set")
     assert(android_manifest, "android manifest not set")
 
+    if not path.is_absolute(android_manifest) then
+        android_manifest = path.join(target:scriptdir(), android_manifest)
+    end
+    if keystore and not path.is_absolute(keystore) then
+        keystore = path.join(target:scriptdir(), keystore)
+    end
+    if android_res and not path.is_absolute(android_res) then
+        android_res = path.join(target:scriptdir(), android_res)
+    end
+    if android_assets and not path.is_absolute(android_assets) then
+        android_assets = path.join(target:scriptdir(), android_assets)
+    end
+
     local final_apk = path.join(target:targetdir(), target:basename() .. ".apk")
 
     -- add dependencies
@@ -55,7 +68,15 @@ function main(target, opt)
         os.mkdir(path.join(tmp_path, "lib", target:arch()))
 
         -- copy the target library to temp folder with name libmain.so
-        local libfile = path.join(tmp_path, "lib", target:arch(), "libmain.so")
+        local libname = "libmain.so"
+        local manifest_xml = io.readfile(android_manifest)
+        if manifest_xml then
+            local lib_name_meta = manifest_xml:match('android:name="android.app.lib_name"%s+android:value="([^"]+)"')
+            if lib_name_meta then
+                libname = "lib" .. lib_name_meta .. ".so"
+            end
+        end
+        local libfile = path.join(tmp_path, "lib", target:arch(), libname)
         os.cp(target:targetfile(), libfile)
 
         -- get android tool path
@@ -87,7 +108,7 @@ function main(target, opt)
         os.vrunv(aapt, aapt_argv)
 
         -- pack libs
-        os.vrunv(aapt, {"add", "res_only.apk", "lib/" .. target:arch() .."/libmain.so"},  {curdir = tmp_path})
+        os.vrunv(aapt, {"add", "res_only.apk", "lib/" .. target:arch() .."/" .. libname},  {curdir = tmp_path})
 
         -- align apk
         local aligned_apk = path.join(tmp_path, "unsigned.apk")
