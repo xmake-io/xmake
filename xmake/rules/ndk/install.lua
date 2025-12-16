@@ -20,7 +20,6 @@
 
 -- imports
 
--- main entry
 function main(target)
 
     local android_sdkdir = target:toolchain("ndk"):config("android_sdk")

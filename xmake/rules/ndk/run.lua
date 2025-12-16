@@ -22,7 +22,6 @@
 import("core.base.tty")
 import("install", {alias = "install_app"})
 
--- main entry
 function main(target)
 
     -- install it first

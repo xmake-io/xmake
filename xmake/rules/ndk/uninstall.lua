@@ -14,11 +14,10 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      keosu
+-- @author      ruki
 -- @file        uninstall.lua
 --
 
--- main entry
 function main(target)
 
     local conf = target:extraconf("rules", "android.native_app")

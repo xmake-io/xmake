@@ -18,7 +18,6 @@
 -- @file        load.lua
 --
 
--- main entry
 function main(target)
 
     -- only for android target

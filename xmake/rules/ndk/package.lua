@@ -22,7 +22,6 @@
 import("core.project.depend")
 import("utils.progress")
 
--- main entry
 function main(target, opt)
 
     local conf = target:extraconf("rules", "android.native_app")
@@ -72,7 +71,7 @@ function main(target, opt)
         local resonly_apk = path.join(tmp_path, "res_only.apk")
         local androidjar = path.join(android_sdkdir, "platforms", string.format("android-%s", android_sdk_version),
             "android.jar")
-        assert(os.exists(androidjar), "%s not found", androidjar)
+        assert(os.isfile(androidjar), "%s not found", androidjar)
         local aapt_argv = {"package", "-f", "-M", android_manifest, "-I", androidjar, "-F", resonly_apk}
 
         if android_res and not os.emptydir(android_res) then
