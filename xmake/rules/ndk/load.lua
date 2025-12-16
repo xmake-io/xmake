@@ -34,6 +34,7 @@ function main(target)
         raise("NDK path not set! Please set NDK path properly.")
     end
 
+    -- set target kind
     target:set("kind", "shared")
 
     -- add glue file to target

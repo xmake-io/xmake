@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 add_requires("raylib 5.5.0")
 
-target("raydemo_android")
+target("raydemo")
     set_kind("binary")
     set_languages("c++17")
     add_files("src/main.cpp")
