@@ -22,8 +22,52 @@
 import("core.project.depend")
 import("utils.progress")
 
-function main(target, opt)
+function _get_libname(android_manifest)
+    local libname = "libmain.so"
+    local manifest_xml = io.readfile(android_manifest)
+    if manifest_xml then
+        local lib_name_meta = manifest_xml:match('android:name="android.app.lib_name"%s+android:value="([^"]+)"')
+        if lib_name_meta then
+            libname = "lib" .. lib_name_meta .. ".so"
+        end
+    end
+    return libname
+end
 
+function _pack_resources(target, aapt, android_manifest, android_res, android_assets, android_sdkdir, android_sdk_version, tmp_path)
+    local resonly_apk = path.join(tmp_path, "res_only.apk")
+    local androidjar = path.join(android_sdkdir, "platforms", string.format("android-%s", android_sdk_version), "android.jar")
+    assert(os.isfile(androidjar), "%s not found", androidjar)
+    
+    local aapt_argv = {"package", "-f", "-M", android_manifest, "-I", androidjar, "-F", resonly_apk}
+    if android_res and not os.emptydir(android_res) then
+        table.insert(aapt_argv, "-S")
+        table.insert(aapt_argv, android_res)
+    end
+    if android_assets and not os.emptydir(android_assets) then
+        table.insert(aapt_argv, "-A")
+        table.insert(aapt_argv, android_assets)
+    end
+    os.vrunv(aapt, aapt_argv)
+end
+
+function _pack_libs(target, aapt, libname, tmp_path)
+    os.vrunv(aapt, {"add", "res_only.apk", "lib/" .. target:arch() .."/" .. libname},  {curdir = tmp_path})
+end
+
+function _align_apk(zipalign, tmp_path)
+    local aligned_apk = path.join(tmp_path, "unsigned.apk")
+    local zipalign_argv = {"-f", "4", "res_only.apk", "unsigned.apk"}
+    os.vrunv(zipalign, zipalign_argv, {curdir = tmp_path})
+end
+
+function _sign_apk(apksigner, keystore, keystore_pass, final_apk, tmp_path)
+    local aligned_apk = path.join(tmp_path, "unsigned.apk")
+    local apksigner_argv = {"sign", "--ks", keystore, "--ks-pass", string.format("pass:%s", keystore_pass), "--out", final_apk, "--in", aligned_apk}
+    os.vrunv(apksigner, apksigner_argv)
+end
+
+function main(target, opt)
     local conf = target:extraconf("rules", "android.native_app")
     local android_sdk_version = conf.android_sdk_version
     local android_manifest = conf.android_manifest
@@ -34,6 +78,19 @@ function main(target, opt)
 
     assert(android_sdk_version, "android sdk version not set")
     assert(android_manifest, "android manifest not set")
+
+    if not path.is_absolute(android_manifest) then
+        android_manifest = path.join(target:scriptdir(), android_manifest)
+    end
+    if keystore and not path.is_absolute(keystore) then
+        keystore = path.join(target:scriptdir(), keystore)
+    end
+    if android_res and not path.is_absolute(android_res) then
+        android_res = path.join(target:scriptdir(), android_res)
+    end
+    if android_assets and not path.is_absolute(android_assets) then
+        android_assets = path.join(target:scriptdir(), android_assets)
+    end
 
     local final_apk = path.join(target:targetdir(), target:basename() .. ".apk")
 
@@ -49,13 +106,15 @@ function main(target, opt)
     depend.on_changed(function ()
         progress.show(opt.progress, "${color.build.target}packing.apk %s", final_apk)
 
-        local tmp_path = path.join(target:targetdir(), "temp")
+        local tmp_path = path.join(target:autogendir(), "packing")
+        os.tryrm(tmp_path)
         os.mkdir(tmp_path)
         os.mkdir(path.join(tmp_path, "lib"))
         os.mkdir(path.join(tmp_path, "lib", target:arch()))
 
-        -- copy the target library to temp folder with name libmain.so
-        local libfile = path.join(tmp_path, "lib", target:arch(), "libmain.so")
+        -- copy the target library
+        local libname = _get_libname(android_manifest)
+        local libfile = path.join(tmp_path, "lib", target:arch(), libname)
         os.cp(target:targetfile(), libfile)
 
         -- get android tool path
@@ -67,37 +126,10 @@ function main(target, opt)
         local zipalign = path.join(sdk_tool_path, "zipalign" .. (is_host("windows") and ".exe" or ""))
         local apksigner = path.join(sdk_tool_path, "apksigner" .. (is_host("windows") and ".bat" or ""))
 
-        -- pack resources
-        local resonly_apk = path.join(tmp_path, "res_only.apk")
-        local androidjar = path.join(android_sdkdir, "platforms", string.format("android-%s", android_sdk_version),
-            "android.jar")
-        assert(os.isfile(androidjar), "%s not found", androidjar)
-        local aapt_argv = {"package", "-f", "-M", android_manifest, "-I", androidjar, "-F", resonly_apk}
+        _pack_resources(target, aapt, android_manifest, android_res, android_assets, android_sdkdir, android_sdk_version, tmp_path)
+        _pack_libs(target, aapt, libname, tmp_path)
+        _align_apk(zipalign, tmp_path)
+        _sign_apk(apksigner, keystore, keystore_pass, final_apk, tmp_path)
 
-        if android_res and not os.emptydir(android_res) then
-            table.insert(aapt_argv, "-S")
-            table.insert(aapt_argv, android_res)
-        end
-
-        if android_assets and not os.emptydir(android_assets) then
-            table.insert(aapt_argv, "-A")
-            table.insert(aapt_argv, android_assets)
-        end
-
-        os.vrunv(aapt, aapt_argv)
-
-        -- pack libs
-        os.vrunv(aapt, {"add", "res_only.apk", "lib/" .. target:arch() .."/libmain.so"},  {curdir = tmp_path})
-
-        -- align apk
-        local aligned_apk = path.join(tmp_path, "unsigned.apk")
-        local zipalign_argv = {"-f", "4", "res_only.apk", "unsigned.apk"}
-
-        os.vrunv(zipalign, zipalign_argv, {curdir = tmp_path})
-
-        -- sign apk
-        local apksigner_argv = {"sign", "--ks", keystore, "--ks-pass", string.format("pass:%s", keystore_pass), "--out",
-                                final_apk, "--in", aligned_apk}
-        os.vrunv(apksigner, apksigner_argv)
     end, {dependfile = target:dependfile(final_apk), files = depfiles, values = {android_sdk_version, keystore_pass}})
 end

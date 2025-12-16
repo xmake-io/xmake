@@ -31,6 +31,7 @@
 --        keystore = "android/debug.jks",
 --        keystore_pass = "123456",
 --        package_name = "com.raylib.demo",
+--        native_app_glue = false,
 --        logcat_filters = {"raydemo_android", "raylib"}
 --     })
 -- @endcode
