@@ -32,7 +32,7 @@ static void my_flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * p
 
     int32_t width = lv_area_get_width(area);
     int32_t height = lv_area_get_height(area);
-    
+
     // Assume 32-bit RGBA
     uint32_t * dst_base = (uint32_t *)buffer.bits;
     uint32_t * src = (uint32_t *)px_map;
@@ -88,7 +88,7 @@ static void update_particles(void) {
         p->x += p->vx;
         p->y += p->vy;
         p->life--;
-        
+
         if (p->life <= 0 || p->x < 0 || p->x > window_width || p->y < 0 || p->y > window_height) {
             *p = particles[--particle_count];
             i--;
@@ -100,18 +100,18 @@ static void draw_particles(lv_layer_t * layer) {
     lv_draw_rect_dsc_t draw_dsc;
     lv_draw_rect_dsc_init(&draw_dsc);
     draw_dsc.radius = LV_RADIUS_CIRCLE;
-    
+
     for (int i = 0; i < particle_count; i++) {
         Particle *p = &particles[i];
         draw_dsc.bg_color = p->color;
         draw_dsc.bg_opa = (p->life * 255) / 100;
-        
+
         lv_area_t area;
         area.x1 = p->x - p->size / 2;
         area.y1 = p->y - p->size / 2;
         area.x2 = area.x1 + p->size;
         area.y2 = area.y1 + p->size;
-        
+
         lv_draw_rect(layer, &draw_dsc, &area);
     }
 }
@@ -129,7 +129,7 @@ static void particle_timer_cb(lv_timer_t * timer) {
          int cy = window_height / 2 + sin(t) * (window_height / 4);
          create_particle(cx, cy);
     }
-    
+
     update_particles();
     lv_obj_invalidate(lv_scr_act()); // Force redraw
 }
@@ -144,16 +144,16 @@ static void create_ui(void) {
     lv_label_set_text(label, "Touch to create particles!");
     lv_obj_set_style_text_font(label, &lv_font_montserrat_14, 0);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 50);
-    
+
     // FPS label
     lv_obj_t * label_fps = lv_label_create(lv_screen_active());
     lv_label_set_text(label_fps, "FPS: 0");
     lv_obj_set_style_text_font(label_fps, &lv_font_montserrat_14, 0);
     lv_obj_align(label_fps, LV_ALIGN_TOP_MID, 0, 100);
-    
+
     // Add draw event to screen for particles
     lv_obj_add_event_cb(lv_screen_active(), canvas_draw_event_cb, LV_EVENT_DRAW_POST, NULL);
-    
+
     lv_timer_create(particle_timer_cb, 16, NULL);
 }
 
@@ -165,20 +165,20 @@ static void handle_cmd(struct android_app* app, int32_t cmd) {
             window_width = ANativeWindow_getWidth(native_window);
             window_height = ANativeWindow_getHeight(native_window);
             ANativeWindow_setBuffersGeometry(native_window, window_width, window_height, WINDOW_FORMAT_RGBA_8888);
-            
+
             if (!display) {
                 display = lv_display_create(window_width, window_height);
                 lv_display_set_color_format(display, LV_COLOR_FORMAT_ARGB8888);
                 lv_display_set_flush_cb(display, my_flush_cb);
-                
+
                 size_t buf_size = window_width * window_height * 4;
                 void * buf = malloc(buf_size);
                 lv_display_set_buffers(display, buf, NULL, buf_size, LV_DISPLAY_RENDER_MODE_FULL);
-                
+
                 lv_indev_t * indev = lv_indev_create();
                 lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
                 lv_indev_set_read_cb(indev, my_input_read);
-                
+
                 create_ui();
             } else {
                  lv_display_set_resolution(display, window_width, window_height);
@@ -208,37 +208,37 @@ static int32_t handle_input(struct android_app* app, AInputEvent* event) {
 
 void android_main(struct android_app* app) {
     lv_init();
-    
+
     app->onAppCmd = handle_cmd;
     app->onInputEvent = handle_input;
-    
+
     int frame_count = 0;
     time_t last_time = time(NULL);
-    
+
     while (1) {
         int ident;
         int events;
         struct android_poll_source* source;
-        
+
         uint32_t timeout = lv_timer_handler();
         if (timeout > 50) timeout = 50;
-        
+
         while ((ident = ALooper_pollAll(timeout, NULL, &events, (void**)&source)) >= 0) {
             if (source != NULL) source->process(app, source);
             if (app->destroyRequested != 0) return;
         }
-        
+
         lv_tick_inc(timeout);
-        
+
         frame_count++;
         time_t current_time = time(NULL);
         if (current_time - last_time >= 1) {
-             lv_obj_t * label_fps = lv_obj_get_child(lv_screen_active(), 1); // 0: label, 1: fps
-             if (label_fps) {
-                 lv_label_set_text_fmt(label_fps, "FPS: %d", frame_count);
-             }
-             frame_count = 0;
-             last_time = current_time;
+            lv_obj_t * label_fps = lv_obj_get_child(lv_screen_active(), 1); // 0: label, 1: fps
+            if (label_fps) {
+                lv_label_set_text_fmt(label_fps, "FPS: %d", frame_count);
+            }
+            frame_count = 0;
+            last_time = current_time;
         }
     }
 }
