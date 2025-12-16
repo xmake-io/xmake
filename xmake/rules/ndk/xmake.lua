@@ -30,7 +30,8 @@
 --        android_assets = "android/assets",
 --        keystore = "android/debug.jks",
 --        keystore_pass = "123456",
---        package_name = "com.raylib.demo"
+--        package_name = "com.raylib.demo",
+--        logcat_filters = {"raydemo_android", "raylib"}
 --     })
 -- @endcode
 --

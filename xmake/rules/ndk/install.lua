@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("core.tool.toolchain")
 import("run", {alias = "run_app"})
 
 -- main entry

@@ -18,6 +18,9 @@
 -- @file        run.lua
 --
 
+-- imports
+import("core.base.tty")
+
 -- main entry
 function main(target)
 
@@ -32,4 +35,19 @@ function main(target)
 
     cprint("running %s ...", package_name)
     os.vrunv(adb, run_argv)
+
+    -- show logcat
+    local logcat_argv = {"logcat"}
+    if io.isatty() and (tty.has_color8() or tty.has_color256()) then
+        table.insert(logcat_argv, "-v")
+        table.insert(logcat_argv, "color")
+    end
+    local logcat_filters = conf.logcat_filters
+    if logcat_filters then
+        table.insert(logcat_argv, "-s")
+        for _, filter in ipairs(logcat_filters) do
+            table.insert(logcat_argv, filter)
+        end
+    end
+    os.execv(adb, logcat_argv)
 end

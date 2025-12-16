@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("core.tool.toolchain")
 import("utils.progress")
 
 -- main entry
