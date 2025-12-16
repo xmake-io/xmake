@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 add_requires("raylib 5.5.0")
 
-target("raydemo")
+target("raydemo_basic")
     set_kind("binary")
     set_languages("c++17")
     add_files("src/main.cpp")
@@ -14,6 +14,6 @@ target("raydemo")
         android_res = "android/res",
         keystore = "android/debug.jks",
         keystore_pass = "123456",
-        package_name = "com.raylib.demo",
-        logcat_filters = {"raydemo_android", "raylib"}
+        package_name = "com.raylib.basic",
+        logcat_filters = {"raydemo_basic", "raylib"}
     })
