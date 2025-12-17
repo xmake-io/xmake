@@ -4,9 +4,51 @@
 
 ### New features
 
-* [#7064](https://github.com/xmake-io/xmake/pull/7064): Add appimage xpack format for Linux application packaging
+* [#7141](https://github.com/xmake-io/xmake/pull/7141): Support disabling native app glue for Android
+* [#7139](https://github.com/xmake-io/xmake/pull/7139): Add Android native app build support
+* [#7127](https://github.com/xmake-io/xmake/pull/7127): Add deplibs support in binutils
+* [#7120](https://github.com/xmake-io/xmake/pull/7120): Add extractlib support in binutils
+* [#7106](https://github.com/xmake-io/xmake/pull/7106): Add `/std:c++23preview` support for MSVC
+* [#7105](https://github.com/xmake-io/xmake/pull/7105): Add `bin2obj` support for glsl/hlsl2spv
+* [#7103](https://github.com/xmake-io/xmake/pull/7103): Add `bin2obj` rule (faster than `bin2c`)
+* [#7096](https://github.com/xmake-io/xmake/pull/7096): Add Flang toolchain support
+* [#7094](https://github.com/xmake-io/xmake/pull/7094): Add `xmake check syntax` support
+* [#7091](https://github.com/xmake-io/xmake/pull/7091): Add dynamic debugging support for MSVC
+* [#7083](https://github.com/xmake-io/xmake/pull/7083): Add support for CUDA 11~13
+* [#7071](https://github.com/xmake-io/xmake/pull/7071): Add Qt pack support
+* [#7064](https://github.com/xmake-io/xmake/pull/7064): Add AppImage xpack format for Linux application packaging
 * [#7062](https://github.com/xmake-io/xmake/pull/7062): Add dmg xpack format for macOS application packaging
-* [#7071](https://github.com/xmake-io/xmake/pull/7071): Improve Qt rules: add uninstallcmd support and improve nsis/wix cp command to support directory copying
+
+### Changes
+
+* [#7136](https://github.com/xmake-io/xmake/pull/7136): Improve clang-cl depfiles generation
+* [#7135](https://github.com/xmake-io/xmake/pull/7135): Improve `xrepo env` to add session ID
+* [#7109](https://github.com/xmake-io/xmake/pull/7109): Improve binutils to read symbols from binary file
+* [#7102](https://github.com/xmake-io/xmake/pull/7102): Improve bin2c rule
+* [#7098](https://github.com/xmake-io/xmake/pull/7098): Refactor and improve Golang support
+* [#7095](https://github.com/xmake-io/xmake/pull/7095): Mark target/package/toolchain:memcache as public
+* [#7093](https://github.com/xmake-io/xmake/pull/7093): Improve mirror repo URL
+* [#7088](https://github.com/xmake-io/xmake/pull/7088): Improve C++/ObjC rules
+* [#7087](https://github.com/xmake-io/xmake/pull/7087): Add type constraint for policy `package.download.http_headers`
+* [#7069](https://github.com/xmake-io/xmake/pull/7069): Save Qt rules for LLVM toolchain
+* [#7061](https://github.com/xmake-io/xmake/pull/7061): Update CI configuration
+* [#7039](https://github.com/xmake-io/xmake/pull/7039): Update macOS CI
+
+### Bugs fixed
+
+* [#7132](https://github.com/xmake-io/xmake/pull/7132): Fix clang-cl toolchain with ASan
+* [#7125](https://github.com/xmake-io/xmake/pull/7125): Fix cosmocc CI
+* [#7124](https://github.com/xmake-io/xmake/pull/7124): Fix default MSVC runtime for Clang toolchain
+* [#7112](https://github.com/xmake-io/xmake/pull/7112): Fix change directory on Windows
+* [#7104](https://github.com/xmake-io/xmake/pull/7104): Fix prepare for project generators
+* [#7092](https://github.com/xmake-io/xmake/pull/7092): Fix Solaris build
+* [#7086](https://github.com/xmake-io/xmake/pull/7086): Fix targetdir in Qt QML rule
+* [#7085](https://github.com/xmake-io/xmake/pull/7085): Fix CMake flags for Clang toolchain
+* [#7084](https://github.com/xmake-io/xmake/pull/7084): Fix pacman find_package
+* [#7082](https://github.com/xmake-io/xmake/pull/7082): Fix checking Clang CUDA flags
+* [#7081](https://github.com/xmake-io/xmake/pull/7081): Fix `get_headerunit_key`
+* [#7074](https://github.com/xmake-io/xmake/pull/7074): Fix libc++ cannot find std module
+* [#7067](https://github.com/xmake-io/xmake/pull/7067): Fix get_stdmodules with cross toolchain
 
 ## v3.0.5
 
@@ -2199,9 +2241,51 @@
 
 ### 新特性
 
-* [#7064](https://github.com/xmake-io/xmake/pull/7064): 添加 appimage xpack 格式，支持 Linux 应用程序打包
-* [#7062](https://github.com/xmake-io/xmake/pull/7062): 添加 dmg xpack 格式，支持 macOS 应用程序打包
-* [#7071](https://github.com/xmake-io/xmake/pull/7071): 改进 Qt 规则：添加 uninstallcmd 支持，改进 nsis/wix cp 命令以支持目录复制
+* [#7141](https://github.com/xmake-io/xmake/pull/7141): 支持禁用 Android 原生应用 glue
+* [#7139](https://github.com/xmake-io/xmake/pull/7139): 添加 Android 原生应用构建支持
+* [#7127](https://github.com/xmake-io/xmake/pull/7127): 为 binutils 添加 deplibs 支持
+* [#7120](https://github.com/xmake-io/xmake/pull/7120): 为 binutils 添加 extractlib 支持
+* [#7106](https://github.com/xmake-io/xmake/pull/7106): 为 MSVC 添加 `/std:c++23preview` 支持
+* [#7105](https://github.com/xmake-io/xmake/pull/7105): 为 glsl/hlsl2spv 添加 `bin2obj` 支持
+* [#7103](https://github.com/xmake-io/xmake/pull/7103): 添加 `bin2obj` 规则（比 `bin2c` 更快）
+* [#7096](https://github.com/xmake-io/xmake/pull/7096): 添加 Flang 工具链支持
+* [#7094](https://github.com/xmake-io/xmake/pull/7094): 添加 `xmake check syntax` 支持
+* [#7091](https://github.com/xmake-io/xmake/pull/7091): 为 MSVC 添加动态调试支持
+* [#7083](https://github.com/xmake-io/xmake/pull/7083): 添加对 CUDA 11~13 的支持
+* [#7071](https://github.com/xmake-io/xmake/pull/7071): 添加 Qt 打包支持
+* [#7064](https://github.com/xmake-io/xmake/pull/7064): 添加 AppImage xpack 格式用于 Linux 应用程序打包
+* [#7062](https://github.com/xmake-io/xmake/pull/7062): 添加 dmg xpack 格式用于 macOS 应用程序打包
+
+### 改进
+
+* [#7136](https://github.com/xmake-io/xmake/pull/7136): 改进 clang-cl 依赖文件生成
+* [#7135](https://github.com/xmake-io/xmake/pull/7135): 改进 `xrepo env` 以添加会话 ID
+* [#7109](https://github.com/xmake-io/xmake/pull/7109): 改进 binutils 以从二进制文件读取符号
+* [#7102](https://github.com/xmake-io/xmake/pull/7102): 改进 bin2c 规则
+* [#7098](https://github.com/xmake-io/xmake/pull/7098): 重构并改进 Golang 支持
+* [#7095](https://github.com/xmake-io/xmake/pull/7095): 将 target/package/toolchain:memcache 标记为公开
+* [#7093](https://github.com/xmake-io/xmake/pull/7093): 改进镜像仓库 URL
+* [#7088](https://github.com/xmake-io/xmake/pull/7088): 改进 C++/ObjC 规则
+* [#7087](https://github.com/xmake-io/xmake/pull/7087): 为策略 `package.download.http_headers` 添加类型约束
+* [#7069](https://github.com/xmake-io/xmake/pull/7069): 为 LLVM 工具链保存 Qt 规则
+* [#7061](https://github.com/xmake-io/xmake/pull/7061): 更新 CI 配置
+* [#7039](https://github.com/xmake-io/xmake/pull/7039): 更新 macOS CI
+
+### Bugs 修复
+
+* [#7132](https://github.com/xmake-io/xmake/pull/7132): 修复带有 ASan 的 clang-cl 工具链
+* [#7125](https://github.com/xmake-io/xmake/pull/7125): 修复 cosmocc CI
+* [#7124](https://github.com/xmake-io/xmake/pull/7124): 修复 Clang 工具链的默认 MSVC 运行时
+* [#7112](https://github.com/xmake-io/xmake/pull/7112): 修复 Windows 上的目录切换
+* [#7104](https://github.com/xmake-io/xmake/pull/7104): 修复项目生成器的准备工作
+* [#7092](https://github.com/xmake-io/xmake/pull/7092): 修复 Solaris 构建
+* [#7086](https://github.com/xmake-io/xmake/pull/7086): 修复 Qt QML 规则中的 targetdir
+* [#7085](https://github.com/xmake-io/xmake/pull/7085): 修复 Clang 工具链的 CMake 标志
+* [#7084](https://github.com/xmake-io/xmake/pull/7084): 修复 pacman find_package
+* [#7082](https://github.com/xmake-io/xmake/pull/7082): 修复 Clang CUDA 标志检查
+* [#7081](https://github.com/xmake-io/xmake/pull/7081): 修复 `get_headerunit_key`
+* [#7074](https://github.com/xmake-io/xmake/pull/7074): 修复 libc++ 找不到 std 模块
+* [#7067](https://github.com/xmake-io/xmake/pull/7067): 修复交叉编译工具链的 get_stdmodules
 
 ## v3.0.5
 
