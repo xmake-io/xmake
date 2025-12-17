@@ -8,10 +8,10 @@ target("lvgl_basic")
     add_files("src/main.c")
     add_syslinks("log", "android", "EGL", "GLESv2")
     add_packages("lvgl")
-    
+
     -- define LV_CONF_INCLUDE_SIMPLE to include lv_conf.h
     add_defines("LV_CONF_INCLUDE_SIMPLE")
-    
+
     add_rules("android.native_app", {
         android_sdk_version = "35",
         android_manifest = "android/AndroidManifest.xml",
