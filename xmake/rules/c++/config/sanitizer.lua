@@ -22,6 +22,13 @@
 import("core.project.project")
 import("lib.detect.find_tool")
 import("core.base.semver")
+import("core.project.config")
+
+function _get_clang_resource_dir()
+    local clang = "clang" -- TODO: use target:xxx get clang?
+    local outdata = os.iorunv(clang, {"--print-resource-dir"})
+    return outdata:trim()
+end
 
 -- add build sanitizer
 function _add_build_sanitizer(target, sourcekind, checkmode)
@@ -38,11 +45,43 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
         target:add(flagname, "-fsanitize=" .. checkmode, {force = true})
     end
 
-    -- add ldflags and shflags
-    -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
-    if target:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
-        target:add("ldflags", "-fsanitize=" .. checkmode, {force = true})
-        target:add("shflags", "-fsanitize=" .. checkmode, {force = true})
+    if target:is_plat("windows") then
+        -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
+        if not target:has_tool("ld", "link") then
+            -- TODO: Add MTd/MDd support when clang asan support it
+            -- @see https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/
+            assert(target:is_arch("x64"), "asan only support x64")
+
+            local runtime
+            if not target:runtimes() then
+                runtime = config.get("vs_runtime")
+            end
+
+            local kind
+            if runtime == "MD" or target:has_runtime("MD") then
+                kind = "dynamic"
+            elseif runtime == "MT" or target:has_runtime("MT") then
+                kind = "static"
+            else
+                os.raise("asan only support MD/MT runtime")
+            end
+
+            local libdir = path.join(_get_clang_resource_dir(), "lib/windows")
+            local thunk = path.join(libdir, format("clang_rt.asan_%s_runtime_thunk-x86_64.lib", kind))
+            local driver = target:has_tool("ld", "lld-link", "link") and "" or "-Wl,"
+            local flags = {
+                path.unix(path.join(libdir, "clang_rt.asan_dynamic-x86_64.lib")),
+                driver .. "/WHOLEARCHIVE:" .. path.unix(thunk),
+                driver .. "/INFERASANLIBS:NO",
+            }
+            target:add("ldflags", flags, {force = true})
+            target:add("shflags", flags, {force = true})
+        end
+    else
+        if target:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
+            target:add("ldflags", "-fsanitize=" .. checkmode, {force = true})
+            target:add("shflags", "-fsanitize=" .. checkmode, {force = true})
+        end
     end
 end
 
@@ -68,16 +107,8 @@ function main(target, sourcekind)
         -- we need to load runenvs for msvc
         -- @see https://github.com/xmake-io/xmake/issues/4176
         if target:is_plat("windows") and target:is_binary() then
-            if target:has_tool("cxx", "clang_cl") then
-                local clang_cl = target:toolchain("clang-cl")
-                if clang_cl then
-                    local envs = clang_cl:runenvs()
-                    local vscmd_ver = envs and envs.VSCMD_VER
-                    if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
-                        local clang_cl_tool = assert(find_tool("clang-cl", {envs = envs}), "clang-cl not found!")
-                        target:add("runenvs", "PATH", path.directory(clang_cl_tool.program))
-                    end
-                end
+            if target:has_tool("cxx", "clang", "clang_cl") then
+                target:add("runenvs", "PATH", path.join(_get_clang_resource_dir(), "lib/windows"))
             else
                 local msvc = target:toolchain("msvc")
                 if msvc then

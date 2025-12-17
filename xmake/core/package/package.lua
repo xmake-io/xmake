@@ -2457,19 +2457,52 @@ end
 
 -- generate sanitizer configs
 function _instance:_generate_sanitizer_configs(checkmode, sourcekind)
-
-    -- add cflags
     local configs = {}
-    if sourcekind and self:has_tool(sourcekind, "cl", "clang", "clangxx", "gcc", "gxx") then
-        local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
-        configs[cflag] = "-fsanitize=" .. checkmode
-    end
+    local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
+    if self:is_plat("windows") then
+        if checkmode == "address" then
+            assert(self:is_arch("x64"), "asan only support x64")
 
-    -- add ldflags and shflags
-    -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
-    if self:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
-        configs.ldflags = "-fsanitize=" .. checkmode
-        configs.shflags = "-fsanitize=" .. checkmode
+            if self:has_tool("cxx", "cl") then
+                configs[cflag] = "-fsanitize=address"
+            else
+                -- Don't pass `-fsanitize=address` to clang link driver, so we use `-Xclang`
+                configs[cflag] = {
+                    "-Xclang", "-fsanitize=address",
+                    "-Xclang", "-fno-sanitize-address-use-odr-indicator", -- TODO: fix odr link error
+                }
+                -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
+
+                local outdata, errdata = assert(os.iorunv(self:build_getenv("cc"), {"--print-resource-dir"}))
+                local libdir = path.join(errdata:trim(), "lib/windows")
+    
+                local kind
+                if self:has_runtime("MD") then
+                    kind = "dynamic"
+                elseif self:has_runtime("MT") then
+                    kind = "static"
+                else
+                    os.raise("asan only support MD/MT runtime")
+                end
+
+                local driver = self:has_tool("ld", "lld-link", "link") and "" or "-Wl,"
+                local thunk = path.join(libdir, string.format("clang_rt.asan_%s_runtime_thunk-x86_64.lib", kind))
+                configs.ldflags = {
+                    path.unix(path.join(libdir, "clang_rt.asan_dynamic-x86_64.lib")),
+                    driver .. "/WHOLEARCHIVE:" .. path.unix(thunk),
+                    driver .. "/INFERASANLIBS:NO",
+                }
+                configs.shflags = configs.ldflags
+            end
+        end
+    else
+        if sourcekind and self:has_tool(sourcekind, "clang", "clangxx", "gcc", "gxx") then
+            configs[cflag] = "-fsanitize=" .. checkmode
+        end
+        if self:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
+            configs.ldflags = "-fsanitize=" .. checkmode
+            configs.shflags = "-fsanitize=" .. checkmode
+        end
     end
     return configs
 end

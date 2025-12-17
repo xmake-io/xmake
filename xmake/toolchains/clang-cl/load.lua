@@ -65,10 +65,6 @@ function main(toolchain)
         toolchain:set("toolset", "ld",  "lld-link")
         toolchain:set("toolset", "sh",  "lld-link")
         toolchain:set("toolset", "ar",  "llvm-ar")
-    elseif project.policy("build.sanitizer.address") then
-        toolchain:set("toolset", "ld",  "clang++")
-        toolchain:set("toolset", "sh",  "clang++")
-        toolchain:set("toolset", "ar",  "llvm-ar")
     else
         toolchain:set("toolset", "ld",  "link.exe")
         toolchain:set("toolset", "sh",  "link.exe")
