@@ -8,13 +8,13 @@ function run_test(toolchain_name)
         flags = "-vD"
     end
 
-    local llvm = toolchain.load("llvm")
-    if not llvm or not llvm:check() then
-        wprint("llvm not found, skipping tests")
+    local toolchain_inst = toolchain.load(toolchain_name)
+    if not toolchain_inst or not toolchain_inst:check() then
+        wprint(toolchain_name .. " not found, skipping tests")
         return
     end
     os.exec("xmake clean -a")
-    os.exec("xmake f --toolchain=llvm -c --yes " .. flags)
+    os.exec("xmake f --toolchain=" .. toolchain_name .. " -c --yes " .. flags)
     os.run("xmake -r " .. flags)
 end
 
