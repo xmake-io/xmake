@@ -184,7 +184,7 @@ end
 -- get llvm sdk resource directory
 function _get_llvm_resourcedir(toolchain)
     local memcache = toolchain:memcache()
-    local cachekey = toolchain:cachekey() .. "_get_llvm_resourcedir"
+    local cachekey = "get_llvm_resourcedir"
     local llvm_resourcedir = memcache:get(cachekey)
     if llvm_resourcedir == nil then
         local outdata = try { function() return os.iorunv(toolchain:tool("cc"), {"-print-resource-dir"}) end }
@@ -202,7 +202,7 @@ end
 -- get llvm sdk root directory
 function _get_llvm_rootdir(toolchain)
     local memcache = toolchain:memcache()
-    local cachekey = toolchain:cachekey() .. "_get_llvm_rootdir"
+    local cachekey = "get_llvm_rootdir"
     local llvm_rootdir = memcache:get(cachekey)
     if llvm_rootdir == nil then
         local resourcedir = _get_llvm_resourcedir(toolchain)
@@ -259,7 +259,7 @@ end
 -- get llvm target triple
 function _get_llvm_target_triple(toolchain)
     local memcache = toolchain:memcache()
-    local cachekey = toolchain:cachekey() .. "_get_llvm_target_triple"
+    local cachekey = "get_llvm_target_triple"
     local llvm_targettriple = memcache:get(cachekey)
     if llvm_targettriple == nil then
         local outdata = try { function() return os.iorunv(toolchain:tool("cc"), {"-print-target-triple"}) end }
@@ -274,7 +274,7 @@ end
 -- get llvm toolchain dirs
 function get_llvm_dirs(toolchain)
     local memcache = toolchain:memcache()
-    local cachekey = toolchain:cachekey() .. "_get_llvm_dirs"
+    local cachekey = "get_llvm_dirs"
     local llvm_dirs = memcache:get(cachekey)
     if llvm_dirs == nil then
         local rootdir = toolchain:sdkdir()
