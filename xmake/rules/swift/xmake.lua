@@ -177,26 +177,7 @@ rule("swift.build")
     set_sourcekinds("sc")
     on_build_files("private.action.build.object", {jobgraph = true, batch = true})
     on_config(function (target)
-        local mode = (type(target:values("swift.interop")) == "string") and target:values("swift.interop") or "objc"
-        if mode == "cxx" then
-            target:add("scflags", "-cxx-interoperability-mode=default")
-        end
-
-        if target:is_library() or target:values("swift.interop.cxxmain") then
-            target:add("scflags", "-parse-as-library")
-        end
-        local modulename = target:values("swift.modulename") or target:name()
-        target:add("scflags", "-module-name", modulename, {force = true})
-        -- we use swift-frontend to support multiple modules
-        -- @see https://github.com/xmake-io/xmake/issues/3916
-        if target:has_tool("sc", "swift_frontend") then
-            local sourcebatch = target:sourcebatches()["swift.build"]
-            if sourcebatch then
-                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                    target:add("scflags", sourcefile, {force = true})
-                end
-            end
-        end
+        import("config")(target)
     end)
 
 -- define rule: swift
@@ -206,9 +187,6 @@ rule("swift")
 
     -- add build rules
     add_deps("swift.build")
-
-    -- set compiler runtime, e.g. vs runtime
-    add_deps("utils.compiler.runtime")
 
     -- inherit links and linkdirs of all dependent targets by default
     add_deps("utils.inherit.links")
