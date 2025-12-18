@@ -21,6 +21,7 @@
 import("detect.sdks.find_vstudio")
 import("detect.sdks.find_mingw")
 import("core.project.config")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- add the given vs environment
 function _add_vsenv(toolchain, name, curenvs)
@@ -90,6 +91,8 @@ function main(toolchain, suffix)
     elseif toolchain:is_plat("linux") then
         target = target .. "-linux-gnu"
     end
+
+    toolchain_utils.add_llvm_runenvs(toolchain)
 
     if target then
         toolchain:add("cxflags", "--target=" .. target)

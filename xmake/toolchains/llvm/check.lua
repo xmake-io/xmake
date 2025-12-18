@@ -115,11 +115,13 @@ function main(toolchain)
         toolchain:config_set("bindir", cross_toolchain.bindir)
         toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
     else
-        raise("llvm toolchain not found!")
+        wprint("llvm toolchain not found!")
+        return false
     end
 
     if toolchain:is_plat("cross") and (not toolchain:cross() or toolchain:cross():match("^%s*$")) then
-        raise("Missing cross target. Use `--cross=name` to specify.")
+        wprint("Missing cross target. Use `--cross=name` to specify.")
+        return false
     end
 
     -- attempt to find xcode to pass `-isysroot` on macos
