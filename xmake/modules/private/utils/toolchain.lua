@@ -222,36 +222,47 @@ end
 
 -- get compiler-rt info
 function get_llvm_compiler_rtinfo(toolchain)
-    local resourcedir = get_llvm_resourcedir(toolchain)
-    if resourcedir  then
-        local res_libdir = path.join(resourcedir, "lib")
-        -- when -DLLVM_ENABLE_TARGET_RUNTIME_DIR=OFF rtdir is windows/ and rtlink is clang_rt.builtins_<arch>.lib  
-        -- when ON rtdir is windows/<target-triple> and rtlink is clang_rt.builtins.lib
-        local target_triple = get_llvm_target_triple(toolchain)
-        local arch = target_triple and target_triple:split("-")[1]
+    local memcache = toolchain:memcache()
+    local cachekey = "get_llvm_compiler_rtinfo"
+    local rtinfo = memcache:get(cachekey)
+    if rtinfo == nil then
+        local resourcedir = get_llvm_resourcedir(toolchain)
+        if resourcedir  then
+            local res_libdir = path.join(resourcedir, "lib")
+            -- when -DLLVM_ENABLE_TARGET_RUNTIME_DIR=OFF rtdir is windows/ and rtlink is clang_rt.builtins_<arch>.lib  
+            -- when ON rtdir is windows/<target-triple> and rtlink is clang_rt.builtins.lib
+            local target_triple = get_llvm_target_triple(toolchain)
+            local arch = target_triple and target_triple:split("-")[1]
 
-        local plat
-        if toolchain:is_plat("windows", "mingw") then
-            plat = "windows"
-        elseif toolchain:is_plat("linux") then
-            plat = "linux"
-        elseif toolchain:is_plat("macosx", "iphoneos", "watchos", "appletvos", "applexros") then
-            plat = "darwin"
-        end
-        
-        local tripletdir = target_triple and path.join(res_libdir, "windows", target_triple)
-        tripletdir = os.isdir(tripletdir) or nil
+            local plat
+            if toolchain:is_plat("windows", "mingw") then
+                plat = "windows"
+            elseif toolchain:is_plat("linux") then
+                plat = "linux"
+            elseif toolchain:is_plat("macosx", "iphoneos", "watchos", "appletvos", "applexros") then
+                plat = "darwin"
+            end
+            
+            local tripletdir = target_triple and path.join(res_libdir, "windows", target_triple)
+            tripletdir = os.isdir(tripletdir) or nil
 
-        local rtdir = tripletdir and path.join(plat, target_triple) or plat
-        local rtinfo = {rtdir = res_libdir, rtlibdir = path.join(res_libdir, rtdir)}
-        if os.isdir(rtinfo.rtlibdir) and toolchain:is_plat("windows", "mingw") then
-            local rtlink = "clang_rt.builtins" .. (tripletdir and ".lib" or ("-" .. arch .. ".lib"))
-            if os.isfile(path.join(rtinfo.rtlibdir, rtlink)) then
-                rtinfo.rtlink = path.join(rtdir, rtlink)
+            local rtdir = tripletdir and path.join(plat, target_triple) or plat
+            rtinfo = {rtdir = res_libdir, rtlibdir = path.join(res_libdir, rtdir)}
+            if os.isdir(rtinfo.rtlibdir) and toolchain:is_plat("windows", "mingw") then
+                local rtlink
+                if tripletdir then
+                    rtlink = "clang_rt.builtins.lib"
+                elseif arch then
+                    rtlink = "clang_rt.builtins-" .. arch .. ".lib"
+                end
+                if rtlink and os.isfile(path.join(rtinfo.rtlibdir, rtlink)) then
+                    rtinfo.rtlink = path.join(rtdir, rtlink)
+                end
             end
         end
-        return rtinfo
+        memcache:set(cachekey, rtinfo or false)
     end
+    return rtinfo or nil
 end
 
 -- get llvm target triple
