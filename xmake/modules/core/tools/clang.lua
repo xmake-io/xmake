@@ -239,39 +239,39 @@ function nf_runtime(self, runtime, opt)
             if kind == "cxx" then
                 -- force the toolchain libc++ headers to prevent clang picking the systems one
                 -- @see https://github.com/llvm/llvm-project/issues/79647
-                if llvm_dirs.cxxinclude then
-                    maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. llvm_dirs.cxxinclude)
-                    maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. llvm_dirs.cxxinclude)
+                if llvm_dirs.cxxincludedir then
+                    maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. llvm_dirs.cxxincludedir)
+                    maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. llvm_dirs.cxxincludedir)
                 end
             end
         end
 
         if self:is_plat("windows") and language.sourcekinds()[kind] then
               -- on windows force link to compiler_rt builtins
-            if llvm_dirs.rt and llvm_dirs.rtlink then
+            if llvm_dirs.rtdir and llvm_dirs.rtlink then
                 for name, _ in pairs(maps) do
                     maps[name] = table.join({"-Xclang", "--dependent-lib=" .. llvm_dirs.rtlink}, maps[name])
                 end
             end
         end
         if kind == "ld" or kind == "sh" then
-            if self:is_plat("windows") and llvm_dirs.rt then
+            if self:is_plat("windows") and llvm_dirs.rtdir then
                   -- on windows force add compiler_rt link directories
                 for name, _ in pairs(maps) do
-                    maps[name] = table.join(nf_linkdir(self, llvm_dirs.rt), maps[name])
-                    maps[name] = table.join("-resource-dir=" .. llvm_dirs.res, maps[name])
+                    maps[name] = table.join(nf_linkdir(self, llvm_dirs.rtdir), maps[name])
+                    maps[name] = table.join("-resource-dir=" .. llvm_dirs.resourcedir, maps[name])
                 end
             end
             local is_cxx = target and (target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx"))
             if is_cxx then
-                if llvm_dirs.lib then
-                    maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, llvm_dirs.lib))
-                    maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, llvm_dirs.lib))
+                if llvm_dirs.libdir then
+                    maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, llvm_dirs.libdir))
+                    maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, llvm_dirs.libdir))
 
                     -- sometimes llvm c++ runtimes are located in c++ subfolder (e.g homebrew llvm)
-                    if llvm_dirs.cxxlib then
-                        maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, llvm_dirs.cxxlib))
-                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, llvm_dirs.cxxlib))
+                    if llvm_dirs.cxxlibdir then
+                        maps["c++_static"] = table.join(maps["c++_static"], nf_linkdir(self, llvm_dirs.cxxlibdir))
+                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, llvm_dirs.cxxlibdir))
                     end
 
                     -- add rpath to avoid the user need to set DYLD_LIBRARY_PATH by hand
