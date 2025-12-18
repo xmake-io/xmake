@@ -567,7 +567,7 @@ function _instance:_checktool(toolkind, toolpath)
 end
 
 -- get memcache
-function toolchain._memcache()
+function toolchain.memcache()
     return memcache.cache("core.tool.toolchain")
 end
 
@@ -732,7 +732,7 @@ function toolchain.load(name, opt)
     configs.arch = opt.arch or config.get("arch") or os.arch()
 
     -- get cache
-    local cache = toolchain._memcache()
+    local cache = toolchain.memcache()
     local cachekey = toolchain._cachekey(name, configs)
 
     -- get it directly from cache dirst
@@ -797,7 +797,7 @@ function toolchain.load_withinfo(name, info, opt)
     configs.arch = opt.arch or config.get("arch") or os.arch()
 
     -- get cache key
-    local cache = toolchain._memcache()
+    local cache = toolchain.memcache()
     local cachekey = toolchain._cachekey(name, configs)
 
     -- get it directly from cache dirst
@@ -909,7 +909,7 @@ function toolchain.toolconfig(toolchains, name, opt)
     local arch = opt.arch or config.get("arch") or os.arch()
 
     -- get cache and cachekey
-    local cache = toolchain._memcache()
+    local cache = toolchain.memcache()
     local cachekey = "toolconfig_" .. (opt.cachekey or "") .. "_" .. plat .. "_" .. arch
 
     -- get configuration
