@@ -219,7 +219,6 @@ end
 
 -- find compiler-rt dir
 function _get_llvm_compiler_rtdir_and_link(toolchain)
-    import("lib.detect.find_tool")
 
     local cc = toolchain:tool("cc")
     local cc_tool = find_tool(cc, {version = true})
@@ -233,7 +232,7 @@ function _get_llvm_compiler_rtdir_and_link(toolchain)
             local arch = target_triple and target_triple:split("-")[1]
 
             local plat
-            if toolchain:is_plat("windows") then
+            if toolchain:is_plat("windows", "mingw") then
                 plat = "windows"
             elseif toolchain:is_plat("linux") then
                 plat = "linux"
@@ -245,7 +244,7 @@ function _get_llvm_compiler_rtdir_and_link(toolchain)
             tripletdir = os.isdir(tripletdir) or nil
 
             local rtdir = tripletdir and path.join(plat, target_triple) or plat
-            if os.isdir(path.join(res_libdir, rtdir)) and toolchain:is_plat("windows") then
+            if os.isdir(path.join(res_libdir, rtdir)) and toolchain:is_plat("windows", "mingw") then
                 local rtlink = "clang_rt.builtins" .. (tripletdir and ".lib" or ("-" .. arch .. ".lib"))
                 if os.isfile(path.join(res_libdir, rtdir, rtlink)) then
                     return res_libdir, path.join(rtdir, rtlink), path.join(res_libdir, rtdir)
@@ -278,7 +277,7 @@ function get_llvm_dirs(toolchain)
     local llvm_dirs = memcache:get(cachekey)
     if llvm_dirs == nil then
         local rootdir = toolchain:sdkdir()
-        if not rootdir and toolchain:is_plat("windows") then
+        if not rootdir and (toolchain:is_plat("windows") or is_host("windows")) then
             rootdir = _get_llvm_rootdir(toolchain)
         end
 
@@ -331,12 +330,12 @@ end
 function set_llvm_runenvs(toolchain)
     local dirs = get_llvm_dirs(toolchain)
     if dirs then
-        if dirs.bin and toolchain:is_plat("windows") then
+        if dirs.bin and (toolchain:is_plat("windows") or is_host("windows")) then
             toolchain:add("runenvs", "PATH", dirs.bin)
         end
         for _, dir in ipairs({dirs.lib or false, dirs.cxxlib or false, dirs.rtlib or false}) do
             if dir then
-                if toolchain:is_plat("windows") then
+                if toolchain:is_plat("windows") or is_host("windows") then
                     toolchain:add("runenvs", "PATH", dir)
                 elseif toolchain:is_plat("linux", "bsd") then
                     toolchain:add("runenvs", "LD_LIBRARY_PATH", dir)
