@@ -229,7 +229,7 @@ function get_llvm_compiler_rtinfo(toolchain)
         local resourcedir = get_llvm_resourcedir(toolchain)
         if resourcedir  then
             local res_libdir = path.join(resourcedir, "lib")
-            -- when -DLLVM_ENABLE_TARGET_RUNTIME_DIR=OFF rtdir is windows/ and rtlink is clang_rt.builtins_<arch>.lib  
+            -- when -DLLVM_ENABLE_TARGET_RUNTIME_DIR=OFF rtdir is windows/ and rtlink is clang_rt.builtins_<arch>.lib
             -- when ON rtdir is windows/<target-triple> and rtlink is clang_rt.builtins.lib
             local target_triple = get_llvm_target_triple(toolchain)
             local arch = target_triple and target_triple:split("-")[1]
@@ -242,7 +242,7 @@ function get_llvm_compiler_rtinfo(toolchain)
             elseif toolchain:is_plat("macosx", "iphoneos", "watchos", "appletvos", "applexros") then
                 plat = "darwin"
             end
-            
+
             local tripletdir = target_triple and path.join(res_libdir, "windows", target_triple)
             tripletdir = os.isdir(tripletdir) or nil
 

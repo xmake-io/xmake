@@ -222,11 +222,11 @@ function nf_runtime(self, runtime, opt)
             }
         end
     end
-    local target = opt.target or opt
     -- llvm on windows still doesn't support autolinking of libc++ and compiler-rt builtins
     -- @see https://discourse.llvm.org/t/improve-autolinking-of-compiler-rt-and-libc-on-windows-with-lld-link/71392/10
-    -- and need manual setting of libc++ headerdirectory 
+    -- and need manual setting of libc++ headerdirectory
     -- @see https://github.com/llvm/llvm-project/issues/79647
+    local target = opt.target or opt
     local llvm_dirs = toolchain_utils.get_llvm_dirs(self:toolchain())
     -- we will set runtimes in android ndk toolchain
     if not self:is_plat("android") then
@@ -274,10 +274,14 @@ function nf_runtime(self, runtime, opt)
                         maps["c++_shared"] = table.join(maps["c++_shared"], nf_linkdir(self, llvm_dirs.cxxlibdir))
                     end
 
-                    -- add rpath to avoid the user need to set DYLD_LIBRARY_PATH by hand
-                    if target.is_shared and target:is_shared() and target.filename and self:is_plat("macosx", "iphoneos", "watchos") then
-                        maps["c++_shared"] = table.join(maps["c++_shared"], "-install_name")
-                        maps["c++_shared"] = table.join(maps["c++_shared"], "@rpath/" .. target:filename())
+                    -- add rpath to avoid the user need to set (DY)LD_LIBRARY_PATH by hand
+                    if not self:is_plat("windows", "mingw") then
+                        if llvm_dirs.libdir then
+                            maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, llvm_dirs.libdir))
+                        end
+                        if llvm_dirs.cxxlibdir then
+                            maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, llvm_dirs.cxxlibdir))
+                        end
                     end
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
