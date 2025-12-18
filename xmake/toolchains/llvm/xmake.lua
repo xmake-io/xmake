@@ -58,7 +58,7 @@ toolchain("llvm")
         end
 
         toolchain_utils.set_llvm_runenvs(toolchain)
-        toolchain_utils.add_llvm_compiler_rt(toolchain)
+
 
         -- add target flags
         local target
