@@ -19,28 +19,15 @@
 --
 
 -- imports
-import("rules.c++.config.basic", {rootdir = os.programdir(), alias = "config_basic"})
-import("rules.c++.config.dynamic_debugging", {rootdir = os.programdir(), alias = "config_dynamic_debugging"})
-import("rules.c++.config.optimization", {rootdir = os.programdir(), alias = "config_optimization"})
-import("rules.c++.config.sanitizer", {rootdir = os.programdir(), alias = "config_sanitizer"})
+import("rules.swift.config.basic", {rootdir = os.programdir(), alias = "config_basic"})
 import("rules.c++.config.runtime", {rootdir = os.programdir(), alias = "config_runtime"})
 
 -- main entry
-function main(target, sourcekind)
+function main(target)
 
     -- config basic configs
-    config_basic(target, sourcekind)
-
-    -- config dynamic debugging configs (must be before optimization to disable incompatible flags)
-    config_dynamic_debugging(target, sourcekind)
-
-    -- config optimization configs
-    config_optimization(target, sourcekind)
+    config_basic(target)
 
     -- config runtime configs
     config_runtime(target)
-
-    -- config sanitizer configs
-    config_sanitizer(target, sourcekind)
 end
-
