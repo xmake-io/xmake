@@ -23,7 +23,6 @@ import("core.base.option")
 import("core.project.config")
 import("core.base.semver")
 import("core.tool.linker")
-import("core.tool.toolchain", {alias = "_toolchain"})
 import("core.tool.compiler")
 import("core.language.language")
 import("lib.detect.find_tool")
@@ -184,7 +183,7 @@ end
 
 -- get llvm sdk resource directory
 function _get_llvm_resourcedir(toolchain)
-    local memcache = _toolchain.memcache()
+    local memcache = toolchain:memcache()
     local cachekey = toolchain:cachekey() .. "_get_llvm_resourcedir"
     local llvm_resourcedir = memcache:get2(cachekey)
     if llvm_resourcedir == nil then
@@ -202,7 +201,7 @@ end
 
 -- get llvm sdk root directory
 function _get_llvm_rootdir(toolchain)
-    local memcache = _toolchain.memcache()
+    local memcache = toolchain:memcache()
     local cachekey = toolchain:cachekey() .. "_get_llvm_rootdir"
     local llvm_rootdir = memcache:get2(cachekey, "rootdir")
     if llvm_rootdir == nil then
@@ -259,7 +258,7 @@ end
 
 -- get llvm target triple
 function _get_llvm_target_triple(toolchain)
-    local memcache = _toolchain.memcache()
+    local memcache = toolchain:memcache()
     local cachekey = toolchain:cachekey() .. "_get_llvm_target_triple"
     local llvm_targettriple = memcache:get(cachekey)
     if llvm_targettriple == nil then
@@ -274,7 +273,7 @@ end
 
 -- get llvm toolchain dirs
 function get_llvm_dirs(toolchain)
-    local memcache = _toolchain.memcache()
+    local memcache = toolchain:memcache()
     local cachekey = toolchain:cachekey() .. "_get_llvm_dirs"
     local llvm_dirs = memcache:get(cachekey)
     if llvm_dirs == nil then
