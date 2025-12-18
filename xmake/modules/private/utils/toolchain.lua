@@ -357,12 +357,4 @@ function set_llvm_runenvs(toolchain)
     end
 end
 
--- add compiler-rt for llvm
-function add_llvm_compiler_rt(toolchain)
-    local dirs = get_llvm_dirs(toolchain)
-    if dirs and dirs.rtlibdir and dirs.rtlink then
-        local rtlib_path = path.join(dirs.rtlibdir, path.filename(dirs.rtlink))
-        toolchain:add("ldflags", rtlib_path)
-        toolchain:add("shflags", rtlib_path)
-    end
-end
+
