@@ -185,7 +185,7 @@ end
 function _get_llvm_resourcedir(toolchain)
     local memcache = toolchain:memcache()
     local cachekey = toolchain:cachekey() .. "_get_llvm_resourcedir"
-    local llvm_resourcedir = memcache:get2(cachekey)
+    local llvm_resourcedir = memcache:get(cachekey)
     if llvm_resourcedir == nil then
         local outdata = try { function() return os.iorunv(toolchain:tool("cc"), {"-print-resource-dir"}) end }
         if outdata then
@@ -203,7 +203,7 @@ end
 function _get_llvm_rootdir(toolchain)
     local memcache = toolchain:memcache()
     local cachekey = toolchain:cachekey() .. "_get_llvm_rootdir"
-    local llvm_rootdir = memcache:get2(cachekey, "rootdir")
+    local llvm_rootdir = memcache:get(cachekey)
     if llvm_rootdir == nil then
         local resourcedir = _get_llvm_resourcedir(toolchain)
         if resourcedir then

@@ -31,7 +31,6 @@ local raise     = require("sandbox/modules/raise")
 sandbox_core_tool_toolchain.apis        = toolchain.apis
 sandbox_core_tool_toolchain.directories = toolchain.directories
 sandbox_core_tool_toolchain.save        = toolchain.save
-sandbox_core_tool_toolchain.memcache    = toolchain.memcache
 
 -- get all toolchains list
 function sandbox_core_tool_toolchain.list()
