@@ -10,7 +10,7 @@ function run_test(toolchain_name)
 
     local plat = os.host()
     local arch = os.arch()
-    if is_subhost("msys2") then
+    if is_subhost("msys") then
         plat = "mingw"
     end
     local toolchain_inst = toolchain.load(toolchain_name, {plat = plat, arch = arch})
