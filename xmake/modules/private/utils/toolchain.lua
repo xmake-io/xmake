@@ -281,7 +281,7 @@ function get_llvm_dirs(toolchain)
             rootdir = _get_llvm_rootdir(toolchain)
         end
 
-        local bindir, libdir, cxxlibdir, includedir, cxxincludedir, resdir, rtdir, rtlink
+        local bindir, libdir, cxxlibdir, includedir, cxxincludedir, resdir, rtdir, rtlink, rtlib
         if rootdir then
             bindir = path.join(rootdir, "bin")
             bindir = os.isdir(bindir) and bindir or nil
@@ -321,7 +321,6 @@ function get_llvm_dirs(toolchain)
                      rtlib = rtlib,
                      rtlink = rtlink }
         memcache:set(cachekey, llvm_dirs)
-        _g.llvm_dirs = llvm_dirs
       end
       return llvm_dirs
 end
@@ -348,5 +347,15 @@ function set_llvm_runenvs(toolchain)
                 end
             end
         end
+    end
+end
+
+-- add compiler-rt for llvm
+function add_llvm_compiler_rt(toolchain)
+    local dirs = get_llvm_dirs(toolchain)
+    if dirs and dirs.rtlib and dirs.rtlink then
+        local rtlib_path = path.join(dirs.rtlib, path.filename(dirs.rtlink))
+        toolchain:add("ldflags", rtlib_path)
+        toolchain:add("shflags", rtlib_path)
     end
 end
