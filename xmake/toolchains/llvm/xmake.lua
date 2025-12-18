@@ -57,8 +57,8 @@ toolchain("llvm")
             toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
         end
 
-        toolchain_utils.set_llvm_runenvs(toolchain)
-
+        -- add llvm runenvs
+        toolchain_utils.add_llvm_runenvs(toolchain)
 
         -- add target flags
         local target

@@ -92,7 +92,7 @@ function main(toolchain, suffix)
         target = target .. "-linux-gnu"
     end
 
-    toolchain_utils.set_llvm_runenvs(toolchain)
+    toolchain_utils.add_llvm_runenvs(toolchain)
 
     if target then
         toolchain:add("cxflags", "--target=" .. target)

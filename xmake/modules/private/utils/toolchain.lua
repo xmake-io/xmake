@@ -332,8 +332,8 @@ function get_llvm_dirs(toolchain)
       return llvm_dirs
 end
 
--- set runenvs for llvm
-function set_llvm_runenvs(toolchain)
+-- add runenvs for llvm
+function add_llvm_runenvs(toolchain)
     local dirs = get_llvm_dirs(toolchain)
     if dirs then
         if dirs.bindir and (toolchain:is_plat("windows") or is_host("windows")) then
