@@ -23,6 +23,7 @@ import("rules.c++.config.basic", {rootdir = os.programdir(), alias = "config_bas
 import("rules.c++.config.dynamic_debugging", {rootdir = os.programdir(), alias = "config_dynamic_debugging"})
 import("rules.c++.config.optimization", {rootdir = os.programdir(), alias = "config_optimization"})
 import("rules.c++.config.sanitizer", {rootdir = os.programdir(), alias = "config_sanitizer"})
+import("rules.c++.config.runtime", {rootdir = os.programdir(), alias = "config_runtime"})
 
 -- main entry
 function main(target, sourcekind)
@@ -35,6 +36,9 @@ function main(target, sourcekind)
 
     -- config optimization configs
     config_optimization(target, sourcekind)
+
+    -- config runtime configs
+    config_runtime(target)
 
     -- config sanitizer configs
     config_sanitizer(target, sourcekind)

@@ -21,35 +21,6 @@
 -- define rule: utils.compiler.runtime
 rule("utils.compiler.runtime")
     on_config(function (target)
-        local runtimes = get_config("runtimes")
-        if not runtimes and target:is_plat("windows") then
-            runtimes = get_config("vs_runtime")
-            if runtimes then
-                wprint("--vs_runtime=%s is deprecated, please use --runtimes=%s", runtimes, runtimes)
-            end
-        end
-        if not runtimes and target:is_plat("android") then
-            runtimes = get_config("ndk_cxxstl")
-            if runtimes then
-                wprint("--ndk_cxxstl=%s is deprecated, please use --runtimes=%s", runtimes, runtimes)
-            end
-        end
-        if runtimes and not target:get("runtimes") then
-            if type(runtimes) == "string" then
-                runtimes = runtimes:split(",", {plain = true})
-            end
-            target:set("runtimes", runtimes)
-        end
-
-        -- enable vs runtime as MD by default
-        if target:is_plat("windows") and not target:get("runtimes") then
-            local vs_runtime_default = target:policy("build.c++.msvc.runtime")
-            if vs_runtime_default and target:has_tool("cxx", "cl", "clang", "clangxx", "clang_cl") then
-                if is_mode("debug") then
-                    vs_runtime_default = vs_runtime_default .. "d"
-                end
-                target:set("runtimes", vs_runtime_default)
-            end
-        end
+        import("rules.c++.config.runtime", {rootdir = os.programdir(), alias = "config_runtime"})
+        config_runtime(target)
     end)
-
