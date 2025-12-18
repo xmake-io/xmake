@@ -220,11 +220,11 @@ function get_llvm_rootdir(toolchain)
     return llvm_rootdir or nil
 end
 
--- find compiler-rt dir
-function _get_llvm_compiler_rtdir_and_link(toolchain)
-    local resdir = get_llvm_resourcedir(toolchain)
-    if resdir  then
-        local res_libdir = path.join(resdir, "lib")
+-- get compiler-rt info
+function get_llvm_compiler_rtinfo(toolchain)
+    local resourcedir = get_llvm_resourcedir(toolchain)
+    if resourcedir  then
+        local res_libdir = path.join(resourcedir, "lib")
         -- when -DLLVM_ENABLE_TARGET_RUNTIME_DIR=OFF rtdir is windows/ and rtlink is clang_rt.builtins_<arch>.lib  
         -- when ON rtdir is windows/<target-triple> and rtlink is clang_rt.builtins.lib
         local target_triple = get_llvm_target_triple(toolchain)
@@ -235,7 +235,7 @@ function _get_llvm_compiler_rtdir_and_link(toolchain)
             plat = "windows"
         elseif toolchain:is_plat("linux") then
             plat = "linux"
-        elseif toolchain:is_plat("macosx", "ios", "watchos", "appletvos", "applexros") then
+        elseif toolchain:is_plat("macosx", "iphoneos", "watchos", "appletvos", "applexros") then
             plat = "darwin"
         end
         
@@ -243,13 +243,14 @@ function _get_llvm_compiler_rtdir_and_link(toolchain)
         tripletdir = os.isdir(tripletdir) or nil
 
         local rtdir = tripletdir and path.join(plat, target_triple) or plat
-        if os.isdir(path.join(res_libdir, rtdir)) and toolchain:is_plat("windows", "mingw") then
+        local rtinfo = {rtdir = res_libdir, rtlibdir = path.join(res_libdir, rtdir)}
+        if os.isdir(rtinfo.rtlibdir) and toolchain:is_plat("windows", "mingw") then
             local rtlink = "clang_rt.builtins" .. (tripletdir and ".lib" or ("-" .. arch .. ".lib"))
-            if os.isfile(path.join(res_libdir, rtdir, rtlink)) then
-                return res_libdir, path.join(rtdir, rtlink), path.join(res_libdir, rtdir)
+            if os.isfile(path.join(rtinfo.rtlibdir, rtlink)) then
+                rtinfo.rtlink = path.join(rtdir, rtlink)
             end
         end
-        return res_libdir, nil, path.join(res_libdir, rtdir)
+        return rtinfo
     end
 end
 
@@ -282,7 +283,7 @@ function get_llvm_dirs(toolchain)
             rootdir = get_llvm_rootdir(toolchain)
         end
 
-        local bindir, libdir, cxxlibdir, includedir, cxxincludedir, resourcedir, rtdir, rtlink, rtlib
+        local bindir, libdir, cxxlibdir, includedir, cxxincludedir, resourcedir, rtdir, rtlink, rtlibdir
         if rootdir then
             bindir = path.join(rootdir, "bin")
             bindir = os.isdir(bindir) and bindir or nil
@@ -308,7 +309,12 @@ function get_llvm_dirs(toolchain)
             end
 
             resourcedir = get_llvm_resourcedir(toolchain)
-            rtdir, rtlink, rtlib = _get_llvm_compiler_rtdir_and_link(toolchain)
+            local rtinfo = get_llvm_compiler_rtinfo(toolchain)
+            if rtinfo then
+                rtdir = rtinfo.rtdir
+                rtlink = rtinfo.rtlink
+                rtlibdir = rtinfo.rtlibdir
+            end
         end
 
         llvm_dirs = {rootdir = rootdir,
@@ -319,7 +325,7 @@ function get_llvm_dirs(toolchain)
                      cxxincludedir = cxxincludedir,
                      resourcedir = resourcedir,
                      rtdir = rtdir,
-                     rtlibdir = rtlib,
+                     rtlibdir = rtlibdir,
                      rtlink = rtlink }
         memcache:set(cachekey, llvm_dirs)
       end
