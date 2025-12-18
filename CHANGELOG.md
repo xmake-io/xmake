@@ -21,6 +21,8 @@
 
 ### Changes
 
+* [#7148](https://github.com/xmake-io/xmake/pull/7148): Update Zig examples
+* [#7145](https://github.com/xmake-io/xmake/pull/7145): Improve Clang/LLVM runtime support
 * [#7136](https://github.com/xmake-io/xmake/pull/7136): Improve clang-cl depfiles generation
 * [#7135](https://github.com/xmake-io/xmake/pull/7135): Improve `xrepo env` to add session ID
 * [#7109](https://github.com/xmake-io/xmake/pull/7109): Improve binutils to read symbols from binary file
@@ -2258,6 +2260,8 @@
 
 ### 改进
 
+* [#7148](https://github.com/xmake-io/xmake/pull/7148): 更新 Zig 示例
+* [#7145](https://github.com/xmake-io/xmake/pull/7145): 改进 Clang/LLVM 运行时支持
 * [#7136](https://github.com/xmake-io/xmake/pull/7136): 改进 clang-cl 依赖文件生成
 * [#7135](https://github.com/xmake-io/xmake/pull/7135): 改进 `xrepo env` 以添加会话 ID
 * [#7109](https://github.com/xmake-io/xmake/pull/7109): 改进 binutils 以从二进制文件读取符号
