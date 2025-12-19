@@ -18,53 +18,15 @@
 -- @file        xmake.lua
 --
 
-import("detect.sdks.find_vstudio")
 import("detect.sdks.find_mingw")
 import("core.project.config")
 import("core.project.project")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
--- add the given vs environment
-function _add_vsenv(toolchain, name, curenvs)
-
-    -- get vcvars
-    local vcvars = toolchain:config("vcvars")
-    if not vcvars then
-        return
-    end
-
-    -- get the paths for the vs environment
-    local new = vcvars[name]
-    if new then
-        -- fix case naming conflict for cmake/msbuild between the new msvc envs and current environment, if we are running xmake in vs prompt.
-        -- @see https://github.com/xmake-io/xmake/issues/4751
-        for k, c in pairs(curenvs) do
-            if name:lower() == k:lower() and name ~= k then
-                name = k
-                break
-            end
-        end
-        if name == "INCLUDE" or name == "LIB" then
-            toolchain:add("runenvs", name, table.concat(path.splitenv(new), ";"))
-        else
-            toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
-        end
-    end
-end
-
 function _load_windows(toolchain, suffix)
 
     -- add vs environments
-    local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
-    local curenvs = os.getenvs()
-    for _, name in ipairs(expect_vars) do
-        _add_vsenv(toolchain, name, curenvs)
-    end
-    for _, name in ipairs(find_vstudio.get_vcvars()) do
-        if not table.contains(expect_vars, name:upper()) then
-            _add_vsenv(toolchain, name, curenvs)
-        end
-    end
+    toolchain_utils.add_vsenvs(toolchain)
 
     if is_host("linux") or project.policy("build.optimization.lto") then
         toolchain:add("ldflags", "-fuse-ld=lld-link" .. suffix)

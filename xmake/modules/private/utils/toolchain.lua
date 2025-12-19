@@ -91,6 +91,48 @@ function check_vstudio(toolchain, check)
     return vs
 end
 
+-- add the given vs environment
+function _add_vsenv(toolchain, name, curenvs)
+
+    -- get vcvars
+    local vcvars = toolchain:config("vcvars")
+    if not vcvars then
+        return
+    end
+
+    -- get the paths for the vs environment
+    local new = vcvars[name]
+    if new then
+        -- fix case naming conflict for cmake/msbuild between the new msvc envs and current environment, if we are running xmake in vs prompt.
+        -- @see https://github.com/xmake-io/xmake/issues/4751
+        for k, c in pairs(curenvs) do
+            if name:lower() == k:lower() and name ~= k then
+                name = k
+                break
+            end
+        end
+        if name == "INCLUDE" or name == "LIB" then
+            toolchain:add("runenvs", name, table.concat(path.splitenv(new), ";"))
+        else
+            toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
+        end
+    end
+end
+
+-- add vs environments
+function add_vsenvs(toolchain, expect_vars)
+    local curenvs = os.getenvs()
+    expect_vars = expect_vars or {"PATH", "LIB", "INCLUDE", "LIBPATH"}
+    for _, name in ipairs(expect_vars) do
+        _add_vsenv(toolchain, name, curenvs)
+    end
+    for _, name in ipairs(find_vstudio.get_vcvars()) do
+        if not table.contains(expect_vars, name:upper()) then
+            _add_vsenv(toolchain, name, curenvs)
+        end
+    end
+end
+
 -- set llvm runtimes
 function set_llvm_runtimes(toolchain)
     -- We should set them up uniformly here, because runtimes will be accessed early (in sanitizer),
@@ -381,5 +423,3 @@ function add_llvm_runenvs(toolchain)
         end
     end
 end
-
-
