@@ -104,7 +104,6 @@ typedef struct __xm_macho_rpath_command_t {
     tb_uint32_t cmdsize;
     tb_uint32_t path_offset;
 } __tb_packed__ xm_macho_rpath_command_t;
-#include "tbox/prefix/packed.h"
 
 typedef struct __xm_macho_segment_command_t {
     tb_uint32_t cmd;
@@ -215,7 +214,6 @@ typedef struct __xm_macho_dylib_command_t {
     xm_macho_dylib_t dylib;
 } __tb_packed__ xm_macho_dylib_command_t;
 #include "tbox/prefix/packed.h"
-
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * inline implementation
