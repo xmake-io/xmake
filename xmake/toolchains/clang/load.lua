@@ -34,38 +34,6 @@ function _load_windows(toolchain, suffix)
     end
 end
 
-function _get_target(toolchain)
-    -- TODO
-    -- Perhaps in the future we will improve it and allow setting targets on more platforms.
-    if not toolchain:is_plat("windows", "mingw") then
-        return
-    end
-
-    local target
-    if toolchain:is_arch("x86_64", "x64") then
-        target = "x86_64"
-    elseif toolchain:is_arch("i386", "x86", "i686") then
-        target = "i686"
-    elseif toolchain:is_arch("arm64", "aarch64", "arm64-v8a") then
-        target = "aarch64"
-    elseif toolchain:is_arch("arm.*") then
-        target = "armv7"
-    end
-
-    if target then
-        if toolchain:is_plat("windows") then
-            target = target .. "-windows-msvc"
-        elseif toolchain:is_plat("mingw") then
-            target = target .. "-w64-windows-gnu"
-        elseif toolchain:is_plat("linux") then
-            target = target .. "-linux-gnu"
-        else
-            target = nil
-        end
-    end
-    return target
-end
-
 function main(toolchain, suffix)
 
     -- init tools for lto
@@ -74,28 +42,14 @@ function main(toolchain, suffix)
         toolchain:set("toolset", "ranlib",  "llvm-ranlib" .. suffix)
     end
 
-    -- init target
-    local target = _get_target(toolchain)
-    if target then
-        toolchain:add("cxflags", "--target=" .. target)
-        toolchain:add("mxflags", "--target=" .. target)
-        toolchain:add("asflags", "--target=" .. target)
-        toolchain:add("ldflags", "--target=" .. target)
-        toolchain:add("shflags", "--target=" .. target)
-    else
-        local march
-        if toolchain:is_arch("x86_64", "x64") then
-            march = "-m64"
-        elseif toolchain:is_arch("i386", "x86") then
-            march = "-m32"
-        end
-        if march then
-            toolchain:add("cxflags", march)
-            toolchain:add("mxflags", march)
-            toolchain:add("asflags", march)
-            toolchain:add("ldflags", march)
-            toolchain:add("shflags", march)
-        end
+    -- add target flags
+    local flags = toolchain_utils.get_clang_target_flags(toolchain)
+    if flags then
+        toolchain:add("cxflags", flags)
+        toolchain:add("mxflags", flags)
+        toolchain:add("asflags", flags)
+        toolchain:add("ldflags", flags)
+        toolchain:add("shflags", flags)
     end
 
     -- init windows

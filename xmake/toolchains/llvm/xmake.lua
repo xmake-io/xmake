@@ -58,33 +58,22 @@ toolchain("llvm")
         toolchain_utils.add_llvm_runenvs(toolchain)
 
         -- add target flags
-        local target
-        if toolchain:is_plat("windows") and not is_host("windows") then
-            if toolchain:is_arch("i386", "x86") then
-                target = "i386-pc-windows-msvc"
-            else
-                target = "x86_64-pc-windows-msvc"
-            end
-        elseif toolchain:is_plat("cross") then
-            target = toolchain:cross():gsub("(.*)%-$", "%1")
+        local flags = toolchain_utils.get_clang_target_flags(toolchain)
+        if flags then
+            toolchain:add("cxflags", flags)
+            toolchain:add("mxflags", flags)
+            toolchain:add("asflags", flags)
+            toolchain:add("ldflags", flags)
+            toolchain:add("shflags", flags)
         end
-        local target_flags
+
+        -- add target flags for swift
+        local target = toolchain_utils.get_clang_target(toolchain)
         if target then
-            target_flags = "--target=" .. target
-        elseif toolchain:is_arch("x86_64", "x64") then
-            target_flags = "-m64"
-        elseif toolchain:is_arch("i386", "x86") then
-            target_flags = "-m32"
-        end
-        if target_flags then
-            toolchain:add("cxflags", target_flags)
-            toolchain:add("mxflags", target_flags)
-            toolchain:add("asflags", target_flags)
-            toolchain:add("ldflags", target_flags)
-            toolchain:add("shflags", target_flags)
-            toolchain:add("scasflags", "--target=" .. target_flags)
-            toolchain:add("scldflags", "--target=" .. target_flags)
-            toolchain:add("scshflags", "--target=" .. target_flags)
+            local flag = "--target=" .. target
+            toolchain:add("scasflags", flag)
+            toolchain:add("scldflags", flag)
+            toolchain:add("scshflags", flag)
         end
 
         -- init flags for platform
