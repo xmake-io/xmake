@@ -120,6 +120,63 @@ function _add_vsenv(toolchain, name, curenvs)
     end
 end
 
+-- get clang target
+function get_clang_target(toolchain)
+    local target
+    if toolchain:is_plat("windows") then
+        if toolchain:is_arch("x86_64", "x64") then
+            target = "x86_64-pc-windows-msvc"
+        elseif toolchain:is_arch("i386", "x86", "i686") then
+            target = "i686-pc-windows-msvc"
+        elseif toolchain:is_arch("arm64", "aarch64") then
+            target = "aarch64-pc-windows-msvc"
+        elseif toolchain:is_arch("arm64ec") then
+            target = "arm64ec-pc-windows-msvc"
+        elseif toolchain:is_arch("arm.*") then
+            target = "armv7-pc-windows-msvc"
+        end
+    elseif toolchain:is_plat("mingw") then
+        if toolchain:is_arch("x86_64", "x64") then
+            target = "x86_64-w64-windows-gnu"
+        elseif toolchain:is_arch("i386", "x86", "i686") then
+            target = "i686-w64-windows-gnu"
+        elseif toolchain:is_arch("arm64", "aarch64") then
+            target = "aarch64-w64-windows-gnu"
+        elseif toolchain:is_arch("arm.*") then
+            target = "armv7-w64-windows-gnu"
+        end
+    elseif toolchain:is_plat("linux") then
+        if toolchain:is_arch("x86_64", "x64") then
+            target = "x86_64-linux-gnu"
+        elseif toolchain:is_arch("i386", "x86", "i686") then
+            target = "i686-linux-gnu"
+        elseif toolchain:is_arch("arm64", "aarch64", "arm64-v8a") then
+            target = "aarch64-linux-gnu"
+        elseif toolchain:is_arch("arm.*") then
+            target = "armv7-linux-gnu"
+        end
+    elseif toolchain:is_plat("cross") then
+        target = toolchain:cross()
+        if target and target:endswith("-") then
+            target = target:sub(1, -2)
+        end
+    end
+    return target
+end
+
+-- get clang target flags
+function get_clang_target_flags(toolchain)
+    local target = get_clang_target(toolchain)
+    if target then
+        return "--target=" .. target
+    end
+    if toolchain:is_arch("x86_64", "x64") then
+        return "-m64"
+    elseif toolchain:is_arch("i386", "x86") then
+        return "-m32"
+    end
+end
+
 -- add vs environments
 function add_vsenvs(toolchain, expect_vars)
     local curenvs = os.getenvs()
