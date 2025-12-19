@@ -91,6 +91,63 @@ function check_vstudio(toolchain, check)
     return vs
 end
 
+-- add the given vs environment
+function _add_vsenv(toolchain, name, curenvs)
+
+    -- get vcvars
+    local vcvars = toolchain:config("vcvars")
+    if not vcvars then
+        return
+    end
+
+    -- get the paths for the vs environment
+    local new = vcvars[name]
+    if new then
+        -- fix case naming conflict for cmake/msbuild between the new msvc envs and current environment, if we are running xmake in vs prompt.
+        -- @see https://github.com/xmake-io/xmake/issues/4751
+        for k, c in pairs(curenvs) do
+            if name:lower() == k:lower() and name ~= k then
+                name = k
+                break
+            end
+        end
+        -- msvc-wine on linux
+        if (name == "INCLUDE" or name == "LIB") and not is_host("windows") then
+            toolchain:add("runenvs", name, path.joinenv(path.splitenv(new), ";"))
+        else
+            toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
+        end
+    end
+end
+
+-- add vs environments
+function add_vsenvs(toolchain, expect_vars)
+    local curenvs = os.getenvs()
+    expect_vars = expect_vars or {"PATH", "LIB", "INCLUDE", "LIBPATH"}
+    for _, name in ipairs(expect_vars) do
+        _add_vsenv(toolchain, name, curenvs)
+    end
+    for _, name in ipairs(find_vstudio.get_vcvars()) do
+        if not table.contains(expect_vars, name:upper()) then
+            _add_vsenv(toolchain, name, curenvs)
+        end
+    end
+end
+
+-- set llvm runtimes
+function set_llvm_runtimes(toolchain)
+    -- We should set them up uniformly here, because runtimes will be accessed early (in sanitizer),
+    -- which automatically triggers lazy loading of the toolchain.
+    -- However, if some runtime configurations are set in advance in the descriptor scope,
+    -- lazy loading will not be triggered when the runtimes are accessed, and some Windows runtimes may be lost.
+    --
+    -- @see https://github.com/xmake-io/xmake/pull/7146#issuecomment-3674402132
+    toolchain:set("runtimes", "c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
+    if toolchain:is_plat("windows") then
+        toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
+    end
+end
+
 -- check vc build tools sdk
 function check_vc_build_tools(toolchain, sdkdir, check)
     local opt = {}
@@ -367,5 +424,3 @@ function add_llvm_runenvs(toolchain)
         end
     end
 end
-
-

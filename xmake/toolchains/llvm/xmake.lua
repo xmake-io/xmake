@@ -22,7 +22,6 @@ toolchain("llvm")
     set_kind("standalone")
     set_homepage("https://llvm.org/")
     set_description("A collection of modular and reusable compiler and toolchain technologies")
-    set_runtimes("c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
 
     set_toolset("cc",      "clang")
     set_toolset("cxx",     "clang++", "clang")
@@ -52,10 +51,8 @@ toolchain("llvm")
     on_load(function (toolchain)
         import("private.utils.toolchain", {alias = "toolchain_utils"})
 
-        -- add runtimes
-        if toolchain:is_plat("windows") then
-            toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
-        end
+        -- set llvm runtimes
+        toolchain_utils.set_llvm_runtimes(toolchain)
 
         -- add llvm runenvs
         toolchain_utils.add_llvm_runenvs(toolchain)

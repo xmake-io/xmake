@@ -36,7 +36,7 @@ function _check_clang(toolchain, vcvars, suffix)
     return result
 end
 
-function main(toolchain, suffix)
+function _check_for_windows(toolchain, suffix)
 
     -- only for windows or linux (msvc-wine)
     if not is_host("windows", "linux") then
@@ -66,5 +66,12 @@ function main(toolchain, suffix)
             return toolchain_utils.check_vstudio(toolchain, check)
         end
     end
+end
+
+function main(toolchain, suffix)
+    if toolchain:is_plat("windows") then
+        return _check_for_windows(toolchain, suffix)
+    end
+    return find_tool("clang", {program = "clang" .. suffix})
 end
 

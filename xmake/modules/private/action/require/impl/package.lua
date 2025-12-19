@@ -546,7 +546,8 @@ function _finish_requireinfo(requireinfo, package)
         else
             runtimes = {}
         end
-        if not table.contains(runtimes, "MT", "MD", "MTd", "MDd") then
+        -- we should not set default runtimes if runtimes has been set, e.g. `xmake f --toolchain=clang --runtimes=c++_shared`
+        if #runtimes == 0 then
             local vs_runtime_default = project.policy("build.c++.msvc.runtime")
             if vs_runtime_default and is_mode("debug") then
                 vs_runtime_default = vs_runtime_default .. "d"

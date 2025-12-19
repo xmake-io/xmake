@@ -95,7 +95,8 @@ function build_tests(toolchain_name, opt)
     if opt.runtimes then
         runtimes = " --runtimes=" .. opt.runtimes .. " "
     end
-    print("running with config: (toolchain: %s, compiler: %s, version: %s, runtimes: %s, stdmodule: %s, fallback scanner: %s, two phases: %s)", toolchain_name, compiler, version, opt.runtimes or "default", opt.stdmodule or false, opt.fallbackscanner or false, two_phases)
+    print("running with config: (toolchain: %s, compiler: %s, version: %s, runtimes: %s, stdmodule: %s, fallback scanner: %s, two phases: %s)",
+        toolchain_name, compiler, version, opt.runtimes or "default", opt.stdmodule or false, opt.fallbackscanner or false, two_phases)
 
     local flags = ""
     if opt.flags then
