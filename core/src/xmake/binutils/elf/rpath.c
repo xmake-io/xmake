@@ -250,7 +250,7 @@ static tb_bool_t xm_binutils_elf_rpath_list_64(tb_stream_ref_t istream, tb_hize_
         if (dynamic_offset > 0 && dynamic_size > 0) {
             // read dynamic entries to find strtab address
             tb_uint64_t strtab_vaddr = 0;
-            tb_uint32_t count = dynamic_size / sizeof(xm_elf64_dynamic_t);
+            tb_uint32_t count = (tb_uint32_t)(dynamic_size / sizeof(xm_elf64_dynamic_t));
             if (tb_stream_seek(istream, base_offset + dynamic_offset)) {
                 for (tb_uint32_t i = 0; i < count; i++) {
                     xm_elf64_dynamic_t dyn;
@@ -287,7 +287,7 @@ static tb_bool_t xm_binutils_elf_rpath_list_64(tb_stream_ref_t istream, tb_hize_
     }
 
     // read dynamic entries
-    tb_uint32_t count = dynamic_size / sizeof(xm_elf64_dynamic_t);
+    tb_uint32_t count = (tb_uint32_t)(dynamic_size / sizeof(xm_elf64_dynamic_t));
     if (!tb_stream_seek(istream, base_offset + dynamic_offset)) {
         return tb_false;
     }
