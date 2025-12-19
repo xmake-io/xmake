@@ -111,8 +111,9 @@ function _add_vsenv(toolchain, name, curenvs)
                 break
             end
         end
-        if name == "INCLUDE" or name == "LIB" then
-            toolchain:add("runenvs", name, table.concat(path.splitenv(new), ";"))
+        -- msvc-wine on linux
+        if (name == "INCLUDE" or name == "LIB") and not is_host("windows") then
+            toolchain:add("runenvs", name, path.joinenv(path.splitenv(new), ";"))
         else
             toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
         end
