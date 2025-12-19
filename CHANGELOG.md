@@ -21,6 +21,7 @@
 
 ### Changes
 
+* [#7149](https://github.com/xmake-io/xmake/pull/7149): Improve binutils to optimize rpath parsing
 * [#7148](https://github.com/xmake-io/xmake/pull/7148): Update Zig examples
 * [#7145](https://github.com/xmake-io/xmake/pull/7145): Improve Clang/LLVM runtime support
 * [#7136](https://github.com/xmake-io/xmake/pull/7136): Improve clang-cl depfiles generation
@@ -2260,6 +2261,7 @@
 
 ### 改进
 
+* [#7149](https://github.com/xmake-io/xmake/pull/7149): 改进 binutils 优化 rpath 解析
 * [#7148](https://github.com/xmake-io/xmake/pull/7148): 更新 Zig 示例
 * [#7145](https://github.com/xmake-io/xmake/pull/7145): 改进 Clang/LLVM 运行时支持
 * [#7136](https://github.com/xmake-io/xmake/pull/7136): 改进 clang-cl 依赖文件生成
