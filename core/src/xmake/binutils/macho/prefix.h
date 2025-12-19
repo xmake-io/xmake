@@ -213,6 +213,17 @@ typedef struct __xm_macho_dylib_command_t {
     tb_uint32_t cmdsize;
     xm_macho_dylib_t dylib;
 } __tb_packed__ xm_macho_dylib_command_t;
+
+typedef struct __xm_macho_context_t {
+    union {
+        xm_macho_header_t header32;
+        xm_macho_header_64_t header64;
+    } header;
+    tb_bool_t   is64;
+    tb_bool_t   swap;
+    tb_uint32_t ncmds;
+    tb_uint32_t sizeofcmds;
+} __tb_packed__ xm_macho_context_t;
 #include "tbox/prefix/packed.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -244,6 +255,46 @@ static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_64(xm_macho_header_
         header->flags = tb_bits_swap_u32(header->flags);
         header->reserved = tb_bits_swap_u32(header->reserved);
     }
+}
+
+// init Mach-O context
+static __tb_inline__ tb_bool_t xm_binutils_macho_context_init(tb_stream_ref_t istream, tb_hize_t base_offset, xm_macho_context_t* context) {
+    tb_assert_and_check_return_val(istream && context, tb_false);
+
+    // read Mach-O header
+    if (!tb_stream_seek(istream, base_offset)) return tb_false;
+    if (!tb_stream_bread(istream, (tb_byte_t*)&context->header.header32, sizeof(xm_macho_header_t))) return tb_false;
+
+    // check magic
+    tb_uint32_t magic = context->header.header32.magic;
+    if (magic == XM_MACHO_MAGIC_32) {
+        context->is64 = tb_false;
+        context->swap = tb_false;
+    } else if (magic == XM_MACHO_MAGIC_32_BE) {
+        context->is64 = tb_false;
+        context->swap = tb_true;
+    } else if (magic == XM_MACHO_MAGIC_64) {
+        context->is64 = tb_true;
+        context->swap = tb_false;
+    } else if (magic == XM_MACHO_MAGIC_64_BE) {
+        context->is64 = tb_true;
+        context->swap = tb_true;
+    } else {
+        return tb_false; // Not a Mach-O file
+    }
+
+    if (context->is64) {
+        if (!tb_stream_seek(istream, base_offset)) return tb_false;
+        if (!tb_stream_bread(istream, (tb_byte_t*)&context->header.header64, sizeof(xm_macho_header_64_t))) return tb_false;
+        xm_binutils_macho_swap_header_64(&context->header.header64, context->swap);
+        context->ncmds = context->header.header64.ncmds;
+        context->sizeofcmds = context->header.header64.sizeofcmds;
+    } else {
+        xm_binutils_macho_swap_header_32(&context->header.header32, context->swap);
+        context->ncmds = context->header.header32.ncmds;
+        context->sizeofcmds = context->header.header32.sizeofcmds;
+    }
+    return tb_true;
 }
 
 // byte-swap load command fields if needed
@@ -440,39 +491,7 @@ static __tb_inline__ tb_uint32_t xm_binutils_macho_parse_version(tb_char_t const
  * readsyms inline implementation
  */
 
-/* detect Mach-O format from magic bytes
- *
- * @param magic_bytes  the magic bytes (4 bytes)
- * @param is_32bit     output: tb_true if 32-bit, tb_false if 64-bit
- * @param swap_bytes   output: tb_true if byte-swapping needed (big-endian), tb_false otherwise
- * @return             tb_true if valid Mach-O magic, tb_false otherwise
- */
-static __tb_inline__ tb_bool_t xm_binutils_macho_detect_format(tb_uint8_t const *magic_bytes, tb_bool_t *is_32bit, tb_bool_t *swap_bytes) {
-    tb_assert_and_check_return_val(magic_bytes && is_32bit && swap_bytes, tb_false);
 
-    // check for little-endian magic numbers
-    if (magic_bytes[0] == 0xce && magic_bytes[1] == 0xfa && magic_bytes[2] == 0xed && magic_bytes[3] == 0xfe) {
-        *is_32bit = tb_true;
-        *swap_bytes = tb_false;
-        return tb_true;
-    } else if (magic_bytes[0] == 0xcf && magic_bytes[1] == 0xfa && magic_bytes[2] == 0xed && magic_bytes[3] == 0xfe) {
-        *is_32bit = tb_false;
-        *swap_bytes = tb_false;
-        return tb_true;
-    }
-    // check for big-endian magic numbers
-    else if (magic_bytes[0] == 0xfe && magic_bytes[1] == 0xed && magic_bytes[2] == 0xfa && magic_bytes[3] == 0xce) {
-        *is_32bit = tb_true;
-        *swap_bytes = tb_true;
-        return tb_true;
-    } else if (magic_bytes[0] == 0xfe && magic_bytes[1] == 0xed && magic_bytes[2] == 0xfa && magic_bytes[3] == 0xcf) {
-        *is_32bit = tb_false;
-        *swap_bytes = tb_true;
-        return tb_true;
-    }
-
-    return tb_false;
-}
 
 /* read string from Mach-O string table
  *

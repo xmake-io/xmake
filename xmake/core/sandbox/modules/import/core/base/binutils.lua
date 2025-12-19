@@ -72,6 +72,30 @@ function sandbox_core_base_binutils.rpath_list(binaryfile)
     end
 end
 
+-- insert rpath to binary file (auto-detect format: ELF or Mach-O)
+function sandbox_core_base_binutils.rpath_insert(binaryfile, rpath)
+    local ok, errors = binutils.rpath_insert(binaryfile, rpath)
+    if not ok then
+        raise("rpath_insert: %s", errors or "unknown errors")
+    end
+end
+
+-- remove rpath from binary file (auto-detect format: ELF or Mach-O)
+function sandbox_core_base_binutils.rpath_remove(binaryfile, rpath)
+    local ok, errors = binutils.rpath_remove(binaryfile, rpath)
+    if not ok then
+        raise("rpath_remove: %s", errors or "unknown errors")
+    end
+end
+
+-- clean rpaths from binary file (auto-detect format: ELF or Mach-O)
+function sandbox_core_base_binutils.rpath_clean(binaryfile)
+    local ok, errors = binutils.rpath_clean(binaryfile)
+    if not ok then
+        raise("rpath_clean: %s", errors or "unknown errors")
+    end
+end
+
 -- extract static library to directory
 function sandbox_core_base_binutils.extractlib(libraryfile, outputdir, opt)
     local ok, errors = binutils.extractlib(libraryfile, outputdir, opt)
