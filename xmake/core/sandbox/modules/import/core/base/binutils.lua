@@ -62,6 +62,16 @@ function sandbox_core_base_binutils.deplibs(binaryfile)
     end
 end
 
+-- get rpath list from binary file (auto-detect format: ELF or Mach-O)
+function sandbox_core_base_binutils.rpath_list(binaryfile)
+    local rpaths, errors = binutils.rpath_list(binaryfile)
+    if rpaths then
+        return rpaths
+    else
+        raise("rpath_list: %s", errors or "unknown errors")
+    end
+end
+
 -- extract static library to directory
 function sandbox_core_base_binutils.extractlib(libraryfile, outputdir, opt)
     local ok, errors = binutils.extractlib(libraryfile, outputdir, opt)

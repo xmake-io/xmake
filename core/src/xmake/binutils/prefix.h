@@ -36,7 +36,7 @@
 #define XM_BINUTILS_FORMAT_PE      5
 #define XM_BINUTILS_FORMAT_UNKNOWN 0
 
-/* COFF machine types (for format detection) */
+// COFF machine types (for format detection)
 #define XM_BINUTILS_COFF_MACHINE_I386    0x014c
 #define XM_BINUTILS_COFF_MACHINE_AMD64   0x8664
 #define XM_BINUTILS_COFF_MACHINE_ARM     0x01c0

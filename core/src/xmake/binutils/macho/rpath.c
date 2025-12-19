@@ -15,14 +15,14 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        deplibs.c
+ * @file        rpath.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "deplibs_macho"
+#define TB_TRACE_MODULE_NAME "rpath_macho"
 #define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -31,13 +31,9 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * private implementation
- */
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_bool_t xm_binutils_macho_deplibs(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
+tb_bool_t xm_binutils_macho_rpath_list(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
     // read Mach-O header
@@ -91,7 +87,6 @@ tb_bool_t xm_binutils_macho_deplibs(tb_stream_ref_t istream, tb_hize_t base_offs
         return tb_false;
     }
 
-    lua_newtable(lua);
     tb_size_t result_count = 0;
 
     // iterate load commands
@@ -104,35 +99,34 @@ tb_bool_t xm_binutils_macho_deplibs(tb_stream_ref_t istream, tb_hize_t base_offs
         }
         xm_binutils_macho_swap_load_command(&lc, swap);
 
-        // check for LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, LC_REEXPORT_DYLIB, LC_ID_DYLIB
-        if (lc.cmd == XM_MACHO_LC_LOAD_DYLIB || lc.cmd == XM_MACHO_LC_ID_DYLIB || 
-            lc.cmd == XM_MACHO_LC_LOAD_WEAK_DYLIB || lc.cmd == XM_MACHO_LC_REEXPORT_DYLIB) {
+        // check for LC_RPATH
+        if (lc.cmd == XM_MACHO_LC_RPATH) {
             
-            xm_macho_dylib_command_t dc;
+            xm_macho_rpath_command_t rc;
             if (tb_stream_seek(istream, current_cmd_offset)) {
-                 if (tb_stream_bread(istream, (tb_byte_t*)&dc, sizeof(dc))) {
-                     xm_binutils_macho_swap_dylib_command(&dc, swap);
+                 if (tb_stream_bread(istream, (tb_byte_t*)&rc, sizeof(rc))) {
+                     xm_binutils_macho_swap_rpath_command(&rc, swap);
                      
-                     tb_uint32_t name_offset = dc.dylib.offset;
+                     tb_uint32_t name_offset = rc.path_offset;
                      if (name_offset < lc.cmdsize) {
                          // name is at current_cmd_offset + name_offset
                          if (tb_stream_seek(istream, current_cmd_offset + name_offset)) {
-                             tb_char_t dylib_path[1024];
+                             tb_char_t rpath[TB_PATH_MAXN];
                              tb_size_t max_len = lc.cmdsize - name_offset;
-                             if (max_len > sizeof(dylib_path) - 1) max_len = sizeof(dylib_path) - 1;
+                             if (max_len > sizeof(rpath) - 1) max_len = sizeof(rpath) - 1;
                              
                              tb_size_t pos = 0;
                              tb_byte_t c;
                              while (pos < max_len) {
                                  if (!tb_stream_bread(istream, &c, 1)) break;
                                  if (c == 0) break;
-                                 dylib_path[pos++] = (tb_char_t)c;
+                                 rpath[pos++] = (tb_char_t)c;
                              }
-                             dylib_path[pos] = '\0';
+                             rpath[pos] = '\0';
                              
                              if (pos > 0) {
                                  lua_pushinteger(lua, result_count + 1);
-                                 lua_pushstring(lua, dylib_path);
+                                 lua_pushstring(lua, rpath);
                                  lua_settable(lua, -3);
                                  result_count++;
                              }

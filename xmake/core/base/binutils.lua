@@ -31,6 +31,7 @@ binutils._bin2macho = binutils._bin2macho or binutils.bin2macho
 binutils._bin2elf = binutils._bin2elf or binutils.bin2elf
 binutils._readsyms = binutils._readsyms or binutils.readsyms
 binutils._deplibs = binutils._deplibs or binutils.deplibs
+binutils._rpath_list = binutils._rpath_list or binutils.rpath_list
 binutils._extractlib = binutils._extractlib or binutils.extractlib
 
 -- generate c/c++ code from the binary file
@@ -108,6 +109,15 @@ function binutils.deplibs(binaryfile)
         return binutils._deplibs(binaryfile)
     else
         return nil, "deplibs: C implementation not available"
+    end
+end
+
+-- get rpath list from binary file (auto-detect format: ELF or Mach-O)
+function binutils.rpath_list(binaryfile)
+    if binutils._rpath_list then
+        return binutils._rpath_list(binaryfile)
+    else
+        return nil, "binutils: internal rpath_list not supported!"
     end
 end
 
