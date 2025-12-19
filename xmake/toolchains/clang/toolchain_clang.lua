@@ -46,15 +46,7 @@ function toolchain_clang(version)
         end
 
         on_check(function (toolchain)
-            if toolchain:is_plat("windows") then
-                local rootdir = path.join(path.directory(os.scriptdir()), "clang")
-                local result = import("check", {rootdir = rootdir})(toolchain, suffix)
-                if result then
-                    return result
-                end
-            end
-
-            return import("lib.detect.find_tool")("clang", {program = "clang" .. suffix})
+            return import("check")(toolchain, suffix)
         end)
 
         on_load(function (toolchain)
