@@ -18,6 +18,39 @@
 -- @file        xmake.lua
 --
 
-includes(path.join(os.scriptdir(), "toolchain_clang.lua"))
+-- define toolchain
+function toolchain_clang(version)
+    local suffix = version and ("-" .. version) or ""
 
+    toolchain("clang" .. suffix)
+        set_kind("standalone")
+        set_homepage("https://clang.llvm.org/")
+        set_description("A C language family frontend for LLVM" .. (version and (" (" .. version .. ")") or ""))
+
+        set_toolset("cc",      "clang" .. suffix)
+        set_toolset("cxx",     "clang++" .. suffix, "clang" .. suffix)
+        set_toolset("ld",      "clang++" .. suffix, "clang" .. suffix)
+        set_toolset("sh",      "clang++" .. suffix, "clang" .. suffix)
+        set_toolset("ar",      "llvm-ar" .. suffix, "ar")
+        set_toolset("strip",   "llvm-strip" .. suffix, "strip")
+        set_toolset("ranlib",  "llvm-ranlib" .. suffix, "ranlib")
+        set_toolset("objcopy", "llvm-objcopy" .. suffix, "objcopy")
+        set_toolset("nm",      "llvm-nm" .. suffix, "nm")
+        set_toolset("mm",      "clang" .. suffix)
+        set_toolset("mxx",     "clang++" .. suffix, "clang" .. suffix)
+        set_toolset("as",      "clang" .. suffix)
+        set_toolset("mrc",     "llvm-rc" .. suffix)
+        set_toolset("dlltool", "llvm-dlltool" .. suffix)
+        if is_host("macosx") then
+            set_toolset("dsymutil", "dsymutil")
+        end
+
+        on_check(function (toolchain)
+            return import("toolchains.clang.check", {rootdir = os.programdir()})(toolchain, suffix)
+        end)
+
+        on_load(function (toolchain)
+            import("toolchains.clang.load", {rootdir = os.programdir()})(toolchain, suffix)
+        end)
+end
 toolchain_clang()
