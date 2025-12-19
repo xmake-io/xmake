@@ -342,6 +342,7 @@ tb_int_t xm_binutils_bin2macho(lua_State *lua);
 tb_int_t xm_binutils_bin2elf(lua_State *lua);
 tb_int_t xm_binutils_readsyms(lua_State *lua);
 tb_int_t xm_binutils_deplibs(lua_State *lua);
+tb_int_t xm_binutils_rpath_list(lua_State *lua);
 tb_int_t xm_binutils_extractlib(lua_State *lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
@@ -668,6 +669,7 @@ static luaL_Reg const g_binutils_functions[] = {
     { "bin2elf", xm_binutils_bin2elf },
     { "readsyms", xm_binutils_readsyms },
     { "deplibs", xm_binutils_deplibs },
+    { "rpath_list", xm_binutils_rpath_list },
     { "extractlib", xm_binutils_extractlib },
     { tb_null, tb_null },
 };

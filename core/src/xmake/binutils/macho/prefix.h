@@ -29,10 +29,10 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
-#define XM_MACHO_MAGIC_32        0xfeedface  /* MH_MAGIC - little endian */
-#define XM_MACHO_MAGIC_64        0xfeedfacf  /* MH_MAGIC_64 - little endian */
-#define XM_MACHO_MAGIC_32_BE     0xcefaedfe  /* MH_CIGAM - big endian */
-#define XM_MACHO_MAGIC_64_BE     0xcffaedfe  /* MH_CIGAM_64 - big endian */
+#define XM_MACHO_MAGIC_32        0xfeedface  // MH_MAGIC - little endian
+#define XM_MACHO_MAGIC_64        0xfeedfacf  // MH_MAGIC_64 - little endian
+#define XM_MACHO_MAGIC_32_BE     0xcefaedfe  // MH_CIGAM - big endian
+#define XM_MACHO_MAGIC_64_BE     0xcffaedfe  // MH_CIGAM_64 - big endian
 #define XM_MACHO_MAGIC_FAT       0xcafebabe
 
 #define XM_MACHO_CPU_TYPE_X86    7
@@ -52,6 +52,7 @@
 #define XM_MACHO_LC_SYMTAB           0x2
 #define XM_MACHO_LC_LOAD_DYLIB       0xc
 #define XM_MACHO_LC_ID_DYLIB         0xd
+#define XM_MACHO_LC_RPATH            (0x1c | 0x80000000)
 #define XM_MACHO_LC_LOAD_WEAK_DYLIB  (0x18 | 0x80000000)
 #define XM_MACHO_LC_REEXPORT_DYLIB   (0x1f | 0x80000000)
 #define XM_MACHO_LC_BUILD_VERSION    0x32
@@ -97,6 +98,13 @@ typedef struct __xm_macho_header_64_t {
     tb_uint32_t flags;
     tb_uint32_t reserved;
 } __tb_packed__ xm_macho_header_64_t;
+
+typedef struct __xm_macho_rpath_command_t {
+    tb_uint32_t cmd;
+    tb_uint32_t cmdsize;
+    tb_uint32_t path_offset;
+} __tb_packed__ xm_macho_rpath_command_t;
+#include "tbox/prefix/packed.h"
 
 typedef struct __xm_macho_segment_command_t {
     tb_uint32_t cmd;
@@ -213,7 +221,7 @@ typedef struct __xm_macho_dylib_command_t {
  * inline implementation
  */
 
-/* byte-swap Mach-O header fields if needed */
+// byte-swap Mach-O header fields if needed
 static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_32(xm_macho_header_t *header, tb_bool_t swap) {
     if (swap) {
         header->magic = tb_bits_swap_u32(header->magic);
@@ -226,7 +234,7 @@ static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_32(xm_macho_header_
     }
 }
 
-/* byte-swap Mach-O header 64 fields if needed */
+// byte-swap Mach-O header 64 fields if needed
 static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_64(xm_macho_header_64_t *header, tb_bool_t swap) {
     if (swap) {
         header->magic = tb_bits_swap_u32(header->magic);
@@ -240,7 +248,7 @@ static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_64(xm_macho_header_
     }
 }
 
-/* byte-swap load command fields if needed */
+// byte-swap load command fields if needed
 static __tb_inline__ tb_void_t xm_binutils_macho_swap_load_command(xm_macho_load_command_t *lc, tb_bool_t swap) {
     if (swap) {
         lc->cmd = tb_bits_swap_u32(lc->cmd);
@@ -248,7 +256,7 @@ static __tb_inline__ tb_void_t xm_binutils_macho_swap_load_command(xm_macho_load
     }
 }
 
-/* byte-swap dylib command fields if needed */
+// byte-swap dylib command fields if needed
 static __tb_inline__ tb_void_t xm_binutils_macho_swap_dylib_command(xm_macho_dylib_command_t *dc, tb_bool_t swap) {
     if (swap) {
         dc->cmd = tb_bits_swap_u32(dc->cmd);
@@ -260,7 +268,16 @@ static __tb_inline__ tb_void_t xm_binutils_macho_swap_dylib_command(xm_macho_dyl
     }
 }
 
-/* byte-swap symtab command fields if needed */
+// byte-swap rpath command fields if needed
+static __tb_inline__ tb_void_t xm_binutils_macho_swap_rpath_command(xm_macho_rpath_command_t *rc, tb_bool_t swap) {
+    if (swap) {
+        rc->cmd = tb_bits_swap_u32(rc->cmd);
+        rc->cmdsize = tb_bits_swap_u32(rc->cmdsize);
+        rc->path_offset = tb_bits_swap_u32(rc->path_offset);
+    }
+}
+
+// byte-swap symtab command fields if needed
 static __tb_inline__ tb_void_t xm_binutils_macho_swap_symtab_command(xm_macho_symtab_command_t *cmd, tb_bool_t swap) {
     if (swap) {
         cmd->cmd = tb_bits_swap_u32(cmd->cmd);
@@ -272,7 +289,7 @@ static __tb_inline__ tb_void_t xm_binutils_macho_swap_symtab_command(xm_macho_sy
     }
 }
 
-/* byte-swap nlist 32 fields if needed */
+// byte-swap nlist 32 fields if needed
 static __tb_inline__ tb_void_t xm_binutils_macho_swap_nlist_32(xm_macho_nlist_t *nlist, tb_bool_t swap) {
     if (swap) {
         nlist->strx = tb_bits_swap_u32(nlist->strx);
@@ -281,7 +298,7 @@ static __tb_inline__ tb_void_t xm_binutils_macho_swap_nlist_32(xm_macho_nlist_t 
     }
 }
 
-/* byte-swap nlist 64 fields if needed */
+// byte-swap nlist 64 fields if needed
 static __tb_inline__ tb_void_t xm_binutils_macho_swap_nlist_64(xm_macho_nlist_64_t *nlist, tb_bool_t swap) {
     if (swap) {
         nlist->strx = tb_bits_swap_u32(nlist->strx);
