@@ -93,7 +93,7 @@ tb_bool_t xm_binutils_macho_rpath_list(tb_stream_ref_t istream, tb_hize_t base_o
     for (tb_uint32_t i = 0; i < ncmds; i++) {
         xm_macho_load_command_t lc;
         tb_hize_t current_cmd_offset = tb_stream_offset(istream);
-        
+
         if (!tb_stream_bread(istream, (tb_byte_t*)&lc, sizeof(lc))) {
             return tb_false;
         }
@@ -101,35 +101,24 @@ tb_bool_t xm_binutils_macho_rpath_list(tb_stream_ref_t istream, tb_hize_t base_o
 
         // check for LC_RPATH
         if (lc.cmd == XM_MACHO_LC_RPATH) {
-            
+
             xm_macho_rpath_command_t rc;
             if (tb_stream_seek(istream, current_cmd_offset)) {
                  if (tb_stream_bread(istream, (tb_byte_t*)&rc, sizeof(rc))) {
                      xm_binutils_macho_swap_rpath_command(&rc, swap);
-                     
+
                      tb_uint32_t name_offset = rc.path_offset;
                      if (name_offset < lc.cmdsize) {
                          // name is at current_cmd_offset + name_offset
-                         if (tb_stream_seek(istream, current_cmd_offset + name_offset)) {
-                             tb_char_t rpath[TB_PATH_MAXN];
-                             tb_size_t max_len = lc.cmdsize - name_offset;
-                             if (max_len > sizeof(rpath) - 1) max_len = sizeof(rpath) - 1;
-                             
-                             tb_size_t pos = 0;
-                             tb_byte_t c;
-                             while (pos < max_len) {
-                                 if (!tb_stream_bread(istream, &c, 1)) break;
-                                 if (c == 0) break;
-                                 rpath[pos++] = (tb_char_t)c;
-                             }
-                             rpath[pos] = '\0';
-                             
-                             if (pos > 0) {
-                                 lua_pushinteger(lua, result_count + 1);
-                                 lua_pushstring(lua, rpath);
-                                 lua_settable(lua, -3);
-                                 result_count++;
-                             }
+                         tb_char_t rpath[TB_PATH_MAXN];
+                         tb_size_t max_len = lc.cmdsize - name_offset;
+                         if (max_len > sizeof(rpath) - 1) max_len = sizeof(rpath) - 1;
+
+                         if (xm_binutils_read_string(istream, current_cmd_offset + name_offset, rpath, max_len + 1) && rpath[0]) {
+                             lua_pushinteger(lua, result_count + 1);
+                             lua_pushstring(lua, rpath);
+                             lua_settable(lua, -3);
+                             result_count++;
                          }
                      }
                  }
