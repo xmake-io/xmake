@@ -36,13 +36,14 @@
 static tb_void_t xm_binutils_elf_add_rpaths(lua_State *lua, tb_char_t const* rpath, tb_size_t* pcount) {
     if (!rpath || !*rpath) return;
 
+    tb_char_t path[TB_PATH_MAXN];
     tb_char_t const* p = rpath;
     tb_char_t const* e = tb_null;
     while (*p) {
         e = tb_strchr(p, ':');
         tb_size_t n = e ? (tb_size_t)(e - p) : tb_strlen(p);
         if (n > 0) {
-            tb_char_t path[TB_PATH_MAXN];
+            if (n > sizeof(path) - 1) n = sizeof(path) - 1;
             tb_strncpy(path, p, n);
             path[n] = '\0';
             
