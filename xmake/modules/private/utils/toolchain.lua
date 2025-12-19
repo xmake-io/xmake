@@ -91,6 +91,20 @@ function check_vstudio(toolchain, check)
     return vs
 end
 
+-- set llvm runtimes
+function set_llvm_runtimes(toolchain)
+    -- We should set them up uniformly here, because runtimes will be accessed early (in sanitizer),
+    -- which automatically triggers lazy loading of the toolchain.
+    -- However, if some runtime configurations are set in advance in the descriptor scope,
+    -- lazy loading will not be triggered when the runtimes are accessed, and some Windows runtimes may be lost.
+    --
+    -- @see https://github.com/xmake-io/xmake/pull/7146#issuecomment-3674402132
+    toolchain:set("runtimes", "c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
+    if toolchain:is_plat("windows") then
+        toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
+    end
+end
+
 -- check vc build tools sdk
 function check_vc_build_tools(toolchain, sdkdir, check)
     local opt = {}

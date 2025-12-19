@@ -26,7 +26,6 @@ function toolchain_clang(version)
         set_kind("standalone")
         set_homepage("https://clang.llvm.org/")
         set_description("A C language family frontend for LLVM" .. (version and (" (" .. version .. ")") or ""))
-        set_runtimes("c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
 
         set_toolset("cc",      "clang" .. suffix)
         set_toolset("cxx",     "clang++" .. suffix, "clang" .. suffix)
@@ -60,6 +59,7 @@ function toolchain_clang(version)
 
         on_load(function (toolchain)
             import("core.project.project")
+            import("private.utils.toolchain", {alias = "toolchain_utils"})
 
             if project.policy("build.optimization.lto") then
                 toolchain:set("toolset", "ar",  "llvm-ar" .. suffix)
@@ -79,9 +79,10 @@ function toolchain_clang(version)
                 toolchain:add("ldflags", march)
                 toolchain:add("shflags", march)
             end
-            if toolchain:is_plat("windows") then
-                toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
-            end
+
+            toolchain_utils.set_llvm_runtimes(toolchain)
+
+            -- load windows configurations
             if toolchain:is_plat("windows", "mingw") then
                 local rootdir = path.join(path.directory(os.scriptdir()), "clang")
                 import("load", {rootdir = rootdir})(toolchain, suffix)

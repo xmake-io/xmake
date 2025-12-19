@@ -21,6 +21,7 @@
 import("detect.sdks.find_vstudio")
 import("detect.sdks.find_mingw")
 import("core.project.config")
+import("core.project.project")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- add the given vs environment
@@ -52,7 +53,6 @@ function _add_vsenv(toolchain, name, curenvs)
 end
 
 function main(toolchain, suffix)
-    import("core.project.project")
 
     local target
     if toolchain:is_arch("x86_64", "x64") then
