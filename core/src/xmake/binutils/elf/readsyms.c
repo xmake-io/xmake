@@ -47,8 +47,8 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t bas
     }
 
     // find .symtab section
-    xm_elf32_section_t symtab_section;
-    xm_elf32_section_t strtab_section;
+    xm_elf32_section_t symtab_section = {0};
+    xm_elf32_section_t strtab_section = {0};
     tb_bool_t found_symtab = tb_false;
     tb_bool_t found_strtab = tb_false;
 
@@ -177,8 +177,8 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, tb_hize_t bas
     }
 
     // find .symtab section
-    xm_elf64_section_t symtab_section;
-    xm_elf64_section_t strtab_section;
+    xm_elf64_section_t symtab_section = {0};
+    xm_elf64_section_t strtab_section = {0};
     tb_bool_t found_symtab = tb_false;
     tb_bool_t found_strtab = tb_false;
 

@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.binutils")
 import("lib.detect.find_tool")
 
 function _replace_rpath_vars(rpath, opt)
@@ -32,6 +33,10 @@ function _replace_rpath_vars(rpath, opt)
         rpath = rpath:gsub("@executable_path", "$ORIGIN")
     end
     return rpath
+end
+
+function _get_rpath_list_by_binutils(binaryfile, opt)
+    return binutils.rpath_list(binaryfile)
 end
 
 function _get_rpath_list_by_objdump(binaryfile, opt)
@@ -296,7 +301,8 @@ function list(binaryfile, opt)
     local ops = {
         _get_rpath_list_by_objdump,
         _get_rpath_list_by_readelf,
-        _get_rpath_list_by_patchelf
+        _get_rpath_list_by_patchelf,
+        _get_rpath_list_by_binutils
     }
     if is_host("macosx") then
         table.insert(ops, 1, _get_rpath_list_by_otool)
