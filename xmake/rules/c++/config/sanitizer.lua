@@ -22,6 +22,12 @@
 import("core.project.project")
 import("lib.detect.find_tool")
 import("core.base.semver")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
+
+function _get_clang_asan_library_dir(target)
+    local toolchain = target:toolchain("clang-cl") or target:toolchain("clang")
+    return path.join(toolchain_utils.get_llvm_resourcedir(toolchain), "lib/windows")
+end
 
 -- add build sanitizer
 function _add_build_sanitizer(target, sourcekind, checkmode)
@@ -43,6 +49,39 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
     if target:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
         target:add("ldflags", "-fsanitize=" .. checkmode, {force = true})
         target:add("shflags", "-fsanitize=" .. checkmode, {force = true})
+    end
+
+    if target:is_plat("windows") and checkmode == "address" and not target:has_tool("cxx", "cl") then
+        assert(target:has_runtime("MD", "MT"), "clang asan only support MD/MT runtime on windows")
+
+        local ldflags = {}
+        if target:has_tool("ld", "clang", "clangxx") then
+            if target:has_runtime("MT") then
+                table.insert(ldflags, "-D_MT")
+            elseif target:has_runtime("MD") then
+                table.join2(ldflags, {"-D_MT", "-D_DLL"})
+            end
+        else
+            -- cmake unsupported use clang++ as linker with clang-cl compiler, so we keep using lld-link/link as linker
+            -- @see https://gitlab.kitware.com/cmake/cmake/-/issues/26430
+            local kind
+            if target:has_runtime("MD") then
+                kind = "dynamic"
+            elseif target:has_runtime("MT") then
+                kind = "static"
+            end
+
+            local libdir = _get_clang_asan_library_dir(target)
+            local driver = target:has_tool("ld", "lld-link", "link") and "" or "-Wl,"
+            local thunk = path.join(libdir, string.format("clang_rt.asan_%s_runtime_thunk-x86_64.lib", kind))
+            table.join2(ldflags, {
+                path.unix(path.join(libdir, "clang_rt.asan_dynamic-x86_64.lib")),
+                driver .. "/WHOLEARCHIVE:" .. path.unix(thunk),
+                driver .. "/INFERASANLIBS:NO",
+            })
+        end
+        target:add("ldflags", ldflags, {force = true})
+        target:add("shflags", ldflags, {force = true})
     end
 end
 
@@ -68,17 +107,7 @@ function main(target, sourcekind)
         -- we need to load runenvs for msvc
         -- @see https://github.com/xmake-io/xmake/issues/4176
         if target:is_plat("windows") and target:is_binary() then
-            if target:has_tool("cxx", "clang_cl") then
-                local clang_cl = target:toolchain("clang-cl")
-                if clang_cl then
-                    local envs = clang_cl:runenvs()
-                    local vscmd_ver = envs and envs.VSCMD_VER
-                    if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
-                        local clang_cl_tool = assert(find_tool("clang-cl", {envs = envs}), "clang-cl not found!")
-                        target:add("runenvs", "PATH", path.directory(clang_cl_tool.program))
-                    end
-                end
-            else
+            if target:has_tool("cxx", "cl") then
                 local msvc = target:toolchain("msvc")
                 if msvc then
                     local envs = msvc:runenvs()
@@ -88,6 +117,8 @@ function main(target, sourcekind)
                         target:add("runenvs", "PATH", path.directory(cl.program))
                     end
                 end
+            else
+                target:add("runenvs", "PATH", _get_clang_asan_library_dir(target))
             end
         end
     end
