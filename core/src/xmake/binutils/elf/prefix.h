@@ -81,14 +81,14 @@
  */
 #include "tbox/prefix/packed.h"
 typedef struct __xm_elf_context_t {
-    tb_hize_t dynamic_offset;
-    tb_hize_t dynamic_size;
-    tb_hize_t strtab_offset;
-    tb_hize_t strtab_size;
-    tb_hize_t symtab_offset;
-    tb_hize_t symtab_size;
-    tb_hize_t symstr_offset;
-    tb_hize_t symstr_size;
+    tb_hize_t dynamic_offset; // file offset of .dynamic
+    tb_hize_t dynamic_size;   // size of .dynamic
+    tb_hize_t strtab_offset;  // file offset of .dynstr
+    tb_hize_t strtab_size;    // size of .dynstr
+    tb_hize_t symtab_offset;  // file offset of .symtab
+    tb_hize_t symtab_size;    // size of .symtab
+    tb_hize_t symstr_offset;  // file offset of .strtab (for .symtab)
+    tb_hize_t symstr_size;    // size of .strtab (for .symtab)
     tb_bool_t is64;
 } xm_elf_context_t;
 
@@ -516,6 +516,52 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_get_context_64(tb_stream_ref_t is
     }
 
     return (ctx->dynamic_offset != 0 && ctx->strtab_offset != 0);
+}
+
+// read ELF header (32-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_read_header_32(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf32_header_t* header) {
+    if (!tb_stream_seek(istream, base_offset)) return tb_false;
+    if (!tb_stream_bread(istream, (tb_byte_t*)header, sizeof(*header))) return tb_false;
+    return tb_true;
+}
+
+// read ELF header (64-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_read_header_64(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf64_header_t* header) {
+    if (!tb_stream_seek(istream, base_offset)) return tb_false;
+    if (!tb_stream_bread(istream, (tb_byte_t*)header, sizeof(*header))) return tb_false;
+    return tb_true;
+}
+
+// find PT_INTERP and read interpreter path (32-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_find_interp_32(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf32_header_t const* header, tb_char_t* name, tb_size_t size) {
+    if (header->e_phoff != 0 && header->e_phnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header->e_phoff)) {
+            for (tb_uint16_t i = 0; i < header->e_phnum; i++) {
+                xm_elf32_phdr_t phdr;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) break;
+                if (phdr.p_type == XM_ELF_PT_INTERP) {
+                    return xm_binutils_read_string(istream, base_offset + phdr.p_offset, name, size) && name[0];
+                }
+            }
+        }
+    }
+    return tb_false;
+}
+
+// find PT_INTERP and read interpreter path (64-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_find_interp_64(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf64_header_t const* header, tb_char_t* name, tb_size_t size) {
+    if (header->e_phoff != 0 && header->e_phnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header->e_phoff)) {
+            for (tb_uint16_t i = 0; i < header->e_phnum; i++) {
+                xm_elf64_phdr_t phdr;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) break;
+                if (phdr.p_type == XM_ELF_PT_INTERP) {
+                    return xm_binutils_read_string(istream, base_offset + phdr.p_offset, name, size) && name[0];
+                }
+            }
+        }
+    }
+    return tb_false;
 }
 
 #endif

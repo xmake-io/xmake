@@ -57,6 +57,7 @@ static tb_void_t xm_binutils_elf_add_rpaths(lua_State *lua, tb_char_t const* rpa
     }
 }
 
+// parse .dynamic section and read DT_RPATH/DT_RUNPATH to build rpath list
 static tb_bool_t xm_binutils_elf_rpath_list_impl(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf_context_t* ctx, lua_State *lua) {
     tb_bool_t ok = tb_false;
     do {
@@ -66,6 +67,7 @@ static tb_bool_t xm_binutils_elf_rpath_list_impl(tb_stream_ref_t istream, tb_hiz
         tb_char_t rpath[8192] = {0};
         tb_char_t runpath[8192] = {0};
 
+        // scan dynamic entries
         for (tb_uint32_t i = 0; i < count; i++) {
             tb_hize_t val = 0;
             tb_hize_t tag = 0;
@@ -83,6 +85,7 @@ static tb_bool_t xm_binutils_elf_rpath_list_impl(tb_stream_ref_t istream, tb_hiz
             }
 
             if (tag == XM_ELF_DT_NULL) break;
+            // read rpath/runpath string from strtab
             if (tag == XM_ELF_DT_RPATH) {
                  xm_binutils_read_string(istream, base_offset + ctx->strtab_offset + val, rpath, sizeof(rpath));
             } else if (tag == XM_ELF_DT_RUNPATH) {
@@ -90,6 +93,7 @@ static tb_bool_t xm_binutils_elf_rpath_list_impl(tb_stream_ref_t istream, tb_hiz
             }
         }
 
+        // split rpath(s) and push into Lua table
         tb_size_t result_count = 0;
         if (runpath[0]) {
             xm_binutils_elf_add_rpaths(lua, runpath, &result_count);
@@ -101,8 +105,7 @@ static tb_bool_t xm_binutils_elf_rpath_list_impl(tb_stream_ref_t istream, tb_hiz
     return ok;
 }
 
-
-
+// remove DT_RPATH/DT_RUNPATH entries from .dynamic and write back
 static tb_bool_t xm_binutils_elf_rpath_clean_impl(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf_context_t* ctx) {
     tb_bool_t ok = tb_false;
     tb_byte_t* buffer = tb_null;
@@ -117,6 +120,7 @@ static tb_bool_t xm_binutils_elf_rpath_clean_impl(tb_stream_ref_t istream, tb_hi
         if (!tb_stream_seek(istream, base_offset + ctx->dynamic_offset)) break;
         if (!tb_stream_bread(istream, buffer, dyn_size)) break;
 
+        // p: read pointer, w: write pointer after filtering
         tb_byte_t* p = buffer;
         tb_byte_t* w = buffer;
         tb_size_t entry_size = ctx->is64 ? sizeof(xm_elf64_dynamic_t) : sizeof(xm_elf32_dynamic_t);
@@ -137,6 +141,7 @@ static tb_bool_t xm_binutils_elf_rpath_clean_impl(tb_stream_ref_t istream, tb_hi
                 break;
             }
 
+            // keep entries except rpath/runpath
             if (tag != XM_ELF_DT_RPATH && tag != XM_ELF_DT_RUNPATH) {
                 if (w != p) tb_memcpy(w, p, entry_size);
                 w += entry_size;
@@ -174,6 +179,7 @@ tb_bool_t xm_binutils_elf_rpath_list(tb_stream_ref_t istream, tb_hize_t base_off
         if (!tb_stream_seek(istream, base_offset)) break;
         if (!tb_stream_bread(istream, ident, sizeof(ident))) break;
 
+        // build ELF context (dynamic, strtab offsets)
         xm_elf_context_t ctx;
         if (ident[XM_ELF_EI_CLASS] == XM_ELF_CLASS32) {
             if (xm_binutils_elf_get_context_32(istream, base_offset, &ctx)) {
@@ -188,8 +194,6 @@ tb_bool_t xm_binutils_elf_rpath_list(tb_stream_ref_t istream, tb_hize_t base_off
     return ok;
 }
 
-
-
 tb_bool_t xm_binutils_elf_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_offset) {
     tb_assert_and_check_return_val(istream, tb_false);
 
@@ -200,6 +204,7 @@ tb_bool_t xm_binutils_elf_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_of
         if (!tb_stream_seek(istream, base_offset)) break;
         if (!tb_stream_bread(istream, ident, sizeof(ident))) break;
 
+        // build ELF context and cleanup rpath entries
         xm_elf_context_t ctx;
         if (ident[XM_ELF_EI_CLASS] == XM_ELF_CLASS32) {
             if (xm_binutils_elf_get_context_32(istream, base_offset, &ctx)) {

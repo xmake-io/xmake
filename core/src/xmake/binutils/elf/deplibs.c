@@ -121,42 +121,27 @@ static tb_bool_t xm_binutils_elf_deplibs_32(tb_stream_ref_t istream, tb_hize_t b
 
     // read ELF header
     xm_elf32_header_t header;
-    if (!tb_stream_seek(istream, base_offset)) {
-        return tb_false;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
+    if (!xm_binutils_elf_read_header_32(istream, base_offset, &header)) {
         return tb_false;
     }
 
+    // find program interpreter (PT_INTERP) and push
+    tb_char_t name[256];
     tb_size_t result_count = 0;
-
-    // find program interpreter (PT_INTERP)
-    if (header.e_phoff != 0 && header.e_phnum > 0) {
-        if (tb_stream_seek(istream, base_offset + header.e_phoff)) {
-            for (tb_uint16_t i = 0; i < header.e_phnum; i++) {
-                xm_elf32_phdr_t phdr;
-                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) {
-                    break;
-                }
-                if (phdr.p_type == XM_ELF_PT_INTERP) {
-                    tb_char_t name[256];
-                    if (xm_binutils_read_string(istream, base_offset + phdr.p_offset, name, sizeof(name)) && name[0]) {
-                        lua_pushinteger(lua, result_count + 1);
-                        lua_pushstring(lua, name);
-                        lua_settable(lua, -3);
-                        result_count++;
-                    }
-                    break;
-                }
-            }
-        }
+    if (xm_binutils_elf_find_interp_32(istream, base_offset, &header, name, sizeof(name))) {
+        lua_pushinteger(lua, result_count + 1);
+        lua_pushstring(lua, name);
+        lua_settable(lua, -3);
+        result_count++;
     }
 
+    // build dynamic/string table context
     xm_elf_context_t ctx;
     if (!xm_binutils_elf_get_context_32(istream, base_offset, &ctx)) {
         return tb_true;
     }
 
+    // scan .dynamic entries: collect NEEDED and read RPATH/RUNPATH
     tb_uint32_t count = (tb_uint32_t)(ctx.dynamic_size / sizeof(xm_elf32_dynamic_t));
     if (!tb_stream_seek(istream, base_offset + ctx.dynamic_offset)) {
         return tb_false;
@@ -194,6 +179,7 @@ static tb_bool_t xm_binutils_elf_deplibs_32(tb_stream_ref_t istream, tb_hize_t b
             tb_path_directory(binary_path, binary_dir, sizeof(binary_dir));
         }
 
+        // resolve $ORIGIN and rpath/runpath, push full paths
         tb_for_all (tb_char_t const*, name, needed_libs) {
             tb_char_t fullpath[TB_PATH_MAXN];
             xm_binutils_elf_resolve_path(name, runpath[0]? runpath : rpath, binary_dir[0]? binary_dir : tb_null, fullpath, sizeof(fullpath));
@@ -213,37 +199,21 @@ static tb_bool_t xm_binutils_elf_deplibs_64(tb_stream_ref_t istream, tb_hize_t b
 
     // read ELF header
     xm_elf64_header_t header;
-    if (!tb_stream_seek(istream, base_offset)) {
-        return tb_false;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
+    if (!xm_binutils_elf_read_header_64(istream, base_offset, &header)) {
         return tb_false;
     }
 
+    // find program interpreter (PT_INTERP) and push
+    tb_char_t name[256];
     tb_size_t result_count = 0;
-
-    // find program interpreter (PT_INTERP)
-    if (header.e_phoff != 0 && header.e_phnum > 0) {
-        if (tb_stream_seek(istream, base_offset + header.e_phoff)) {
-            for (tb_uint16_t i = 0; i < header.e_phnum; i++) {
-                xm_elf64_phdr_t phdr;
-                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) {
-                    break;
-                }
-                if (phdr.p_type == XM_ELF_PT_INTERP) {
-                    tb_char_t name[256];
-                    if (xm_binutils_read_string(istream, base_offset + phdr.p_offset, name, sizeof(name)) && name[0]) {
-                        lua_pushinteger(lua, result_count + 1);
-                        lua_pushstring(lua, name);
-                        lua_settable(lua, -3);
-                        result_count++;
-                    }
-                    break;
-                }
-            }
-        }
+    if (xm_binutils_elf_find_interp_64(istream, base_offset, &header, name, sizeof(name))) {
+        lua_pushinteger(lua, result_count + 1);
+        lua_pushstring(lua, name);
+        lua_settable(lua, -3);
+        result_count++;
     }
 
+    // build dynamic/string table context
     xm_elf_context_t ctx;
     if (!xm_binutils_elf_get_context_64(istream, base_offset, &ctx)) {
         return tb_true;

@@ -37,16 +37,20 @@
 tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
+    // build context and ensure .symtab/.strtab are available
     xm_elf_context_t ctx;
     xm_binutils_elf_get_context_32(istream, base_offset, &ctx);
 
     if (!ctx.symtab_offset || !ctx.symstr_offset) {
+        // no symbol table present: return empty result
         lua_newtable(lua);
         return tb_true;
     }
 
+    // create result table
     lua_newtable(lua);
 
+    // compute symbol count and seek to .symtab
     tb_uint32_t sym_count = (tb_uint32_t)(ctx.symtab_size / sizeof(xm_elf32_symbol_t));
     if (!tb_stream_seek(istream, base_offset + ctx.symtab_offset)) {
         return tb_false;
@@ -59,20 +63,24 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t bas
             return tb_false;
         }
 
+        // skip NULL symbol entries
         if (sym.st_name == 0 && sym.st_value == 0 && sym.st_size == 0) {
             continue;
         }
 
+        // skip section/file symbols
         tb_uint8_t type = sym.st_info & 0xf;
         if (type == 3 || type == 4) {
             continue;
         }
 
+        // read symbol name from .strtab
         tb_char_t name[256];
         if (!xm_binutils_read_string(istream, base_offset + ctx.symstr_offset + sym.st_name, name, sizeof(name)) || !name[0]) {
             continue;
         }
 
+        // skip internal ('.', '$') and local-defined symbols
         if (name[0] == '.' || name[0] == '$') {
             continue;
         }
@@ -82,6 +90,7 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t bas
             continue;
         }
 
+        // push symbol entry: name + nm-style type
         lua_pushinteger(lua, result_count + 1);
         lua_newtable(lua);
 
@@ -105,16 +114,20 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t bas
 tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
+    // build context and ensure .symtab/.strtab are available
     xm_elf_context_t ctx;
     xm_binutils_elf_get_context_64(istream, base_offset, &ctx);
 
     if (!ctx.symtab_offset || !ctx.symstr_offset) {
+        // no symbol table present: return empty result
         lua_newtable(lua);
         return tb_true;
     }
 
+    // create result table
     lua_newtable(lua);
 
+    // compute symbol count and seek to .symtab
     tb_uint32_t sym_count = (tb_uint32_t)(ctx.symtab_size / sizeof(xm_elf64_symbol_t));
     if (!tb_stream_seek(istream, base_offset + ctx.symtab_offset)) {
         return tb_false;
@@ -127,20 +140,24 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, tb_hize_t bas
             return tb_false;
         }
 
+        // skip NULL symbol entries
         if (sym.st_name == 0 && sym.st_value == 0 && sym.st_size == 0) {
             continue;
         }
 
+        // skip section/file symbols
         tb_uint8_t type = sym.st_info & 0xf;
         if (type == 3 || type == 4) {
             continue;
         }
 
+        // read symbol name from .strtab
         tb_char_t name[256];
         if (!xm_binutils_read_string(istream, base_offset + ctx.symstr_offset + sym.st_name, name, sizeof(name)) || !name[0]) {
             continue;
         }
 
+        // skip internal ('.', '$') and local-defined symbols
         if (name[0] == '.' || name[0] == '$') {
             continue;
         }
@@ -150,6 +167,7 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, tb_hize_t bas
             continue;
         }
 
+        // push symbol entry: name + nm-style type
         lua_pushinteger(lua, result_count + 1);
         lua_newtable(lua);
 
@@ -202,4 +220,3 @@ tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, tb_hize_t base_o
 
     return tb_false;
 }
-
