@@ -112,7 +112,7 @@ tb_bool_t xm_binutils_macho_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_
         tb_uint32_t new_sizeofcmds = 0;
         tb_bool_t found = tb_false;
 
-        buffer = tb_malloc(64 * 1024); // 64KB should be enough for any load command
+        buffer = (tb_byte_t*)tb_malloc(64 * 1024); // 64KB should be enough for any load command
         if (!buffer) break;
 
         tb_uint32_t i = 0;

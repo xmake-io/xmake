@@ -114,7 +114,7 @@ static tb_bool_t xm_binutils_elf_rpath_clean_impl(tb_stream_ref_t istream, tb_hi
         
         // allocate buffer for all dynamic entries
         tb_size_t dyn_size = (tb_size_t)ctx->dynamic_size;
-        buffer = tb_malloc(dyn_size);
+        buffer = (tb_byte_t*)tb_malloc(dyn_size);
         if (!buffer) break;
 
         if (!tb_stream_seek(istream, base_offset + ctx->dynamic_offset)) break;
