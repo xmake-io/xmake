@@ -37,72 +37,18 @@
 tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
-    // read ELF header
-    xm_elf32_header_t header;
-    if (!tb_stream_seek(istream, base_offset)) {
-        return tb_false;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
-        return tb_false;
-    }
+    xm_elf_context_t ctx;
+    xm_binutils_elf_get_context_32(istream, base_offset, &ctx);
 
-    // find .symtab section
-    xm_elf32_section_t symtab_section = {0};
-    xm_elf32_section_t strtab_section = {0};
-    tb_bool_t found_symtab = tb_false;
-    tb_bool_t found_strtab = tb_false;
-
-    if (!tb_stream_seek(istream, base_offset + header.e_shoff)) {
-        return tb_false;
-    }
-
-    for (tb_uint16_t i = 0; i < header.e_shnum; i++) {
-        xm_elf32_section_t section;
-        if (!tb_stream_bread(istream, (tb_byte_t*)&section, sizeof(section))) {
-            return tb_false;
-        }
-
-        if (section.sh_type == XM_ELF_SHT_SYMTAB) {
-            symtab_section = section;
-            found_symtab = tb_true;
-        } else if (section.sh_type == XM_ELF_SHT_STRTAB && section.sh_link == 0) {
-            /* .strtab is linked from .symtab, but we need to find it
-             * check if this is the string table for symbols
-             */
-            if (found_symtab && symtab_section.sh_link == i) {
-                strtab_section = section;
-                found_strtab = tb_true;
-            }
-        }
-    }
-
-    if (!found_symtab) {
+    if (!ctx.symtab_offset || !ctx.symstr_offset) {
         lua_newtable(lua);
         return tb_true;
     }
 
-    // find string table
-    if (!found_strtab && symtab_section.sh_link < header.e_shnum) {
-        if (!tb_stream_seek(istream, base_offset + header.e_shoff + symtab_section.sh_link * sizeof(xm_elf32_section_t))) {
-            return tb_false;
-        }
-        if (!tb_stream_bread(istream, (tb_byte_t*)&strtab_section, sizeof(strtab_section))) {
-            return tb_false;
-        }
-        found_strtab = tb_true;
-    }
-
-    if (!found_strtab) {
-        lua_newtable(lua);
-        return tb_true;
-    }
-
-    // create result table
     lua_newtable(lua);
 
-    // read symbols
-    tb_uint32_t sym_count = symtab_section.sh_size / sizeof(xm_elf32_symbol_t);
-    if (!tb_stream_seek(istream, base_offset + symtab_section.sh_offset)) {
+    tb_uint32_t sym_count = (tb_uint32_t)(ctx.symtab_size / sizeof(xm_elf32_symbol_t));
+    if (!tb_stream_seek(istream, base_offset + ctx.symtab_offset)) {
         return tb_false;
     }
 
@@ -113,44 +59,36 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t bas
             return tb_false;
         }
 
-        // skip NULL symbol
         if (sym.st_name == 0 && sym.st_value == 0 && sym.st_size == 0) {
             continue;
         }
 
-        // skip section and file symbols
         tb_uint8_t type = sym.st_info & 0xf;
-        if (type == 3 || type == 4) { // STT_SECTION or STT_FILE
+        if (type == 3 || type == 4) {
             continue;
         }
 
-        // get symbol name
         tb_char_t name[256];
-        if (!xm_binutils_read_string(istream, base_offset + strtab_section.sh_offset + sym.st_name, name, sizeof(name)) || !name[0]) {
+        if (!xm_binutils_read_string(istream, base_offset + ctx.symstr_offset + sym.st_name, name, sizeof(name)) || !name[0]) {
             continue;
         }
 
-        // skip internal symbols (starting with . or $)
         if (name[0] == '.' || name[0] == '$') {
             continue;
         }
 
-        // skip local symbols (unless undefined)
         tb_uint8_t bind = (sym.st_info >> 4) & 0xf;
-        if (bind == 0 && sym.st_shndx != 0) { // STB_LOCAL and not undefined
+        if (bind == 0 && sym.st_shndx != 0) {
             continue;
         }
 
-        // create symbol table entry
         lua_pushinteger(lua, result_count + 1);
         lua_newtable(lua);
 
-        // name
         lua_pushstring(lua, "name");
         lua_pushstring(lua, name);
         lua_settable(lua, -3);
 
-        // type (nm-style: T/t/D/d/B/b/U)
         tb_char_t type_char = xm_binutils_elf_get_symbol_type_char(sym.st_info, sym.st_shndx);
         tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
@@ -167,69 +105,18 @@ tb_bool_t xm_binutils_elf_read_symbols_32(tb_stream_ref_t istream, tb_hize_t bas
 tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
-    // read ELF header
-    xm_elf64_header_t header;
-    if (!tb_stream_seek(istream, base_offset)) {
-        return tb_false;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
-        return tb_false;
-    }
+    xm_elf_context_t ctx;
+    xm_binutils_elf_get_context_64(istream, base_offset, &ctx);
 
-    // find .symtab section
-    xm_elf64_section_t symtab_section = {0};
-    xm_elf64_section_t strtab_section = {0};
-    tb_bool_t found_symtab = tb_false;
-    tb_bool_t found_strtab = tb_false;
-
-    if (!tb_stream_seek(istream, base_offset + header.e_shoff)) {
-        return tb_false;
-    }
-
-    for (tb_uint16_t i = 0; i < header.e_shnum; i++) {
-        xm_elf64_section_t section;
-        if (!tb_stream_bread(istream, (tb_byte_t*)&section, sizeof(section))) {
-            return tb_false;
-        }
-
-        if (section.sh_type == XM_ELF_SHT_SYMTAB) {
-            symtab_section = section;
-            found_symtab = tb_true;
-        } else if (section.sh_type == XM_ELF_SHT_STRTAB && section.sh_link == 0) {
-            if (found_symtab && symtab_section.sh_link == i) {
-                strtab_section = section;
-                found_strtab = tb_true;
-            }
-        }
-    }
-
-    if (!found_symtab) {
+    if (!ctx.symtab_offset || !ctx.symstr_offset) {
         lua_newtable(lua);
         return tb_true;
     }
 
-    // find string table
-    if (!found_strtab && symtab_section.sh_link < header.e_shnum) {
-        if (!tb_stream_seek(istream, base_offset + header.e_shoff + symtab_section.sh_link * sizeof(xm_elf64_section_t))) {
-            return tb_false;
-        }
-        if (!tb_stream_bread(istream, (tb_byte_t*)&strtab_section, sizeof(strtab_section))) {
-            return tb_false;
-        }
-        found_strtab = tb_true;
-    }
-
-    if (!found_strtab) {
-        lua_newtable(lua);
-        return tb_true;
-    }
-
-    // create result table
     lua_newtable(lua);
 
-    // read symbols
-    tb_uint32_t sym_count = (tb_uint32_t)(symtab_section.sh_size / sizeof(xm_elf64_symbol_t));
-    if (!tb_stream_seek(istream, base_offset + symtab_section.sh_offset)) {
+    tb_uint32_t sym_count = (tb_uint32_t)(ctx.symtab_size / sizeof(xm_elf64_symbol_t));
+    if (!tb_stream_seek(istream, base_offset + ctx.symtab_offset)) {
         return tb_false;
     }
 
@@ -240,44 +127,36 @@ tb_bool_t xm_binutils_elf_read_symbols_64(tb_stream_ref_t istream, tb_hize_t bas
             return tb_false;
         }
 
-        // skip NULL symbol
         if (sym.st_name == 0 && sym.st_value == 0 && sym.st_size == 0) {
             continue;
         }
 
-        // skip section and file symbols
         tb_uint8_t type = sym.st_info & 0xf;
-        if (type == 3 || type == 4) { // STT_SECTION or STT_FILE
+        if (type == 3 || type == 4) {
             continue;
         }
 
-        // get symbol name
         tb_char_t name[256];
-        if (!xm_binutils_read_string(istream, base_offset + strtab_section.sh_offset + sym.st_name, name, sizeof(name)) || !name[0]) {
+        if (!xm_binutils_read_string(istream, base_offset + ctx.symstr_offset + sym.st_name, name, sizeof(name)) || !name[0]) {
             continue;
         }
 
-        // skip internal symbols (starting with . or $)
         if (name[0] == '.' || name[0] == '$') {
             continue;
         }
 
-        // skip local symbols (unless undefined)
         tb_uint8_t bind = (sym.st_info >> 4) & 0xf;
-        if (bind == 0 && sym.st_shndx != 0) { // STB_LOCAL and not undefined
+        if (bind == 0 && sym.st_shndx != 0) {
             continue;
         }
 
-        // create symbol table entry
         lua_pushinteger(lua, result_count + 1);
         lua_newtable(lua);
 
-        // name
         lua_pushstring(lua, "name");
         lua_pushstring(lua, name);
         lua_settable(lua, -3);
 
-        // type (nm-style: T/t/D/d/B/b/U)
         tb_char_t type_char = xm_binutils_elf_get_symbol_type_char(sym.st_info, sym.st_shndx);
         tb_char_t type_str[2] = {type_char, '\0'};
         lua_pushstring(lua, "type");
@@ -323,5 +202,4 @@ tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, tb_hize_t base_o
 
     return tb_false;
 }
-
 

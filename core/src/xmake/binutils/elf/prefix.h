@@ -85,6 +85,10 @@ typedef struct __xm_elf_context_t {
     tb_hize_t dynamic_size;
     tb_hize_t strtab_offset;
     tb_hize_t strtab_size;
+    tb_hize_t symtab_offset;
+    tb_hize_t symtab_size;
+    tb_hize_t symstr_offset;
+    tb_hize_t symstr_size;
     tb_bool_t is64;
 } xm_elf_context_t;
 
@@ -364,7 +368,15 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_get_context_32(tb_stream_ref_t is
                         ctx->strtab_offset = strtab_section.sh_offset;
                         ctx->strtab_size = strtab_section.sh_size;
                     }
-                    break;
+                } else if (section.sh_type == XM_ELF_SHT_SYMTAB) {
+                    ctx->symtab_offset = section.sh_offset;
+                    ctx->symtab_size = section.sh_size;
+                    xm_elf32_section_t symstr_section;
+                    if (tb_stream_seek(istream, base_offset + header.e_shoff + section.sh_link * sizeof(xm_elf32_section_t)) &&
+                        tb_stream_bread(istream, (tb_byte_t*)&symstr_section, sizeof(symstr_section))) {
+                        ctx->symstr_offset = symstr_section.sh_offset;
+                        ctx->symstr_size = symstr_section.sh_size;
+                    }
                 }
             }
         }
@@ -444,7 +456,15 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_get_context_64(tb_stream_ref_t is
                         ctx->strtab_offset = strtab_section.sh_offset;
                         ctx->strtab_size = strtab_section.sh_size;
                     }
-                    break;
+                } else if (section.sh_type == XM_ELF_SHT_SYMTAB) {
+                    ctx->symtab_offset = section.sh_offset;
+                    ctx->symtab_size = section.sh_size;
+                    xm_elf64_section_t symstr_section;
+                    if (tb_stream_seek(istream, base_offset + header.e_shoff + section.sh_link * sizeof(xm_elf64_section_t)) &&
+                        tb_stream_bread(istream, (tb_byte_t*)&symstr_section, sizeof(symstr_section))) {
+                        ctx->symstr_offset = symstr_section.sh_offset;
+                        ctx->symstr_size = symstr_section.sh_size;
+                    }
                 }
             }
         }
@@ -499,4 +519,3 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_get_context_64(tb_stream_ref_t is
 }
 
 #endif
-

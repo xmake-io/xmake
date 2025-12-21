@@ -673,8 +673,6 @@ static luaL_Reg const g_binutils_functions[] = {
     { "readsyms", xm_binutils_readsyms },
     { "deplibs", xm_binutils_deplibs },
     { "rpath_list", xm_binutils_rpath_list },
-    { "rpath_insert", xm_binutils_rpath_insert },
-    { "rpath_remove", xm_binutils_rpath_remove },
     { "rpath_clean", xm_binutils_rpath_clean },
     { "extractlib", xm_binutils_extractlib },
     { tb_null, tb_null },
