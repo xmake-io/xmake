@@ -342,13 +342,27 @@ static __tb_inline__ tb_char_t const *xm_binutils_elf_get_symbol_bind(tb_uint8_t
     }
 }
 
+// read ELF header (32-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_read_header_32(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf32_header_t* header) {
+    if (!tb_stream_seek(istream, base_offset)) return tb_false;
+    if (!tb_stream_bread(istream, (tb_byte_t*)header, sizeof(*header))) return tb_false;
+    return tb_true;
+}
+
+// read ELF header (64-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_read_header_64(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf64_header_t* header) {
+    if (!tb_stream_seek(istream, base_offset)) return tb_false;
+    if (!tb_stream_bread(istream, (tb_byte_t*)header, sizeof(*header))) return tb_false;
+    return tb_true;
+}
+
 static __tb_inline__ tb_bool_t xm_binutils_elf_get_context_32(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf_context_t* ctx) {
     tb_memset(ctx, 0, sizeof(xm_elf_context_t));
     ctx->is64 = tb_false;
 
     // read ELF header
     xm_elf32_header_t header;
-    if (!tb_stream_seek(istream, base_offset) || !tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) return tb_false;
+    if (!xm_binutils_elf_read_header_32(istream, base_offset, &header)) return tb_false;
 
     // try to find from section headers first
     if (header.e_shoff != 0 && header.e_shnum > 0) {
@@ -436,7 +450,7 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_get_context_64(tb_stream_ref_t is
 
     // read ELF header
     xm_elf64_header_t header;
-    if (!tb_stream_seek(istream, base_offset) || !tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) return tb_false;
+    if (!xm_binutils_elf_read_header_64(istream, base_offset, &header)) return tb_false;
 
     // try to find from section headers first
     if (header.e_shoff != 0 && header.e_shnum > 0) {
@@ -518,19 +532,6 @@ static __tb_inline__ tb_bool_t xm_binutils_elf_get_context_64(tb_stream_ref_t is
     return (ctx->dynamic_offset != 0 && ctx->strtab_offset != 0);
 }
 
-// read ELF header (32-bit)
-static __tb_inline__ tb_bool_t xm_binutils_elf_read_header_32(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf32_header_t* header) {
-    if (!tb_stream_seek(istream, base_offset)) return tb_false;
-    if (!tb_stream_bread(istream, (tb_byte_t*)header, sizeof(*header))) return tb_false;
-    return tb_true;
-}
-
-// read ELF header (64-bit)
-static __tb_inline__ tb_bool_t xm_binutils_elf_read_header_64(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf64_header_t* header) {
-    if (!tb_stream_seek(istream, base_offset)) return tb_false;
-    if (!tb_stream_bread(istream, (tb_byte_t*)header, sizeof(*header))) return tb_false;
-    return tb_true;
-}
 
 // find PT_INTERP and read interpreter path (32-bit)
 static __tb_inline__ tb_bool_t xm_binutils_elf_find_interp_32(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf32_header_t const* header, tb_char_t* name, tb_size_t size) {
