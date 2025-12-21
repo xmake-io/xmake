@@ -2493,7 +2493,7 @@ function _instance:_generate_sanitizer_configs(checkmode, sourcekind)
                 kind = "static"
             end
 
-            local driver = self:has_tool("ld", "lld-link", "link") and "" or "-Wl,"
+            local driver = self:has_tool("ld", "lld_link", "link") and "" or "-Wl,"
             local thunk = path.join(libdir, string.format("clang_rt.asan_%s_runtime_thunk-x86_64.lib", kind))
             table.join2(ldflags, {
                 path.unix(path.join(libdir, "clang_rt.asan_dynamic-x86_64.lib")),

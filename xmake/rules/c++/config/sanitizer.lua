@@ -72,7 +72,7 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
             end
 
             local libdir = _get_clang_asan_library_dir(target)
-            local driver = target:has_tool("ld", "lld-link", "link") and "" or "-Wl,"
+            local driver = target:has_tool("ld", "lld_link", "link") and "" or "-Wl,"
             local thunk = path.join(libdir, string.format("clang_rt.asan_%s_runtime_thunk-x86_64.lib", kind))
             table.join2(ldflags, {
                 path.unix(path.join(libdir, "clang_rt.asan_dynamic-x86_64.lib")),
