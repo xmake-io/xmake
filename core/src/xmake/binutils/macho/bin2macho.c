@@ -326,7 +326,7 @@ static tb_bool_t xm_binutils_bin2macho_dump_32(tb_stream_ref_t istream,
     tb_snprintf(symbol_end, sizeof(symbol_end), "%s_end", symbol_name);
 
     // calculate offsets
-    tb_uint32_t header_size = sizeof(xm_macho_header_t);
+    tb_uint32_t header_size = sizeof(xm_macho_header_32_t);
     tb_uint32_t segment_cmd_size = sizeof(xm_macho_segment_command_t);
     tb_uint32_t section_size = sizeof(xm_macho_section_t);
     tb_uint32_t symtab_cmd_size = sizeof(xm_macho_symtab_command_t);
@@ -347,7 +347,7 @@ static tb_bool_t xm_binutils_bin2macho_dump_32(tb_stream_ref_t istream,
     strtab_size = xm_binutils_macho_align(strtab_size, 4);
 
     // write Mach-O header
-    xm_macho_header_t header;
+    xm_macho_header_32_t header;
     tb_memset(&header, 0, sizeof(header));
     header.magic = XM_MACHO_MAGIC_32;
     header.cputype = xm_binutils_macho_get_cputype(arch);
@@ -617,4 +617,3 @@ tb_int_t xm_binutils_bin2macho(lua_State *lua) {
 
     return ok ? 1 : 2;
 }
-

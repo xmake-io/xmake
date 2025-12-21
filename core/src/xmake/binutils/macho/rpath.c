@@ -43,7 +43,7 @@ tb_bool_t xm_binutils_macho_rpath_list(tb_stream_ref_t istream, tb_hize_t base_o
         if (!xm_binutils_macho_context_init(istream, base_offset, &context)) break;
 
         // skip header to reach load commands
-        tb_size_t header_size = context.is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_t);
+        tb_size_t header_size = context.is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_32_t);
         if (!tb_stream_seek(istream, base_offset + header_size)) break;
 
         tb_size_t result_count = 0;
@@ -103,7 +103,7 @@ tb_bool_t xm_binutils_macho_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_
         xm_macho_context_t context;
         if (!xm_binutils_macho_context_init(istream, base_offset, &context)) break;
 
-        tb_size_t header_size = context.is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_t);
+        tb_size_t header_size = context.is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_32_t);
         if (!tb_stream_seek(istream, base_offset + header_size)) break;
 
         tb_hize_t read_offset = base_offset + header_size;
@@ -176,7 +176,7 @@ tb_bool_t xm_binutils_macho_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_
                 context.header.header32.sizeofcmds = new_sizeofcmds;
                 xm_binutils_macho_swap_header_32(&context.header.header32, context.swap);
                 if (!tb_stream_seek(istream, base_offset)) break;
-                if (!tb_stream_bwrit(istream, (tb_byte_t const*)&context.header.header32, sizeof(xm_macho_header_t))) break;
+                if (!tb_stream_bwrit(istream, (tb_byte_t const*)&context.header.header32, sizeof(xm_macho_header_32_t))) break;
             }
         }
 

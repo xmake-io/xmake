@@ -295,13 +295,6 @@ function _clean_rpath_by_patchelf(binaryfile, opt)
     return ok
 end
 
-function _insert_rpath_by_binutils(binaryfile, rpath, opt)
-    return binutils.rpath_insert(binaryfile, rpath)
-end
-
-function _remove_rpath_by_binutils(binaryfile, rpath, opt)
-    return binutils.rpath_remove(binaryfile, rpath)
-end
 
 function _clean_rpath_by_binutils(binaryfile, opt)
     return binutils.rpath_clean(binaryfile)
@@ -332,7 +325,6 @@ function insert(binaryfile, rpath, opt)
     opt = opt or {}
     local ops = {
         _insert_rpath_by_patchelf,
-        _insert_rpath_by_binutils
     }
     if is_host("macosx") then
         table.insert(ops, 1, _insert_rpath_by_install_name_tool)
@@ -355,7 +347,6 @@ function remove(binaryfile, rpath, opt)
     opt = opt or {}
     local ops = {
         _remove_rpath_by_patchelf,
-        _remove_rpath_by_binutils
     }
     if is_host("macosx") then
         table.insert(ops, 1, _remove_rpath_by_install_name_tool)

@@ -78,7 +78,7 @@
  * types
  */
 #include "tbox/prefix/packed.h"
-typedef struct __xm_macho_header_t {
+typedef struct __xm_macho_header_32_t {
     tb_uint32_t magic;
     tb_uint32_t cputype;
     tb_uint32_t cpusubtype;
@@ -86,7 +86,7 @@ typedef struct __xm_macho_header_t {
     tb_uint32_t ncmds;
     tb_uint32_t sizeofcmds;
     tb_uint32_t flags;
-} __tb_packed__ xm_macho_header_t;
+} __tb_packed__ xm_macho_header_32_t;
 
 typedef struct __xm_macho_header_64_t {
     tb_uint32_t magic;
@@ -216,7 +216,7 @@ typedef struct __xm_macho_dylib_command_t {
 
 typedef struct __xm_macho_context_t {
     union {
-        xm_macho_header_t header32;
+        xm_macho_header_32_t header32;
         xm_macho_header_64_t header64;
     } header;
     tb_bool_t   is64;
@@ -231,7 +231,7 @@ typedef struct __xm_macho_context_t {
  */
 
 // byte-swap Mach-O header fields if needed
-static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_32(xm_macho_header_t *header, tb_bool_t swap) {
+static __tb_inline__ tb_void_t xm_binutils_macho_swap_header_32(xm_macho_header_32_t *header, tb_bool_t swap) {
     if (swap) {
         header->magic = tb_bits_swap_u32(header->magic);
         header->cputype = tb_bits_swap_u32(header->cputype);
@@ -263,7 +263,7 @@ static __tb_inline__ tb_bool_t xm_binutils_macho_context_init(tb_stream_ref_t is
 
     // read Mach-O header
     if (!tb_stream_seek(istream, base_offset)) return tb_false;
-    if (!tb_stream_bread(istream, (tb_byte_t*)&context->header.header32, sizeof(xm_macho_header_t))) return tb_false;
+    if (!tb_stream_bread(istream, (tb_byte_t*)&context->header.header32, sizeof(xm_macho_header_32_t))) return tb_false;
 
     // check magic
     tb_uint32_t magic = context->header.header32.magic;
@@ -579,4 +579,3 @@ static __tb_inline__ tb_char_t const *xm_binutils_macho_get_symbol_bind(tb_uint8
 }
 
 #endif
-

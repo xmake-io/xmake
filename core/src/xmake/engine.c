@@ -343,8 +343,6 @@ tb_int_t xm_binutils_bin2elf(lua_State *lua);
 tb_int_t xm_binutils_readsyms(lua_State *lua);
 tb_int_t xm_binutils_deplibs(lua_State *lua);
 tb_int_t xm_binutils_rpath_list(lua_State *lua);
-tb_int_t xm_binutils_rpath_insert(lua_State *lua);
-tb_int_t xm_binutils_rpath_remove(lua_State *lua);
 tb_int_t xm_binutils_rpath_clean(lua_State *lua);
 tb_int_t xm_binutils_extractlib(lua_State *lua);
 

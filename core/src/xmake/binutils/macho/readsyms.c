@@ -41,7 +41,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, tb_hize_t b
     xm_macho_symtab_command_t symtab_cmd;
     tb_bool_t found_symtab = tb_false;
 
-    tb_uint32_t offset = sizeof(xm_macho_header_t);
+    tb_uint32_t offset = sizeof(xm_macho_header_32_t);
     for (tb_uint32_t i = 0; i < context->ncmds; i++) {
         tb_uint32_t cmd;
         tb_uint32_t cmdsize;
@@ -253,5 +253,4 @@ tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize_t base
         return xm_binutils_macho_read_symbols_64(istream, base_offset, lua, &context);
     }
 }
-
 

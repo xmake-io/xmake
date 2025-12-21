@@ -47,7 +47,7 @@ tb_bool_t xm_binutils_macho_deplibs(tb_stream_ref_t istream, tb_hize_t base_offs
     }
 
     // skip header to reach load commands
-    tb_size_t header_size = context.is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_t);
+    tb_size_t header_size = context.is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_32_t);
     if (!tb_stream_seek(istream, base_offset + header_size)) {
         return tb_false;
     }

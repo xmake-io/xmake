@@ -38,8 +38,6 @@
 tb_bool_t xm_binutils_elf_rpath_list(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 tb_bool_t xm_binutils_macho_rpath_list(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 
-
-
 tb_bool_t xm_binutils_elf_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_offset);
 tb_bool_t xm_binutils_macho_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_offset);
 
