@@ -26,32 +26,10 @@ import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- add build sanitizer
 function _add_build_sanitizer(target, sourcekind, checkmode)
-    -- add cflags
-    local _, cc = target:tool(sourcekind)
-    local flagnames = {
-        cc = "cflags",
-        cxx = "cxxflags",
-        mm = "mflags",
-        mxx = "mxflags"
-    }
-    local flagname = flagnames[sourcekind]
-    if flagname and target:has_tool(sourcekind, "cl", "clang", "clangxx", "clang_cl", "gcc", "gxx") then
-        target:add(flagname, "-fsanitize=" .. checkmode, {force = true})
-    end
-
-    -- add ldflags and shflags
-    -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
-    if target:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
-        target:add("ldflags", "-fsanitize=" .. checkmode, {force = true})
-        target:add("shflags", "-fsanitize=" .. checkmode, {force = true})
-    end
-
-    if target:is_plat("windows") and checkmode == "address" and not target:has_tool("cxx", "cl") then
-        local ldflags = toolchain_utils.get_llvm_asan_flags(target)
-        if #ldflags ~= 0 then
-            target:add("ldflags", ldflags, {force = true})
-            target:add("shflags", ldflags, {force = true})
-        end
+    -- add sanitizer flags
+    local flags = toolchain_utils.get_sanitizer_flags(target, {checkmode = checkmode, sourcekind = sourcekind})
+    for name, value in pairs(flags) do
+        target:add(name, value, {force = true})
     end
 end
 
