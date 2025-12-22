@@ -51,14 +51,6 @@ Support this project by [becoming a sponsor](https://xmake.io/about/sponsor). Yo
 <a href="https://opencollective.com/xmake#sponsors" target="_blank"><img src="https://opencollective.com/xmake/sponsors.svg?width=890"></a>
 <a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
 
-## Technical support
-
-You can also consider sponsoring us to get extra technical support services via the [Github sponsor program](https://github.com/sponsors/waruqi). If you do, you can get access to the [xmake-io/technical-support](https://github.com/xmake-io/technical-support) repository, which has the following benefits:
-
-- [X] Handling Issues with higher priority
-- [X] One-to-one technical consulting service
-- [X] Review your xmake.lua and provide suggestions for improvement
-
 ## Introduction ([中文](/README_zh.md))
 
 What is Xmake?
