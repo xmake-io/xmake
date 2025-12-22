@@ -471,7 +471,8 @@ function add_llvm_runenvs(toolchain)
                     -- Currently, runenvs maybe have Visual Studio environment variables.
                     -- If the Clang path is not prioritized (placed first), the system incorrectly loads the MSVC ASan DLL, resulting in a runtime failure.
                     local runenvs = toolchain:get("runenvs")
-                    if runenvs and runenvs["PATH"]then
+                    if runenvs and runenvs["PATH"] then
+                        runenvs["PATH"] = table.wrap(runenvs["PATH"])
                         table.insert(runenvs["PATH"], 1 , dir)
                     else
                         toolchain:add("runenvs", "PATH", dir)
