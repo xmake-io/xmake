@@ -47,9 +47,9 @@ function main(toolchain)
         toolchain:set("toolset", "ar",  "link.exe")
     end
 
-    -- set llvm runtimes
-    toolchain_utils.set_llvm_runtimes(toolchain)
-
+    -- add vs environments
+    toolchain_utils.add_vsenvs(toolchain)
+    
     -- add llvm runenvs
     toolchain_utils.add_llvm_runenvs(toolchain)
 
