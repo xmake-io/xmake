@@ -47,10 +47,13 @@ function main(toolchain)
         toolchain:set("toolset", "ar",  "link.exe")
     end
 
-    toolchain_utils.add_vsenvs(toolchain)
+    -- set llvm runtimes
+    toolchain_utils.set_llvm_runtimes(toolchain)
 
+    -- add llvm runenvs
     toolchain_utils.add_llvm_runenvs(toolchain)
 
+    -- add target flags
     local flags = toolchain_utils.get_clang_target_flags(toolchain)
     if flags then
         toolchain:add("cxflags", flags)
