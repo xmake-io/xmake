@@ -116,7 +116,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     header.e_ident[1] = 'E';
     header.e_ident[2] = 'L';
     header.e_ident[3] = 'F';
-    header.e_ident[4] = 1; // ELFCLASS32
+    header.e_ident[XM_ELF_EI_CLASS] = XM_ELF_CLASS32;
     header.e_ident[5] = 1; // ELFDATA2LSB
     header.e_ident[6] = 1; // EV_CURRENT
     header.e_ident[7] = 0; // ELFOSABI_SYSV
@@ -416,7 +416,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     header.e_ident[1] = 'E';
     header.e_ident[2] = 'L';
     header.e_ident[3] = 'F';
-    header.e_ident[4] = 2; // ELFCLASS64
+    header.e_ident[XM_ELF_EI_CLASS] = XM_ELF_CLASS64;
     header.e_ident[5] = 1; // ELFDATA2LSB
     header.e_ident[6] = 1; // EV_CURRENT
     header.e_ident[7] = 0; // ELFOSABI_SYSV

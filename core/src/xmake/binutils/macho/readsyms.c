@@ -34,25 +34,15 @@
  * private implementation
  */
 
-tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua, tb_bool_t swap_bytes) {
-    tb_assert_and_check_return_val(istream && lua, tb_false);
-
-    // read Mach-O header
-    xm_macho_header_t header;
-    if (!tb_stream_seek(istream, base_offset)) {
-        return tb_false;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
-        return tb_false;
-    }
-    xm_binutils_macho_swap_header_32(&header, swap_bytes);
+tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua, xm_macho_context_t* context) {
+    tb_assert_and_check_return_val(istream && lua && context, tb_false);
 
     // find LC_SYMTAB command
     xm_macho_symtab_command_t symtab_cmd;
     tb_bool_t found_symtab = tb_false;
 
-    tb_uint32_t offset = sizeof(header);
-    for (tb_uint32_t i = 0; i < header.ncmds; i++) {
+    tb_uint32_t offset = sizeof(xm_macho_header_32_t);
+    for (tb_uint32_t i = 0; i < context->ncmds; i++) {
         tb_uint32_t cmd;
         tb_uint32_t cmdsize;
 
@@ -66,6 +56,11 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, tb_hize_t b
             return tb_false;
         }
 
+        if (context->swap) {
+            cmd = tb_bits_swap_u32(cmd);
+            cmdsize = tb_bits_swap_u32(cmdsize);
+        }
+
         if (cmd == XM_MACHO_LC_SYMTAB) {
             if (!tb_stream_seek(istream, base_offset + offset)) {
                 return tb_false;
@@ -73,6 +68,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, tb_hize_t b
             if (!tb_stream_bread(istream, (tb_byte_t*)&symtab_cmd, sizeof(symtab_cmd))) {
                 return tb_false;
             }
+            xm_binutils_macho_swap_symtab_command(&symtab_cmd, context->swap);
             found_symtab = tb_true;
             break;
         }
@@ -99,7 +95,7 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, tb_hize_t b
         if (!tb_stream_bread(istream, (tb_byte_t*)&nlist, sizeof(nlist))) {
             return tb_false;
         }
-        xm_binutils_macho_swap_nlist_32(&nlist, swap_bytes);
+        xm_binutils_macho_swap_nlist_32(&nlist, context->swap);
 
         // skip NULL symbols
         if (nlist.strx == 0) {
@@ -140,25 +136,15 @@ tb_bool_t xm_binutils_macho_read_symbols_32(tb_stream_ref_t istream, tb_hize_t b
     return tb_true;
 }
 
-tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua, tb_bool_t swap_bytes) {
-    tb_assert_and_check_return_val(istream && lua, tb_false);
-
-    // read Mach-O header
-    xm_macho_header_64_t header;
-    if (!tb_stream_seek(istream, base_offset)) {
-        return tb_false;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
-        return tb_false;
-    }
-    xm_binutils_macho_swap_header_64(&header, swap_bytes);
+tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua, xm_macho_context_t* context) {
+    tb_assert_and_check_return_val(istream && lua && context, tb_false);
 
     // find LC_SYMTAB command
     xm_macho_symtab_command_t symtab_cmd;
     tb_bool_t found_symtab = tb_false;
 
-    tb_uint32_t offset = sizeof(header);
-    for (tb_uint32_t i = 0; i < header.ncmds; i++) {
+    tb_uint32_t offset = sizeof(xm_macho_header_64_t);
+    for (tb_uint32_t i = 0; i < context->ncmds; i++) {
         tb_uint32_t cmd;
         tb_uint32_t cmdsize;
 
@@ -172,7 +158,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, tb_hize_t b
             return tb_false;
         }
 
-        if (swap_bytes) {
+        if (context->swap) {
             cmd = tb_bits_swap_u32(cmd);
             cmdsize = tb_bits_swap_u32(cmdsize);
         }
@@ -184,7 +170,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, tb_hize_t b
             if (!tb_stream_bread(istream, (tb_byte_t*)&symtab_cmd, sizeof(symtab_cmd))) {
                 return tb_false;
             }
-            xm_binutils_macho_swap_symtab_command(&symtab_cmd, swap_bytes);
+            xm_binutils_macho_swap_symtab_command(&symtab_cmd, context->swap);
             found_symtab = tb_true;
             break;
         }
@@ -211,7 +197,7 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, tb_hize_t b
         if (!tb_stream_bread(istream, (tb_byte_t*)&nlist, sizeof(nlist))) {
             return tb_false;
         }
-        xm_binutils_macho_swap_nlist_64(&nlist, swap_bytes);
+        xm_binutils_macho_swap_nlist_64(&nlist, context->swap);
 
         // skip NULL symbols
         if (nlist.strx == 0) {
@@ -255,28 +241,16 @@ tb_bool_t xm_binutils_macho_read_symbols_64(tb_stream_ref_t istream, tb_hize_t b
 tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
-    if (!tb_stream_seek(istream, base_offset)) {
+    // init Mach-O context
+    xm_macho_context_t context;
+    if (!xm_binutils_macho_context_init(istream, base_offset, &context)) {
         return tb_false;
     }
 
-    // read and check magic
-    tb_uint8_t magic_bytes[4];
-    if (!tb_stream_bread(istream, magic_bytes, 4)) {
-        return tb_false;
-    }
-
-    // detect Mach-O format
-    tb_bool_t is_32bit = tb_false;
-    tb_bool_t swap_bytes = tb_false;
-    if (!xm_binutils_macho_detect_format(magic_bytes, &is_32bit, &swap_bytes)) {
-        return tb_false;
-    }
-
-    if (is_32bit) {
-        return xm_binutils_macho_read_symbols_32(istream, base_offset, lua, swap_bytes);
+    if (!context.is64) {
+        return xm_binutils_macho_read_symbols_32(istream, base_offset, lua, &context);
     } else {
-        return xm_binutils_macho_read_symbols_64(istream, base_offset, lua, swap_bytes);
+        return xm_binutils_macho_read_symbols_64(istream, base_offset, lua, &context);
     }
 }
-
 

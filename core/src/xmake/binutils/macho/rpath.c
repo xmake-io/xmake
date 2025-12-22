@@ -36,100 +36,153 @@
 tb_bool_t xm_binutils_macho_rpath_list(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
-    // read Mach-O header
-    xm_macho_header_t header;
-    if (!tb_stream_seek(istream, base_offset)) {
-        return tb_false;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
-        return tb_false;
-    }
+    tb_bool_t ok = tb_false;
+    do {
+        // init Mach-O context
+        xm_macho_context_t context;
+        if (!xm_binutils_macho_context_init(istream, base_offset, &context)) break;
 
-    tb_bool_t swap = tb_false;
-    tb_bool_t is64 = tb_false;
+        // skip header to reach load commands
+        tb_size_t header_size = context.is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_32_t);
+        if (!tb_stream_seek(istream, base_offset + header_size)) break;
 
-    // check magic
-    if (header.magic == XM_MACHO_MAGIC_32) {
-        is64 = tb_false;
-    } else if (header.magic == XM_MACHO_MAGIC_32_BE) {
-        is64 = tb_false;
-        swap = tb_true;
-    } else if (header.magic == XM_MACHO_MAGIC_64) {
-        is64 = tb_true;
-    } else if (header.magic == XM_MACHO_MAGIC_64_BE) {
-        is64 = tb_true;
-        swap = tb_true;
-    } else {
-        return tb_false; // Not a Mach-O file
-    }
+        tb_size_t result_count = 0;
 
-    // re-read header for 64-bit if needed, or just use 32-bit part and skip reserved
-    tb_uint32_t ncmds = 0;
+        // iterate load commands
+        tb_uint32_t i = 0;
+        for (i = 0; i < context.ncmds; i++) {
+            xm_macho_load_command_t lc;
+            tb_hize_t current_cmd_offset = tb_stream_offset(istream);
 
-    if (is64) {
-        xm_macho_header_64_t header64;
-        if (!tb_stream_seek(istream, base_offset)) {
-            return tb_false;
-        }
-        if (!tb_stream_bread(istream, (tb_byte_t*)&header64, sizeof(header64))) {
-            return tb_false;
-        }
-        xm_binutils_macho_swap_header_64(&header64, swap);
-        ncmds = header64.ncmds;
-    } else {
-        xm_binutils_macho_swap_header_32(&header, swap);
-        ncmds = header.ncmds;
-    }
+            if (!tb_stream_bread(istream, (tb_byte_t*)&lc, sizeof(lc))) break;
+            xm_binutils_macho_swap_load_command(&lc, context.swap);
 
-    // skip header to reach load commands
-    tb_size_t header_size = is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_t);
-    if (!tb_stream_seek(istream, base_offset + header_size)) {
-        return tb_false;
-    }
+            // check for LC_RPATH
+            if (lc.cmd == XM_MACHO_LC_RPATH) {
 
-    tb_size_t result_count = 0;
+                xm_macho_rpath_command_t rc;
+                if (tb_stream_seek(istream, current_cmd_offset)) {
+                     if (tb_stream_bread(istream, (tb_byte_t*)&rc, sizeof(rc))) {
+                         xm_binutils_macho_swap_rpath_command(&rc, context.swap);
 
-    // iterate load commands
-    for (tb_uint32_t i = 0; i < ncmds; i++) {
-        xm_macho_load_command_t lc;
-        tb_hize_t current_cmd_offset = tb_stream_offset(istream);
-
-        if (!tb_stream_bread(istream, (tb_byte_t*)&lc, sizeof(lc))) {
-            return tb_false;
-        }
-        xm_binutils_macho_swap_load_command(&lc, swap);
-
-        // check for LC_RPATH
-        if (lc.cmd == XM_MACHO_LC_RPATH) {
-
-            xm_macho_rpath_command_t rc;
-            if (tb_stream_seek(istream, current_cmd_offset)) {
-                 if (tb_stream_bread(istream, (tb_byte_t*)&rc, sizeof(rc))) {
-                     xm_binutils_macho_swap_rpath_command(&rc, swap);
-
-                     tb_uint32_t name_offset = rc.path_offset;
-                     if (name_offset < lc.cmdsize) {
-                         // name is at current_cmd_offset + name_offset
-                         tb_char_t rpath[TB_PATH_MAXN];
-                         tb_size_t max_len = lc.cmdsize - name_offset;
-                         if (max_len > sizeof(rpath) - 1) max_len = sizeof(rpath) - 1;
-
-                         if (xm_binutils_read_string(istream, current_cmd_offset + name_offset, rpath, max_len + 1) && rpath[0]) {
-                             lua_pushinteger(lua, result_count + 1);
-                             lua_pushstring(lua, rpath);
-                             lua_settable(lua, -3);
-                             result_count++;
+                         tb_uint32_t name_offset = rc.path_offset;
+                         if (name_offset < lc.cmdsize) {
+                             // name is at current_cmd_offset + name_offset
+                             tb_char_t rpath[TB_PATH_MAXN];
+                             if (xm_binutils_read_string(istream, current_cmd_offset + name_offset, rpath, sizeof(rpath))) {
+                                 if (tb_strlen(rpath) > 0) {
+                                     lua_pushinteger(lua, result_count + 1);
+                                     lua_pushstring(lua, rpath);
+                                     lua_settable(lua, -3);
+                                     result_count++;
+                                 }
+                             }
                          }
                      }
-                 }
+                }
+            }
+
+            // move to next command
+            if (!tb_stream_seek(istream, current_cmd_offset + lc.cmdsize)) break;
+        }
+        if (i < context.ncmds) break;
+
+        ok = tb_true;
+    } while (0);
+
+    return ok;
+}
+
+tb_bool_t xm_binutils_macho_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_offset) {
+    tb_assert_and_check_return_val(istream, tb_false);
+
+    tb_bool_t ok = tb_false;
+    tb_byte_t* buffer = tb_null;
+    do {
+        // init Mach-O context
+        xm_macho_context_t context;
+        if (!xm_binutils_macho_context_init(istream, base_offset, &context)) break;
+
+        tb_size_t header_size = context.is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_32_t);
+        if (!tb_stream_seek(istream, base_offset + header_size)) break;
+
+        tb_hize_t read_offset = base_offset + header_size;
+        tb_hize_t write_offset = read_offset;
+        tb_uint32_t new_ncmds = 0;
+        tb_uint32_t new_sizeofcmds = 0;
+        tb_bool_t found = tb_false;
+
+        buffer = (tb_byte_t*)tb_malloc(64 * 1024); // 64KB should be enough for any load command
+        if (!buffer) break;
+
+        tb_uint32_t i = 0;
+        for (i = 0; i < context.ncmds; i++) {
+            xm_macho_load_command_t lc;
+            if (!tb_stream_seek(istream, read_offset)) break;
+            if (!tb_stream_bread(istream, (tb_byte_t*)&lc, sizeof(lc))) break;
+            xm_binutils_macho_swap_load_command(&lc, context.swap);
+
+            tb_bool_t remove = tb_false;
+            if (lc.cmd == XM_MACHO_LC_RPATH) {
+                remove = tb_true;
+                found = tb_true;
+            }
+
+            if (!remove) {
+                // copy command to write_offset
+                if (read_offset != write_offset) {
+                    if (lc.cmdsize > 64 * 1024) break;
+
+                    if (!tb_stream_seek(istream, read_offset)) break;
+                    if (!tb_stream_bread(istream, buffer, lc.cmdsize)) break;
+                    if (!tb_stream_seek(istream, write_offset)) break;
+                    if (!tb_stream_bwrit(istream, buffer, lc.cmdsize)) break;
+                }
+                write_offset += lc.cmdsize;
+                new_ncmds++;
+                new_sizeofcmds += lc.cmdsize;
+            }
+
+            read_offset += lc.cmdsize;
+        }
+        if (i < context.ncmds) break;
+
+        if (found) {
+            // zero out the remaining space
+            if (read_offset > write_offset) {
+                tb_hize_t diff = read_offset - write_offset;
+                if (!tb_stream_seek(istream, write_offset)) break;
+
+                tb_byte_t zero = 0;
+                tb_bool_t write_ok = tb_true;
+                for (tb_hize_t k = 0; k < diff; k++) {
+                    if (!tb_stream_bwrit(istream, &zero, 1)) {
+                        write_ok = tb_false;
+                        break;
+                    }
+                }
+                if (!write_ok) break;
+            }
+
+            // update header
+            if (context.is64) {
+                context.header.header64.ncmds = new_ncmds;
+                context.header.header64.sizeofcmds = new_sizeofcmds;
+                xm_binutils_macho_swap_header_64(&context.header.header64, context.swap);
+                if (!tb_stream_seek(istream, base_offset)) break;
+                if (!tb_stream_bwrit(istream, (tb_byte_t const*)&context.header.header64, sizeof(xm_macho_header_64_t))) break;
+            } else {
+                context.header.header32.ncmds = new_ncmds;
+                context.header.header32.sizeofcmds = new_sizeofcmds;
+                xm_binutils_macho_swap_header_32(&context.header.header32, context.swap);
+                if (!tb_stream_seek(istream, base_offset)) break;
+                if (!tb_stream_bwrit(istream, (tb_byte_t const*)&context.header.header32, sizeof(xm_macho_header_32_t))) break;
             }
         }
 
-        // move to next command
-        if (!tb_stream_seek(istream, current_cmd_offset + lc.cmdsize)) {
-            break;
-        }
-    }
+        ok = tb_true;
+    } while (0);
 
-    return tb_true;
+    if (buffer) tb_free(buffer);
+    return ok;
 }

@@ -32,6 +32,7 @@ binutils._bin2elf = binutils._bin2elf or binutils.bin2elf
 binutils._readsyms = binutils._readsyms or binutils.readsyms
 binutils._deplibs = binutils._deplibs or binutils.deplibs
 binutils._rpath_list = binutils._rpath_list or binutils.rpath_list
+binutils._rpath_clean = binutils._rpath_clean or binutils.rpath_clean
 binutils._extractlib = binutils._extractlib or binutils.extractlib
 
 -- generate c/c++ code from the binary file
@@ -121,6 +122,17 @@ function binutils.rpath_list(binaryfile)
     end
 end
 
+-- insert rpath to binary file (auto-detect format: ELF or Mach-O)
+
+-- clean rpaths from binary file (auto-detect format: ELF or Mach-O)
+function binutils.rpath_clean(binaryfile)
+    if binutils._rpath_clean then
+        return binutils._rpath_clean(binaryfile)
+    else
+        return false, "binutils: internal rpath_clean not supported!"
+    end
+end
+
 -- extract static library to directory
 -- Supports AR format (.a) and MSVC lib format (.lib)
 -- @param libraryfile the static library file path (.a or .lib)
@@ -143,4 +155,3 @@ end
 
 -- return module
 return binutils
-

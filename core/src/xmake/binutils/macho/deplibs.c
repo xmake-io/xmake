@@ -40,53 +40,14 @@
 tb_bool_t xm_binutils_macho_deplibs(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua) {
     tb_assert_and_check_return_val(istream && lua, tb_false);
 
-    // read Mach-O header
-    xm_macho_header_t header;
-    if (!tb_stream_seek(istream, base_offset)) {
+    // init Mach-O context
+    xm_macho_context_t context;
+    if (!xm_binutils_macho_context_init(istream, base_offset, &context)) {
         return tb_false;
-    }
-    if (!tb_stream_bread(istream, (tb_byte_t*)&header, sizeof(header))) {
-        return tb_false;
-    }
-
-    tb_bool_t swap = tb_false;
-    tb_bool_t is64 = tb_false;
-
-    // check magic
-    if (header.magic == XM_MACHO_MAGIC_32) {
-        is64 = tb_false;
-    } else if (header.magic == XM_MACHO_MAGIC_32_BE) {
-        is64 = tb_false;
-        swap = tb_true;
-    } else if (header.magic == XM_MACHO_MAGIC_64) {
-        is64 = tb_true;
-    } else if (header.magic == XM_MACHO_MAGIC_64_BE) {
-        is64 = tb_true;
-        swap = tb_true;
-    } else {
-        return tb_false; // Not a Mach-O file
-    }
-
-    // re-read header for 64-bit if needed, or just use 32-bit part and skip reserved
-    tb_uint32_t ncmds = 0;
-
-    if (is64) {
-        xm_macho_header_64_t header64;
-        if (!tb_stream_seek(istream, base_offset)) {
-            return tb_false;
-        }
-        if (!tb_stream_bread(istream, (tb_byte_t*)&header64, sizeof(header64))) {
-            return tb_false;
-        }
-        xm_binutils_macho_swap_header_64(&header64, swap);
-        ncmds = header64.ncmds;
-    } else {
-        xm_binutils_macho_swap_header_32(&header, swap);
-        ncmds = header.ncmds;
     }
 
     // skip header to reach load commands
-    tb_size_t header_size = is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_t);
+    tb_size_t header_size = context.is64 ? sizeof(xm_macho_header_64_t) : sizeof(xm_macho_header_32_t);
     if (!tb_stream_seek(istream, base_offset + header_size)) {
         return tb_false;
     }
@@ -95,14 +56,14 @@ tb_bool_t xm_binutils_macho_deplibs(tb_stream_ref_t istream, tb_hize_t base_offs
     tb_size_t result_count = 0;
 
     // iterate load commands
-    for (tb_uint32_t i = 0; i < ncmds; i++) {
+    for (tb_uint32_t i = 0; i < context.ncmds; i++) {
         xm_macho_load_command_t lc;
         tb_hize_t current_cmd_offset = tb_stream_offset(istream);
         
         if (!tb_stream_bread(istream, (tb_byte_t*)&lc, sizeof(lc))) {
             return tb_false;
         }
-        xm_binutils_macho_swap_load_command(&lc, swap);
+        xm_binutils_macho_swap_load_command(&lc, context.swap);
 
         // check for LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, LC_REEXPORT_DYLIB, LC_ID_DYLIB
         if (lc.cmd == XM_MACHO_LC_LOAD_DYLIB || lc.cmd == XM_MACHO_LC_ID_DYLIB || 
@@ -111,7 +72,7 @@ tb_bool_t xm_binutils_macho_deplibs(tb_stream_ref_t istream, tb_hize_t base_offs
             xm_macho_dylib_command_t dc;
             if (tb_stream_seek(istream, current_cmd_offset)) {
                  if (tb_stream_bread(istream, (tb_byte_t*)&dc, sizeof(dc))) {
-                     xm_binutils_macho_swap_dylib_command(&dc, swap);
+                     xm_binutils_macho_swap_dylib_command(&dc, context.swap);
                      
                      tb_uint32_t name_offset = dc.dylib.offset;
                      if (name_offset < lc.cmdsize) {

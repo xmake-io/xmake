@@ -29,6 +29,11 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
+// ELF class
+#define XM_ELF_EI_CLASS 4
+#define XM_ELF_CLASS32  1
+#define XM_ELF_CLASS64  2
+
 #define XM_ELF_MACHINE_NONE      0x00
 #define XM_ELF_MACHINE_SPARC     0x02
 #define XM_ELF_MACHINE_I386      0x03
@@ -75,6 +80,18 @@
  * types
  */
 #include "tbox/prefix/packed.h"
+typedef struct __xm_elf_context_t {
+    tb_hize_t dynamic_offset; // file offset of .dynamic
+    tb_hize_t dynamic_size;   // size of .dynamic
+    tb_hize_t strtab_offset;  // file offset of .dynstr
+    tb_hize_t strtab_size;    // size of .dynstr
+    tb_hize_t symtab_offset;  // file offset of .symtab
+    tb_hize_t symtab_size;    // size of .symtab
+    tb_hize_t symstr_offset;  // file offset of .strtab (for .symtab)
+    tb_hize_t symstr_size;    // size of .strtab (for .symtab)
+    tb_bool_t is64;
+} xm_elf_context_t;
+
 typedef struct __xm_elf32_header_t {
     tb_uint8_t  e_ident[16];
     tb_uint16_t e_type;
@@ -325,5 +342,227 @@ static __tb_inline__ tb_char_t const *xm_binutils_elf_get_symbol_bind(tb_uint8_t
     }
 }
 
-#endif
+// read ELF header (32-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_read_header_32(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf32_header_t* header) {
+    if (!tb_stream_seek(istream, base_offset)) return tb_false;
+    if (!tb_stream_bread(istream, (tb_byte_t*)header, sizeof(*header))) return tb_false;
+    return tb_true;
+}
 
+// read ELF header (64-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_read_header_64(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf64_header_t* header) {
+    if (!tb_stream_seek(istream, base_offset)) return tb_false;
+    if (!tb_stream_bread(istream, (tb_byte_t*)header, sizeof(*header))) return tb_false;
+    return tb_true;
+}
+
+static __tb_inline__ tb_bool_t xm_binutils_elf_get_context_32(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf_context_t* ctx) {
+    tb_memset(ctx, 0, sizeof(xm_elf_context_t));
+    ctx->is64 = tb_false;
+
+    // read ELF header
+    xm_elf32_header_t header;
+    if (!xm_binutils_elf_read_header_32(istream, base_offset, &header)) return tb_false;
+
+    // try to find from section headers first
+    if (header.e_shoff != 0 && header.e_shnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header.e_shoff)) {
+            for (tb_uint16_t i = 0; i < header.e_shnum; i++) {
+                xm_elf32_section_t section;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&section, sizeof(section))) break;
+
+                if (section.sh_type == XM_ELF_SHT_DYNAMIC) {
+                    ctx->dynamic_offset = section.sh_offset;
+                    ctx->dynamic_size = section.sh_size;
+
+                    // find string table via sh_link
+                    xm_elf32_section_t strtab_section;
+                    if (tb_stream_seek(istream, base_offset + header.e_shoff + section.sh_link * sizeof(xm_elf32_section_t)) &&
+                        tb_stream_bread(istream, (tb_byte_t*)&strtab_section, sizeof(strtab_section))) {
+                        ctx->strtab_offset = strtab_section.sh_offset;
+                        ctx->strtab_size = strtab_section.sh_size;
+                    }
+                } else if (section.sh_type == XM_ELF_SHT_SYMTAB) {
+                    ctx->symtab_offset = section.sh_offset;
+                    ctx->symtab_size = section.sh_size;
+                    xm_elf32_section_t symstr_section;
+                    if (tb_stream_seek(istream, base_offset + header.e_shoff + section.sh_link * sizeof(xm_elf32_section_t)) &&
+                        tb_stream_bread(istream, (tb_byte_t*)&symstr_section, sizeof(symstr_section))) {
+                        ctx->symstr_offset = symstr_section.sh_offset;
+                        ctx->symstr_size = symstr_section.sh_size;
+                    }
+                }
+            }
+        }
+    }
+
+    // fallback to program headers
+    if ((ctx->dynamic_offset == 0 || ctx->strtab_offset == 0) && header.e_phoff != 0 && header.e_phnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header.e_phoff)) {
+            for (tb_uint16_t i = 0; i < header.e_phnum; i++) {
+                xm_elf32_phdr_t phdr;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) break;
+                if (phdr.p_type == XM_ELF_PT_DYNAMIC) {
+                    ctx->dynamic_offset = phdr.p_offset;
+                    ctx->dynamic_size = phdr.p_memsz;
+                    break;
+                }
+            }
+        }
+
+        if (ctx->dynamic_offset > 0 && ctx->dynamic_size > 0) {
+            // read dynamic entries to find strtab address and size
+            tb_uint64_t strtab_vaddr = 0;
+            tb_uint64_t strtab_sz = 0;
+            tb_uint32_t count = (tb_uint32_t)(ctx->dynamic_size / sizeof(xm_elf32_dynamic_t));
+            if (tb_stream_seek(istream, base_offset + ctx->dynamic_offset)) {
+                for (tb_uint32_t i = 0; i < count; i++) {
+                    xm_elf32_dynamic_t dyn;
+                    if (!tb_stream_bread(istream, (tb_byte_t*)&dyn, sizeof(dyn))) break;
+                    if (dyn.d_tag == XM_ELF_DT_STRTAB) strtab_vaddr = dyn.d_un.d_val;
+                    else if (dyn.d_tag == XM_ELF_DT_STRSZ) strtab_sz = dyn.d_un.d_val;
+                }
+            }
+
+            if (strtab_vaddr > 0) {
+                // map strtab vaddr to file offset using PT_LOAD
+                if (tb_stream_seek(istream, base_offset + header.e_phoff)) {
+                    for (tb_uint16_t i = 0; i < header.e_phnum; i++) {
+                        xm_elf32_phdr_t phdr;
+                        if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) break;
+                        if (phdr.p_type == XM_ELF_PT_LOAD && strtab_vaddr >= phdr.p_vaddr && strtab_vaddr < phdr.p_vaddr + phdr.p_memsz) {
+                            ctx->strtab_offset = phdr.p_offset + (strtab_vaddr - phdr.p_vaddr);
+                            ctx->strtab_size = strtab_sz;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return (ctx->dynamic_offset != 0 && ctx->strtab_offset != 0);
+}
+
+static __tb_inline__ tb_bool_t xm_binutils_elf_get_context_64(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf_context_t* ctx) {
+    tb_memset(ctx, 0, sizeof(xm_elf_context_t));
+    ctx->is64 = tb_true;
+
+    // read ELF header
+    xm_elf64_header_t header;
+    if (!xm_binutils_elf_read_header_64(istream, base_offset, &header)) return tb_false;
+
+    // try to find from section headers first
+    if (header.e_shoff != 0 && header.e_shnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header.e_shoff)) {
+            for (tb_uint16_t i = 0; i < header.e_shnum; i++) {
+                xm_elf64_section_t section;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&section, sizeof(section))) break;
+
+                if (section.sh_type == XM_ELF_SHT_DYNAMIC) {
+                    ctx->dynamic_offset = section.sh_offset;
+                    ctx->dynamic_size = section.sh_size;
+
+                    // find string table via sh_link
+                    xm_elf64_section_t strtab_section;
+                    if (tb_stream_seek(istream, base_offset + header.e_shoff + section.sh_link * sizeof(xm_elf64_section_t)) &&
+                        tb_stream_bread(istream, (tb_byte_t*)&strtab_section, sizeof(strtab_section))) {
+                        ctx->strtab_offset = strtab_section.sh_offset;
+                        ctx->strtab_size = strtab_section.sh_size;
+                    }
+                } else if (section.sh_type == XM_ELF_SHT_SYMTAB) {
+                    ctx->symtab_offset = section.sh_offset;
+                    ctx->symtab_size = section.sh_size;
+                    xm_elf64_section_t symstr_section;
+                    if (tb_stream_seek(istream, base_offset + header.e_shoff + section.sh_link * sizeof(xm_elf64_section_t)) &&
+                        tb_stream_bread(istream, (tb_byte_t*)&symstr_section, sizeof(symstr_section))) {
+                        ctx->symstr_offset = symstr_section.sh_offset;
+                        ctx->symstr_size = symstr_section.sh_size;
+                    }
+                }
+            }
+        }
+    }
+
+    // fallback to program headers
+    if ((ctx->dynamic_offset == 0 || ctx->strtab_offset == 0) && header.e_phoff != 0 && header.e_phnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header.e_phoff)) {
+            for (tb_uint16_t i = 0; i < header.e_phnum; i++) {
+                xm_elf64_phdr_t phdr;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) break;
+                if (phdr.p_type == XM_ELF_PT_DYNAMIC) {
+                    ctx->dynamic_offset = phdr.p_offset;
+                    ctx->dynamic_size = phdr.p_memsz;
+                    break;
+                }
+            }
+        }
+
+        if (ctx->dynamic_offset > 0 && ctx->dynamic_size > 0) {
+            // read dynamic entries to find strtab address and size
+            tb_uint64_t strtab_vaddr = 0;
+            tb_uint64_t strtab_sz = 0;
+            tb_uint32_t count = (tb_uint32_t)(ctx->dynamic_size / sizeof(xm_elf64_dynamic_t));
+            if (tb_stream_seek(istream, base_offset + ctx->dynamic_offset)) {
+                for (tb_uint32_t i = 0; i < count; i++) {
+                    xm_elf64_dynamic_t dyn;
+                    if (!tb_stream_bread(istream, (tb_byte_t*)&dyn, sizeof(dyn))) break;
+                    if (dyn.d_tag == XM_ELF_DT_STRTAB) strtab_vaddr = dyn.d_un.d_val;
+                    else if (dyn.d_tag == XM_ELF_DT_STRSZ) strtab_sz = dyn.d_un.d_val;
+                }
+            }
+
+            if (strtab_vaddr > 0) {
+                // map strtab vaddr to file offset using PT_LOAD
+                if (tb_stream_seek(istream, base_offset + header.e_phoff)) {
+                    for (tb_uint16_t i = 0; i < header.e_phnum; i++) {
+                        xm_elf64_phdr_t phdr;
+                        if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) break;
+                        if (phdr.p_type == XM_ELF_PT_LOAD && strtab_vaddr >= phdr.p_vaddr && strtab_vaddr < phdr.p_vaddr + phdr.p_memsz) {
+                            ctx->strtab_offset = phdr.p_offset + (strtab_vaddr - phdr.p_vaddr);
+                            ctx->strtab_size = strtab_sz;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return (ctx->dynamic_offset != 0 && ctx->strtab_offset != 0);
+}
+
+
+// find PT_INTERP and read interpreter path (32-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_find_interp_32(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf32_header_t const* header, tb_char_t* name, tb_size_t size) {
+    if (header->e_phoff != 0 && header->e_phnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header->e_phoff)) {
+            for (tb_uint16_t i = 0; i < header->e_phnum; i++) {
+                xm_elf32_phdr_t phdr;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) break;
+                if (phdr.p_type == XM_ELF_PT_INTERP) {
+                    return xm_binutils_read_string(istream, base_offset + phdr.p_offset, name, size) && name[0];
+                }
+            }
+        }
+    }
+    return tb_false;
+}
+
+// find PT_INTERP and read interpreter path (64-bit)
+static __tb_inline__ tb_bool_t xm_binutils_elf_find_interp_64(tb_stream_ref_t istream, tb_hize_t base_offset, xm_elf64_header_t const* header, tb_char_t* name, tb_size_t size) {
+    if (header->e_phoff != 0 && header->e_phnum > 0) {
+        if (tb_stream_seek(istream, base_offset + header->e_phoff)) {
+            for (tb_uint16_t i = 0; i < header->e_phnum; i++) {
+                xm_elf64_phdr_t phdr;
+                if (!tb_stream_bread(istream, (tb_byte_t*)&phdr, sizeof(phdr))) break;
+                if (phdr.p_type == XM_ELF_PT_INTERP) {
+                    return xm_binutils_read_string(istream, base_offset + phdr.p_offset, name, size) && name[0];
+                }
+            }
+        }
+    }
+    return tb_false;
+}
+
+#endif
