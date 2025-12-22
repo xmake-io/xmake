@@ -46,18 +46,6 @@ function _instance.new(name, url, branch, directory, is_global)
     return instance
 end
 
--- get the repository configure
-function _instance:get(name)
-
-    -- load info
-    local info = self:load()
-
-    -- get if from info
-    local value = info and info[name] or nil
-    if value ~= nil then
-        return value
-    end
-end
 
 -- get the repository name
 function _instance:name()
@@ -94,37 +82,6 @@ function _instance:directory()
     return self._DIRECTORY
 end
 
--- load the repository info in xmake.lua
-function _instance:load()
-
-    -- do not loaded?
-    if not self._INFO then
-
-        -- attempt to load info from the repository script (xmake.lua)
-        local scriptpath = path.join(self:directory(), "xmake.lua")
-        if os.isfile(scriptpath) then
-
-            -- get interpreter
-            local interp = repository._interpreter()
-
-            -- load script
-            local ok, errors = interp:load(scriptpath)
-            if not ok then
-                os.raise("load repo(%s) failed, " .. errors, self:name())
-            end
-
-            -- load repository and disable filter
-            local results, errors = interp:make(nil, true, false)
-            if not results then
-                os.raise("load repo(%s) failed, " .. errors, self:name())
-            end
-
-            -- save repository info
-            self._INFO = results
-        end
-    end
-    return self._INFO
-end
 
 -- get cache
 function repository._cache(is_global)

@@ -3109,11 +3109,6 @@ function package.load_from_repository(packagename, packagedir, opt)
         return instance
     end
 
-    -- load repository first for checking the xmake minimal version (deprecated)
-    local repo = opt.repo
-    if repo then
-        repo:load()
-    end
 
     -- find the package script path
     local scriptpath = opt.packagefile
