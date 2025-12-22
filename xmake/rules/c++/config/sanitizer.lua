@@ -22,27 +22,14 @@
 import("core.project.project")
 import("lib.detect.find_tool")
 import("core.base.semver")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- add build sanitizer
 function _add_build_sanitizer(target, sourcekind, checkmode)
-    -- add cflags
-    local _, cc = target:tool(sourcekind)
-    local flagnames = {
-        cc = "cflags",
-        cxx = "cxxflags",
-        mm = "mflags",
-        mxx = "mxflags"
-    }
-    local flagname = flagnames[sourcekind]
-    if flagname and target:has_tool(sourcekind, "cl", "clang", "clangxx", "clang_cl", "gcc", "gxx") then
-        target:add(flagname, "-fsanitize=" .. checkmode, {force = true})
-    end
-
-    -- add ldflags and shflags
-    -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
-    if target:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
-        target:add("ldflags", "-fsanitize=" .. checkmode, {force = true})
-        target:add("shflags", "-fsanitize=" .. checkmode, {force = true})
+    -- add sanitizer flags
+    local flags = toolchain_utils.get_sanitizer_flags(target, {checkmode = checkmode, sourcekind = sourcekind})
+    for name, value in pairs(flags) do
+        target:add(name, value, {force = true})
     end
 end
 
@@ -68,17 +55,7 @@ function main(target, sourcekind)
         -- we need to load runenvs for msvc
         -- @see https://github.com/xmake-io/xmake/issues/4176
         if target:is_plat("windows") and target:is_binary() then
-            if target:has_tool("cxx", "clang_cl") then
-                local clang_cl = target:toolchain("clang-cl")
-                if clang_cl then
-                    local envs = clang_cl:runenvs()
-                    local vscmd_ver = envs and envs.VSCMD_VER
-                    if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
-                        local clang_cl_tool = assert(find_tool("clang-cl", {envs = envs}), "clang-cl not found!")
-                        target:add("runenvs", "PATH", path.directory(clang_cl_tool.program))
-                    end
-                end
-            else
+            if target:has_tool("cxx", "cl") then
                 local msvc = target:toolchain("msvc")
                 if msvc then
                     local envs = msvc:runenvs()

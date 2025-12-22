@@ -2457,21 +2457,8 @@ end
 
 -- generate sanitizer configs
 function _instance:_generate_sanitizer_configs(checkmode, sourcekind)
-
-    -- add cflags
-    local configs = {}
-    if sourcekind and self:has_tool(sourcekind, "cl", "clang", "clangxx", "gcc", "gxx") then
-        local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
-        configs[cflag] = "-fsanitize=" .. checkmode
-    end
-
-    -- add ldflags and shflags
-    -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
-    if self:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
-        configs.ldflags = "-fsanitize=" .. checkmode
-        configs.shflags = "-fsanitize=" .. checkmode
-    end
-    return configs
+    local toolchain_utils = sandbox_module.import("private.utils.toolchain", {anonymous = true})
+    return toolchain_utils.get_sanitizer_flags(self, {checkmode = checkmode, sourcekind = sourcekind})
 end
 
 -- generate building configs for has_xxx/check_xxx

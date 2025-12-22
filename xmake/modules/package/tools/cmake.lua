@@ -426,6 +426,10 @@ function _get_configs_for_generic(package, configs, opt)
     if package:is_library() then
         envs.BUILD_SHARED_LIBS = package:config("shared") and "ON" or "OFF"
     end
+    -- https://cmake.org/cmake/help/latest/variable/CMAKE_LINKER_TYPE.html
+    if package:has_tool("ld", "link") then
+        envs.CMAKE_LINKER_TYPE = "MSVC"
+    end
     _fix_zigcc_linker_cmake(package, envs)
     _insert_configs_from_envs(configs, envs, opt)
 end

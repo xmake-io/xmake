@@ -18,7 +18,7 @@
 -- @file        xmake.lua
 --
 
-import("detect.sdks.find_mingw")
+-- imports
 import("core.project.config")
 import("core.project.project")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
