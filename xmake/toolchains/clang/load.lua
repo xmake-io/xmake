@@ -18,7 +18,7 @@
 -- @file        xmake.lua
 --
 
-import("detect.sdks.find_mingw")
+-- imports
 import("core.project.config")
 import("core.project.project")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
@@ -57,7 +57,9 @@ function main(toolchain, suffix)
         _load_windows(toolchain, suffix)
     end
 
+    -- set llvm runtimes
     toolchain_utils.set_llvm_runtimes(toolchain)
 
+    -- add llvm runenvs
     toolchain_utils.add_llvm_runenvs(toolchain)
 end
