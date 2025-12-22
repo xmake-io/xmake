@@ -467,9 +467,15 @@ function add_llvm_runenvs(toolchain)
         for _, dir in ipairs({dirs.libdir or false, dirs.cxxlibdir or false, dirs.rtlibdir or false}) do
             if dir then
                 if toolchain:is_plat("windows") or is_host("windows") then
-                    -- clang asan path must be first
-                    local envs = toolchain:get("runenvs")["PATH"]
-                    table.insert(envs, 1 , dir)
+                    -- The dynamic libraries (DLLs) for Clang ASan and MSVC ASan share the same filename, making them incompatible.
+                    -- Currently, runenvs maybe have Visual Studio environment variables.
+                    -- If the Clang path is not prioritized (placed first), the system incorrectly loads the MSVC ASan DLL, resulting in a runtime failure.
+                    local runenvs = toolchain:get("runenvs")
+                    if runenvs and runenvs["PATH"]then
+                        table.insert(runenvs["PATH"], 1 , dir)
+                    else
+                        toolchain:add("runenvs", "PATH", dir)
+                    end
                 elseif toolchain:is_plat("linux", "bsd") then
                     toolchain:add("runenvs", "LD_LIBRARY_PATH", dir)
                 elseif toolchain:is_plat("macosx") then
@@ -484,8 +490,8 @@ function add_llvm_runenvs(toolchain)
     end
 end
 
--- add address sanitizer flags for llvm
-function add_llvm_asan_flags(target)
+-- get address sanitizer flags for llvm
+function get_llvm_asan_flags(target)
     assert(target:has_runtime("MD", "MT"), "clang asan only support MD/MT runtime on windows")
 
     local ldflags = {}

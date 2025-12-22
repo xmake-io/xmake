@@ -2471,7 +2471,7 @@ function _instance:_generate_sanitizer_configs(checkmode, sourcekind)
 
     if self:is_plat("windows") and checkmode == "address" and not self:has_tool("cxx", "cl") then
         local toolchain_utils = sandbox_module.import("private.utils.toolchain", {anonymous = true})
-        table.join2(ldflags, toolchain_utils.add_llvm_asan_flags(self))
+        table.join2(ldflags, toolchain_utils.get_llvm_asan_flags(self))
     end
 
     if #ldflags ~= 0 then

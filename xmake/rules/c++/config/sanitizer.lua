@@ -47,7 +47,7 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
     end
 
     if target:is_plat("windows") and checkmode == "address" and not target:has_tool("cxx", "cl") then
-        local ldflags = toolchain_utils.add_llvm_asan_flags(target)
+        local ldflags = toolchain_utils.get_llvm_asan_flags(target)
         if #ldflags ~= 0 then
             target:add("ldflags", ldflags, {force = true})
             target:add("shflags", ldflags, {force = true})
