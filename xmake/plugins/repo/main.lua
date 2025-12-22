@@ -82,10 +82,7 @@ function _remove(name, is_global)
 
     -- clear quick search cache
     _clear_quick_search_cache(is_global)
-
-    -- trace
     cprint("${bright}remove %s repository(%s): ok!", (is_global and "global" or "local"), name)
-
 end
 
 -- update repositories
@@ -162,8 +159,6 @@ function _update()
 
     -- leave environment
     environment.leave()
-
-    -- trace
     cprint("${green}ok")
 end
 
@@ -181,37 +176,20 @@ function _clear(is_global)
 
     -- clear quick search cache
     _clear_quick_search_cache(is_global)
-
-    -- trace
     cprint("${color.success}clear %s repositories: ok!", (is_global and "global" or "local"))
 end
 
 -- list all repositories
 function _list(is_global)
-
-    -- list all repositories
     local count = 0
     for _, position in ipairs(is_global and "global" or {"local", "global"}) do
-
-        -- trace
         print("%s repositories:", position)
-
-        -- list all
         for _, repo in pairs(repository.repositories(position == "global")) do
-
-            -- trace
-            local description = repo:get("description")
-            print("    %s %s%s %s", repo:name(), repo:url(), repo:branch() and (" " .. repo:branch()) or "", description and ("(" .. description .. ")") or "")
-
-            -- update count
+            print("    %s %s%s", repo:name(), repo:url(), repo:branch() and (" " .. repo:branch()) or "")
             count = count + 1
         end
-
-        -- trace
         print("")
     end
-
-    -- trace
     print("%d repositories were found!", count)
 end
 
@@ -276,4 +254,3 @@ function main()
         _directory(option.get("global"))
     end
 end
-
