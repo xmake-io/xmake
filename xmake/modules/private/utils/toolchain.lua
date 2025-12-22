@@ -473,7 +473,7 @@ function add_llvm_runenvs(toolchain)
                     local runenvs = toolchain:get("runenvs")
                     if runenvs and runenvs["PATH"] then
                         runenvs["PATH"] = table.wrap(runenvs["PATH"])
-                        table.insert(runenvs["PATH"], 1 , dir)
+                        table.insert(runenvs["PATH"], 1, dir)
                     else
                         toolchain:add("runenvs", "PATH", dir)
                     end
