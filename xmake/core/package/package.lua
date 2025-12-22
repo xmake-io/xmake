@@ -2457,8 +2457,6 @@ end
 
 -- generate sanitizer configs
 function _instance:_generate_sanitizer_configs(checkmode, sourcekind)
-
-    -- add cflags
     local configs = {}
     if sourcekind and self:has_tool(sourcekind, "cl", "clang", "clangxx", "clang_cl", "gcc", "gxx") then
         local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
@@ -2466,45 +2464,20 @@ function _instance:_generate_sanitizer_configs(checkmode, sourcekind)
     end
 
     local ldflags = {}
-    -- add ldflags and shflags
     -- msvc does not have an fsanitize linker flag, so the 'link' tool is excluded
     if self:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
         table.insert(ldflags, "-fsanitize=" .. checkmode)
     end
 
     if self:is_plat("windows") and checkmode == "address" and not self:has_tool("cxx", "cl") then
-        assert(self:has_runtime("MD", "MT"), "clang asan only support MD/MT runtime on windows")
-        if self:has_tool("cxx", "clang", "clangxx") then
-            if self:has_runtime("MT") then
-                table.insert(ldflags, "-D_MT")
-            elseif self:has_runtime("MD") then
-                table.join2(ldflags, {"-D_MT", "-D_DLL"})
-            end
-        elseif self:has_tool("cxx", "clang_cl") then
-            -- TODO: This is hack, try to find a way to let cmake use clang++ for link
-            -- @see https://gitlab.kitware.com/cmake/cmake/-/issues/26430
-            local outdata, errdata = assert(os.iorunv(self:build_getenv("cc"), {"-print-resource-dir"}))
-            local libdir = path.join(errdata:trim(), "lib/windows")
-
-            local kind
-            if self:has_runtime("MD") then
-                kind = "dynamic"
-            elseif self:has_runtime("MT") then
-                kind = "static"
-            end
-
-            local driver = self:has_tool("ld", "lld_link", "link") and "" or "-Wl,"
-            local thunk = path.join(libdir, string.format("clang_rt.asan_%s_runtime_thunk-x86_64.lib", kind))
-            table.join2(ldflags, {
-                path.unix(path.join(libdir, "clang_rt.asan_dynamic-x86_64.lib")),
-                driver .. "/WHOLEARCHIVE:" .. path.unix(thunk),
-                driver .. "/INFERASANLIBS:NO",
-            })
-        end
+        local toolchain_utils = sandbox_module.import("private.utils.toolchain", {anonymous = true})
+        table.join2(ldflags, toolchain_utils.add_llvm_asan_flags(self))
     end
 
-    configs.ldflags = ldflags
-    configs.shflags = ldflags
+    if #ldflags ~= 0 then
+        configs.ldflags = ldflags
+        configs.shflags = ldflags
+    end
     return configs
 end
 

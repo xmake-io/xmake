@@ -57,9 +57,7 @@ function main(toolchain, suffix)
         _load_windows(toolchain, suffix)
     end
 
-    -- set llvm runtimes
     toolchain_utils.set_llvm_runtimes(toolchain)
 
-    -- add llvm runenvs
     toolchain_utils.add_llvm_runenvs(toolchain)
 end

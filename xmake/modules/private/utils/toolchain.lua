@@ -467,7 +467,9 @@ function add_llvm_runenvs(toolchain)
         for _, dir in ipairs({dirs.libdir or false, dirs.cxxlibdir or false, dirs.rtlibdir or false}) do
             if dir then
                 if toolchain:is_plat("windows") or is_host("windows") then
-                    toolchain:add("runenvs", "PATH", dir)
+                    -- clang asan path must be first
+                    local envs = toolchain:get("runenvs")["PATH"]
+                    table.insert(envs, 1 , dir)
                 elseif toolchain:is_plat("linux", "bsd") then
                     toolchain:add("runenvs", "LD_LIBRARY_PATH", dir)
                 elseif toolchain:is_plat("macosx") then
@@ -480,4 +482,40 @@ function add_llvm_runenvs(toolchain)
             end
         end
     end
+end
+
+-- add address sanitizer flags for llvm
+function add_llvm_asan_flags(target)
+    assert(target:has_runtime("MD", "MT"), "clang asan only support MD/MT runtime on windows")
+
+    local ldflags = {}
+    if target:has_tool("cxx", "clang", "clangxx") then
+        if target:has_runtime("MT") then
+            table.insert(ldflags, "-D_MT")
+        elseif target:has_runtime("MD") then
+            table.join2(ldflags, {"-D_MT", "-D_DLL"})
+        end
+    elseif target:has_tool("cxx", "clang_cl") then
+        -- TODO: This is hack, try to find a way to let cmake use clang++ for link
+        -- @see https://gitlab.kitware.com/cmake/cmake/-/issues/26430
+        local toolchain = target:toolchain("clang-cl") or target:toolchain("clang")
+        local libdir = assert(get_llvm_dirs(toolchain).rtlibdir, "clang resource directory not found")
+
+        local kind
+        if target:has_runtime("MD") then
+            kind = "dynamic"
+        elseif target:has_runtime("MT") then
+            kind = "static"
+        end
+
+        local driver = target:has_tool("ld", "lld_link", "link") and "" or "-Wl,"
+        local thunk = path.join(libdir, string.format("clang_rt.asan_%s_runtime_thunk-x86_64.lib", kind))
+        table.join2(ldflags, {
+            path.unix(path.join(libdir, "clang_rt.asan_dynamic-x86_64.lib")),
+            driver .. "/WHOLEARCHIVE:" .. path.unix(thunk),
+            driver .. "/INFERASANLIBS:NO",
+        })
+    end
+
+    return ldflags
 end
