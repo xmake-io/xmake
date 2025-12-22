@@ -150,16 +150,16 @@ tb_bool_t xm_binutils_macho_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_
         if (found) {
             // zero out the remaining space
             if (read_offset > write_offset) {
-                tb_size_t diff = read_offset - write_offset;
+                tb_hize_t diff = read_offset - write_offset;
                 if (!tb_stream_seek(istream, write_offset)) break;
-                
+
                 tb_byte_t zero = 0;
                 tb_bool_t write_ok = tb_true;
-                for (tb_size_t k = 0; k < diff; k++) {
-                     if (!tb_stream_bwrit(istream, &zero, 1)) {
-                         write_ok = tb_false;
-                         break;
-                     }
+                for (tb_hize_t k = 0; k < diff; k++) {
+                    if (!tb_stream_bwrit(istream, &zero, 1)) {
+                        write_ok = tb_false;
+                        break;
+                    }
                 }
                 if (!write_ok) break;
             }
