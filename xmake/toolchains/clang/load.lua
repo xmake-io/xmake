@@ -52,14 +52,22 @@ function main(toolchain, suffix)
         toolchain:add("shflags", flags)
     end
 
-    -- init windows
-    if toolchain:is_plat("windows") then
-        _load_windows(toolchain, suffix)
-    end
-
     -- set llvm runtimes
     toolchain_utils.set_llvm_runtimes(toolchain)
 
-    -- add llvm runenvs
+    -- add llvm runenvs before adding vsenvs
+    --
+    -- The dynamic libraries (DLLs) for Clang ASan and MSVC ASan share the same filename, making them incompatible.
+    -- Currently, runenvs maybe have Visual Studio environment variables.
+    -- If the Clang path is not prioritized (placed first), the system incorrectly loads the MSVC ASan DLL, resulting in a runtime failure.
     toolchain_utils.add_llvm_runenvs(toolchain)
+
+    -- add configs for windows
+    if toolchain:is_plat("windows") then
+        toolchain_utils.add_vsenvs(toolchain)
+        if is_host("linux") or project.policy("build.optimization.lto") then
+            toolchain:add("ldflags", "-fuse-ld=lld-link" .. suffix)
+            toolchain:add("shflags", "-fuse-ld=lld-link" .. suffix)
+        end
+    end
 end
