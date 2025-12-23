@@ -115,7 +115,9 @@ function _add_vsenv(toolchain, name, curenvs)
         if (name == "INCLUDE" or name == "LIB") and not is_host("windows") then
             toolchain:add("runenvs", name, path.joinenv(path.splitenv(new), ";"))
         else
-            toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
+            for _, item in ipairs(path.splitenv(new)) do
+                toolchain:add("runenvs", name, item)
+            end
         end
     end
 end
