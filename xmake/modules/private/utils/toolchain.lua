@@ -115,7 +115,9 @@ function _add_vsenv(toolchain, name, curenvs)
         if (name == "INCLUDE" or name == "LIB") and not is_host("windows") then
             toolchain:add("runenvs", name, path.joinenv(path.splitenv(new), ";"))
         else
-            toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
+            for _, item in ipairs(path.splitenv(new)) do
+                toolchain:add("runenvs", name, item)
+            end
         end
     end
 end
@@ -467,16 +469,7 @@ function add_llvm_runenvs(toolchain)
         for _, dir in ipairs({dirs.libdir or false, dirs.cxxlibdir or false, dirs.rtlibdir or false}) do
             if dir then
                 if toolchain:is_plat("windows") or is_host("windows") then
-                    -- The dynamic libraries (DLLs) for Clang ASan and MSVC ASan share the same filename, making them incompatible.
-                    -- Currently, runenvs maybe have Visual Studio environment variables.
-                    -- If the Clang path is not prioritized (placed first), the system incorrectly loads the MSVC ASan DLL, resulting in a runtime failure.
-                    local runenvs = toolchain:get("runenvs")
-                    if runenvs and runenvs["PATH"] then
-                        runenvs["PATH"] = table.wrap(runenvs["PATH"])
-                        table.insert(runenvs["PATH"], 1, dir)
-                    else
-                        toolchain:add("runenvs", "PATH", dir)
-                    end
+                    toolchain:add("runenvs", "PATH", dir)
                 elseif toolchain:is_plat("linux", "bsd") then
                     toolchain:add("runenvs", "LD_LIBRARY_PATH", dir)
                 elseif toolchain:is_plat("macosx") then

@@ -49,8 +49,12 @@ function main(toolchain)
 
     -- add vs environments
     toolchain_utils.add_vsenvs(toolchain)
-    
-    -- add llvm runenvs
+
+    -- add llvm runenvs before adding vsenvs
+    --
+    -- The dynamic libraries (DLLs) for Clang ASan and MSVC ASan share the same filename, making them incompatible.
+    -- Currently, runenvs maybe have Visual Studio environment variables.
+    -- If the Clang path is not prioritized (placed first), the system incorrectly loads the MSVC ASan DLL, resulting in a runtime failure.
     toolchain_utils.add_llvm_runenvs(toolchain)
 
     -- add target flags
