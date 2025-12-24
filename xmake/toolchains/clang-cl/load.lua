@@ -47,7 +47,7 @@ function main(toolchain)
         toolchain:set("toolset", "ar",  "link.exe")
     end
 
-    toolchain_utils.add_vsenvs(toolchain)
+--    toolchain_utils.add_vsenvs(toolchain)
 
     -- add llvm runenvs before adding vsenvs
     --
@@ -57,7 +57,7 @@ function main(toolchain)
     toolchain_utils.add_llvm_runenvs(toolchain)
 
     -- add vs environments
---    toolchain_utils.add_vsenvs(toolchain)
+    toolchain_utils.add_vsenvs(toolchain)
 
     -- add target flags
     local flags = toolchain_utils.get_clang_target_flags(toolchain)
