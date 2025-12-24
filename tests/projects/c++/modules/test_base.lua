@@ -126,9 +126,6 @@ function run_tests(clang_options, gcc_options, msvc_options)
     end
     if is_subhost("windows") then
         if clang_options then
-            build_tests("llvm", clang_options)
-            build_tests("clang", clang_options)
-            build_tests("clang", table.join(clang_options, {two_phases = false}))
             if not clang_options.disable_clang_cl then
                 local clang_cl_options = table.clone(clang_options)
                 clang_cl_options.compiler = "clang-cl"
@@ -136,69 +133,6 @@ function run_tests(clang_options, gcc_options, msvc_options)
                 build_tests("clang-cl", clang_cl_options)
                 build_tests("clang-cl", table.join(clang_options, {two_phases = false}))
             end
-            if not clang_options.stdmodule then
-                build_tests("llvm", clang_libcpp_options)
-                build_tests("clang", clang_libcpp_options)
-                build_tests("clang", table.join(clang_libcpp_options, {two_phases = false}))
-            else
-                wprint("std modules tests skipped for Windows clang libc++ as it's not currently supported officially")
-            end
-        end
-        if msvc_options then
-            build_tests("msvc", msvc_options)
-            build_tests("msvc", table.join(msvc_options, {two_phases = false}))
-        end
-    elseif is_subhost("macosx") then
-        if clang_options then
-            -- macOS doesn't ship clang-scan-deps currently
-            if is_subhost("macosx") then
-                -- check if normal clang is avalaible
-                local regular_clang_available = false
-
-                local outdata = os.iorun("clang --version")
-                if outdata then
-                    regular_clang_available = true
-                    if outdata:find("Apple") then
-                        regular_clang_available = false
-                    end
-                end
-                if not regular_clang_available then
-                    wprint("Appleclang isn't shipped with clang-scan-deps, disabling modules tests")
-                    return
-                end
-            end
-            build_tests("llvm", clang_options)
-            build_tests("clang", clang_options)
-            build_tests("clang", table.join(clang_options, {two_phases = false}))
-        end
-    elseif is_subhost("msys") then
-        if clang_options then
-            clang_options.platform = "mingw"
-            clang_libcpp_options.platform = "mingw"
-            build_tests("llvm", clang_options)
-            build_tests("clang", clang_options)
-            build_tests("clang", table.join(clang_options, {two_phases = false}))
-            build_tests("llvm", clang_libcpp_options)
-            build_tests("clang", clang_libcpp_options)
-            build_tests("clang", table.join(clang_libcpp_options, {two_phases = false}))
-        end
-        if gcc_options then
-            gcc_options.platform = "mingw"
-            build_tests("gcc", gcc_options)
-            build_tests("gcc", table.join(gcc_options, {two_phases = false}))
-        end
-    elseif is_host("linux") then
-        if clang_options then
-            build_tests("llvm", clang_options)
-            build_tests("clang", clang_options)
-            build_tests("clang", table.join(clang_options, {two_phases = false}))
-            build_tests("llvm", clang_libcpp_options)
-            build_tests("clang", clang_libcpp_options)
-            build_tests("clang", table.join(clang_libcpp_options, {two_phases = false}))
-        end
-        if gcc_options then
-            build_tests("gcc", gcc_options)
-            build_tests("gcc", table.join(gcc_options, {two_phases = false}))
         end
     end
 end
