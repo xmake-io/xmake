@@ -41,17 +41,7 @@ function menu_options()
     -- menu options
     local options =
     {
-        {'k', "kind",       "kv", nil, "Enable static/shared library.",
-                                       values = {"static", "shared"}         },
-        {'p', "plat",       "kv", nil, "Set the given platform."             },
-        {'a', "arch",       "kv", nil, "Set the given architecture."         },
-        {'m', "mode",       "kv", nil, "Set the given mode.",
-                                       values = {"release", "debug"}         },
         {nil, "show",       "k",  nil, "Only show environment information."  },
-        {'f', "configs",    "kv", nil, "Set the given extra package configs.",
-                                       "e.g.",
-                                       "    - xrepo env -f \"runtimes='MD'\" zlib cmake ..",
-                                       "    - xrepo env -f \"regex=true,thread=true\" \"zlib,boost\" cmake .."},
         {nil, "add",        "k",  nil, "Add global environment config.",
                                        "e.g.",
                                        "    - xrepo env --add base.lua",
