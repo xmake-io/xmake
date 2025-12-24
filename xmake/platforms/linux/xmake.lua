@@ -29,7 +29,14 @@ platform("linux")
     set_formats("symbol", "$(name).sym")
 
     set_installdir("/usr/local")
-    set_toolchains("envs", "cross", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "go", "rust", "swift", "gfortran", "zig", "fpc", "nim")
+
+    -- The cross toolchain should be placed after the host toolchain.
+    -- otherwise, if the host toolchain is explicitly loaded in the target,
+    -- the cross toolchain will be selected incorrectly in toolchain.lua.
+    --
+    -- TODO Perhaps we should handle it better, or remove the cross toolchain.
+    set_toolchains("envs", "gcc", "clang",
+        "cross", "yasm", "nasm", "fasm", "cuda", "go", "rust", "swift", "gfortran", "zig", "fpc", "nim")
 
     set_menu {
                 config =
