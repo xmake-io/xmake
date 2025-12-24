@@ -372,14 +372,14 @@ function get_modulesreducedbmiflag(target)
     local modulesreducedbmiflag = _g.modulesreducedbmiflag
     if modulesreducedbmiflag == nil then
         local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
+            modulesreducedbmiflag = "-fmodules-reduced-bmi"
         if compinst:has_flags("/clang:-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_cl_modules_reduced_bmi"}) then
             modulesreducedbmiflag = "/clang:-fmodules-reduced-bmi"
-        elseif compinst:has_flags("-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
-            modulesreducedbmiflag = "-fmodules-reduced-bmi"
-        elseif compinst:has_flags("/clang:-fexperimental-modules-reduced-bmi", "cxxflags", {flagskey = "clang_cl_modules_reduced_bmi"}) then
-            modulesreducedbmiflag = "/clang:-fexperimental-modules-reduced-bmi"
         elseif compinst:has_flags("-fexperimental-modules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
             modulesreducedbmiflag = "-fexperimental-modules-reduced-bmi"
+        elseif compinst:has_flags("/clang:-fexperimental-modules-reduced-bmi", "cxxflags", {flagskey = "clang_cl_modules_reduced_bmi"}) then
+            modulesreducedbmiflag = "/clang:-fexperimental-modules-reduced-bmi"
         end
         _g.modulesreducedbmiflag = modulesreducedbmiflag or false
     end
@@ -420,10 +420,10 @@ function get_moduleoutputflag(target)
         local clang_version = get_clang_version(target)
         if semver.compare(clang_version, "16.0") >= 0 then
             local modulefile = os.tmpfile() .. get_bmi_extension()
-            if compinst:has_flags("/clang:-fmodule-output=" .. modulefile, "cxxflags", {flagskey = "clang_cl_module_output", tryrun = true}) then
-                moduleoutputflag = "/clang:-fmodule-output="
-            elseif compinst:has_flags("-fmodule-output=" .. modulefile, "cxxflags", {flagskey = "clang_module_output", tryrun = true}) then
+            if compinst:has_flags("-fmodule-output=" .. modulefile, "cxxflags", {flagskey = "clang_module_output", tryrun = true}) then
                 moduleoutputflag = "-fmodule-output="
+            elseif compinst:has_flags("/clang:-fmodule-output=" .. modulefile, "cxxflags", {flagskey = "clang_cl_module_output", tryrun = true}) then
+                moduleoutputflag = "/clang:-fmodule-output="
             end
         end
         _g.moduleoutputflag = moduleoutputflag or false
