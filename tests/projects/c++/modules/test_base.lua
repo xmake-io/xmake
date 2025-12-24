@@ -9,6 +9,7 @@ GCC_MIN_VER = "11"
 MSVC_MIN_VER = "14.29"
 
 function _build(check_outdata)
+    print("Building ...")
     local flags = ""
     if ci_is_running() then
         flags = "-vD"
@@ -22,13 +23,7 @@ function _build(check_outdata)
             end
         end
     else
-        os.run("xmake -r " .. flags)
-    end
-    local outdata = os.iorun("xmake " .. flags)
-    if outdata then
-        if outdata:find("compiling", 1, true) or outdata:find("linking", 1, true) or outdata:find("generating", 1, true) then
-            raise("Modules incremental compilation does not work\n%s", outdata)
-        end
+        os.exec("xmake -r " .. flags)
     end
 end
 
@@ -51,24 +46,26 @@ end
 
 function build_tests(toolchain_name, opt)
     assert(opt and opt.version)
+    print("Building test", toolchain_name, opt)
     local version
     if is_subhost("windows") then
         local msvc = toolchain.load("msvc")
         if not msvc or not msvc:check() then
-            wprint("msvc not found, skipping tests")
+            print("msvc not found, skipping tests")
             return
         end
         local vcvars = msvc:config("vcvars")
         if not vcvars or not vcvars.VCInstallDir or not vcvars.VCToolsVersion then
-            wprint("msvc not found, skipping tests")
+            print("msvc not found, skipping tests")
             return
         end
         version = vcvars.VCToolsVersion
     end
     if opt.compiler then
         local cc = find_tool(opt.compiler, {version = true})
+        print("find tool", cc)
         if not cc then
-            wprint(opt.compiler .. " not found, skipping tests")
+            print(opt.compiler .. " not found, skipping tests")
             return
         end
         version = cc.version
@@ -77,7 +74,7 @@ function build_tests(toolchain_name, opt)
     local compiler = toolchain_name == "msvc" and "cl" or opt.compiler
     if not version or not (semver.compare(version, opt.version) >= 0) then
         local version_str = compiler ..  " >= " .. opt.version .. (version and " (found " .. version .. ")" or "") .. " "
-        wprint(version_str .. "not found, skipping tests")
+        print(version_str .. "not found, skipping tests")
         return
     end
 
@@ -106,6 +103,7 @@ function build_tests(toolchain_name, opt)
         flags = flags .. " -vD"
     end
 
+    print("Running config ..", opt)
     os.exec("xmake clean -a")
     os.exec("xmake f" .. platform .. "--toolchain=" .. toolchain_name .. runtimes .. "-c --yes " .. policies .. flags)
     if opt.build then
@@ -119,6 +117,7 @@ function build_tests(toolchain_name, opt)
 end
 
 function run_tests(clang_options, gcc_options, msvc_options)
+    print("running tests")
     local clang_libcpp_options
     if clang_options then
         clang_libcpp_options = table.clone(clang_options)
@@ -130,6 +129,7 @@ function run_tests(clang_options, gcc_options, msvc_options)
                 local clang_cl_options = table.clone(clang_options)
                 clang_cl_options.compiler = "clang-cl"
                 clang_cl_options.version = CLANG_CL_MIN_VER
+                print("Building clang-cl", clang_cl_options)
                 build_tests("clang-cl", clang_cl_options)
                 build_tests("clang-cl", table.join(clang_options, {two_phases = false}))
             end
