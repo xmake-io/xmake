@@ -351,7 +351,10 @@ function get_modulefileflag(target)
     if modulefileflag == nil then
         local compinst = target:compiler("cxx")
         local modulefile = os.tmpfile() .. get_bmi_extension()
-        if compinst:has_flags("/clang:-fmodule-file=" .. modulefile, "cxxflags", {flagskey = "clang_cl_module_file"}) then
+        local _, toolname = target:tool("cxx")
+        if toolname == "clang-cl" then
+             modulefileflag = "/clang:-fmodule-file="
+        elseif compinst:has_flags("/clang:-fmodule-file=" .. modulefile, "cxxflags", {flagskey = "clang_cl_module_file"}) then
             modulefileflag = "/clang:-fmodule-file="
         elseif compinst:has_flags("-fmodule-file=" .. modulefile, "cxxflags", {flagskey = "clang_module_file"}) then
             modulefileflag = "-fmodule-file="
@@ -366,7 +369,10 @@ function get_moduleheaderflag(target)
     local moduleheaderflag = _g.moduleheaderflag
     if moduleheaderflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/clang:-fmodule-header=system", "cxxflags", {flagskey = "clang_cl_module_header"}) then
+        local _, toolname = target:tool("cxx")
+        if toolname == "clang-cl" then
+             moduleheaderflag = "/clang:-fmodule-header="
+        elseif compinst:has_flags("/clang:-fmodule-header=system", "cxxflags", {flagskey = "clang_cl_module_header"}) then
             moduleheaderflag = "/clang:-fmodule-header="
         elseif compinst:has_flags("-fmodule-header=system", "cxxflags", {flagskey = "clang_module_header"}) then
             moduleheaderflag = "-fmodule-header="
@@ -380,7 +386,10 @@ function get_modulesreducedbmiflag(target)
     local modulesreducedbmiflag = _g.modulesreducedbmiflag
     if modulesreducedbmiflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/clang:-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_cl_modules_reduced_bmi"}) then
+        local _, toolname = target:tool("cxx")
+        if toolname == "clang-cl" then
+             modulesreducedbmiflag = "/clang:-fmodules-reduced-bmi"
+        elseif compinst:has_flags("/clang:-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_cl_modules_reduced_bmi"}) then
             modulesreducedbmiflag = "/clang:-fmodules-reduced-bmi"
         elseif compinst:has_flags("-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
             modulesreducedbmiflag = "-fmodules-reduced-bmi"
