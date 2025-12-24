@@ -180,14 +180,15 @@ function get_clang_target_flags(toolchain)
 end
 
 -- add vs environments
-function add_vsenvs(toolchain, expect_vars)
+function add_vsenvs(toolchain, opt)
+    opt = opt or {}
     local curenvs = os.getenvs()
-    expect_vars = expect_vars or {"PATH", "LIB", "INCLUDE", "LIBPATH"}
-    for _, name in ipairs(expect_vars) do
+    local varnames = opt.varnames or {"PATH", "LIB", "INCLUDE", "LIBPATH"}
+    for _, name in ipairs(varnames) do
         _add_vsenv(toolchain, name, curenvs)
     end
     for _, name in ipairs(find_vstudio.get_vcvars()) do
-        if not table.contains(expect_vars, name:upper()) then
+        if not table.contains(varnames, name:upper()) then
             _add_vsenv(toolchain, name, curenvs)
         end
     end
