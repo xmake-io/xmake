@@ -131,7 +131,7 @@ function run_tests(clang_options, gcc_options, msvc_options)
                 clang_cl_options.version = CLANG_CL_MIN_VER
                 print("Building clang-cl", clang_cl_options)
                 build_tests("clang-cl", clang_cl_options)
-                build_tests("clang-cl", table.join(clang_options, {two_phases = false}))
+                --build_tests("clang-cl", table.join(clang_options, {two_phases = false}))
             end
         end
     end

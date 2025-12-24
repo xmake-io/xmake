@@ -383,6 +383,7 @@ function get_modulesreducedbmiflag(target)
         end
         _g.modulesreducedbmiflag = modulesreducedbmiflag or false
     end
+    print("get_modulesreducedbmiflag", modulesreducedbmiflag)
     return modulesreducedbmiflag or nil
 end
 

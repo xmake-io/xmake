@@ -19,6 +19,7 @@ import(".builder", {inherit = true})
 function _get_bmifile(target, module)
     local has_reduced_bmi = support.get_modulesreducedbmiflag(target)
     local has_two_phases = target:policy("build.c++.modules.two_phases")
+    print("has_two_phases", has_two_phases)
     -- disabled with two phases currently, LLVM currently have a bug which prevent to emit reduced bmi when using two phase compilation
     -- will be enabled after the fix
     local add_reduced_flag = not has_two_phases and has_reduced_bmi
@@ -74,6 +75,7 @@ function _make_modulebuildflags(target, module, opt)
         print("has_two_phases", has_two_phases)
         print("add_reduced_flag", add_reduced_flag)
         if not has_two_phases or add_reduced_flag then
+            print("insert outputflag")
             table.insert(flags, module_outputflag .. bmifile)
         end
     else
