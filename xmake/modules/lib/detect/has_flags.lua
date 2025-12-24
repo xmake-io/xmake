@@ -125,6 +125,10 @@ function main(name, flags, opt)
     local errors = nil
     if hasflags then
         result, errors = hasflags(checkflags, opt)
+        print("has flags", checkflags, result, errors)
+        if errors then
+            print("check errors", errors)
+        end
     else
         result = try { function () os.runv(tool.program, checkflags, {envs = opt.envs}); return true end, catch { function (errs) errors = errs end }}
     end

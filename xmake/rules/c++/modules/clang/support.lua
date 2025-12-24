@@ -428,6 +428,7 @@ function get_moduleoutputflag(target)
         end
         _g.moduleoutputflag = moduleoutputflag or false
     end
+    print("get_moduleoutputflag", moduleoutputflag)
     return moduleoutputflag or nil
 end
 
