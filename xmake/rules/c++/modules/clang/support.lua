@@ -413,9 +413,12 @@ function get_moduleoutputflag(target)
     if moduleoutputflag == nil then
         local compinst = target:compiler("cxx")
         local clang_version = get_clang_version(target)
-        if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) and
-            semver.compare(clang_version, "16.0") >= 0 then
-            moduleoutputflag = "-fmodule-output="
+        if semver.compare(clang_version, "16.0") >= 0 then
+            if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) then
+                moduleoutputflag = "-fmodule-output="
+            elseif compinst:has_flags("/clang:-fmodule-output=", "cxxflags", {flagskey = "clang_cl_module_output", tryrun = true}) then
+                moduleoutputflag = "/clang:-fmodule-output="
+            end
         end
         _g.moduleoutputflag = moduleoutputflag or false
     end
