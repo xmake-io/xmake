@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2022, windows-2025]
-        arch: [x64, x86, arm64]
+        arch: [x64, x86]
 
     runs-on: ${{ matrix.os }}
 
@@ -29,9 +29,6 @@ jobs:
           # this is not supported, use dev branch instead
           # xmake-version: local#
           xmake-version: branch@dev
-      - uses: dlang-community/setup-dlang@v1
-        with:
-          compiler: dmd-latest
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
@@ -59,20 +56,8 @@ jobs:
       - name: Build
         run: |
           cd core
-          xmake f -vD -a ${{ matrix.arch }} --embed=y -c
-          xmake
-          xmake l os.cp build/xmake.exe ../artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
           xmake f -vD -a ${{ matrix.arch }} -c
           xmake -vD
-          cd ..
-
-      - name: Artifact
-        run: |
-          cd core
-          xrepo update-repo
-          xmake pack -vD -y --formats=nsis,zip --autobuild=n -o ../artifacts/${{env.RELEASE_NAME}} --basename=xmake xmake
-          (Get-FileHash ../artifacts/${{env.RELEASE_NAME}}/xmake.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
-          Copy-Item shafile ../artifacts/${{env.RELEASE_NAME}}
           cd ..
 
       - name: Tests
@@ -87,106 +72,4 @@ jobs:
           xrepo --version
           xmake show
           xmake lua -v -D tests/run.lua packages
-
-        # upload artifacts
-      - name: Upload artifacts (exe)
-        if: matrix.os == 'windows-2025'
-        uses: actions/upload-artifact@v4
-        with:
-          name: xmake-latest.${{env.RELEASE_NAME}}.exe
-          path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
-
-      - name: Upload artifacts (zip)
-        if: matrix.os == 'windows-2025'
-        uses: actions/upload-artifact@v4
-        with:
-          name: xmake-latest.${{ env.RELEASE_NAME }}.zip
-          path: artifacts/${{env.RELEASE_NAME}}/xmake.zip
-
-      - name: Upload artifacts (sha256)
-        if: matrix.os == 'windows-2025'
-        uses: actions/upload-artifact@v4
-        with:
-          name: xmake-latest.${{ env.RELEASE_NAME }}.sha256
-          path: artifacts/${{env.RELEASE_NAME}}/shafile
-
-      - name: Upload artifacts (bundle)
-        if: matrix.os == 'windows-2025'
-        uses: actions/upload-artifact@v4
-        with:
-          name: xmake-bundle-latest.${{env.RELEASE_NAME}}.exe
-          path: artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
-
-        # upload artifacts to latest release
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v3.x
-
-      - name: Get Previous tag
-        id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@master
-
-      - name: Upload artifacts to lastest release
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') && matrix.os == 'windows-2025'
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: artifacts/${{env.RELEASE_NAME}}/xmake.exe
-          asset_name: xmake-${{ env.GITHUB_REF_SLUG }}.${{ env.RELEASE_NAME }}.exe
-          tag: ${{ steps.previoustag.outputs.tag }}
-          overwrite: true
-
-      - name: Upload artifacts to lastest release
-        if: github.ref == 'refs/heads/master' && matrix.os == 'windows-2025'
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: artifacts/${{env.RELEASE_NAME}}/xmake.zip
-          asset_name: xmake-${{ env.GITHUB_REF_SLUG }}.${{ env.RELEASE_NAME }}.zip
-          tag: ${{ steps.previoustag.outputs.tag }}
-          overwrite: true
-
-        # publish release
-      - name: Publish
-        if: github.event.action == 'published' && matrix.os == 'windows-2025'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
-          asset_content_type: application/zip
-
-      - name: Publish
-        if: github.event.action == 'published' && matrix.os == 'windows-2025'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/${{env.RELEASE_NAME}}/xmake.zip
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.zip
-          asset_content_type: application/zip
-
-      - name: Publish
-        if: github.event.action == 'published' && matrix.os == 'windows-2025'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/${{env.RELEASE_NAME}}/shafile
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.sha256
-          asset_content_type: application/zip
-
-      - name: Publish
-        if: github.event.action == 'published' && matrix.os == 'windows-2025'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
-          asset_name: xmake-bundle-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
-          asset_content_type: application/zip
 
