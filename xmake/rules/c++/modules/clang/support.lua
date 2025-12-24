@@ -374,7 +374,7 @@ function get_modulesreducedbmiflag(target)
         local compinst = target:compiler("cxx")
         if compinst:has_flags("-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
             modulesreducedbmiflag = "-fmodules-reduced-bmi"
-        if compinst:has_flags("/clang:-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_cl_modules_reduced_bmi"}) then
+        elseif compinst:has_flags("/clang:-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_cl_modules_reduced_bmi"}) then
             modulesreducedbmiflag = "/clang:-fmodules-reduced-bmi"
         elseif compinst:has_flags("-fexperimental-modules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
             modulesreducedbmiflag = "-fexperimental-modules-reduced-bmi"
