@@ -1,6 +1,7 @@
 add_rules('mode.debug', 'mode.release')
-    set_languages('c++23')
-    set_policy('build.c++.modules.std', false)
+
+set_languages('c++23')
+set_policy('build.c++.modules.std', false)
 
 target('module_dep')
     set_kind('moduleonly')
