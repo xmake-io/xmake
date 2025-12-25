@@ -325,18 +325,16 @@ function get_modulesflag(target)
     local modulestsflag = _g.modulestsflag
     local withoutflag = _g.withoutflag
     if clangmodulesflag == nil and modulestsflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "clang_modules"}) then
+            clangmodulesflag = "-fmodules"
+        end
+        if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
+            modulestsflag = "-fmodules-ts"
+        end
         local clang_version = get_clang_version(target)
         withoutflag = semver.compare(clang_version, "16.0") >= 0
-        if not withoutflag then
-            local compinst = target:compiler("cxx")
-            if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "clang_modules"}) then
-                clangmodulesflag = "-fmodules"
-            end
-            if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
-                modulestsflag = "-fmodules-ts"
-            end
-            assert(modulestsflag or clangmodulesflag, "compiler(clang): does not support c++ module!")
-        end
+        assert(withoutflag or modulestsflag, "compiler(clang): does not support c++ module!")
         _g.clangmodulesflag = clangmodulesflag or false
         _g.modulestsflag = modulestsflag or false
         _g.withoutflag = withoutflag or false
@@ -347,12 +345,9 @@ end
 function get_modulefileflag(target)
     local modulefileflag = _g.modulefileflag
     if modulefileflag == nil then
-        local clang_version = get_clang_version(target)
-        if semver.compare(clang_version, "16.0") >= 0 then
-            local compinst = target:compiler("cxx")
-            if compinst:has_flags("-fmodule-file=" .. os.tmpfile() .. get_bmi_extension(), "cxxflags", {flagskey = "clang_module_file"}) then
-                modulefileflag = "-fmodule-file="
-            end
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodule-file=" .. os.tmpfile() .. get_bmi_extension(), "cxxflags", {flagskey = "clang_module_file"}) then
+            modulefileflag = "-fmodule-file="
         end
         assert(modulefileflag, "compiler(clang): does not support c++ module!")
         _g.modulefileflag = modulefileflag or false
@@ -363,12 +358,9 @@ end
 function get_moduleheaderflag(target)
     local moduleheaderflag = _g.moduleheaderflag
     if moduleheaderflag == nil then
-        local clang_version = get_clang_version(target)
-        if semver.compare(clang_version, "16.0") >= 0 then
-            local compinst = target:compiler("cxx")
-            if compinst:has_flags("-fmodule-header=system", "cxxflags", {flagskey = "clang_module_header"}) then
-                moduleheaderflag = "-fmodule-header="
-            end
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodule-header=system", "cxxflags", {flagskey = "clang_module_header"}) then
+            moduleheaderflag = "-fmodule-header="
         end
         _g.moduleheaderflag = moduleheaderflag or false
     end
@@ -378,14 +370,11 @@ end
 function get_modulesreducedbmiflag(target)
     local modulesreducedbmiflag = _g.modulesreducedbmiflag
     if modulesreducedbmiflag == nil then
-        local clang_version = get_clang_version(target)
-        if semver.compare(clang_version, "16.0") >= 0 then
-            local compinst = target:compiler("cxx")
-            if compinst:has_flags("-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
-                modulesreducedbmiflag = "-fmodules-reduced-bmi"
-            elseif compinst:has_flags("-fexperimental-modules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
-                modulesreducedbmiflag = "-fexperimental-modules-reduced-bmi"
-            end
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
+            modulesreducedbmiflag = "-fmodules-reduced-bmi"
+        elseif compinst:has_flags("-fexperimental-modules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
+            modulesreducedbmiflag = "-fexperimental-modules-reduced-bmi"
         end
         _g.modulesreducedbmiflag = modulesreducedbmiflag or false
     end
@@ -422,12 +411,11 @@ end
 function get_moduleoutputflag(target)
     local moduleoutputflag = _g.moduleoutputflag
     if moduleoutputflag == nil then
+        local compinst = target:compiler("cxx")
         local clang_version = get_clang_version(target)
-        if semver.compare(clang_version, "16.0") >= 0 then
-            local compinst = target:compiler("cxx")
-            if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) then
-                moduleoutputflag = "-fmodule-output="
-            end
+        if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) and
+            semver.compare(clang_version, "16.0") >= 0 then
+            moduleoutputflag = "-fmodule-output="
         end
         _g.moduleoutputflag = moduleoutputflag or false
     end
@@ -437,12 +425,9 @@ end
 function get_print_library_module_manifest_path_flag(target)
     local print_library_module_manifest_path_flag = _g.print_library_module_manifest_path_flag
     if print_library_module_manifest_path_flag == nil then
-        local clang_version = get_clang_version(target)
-        if semver.compare(clang_version, "16.0") >= 0 then
-            local compinst = target:compiler("cxx")
-            if compinst:has_flags("-print-library-module-manifest-path", "cxxflags", {flagskey = "clang_print_library_module_manifest_path", tryrun = true}) then
-                print_library_module_manifest_path_flag = "-print-library-module-manifest-path"
-            end
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-print-library-module-manifest-path", "cxxflags", {flagskey = "clang_print_library_module_manifest_path", tryrun = true}) then
+            print_library_module_manifest_path_flag = "-print-library-module-manifest-path"
         end
         _g.print_library_module_manifest_path_flag = print_library_module_manifest_path_flag or false
     end
