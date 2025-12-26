@@ -151,6 +151,7 @@ function sandbox_core_package_repository.repositories(is_global)
             if not mainurls then
                 mainurls = {"https://github.com/xmake-io/xmake-repo.git",
                             "https://gitlab.com/tboox/xmake-repo.git",
+                            "https://gitcode.com/xmake-io/xmake-repo.git",
                             "https://gitee.com/tboox/xmake-repo.git"}
                 if network ~= "private" then
                     import("net.fasturl")
