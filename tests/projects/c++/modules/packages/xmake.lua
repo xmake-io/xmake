@@ -1,5 +1,5 @@
 add_rules("mode.release", "mode.debug")
-set_languages("c++2b")
+set_languages("c++20")
 
 add_repositories("my-repo my-repo")
 add_requires("foo", "bar", "bar2")
