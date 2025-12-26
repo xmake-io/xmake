@@ -267,6 +267,13 @@ function nf_language(self, stdname)
 
     -- the stdc++ maps
     if _g.cxxmaps == nil then
+        -- clang-cl with c++23preview does not work for c++ modules
+        -- https://github.com/xmake-io/xmake/issues/7169
+        local cxx23 = {"-std:c++23", "-std:c++23preview", "-std:c++latest"}
+        if self:name() == "clang_cl" then
+            cxx23 = {"-std:c++23", "-std:c++latest"}
+        end
+        local cxx2b = cxx23
         _g.cxxmaps =
         {
             cxx11       = "-std:c++11"
@@ -281,10 +288,10 @@ function nf_language(self, stdname)
         ,   gnuxx20     = {"-std:c++20", "-std:c++latest"}
         ,   cxx2a       = {"-std:c++20", "-std:c++latest"}
         ,   gnuxx2a     = {"-std:c++20", "-std:c++latest"}
-        ,   cxx23       = {"-std:c++23", "-std:c++23preview", "-std:c++latest"}
-        ,   gnuxx23     = {"-std:c++23", "-std:c++23preview", "-std:c++latest"}
-        ,   cxx2b       = {"-std:c++23", "-std:c++23preview", "-std:c++latest"}
-        ,   gnuxx2b     = {"-std:c++23", "-std:c++23preview", "-std:c++latest"}
+        ,   cxx23       = cxx23
+        ,   gnuxx23     = cxx23
+        ,   cxx2b       = cxx2b
+        ,   gnuxx2b     = cxx2b
         ,   cxx26       = {"-std:c++26", "-std:c++latest"}
         ,   gnuxx26     = {"-std:c++26", "-std:c++latest"}
         ,   cxxlatest   = "-std:c++latest"
