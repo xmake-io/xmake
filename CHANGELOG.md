@@ -26,6 +26,7 @@
 * [#7145](https://github.com/xmake-io/xmake/pull/7145): Improve Clang/LLVM runtime support
 * [#7136](https://github.com/xmake-io/xmake/pull/7136): Improve clang-cl depfiles generation
 * [#7135](https://github.com/xmake-io/xmake/pull/7135): Improve `xrepo env` to add session ID
+* [#7155](https://github.com/xmake-io/xmake/pull/7155): Refactor Windows ASan for clang-cl (runtime linking, linker flags, PATH/CMAKE_LINKER_TYPE setup, toolchain streamlining)
 * [#7109](https://github.com/xmake-io/xmake/pull/7109): Improve binutils to read symbols from binary file
 * [#7102](https://github.com/xmake-io/xmake/pull/7102): Improve bin2c rule
 * [#7098](https://github.com/xmake-io/xmake/pull/7098): Refactor and improve Golang support
@@ -2266,6 +2267,7 @@
 * [#7145](https://github.com/xmake-io/xmake/pull/7145): 改进 Clang/LLVM 运行时支持
 * [#7136](https://github.com/xmake-io/xmake/pull/7136): 改进 clang-cl 依赖文件生成
 * [#7135](https://github.com/xmake-io/xmake/pull/7135): 改进 `xrepo env` 以添加会话 ID
+* [#7155](https://github.com/xmake-io/xmake/pull/7155): 重构 Windows 上 clang-cl 的 ASan 支持（改进运行库链接、链接器标志、完善 PATH/CMAKE_LINKER_TYPE 配置、精简工具链）
 * [#7109](https://github.com/xmake-io/xmake/pull/7109): 改进 binutils 以从二进制文件读取符号
 * [#7102](https://github.com/xmake-io/xmake/pull/7102): 改进 bin2c 规则
 * [#7098](https://github.com/xmake-io/xmake/pull/7098): 重构并改进 Golang 支持
@@ -4476,5 +4478,3 @@
 * 修复set_installscript接口的一些bug
 * 修复在windows x86_64下，安装失败的问题
 * 修复相对路径的一些bug
-
-
