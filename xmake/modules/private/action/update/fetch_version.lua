@@ -32,6 +32,7 @@ local official_sources =
     "https://github.com/xmake-io/xmake.git",
     "git@github.com:xmake-io/xmake.git",
     "https://gitlab.com/tboox/xmake.git",
+    "https://gitcode.com/xmake-io/xmake.git",
     "https://gitee.com/tboox/xmake.git"
 }
 
