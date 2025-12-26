@@ -10,7 +10,6 @@ target('module_dep')
 target('module_target')
     set_kind('moduleonly')
     add_files('src/*.cppm')
-
-add_deps('module_dep')
+    add_deps('module_dep')
     add_tests('test', { kind = 'binary', files = 'src/main.cpp', build_should_pass = true })
     add_tests('test2', { kind = 'binary', files = 'src/main.cpp', build_should_pass = true })

@@ -9,13 +9,11 @@ target("module_dep")
 target("module_target1")
     set_kind("moduleonly")
     add_files("src/*.cppm")
-
     add_deps("module_dep")
     add_tests("tests", {kind = "binary", files = "src/main.cpp", build_should_pass = true})
 
 target("module_target2")
     set_kind("moduleonly")
     add_files("src/*.cppm")
-
     add_deps("module_dep")
     add_tests("tests", {kind = "binary", files = "src/main.cpp", build_should_pass = true})
