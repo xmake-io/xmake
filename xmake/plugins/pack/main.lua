@@ -26,6 +26,7 @@ import("core.project.project")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
 import("xpack")
+import("async.runjobs")
 
 -- get packages
 function _get_packages()
@@ -85,9 +86,17 @@ function _pack_package(package)
 end
 
 function _pack_packages()
-    for _, package in ipairs(_get_packages()) do
-        _pack_package(package)
+    local packages = _get_packages()
+    local jobs = option.get("jobs")
+    if jobs then
+        jobs = tonumber(jobs)
     end
+    runjobs("pack_packages", function (index)
+        local package = packages[index]
+        if package then
+            _pack_package(package)
+        end
+    end, {total = #packages, comax = jobs or os.default_njob(), isolate = true})
 end
 
 function _build_targets()

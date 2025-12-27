@@ -261,7 +261,11 @@ end
 
 -- get the build directory
 function xpack:builddir()
-    return path.join(config.builddir(), ".xpack", self:name())
+    local dir = path.join(config.builddir(), ".xpack", self:name())
+    if self:format() then
+        dir = path.join(dir, self:format())
+    end
+    return dir
 end
 
 -- get the build directory (deprecated)
