@@ -97,7 +97,7 @@ xpack("xmakesrc")
     before_package(function (package)
         import("devel.git")
 
-        local rootdir = path.join(os.tmpfile(package:basename()) .. ".dir", "repo")
+        local rootdir = path.join(os.tmpfile(package:basename() .. "_" .. package:format()) .. ".dir", "repo")
         if not os.isdir(rootdir) then
             os.tryrm(rootdir)
             os.cp(path.directory(os.projectdir()), rootdir)
