@@ -20,6 +20,8 @@
 
 -- imports
 import("core.base.text")
+import("core.base.json")
+import("core.base.option")
 import("core.base.global")
 import("core.project.config")
 import("core.project.project")
@@ -43,6 +45,16 @@ function main()
                     XMAKE_BINARY_REPO    = {"Set the official package pre-compiled repository url.", os.getenv("XMAKE_BINARY_REPO")},
                     XMAKE_THEME          = {"Set theme.", os.getenv("XMAKE_THEME") or global.get("theme")},
                     XMAKE_STATS          = {"Enable or disable user statistics.", os.getenv("XMAKE_STATS")}}
+    
+    if option.get("json") then
+        local list = {}
+        for name, env in pairs(envs) do
+            table.insert(list, {name = name, description = env[1], value = env[2]})
+        end
+        print(json.encode(list))
+        return 
+    end
+
     local width = 24
     for name, env in pairs(envs) do
         cprint("${color.dump.string}%s${clear}%s%s", name, (" "):rep(width - #name), env[1])
