@@ -21,7 +21,6 @@
 -- imports
 import("core.project.config")
 import("private.action.require.list", { alias = "show_packages" })
-import(".showlist")
 
 -- show all packages
 function main()

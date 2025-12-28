@@ -21,6 +21,8 @@
 -- imports
 import("core.project.project")
 import("core.base.task")
+import("core.base.json")
+import("core.base.option")
 import("private.action.require.impl.package")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.environment")
@@ -53,11 +55,61 @@ function _info(instance)
     return info
 end
 
+function _get_status(instance)
+    local fetchinfo = instance:fetch()
+    if fetchinfo then
+        if instance:is_thirdparty() then
+            return "3rd"
+        elseif instance:is_system() then
+            return "system"
+        else
+            return "installed"
+        end
+    elseif #instance:urls() > 0 then
+        return "remote"
+    elseif instance:is_system() then
+        return "missing"
+    end
+    return "unknown"
+end
+
+function _make_info_json(instance)
+    local info = {}
+    info.name = instance:name()
+    info.requirestr = instance:requireinfo().originstr
+    info.version = instance:version_str()
+    info.status = _get_status(instance)
+
+    if info.status == "remote" then
+         if instance:repo() then
+            info.repo = instance:repo():name()
+         end
+         if not instance:is_supported() then
+            info.supported = false
+         end
+    end
+
+    if instance:is_optional() then
+        info.optional = true
+    end
+
+    local fetchinfo = instance:fetch()
+    if fetchinfo then
+        info.fetchinfo = fetchinfo
+    end
+
+    local deps = {}
+    for _, dep in ipairs(instance:orderdeps()) do
+        table.insert(deps, _make_info_json(dep))
+    end
+    if #deps > 0 then
+        info.deps = deps
+    end
+    return info
+end
+
 -- list packages
 function main()
-
-    -- list all requires
-    print("The package dependencies of project:")
 
     -- get requires
     local requires, requires_extra = project.requires_str()
@@ -72,6 +124,19 @@ function main()
     if not repository.pulled() then
         task.run("repo", {update = true})
     end
+
+    if option.get("json") then
+        local list = {}
+        for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
+             table.insert(list, _make_info_json(instance))
+        end
+        print(json.encode(list))
+        environment.leave()
+        return
+    end
+
+    -- list all required packages
+    print("The package dependencies of project:")
 
     -- list all required packages
     for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do

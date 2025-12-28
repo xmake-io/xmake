@@ -20,11 +20,22 @@
 
 -- imports
 import("core.project.policy")
+import("core.base.json")
+import("core.base.option")
 
 -- show all policies
 function main()
-    local width = 45
     local policies = policy.policies()
+    if option.get("json") then
+        local list = {}
+        for name, policy in table.orderpairs(policies) do
+            table.insert(list, {name = name, description = policy.description, default = policy.default or "false"})
+        end
+        print(json.encode(list))
+        return 
+    end
+
+    local width = 45
     for name, policy in table.orderpairs(policies) do
         cprint("${color.dump.string}%s${clear}%s%s", name, (" "):rep(width - #name), policy["description"])
         cprint("%s${bright}%s", (" "):rep(width), policy["default"] or "false")
