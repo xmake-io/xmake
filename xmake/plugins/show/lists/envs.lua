@@ -48,7 +48,13 @@ function main()
     
     if option.get("json") then
         local list = {}
-        for name, env in pairs(envs) do
+        local names = {}
+        for name in pairs(envs) do
+            table.insert(names, name)
+        end
+        table.sort(names)
+        for _, name in ipairs(names) do
+            local env = envs[name]
             table.insert(list, {name = name, description = env[1], value = env[2]})
         end
         print(json.encode(list))
