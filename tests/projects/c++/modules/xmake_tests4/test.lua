@@ -1,1 +1,1 @@
-inherit(".test_xmake_test")
+inherit(".test_xmake_test_stdmodules")
