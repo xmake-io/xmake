@@ -1,0 +1,4 @@
+.xmake/
+.vscode/
+build/
+uselocalxmake.sh

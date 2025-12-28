@@ -31,6 +31,7 @@ import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
 import("utils.progress")
+import("private.utils.target", {alias = "target_utils"})
 
 -- test target
 function _do_test_target(target, opt)
@@ -522,6 +523,7 @@ function get_tests()
                     if extra.packages then
                         target_new:add("packages", extra.packages)
                     end
+                    target_utils.config_target(target_new)
                     testinfo.target = target_new
                 end
             end
