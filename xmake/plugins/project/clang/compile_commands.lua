@@ -276,6 +276,23 @@ function _add_target(jsonfile, target)
     os.setenvs(oldenvs)
 end
 
+-- get test targets
+-- https://github.com/xmake-io/xmake/issues/4750
+function _get_test_targets()
+    local test_targets = _g.test_targets
+    if test_targets == nil then
+        test_targets = {}
+        for _, test in pairs(test_action.get_tests()) do
+            local target = test.target
+            if not target:is_phony() then
+                table.insert(test_targets, target)
+            end
+        end
+        _g.test_targets = test_targets
+    end
+    return test_targets
+end
+
 -- add targets
 function _add_targets(jsonfile)
     jsonfile:print("[")
@@ -288,13 +305,17 @@ function _add_targets(jsonfile)
         end
     end
     -- https://github.com/xmake-io/xmake/issues/4750
-    for _, test in pairs(test_action.get_tests()) do
-        local target = test.target
-        if not target:is_phony() then
-            _add_target(jsonfile, target)
-        end
+    for _, target in ipairs(_get_test_targets()) do
+        _add_target(jsonfile, target)
     end
     jsonfile:print("]")
+end
+
+-- prepare targets
+function _prepare_targets()
+    target_cmds.prepare_targets()
+    -- https://github.com/xmake-io/xmake/issues/7166
+    target_cmds.prepare_targets(_get_test_targets())
 end
 
 -- generate compilation databases for clang-based tools(compile_commands.json)
@@ -308,7 +329,7 @@ function make(outputdir)
     local oldir = os.cd(os.projectdir())
     local jsonfile = io.open(path.join(outputdir, "compile_commands.json"), "w")
     os.setenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR", "true")
-    target_cmds.prepare_targets()
+    _prepare_targets()
     _add_targets(jsonfile)
     jsonfile:close()
     os.setenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR", nil)

@@ -50,6 +50,7 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/3022
 --
 -- e.g.
+--
 -- for all: add_cxxflags("-g")
 -- only for clang: add_cxxflags("clang::-stdlib=libc++")
 -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
@@ -104,6 +105,7 @@ function translate_flags_in_tool(target, flagkind, flags)
     -- @see https://github.com/xmake-io/xmake/issues/3022
     --
     -- e.g.
+    --
     -- for all: add_cxxflags("-g")
     -- only for clang: add_cxxflags("clang::-stdlib=libc++")
     -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
@@ -165,3 +167,40 @@ function check_target_toolchains()
     end
 end
 
+-- config target
+function config_target(target, opt)
+    for _, rule in ipairs(table.wrap(target:orderules())) do
+        local before_config = rule:script("config_before")
+        if before_config then
+            before_config(target, opt)
+        end
+    end
+
+    for _, rule in ipairs(table.wrap(target:orderules())) do
+        local on_config = rule:script("config")
+        if on_config then
+            on_config(target, opt)
+        end
+    end
+    local on_config = target:script("config")
+    if on_config then
+        on_config(target, opt)
+    end
+
+    for _, rule in ipairs(table.wrap(target:orderules())) do
+        local after_config = rule:script("config_after")
+        if after_config then
+            after_config(target, opt)
+        end
+    end
+end
+
+-- config targets
+function config_targets(opt)
+    opt = opt or {}
+    for _, target in ipairs(table.wrap(project.ordertargets())) do
+        if target:is_enabled() then
+            config_target(target, opt)
+        end
+    end
+end

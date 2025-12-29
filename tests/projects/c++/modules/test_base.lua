@@ -136,12 +136,12 @@ function run_tests(clang_options, gcc_options, msvc_options)
                 build_tests("clang-cl", clang_cl_options)
                 build_tests("clang-cl", table.join(clang_options, {two_phases = false}))
             end
-            if not clang_options.stdmodule then
+            if clang_options.stdmodule then
+                wprint("std modules tests skipped for Windows clang libc++ as it's not currently supported officially")
+            else
                 build_tests("llvm", clang_libcpp_options)
                 build_tests("clang", clang_libcpp_options)
                 build_tests("clang", table.join(clang_libcpp_options, {two_phases = false}))
-            else
-                wprint("std modules tests skipped for Windows clang libc++ as it's not currently supported officially")
             end
         end
         if msvc_options then
