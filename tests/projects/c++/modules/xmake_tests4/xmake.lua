@@ -1,10 +1,7 @@
 add_rules("mode.debug", "mode.release")
 set_languages("c++23")
-set_encodings("utf-8")
---add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 
 target("llvm")
     set_kind("binary")
-    set_runtimes("c++_shared")
     add_files("src/*.cpp", "src/*.mpp")
     add_tests("test", { files = "test/test.cpp", remove_files = "src/main.cpp" })

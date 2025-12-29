@@ -126,11 +126,7 @@ function run_tests(clang_options, gcc_options, msvc_options)
     end
     if is_subhost("windows") then
         if clang_options then
-            if clang_options.stdmodule then
-                wprint("std modules tests skipped for Windows llvm (default: libc++), as it's not currently supported officially")
-            else
-                build_tests("llvm", clang_options)
-            end
+            build_tests("llvm", clang_options)
             build_tests("clang", clang_options)
             build_tests("clang", table.join(clang_options, {two_phases = false}))
             if not clang_options.disable_clang_cl then
