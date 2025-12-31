@@ -43,9 +43,6 @@ function main(name, opt)
 
     -- init argv
     local argv = {"install", "-y", opt.yum or name}
-    if opt.verbose or option.get("verbose") then
-        table.insert(argv, "--verbose")
-    end
 
     -- install package directly if the current user is root
     if os.isroot() then
