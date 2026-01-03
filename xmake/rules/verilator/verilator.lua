@@ -24,15 +24,61 @@ import("core.base.hashset")
 import("core.project.depend")
 import("private.action.build.object", { alias = "build_objectfiles" })
 import("core.base.json")
+import("lib.detect.find_programver")
+
+-- parse sourcefiles from cmakefile
+function _get_sourcefiles_from_cmake(target, cmakefile)
+    local global_classes = {}
+    local classefiles_slow = {}
+    local classefiles_fast = {}
+    local supportfiles_slow = {}
+    local supportfiles_fast = {}
+    local targetname = target:name()
+    local verilator_root = assert(target:data("verilator.root"), "no verilator_root!")
+    io.gsub(cmakefile, "set%((%S-) (.-)%)", function(key, values)
+        if key == targetname .. "_GLOBAL" then
+            -- get global class source files
+            -- set(hello_GLOBAL "${VERILATOR_ROOT}/include/verilated.cpp" "${VERILATOR_ROOT}/include/verilated_threads.cpp")
+            for classfile in values:gmatch("\"(.-)\"") do
+                classfile = classfile:gsub("%${VERILATOR_ROOT}", verilator_root)
+                if os.isfile(classfile) then
+                    table.insert(global_classes, classfile)
+                end
+            end
+        elseif key == targetname .. "_CLASSES_SLOW" then
+            for classfile in values:gmatch("\"(.-)\"") do
+                table.insert(classefiles_slow, classfile)
+            end
+        elseif key == targetname .. "_CLASSES_FAST" then
+            for classfile in values:gmatch("\"(.-)\"") do
+                table.insert(classefiles_fast, classfile)
+            end
+        elseif key == targetname .. "_SUPPORT_SLOW" then
+            for classfile in values:gmatch("\"(.-)\"") do
+                table.insert(supportfiles_slow, classfile)
+            end
+        elseif key == targetname .. "_SUPPORT_FAST" then
+            for classfile in values:gmatch("\"(.-)\"") do
+                table.insert(supportfiles_fast, classfile)
+            end
+        end
+    end)
+
+    -- get compiled source files
+    local sourcefiles = table.join(global_classes, classefiles_slow, classefiles_fast, supportfiles_slow,
+        supportfiles_fast)
+    return sourcefiles
+end
 
 -- parse sourcefiles from jsonfile
 function _get_sourcefiles_from_json(jsonfile)
-    local json = json.loadfile(jsonfile)
-    local global_classes = json["sources"]["global"]
-    local classefiles_slow = json["sources"]["classes_slow"]
-    local classefiles_fast = json["sources"]["classes_fast"]
-    local supportfiles_slow = json["sources"]["support_slow"]
-    local supportfiles_fast = json["sources"]["support_fast"]
+    local json_table = json.loadfile(jsonfile)
+    local sources_table = assert(json_table["sources"], "No sources field found in json file: %s.", jsonfile)
+    local global_classes = sources_table["global"] or {}
+    local classefiles_slow = sources_table["classes_slow"] or {}
+    local classefiles_fast = sources_table["classes_fast"] or {}
+    local supportfiles_slow = sources_table["support_slow"] or {}
+    local supportfiles_fast = sources_table["support_fast"] or {}
 
     -- get compiled source files
     local sourcefiles = table.join(global_classes, classefiles_slow, classefiles_fast, supportfiles_slow,
@@ -78,15 +124,28 @@ function _get_lanuage_flags(target)
     end
 end
 
+--- @brief get makefile type
+--- @param verilator string verilator program path
+--- @return boolean support_json Whether support json
+--- @return string makefile_type Makefile type, json or cmake
+---
+function _get_makefile_type(verilator)
+    local version = assert(find_programver(verilator), "verilator version is unknown!")
+    local support_json = version >= "5.036"
+    local makefile_type = support_json and "json" or "cmake"
+    return support_json, makefile_type
+end
+
 function config(target)
     local toolchain = assert(target:toolchain("verilator"), 'we need to set_toolchains("verilator") in target("%s")',
         target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
+    local support_json, makefile_type = _get_makefile_type(verilator)
     local autogendir = path.join(target:autogendir(), "rules", "verilator")
     local tmpdir = os.tmpfile() .. ".dir"
-    local jsonfile = path.join(tmpdir, "test.json")
+    local makefile = path.join(tmpdir, "test." .. makefile_type)
     local sourcefile = path.join(tmpdir, "main.v")
-    local argv = { "--cc", "--make", "json", "--prefix", "test", "--Mdir", tmpdir, "main.v" }
+    local argv = { "--cc", "--make", makefile_type, "--prefix", "test", "--Mdir", tmpdir, "main.v" }
     local flags = target:values("verilator.flags")
     local switches_flags = hashset.of("sc", "coverage", "timing", "trace", "trace-vcd", "trace-fst", "trace-saif",
         "threads")
@@ -112,19 +171,53 @@ endmodule]])
     -- @see https://github.com/verilator/verilator/issues/3873
     os.runv(verilator, argv, { curdir = tmpdir, envs = toolchain:runenvs() })
 
-    -- parse some configurations from jsonfile
+    -- parse some configurations from makefile
     local verilator_root
     local switches = {}
+    local options_table = {}
 
-    local json = json.loadfile(jsonfile)
-    verilator_root = json["system"]["verilator_root"]
-    switches.SC = json["options"]["system_c"]
-    switches.COVERAGE = json["options"]["coverage"]
-    switches.TIMING = json["options"]["use_timing"]
-    switches.THREADS = json["options"]["threads"]
-    switches.TRACE_VCD = json["options"]["trace_vcd"]
-    switches.TRACE_FST = json["options"]["trace_fst"]
-    switches.TRACE_SAIF = json["options"]["trace_saif"]
+    if support_json then
+        local json_table = json.loadfile(makefile)
+        local system_table = assert(json_table["system"], "No system field found in json file: %s.", makefile)
+        verilator_root = system_table["verilator_root"]
+        options_table = assert(json_table["options"], "No options field found in json file: %s.", makefile)
+        switches.SC = options_table["system_c"] and "1" or "0"
+        switches.COVERAGE = options_table["coverage"] and "1" or "0"
+        switches.TIMING = options_table["use_timing"] and "1" or "0"
+        -- The thread field is a integer in float format, we need to convert it to string.
+        switches.THREADS = string.format("%d", options_table["threads"] or 1)
+        switches.TRACE_VCD = options_table["trace_vcd"] and "1" or "0"
+        switches.TRACE_FST = options_table["trace_fst"] and "1" or "0"
+        switches.TRACE_SAIF = options_table["trace_saif"] and "1" or "0"
+    else
+        io.gsub(makefile, "set%((%S-) (.-)%)", function(key, values)
+            if key == "VERILATOR_ROOT" then
+                verilator_root = values:match("\"(.-)\" CACHE PATH")
+                if not verilator_root then
+                    verilator_root = values:match("(.-) CACHE PATH")
+                end
+            elseif key == "test_SC" then
+                -- SystemC output mode?  0/1 (from --sc)
+                switches.SC = values:trim()
+            elseif key == "test_COVERAGE" then
+                -- Coverage output mode?  0/1 (from --coverage)
+                switches.COVERAGE = values:trim()
+            elseif key == "test_TIMING" then
+                -- Timing mode?  0/1 (from --timing)
+                switches.TIMING = values:trim()
+            elseif key == "test_THREADS" then
+                -- Threaded output mode?  1/N threads (from --threads)
+                switches.THREADS = values:trim()
+            elseif key == "test_TRACE_VCD" then
+                -- VCD Tracing output mode?  0/1 (from --trace)
+                switches.TRACE_VCD = values:trim()
+            elseif key == "test_TRACE_FST" then
+                -- FST Tracing output mode? 0/1 (from --trace-fst)
+                switches.TRACE_FST = values:trim()
+            end
+        end)
+    end
+
     assert(verilator_root, "the verilator root directory not found!")
     target:data_set("verilator.root", verilator_root)
 
@@ -151,10 +244,10 @@ endmodule]])
 
     -- add definitions for switches
     for k, v in table.orderpairs(switches) do
-        target:add("defines", "VM_" .. k .. "=" .. (v and "1" or "0"), { public = true })
+        target:add("defines", "VM_" .. k .. "=" .. v, { public = true })
     end
-    local cflags = json["options"]["cflags"]
-    if cflags then
+    if support_json then
+        local cflags = options_table["cflags"] or {}
         for _, flag in ipairs(cflags) do
             if flag:startswith("-D") then
                 target:add("defines", flag:sub(3), { public = true })
@@ -163,12 +256,19 @@ endmodule]])
     end
 
     -- add syslinks
-    local ldflags = json["options"]["ldflags"]
-    if ldflags then
+    if support_json then
+        local ldflags = options_table["ldflags"] or {}
         for _, flag in ipairs(ldflags) do
             if flag:startswith("-l") then
                 target:add("syslinks", flag:sub(3))
             end
+        end
+    else
+        if target:is_plat("linux", "macosx") and switches.THREADS == "1" then
+            target:add("syslinks", "pthread")
+        end
+        if target:is_plat("linux", "macosx") and switches.TRACE_FST == "1" then
+            target:add("syslinks", "z")
         end
     end
 
@@ -179,13 +279,14 @@ function build_cppfiles(target, jobgraph, sourcebatch, opt)
     local toolchain = assert(target:toolchain("verilator"), 'we need to set_toolchains("verilator") in target("%s")',
         target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
+    local support_json, makefile_type = _get_makefile_type(verilator)
     local autogendir = path.join(target:autogendir(), "rules", "verilator")
     local targetname = target:name()
-    local jsonfile = path.join(autogendir, targetname .. ".json")
+    local makefile = path.join(autogendir, targetname .. "." .. makefile_type)
 
     -- build verilog files
     depend.on_changed(function()
-        local argv = { "--cc", "--make", "json", "--prefix", targetname, "--Mdir", autogendir }
+        local argv = { "--cc", "--make", makefile_type, "--prefix", targetname, "--Mdir", autogendir }
         local flags = target:values("verilator.flags")
         if flags then
             table.join2(argv, flags)
@@ -208,14 +309,19 @@ function build_cppfiles(target, jobgraph, sourcebatch, opt)
         -- generate c++ sourcefiles
         os.vrunv(verilator, argv, { envs = toolchain:runenvs() })
     end, {
-        dependfile = jsonfile .. ".d",
+        dependfile = makefile .. ".d",
         files = sourcebatch.sourcefiles,
         changed = target:is_rebuilt(),
-        lastmtime = os.mtime(jsonfile)
+        lastmtime = os.mtime(makefile)
     })
 
     -- get compiled source files
-    local sourcefiles = _get_sourcefiles_from_json(jsonfile)
+    local sourcefiles
+    if support_json then
+        sourcefiles = _get_sourcefiles_from_json(makefile)
+    else
+        sourcefiles = _get_sourcefiles_from_cmake(target, makefile)
+    end
 
     -- do build
     local sourcebatch_cpp = {
@@ -239,12 +345,13 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     local toolchain = assert(target:toolchain("verilator"), 'we need to set_toolchains("verilator") in target("%s")',
         target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
+    local _, makefile_type = _get_makefile_type(verilator)
     local autogendir = path.join(target:autogendir(), "rules", "verilator")
     local targetname = target:name()
-    local jsonfile = path.join(autogendir, targetname .. ".json")
-    local dependfile = jsonfile .. ".d"
+    local makefile = path.join(autogendir, targetname .. "." .. makefile_type)
+    local dependfile = makefile .. ".d"
 
-    local argv = { "--cc", "--make", "json", "--prefix", targetname, "--Mdir", path(autogendir) }
+    local argv = { "--cc", "--make", makefile_type, "--prefix", targetname, "--Mdir", path(autogendir) }
     local flags = target:values("verilator.flags")
     if flags then
         table.join2(argv, flags)
@@ -269,7 +376,7 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     -- generate c++ sourcefiles
     batchcmds:vrunv(verilator, argv, { envs = toolchain:runenvs() })
     batchcmds:add_depfiles(sourcefiles)
-    batchcmds:set_depmtime(os.mtime(jsonfile))
+    batchcmds:set_depmtime(os.mtime(makefile))
     batchcmds:set_depcache(dependfile)
 end
 
@@ -277,13 +384,19 @@ function buildcmd_cppfiles(target, batchcmds, sourcebatch, opt)
     local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")',
         target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
+    local support_json, makefile_type = _get_makefile_type(verilator)
     local autogendir = path.join(target:autogendir(), "rules", "verilator")
     local targetname = target:name()
-    local jsonfile = path.join(autogendir, targetname .. ".json")
+    local makefile = path.join(autogendir, targetname .. "." .. makefile_type)
     local dependfile = path.join(autogendir, targetname .. ".build.d")
 
     -- get compiled source files
-    local sourcefiles = _get_sourcefiles_from_json(jsonfile)
+    local sourcefiles
+    if support_json then
+        sourcefiles = _get_sourcefiles_from_json(makefile)
+    else
+        sourcefiles = _get_sourcefiles_from_cmake(target, makefile)
+    end
 
     -- do build
     for _, sourcefile in ipairs(sourcefiles) do
