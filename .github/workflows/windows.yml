@@ -152,7 +152,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: https://uploads.github.com/repos/xmake-io/xmake/releases/3.0.6/assets
           asset_path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
           asset_name: xmake-v3.0.6.${{ env.RELEASE_NAME }}.exe
           asset_content_type: application/zip
@@ -163,7 +163,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: https://uploads.github.com/repos/xmake-io/xmake/releases/3.0.6/assets
           asset_path: artifacts/${{env.RELEASE_NAME}}/xmake.zip
           asset_name: xmake-v3.0.6.${{ env.RELEASE_NAME }}.zip
           asset_content_type: application/zip
@@ -174,7 +174,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: https://uploads.github.com/repos/xmake-io/xmake/releases/3.0.6/assets
           asset_path: artifacts/${{env.RELEASE_NAME}}/shafile
           asset_name: xmake-v3.0.6.${{ env.RELEASE_NAME }}.sha256
           asset_content_type: application/zip
@@ -185,7 +185,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: https://uploads.github.com/repos/xmake-io/xmake/releases/3.0.6/assets
           asset_path: artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
           asset_name: xmake-bundle-v3.0.6.${{ env.RELEASE_NAME }}.exe
           asset_content_type: application/zip
