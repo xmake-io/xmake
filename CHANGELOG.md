@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v3.0.6
+
 ### New features
 
 * [#7141](https://github.com/xmake-io/xmake/pull/7141): Support disabling native app glue for Android
@@ -2242,6 +2244,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v3.0.6
 
 ### 新特性
 
