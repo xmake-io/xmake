@@ -129,7 +129,8 @@ end
 --- @return boolean support_json Whether support json
 --- @return string makefile_type Makefile type, json or cmake
 function _get_makefile_type(verilator)
-    local version = assert(find_tool(verilator, {version = true}).version, "verilator version is unknown!")
+    local tool = assert(find_tool("verilator", { program = verilator, version = true }), "verilator not found!")
+    local version = tool.version
     local support_json = version >= "5.036"
     local makefile_type = support_json and "json" or "cmake"
     return support_json, makefile_type
