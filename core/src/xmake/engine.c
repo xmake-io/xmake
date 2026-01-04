@@ -398,7 +398,8 @@ tb_int_t xm_thread_sharedata_set(lua_State *lua);
 tb_int_t xm_thread_sharedata_get_(lua_State *lua);
 
 // open cjson
-__tb_extern_c_enter__ tb_int_t luaopen_cjson(lua_State *l);
+__tb_extern_c_enter__
+tb_int_t luaopen_cjson(lua_State *l);
 __tb_extern_c_leave__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -720,8 +721,10 @@ static lua_State *g_lua = tb_null;
 
 // the xmake script files data
 #ifdef XM_EMBED_ENABLE
+__tb_extern_c_enter__
 extern tb_byte_t _binary_xmake_xmz_start[];
 extern tb_byte_t _binary_xmake_xmz_end[];
+__tb_extern_c_leave__
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
