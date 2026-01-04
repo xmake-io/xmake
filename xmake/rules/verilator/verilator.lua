@@ -24,7 +24,7 @@ import("core.base.hashset")
 import("core.project.depend")
 import("private.action.build.object", { alias = "build_objectfiles" })
 import("core.base.json")
-import("lib.detect.find_programver")
+import("lib.detect.find_tool")
 
 -- parse sourcefiles from cmakefile
 function _get_sourcefiles_from_cmake(target, cmakefile)
@@ -128,9 +128,8 @@ end
 --- @param verilator string verilator program path
 --- @return boolean support_json Whether support json
 --- @return string makefile_type Makefile type, json or cmake
----
 function _get_makefile_type(verilator)
-    local version = assert(find_programver(verilator), "verilator version is unknown!")
+    local version = assert(find_tool(verilator, {version = true}).version, "verilator version is unknown!")
     local support_json = version >= "5.036"
     local makefile_type = support_json and "json" or "cmake"
     return support_json, makefile_type
