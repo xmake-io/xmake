@@ -276,6 +276,9 @@ function _timer_loop(state)
             state.on_timer(indices)
         end
     end
+
+    -- we cannot post semaphore in a dead coroutine
+    state.timer_semaphore = nil
 end
 
 -- the refresh loop for multirow progress (independent timer with its own timeout)
@@ -297,6 +300,9 @@ function _progress_refresh_loop(state)
             progress.refresh()
         end
     end
+
+    -- we cannot post semaphore in a dead coroutine
+    state.progress_refresh_semaphore = nil
 end
 
 -- the waiting indicator loop
@@ -343,6 +349,9 @@ function _waiting_indicator_loop(state)
             waiting_indicator_helper:write()
         end
     end
+
+    -- we cannot post semaphore in a dead coroutine
+    state.waiting_indicator_semaphore = nil
 end
 
 -- consume jobs
