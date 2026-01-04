@@ -124,10 +124,6 @@ function _get_lanuage_flags(target)
     end
 end
 
---- @brief get makefile type
---- @param verilator string verilator program path
---- @return boolean support_json Whether support json
---- @return string makefile_type Makefile type, json or cmake
 function _get_makefile_type(verilator)
     local tool = assert(find_tool("verilator", { program = verilator, version = true }), "verilator not found!")
     local version = tool.version
@@ -233,7 +229,7 @@ endmodule]])
     local languages = target:get("languages")
     local cxxlang = false
     for _, lang in ipairs(languages) do
-        if lang:startswith("cxx") or lang:startswith("c++") then
+        if lang:find("xx", 1, true) or lang:find("++", 1, true) then
             cxxlang = true
             break
         end
