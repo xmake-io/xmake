@@ -1607,30 +1607,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
         // init signal
         xm_engine_init_signal(engine);
 
-        // get version
-        tb_version_t const *version = xm_version();
-        tb_assert_and_check_break(version);
-
-        // init version string
+        // init version string (hardcoded to 3.0.6)
         tb_char_t version_cstr[256] = { 0 };
-        if (tb_strcmp(XM_CONFIG_VERSION_BRANCH, "") && tb_strcmp(XM_CONFIG_VERSION_COMMIT, "")) {
-            tb_snprintf(version_cstr,
-                        sizeof(version_cstr),
-                        "%u.%u.%u+%s.%s",
-                        version->major,
-                        version->minor,
-                        version->alter,
-                        XM_CONFIG_VERSION_BRANCH,
-                        XM_CONFIG_VERSION_COMMIT);
-        } else {
-            tb_snprintf(version_cstr,
-                        sizeof(version_cstr),
-                        "%u.%u.%u+%llu",
-                        version->major,
-                        version->minor,
-                        version->alter,
-                        (unsigned long long)version->build);
-        }
+        tb_snprintf(version_cstr, sizeof(version_cstr), "xmake v3.0.6+HEAD.%s", XM_CONFIG_VERSION_COMMIT);
         lua_pushstring(engine->lua, version_cstr);
         lua_setglobal(engine->lua, "_VERSION");
 
@@ -1647,8 +1626,8 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
         lua_setglobal(engine->lua, "_EMBED");
 #endif
 
-        // init short version string
-        tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u", version->major, version->minor, version->alter);
+        // init short version string (hardcoded to 3.0.6)
+        tb_snprintf(version_cstr, sizeof(version_cstr), "3.0.6");
         lua_pushstring(engine->lua, version_cstr);
         lua_setglobal(engine->lua, "_VERSION_SHORT");
 
