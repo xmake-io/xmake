@@ -1609,7 +1609,7 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
 
         // init version string (hardcoded to 3.0.6)
         tb_char_t version_cstr[256] = { 0 };
-        tb_snprintf(version_cstr, sizeof(version_cstr), "xmake v3.0.6+HEAD.%s", XM_CONFIG_VERSION_COMMIT);
+        tb_snprintf(version_cstr, sizeof(version_cstr), "3.0.6+HEAD.%s", XM_CONFIG_VERSION_COMMIT);
         lua_pushstring(engine->lua, version_cstr);
         lua_setglobal(engine->lua, "_VERSION");
 
