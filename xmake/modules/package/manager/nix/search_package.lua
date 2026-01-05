@@ -14,7 +14,7 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      ruki
+-- @author      ZZBaron
 -- @file        search_package.lua
 --
 
