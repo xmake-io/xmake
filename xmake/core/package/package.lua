@@ -1110,10 +1110,18 @@ function _instance:_load()
     self._SOURCE_INITED = true
     local loaded = self._LOADED
     if not loaded then
+
+        -- load on_load script
         local on_load = self:script("load")
         if on_load then
             on_load(self)
         end
+        
+        -- load all components
+        self:_load_components()
+
+        -- load environments from the manifest to enable the environments of on_install()
+        self:_load_envs()
     end
 end
 
@@ -1195,13 +1203,20 @@ function _instance:envs()
 end
 
 -- load the package environments from the manifest
-function _instance:envs_load()
+function _instance:_load_envs()
     local manifest = self:manifest_load()
     if manifest then
         local envs = self:_rawenvs()
         for name, values in pairs(manifest.envs) do
             envs[name] = values
         end
+    end
+end
+
+-- load all components
+function _instance:_load_components()
+    for _, component_inst in pairs(self:components()) do
+        component_inst:_load()
     end
 end
 
