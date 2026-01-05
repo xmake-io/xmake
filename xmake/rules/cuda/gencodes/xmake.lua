@@ -136,7 +136,18 @@ rule("cuda.gencodes")
             if v_arch then
                 table.insert(r_archs, v_arch)
             else
-                v_arch = math.min(table.unpack(r_archs))
+                v_arch = r_archs[1]
+                local v_arch_ver = type(v_arch) == "string" and tonumber(v_arch:match("^(%d+)")) or v_arch
+                for i = 2, #r_archs do
+                    local r_arch = r_archs[i]
+                    local r_arch_ver = type(r_arch) == "string" and tonumber(r_arch:match("^(%d+)")) or r_arch
+                    if r_arch_ver < v_arch_ver then
+                        v_arch = r_arch
+                        v_arch_ver = r_arch_ver
+                    elseif r_arch_ver == v_arch_ver and type(r_arch) == "number" and type(v_arch) == "string" then
+                        v_arch = r_arch
+                    end
+                end
             end
             r_archs = table.unique(r_archs)
 
