@@ -2894,6 +2894,7 @@ function package.apis()
         ,   "package.set_cachedir"
         ,   "package.set_installdir"
         ,   "package.add_bindirs"
+        ,   "package.add_installschemes"
             -- package.add_xxx
         ,   "package.add_deps"
         ,   "package.add_urls"
