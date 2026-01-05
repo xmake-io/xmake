@@ -75,9 +75,20 @@ rule("cuda.gencodes")
                 if not value:startswith(prefix) then
                     return nil
                 end
-                local arch = tonumber(value:sub(#prefix + 1)) or tonumber(value:sub(#prefix + 2))
+                local arch_str = value:sub(#prefix + 1)
+                if arch_str:startswith("_") then
+                    arch_str = arch_str:sub(2)
+                end
+                local arch_ver, suffix = arch_str:match("^(%d+)([af]?)$")
+                local arch = tonumber(arch_ver)
                 if arch == nil then
                     raise("unknown architecture: " .. value)
+                end
+                if suffix == 'a' and arch < 90 then
+                    raise("unknown architecture: " .. prefix .. "_" .. arch .. suffix)
+                end
+                if suffix == 'f' and arch < 100 then
+                    raise("unknown architecture: " .. prefix .. "_" .. arch .. suffix)
                 end
                 if not know_list:has(arch) then
                     if arch <= table.maxn(know_list:data()) then
@@ -85,6 +96,9 @@ rule("cuda.gencodes")
                     else
                         utils.warning("unknown architecture: " .. prefix .. "_" .. arch)
                     end
+                end
+                if suffix and #suffix > 0 then
+                    return arch .. suffix
                 end
                 return arch
             end
