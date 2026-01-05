@@ -343,9 +343,6 @@ local function follow_propagated_inputs(store_paths, opt)
             
             if cached_props then
                 prop_paths = cached_props
-                if opt and (opt.verbose or option.get("verbose")) then
-                    print("Nix: Using cached propagated inputs for: " .. store_path)
-                end
             else
                 -- Read from filesystem
                 prop_paths = {}
@@ -1016,16 +1013,15 @@ local function select_best_version(packages, package_name, require_version, opt)
         if not require_version or require_version == "latest" then
             satisfies = true
         else
-            -- Use xmake's semver to check constraint satisfaction
-            local ok, result = pcall(function()
-                return semver.satisfies(pkg_version, require_version)
-            end)
-            if ok then
-                satisfies = result
-            else
-                -- If semver parsing fails, try exact match
-                satisfies = (pkg_version == require_version)
-            end
+            satisfies = try {
+                function()
+                    return semver.satisfies(pkg_version, require_version)
+                end,
+                catch = function()
+                    -- If semver parsing fails, try exact match
+                    return (pkg_version == require_version)
+                end
+            }
         end
         
         if satisfies then
@@ -1111,11 +1107,16 @@ function main(name, opt)
     local pkgconfig_result = find_with_pkgconfig(name, store_paths, opt)
     if pkgconfig_result then
         if require_version and pkgconfig_result.version then
-            local ok, satisfies = pcall(function()
+            local satisfies = try {
+                function()
                 return semver.satisfies(pkgconfig_result.version, require_version)
-            end)
+                end,
+                catch = function()
+                return false
+                end
+            }
             
-            if ok and satisfies then
+            if satisfies then
                 if opt and (opt.verbose or option.get("verbose")) then
                     print("Nix: Found package via pkg-config: " .. name .. " " .. pkgconfig_result.version)
                 end
