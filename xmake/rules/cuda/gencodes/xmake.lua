@@ -71,6 +71,11 @@ rule("cuda.gencodes")
             local v_arch = nil
             local r_archs = {}
 
+            -- full legal value list could be found in nvcc docs
+            -- https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#gpu-name-gpuname-arch
+            -- examples: sm_75, compute_75, sm_90a, compute_100, sm_100f, compute_100a, etc.
+            -- For robustness, xmake support a unoffical format: sm75, compute75, etc. New version still support it.
+            -- examples: sm75, compute75, sm90a, compute100, sm100f, compute100a, etc.
             local function parse_arch(value, prefix, know_list)
                 if not value:startswith(prefix) then
                     return nil
@@ -79,6 +84,8 @@ rule("cuda.gencodes")
                 if arch_str:startswith("_") then
                     arch_str = arch_str:sub(2)
                 end
+
+                -- a legal arch_str should be like: 75, 90a, 100f, etc.
                 local arch_ver, suffix = arch_str:match("^(%d+)([af]?)$")
                 local arch = tonumber(arch_ver)
                 if arch == nil then
