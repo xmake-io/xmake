@@ -2440,6 +2440,10 @@ function _instance:schemes()
         for _, name in ipairs(table.wrap(self:get("schemes"))) do
             schemes[name] = scheme.new(name, {package = self})
         end
+        -- add default scheme if no schemes are defined
+        if table.empty(schemes) then
+            schemes["__default__"] = scheme.new("__default__", {package = self})
+        end
         self._SCHEMES = schemes
     end
     return schemes

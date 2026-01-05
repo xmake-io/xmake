@@ -78,8 +78,8 @@ end
 -- get the extra configuration
 function _instance:extraconf(name, item, key)
     local conf = self._INFO:extraconf(name, item, key)
-    if conf == nil and self:base() then
-        conf = self:base():extraconf(name, item, key)
+    if conf == nil then
+        conf = self:package():extraconf(name, item, key)
     end
     return conf
 end

@@ -67,7 +67,11 @@ end
 
 -- get the scheme configuration
 function _instance:get(name)
-    return self._INFO:get(name)
+    local value = self._INFO:get(name)
+    if value == nil then
+        value = self:package():get(name)
+    end
+    return value
 end
 
 -- set the value to scheme info
@@ -83,8 +87,8 @@ end
 -- get the extra configuration
 function _instance:extraconf(name, item, key)
     local conf = self._INFO:extraconf(name, item, key)
-    if conf == nil and self:base() then
-        conf = self:base():extraconf(name, item, key)
+    if conf == nil then
+        conf = self:package():extraconf(name, item, key)
     end
     return conf
 end
