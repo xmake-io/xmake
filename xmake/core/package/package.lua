@@ -1120,6 +1120,9 @@ function _instance:_load()
         -- load all components
         self:_load_components()
 
+        -- load all schemes
+        self:_load_schemes()
+
         -- load environments from the manifest to enable the environments of on_install()
         self:_load_envs()
     end
@@ -1217,6 +1220,13 @@ end
 function _instance:_load_components()
     for _, component_inst in pairs(self:components()) do
         component_inst:_load()
+    end
+end
+
+-- load all schemes
+function _instance:_load_schemes()
+    for _, scheme_inst in pairs(self:schemes()) do
+        scheme_inst:_load()
     end
 end
 
