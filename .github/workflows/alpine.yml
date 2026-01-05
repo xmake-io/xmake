@@ -69,7 +69,7 @@ jobs:
       - name: Prepare build tools
         run: |
           uname -a
-          apk --no-cache add grep linux-headers bash curl git unzip build-base tar 7zip
+          apk --no-cache add grep linux-headers bash curl git unzip build-base tar 7zip perl
 
       - uses: actions/checkout@v2
         with:
