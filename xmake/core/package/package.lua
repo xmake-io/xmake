@@ -46,6 +46,7 @@ local policy         = require("project/policy")
 local platform       = require("platform/platform")
 local platform_menu  = require("platform/menu")
 local component      = require("package/component")
+local scheme         = require("package/scheme")
 local language       = require("language/language")
 local language_menu  = require("language/menu")
 local sandbox        = require("sandbox/sandbox")
@@ -2423,6 +2424,40 @@ function _instance:_sort_componentdeps(name)
     return orderdeps
 end
 
+-- get the given package scheme
+function _instance:scheme(name)
+    return self:schemes()[name]
+end
+
+-- get package schemes
+--
+-- .e.g. add_schemes("binary", "source")
+--
+function _instance:schemes()
+    local schemes = self._SCHEMES
+    if not schemes then
+        schemes = {}
+        for _, name in ipairs(table.wrap(self:get("schemes"))) do
+            schemes[name] = scheme.new(name, {package = self})
+        end
+        self._SCHEMES = schemes
+    end
+    return schemes
+end
+
+-- get package schemes list (ordered)
+function _instance:schemes_orderlist()
+    local schemes_orderlist = self._SCHEMES_ORDERLIST
+    if not schemes_orderlist then
+        schemes_orderlist = {}
+        for _, name in ipairs(table.wrap(self:get("schemes"))) do
+            table.insert(schemes_orderlist, self:scheme(name))
+        end
+        self._SCHEMES_ORDERLIST = schemes_orderlist
+    end
+    return schemes_orderlist
+end
+
 -- generate lto configs
 function _instance:_generate_lto_configs(sourcekind)
 
@@ -2894,7 +2929,7 @@ function package.apis()
         ,   "package.set_cachedir"
         ,   "package.set_installdir"
         ,   "package.add_bindirs"
-        ,   "package.add_installschemes"
+        ,   "package.add_schemes"
             -- package.add_xxx
         ,   "package.add_deps"
         ,   "package.add_urls"
