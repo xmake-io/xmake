@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.config")
+import("core.project.project")
 import("core.project.rule")
 import(".showlist")
 
@@ -27,10 +28,21 @@ import(".showlist")
 function main()
     config.load()
     local modes = {}
-    for _, r in pairs(rule.rules()) do
-        local rulename = r:name()
-        if rulename:startswith("mode.") then
-            table.insert(modes, rulename)
+
+    -- prioritize project modes
+    local project_modes = nil
+    if os.isfile(os.projectfile()) then
+        project_modes = project.modes()
+    end
+    if project_modes and #project_modes > 0 then
+        modes = project_modes
+    else
+        -- fallback to rule modes
+        for _, r in pairs(rule.rules()) do
+            local rulename = r:name()
+            if rulename:startswith("mode.") then
+                table.insert(modes, rulename:sub(6)) -- remove "mode." prefix
+            end
         end
     end
     showlist(modes)
