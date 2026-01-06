@@ -5,6 +5,7 @@ package("cmake")
     set_homepage("https://cmake.org")
     set_description("A cross-platform family of tools designed to build, test and package software")
 
+    local is_precompiled = true
     if is_host("macosx") then
         add_urls("https://cmake.org/files/v$(version).tar.gz", {version = function (version)
                 return table.concat(table.slice((version):split('%.'), 1, 2), '.') .. "/cmake-" .. version .. (version:ge("3.20") and "-macos-universal" or "-Darwin-x86_64")
@@ -60,11 +61,20 @@ package("cmake")
     else
         add_urls("https://github.com/Kitware/CMake/releases/download/v$(version)/cmake-$(version).tar.gz")
         add_versions("4.2.1",  "414aacfac54ba0e78e64a018720b64ed6bfca14b587047b8b3489f407a14a070")
+        is_precompiled = false
+    end
+
+    if is_precompiled then
+        add_schemes("source")
+        on_scheme("source", function (package, scheme)
+            scheme:add("urls", "https://github.com/Kitware/CMake/releases/download/v$(version)/cmake-$(version).tar.gz")
+            scheme:add("versions", "4.2.1",  "414aacfac54ba0e78e64a018720b64ed6bfca14b587047b8b3489f407a14a070")
+        end)
     end
 
     on_install("@linux", "@windows", "@msys", "@cygwin", "@macosx", function (package)
-        local is_default = false
-        if is_default then
+        local scheme = package:current_scheme()
+        if scheme:is_default() then
             raise("trigger failure when installing binaries, then we will fallback to install it from source tarball.")
         else
             import("core.base.option")

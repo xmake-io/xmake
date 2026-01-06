@@ -2451,7 +2451,27 @@ end
 
 -- get the given package scheme
 function _instance:scheme(name)
-    return self:schemes()[name]
+    if not name then
+        os.raise("scheme name is required")
+    end
+    local scheme = self:schemes()[name]
+    if not scheme then
+        os.raise("scheme %s not found", name)
+    end
+    return scheme
+end
+
+-- set current scheme
+function _instance:current_scheme_set(scheme)
+    self._CURRENT_SCHEME = scheme
+end
+
+-- get current scheme
+function _instance:current_scheme()
+    if self._CURRENT_SCHEME then
+        return self._CURRENT_SCHEME
+    end
+    return self:scheme("__default__")
 end
 
 -- get package schemes
