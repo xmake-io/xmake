@@ -71,13 +71,31 @@ rule("cuda.gencodes")
             local v_arch = nil
             local r_archs = {}
 
+            -- full legal value list could be found in nvcc docs
+            -- https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#gpu-name-gpuname-arch
+            -- examples: sm_75, compute_75, sm_90a, compute_100, sm_100f, compute_100a, etc.
+            -- For robustness, xmake support a unoffical format: sm75, compute75, etc. New version still support it.
+            -- examples: sm75, compute75, sm90a, compute100, sm100f, compute100a, etc.
             local function parse_arch(value, prefix, know_list)
                 if not value:startswith(prefix) then
                     return nil
                 end
-                local arch = tonumber(value:sub(#prefix + 1)) or tonumber(value:sub(#prefix + 2))
+                local arch_str = value:sub(#prefix + 1)
+                if arch_str:startswith("_") then
+                    arch_str = arch_str:sub(2)
+                end
+
+                -- a legal arch_str should be like: 75, 90a, 100f, etc.
+                local arch_ver, suffix = arch_str:match("^(%d+)([af]?)$")
+                local arch = tonumber(arch_ver)
                 if arch == nil then
                     raise("unknown architecture: " .. value)
+                end
+                if suffix == 'a' and arch < 90 then
+                    raise("unknown architecture: " .. prefix .. "_" .. arch .. suffix)
+                end
+                if suffix == 'f' and arch < 100 then
+                    raise("unknown architecture: " .. prefix .. "_" .. arch .. suffix)
                 end
                 if not know_list:has(arch) then
                     if arch <= table.maxn(know_list:data()) then
@@ -85,6 +103,9 @@ rule("cuda.gencodes")
                     else
                         utils.warning("unknown architecture: " .. prefix .. "_" .. arch)
                     end
+                end
+                if suffix and #suffix > 0 then
+                    return arch .. suffix
                 end
                 return arch
             end
@@ -122,7 +143,18 @@ rule("cuda.gencodes")
             if v_arch then
                 table.insert(r_archs, v_arch)
             else
-                v_arch = math.min(table.unpack(r_archs))
+                v_arch = r_archs[1]
+                local v_arch_ver = type(v_arch) == "string" and tonumber(v_arch:match("^(%d+)")) or v_arch
+                for i = 2, #r_archs do
+                    local r_arch = r_archs[i]
+                    local r_arch_ver = type(r_arch) == "string" and tonumber(r_arch:match("^(%d+)")) or r_arch
+                    if r_arch_ver < v_arch_ver then
+                        v_arch = r_arch
+                        v_arch_ver = r_arch_ver
+                    elseif r_arch_ver == v_arch_ver and type(r_arch) == "number" and type(v_arch) == "string" then
+                        v_arch = r_arch
+                    end
+                end
             end
             r_archs = table.unique(r_archs)
 
