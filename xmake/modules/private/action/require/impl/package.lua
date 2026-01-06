@@ -1025,14 +1025,6 @@ function _load_package(packagename, requireinfo, opt)
     -- do load
     package:_load()
 
-    -- load all components
-    for _, component in pairs(package:components()) do
-        component:_load()
-    end
-
-    -- load environments from the manifest to enable the environments of on_install()
-    package:envs_load()
-
     -- check api
     check_api(package, {load = true})
 
