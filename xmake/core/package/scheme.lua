@@ -90,34 +90,6 @@ function _instance:extraconf_set(name, item, key, value)
     return self._INFO:extraconf_set(name, item, key, value)
 end
 
--- get on_scheme script
-function _instance:_on_scheme()
-    local script = self:package():get("scheme")
-    local result = nil
-    if type(script) == "function" then
-        result = script
-    elseif type(script) == "table" then
-        result = script[self:name()]
-        result = result or script["__generic__"]
-    end
-    return result
-end
-
--- load this scheme
-function _instance:_load()
-    local loaded = self._LOADED
-    if not loaded then
-        local script = self:_on_scheme()
-        if script then
-            local ok, errors = sandbox.load(script, self:package(), self)
-            if not ok then
-                os.raise("load scheme(%s) failed, %s", self:name(), errors or "unknown errors")
-            end
-        end
-        self._LOADED = true
-    end
-end
-
 -- interpreter
 function scheme._interpreter()
     local interp = scheme._INTERPRETER
