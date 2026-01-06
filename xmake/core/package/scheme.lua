@@ -60,6 +60,11 @@ function _instance:type()
     return "scheme"
 end
 
+-- is default scheme?
+function _instance:is_default()
+    return self:name() == "__default__"
+end
+
 -- get the it's package
 function _instance:package()
     return self._PACKAGE
@@ -68,7 +73,7 @@ end
 -- get the scheme configuration
 function _instance:get(name)
     local value = self._INFO:get(name)
-    if value == nil then
+    if value == nil and self:is_default() then
         value = self:package():get(name)
     end
     return value
@@ -87,7 +92,7 @@ end
 -- get the extra configuration
 function _instance:extraconf(name, item, key)
     local conf = self._INFO:extraconf(name, item, key)
-    if conf == nil then
+    if conf == nil and self:is_default() then
         conf = self:package():extraconf(name, item, key)
     end
     return conf

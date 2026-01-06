@@ -2462,12 +2462,9 @@ function _instance:schemes()
     local schemes = self._SCHEMES
     if not schemes then
         schemes = {}
+        schemes["__default__"] = scheme.new("__default__", {package = self})
         for _, name in ipairs(table.wrap(self:get("schemes"))) do
             schemes[name] = scheme.new(name, {package = self})
-        end
-        -- add default scheme if no schemes are defined
-        if table.empty(schemes) then
-            schemes["__default__"] = scheme.new("__default__", {package = self})
         end
         self._SCHEMES = schemes
     end
@@ -2479,6 +2476,8 @@ function _instance:schemes_orderlist()
     local schemes_orderlist = self._SCHEMES_ORDERLIST
     if not schemes_orderlist then
         schemes_orderlist = {}
+        -- always add default scheme first
+        table.insert(schemes_orderlist, self:scheme("__default__"))
         for _, name in ipairs(table.wrap(self:get("schemes"))) do
             table.insert(schemes_orderlist, self:scheme(name))
         end
