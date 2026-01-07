@@ -2490,6 +2490,7 @@ function _instance:schemes_orderlist()
             table.insert(schemes_orderlist, scheme.new(name, {package = self}))
         end
         self._SCHEMES_ORDERLIST = schemes_orderlist
+        self._CURRENT_SCHEME = schemes_orderlist[1]
     end
     return schemes_orderlist
 end
