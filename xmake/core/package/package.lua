@@ -2458,10 +2458,7 @@ end
 
 -- get current scheme
 function _instance:current_scheme()
-    if self._CURRENT_SCHEME then
-        return self._CURRENT_SCHEME
-    end
-    return self:scheme("__default__")
+    return self._CURRENT_SCHEME
 end
 
 -- get package schemes
@@ -2472,8 +2469,8 @@ function _instance:schemes()
     local schemes = self._SCHEMES
     if not schemes then
         schemes = {}
-        for _, name in ipairs(table.wrap(self:get("schemes"))) do
-            schemes[name] = scheme.new(name, {package = self})
+        for _, scheme in ipairs(self:schemes_orderlist()) do
+            schemes[scheme:name()] = scheme
         end
         self._SCHEMES = schemes
     end
@@ -2485,8 +2482,12 @@ function _instance:schemes_orderlist()
     local schemes_orderlist = self._SCHEMES_ORDERLIST
     if not schemes_orderlist then
         schemes_orderlist = {}
-        for _, name in ipairs(table.wrap(self:get("schemes"))) do
-            table.insert(schemes_orderlist, self:scheme(name))
+        local scheme_names = table.wrap(self:get("schemes"))
+        if #scheme_names == 0 then
+            scheme_names = {"__default__"}
+        end
+        for _, name in ipairs(scheme_names) do
+            table.insert(schemes_orderlist, scheme.new(name, {package = self}))
         end
         self._SCHEMES_ORDERLIST = schemes_orderlist
     end
