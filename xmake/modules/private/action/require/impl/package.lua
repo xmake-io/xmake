@@ -342,20 +342,8 @@ function _add_package_configurations(package)
     package:add("configs", "shflags", {builtin = true, description = "Set the shared library linker flags."})
 end
 
--- select package version
-function _select_package_version(package, requireinfo, locked_requireinfo)
-
-    -- get it from the locked requireinfo
-    if locked_requireinfo then
-        local version = locked_requireinfo.version
-        local source = "version"
-        if locked_requireinfo.branch then
-            source = "branch"
-        elseif locked_requireinfo.tag then
-            source = "tag"
-        end
-        return version, source
-    end
+-- select version from package or scheme
+function _select_version_from(package, requireinfo)
 
     -- has git url?
     local has_giturl = false
@@ -397,6 +385,44 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         version = "latest"
         source = "version"
     end
+    return version, source
+end
+
+-- select package version
+function _select_package_version(package, requireinfo, locked_requireinfo)
+
+    -- get it from the locked requireinfo
+    if locked_requireinfo then
+        local version = locked_requireinfo.version
+        local source = "version"
+        if locked_requireinfo.branch then
+            source = "branch"
+        elseif locked_requireinfo.tag then
+            source = "tag"
+        end
+        return version, source
+    end
+
+    -- select version from package or schemes
+    local version, source
+    local schemes = package:schemes_orderlist()
+    if schemes then
+        for _, scheme in ipairs(schemes) do
+            local scheme_version, scheme_source = _select_version_from(scheme, requireinfo)
+            if scheme_version then
+                scheme:version_set(scheme_version, scheme_source)
+                if version then
+                    assert(scheme_version == version, "package(%s): the version lists of schemes are mismatch.")
+                else
+                    version = scheme_version
+                    source = scheme_source
+                end
+            end
+        end
+    else
+        version, source = _select_version_from(package, requireinfo)
+    end
+
     if not version and not package:is_thirdparty() and is_system ~= true then
         raise("package(%s): version(%s) not found!", package:name(), require_version)
     end
