@@ -253,7 +253,7 @@ local function extract_package_info_from_path(store_path, opt)
 end
 
 -- package info data
-local package_info = object {_init = {"package_name"}}
+local package_info = object {_init = {"name", "version"}}
 
 function package_info:new(name, version)
     self._name = name
@@ -266,7 +266,7 @@ function package_info:new(name, version)
     self._store_paths = {}
     self._outputs = {}
     self._pkgconfig_available = false
-    return package_info {self, name}
+    return package_info {self, name, version}
 end
 
 function package_info:add_store_path(p, output_name)
@@ -688,7 +688,7 @@ local function group_paths_by_version(store_paths, package_name, opt)
         if not store_path or store_path == "" then goto continue end
         
         -- Extract package info
-        local parsed_name, parsed_version = extract_package_info_from_path(store_path, opt)
+        local parsed_name, parsed_version, output_paths, current_output = extract_package_info_from_path(store_path, opt)
         
         if not parsed_name then
             goto continue
@@ -713,7 +713,11 @@ local function group_paths_by_version(store_paths, package_name, opt)
             }
         end
         
-        table.insert(version_groups[version_key].paths, store_path)
+        table.insert(version_groups[version_key].paths, {
+            path = store_path,
+            outputs = output_paths,
+            current_output = current_output
+        })
         
         ::continue::
     end
@@ -785,72 +789,71 @@ local function extract_package_info(store_paths, package_name, opt)
         local pkg_version = version_data.version
         local pkg = package_info:new(pkg_name, pkg_version)
         
-        -- Process all store paths for THIS version only
-        for _, store_path in ipairs(version_data.paths) do
-            local parsed_name, parsed_version, output_paths, current_output = 
-                extract_package_info_from_path(store_path, opt)
+        -- Process all store paths for this version only
+        for _, path_data in ipairs(version_data.paths) do
+            local store_path = path_data.path
+            local output_paths = path_data.outputs
+            local current_output = path_data.current_output
+            
+            pkg:add_store_path(store_path, current_output)
+            
+            -- Add all output paths to the package
+            if output_paths then
+                for output_name, output_path in pairs(output_paths) do
+                    pkg._outputs[output_name] = output_path
+                end
+            end
 
-            if parsed_name then
-                pkg:add_store_path(store_path, current_output)
-                
-                -- Add all output paths to the package
-                if output_paths then
-                    for output_name, output_path in pairs(output_paths) do
-                        pkg._outputs[output_name] = output_path
+            -- include directories (and their subdirs)
+            local includedir = path.join(store_path, "include")
+            if os.isdir(includedir) then
+                pkg:add_includedir(includedir)
+                local subdirs = try { function() return os.dirs(path.join(includedir, "*")) end } or {}
+                for _, subdir in ipairs(subdirs) do
+                    if os.isdir(subdir) then
+                        pkg:add_includedir(subdir)
                     end
                 end
+            end
 
-                -- include directories (and their subdirs)
-                local includedir = path.join(store_path, "include")
-                if os.isdir(includedir) then
-                    pkg:add_includedir(includedir)
-                    local subdirs = try { function() return os.dirs(path.join(includedir, "*")) end } or {}
-                    for _, subdir in ipairs(subdirs) do
-                        if os.isdir(subdir) then
-                            pkg:add_includedir(subdir)
+            -- bin
+            local bindir = path.join(store_path, "bin")
+            if os.isdir(bindir) then
+                pkg:add_bindir(bindir)
+            end
+
+            -- lib and libs
+            local libdir = path.join(store_path, "lib")
+            if os.isdir(libdir) then
+                local libfiles = try { function()
+                    local files = {}
+                    local patterns = {"*.so*", "*.a", "*.dylib*"}
+                    for _, pattern in ipairs(patterns) do
+                        for _, f in ipairs(os.files(path.join(libdir, pattern)) or {}) do
+                            table.insert(files, f)
                         end
                     end
-                end
+                    return files
+                end } or {}
 
-                -- bin
-                local bindir = path.join(store_path, "bin")
-                if os.isdir(bindir) then
-                    pkg:add_bindir(bindir)
-                end
-
-                -- lib and libs
-                local libdir = path.join(store_path, "lib")
-                if os.isdir(libdir) then
-                    local libfiles = try { function()
-                        local files = {}
-                        local patterns = {"*.so*", "*.a", "*.dylib*"}
-                        for _, pattern in ipairs(patterns) do
-                            for _, f in ipairs(os.files(path.join(libdir, pattern)) or {}) do
-                                table.insert(files, f)
-                            end
+                if #libfiles > 0 then
+                    pkg:add_linkdir(libdir)
+                    for _, libfile in ipairs(libfiles) do
+                        local filename = path.filename(libfile)
+                        local linkname = filename:match("^lib(.+)%.so") or
+                                         filename:match("^lib(.+)%.a") or
+                                         filename:match("^lib(.+)%.dylib")
+                        if linkname then
+                            pkg:add_link(linkname)
+                            pkg:add_libfile(libfile)
                         end
-                        return files
-                    end } or {}
-
-                    if #libfiles > 0 then
+                    end
+                else
+                    -- if no libs, see if cmake/pkgconfig dirs exist and add linkdir
+                    local has_cmake = os.isdir(path.join(libdir, "cmake"))
+                    local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
+                    if has_cmake or has_pkgconfig then
                         pkg:add_linkdir(libdir)
-                        for _, libfile in ipairs(libfiles) do
-                            local filename = path.filename(libfile)
-                            local linkname = filename:match("^lib(.+)%.so") or
-                                             filename:match("^lib(.+)%.a") or
-                                             filename:match("^lib(.+)%.dylib")
-                            if linkname then
-                                pkg:add_link(linkname)
-                                pkg:add_libfile(libfile)
-                            end
-                        end
-                    else
-                        -- if no libs, see if cmake/pkgconfig dirs exist and add linkdir
-                        local has_cmake = os.isdir(path.join(libdir, "cmake"))
-                        local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
-                        if has_cmake or has_pkgconfig then
-                            pkg:add_linkdir(libdir)
-                        end
                     end
                 end
             end
@@ -949,77 +952,11 @@ local function find_all_with_pkgconfig(package_name, store_paths, opt)
     return all_results
 end
 
-local function select_best_pkgconfig_version(results, package_name, require_version, opt)
-    if not results or #results == 0 then
-        return nil
-    end
-    
-    -- If only one result, return it
-    if #results == 1 then
-        return results[1]
-    end
-    
-    local best_match = nil
-    local best_version = nil
-    
-    for _, result in ipairs(results) do
-        local pkg_version = result.version
-        
-        if not pkg_version then
-            -- No version info, use as fallback
-            if not best_match then
-                best_match = result
-            end
-            goto continue
-        end
-        
-        -- Check if version satisfies constraints
-        local satisfies = false
-        if not require_version or require_version == "latest" then
-            satisfies = true
-        else
-            satisfies = try {
-                function()
-                    return semver.satisfies(pkg_version, require_version)
-                end,
-                catch = function()
-                    -- If semver parsing fails, try exact match
-                    return (pkg_version == require_version)
-                end
-            }
-        end
-        
-        if satisfies then
-            -- Select highest version among satisfying candidates
-            if not best_version then
-                best_match = result
-                best_version = semver.new(pkg_version)
-            else
-                local current_ver = semver.new(pkg_version)
-                if current_ver:gt(best_version) then
-                    best_match = result
-                    best_version = current_ver
-                end
-            end
-        end
-        
-        ::continue::
-    end
-    
-    if best_match and opt and (opt.verbose or option.get("verbose")) then
-        local ver = best_match.version or "unknown"
-        local constraint_msg = (require_version and require_version ~= "") and (" matching constraint: " .. require_version) or ""
-        print("Nix: Selected pkg-config version: " .. package_name .. " " .. ver .. constraint_msg)
-    end
-    
-    return best_match
-end
-
 local function select_best_version(packages, package_name, require_version, opt)
+    -- Collect all versions of the target package
     local candidates = {}
     local name_lower = package_name:lower()
     
-    -- Collect all versions of the target package
     for version_key, pkg_data in pairs(packages) do
         local pkg_name = pkg_data.name or ""
         if pkg_name:lower() == name_lower then
@@ -1027,7 +964,8 @@ local function select_best_version(packages, package_name, require_version, opt)
         end
     end
     
-    if #candidates == 0 then
+    -- Handle empty candidates
+    if not candidates or #candidates == 0 then
         if opt and (opt.verbose or option.get("verbose")) then
             print("Nix: No versions found for package: " .. package_name)
         end
@@ -1043,7 +981,7 @@ local function select_best_version(packages, package_name, require_version, opt)
         return candidates[1]
     end
     
-    -- Multiple versions - need to select best one
+    -- Multiple candidates - select best one
     local best_match = nil
     local best_version = nil
     
@@ -1075,31 +1013,46 @@ local function select_best_version(packages, package_name, require_version, opt)
         end
         
         if satisfies then
+            -- Try to parse version for comparison
+            local current_ver = try {
+                function()
+                    return semver.new(pkg_version)
+                end,
+                catch = function()
+                    return nil
+                end
+            }
+            
             -- Select highest version among satisfying candidates
             if not best_version then
                 best_match = candidate
-                best_version = semver.new(pkg_version)
-            else
-                local current_ver = semver.new(pkg_version)
+                best_version = current_ver
+            elseif current_ver and best_version then
+                -- Both versions are valid semver, compare them
                 if current_ver:gt(best_version) then
                     best_match = candidate
                     best_version = current_ver
                 end
+            elseif current_ver and not best_version then
+                -- Current has valid semver but previous didn't, prefer current
+                best_match = candidate
+                best_version = current_ver
             end
         end
         
         ::continue::
     end
     
-    if best_match then
-        if opt and (opt.verbose or option.get("verbose")) then
+    -- Log results if verbose
+    if opt and (opt.verbose or option.get("verbose")) then
+        if best_match then
             local ver = best_match.version or "unknown"
-            local constraint_msg = (require_version and require_version ~= "") and (" matching constraint: " .. require_version) or ""
+            local constraint_msg = (require_version and require_version ~= "") 
+                and (" matching constraint: " .. require_version) or ""
             print("Nix: Selected version: " .. package_name .. " " .. ver .. constraint_msg)
-        end
-    else
-        if opt and (opt.verbose or option.get("verbose")) then
-            local constraint_msg = (require_version and require_version ~= "") and (" matching constraint: " .. require_version) or ""
+        else
+            local constraint_msg = (require_version and require_version ~= "") 
+                and (" matching constraint: " .. require_version) or ""
             print("Nix: No version found for: " .. package_name .. constraint_msg)
         end
     end
@@ -1160,7 +1113,7 @@ function main(name, opt)
     end
 
     local pkgconfig_results = find_all_with_pkgconfig(name, store_paths, opt)
-    local pkgconfig_result = select_best_pkgconfig_version(pkgconfig_results, name, require_version, opt)
+    local pkgconfig_result =  select_best_version(pkgconfig_results, name, require_version, opt)
     
     -- Decide which result to use - prefer whichever has the highest version
     local use_pkgconfig = false
@@ -1208,7 +1161,7 @@ function main(name, opt)
     end
     
     local result = {
-        name = found_package.name or name,
+        name = found_package.name,
         version = found_package.version
     }
     
