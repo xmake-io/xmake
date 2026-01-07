@@ -115,6 +115,51 @@ function _instance:urls()
     return urls
 end
 
+-- set urls
+function _instance:urls_set(urls)
+    self._URLS = urls
+end
+
+-- get the alias of url, @note need raw url
+function _instance:url_alias(url)
+    return self:extraconf("urls", url, "alias")
+end
+
+-- get the version filter of url, @note need raw url
+function _instance:url_version(url)
+    return self:extraconf("urls", url, "version")
+end
+
+-- get the excludes paths of url
+-- @note it supports the path pattern, but it only supports for archiver.
+function _instance:url_excludes(url)
+    return self:extraconf("urls", url, "excludes")
+end
+
+-- get the includes paths of url
+-- @note it does not support the path pattern, and it only supports for git url now.
+-- @see https://github.com/xmake-io/xmake/issues/6071
+function _instance:url_includes(url)
+    return self:extraconf("urls", url, "includes")
+end
+
+-- get the http headers of url, @note need raw url
+function _instance:url_http_headers(url)
+    return self:extraconf("urls", url, "http_headers")
+end
+
+-- get the script directory
+function _instance:scriptdir()
+    local scriptdir = self._SCRIPTDIR
+    if not scriptdir then
+        if self:package() then
+            scriptdir = self:package():scriptdir()
+        end
+        self._SCRIPTDIR = scriptdir
+    end
+    return scriptdir
+end
+
 -- get versions
 function _instance:versions()
     if self._VERSIONS == nil then
@@ -144,8 +189,8 @@ function _instance:_versions_list()
                 if not path.is_absolute(versionfile) then
                     local subpath = versionfile
                     versionfile = path.join(self:scriptdir(), subpath)
-                    if not os.isfile(versionfile) and self:package() then
-                        versionfile = path.join(self:package():scriptdir(), subpath)
+                    if not os.isfile(versionfile) and self:package() and self:package():base() then
+                        versionfile = path.join(self:package():base():scriptdir(), subpath)
                     end
                 end
                 if os.isfile(versionfile) then
@@ -166,6 +211,11 @@ function _instance:_versions_list()
     return self._VERSIONS_LIST
 end
 
+-- get version
+function _instance:version()
+    return self._VERSION
+end
+
 -- get version string
 function _instance:version_str()
     return self._VERSION_STR
@@ -173,14 +223,28 @@ end
 
 -- set version
 function _instance:version_set(version, source)
-    self._VERSION_STR = version
-    self._VERSION_SOURCE = source
+
+    -- save the semver version
+    local sv = semver.new(version)
+    if sv then
+        self._VERSION = sv
+    end
+
+    -- save branch and tag
     if source == "branch" then
         self._BRANCH = version
     elseif source == "tag" then
         self._TAG = version
     elseif source == "commit" then
         self._COMMIT = version
+    end
+
+    -- save version string
+    if source == "commit" then
+        -- we strip it to avoid long paths
+        self._VERSION_STR = version:sub(1, 8)
+    else
+        self._VERSION_STR = version
     end
 end
 
@@ -202,6 +266,34 @@ end
 -- is git ref?
 function _instance:gitref()
     return self:branch() or self:tag() or self:commit()
+end
+
+-- get hash of the source package for the url_alias@version_str
+function _instance:sourcehash(url_alias)
+    local versions    = self:_versions_list()
+    local version_str = self:version_str()
+    if versions and version_str then
+        local sourcehash = nil
+        if url_alias then
+            sourcehash = versions[url_alias .. ":" ..version_str]
+        end
+        if not sourcehash then
+            sourcehash = versions[version_str]
+        end
+        if sourcehash and #sourcehash == 40 then
+            sourcehash = sourcehash:lower()
+        end
+        return sourcehash
+    end
+end
+
+-- get revision(commit, tag, branch) of the url_alias@version_str, only for git url
+function _instance:revision(url_alias)
+    local revision = self:sourcehash(url_alias)
+    if revision and #revision <= 40 then
+        -- it will be sha256 of tar/gz file, not commit number if longer than 40 characters
+        return revision
+    end
 end
 
 -- interpreter

@@ -327,47 +327,40 @@ end
 
 -- get urls
 function _instance:urls()
-    local urls = self._URLS
-    if urls == nil then
-        urls = table.wrap(self:get("urls"))
-        if #urls == 1 and urls[1] == "" then
-            urls = {}
-        end
-    end
-    return urls
+    return self:current_scheme():urls()
 end
 
 -- get urls
 function _instance:urls_set(urls)
-    self._URLS = urls
+    self:current_scheme():urls_set(urls)
 end
 
 -- get the alias of url, @note need raw url
 function _instance:url_alias(url)
-    return self:extraconf("urls", url, "alias")
+    return self:current_scheme():url_alias(url)
 end
 
 -- get the version filter of url, @note need raw url
 function _instance:url_version(url)
-    return self:extraconf("urls", url, "version")
+    return self:current_scheme():url_version(url)
 end
 
 -- get the excludes paths of url
 -- @note it supports the path pattern, but it only supports for archiver.
 function _instance:url_excludes(url)
-    return self:extraconf("urls", url, "excludes")
+    return self:current_scheme():url_excludes(url)
 end
 
 -- get the includes paths of url
 -- @note it does not support the path pattern, and it only supports for git url now.
 -- @see https://github.com/xmake-io/xmake/issues/6071
 function _instance:url_includes(url)
-    return self:extraconf("urls", url, "includes")
+    return self:current_scheme():url_includes(url)
 end
 
 -- get the http headers of url, @note need raw url
 function _instance:url_http_headers(url)
-    return self:extraconf("urls", url, "http_headers")
+    return self:current_scheme():url_http_headers(url)
 end
 
 -- set artifacts info
@@ -546,30 +539,12 @@ end
 
 -- get hash of the source package for the url_alias@version_str
 function _instance:sourcehash(url_alias)
-    local versions    = self:_versions_list()
-    local version_str = self:version_str()
-    if versions and version_str then
-        local sourcehash = nil
-        if url_alias then
-            sourcehash = versions[url_alias .. ":" ..version_str]
-        end
-        if not sourcehash then
-            sourcehash = versions[version_str]
-        end
-        if sourcehash and #sourcehash == 40 then
-            sourcehash = sourcehash:lower()
-        end
-        return sourcehash
-    end
+    return self:current_scheme():sourcehash(url_alias)
 end
 
 -- get revision(commit, tag, branch) of the url_alias@version_str, only for git url
 function _instance:revision(url_alias)
-    local revision = self:sourcehash(url_alias)
-    if revision and #revision <= 40 then
-        -- it will be sha256 of tar/gz file, not commit number if longer than 40 characters
-        return revision
-    end
+    return self:current_scheme():revision(url_alias)
 end
 
 -- get the package policy
@@ -1485,58 +1460,17 @@ end
 
 -- get versions list
 function _instance:_versions_list()
-    if self._VERSIONS_LIST == nil then
-        local versions = table.wrap(self:get("versions"))
-        local versionfiles = self:get("versionfiles")
-        if versionfiles then
-            for _, versionfile in ipairs(table.wrap(versionfiles)) do
-                if not path.is_absolute(versionfile) then
-                    local subpath = versionfile
-                    versionfile = path.join(self:scriptdir(), subpath)
-                    if not os.isfile(versionfile) and self:base() then
-                        versionfile = path.join(self:base():scriptdir(), subpath)
-                    end
-                end
-                if os.isfile(versionfile) then
-                    local list = io.readfile(versionfile)
-                    for _, line in ipairs(list:split("\n")) do
-                        local splitinfo = line:split("%s+")
-                        if #splitinfo == 2 then
-                            local version = splitinfo[1]
-                            local shasum = splitinfo[2]
-                            versions[version] = shasum
-                        end
-                    end
-                end
-            end
-        end
-        self._VERSIONS_LIST = versions
-    end
-    return self._VERSIONS_LIST
+    return self:current_scheme():_versions_list()
 end
 
 -- get versions
 function _instance:versions()
-    if self._VERSIONS == nil then
-        -- we need to sort the build number in semver list
-        -- https://github.com/xmake-io/xmake/issues/6953
-        local versions = {}
-        for version, _ in table.orderpairs(self:_versions_list()) do
-            -- remove the url alias prefix if exists
-            local pos = version:find(':', 1, true)
-            if pos then
-                version = version:sub(pos + 1, -1)
-            end
-            table.insert(versions, version)
-        end
-        self._VERSIONS = table.unique(versions)
-    end
-    return self._VERSIONS
+    return self:current_scheme():versions()
 end
 
 -- get the version
 function _instance:version()
-    return self._VERSION
+    return self:current_scheme():version()
 end
 
 -- get the version string
@@ -1547,54 +1481,32 @@ function _instance:version_str()
             return requireinfo.version
         end
     end
-    return self._VERSION_STR
+    return self:current_scheme():version_str()
 end
 
 -- set the version, source: branch, tag, version
 function _instance:version_set(version, source)
-
-    -- save the semver version
-    local sv = semver.new(version)
-    if sv then
-        self._VERSION = sv
-    end
-
-    -- save branch and tag
-    if source == "branch" then
-        self._BRANCH = version
-    elseif source == "tag" then
-        self._TAG = version
-    elseif source == "commit" then
-        self._COMMIT = version
-    end
-
-    -- save version string
-    if source == "commit" then
-        -- we strip it to avoid long paths
-        self._VERSION_STR = version:sub(1, 8)
-    else
-        self._VERSION_STR = version
-    end
+    self:current_scheme():version_set(version, source)
 end
 
 -- get branch version
 function _instance:branch()
-    return self._BRANCH
+    return self:current_scheme():branch()
 end
 
 -- get tag version
 function _instance:tag()
-    return self._TAG
+    return self:current_scheme():tag()
 end
 
 -- get commit version
 function _instance:commit()
-    return self._COMMIT
+    return self:current_scheme():commit()
 end
 
 -- is git ref?
 function _instance:gitref()
-    return self:branch() or self:tag() or self:commit()
+    return self:current_scheme():gitref()
 end
 
 -- get the require info
