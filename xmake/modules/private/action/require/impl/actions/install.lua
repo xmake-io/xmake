@@ -555,8 +555,11 @@ function main(package)
                 end
                 os.tryrm(installdir)
 
-                -- is precompiled package? we can fallback to source package and try reinstall it again
-                if package:is_precompiled() then
+                -- is not last scheme? we can fallback to next scheme and try reinstall it again
+                local current_scheme = package:current_scheme()
+                local schemes_orderlist = package:schemes_orderlist()
+                local last_scheme = schemes_orderlist[#schemes_orderlist]
+                if current_scheme ~= last_scheme then
                     ok = false
                 else
                     -- failed
