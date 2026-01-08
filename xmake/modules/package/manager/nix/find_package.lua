@@ -14,11 +14,11 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      ruki
+-- @author      ZZBaron
 -- @file        find_package.lua
 --
 
--- imports
+--imports
 import("core.base.option")
 import("lib.detect.find_tool")
 import("private.core.base.is_cross")
@@ -27,6 +27,7 @@ import("core.cache.globalcache")
 import("core.cache.memcache")
 import("core.base.json")
 import("core.base.object")
+import("core.base.semver")
 
 -- cache keys
 local STORE_PATHS_CACHE = "nix_store_paths"
@@ -88,6 +89,7 @@ local function extract_package_info_from_path(store_path, opt)
         if opt and (opt.verbose or option.get("verbose")) then
             print("Nix: Using session cached derivation info for: " .. store_path)
         end
+
         return cached.name, cached.version, cached.outputs, cached.current_output
     end
     
@@ -96,6 +98,7 @@ local function extract_package_info_from_path(store_path, opt)
         if opt and (opt.verbose or option.get("verbose")) then
             print("Nix: Using persistent cached derivation info for: " .. store_path)
         end
+
         memory_cache:set2(DERIVATION_CACHE, store_path, cached)
         return cached.name, cached.version, cached.outputs, cached.current_output
     end
@@ -109,7 +112,9 @@ local function extract_package_info_from_path(store_path, opt)
             local missing = {}
             if not nix_store then table.insert(missing, "nix-store") end
             if not nix then table.insert(missing, "nix") end
-            wprint("Nix: Required tools not found: " .. table.concat(missing, ", "))
+            if opt and (opt.verbose or option.get("verbose")) then
+                print("Nix: Required tools not found: " .. table.concat(missing, ", "))
+            end
         end
         return nil
     end
@@ -193,10 +198,8 @@ local function extract_package_info_from_path(store_path, opt)
         break
     end
     
-    if not drv_info then
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: No derivation info found in JSON")
-        end
+    if not drv_info and opt and (opt.verbose or option.get("verbose")) then
+        print("Nix: No derivation info found in JSON")
     end
     
     -- Extract package information
@@ -246,15 +249,15 @@ local function extract_package_info_from_path(store_path, opt)
     if opt and (opt.verbose or option.get("verbose")) then
         print("Nix: Extracted derivation info for " .. package_name .. " (version: " .. (version or "unknown") .. ")")
     end
-    
     return package_name, version, output_paths, current_output
 end
 
 -- package info data
-local package_info = object {_init = {"package_name"}}
+local package_info = object {_init = {"name", "version"}}
 
-function package_info:new(name)
+function package_info:new(name, version)
     self._name = name
+    self._version = version
     self._includedirs = {}
     self._bindirs = {}
     self._linkdirs = {}
@@ -262,9 +265,8 @@ function package_info:new(name)
     self._libfiles = {}
     self._store_paths = {}
     self._outputs = {}
-    self._version = nil
     self._pkgconfig_available = false
-    return package_info {self, name}
+    return package_info {self, name, version}
 end
 
 function package_info:add_store_path(p, output_name)
@@ -292,12 +294,6 @@ end
 
 function package_info:add_libfile(f)
     table.insert(self._libfiles, f)
-end
-
-function package_info:set_version(v)
-    if not self._version and v then
-        self._version = v
-    end
 end
 
 function package_info:set_pkgconfig_available()
@@ -422,9 +418,6 @@ local function parse_store_paths_from_env(env_vars, opt)
     -- Check memory cache first (session cache)
     local cached_paths = memory_cache:get2(STORE_PATHS_CACHE, cache_key)
     if cached_paths then
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Using session cached store paths")
-        end
         return cached_paths
     end
     
@@ -432,9 +425,6 @@ local function parse_store_paths_from_env(env_vars, opt)
     local cache = get_nix_cache()
     cached_paths = cache:get2(STORE_PATHS_CACHE, cache_key)
     if cached_paths then
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Using persistent cached store paths")
-        end
         -- Also cache in memory for faster access
         memory_cache:set2(STORE_PATHS_CACHE, cache_key, cached_paths)
         memory_cache:set("last_env_key", cache_key)
@@ -637,18 +627,12 @@ local function get_all_store_paths(opt)
     -- Check memory cache first
     local cached_paths = memory_cache:get2(STORE_PATHS_CACHE, cache_key)
     if cached_paths then
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Using session cached all store paths")
-        end
         return cached_paths
     end
     
     -- Check persistent cache
     cached_paths = cache:get2(STORE_PATHS_CACHE, cache_key)
     if cached_paths then
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Using persistent cached all store paths")
-        end
         memory_cache:set2(STORE_PATHS_CACHE, cache_key, cached_paths)
         return cached_paths
     end
@@ -697,6 +681,50 @@ local function path_matches_package(store_path, package_name)
     return path_name_lower:find(package_name_lower, 1, true) ~= nil
 end
 
+local function group_paths_by_version(store_paths, package_name, opt)
+    local version_groups = {}  -- { "package:version" -> [store_paths] }
+    
+    for _, store_path in ipairs(store_paths) do
+        if not store_path or store_path == "" then goto continue end
+        
+        -- Extract package info
+        local parsed_name, parsed_version, output_paths, current_output = extract_package_info_from_path(store_path, opt)
+        
+        if not parsed_name then
+            goto continue
+        end
+        
+        -- Only include matching package names (if filtering)
+        if package_name then
+            local name_matches = parsed_name:lower() == package_name:lower()
+            if not name_matches then
+                goto continue
+            end
+        end
+        
+        -- Create version key
+        local version_key = parsed_name .. ":" .. (parsed_version or "unknown")
+        
+        if not version_groups[version_key] then
+            version_groups[version_key] = {
+                name = parsed_name,
+                version = parsed_version,
+                paths = {}
+            }
+        end
+        
+        table.insert(version_groups[version_key].paths, {
+            path = store_path,
+            outputs = output_paths,
+            current_output = current_output
+        })
+        
+        ::continue::
+    end
+    
+    return version_groups
+end
+
 -- extract package information from store paths with caching
 local function extract_package_info(store_paths, package_name, opt)
     opt = opt or {}
@@ -708,18 +736,12 @@ local function extract_package_info(store_paths, package_name, opt)
     -- Check memory cache first
     local cached = memory_cache:get2(PACKAGE_INFO_CACHE, cache_key)
     if cached ~= nil then
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Using session cached package info")
-        end
         return cached
     end
     
     -- Check persistent cache
     cached = cache:get2(PACKAGE_INFO_CACHE, cache_key)
     if cached ~= nil then
-        if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Using persistent cached package info")
-        end
         memory_cache:set2(PACKAGE_INFO_CACHE, cache_key, cached)
         return cached
     end
@@ -758,111 +780,93 @@ local function extract_package_info(store_paths, package_name, opt)
         print("Nix: Extracting package info for " .. #filtered_paths .. " store paths")
     end
 
-    local packages = {} -- map: package_name -> package_info
+    local version_groups = group_paths_by_version(filtered_paths, package_name, opt)
 
-    local function ensure_pkg(name)
-        if not name then
-            name = "<unknown>"
-        end
-        local p = packages[name]
-        if not p then
-            -- Create the package_info object
-            p = package_info:new(name)
-            packages[name] = p
-        end
-        return p
-    end
+    local packages = {} -- map: "package_name:version" -> package_info
 
-    for _, store_path in ipairs(filtered_paths) do
-        if not store_path or store_path == "" then goto continue end
-
-        -- Use the enhanced derivation-based extraction
-        local parsed_name, parsed_version, output_paths, current_output = 
-            extract_package_info_from_path(store_path, opt)
-
-        if not parsed_name then
-            if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Could not extract package info from: " .. store_path)
-            end
-            goto continue
-        end
-
-        local pkg = ensure_pkg(parsed_name)
-
-        pkg:add_store_path(store_path, current_output)
-        if parsed_version then
-            pkg:set_version(parsed_version)
-        end
-
-        -- Add all output paths to the package
-        if output_paths then
-            for output_name, output_path in pairs(output_paths) do
-                pkg._outputs[output_name] = output_path
-            end
-        end
-
-        -- include directories (and their subdirs)
-        local includedir = path.join(store_path, "include")
-        if os.isdir(includedir) then
-            pkg:add_includedir(includedir)
-            local subdirs = try { function() return os.dirs(path.join(includedir, "*")) end } or {}
-            for _, subdir in ipairs(subdirs) do
-                if os.isdir(subdir) then
-                    pkg:add_includedir(subdir)
+    for version_key, version_data in pairs(version_groups) do
+        local pkg_name = version_data.name
+        local pkg_version = version_data.version
+        local pkg = package_info:new(pkg_name, pkg_version)
+        
+        -- Process all store paths for this version only
+        for _, path_data in ipairs(version_data.paths) do
+            local store_path = path_data.path
+            local output_paths = path_data.outputs
+            local current_output = path_data.current_output
+            
+            pkg:add_store_path(store_path, current_output)
+            
+            -- Add all output paths to the package
+            if output_paths then
+                for output_name, output_path in pairs(output_paths) do
+                    pkg._outputs[output_name] = output_path
                 end
             end
-        end
 
-        -- bin
-        local bindir = path.join(store_path, "bin")
-        if os.isdir(bindir) then
-            pkg:add_bindir(bindir)
-        end
-
-        -- lib and libs
-        local libdir = path.join(store_path, "lib")
-        if os.isdir(libdir) then
-            local libfiles = try { function()
-                local files = {}
-                local patterns = {"*.so*", "*.a", "*.dylib*"}
-                for _, pattern in ipairs(patterns) do
-                    for _, f in ipairs(os.files(path.join(libdir, pattern)) or {}) do
-                        table.insert(files, f)
+            -- include directories (and their subdirs)
+            local includedir = path.join(store_path, "include")
+            if os.isdir(includedir) then
+                pkg:add_includedir(includedir)
+                local subdirs = try { function() return os.dirs(path.join(includedir, "*")) end } or {}
+                for _, subdir in ipairs(subdirs) do
+                    if os.isdir(subdir) then
+                        pkg:add_includedir(subdir)
                     end
                 end
-                return files
-            end } or {}
+            end
 
-            if #libfiles > 0 then
-                pkg:add_linkdir(libdir)
-                for _, libfile in ipairs(libfiles) do
-                    local filename = path.filename(libfile)
-                    local linkname = filename:match("^lib(.+)%.so") or
-                                     filename:match("^lib(.+)%.a") or
-                                     filename:match("^lib(.+)%.dylib")
-                    if linkname then
-                        pkg:add_link(linkname)
-                        pkg:add_libfile(libfile)
+            -- bin
+            local bindir = path.join(store_path, "bin")
+            if os.isdir(bindir) then
+                pkg:add_bindir(bindir)
+            end
+
+            -- lib and libs
+            local libdir = path.join(store_path, "lib")
+            if os.isdir(libdir) then
+                local libfiles = try { function()
+                    local files = {}
+                    local patterns = {"*.so*", "*.a", "*.dylib*"}
+                    for _, pattern in ipairs(patterns) do
+                        for _, f in ipairs(os.files(path.join(libdir, pattern)) or {}) do
+                            table.insert(files, f)
+                        end
                     end
-                end
-            else
-                -- if no libs, see if cmake/pkgconfig dirs exist and add linkdir
-                local has_cmake = os.isdir(path.join(libdir, "cmake"))
-                local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
-                if has_cmake or has_pkgconfig then
+                    return files
+                end } or {}
+
+                if #libfiles > 0 then
                     pkg:add_linkdir(libdir)
+                    for _, libfile in ipairs(libfiles) do
+                        local filename = path.filename(libfile)
+                        local linkname = filename:match("^lib(.+)%.so") or
+                                         filename:match("^lib(.+)%.a") or
+                                         filename:match("^lib(.+)%.dylib")
+                        if linkname then
+                            pkg:add_link(linkname)
+                            pkg:add_libfile(libfile)
+                        end
+                    end
+                else
+                    -- if no libs, see if cmake/pkgconfig dirs exist and add linkdir
+                    local has_cmake = os.isdir(path.join(libdir, "cmake"))
+                    local has_pkgconfig = os.isdir(path.join(libdir, "pkgconfig"))
+                    if has_cmake or has_pkgconfig then
+                        pkg:add_linkdir(libdir)
+                    end
                 end
             end
         end
-
-        ::continue::
+    
+        packages[version_key] = pkg
     end
 
     -- finalize all package_info instances into plain tables
     local result = {}
-    for name, pkgobj in pairs(packages) do
+    for version_key, pkgobj in pairs(packages) do
         local plain = pkgobj:finalize()
-        result[name] = plain
+        result[version_key] = plain
     end
 
     -- cache result
@@ -872,40 +876,40 @@ local function extract_package_info(store_paths, package_name, opt)
 
     if opt and (opt.verbose or option.get("verbose")) then
         local keys = table.keys(result)
-        print("Nix: Extracted " .. #keys .. " packages from store paths")
+        print("Nix: Extracted " .. #keys .. " package versions from store paths")
     end
 
     return result
 end
 
--- find package with pkg-config with caching
-local function find_with_pkgconfig(package_name, store_paths, opt)
+local function find_all_with_pkgconfig(package_name, store_paths, opt)
     local cache = get_nix_cache()
     local memory_cache = get_memory_cache()
 
     -- prefer the normalized env key stored in session memcache
     local env_key = memory_cache:get("last_env_key")
-    local cache_key = package_name .. ":" .. (env_key or table.concat(store_paths, ";"))
+    local cache_key = package_name .. ":all:" .. (env_key or table.concat(store_paths, ";"))
 
     -- Check session memory cache first
     local memo = memory_cache:get2(PKGCONFIG_CACHE, cache_key)
     if memo ~= nil then
         if opt and (opt.verbose or option.get("verbose")) then
-            local status = memo and "found" or "not found"
-            print("Nix: Using session cached pkg-config result (" .. status .. ") for: " .. package_name)
+            local status = (type(memo) == "table" and #memo > 0) and "found" or "not found"
+            print("Nix: Using session cached pkg-config results (" .. status .. ") for: " .. package_name)
         end
-        return memo or nil
+        return (type(memo) == "table") and memo or {}
     end
 
     -- Check persistent cache
     local cached_result = cache:get2(PKGCONFIG_CACHE, cache_key)
     if cached_result ~= nil then
         if opt and (opt.verbose or option.get("verbose")) then
-            local status = cached_result and "found" or "not found"
-            print("Nix: Using persistent cached pkg-config result (" .. status .. ") for: " .. package_name)
+            local status = (type(cached_result) == "table" and #cached_result > 0) and "found" or "not found"
+            print("Nix: Using persistent cached pkg-config results (" .. status .. ") for: " .. package_name)
         end
-        memory_cache:set2(PKGCONFIG_CACHE, cache_key, cached_result)
-        return cached_result or nil
+        local result_table = (type(cached_result) == "table") and cached_result or {}
+        memory_cache:set2(PKGCONFIG_CACHE, cache_key, result_table)
+        return result_table
     end
 
     -- Filter store paths to only relevant ones
@@ -922,7 +926,7 @@ local function find_with_pkgconfig(package_name, store_paths, opt)
     -- Add dependencies of matching packages
     filtered_paths = follow_propagated_inputs(filtered_paths, opt)
 
-    -- Search filtered paths
+    local all_results = {}
     for _, store_path in ipairs(filtered_paths) do
         local pkgconfig_dirs = {
             path.join(store_path, "lib", "pkgconfig"),
@@ -932,22 +936,132 @@ local function find_with_pkgconfig(package_name, store_paths, opt)
         for _, pcdir in ipairs(pkgconfig_dirs) do
             if os.isdir(pcdir) then
                 local result = find_package_from_pkgconfig(package_name, {configdirs = pcdir})
-                if result then
+                if result and result.version then
+                    table.insert(all_results, result)
                     if opt and (opt.verbose or option.get("verbose")) then
-                        print("Nix: Found package via pkg-config: " .. package_name)
+                        print("Nix: Found pkg-config version: " .. package_name .. " " .. result.version)
                     end
-                    memory_cache:set2(PKGCONFIG_CACHE, cache_key, result)
-                    cache:set2(PKGCONFIG_CACHE, cache_key, result)
-                    return result
                 end
             end
         end
     end
 
-    -- Cache negative result
-    memory_cache:set2(PKGCONFIG_CACHE, cache_key, false)
-    cache:set2(PKGCONFIG_CACHE, cache_key, false)
-    return nil
+    memory_cache:set2(PKGCONFIG_CACHE, cache_key, all_results)
+    cache:set2(PKGCONFIG_CACHE, cache_key, all_results)
+    
+    return all_results
+end
+
+local function select_best_version(packages, package_name, require_version, opt)
+    -- Collect all versions of the target package
+    local candidates = {}
+    local name_lower = package_name:lower()
+    
+    for version_key, pkg_data in pairs(packages) do
+        local pkg_name = pkg_data.name or ""
+        if pkg_name:lower() == name_lower then
+            table.insert(candidates, pkg_data)
+        end
+    end
+    
+    -- Handle empty candidates
+    if not candidates or #candidates == 0 then
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: No versions found for package: " .. package_name)
+        end
+        return nil
+    end
+    
+    -- If only one candidate, return it
+    if #candidates == 1 then
+        if opt and (opt.verbose or option.get("verbose")) then
+            local ver = candidates[1].version or "unknown"
+            print("Nix: Found single version: " .. package_name .. " " .. ver)
+        end
+        return candidates[1]
+    end
+    
+    -- Multiple candidates - select best one
+    local best_match = nil
+    local best_version = nil
+    
+    for _, candidate in ipairs(candidates) do
+        local pkg_version = candidate.version
+        
+        if not pkg_version then
+            -- No version info, use as fallback if nothing better found
+            if not best_match then
+                best_match = candidate
+            end
+            goto continue
+        end
+        
+        -- Check if version satisfies constraints
+        local satisfies = false
+        if not require_version or require_version == "latest" then
+            satisfies = true
+        else
+            satisfies = try {
+                function()
+                    return semver.satisfies(pkg_version, require_version)
+                end,
+                catch = function()
+                    -- If semver parsing fails, try exact match
+                    return (pkg_version == require_version)
+                end
+            }
+        end
+        
+        if satisfies then
+            -- Try to parse version for comparison
+            local current_ver = try {
+                function()
+                    return semver.new(pkg_version)
+                end,
+                catch = function()
+                    return nil
+                end
+            }
+            
+            -- Select highest version among satisfying candidates
+            if not best_version then
+                best_match = candidate
+                best_version = current_ver
+            elseif current_ver and best_version then
+                -- Both versions are valid semver, compare them
+                if current_ver:gt(best_version) then
+                    best_match = candidate
+                    best_version = current_ver
+                end
+            elseif current_ver and not best_version then
+                -- Current has valid semver but previous didn't, prefer current
+                best_match = candidate
+                best_version = current_ver
+            end
+        end
+        
+        ::continue::
+    end
+    
+    -- Log results if verbose
+    if opt and (opt.verbose or option.get("verbose")) then
+        if best_match then
+            local ver = best_match.version or "unknown"
+            local constraint_msg = (require_version and require_version ~= "") 
+                and (" matching constraint: " .. require_version) or ""
+            print("Nix: Selected version: " .. package_name .. " " .. ver .. constraint_msg)
+        else
+            local constraint_msg = (require_version and require_version ~= "") 
+                and (" matching constraint: " .. require_version) or ""
+            print("Nix: No version found for: " .. package_name .. constraint_msg)
+        end
+    end
+    
+    return best_match
+end
+
+local function nonempty_string(v)
+    return type(v) == "string" and v ~= "" and v
 end
 
 -- find package using the nix package manager
@@ -961,7 +1075,9 @@ function main(name, opt)
     -- ensure a stable env cache key is available for the whole run
     local memory_cache = get_memory_cache()
     memory_cache:set("last_env_key", generate_env_cache_key())
-    
+
+    local require_version = nonempty_string(opt.require_version) or nonempty_string(opt.version)
+
     -- Skip cross-compilation scenarios
     if is_cross(opt.plat, opt.arch) then
         return
@@ -986,48 +1102,76 @@ function main(name, opt)
         return nil
     end
     
-    -- Try to find the package by name match first
-    local name_lower = name:lower()
-    local found_package = packages[name_lower]
+    -- Find best version from extracted packages
+    local found_package = select_best_version(packages, name, require_version, opt)
     
-    -- Try pkg-config if package found in store paths
-    local pkgconfig_result = nil
-    if found_package then
-        pkgconfig_result = find_with_pkgconfig(name, store_paths, opt)
-        if pkgconfig_result then
-            if opt and (opt.verbose or option.get("verbose")) then
-                print("Nix: Found package via pkg-config: " .. name)
-            end
-            return pkgconfig_result
-        end
-    end
-    
-    -- If we found package info directly, return it
-    if found_package then
+    if not found_package then
         if opt and (opt.verbose or option.get("verbose")) then
-            print("Nix: Found package: " .. name .. " (" .. found_package.name .. ")")
+            print("Nix: Package " .. name .. " not found or no matching version")
         end
-        
-        local result = {
-            name = found_package.name,
-            version = found_package.version
-        }
-        
-        local fields_to_copy = {"includedirs", "linkdirs", "links", "libfiles", "bindirs"}
-        -- Add directories and links if they exist
-        for _, field in ipairs(fields_to_copy) do
-            if found_package[field] and #found_package[field] > 0 then
-                result[field] = found_package[field]
+        return nil
+    end
+
+    local pkgconfig_results = find_all_with_pkgconfig(name, store_paths, opt)
+    local pkgconfig_result =  select_best_version(pkgconfig_results, name, require_version, opt)
+    
+    -- Decide which result to use - prefer whichever has the highest version
+    local use_pkgconfig = false
+    if pkgconfig_result then
+        if not found_package.version then
+            -- found_package has no version, prefer pkg-config
+            use_pkgconfig = true
+        elseif not pkgconfig_result.version then
+            -- pkg-config has no version, prefer found_package
+            use_pkgconfig = false
+        else
+            -- Both have versions, compare them
+            local pkg_ver = try {
+                function() return semver.new(found_package.version) end
+            }
+            local pkgconfig_ver = try {
+                function() return semver.new(pkgconfig_result.version) end
+            }
+            
+            if pkg_ver and pkgconfig_ver then
+                -- Prefer whichever is higher
+                if pkgconfig_ver:gt(pkg_ver) then
+                    use_pkgconfig = true
+                end
+            elseif pkgconfig_ver then
+                -- Only pkg-config has valid semver
+                use_pkgconfig = true
             end
+            -- else: only pkg_ver is valid or neither is valid, use found_package
         end
-        
-        return result
     end
     
-    -- Package not found
+    if use_pkgconfig and pkgconfig_result then
+        local ver = pkgconfig_result.version or "unknown"
+        if opt and (opt.verbose or option.get("verbose")) then
+            print("Nix: Returning pkg-config package: " .. name .. " (" .. ver .. ")")
+        end
+        return pkgconfig_result
+    end
+    
+    -- Return the selected version from extracted packages
+    local ver = found_package.version or "unknown"
     if opt and (opt.verbose or option.get("verbose")) then
-        print("Nix: Package " .. name .. " not found in any nix environment")
+        print("Nix: Returning package: " .. name .. " (" .. ver .. ")")
     end
     
-    return nil
+    local result = {
+        name = found_package.name,
+        version = found_package.version
+    }
+    
+    local fields_to_copy = {"includedirs", "linkdirs", "links", "libfiles", "bindirs"}
+    -- Add directories and links if they exist
+    for _, field in ipairs(fields_to_copy) do
+        if found_package[field] and #found_package[field] > 0 then
+            result[field] = found_package[field]
+        end
+    end
+    
+    return result
 end
