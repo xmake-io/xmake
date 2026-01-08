@@ -55,7 +55,7 @@ else -- >= Lua 5.2
             end
             f = debug.getinfo(f + 2, 'f').func
         elseif type(f) ~= 'function' then
-            error(("bad argument #1 to '%s' (number expected, got %s)"):format(type(name, f)), 2)
+            error(("bad argument #1 to '%s' (number expected, got %s)"):format(name, type(f)), 2)
         end
         return f
     end
@@ -79,8 +79,9 @@ else -- >= Lua 5.2
 
     -- 5.1 style `getfenv` implemented in 5.2
     function env.getfenv(f)
-        if f == 0 or f == nil then return _G end -- simulated behavior
-        local f = envhelper(f, 'setfenv')
+        if f == 0 then return _G end -- simulated behavior
+        f = f or 1
+        local f = envhelper(f, 'getfenv')
         local up, val = envlookup(f)
         if not up then return _G end -- simulated behavior [**]
         return val
