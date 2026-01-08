@@ -342,12 +342,12 @@ function _add_package_configurations(package)
     package:add("configs", "shflags", {builtin = true, description = "Set the shared library linker flags."})
 end
 
--- select version from package or scheme
-function _select_version_from(package, requireinfo)
+-- select version from scheme
+function _select_version_from_scheme(scheme, requireinfo)
 
     -- has git url?
     local has_giturl = false
-    for _, url in ipairs(package:urls()) do
+    for _, url in ipairs(scheme:urls()) do
         if git.checkurl(url) then
             has_giturl = true
             break
@@ -360,7 +360,7 @@ function _select_version_from(package, requireinfo)
     local require_version = requireinfo.version
     local require_verify  = requireinfo.verify
     local is_system = requireinfo.system
-    local has_versionlist = package:get("versions") or package:get("versionfiles")
+    local has_versionlist = scheme:get("versions") or scheme:get("versionfiles")
     if (not has_versionlist or require_verify == false)
         and (semver.is_valid(require_version) or semver.is_valid_range(require_version)) then
         -- no version list in package() or need not verify sha256sum? try selecting this version directly
@@ -370,8 +370,8 @@ function _select_version_from(package, requireinfo)
         -- https://github.com/xmake-io/xmake/issues/3551
         version = require_version
         source = "version"
-    elseif #package:versions() > 0 then -- select version?
-        version, source = try { function () return semver.select(require_version, package:versions()) end }
+    elseif #scheme:versions() > 0 then -- select version?
+        version, source = try { function () return semver.select(require_version, scheme:versions()) end }
     end
     if not version and has_giturl then -- select branch?
         if require_version and #require_version == 40 and require_version:match("%w+") then
@@ -381,7 +381,7 @@ function _select_version_from(package, requireinfo)
         end
     end
     -- local source package? we use a phony version
-    if not version and require_version == "latest" and #package:urls() == 0 then
+    if not version and require_version == "latest" and #scheme:urls() == 0 then
         version = "latest"
         source = "version"
     end
@@ -403,24 +403,20 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         return version, source
     end
 
-    -- select version from package or schemes
+    -- select version from schemes
     local version, source
     local schemes = package:schemes_orderlist()
-    if schemes then
-        for _, scheme in ipairs(schemes) do
-            local scheme_version, scheme_source = _select_version_from(scheme, requireinfo)
-            if scheme_version then
-                scheme:version_set(scheme_version, scheme_source)
-                if version then
-                    assert(scheme_version == version, "package(%s): the version lists of schemes are mismatch.")
-                else
-                    version = scheme_version
-                    source = scheme_source
-                end
+    for _, scheme in ipairs(schemes) do
+        local scheme_version, scheme_source = _select_version_from_scheme(scheme, requireinfo)
+        if scheme_version then
+            scheme:version_set(scheme_version, scheme_source)
+            if version then
+                assert(scheme_version == version, "package(%s): the version lists of schemes are mismatch.")
+            else
+                version = scheme_version
+                source = scheme_source
             end
         end
-    else
-        version, source = _select_version_from(package, requireinfo)
     end
 
     if not version and not package:is_thirdparty() and is_system ~= true then
