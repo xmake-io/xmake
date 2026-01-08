@@ -218,6 +218,13 @@ end
 
 -- get version string
 function _instance:version_str()
+    local package = self:package()
+    if package and package:is_thirdparty() then
+        local requireinfo = package:requireinfo()
+        if requireinfo then
+            return requireinfo.version
+        end
+    end
     return self._VERSION_STR
 end
 
@@ -294,6 +301,80 @@ function _instance:revision(url_alias)
         -- it will be sha256 of tar/gz file, not commit number if longer than 40 characters
         return revision
     end
+end
+
+-- get the patches of the current version
+--
+-- @code
+-- add_patches("6.7.6", "https://cdn.kernel.org/pub/linux/kernel/v6.x/patch-6.7.6.xz",
+--    "a394326aa325f8a930a4ce33c69ba7b8b454aef1107a4d3c2a8ae12908615fc4", {reverse = true})
+-- @endcode
+--
+function _instance:patches()
+    local patches = self._PATCHES
+    if patches == nil then
+        local patchinfos = self:get("patches")
+        if patchinfos then
+            local version_str = self:version_str()
+            local patchinfo = patchinfos[version_str]
+            if patchinfo then
+                patches = {}
+                patchinfo = table.wrap(patchinfo)
+                for idx = 1, #patchinfo, 2 do
+                    local extra = self:extraconf("patches." .. version_str, patchinfo[idx])
+                    table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1], extra = extra})
+                end
+            else
+                -- match semver, e.g add_patches(">=1.0.0", url, sha256)
+                for range, patchinfo in pairs(patchinfos) do
+                    if semver.satisfies(version_str, range) then
+                        patches = patches or {}
+                        patchinfo = table.wrap(patchinfo)
+                        for idx = 1, #patchinfo, 2 do
+                            local extra = self:extraconf("patches." .. range, patchinfo[idx])
+                            table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1], extra = extra})
+                        end
+                    end
+                end
+            end
+        end
+        self._PATCHES = patches or false
+    end
+    return patches and patches or nil
+end
+
+-- get the resources of the current version
+function _instance:resources()
+    local resources = self._RESOURCES
+    if resources == nil then
+        local resourceinfos = self:get("resources")
+        if resourceinfos then
+            local version_str = self:version_str()
+            local resourceinfo = resourceinfos[version_str]
+            if resourceinfo then
+                resources = {}
+                resourceinfo = table.wrap(resourceinfo)
+                for idx = 1, #resourceinfo, 3 do
+                    local name = resourceinfo[idx]
+                    resources[name] = {url = resourceinfo[idx + 1], sha256 = resourceinfo[idx + 2]}
+                end
+            else
+                -- match semver, e.g add_resources(">=1.0.0", name, url, sha256)
+                for range, resourceinfo in pairs(resourceinfos) do
+                    if semver.satisfies(version_str, range) then
+                        resources = resources or {}
+                        resourceinfo = table.wrap(resourceinfo)
+                        for idx = 1, #resourceinfo, 3 do
+                            local name = resourceinfo[idx]
+                            resources[name] = {url = resourceinfo[idx + 1], sha256 = resourceinfo[idx + 2]}
+                        end
+                    end
+                end
+            end
+        end
+        self._RESOURCES = resources or false
+    end
+    return resources and resources or nil
 end
 
 -- interpreter
