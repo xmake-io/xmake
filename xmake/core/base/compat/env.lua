@@ -80,8 +80,7 @@ else -- >= Lua 5.2
     -- 5.1 style `getfenv` implemented in 5.2
     function env.getfenv(f)
         if f == 0 then return _G end -- simulated behavior
-        f = f or 1
-        local f = envhelper(f, 'getfenv')
+        local f = envhelper(f or 1, 'getfenv')
         local up, val = envlookup(f)
         if not up then return _G end -- simulated behavior [**]
         return val
