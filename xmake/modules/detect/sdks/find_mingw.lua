@@ -80,7 +80,12 @@ function _find_mingwdir(sdkdir, msystem)
 end
 
 -- find the mingw toolchain
-function _find_mingw(sdkdir, bindir, cross, msystem)
+function _find_mingw(sdkdir, opt)
+    opt = opt or {}
+    local bindir = opt.bindir
+    local cross = opt.cross
+    local msystem = opt.msystem
+    local arch = opt.arch or config.get("arch") or os.arch()
 
     -- find mingw root directory
     sdkdir = _find_mingwdir(sdkdir, msystem)
@@ -90,11 +95,11 @@ function _find_mingw(sdkdir, bindir, cross, msystem)
 
     -- select cross on macOS, e.g x86_64-w64-mingw32- or i686-w64-mingw32-
     if not cross then
-        if is_arch("i386", "x86", "i686") then
+        if arch == "i386" or arch == "x86" or arch == "i686" then
             cross = "i686-w64-mingw32-"
-        elseif is_arch("arm64", "aarch64") then
+        elseif arch == "arm64" or arch == "aarch64" then
             cross = "aarch64-w64-mingw32-" -- for llvm-mingw
-        elseif is_arch("arm.*") then
+        elseif arch:startswith("arm") then
             cross = "armv7-w64-mingw32-"   -- for llvm-mingw
         else
             cross = "x86_64-w64-mingw32-"
@@ -115,7 +120,7 @@ end
 --
 -- @param sdkdir    the mingw directory
 -- @param opt       the argument options
---                  e.g. {verbose = true, force = false, bindir = .., cross = ...}
+--                  e.g. {verbose = true, force = false, bindir = .., cross = ..., arch = ...}
 --
 -- @return          the mingw toolchains. e.g. {sdkdir = .., bindir = .., cross = ..}
 --
@@ -127,36 +132,29 @@ end
 -- @endcode
 --
 function main(sdkdir, opt)
-
-    -- init arguments
     opt = opt or {}
 
     -- attempt to load cache first
     local key = "detect.sdks.find_mingw"
     local cacheinfo = detectcache:get(key) or {}
-    if not opt.force and cacheinfo.mingw and cacheinfo.mingw.sdkdir and os.isdir(cacheinfo.mingw.sdkdir) and cacheinfo.mingw.msystem == opt.msystem then
+    if not opt.force and cacheinfo.mingw and cacheinfo.mingw.sdkdir and os.isdir(cacheinfo.mingw.sdkdir)
+        and cacheinfo.mingw.msystem == opt.msystem then
         return cacheinfo.mingw
     end
 
     -- find mingw
-    local mingw = _find_mingw(
-        sdkdir or config.get("mingw") or global.get("mingw") or config.get("sdk"),
-        opt.bindir or config.get("bin"),
-        opt.cross or config.get("cross"),
-        opt.msystem
-    )
+    local mingw = _find_mingw(sdkdir or config.get("mingw") or global.get("mingw") or config.get("sdk"), {
+        bindir = opt.bindir or config.get("bin"),
+        cross = opt.cross or config.get("cross"),
+        msystem = opt.msystem,
+        arch = opt.arch
+    })
     if mingw and mingw.sdkdir then
-
-        -- save to config
         config.set("mingw", mingw.sdkdir, {force = true, readonly = true})
-
-        -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for mingw directory ... ${color.success}%s", mingw.sdkdir)
+            cprint("checking for mingw directory ... ${color.success}%s (%s)", mingw.sdkdir, mingw.cross)
         end
     else
-
-        -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for mingw directory ... ${color.nothing}${text.nothing}")
         end

@@ -28,7 +28,7 @@ function main(toolchain)
     for _, package in ipairs(toolchain:packages()) do
         local installdir = package:installdir()
         if installdir and os.isdir(installdir) then
-            mingw = find_mingw(installdir, {verbose = true, cross = toolchain:cross()})
+            mingw = find_mingw(installdir, {verbose = true, cross = toolchain:cross(), arch = toolchain:arch()})
             if mingw then
                 break
             end
@@ -40,6 +40,7 @@ function main(toolchain)
             bindir = toolchain:bindir(),
             cross = toolchain:cross(),
             msystem = toolchain:config("msystem"),
+            arch = toolchain:arch()
         })
     end
     if mingw then
