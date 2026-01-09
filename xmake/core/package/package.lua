@@ -2334,6 +2334,14 @@ function _instance:schemes_orderlist()
     return schemes_orderlist
 end
 
+-- prepare to install the given scheme
+function _instance:prepare_install_scheme(scheme)
+    self:current_scheme_set(scheme)
+
+    -- reset manifest to trigger reinstalling
+    self._MANIFEST = nil
+end
+
 -- generate lto configs
 function _instance:_generate_lto_configs(sourcekind)
 

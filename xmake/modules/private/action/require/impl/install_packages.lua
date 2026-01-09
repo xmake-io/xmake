@@ -497,7 +497,7 @@ function _do_install_packages(packages_install, packages_download, installdeps)
 
                 -- install package from the multiple schemes
                 for _, scheme in ipairs(instance:schemes_orderlist()) do
-                    instance:current_scheme_set(scheme)
+                    instance:prepare_install_scheme(scheme)
 
                     -- download this package first
                     local downloaded = true
