@@ -57,7 +57,7 @@ target("libninja")
             target:add("files", "src/jobserver.cc")
             target:add("files", "src/real_command_runner.cc")
             target:add("files", "src/status_printer.cc")
-            if target:is_plat("windows", "mingw", "msys2") then
+            if target:is_plat("windows", "mingw", "msys") then
 		        target:add("files", "src/jobserver-win32.cc")
             else
                 target:add("files", "src/jobserver-posix.cc")

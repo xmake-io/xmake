@@ -363,63 +363,62 @@ function _instance:url_http_headers(url)
     return self:current_scheme():url_http_headers(url)
 end
 
--- set artifacts info
-function _instance:artifacts_set(artifacts_info)
-    local versions = self:_versions_list()
-    if versions then
-        -- backup previous package configuration
-        self._ARTIFACTS_BACKUP = {
-            urls = table.copy(self:urls()),
-            versions = table.copy(versions),
-            install = self:script("install")} -- self:get() will get a table, it will be broken when call self:set()
+-- install the precompiled artifacts first
+function _instance:use_precompiled_artifacts(artifacts_info)
 
-        -- we switch to urls of the precompiled artifacts
-        self:urls_set(table.wrap(artifacts_info.urls))
-        versions[self:version_str()] = artifacts_info.sha256
-        self:set("install", function (package)
-            sandbox_module.import("lib.detect.find_path")
-            local rootdir = find_path("manifest.txt", path.join(os.curdir(), "*", "*", "*"))
-            if not rootdir then
-                os.raise("package(%s): manifest.txt not found when installing artifacts!", package:displayname())
+    -- init the precompiled scheme
+    local precompiled_scheme = scheme.new("__precompiled__", {package = self})
+    precompiled_scheme:urls_set(table.wrap(artifacts_info.urls))
+    local versions_list = table.clone(self:_versions_list())
+    versions_list[self:version_str()] = artifacts_info.sha256
+    precompiled_scheme:_versions_list_set(versions_list)
+
+    precompiled_scheme:set("install", function (package)
+        sandbox_module.import("lib.detect.find_path")
+        local rootdir = find_path("manifest.txt", path.join(os.curdir(), "*", "*", "*"))
+        if not rootdir then
+            os.raise("package(%s): manifest.txt not found when installing artifacts!", package:displayname())
+        end
+        os.cp(path.join(rootdir, "*"), package:installdir(), {symlink = true})
+        local manifest = package:manifest_load()
+        if not manifest then
+            os.raise("package(%s): load manifest.txt failed when installing artifacts!", package:displayname())
+        end
+        if manifest.vars then
+            for k, v in pairs(manifest.vars) do
+                package:set(k, v)
             end
-            os.cp(path.join(rootdir, "*"), package:installdir(), {symlink = true})
-            local manifest = package:manifest_load()
-            if not manifest then
-                os.raise("package(%s): load manifest.txt failed when installing artifacts!", package:displayname())
-            end
-            if manifest.vars then
-                for k, v in pairs(manifest.vars) do
-                    package:set(k, v)
-                end
-            end
-            if manifest.components then
-                local vars = manifest.components.vars
-                if vars then
-                    for component_name, component_vars in pairs(vars) do
-                        local comp = package:component(component_name)
-                        if comp then
-                            for k, v in pairs(component_vars) do
-                                comp:set(k, v)
-                            end
+        end
+        if manifest.components then
+            local vars = manifest.components.vars
+            if vars then
+                for component_name, component_vars in pairs(vars) do
+                    local comp = package:component(component_name)
+                    if comp then
+                        for k, v in pairs(component_vars) do
+                            comp:set(k, v)
                         end
                     end
                 end
             end
-            if manifest.envs then
-                local envs = self:_rawenvs()
-                for k, v in pairs(manifest.envs) do
-                    envs[k] = v
-                end
+        end
+        if manifest.envs then
+            local envs = self:_rawenvs()
+            for k, v in pairs(manifest.envs) do
+                envs[k] = v
             end
-            -- save the remote install directory to fix the install path in .cmake/.pc files for precompiled artifacts
-            --
-            -- @see https://github.com/xmake-io/xmake/issues/2210
-            --
-            manifest.artifacts = manifest.artifacts or {}
-            manifest.artifacts.remotedir = manifest.artifacts.installdir
-        end)
-        self._IS_PRECOMPILED = true
-    end
+        end
+        -- save the remote install directory to fix the install path in .cmake/.pc files for precompiled artifacts
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/2210
+        --
+        manifest.artifacts = manifest.artifacts or {}
+        manifest.artifacts.remotedir = manifest.artifacts.installdir
+    end)
+
+    -- add the precompiled scheme
+    table.insert(self:schemes_orderlist(), 1, precompiled_scheme)
+    self:schemes()[precompiled_scheme:name()] = precompiled_scheme
 end
 
 -- is this package built?
@@ -429,27 +428,7 @@ end
 
 -- is this package precompiled?
 function _instance:is_precompiled()
-    return self._IS_PRECOMPILED
-end
-
--- fallback to source code build
-function _instance:fallback_build()
-    if self:is_precompiled() then
-        local artifacts_backup = self._ARTIFACTS_BACKUP
-        if artifacts_backup then
-            if artifacts_backup.urls then
-                self:urls_set(artifacts_backup.urls)
-            end
-            if artifacts_backup.versions then
-                self._INFO:apival_set("versions", artifacts_backup.versions)
-            end
-            if artifacts_backup.install then
-                self._INFO:apival_set("install", artifacts_backup.install)
-            end
-            self._MANIFEST = nil
-        end
-        self._IS_PRECOMPILED = false
-    end
+    return self:current_scheme():is_precompiled()
 end
 
 -- get the given dependent package
@@ -1772,7 +1751,7 @@ end
 function _instance:script(name, generic)
 
     -- get script
-    local script = self:get(name)
+    local script = self:current_scheme():get(name) or self:get(name)
     local result = select_script(script, {plat = self:plat(), arch = self:arch()}) or generic
 
     -- imports some modules first

@@ -65,6 +65,11 @@ function _instance:is_default()
     return self:name() == "__default__"
 end
 
+-- is precompiled scheme?
+function _instance:is_precompiled()
+    return self:name() == "__precompiled__"
+end
+
 -- get the it's package
 function _instance:package()
     return self._PACKAGE
@@ -209,6 +214,11 @@ function _instance:_versions_list()
         self._VERSIONS_LIST = versions
     end
     return self._VERSIONS_LIST
+end
+
+-- set versions list
+function _instance:_versions_list_set(versions_list)
+    self._VERSIONS_LIST = versions_list
 end
 
 -- get version
@@ -396,6 +406,12 @@ function scheme.apis()
             "scheme.set_urls",
             -- scheme.add_xxx
             "scheme.add_urls"
+        },
+        script = {
+            -- scheme.on_xxx
+            "scheme.on_download"
+        ,   "scheme.on_install"
+        ,   "scheme.on_test"
         },
         keyvalues = {
             -- scheme.add_xxx

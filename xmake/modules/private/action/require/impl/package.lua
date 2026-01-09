@@ -815,7 +815,7 @@ function _select_artifacts(package, artifacts_manifest)
         artifacts_info = _select_artifacts_for_generic(package, artifacts_manifest)
     end
     if artifacts_info then
-        package:artifacts_set(artifacts_info)
+        package:use_precompiled_artifacts(artifacts_info)
     end
 end
 

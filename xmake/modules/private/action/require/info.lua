@@ -111,24 +111,29 @@ function main(requires_raw)
 
         -- show urls
         local urls = instance:urls()
-        if instance:is_precompiled() then
-            instance:fallback_build()
-            local urls_raw = instance:urls()
-            if urls_raw then
-                urls = table.join(urls, urls_raw)
-            end
-        end
         if urls and #urls > 0 then
             cprint("      -> ${color.dump.string_quote}urls${clear}:")
-            for _, url in ipairs(urls) do
-                print("         -> %s", filter.handle(url, instance))
-                if git.asgiturl(url) then
-                    local url_alias = instance:url_alias(url)
-                    cprint("            -> ${yellow}%s", instance:revision(url_alias) or instance:tag() or instance:version_str())
-                else
-                    local sourcehash = instance:sourcehash(instance:url_alias(url))
-                    if sourcehash then
-                        cprint("            -> ${yellow}%s", sourcehash)
+            local schemes = instance:schemes_orderlist()
+            if schemes then
+                for _, scheme in ipairs(schemes) do
+                    if not scheme:is_precompiled() then
+                        local urls = scheme:urls()
+                        if urls and #urls > 0 then
+                            local scheme_name = scheme:is_default() and "default" or scheme:name()
+                            cprint("         -> ${magenta}%s${clear}:", scheme_name)
+                            for _, url in ipairs(urls) do
+                                print("            -> %s", filter.handle(url, instance))
+                                if git.asgiturl(url) then
+                                    local url_alias = scheme:url_alias(url)
+                                    cprint("               -> ${yellow}%s", scheme:revision(url_alias) or scheme:tag() or scheme:version_str())
+                                else
+                                    local sourcehash = scheme:sourcehash(scheme:url_alias(url))
+                                    if sourcehash then
+                                        cprint("               -> ${yellow}%s", sourcehash)
+                                    end
+                                end
+                            end
+                        end
                     end
                 end
             end

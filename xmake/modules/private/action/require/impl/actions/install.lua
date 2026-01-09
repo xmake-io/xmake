@@ -428,6 +428,9 @@ function _get_package_tipname(package)
     end
     if current_scheme and not current_scheme:is_default() then
         local scheme_name = current_scheme:name()
+        if current_scheme:is_precompiled() then
+            scheme_name = "the precompiled artifacts"
+        end
         package_tipname = package_tipname .. " from " .. scheme_name
     end
     return package_tipname
