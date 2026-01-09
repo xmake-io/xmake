@@ -32,7 +32,7 @@ target("libninja")
 	add_files("src/version.cc")
     add_files("src/depfile_parser.cc", "src/lexer.cc")
 
-    if is_plat("windows") then
+    if is_plat("windows", "mingw") then
 		add_files("src/subprocess-win32.cc")
 		add_files("src/includes_normalize-win32.cc")
 		add_files("src/msvc_helper-win32.cc")
