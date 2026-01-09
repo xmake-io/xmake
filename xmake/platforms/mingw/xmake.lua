@@ -31,7 +31,7 @@ platform("mingw")
     set_formats("binary", "$(name).exe")
     set_formats("symbol", "$(name).pdb")
 
-    set_toolchains("mingw", "yasm", "nasm", "fasm", "go")
+    set_toolchains("envs", "mingw", "yasm", "nasm", "fasm", "go")
 
     set_menu {
                 config =
