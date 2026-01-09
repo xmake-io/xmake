@@ -2306,6 +2306,12 @@ end
 
 -- get current scheme
 function _instance:current_scheme()
+    if self._CURRENT_SCHEME == nil then
+        local schemes_orderlist = self:schemes_orderlist()
+        if #schemes_orderlist > 0 then
+            self._CURRENT_SCHEME = schemes_orderlist[1]
+        end
+    end
     return self._CURRENT_SCHEME
 end
 
@@ -2338,7 +2344,6 @@ function _instance:schemes_orderlist()
             table.insert(schemes_orderlist, scheme.new(name, {package = self}))
         end
         self._SCHEMES_ORDERLIST = schemes_orderlist
-        self._CURRENT_SCHEME = schemes_orderlist[1]
     end
     return schemes_orderlist
 end
