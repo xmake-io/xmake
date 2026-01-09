@@ -367,11 +367,17 @@ end
 function _instance:use_precompiled_artifacts(artifacts_info)
 
     -- init the precompiled scheme
+    local current_scheme = self:current_scheme()
     local precompiled_scheme = scheme.new("__precompiled__", {package = self})
     precompiled_scheme:urls_set(table.wrap(artifacts_info.urls))
-    local versions_list = table.clone(self:_versions_list())
+    local versions_list = table.clone(current_scheme:_versions_list())
     versions_list[self:version_str()] = artifacts_info.sha256
-    precompiled_scheme:_versions_list_set(versions_list)
+    precompiled_scheme._VERSIONS_LIST = versions_list
+    precompiled_scheme._VERSION = current_scheme._VERSION
+    precompiled_scheme._VERSION_STR = current_scheme._VERSION_STR
+    precompiled_scheme._TAG = current_scheme._TAG
+    precompiled_scheme._COMMIT = current_scheme._COMMIT
+    precompiled_scheme._BRANCH = current_scheme._BRANCH
 
     precompiled_scheme:set("install", function (package)
         sandbox_module.import("lib.detect.find_path")
@@ -419,6 +425,7 @@ function _instance:use_precompiled_artifacts(artifacts_info)
     -- add the precompiled scheme
     table.insert(self:schemes_orderlist(), 1, precompiled_scheme)
     self:schemes()[precompiled_scheme:name()] = precompiled_scheme
+    self._CURRENT_SCHEME = precompiled_scheme
 end
 
 -- is this package built?
