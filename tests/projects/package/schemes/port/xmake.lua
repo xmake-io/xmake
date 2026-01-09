@@ -32,7 +32,7 @@ target("libninja")
 	add_files("src/version.cc")
     add_files("src/depfile_parser.cc", "src/lexer.cc")
 
-    if is_plat("windows", "mingw") then
+    if is_plat("windows", "mingw", "msys") then
 		add_files("src/subprocess-win32.cc")
 		add_files("src/includes_normalize-win32.cc")
 		add_files("src/msvc_helper-win32.cc")
@@ -57,7 +57,7 @@ target("libninja")
             target:add("files", "src/jobserver.cc")
             target:add("files", "src/real_command_runner.cc")
             target:add("files", "src/status_printer.cc")
-            if target:is_plat("windows") then
+            if target:is_plat("windows", "mingw", "msys2") then
 		        target:add("files", "src/jobserver-win32.cc")
             else
                 target:add("files", "src/jobserver-posix.cc")
