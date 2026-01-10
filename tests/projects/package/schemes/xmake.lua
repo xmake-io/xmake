@@ -54,8 +54,7 @@ package("ninja")
     end
 
     on_install("@linux", "@windows", "@msys", "@cygwin", "@macosx", function (package)
-        local scheme = package:current_scheme()
-        local scheme_name = scheme and scheme:name() or package:data("scheme")
+        local scheme_name = package.current_scheme and package:current_scheme():name() or package:data("scheme")
         if scheme_name and scheme_name == "binary" then
             raise("trigger failure when installing binaries, then we will fallback to install it from source tarball.")
         else
