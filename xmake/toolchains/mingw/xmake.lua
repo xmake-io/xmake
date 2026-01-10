@@ -31,17 +31,32 @@ toolchain("mingw")
         local use_clang = toolchain:config("clang")
 
         -- get cross
-        local cross
-        if toolchain:is_arch("x86_64", "x64") then
-            cross = "x86_64-w64-mingw32-"
-        elseif toolchain:is_arch("i386", "x86", "i686") then
-            cross = "i686-w64-mingw32-"
-        elseif toolchain:is_arch("arm64", "aarch64") then
-            cross = "aarch64-w64-mingw32-"
-        elseif toolchain:is_arch("armv7", "arm.*") then
-            cross = "armv7-w64-mingw32-"
+        -- https://github.com/xmake-io/xmake/issues/7196
+        local cross = toolchain:cross() or ""
+        if cross ~= "" then
+            local arch
+            if cross:startswith("x86_64") then
+                arch = "x86_64"
+            elseif cross:startswith("i686") then
+                arch = "i386"
+            elseif cross:startswith("aarch64") then
+                arch = "arm64"
+            elseif cross:startswith("arm") then
+                arch = "armv7"
+            end
+            if arch then
+                toolchain:arch_set(arch)
+            end
         else
-            cross = toolchain:cross() or ""
+            if toolchain:is_arch("x86_64", "x64") then
+                cross = "x86_64-w64-mingw32-"
+            elseif toolchain:is_arch("i386", "x86", "i686") then
+                cross = "i686-w64-mingw32-"
+            elseif toolchain:is_arch("arm64", "aarch64") then
+                cross = "aarch64-w64-mingw32-"
+            elseif toolchain:is_arch("armv7", "arm.*") then
+                cross = "armv7-w64-mingw32-"
+            end
         end
 
         -- add bin search library for loading some dependent .dll files windows
