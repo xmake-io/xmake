@@ -421,6 +421,8 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         else
             -- remove this scheme if version is not matched
             package:schemes()[scheme:name()] = nil
+            -- reset current scheme cache, we need to resolve new current scheme
+            package:current_scheme_set(nil)
             return true
         end
     end)
