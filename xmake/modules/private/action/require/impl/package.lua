@@ -411,7 +411,10 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         if scheme_version then
             scheme:version_set(scheme_version, scheme_source)
             if version then
-                assert(scheme_version == version, "package(%s): the version lists of schemes are mismatch.")
+                if scheme_version ~= version then
+                    raise("package(%s): the version lists of schemes are mismatch.\n  -> scheme(%s): %s not found!",
+                        package:name(), scheme:name(), version)
+                end
             else
                 version = scheme_version
                 source = scheme_source
