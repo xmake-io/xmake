@@ -405,8 +405,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
 
     -- select version from schemes
     local version, source
-    local schemes = package:schemes_orderlist()
-    for _, scheme in ipairs(schemes) do
+    table.remove_if(package:schemes_orderlist(), function (i, scheme)
         local scheme_version, scheme_source = _select_version_from_scheme(scheme, requireinfo)
         if scheme_version then
             scheme:version_set(scheme_version, scheme_source)
@@ -419,8 +418,12 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
                 version = scheme_version
                 source = scheme_source
             end
+        else
+            -- remove this scheme if version is not matched
+            package:schemes()[scheme:name()] = nil
+            return true
         end
-    end
+    end)
 
     if not version and not package:is_thirdparty() and is_system ~= true then
         raise("package(%s): version(%s) not found!", package:name(), require_version)
@@ -971,7 +974,6 @@ function _load_package(packagename, requireinfo, opt)
     -- select package version
     local version, source = _select_package_version(package, requireinfo, locked_requireinfo)
     if version then
-        package:version_set(version, source)
         package:data_set("__locked_requireinfo", locked_requireinfo)
     end
 
