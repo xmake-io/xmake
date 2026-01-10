@@ -95,6 +95,7 @@ function kmdf(target)
     _base(target, "km")
 
     -- add include directories
+    target:add("sysincludedirs", path.join(wdk.includedir, wdk.sdkver, "shared"))
     if target:rule("wdk.driver") then
         target:add("sysincludedirs", path.join(wdk.includedir, wdk.sdkver, "km", "crt"))
     end
