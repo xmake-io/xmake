@@ -39,6 +39,9 @@ function main(opt)
     opt.command = opt.command or "/confirm"
     opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.%d+%.%d+)%s") end
 
+    -- https://github.com/xmake-io/xmake/issues/7192
+    opt.norunfile = true
+
     local envs = opt.envs
     if envs and envs.WindowsSdkDir and envs.WindowsSDKVersion then
         local toolchain = opt.toolchain
@@ -50,9 +53,8 @@ function main(opt)
         end
     end
 
-    local program = find_program(opt.program or "midl", opt)
-
     local version = nil
+    local program = find_program(opt.program or "midl", opt)
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
