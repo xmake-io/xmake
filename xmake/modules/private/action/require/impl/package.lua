@@ -400,6 +400,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         elseif locked_requireinfo.tag then
             source = "tag"
         end
+        package:version_set(version, source)
         return version, source
     end
 
