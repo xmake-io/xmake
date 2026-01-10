@@ -414,6 +414,7 @@ function main(target, opt)
     end
 
     -- add includedirs, linkdirs
+    _add_includedirs(target, path.join(qt.mkspecsdir, qt.mkspec))
     if target:is_plat("macosx") then
         target:add("frameworks", "DiskArbitration", "IOKit", "CoreFoundation", "CoreGraphics", "OpenGL")
         target:add("frameworks", "Carbon", "Foundation", "AppKit", "Security", "SystemConfiguration")
@@ -434,18 +435,15 @@ function main(target, opt)
             target:set("frameworks", frameworks)
         end
         _add_includedirs(target, qt.includedir)
-        _add_includedirs(target, path.join(qt.mkspecsdir, "macx-clang"))
         target:add("linkdirs", qt.libdir)
     elseif target:is_plat("linux") then
         target:set("frameworks", nil)
         _add_includedirs(target, qt.includedir)
-        _add_includedirs(target, path.join(qt.mkspecsdir, "linux-g++"))
         target:add("rpathdirs", qt.libdir)
         target:add("linkdirs", qt.libdir)
     elseif target:is_plat("windows") then
         target:set("frameworks", nil)
         _add_includedirs(target, qt.includedir)
-        _add_includedirs(target, path.join(qt.mkspecsdir, "win32-msvc"))
         target:add("linkdirs", qt.libdir)
         target:add("syslinks", "ws2_32", "gdi32", "ole32", "advapi32", "shell32", "user32", "opengl32", "imm32", "winmm", "iphlpapi")
         -- for debugger, https://github.com/xmake-io/xmake-vscode/issues/225
@@ -469,19 +467,16 @@ function main(target, opt)
         else
             _add_includedirs(target, qt.includedir)
         end
-        _add_includedirs(target, path.join(qt.mkspecsdir, "win32-g++"))
         target:add("linkdirs", qt.libdir)
         target:add("syslinks", "mingw32", "ws2_32", "gdi32", "ole32", "advapi32", "shell32", "user32", "iphlpapi")
     elseif target:is_plat("android") then
         target:set("frameworks", nil)
         _add_includedirs(target, qt.includedir)
-        _add_includedirs(target, path.join(qt.mkspecsdir, "android-clang"))
         target:add("rpathdirs", qt.libdir)
         target:add("linkdirs", qt.libdir)
     elseif target:is_plat("wasm") then
         target:set("frameworks", nil)
         _add_includedirs(target, qt.includedir)
-        _add_includedirs(target, path.join(qt.mkspecsdir, "wasm-emscripten"))
         target:add("rpathdirs", qt.libdir)
         target:add("linkdirs", qt.libdir)
         -- add prebuilt object files in qt sdk.
