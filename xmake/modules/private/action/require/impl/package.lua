@@ -406,38 +406,44 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
 
     -- select version from schemes
     local version, source
-    local invalid_schemes = hashset.new()
+    local version_latest, source_latest
+    local scheme_version_map = {}
     for _, scheme in ipairs(package:schemes_orderlist()) do
         local scheme_version, scheme_source = _select_version_from_scheme(scheme, requireinfo)
         if scheme_version then
+            scheme_version_map[scheme] = scheme_version
             scheme:version_set(scheme_version, scheme_source)
-            if version then
-                if scheme_version ~= version then
-                    raise("package(%s): the version lists of schemes are mismatch.\n  -> scheme(%s): %s not found!",
-                        package:name(), scheme:name(), version)
-                end
-            elseif #scheme:urls() > 0 then
+            if not version and scheme_version ~= "latest" then
                 version = scheme_version
                 source = scheme_source
-            else
-                invalid_schemes:insert(scheme)
             end
-        else
-            invalid_schemes:insert(scheme)
+            if not version_latest and scheme_version == "latest" then
+                version_latest = scheme_version
+                source_latest = scheme_source
+            end
         end
     end
+    if not version then
+        version = version_latest
+        source = source_latest
+    end
+
     -- remove these invalid schemes if version is not matched
     table.remove_if(package:schemes_orderlist(), function (_, scheme)
-        if invalid_schemes:has(scheme) then
+        local scheme_version = scheme_version_map[scheme]
+        if not scheme_version or (version and scheme_version ~= version) then
             package:schemes()[scheme:name()] = nil
             -- reset current scheme cache, we need to resolve new current scheme
             package:current_scheme_set(nil)
             return true
         end
     end)
+    assert(#package:schemes_orderlist() > 0, "package(%s): no available schemes", package:displayname())
 
+    local is_system = requireinfo.system
     if not version and not package:is_thirdparty() and is_system ~= true then
-        raise("package(%s): version(%s) not found!", package:name(), require_version)
+        local require_version = requireinfo.version
+        raise("package(%s): version(%s) not found!", package:displayname(), require_version)
     end
     return version, source
 end
