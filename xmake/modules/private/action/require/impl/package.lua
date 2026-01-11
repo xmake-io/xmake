@@ -406,7 +406,8 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
 
     -- select version from schemes
     local version, source
-    table.remove_if(package:schemes_orderlist(), function (i, scheme)
+    local invalid_schemes = hashset.new()
+    for _, scheme in ipairs(package:schemes_orderlist()) do
         local scheme_version, scheme_source = _select_version_from_scheme(scheme, requireinfo)
         if scheme_version then
             scheme:version_set(scheme_version, scheme_source)
@@ -415,12 +416,19 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
                     raise("package(%s): the version lists of schemes are mismatch.\n  -> scheme(%s): %s not found!",
                         package:name(), scheme:name(), version)
                 end
-            else
+            elseif #scheme:urls() > 0 then
                 version = scheme_version
                 source = scheme_source
+            else
+                invalid_schemes:insert(scheme)
             end
         else
-            -- remove this scheme if version is not matched
+            invalid_schemes:insert(scheme)
+        end
+    end
+    -- remove these invalid schemes if version is not matched
+    table.remove_if(package:schemes_orderlist(), function (_, scheme)
+        if invalid_schemes:has(scheme) then
             package:schemes()[scheme:name()] = nil
             -- reset current scheme cache, we need to resolve new current scheme
             package:current_scheme_set(nil)
