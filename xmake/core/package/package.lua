@@ -1766,7 +1766,8 @@ function _instance:script(name, generic)
         local scope = getfenv(result)
         if scope then
             for _, modulename in ipairs(table.wrap(self:get("imports"))) do
-                scope[sandbox_module.name(modulename)] = sandbox_module.import(modulename, {anonymous = true})
+                scope[sandbox_module.name(modulename)] = sandbox_module.import(modulename, {
+                    rootdir = self:scriptdir(), anonymous = true})
             end
         end
     end
