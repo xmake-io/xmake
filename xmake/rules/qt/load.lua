@@ -516,11 +516,7 @@ function main(target, opt)
             target:add("shflags", "-s EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]")
         end
     end
-    if qt.mkspec then
-        _add_includedirs(target, path.join(qt.mkspecsdir, qt.mkspec))
-    else
-        _add_includedirs(target, path.join(qt.mkspecsdir, fallbackmkspec))
-    end
+    _add_includedirs(target, path.join(qt.mkspecsdir, qt.mkspec or fallbackmkspec))
 
     -- is gui application?
     if opt.gui then
