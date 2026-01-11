@@ -46,6 +46,7 @@ local policy         = require("project/policy")
 local platform       = require("platform/platform")
 local platform_menu  = require("platform/menu")
 local component      = require("package/component")
+local scheme         = require("package/scheme")
 local language       = require("language/language")
 local language_menu  = require("language/menu")
 local sandbox        = require("sandbox/sandbox")
@@ -326,106 +327,105 @@ end
 
 -- get urls
 function _instance:urls()
-    local urls = self._URLS
-    if urls == nil then
-        urls = table.wrap(self:get("urls"))
-        if #urls == 1 and urls[1] == "" then
-            urls = {}
-        end
-    end
-    return urls
+    return self:current_scheme():urls()
 end
 
 -- get urls
 function _instance:urls_set(urls)
-    self._URLS = urls
+    self:current_scheme():urls_set(urls)
 end
 
 -- get the alias of url, @note need raw url
 function _instance:url_alias(url)
-    return self:extraconf("urls", url, "alias")
+    return self:current_scheme():url_alias(url)
 end
 
 -- get the version filter of url, @note need raw url
 function _instance:url_version(url)
-    return self:extraconf("urls", url, "version")
+    return self:current_scheme():url_version(url)
 end
 
 -- get the excludes paths of url
 -- @note it supports the path pattern, but it only supports for archiver.
 function _instance:url_excludes(url)
-    return self:extraconf("urls", url, "excludes")
+    return self:current_scheme():url_excludes(url)
 end
 
 -- get the includes paths of url
 -- @note it does not support the path pattern, and it only supports for git url now.
 -- @see https://github.com/xmake-io/xmake/issues/6071
 function _instance:url_includes(url)
-    return self:extraconf("urls", url, "includes")
+    return self:current_scheme():url_includes(url)
 end
 
 -- get the http headers of url, @note need raw url
 function _instance:url_http_headers(url)
-    return self:extraconf("urls", url, "http_headers")
+    return self:current_scheme():url_http_headers(url)
 end
 
--- set artifacts info
-function _instance:artifacts_set(artifacts_info)
-    local versions = self:_versions_list()
-    if versions then
-        -- backup previous package configuration
-        self._ARTIFACTS_BACKUP = {
-            urls = table.copy(self:urls()),
-            versions = table.copy(versions),
-            install = self:script("install")} -- self:get() will get a table, it will be broken when call self:set()
+-- install the precompiled artifacts first
+function _instance:use_precompiled_artifacts(artifacts_info)
 
-        -- we switch to urls of the precompiled artifacts
-        self:urls_set(table.wrap(artifacts_info.urls))
-        versions[self:version_str()] = artifacts_info.sha256
-        self:set("install", function (package)
-            sandbox_module.import("lib.detect.find_path")
-            local rootdir = find_path("manifest.txt", path.join(os.curdir(), "*", "*", "*"))
-            if not rootdir then
-                os.raise("package(%s): manifest.txt not found when installing artifacts!", package:displayname())
+    -- init the precompiled scheme
+    local current_scheme = self:current_scheme()
+    local precompiled_scheme = scheme.new("__precompiled__", {package = self})
+    precompiled_scheme:urls_set(table.wrap(artifacts_info.urls))
+    local versions_list = table.clone(current_scheme:_versions_list())
+    versions_list[self:version_str()] = artifacts_info.sha256
+    precompiled_scheme._VERSIONS_LIST = versions_list
+    precompiled_scheme._VERSION = current_scheme._VERSION
+    precompiled_scheme._VERSION_STR = current_scheme._VERSION_STR
+    precompiled_scheme._TAG = current_scheme._TAG
+    precompiled_scheme._COMMIT = current_scheme._COMMIT
+    precompiled_scheme._BRANCH = current_scheme._BRANCH
+
+    precompiled_scheme:set("install", function (package)
+        sandbox_module.import("lib.detect.find_path")
+        local rootdir = find_path("manifest.txt", path.join(os.curdir(), "*", "*", "*"))
+        if not rootdir then
+            os.raise("package(%s): manifest.txt not found when installing artifacts!", package:displayname())
+        end
+        os.cp(path.join(rootdir, "*"), package:installdir(), {symlink = true})
+        local manifest = package:manifest_load()
+        if not manifest then
+            os.raise("package(%s): load manifest.txt failed when installing artifacts!", package:displayname())
+        end
+        if manifest.vars then
+            for k, v in pairs(manifest.vars) do
+                package:set(k, v)
             end
-            os.cp(path.join(rootdir, "*"), package:installdir(), {symlink = true})
-            local manifest = package:manifest_load()
-            if not manifest then
-                os.raise("package(%s): load manifest.txt failed when installing artifacts!", package:displayname())
-            end
-            if manifest.vars then
-                for k, v in pairs(manifest.vars) do
-                    package:set(k, v)
-                end
-            end
-            if manifest.components then
-                local vars = manifest.components.vars
-                if vars then
-                    for component_name, component_vars in pairs(vars) do
-                        local comp = package:component(component_name)
-                        if comp then
-                            for k, v in pairs(component_vars) do
-                                comp:set(k, v)
-                            end
+        end
+        if manifest.components then
+            local vars = manifest.components.vars
+            if vars then
+                for component_name, component_vars in pairs(vars) do
+                    local comp = package:component(component_name)
+                    if comp then
+                        for k, v in pairs(component_vars) do
+                            comp:set(k, v)
                         end
                     end
                 end
             end
-            if manifest.envs then
-                local envs = self:_rawenvs()
-                for k, v in pairs(manifest.envs) do
-                    envs[k] = v
-                end
+        end
+        if manifest.envs then
+            local envs = self:_rawenvs()
+            for k, v in pairs(manifest.envs) do
+                envs[k] = v
             end
-            -- save the remote install directory to fix the install path in .cmake/.pc files for precompiled artifacts
-            --
-            -- @see https://github.com/xmake-io/xmake/issues/2210
-            --
-            manifest.artifacts = manifest.artifacts or {}
-            manifest.artifacts.remotedir = manifest.artifacts.installdir
-        end)
-        self._IS_PRECOMPILED = true
-    end
+        end
+        -- save the remote install directory to fix the install path in .cmake/.pc files for precompiled artifacts
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/2210
+        --
+        manifest.artifacts = manifest.artifacts or {}
+        manifest.artifacts.remotedir = manifest.artifacts.installdir
+    end)
+
+    -- add the precompiled scheme
+    table.insert(self:schemes_orderlist(), 1, precompiled_scheme)
+    self:schemes()[precompiled_scheme:name()] = precompiled_scheme
+    self._CURRENT_SCHEME = precompiled_scheme
 end
 
 -- is this package built?
@@ -435,27 +435,7 @@ end
 
 -- is this package precompiled?
 function _instance:is_precompiled()
-    return self._IS_PRECOMPILED
-end
-
--- fallback to source code build
-function _instance:fallback_build()
-    if self:is_precompiled() then
-        local artifacts_backup = self._ARTIFACTS_BACKUP
-        if artifacts_backup then
-            if artifacts_backup.urls then
-                self:urls_set(artifacts_backup.urls)
-            end
-            if artifacts_backup.versions then
-                self._INFO:apival_set("versions", artifacts_backup.versions)
-            end
-            if artifacts_backup.install then
-                self._INFO:apival_set("install", artifacts_backup.install)
-            end
-            self._MANIFEST = nil
-        end
-        self._IS_PRECOMPILED = false
-    end
+    return self:current_scheme():is_precompiled()
 end
 
 -- get the given dependent package
@@ -545,30 +525,12 @@ end
 
 -- get hash of the source package for the url_alias@version_str
 function _instance:sourcehash(url_alias)
-    local versions    = self:_versions_list()
-    local version_str = self:version_str()
-    if versions and version_str then
-        local sourcehash = nil
-        if url_alias then
-            sourcehash = versions[url_alias .. ":" ..version_str]
-        end
-        if not sourcehash then
-            sourcehash = versions[version_str]
-        end
-        if sourcehash and #sourcehash == 40 then
-            sourcehash = sourcehash:lower()
-        end
-        return sourcehash
-    end
+    return self:current_scheme():sourcehash(url_alias)
 end
 
 -- get revision(commit, tag, branch) of the url_alias@version_str, only for git url
 function _instance:revision(url_alias)
-    local revision = self:sourcehash(url_alias)
-    if revision and #revision <= 40 then
-        -- it will be sha256 of tar/gz file, not commit number if longer than 40 characters
-        return revision
-    end
+    return self:current_scheme():revision(url_alias)
 end
 
 -- get the package policy
@@ -1109,10 +1071,18 @@ function _instance:_load()
     self._SOURCE_INITED = true
     local loaded = self._LOADED
     if not loaded then
+
+        -- load on_load script
         local on_load = self:script("load")
         if on_load then
             on_load(self)
         end
+        
+        -- load all components
+        self:_load_components()
+
+        -- load environments from the manifest to enable the environments of on_install()
+        self:_load_envs()
     end
 end
 
@@ -1194,13 +1164,20 @@ function _instance:envs()
 end
 
 -- load the package environments from the manifest
-function _instance:envs_load()
+function _instance:_load_envs()
     local manifest = self:manifest_load()
     if manifest then
         local envs = self:_rawenvs()
         for name, values in pairs(manifest.envs) do
             envs[name] = values
         end
+    end
+end
+
+-- load all components
+function _instance:_load_components()
+    for _, component_inst in pairs(self:components()) do
+        component_inst:_load()
     end
 end
 
@@ -1469,116 +1446,47 @@ end
 
 -- get versions list
 function _instance:_versions_list()
-    if self._VERSIONS_LIST == nil then
-        local versions = table.wrap(self:get("versions"))
-        local versionfiles = self:get("versionfiles")
-        if versionfiles then
-            for _, versionfile in ipairs(table.wrap(versionfiles)) do
-                if not path.is_absolute(versionfile) then
-                    local subpath = versionfile
-                    versionfile = path.join(self:scriptdir(), subpath)
-                    if not os.isfile(versionfile) and self:base() then
-                        versionfile = path.join(self:base():scriptdir(), subpath)
-                    end
-                end
-                if os.isfile(versionfile) then
-                    local list = io.readfile(versionfile)
-                    for _, line in ipairs(list:split("\n")) do
-                        local splitinfo = line:split("%s+")
-                        if #splitinfo == 2 then
-                            local version = splitinfo[1]
-                            local shasum = splitinfo[2]
-                            versions[version] = shasum
-                        end
-                    end
-                end
-            end
-        end
-        self._VERSIONS_LIST = versions
-    end
-    return self._VERSIONS_LIST
+    return self:current_scheme():_versions_list()
 end
 
 -- get versions
 function _instance:versions()
-    if self._VERSIONS == nil then
-        -- we need to sort the build number in semver list
-        -- https://github.com/xmake-io/xmake/issues/6953
-        local versions = {}
-        for version, _ in table.orderpairs(self:_versions_list()) do
-            -- remove the url alias prefix if exists
-            local pos = version:find(':', 1, true)
-            if pos then
-                version = version:sub(pos + 1, -1)
-            end
-            table.insert(versions, version)
-        end
-        self._VERSIONS = table.unique(versions)
-    end
-    return self._VERSIONS
+    return self:current_scheme():versions()
 end
 
 -- get the version
 function _instance:version()
-    return self._VERSION
+    return self:current_scheme():version()
 end
 
 -- get the version string
 function _instance:version_str()
-    if self:is_thirdparty() then
-        local requireinfo = self:requireinfo()
-        if requireinfo then
-            return requireinfo.version
-        end
-    end
-    return self._VERSION_STR
+    return self:current_scheme():version_str()
 end
 
 -- set the version, source: branch, tag, version
 function _instance:version_set(version, source)
-
-    -- save the semver version
-    local sv = semver.new(version)
-    if sv then
-        self._VERSION = sv
-    end
-
-    -- save branch and tag
-    if source == "branch" then
-        self._BRANCH = version
-    elseif source == "tag" then
-        self._TAG = version
-    elseif source == "commit" then
-        self._COMMIT = version
-    end
-
-    -- save version string
-    if source == "commit" then
-        -- we strip it to avoid long paths
-        self._VERSION_STR = version:sub(1, 8)
-    else
-        self._VERSION_STR = version
-    end
+    self:current_scheme():version_set(version, source)
 end
 
 -- get branch version
 function _instance:branch()
-    return self._BRANCH
+    return self:current_scheme():branch()
 end
 
 -- get tag version
 function _instance:tag()
-    return self._TAG
+    return self:current_scheme():tag()
 end
 
 -- get commit version
 function _instance:commit()
-    return self._COMMIT
+    return self:current_scheme():commit()
 end
 
 -- is git ref?
 function _instance:gitref()
-    return self:branch() or self:tag() or self:commit()
+    return self:current_scheme():gitref()
 end
 
 -- get the require info
@@ -1850,7 +1758,7 @@ end
 function _instance:script(name, generic)
 
     -- get script
-    local script = self:get(name)
+    local script = self:current_scheme():get(name) or self:get(name)
     local result = select_script(script, {plat = self:plat(), arch = self:arch()}) or generic
 
     -- imports some modules first
@@ -2225,70 +2133,12 @@ end
 -- @endcode
 --
 function _instance:patches()
-    local patches = self._PATCHES
-    if patches == nil then
-        local patchinfos = self:get("patches")
-        if patchinfos then
-            local version_str = self:version_str()
-            local patchinfo = patchinfos[version_str]
-            if patchinfo then
-                patches = {}
-                patchinfo = table.wrap(patchinfo)
-                for idx = 1, #patchinfo, 2 do
-                    local extra = self:extraconf("patches." .. version_str, patchinfo[idx])
-                    table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1], extra = extra})
-                end
-            else
-                -- match semver, e.g add_patches(">=1.0.0", url, sha256)
-                for range, patchinfo in pairs(patchinfos) do
-                    if semver.satisfies(version_str, range) then
-                        patches = patches or {}
-                        patchinfo = table.wrap(patchinfo)
-                        for idx = 1, #patchinfo, 2 do
-                            local extra = self:extraconf("patches." .. range, patchinfo[idx])
-                            table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1], extra = extra})
-                        end
-                    end
-                end
-            end
-        end
-        self._PATCHES = patches or false
-    end
-    return patches and patches or nil
+    return self:current_scheme():patches()
 end
 
 -- get the resources of the current version
 function _instance:resources()
-    local resources = self._RESOURCES
-    if resources == nil then
-        local resourceinfos = self:get("resources")
-        if resourceinfos then
-            local version_str = self:version_str()
-            local resourceinfo = resourceinfos[version_str]
-            if resourceinfo then
-                resources = {}
-                resourceinfo = table.wrap(resourceinfo)
-                for idx = 1, #resourceinfo, 3 do
-                    local name = resourceinfo[idx]
-                    resources[name] = {url = resourceinfo[idx + 1], sha256 = resourceinfo[idx + 2]}
-                end
-            else
-                -- match semver, e.g add_resources(">=1.0.0", name, url, sha256)
-                for range, resourceinfo in pairs(resourceinfos) do
-                    if semver.satisfies(version_str, range) then
-                        resources = resources or {}
-                        resourceinfo = table.wrap(resourceinfo)
-                        for idx = 1, #resourceinfo, 3 do
-                            local name = resourceinfo[idx]
-                            resources[name] = {url = resourceinfo[idx + 1], sha256 = resourceinfo[idx + 2]}
-                        end
-                    end
-                end
-            end
-        end
-        self._RESOURCES = resources or false
-    end
-    return resources and resources or nil
+    return self:current_scheme():resources()
 end
 
 -- get the the given resource
@@ -2421,6 +2271,75 @@ function _instance:_sort_componentdeps(name)
         table.join2(orderdeps, self:_sort_componentdeps(dep))
     end
     return orderdeps
+end
+
+-- get the given package scheme
+function _instance:scheme(name)
+    if not name then
+        os.raise("scheme name is required")
+    end
+    local scheme = self:schemes()[name]
+    if not scheme then
+        os.raise("scheme %s not found", name)
+    end
+    return scheme
+end
+
+-- set current scheme
+function _instance:current_scheme_set(scheme)
+    self._CURRENT_SCHEME = scheme
+end
+
+-- get current scheme
+function _instance:current_scheme()
+    if self._CURRENT_SCHEME == nil then
+        local schemes_orderlist = self:schemes_orderlist()
+        if #schemes_orderlist > 0 then
+            self._CURRENT_SCHEME = schemes_orderlist[1]
+        end
+    end
+    return self._CURRENT_SCHEME
+end
+
+-- get package schemes
+--
+-- .e.g. add_schemes("binary", "source")
+--
+function _instance:schemes()
+    local schemes = self._SCHEMES
+    if not schemes then
+        schemes = {}
+        for _, scheme in ipairs(self:schemes_orderlist()) do
+            schemes[scheme:name()] = scheme
+        end
+        self._SCHEMES = schemes
+    end
+    return schemes
+end
+
+-- get package schemes list (ordered)
+function _instance:schemes_orderlist()
+    local schemes_orderlist = self._SCHEMES_ORDERLIST
+    if not schemes_orderlist then
+        schemes_orderlist = {}
+        local scheme_names = table.wrap(self:get("schemes"))
+        if #scheme_names == 0 then
+            scheme_names = {"__default__"}
+        end
+        for _, name in ipairs(scheme_names) do
+            table.insert(schemes_orderlist, scheme.new(name, {package = self}))
+        end
+        self._SCHEMES_ORDERLIST = schemes_orderlist
+    end
+    return schemes_orderlist
+end
+
+-- prepare to install the given scheme
+function _instance:prepare_install_scheme(scheme)
+    self:current_scheme_set(scheme)
+
+    -- reset manifest to trigger reinstalling
+    self._MANIFEST = nil
 end
 
 -- generate lto configs
@@ -2894,6 +2813,7 @@ function package.apis()
         ,   "package.set_cachedir"
         ,   "package.set_installdir"
         ,   "package.add_bindirs"
+        ,   "package.add_schemes"
             -- package.add_xxx
         ,   "package.add_deps"
         ,   "package.add_urls"

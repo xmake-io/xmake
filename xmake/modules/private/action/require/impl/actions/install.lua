@@ -420,21 +420,29 @@ function _enable_ccache(package)
     end
 end
 
+function _get_package_tipname(package)
+    local package_tipname = package:displayname()
+    local current_scheme = package:current_scheme()
+    if package:version_str() then
+        package_tipname = package_tipname .. " " .. package:version_str()
+    end
+    if current_scheme and not current_scheme:is_default() then
+        local scheme_name = current_scheme:name()
+        if current_scheme:is_precompiled() then
+            scheme_name = "precompiled"
+        end
+        package_tipname = package_tipname .. " ${dim}(" .. scheme_name .. ")${clear}"
+    end
+    return package_tipname
+end
 
 function main(package)
-
-    -- enter working directory
     local oldir = _enter_workdir(package)
-
-    -- init tipname
-    local tipname = package:name()
-    if package:version_str() then
-        tipname = tipname .. "-" .. package:version_str()
-    end
 
     -- install it
     local ok = true
     local oldenvs = os.getenvs()
+    local package_tipname = _get_package_tipname(package)
     try
     {
         function ()
@@ -498,7 +506,7 @@ function main(package)
             if option.get("verbose") or option.get("diagnosis") then
                 print(fetchinfo)
             end
-            assert(fetchinfo, "fetch %s failed!", tipname)
+            assert(fetchinfo, "fetch %s failed!", package_tipname)
 
             -- this package is installed now
             if installed_now then
@@ -520,7 +528,7 @@ function main(package)
 
             -- trace
             tty.erase_line_to_start().cr()
-            cprint("${yellow}  => ${clear}install %s %s .. ${color.success}${text.success}", package:displayname(), package:version_str() or "")
+            cprint("${yellow}  => ${clear}install %s .. ${color.success}${text.success}", package_tipname)
         end,
 
         catch
@@ -539,7 +547,7 @@ function main(package)
 
                 -- trace
                 tty.erase_line_to_start().cr()
-                cprint("${yellow}  => ${clear}install %s %s .. ${color.failure}${text.failure}", package:displayname(), package:version_str() or "")
+                cprint("${yellow}  => ${clear}install %s .. ${color.failure}${text.failure}", package_tipname)
 
                 -- leave the package environments
                 os.setenvs(oldenvs)
@@ -555,8 +563,11 @@ function main(package)
                 end
                 os.tryrm(installdir)
 
-                -- is precompiled package? we can fallback to source package and try reinstall it again
-                if package:is_precompiled() then
+                -- is not last scheme? we can fallback to next scheme and try reinstall it again
+                local current_scheme = package:current_scheme()
+                local schemes_orderlist = package:schemes_orderlist()
+                local last_scheme = schemes_orderlist[#schemes_orderlist]
+                if current_scheme ~= last_scheme then
                     ok = false
                 else
                     -- failed

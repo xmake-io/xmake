@@ -495,25 +495,26 @@ function _do_install_packages(packages_install, packages_download, installdeps)
                     packages_in_group[group] = 0
                 end
 
-                -- download this package first
-                local downloaded = true
-                if packages_download[tostring(instance)] then
-                    packages_downloading[index] = instance
-                    action_check(instance)
-                    downloaded = action_download(instance)
-                    packages_downloading[index] = nil
-                end
+                -- install package from the multiple schemes
+                for _, scheme in ipairs(instance:schemes_orderlist()) do
+                    instance:prepare_install_scheme(scheme)
 
-                -- install this package
-                packages_installing[index] = instance
-                if downloaded then
-                    if not action_install(instance) then
-                        assert(instance:is_precompiled(), "package(%s) should be precompiled", instance:name())
-                        -- we need to disable built and re-download and re-install it
-                        instance:fallback_build()
+                    -- download this package first
+                    local downloaded = true
+                    if packages_download[tostring(instance)] then
+                        packages_downloading[index] = instance
+                        packages_installing[index] = nil
                         action_check(instance)
-                        action_download(instance)
-                        action_install(instance)
+                        downloaded = action_download(instance)
+                        packages_downloading[index] = nil
+                    end
+
+                    packages_installing[index] = instance
+                    if downloaded then
+                        if action_install(instance) then
+                            -- install ok
+                            break
+                        end
                     end
                 end
 

@@ -342,24 +342,12 @@ function _add_package_configurations(package)
     package:add("configs", "shflags", {builtin = true, description = "Set the shared library linker flags."})
 end
 
--- select package version
-function _select_package_version(package, requireinfo, locked_requireinfo)
-
-    -- get it from the locked requireinfo
-    if locked_requireinfo then
-        local version = locked_requireinfo.version
-        local source = "version"
-        if locked_requireinfo.branch then
-            source = "branch"
-        elseif locked_requireinfo.tag then
-            source = "tag"
-        end
-        return version, source
-    end
+-- select version from scheme
+function _select_version_from_scheme(scheme, requireinfo)
 
     -- has git url?
     local has_giturl = false
-    for _, url in ipairs(package:urls()) do
+    for _, url in ipairs(scheme:urls()) do
         if git.checkurl(url) then
             has_giturl = true
             break
@@ -372,7 +360,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
     local require_version = requireinfo.version
     local require_verify  = requireinfo.verify
     local is_system = requireinfo.system
-    local has_versionlist = package:get("versions") or package:get("versionfiles")
+    local has_versionlist = scheme:get("versions") or scheme:get("versionfiles")
     if (not has_versionlist or require_verify == false)
         and (semver.is_valid(require_version) or semver.is_valid_range(require_version)) then
         -- no version list in package() or need not verify sha256sum? try selecting this version directly
@@ -382,8 +370,8 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         -- https://github.com/xmake-io/xmake/issues/3551
         version = require_version
         source = "version"
-    elseif #package:versions() > 0 then -- select version?
-        version, source = try { function () return semver.select(require_version, package:versions()) end }
+    elseif #scheme:versions() > 0 then -- select version?
+        version, source = try { function () return semver.select(require_version, scheme:versions()) end }
     end
     if not version and has_giturl then -- select branch?
         if require_version and #require_version == 40 and require_version:match("%w+") then
@@ -393,10 +381,53 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         end
     end
     -- local source package? we use a phony version
-    if not version and require_version == "latest" and #package:urls() == 0 then
+    if not version and require_version == "latest" and #scheme:urls() == 0 then
         version = "latest"
         source = "version"
     end
+    return version, source
+end
+
+-- select package version
+function _select_package_version(package, requireinfo, locked_requireinfo)
+
+    -- get it from the locked requireinfo
+    if locked_requireinfo then
+        local version = locked_requireinfo.version
+        local source = "version"
+        if locked_requireinfo.branch then
+            source = "branch"
+        elseif locked_requireinfo.tag then
+            source = "tag"
+        end
+        package:version_set(version, source)
+        return version, source
+    end
+
+    -- select version from schemes
+    local version, source
+    table.remove_if(package:schemes_orderlist(), function (i, scheme)
+        local scheme_version, scheme_source = _select_version_from_scheme(scheme, requireinfo)
+        if scheme_version then
+            scheme:version_set(scheme_version, scheme_source)
+            if version then
+                if scheme_version ~= version then
+                    raise("package(%s): the version lists of schemes are mismatch.\n  -> scheme(%s): %s not found!",
+                        package:name(), scheme:name(), version)
+                end
+            else
+                version = scheme_version
+                source = scheme_source
+            end
+        else
+            -- remove this scheme if version is not matched
+            package:schemes()[scheme:name()] = nil
+            -- reset current scheme cache, we need to resolve new current scheme
+            package:current_scheme_set(nil)
+            return true
+        end
+    end)
+
     if not version and not package:is_thirdparty() and is_system ~= true then
         raise("package(%s): version(%s) not found!", package:name(), require_version)
     end
@@ -793,7 +824,7 @@ function _select_artifacts(package, artifacts_manifest)
         artifacts_info = _select_artifacts_for_generic(package, artifacts_manifest)
     end
     if artifacts_info then
-        package:artifacts_set(artifacts_info)
+        package:use_precompiled_artifacts(artifacts_info)
     end
 end
 
@@ -946,7 +977,6 @@ function _load_package(packagename, requireinfo, opt)
     -- select package version
     local version, source = _select_package_version(package, requireinfo, locked_requireinfo)
     if version then
-        package:version_set(version, source)
         package:data_set("__locked_requireinfo", locked_requireinfo)
     end
 
@@ -1025,14 +1055,7 @@ function _load_package(packagename, requireinfo, opt)
     -- do load
     package:_load()
 
-    -- load all components
-    for _, component in pairs(package:components()) do
-        component:_load()
-    end
-
-    -- load environments from the manifest to enable the environments of on_install()
-    package:envs_load()
-
+    -- check api
     check_api(package, {load = true})
 
     -- save this package package to cache

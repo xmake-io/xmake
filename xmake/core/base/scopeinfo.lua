@@ -359,11 +359,7 @@ end
 
 -- add the api dictionary to the scope info
 function _instance:_api_add_dictionary(name, dict_or_key, value, extra_config)
-
-    -- get the scope info
     local scope = self._INFO
-
-    -- check
     scope[name] = scope[name] or {}
     if type(dict_or_key) == "table" then
         local dict = {}
