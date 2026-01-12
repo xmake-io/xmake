@@ -30,7 +30,8 @@ function main(target, opt)
     end
 
     -- get pkgconfig/.pc file
-    local pcfile = path.join(installdir, opt and opt.libdir or "lib", "pkgconfig", opt.filename or (target:basename() .. ".pc"))
+    local libdir = opt.libdir and path.join(installdir, opt.libdir) or target:libdir()
+    local pcfile = path.join(libdir, "pkgconfig", opt.filename or (target:basename() .. ".pc"))
 
     -- get includedirs
     local includedirs = opt.includedirs
