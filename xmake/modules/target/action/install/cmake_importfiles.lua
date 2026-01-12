@@ -21,6 +21,12 @@
 -- imports
 import("core.project.project")
 
+-- get install libdir
+function _get_install_libdir(target, installdir, opt)
+    opt = opt or {}
+    return opt.libdir and path.join(installdir, opt.libdir) or target:libdir()
+end
+
 -- get the lib file of the target
 function _get_libfile(target, libdir)
     local libfile = path.filename(target:targetfile())
@@ -61,10 +67,9 @@ end
 
 -- install cmake config file
 function _install_cmake_configfile(target, installdir, filename, opt)
-    opt = opt or {}
 
     -- get import file path
-    local libdir = opt.libdir and path.join(installdir, opt.libdir) or target:libdir()
+    local libdir = _get_install_libdir(target, installdir, opt)
     local projectname = project.name() or target:name()
     local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
     local importfile_dst = path.join(libdir, "cmake", projectname, (filename:gsub("xxx", projectname)))
@@ -90,10 +95,9 @@ end
 
 -- append target to cmake config file
 function _append_cmake_configfile(target, installdir, filename, opt)
-    opt = opt or {}
 
     -- get import file path
-    local libdir = opt.libdir and path.join(installdir, opt.libdir) or target:libdir()
+    local libdir = _get_install_libdir(target, installdir, opt)
     local projectname = project.name() or target:name()
     local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
     local importfile_dst = path.join(libdir, "cmake", projectname, (filename:gsub("xxx", projectname)))
@@ -127,10 +131,9 @@ end
 
 -- install cmake target file
 function _install_cmake_targetfile(target, installdir, filename, opt)
-    opt = opt or {}
 
     -- get import file path
-    local libdir = opt.libdir and path.join(installdir, opt.libdir) or target:libdir()
+    local libdir = _get_install_libdir(target, installdir, opt)
     local projectname = project.name() or target:name()
     local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
     local importfile_dst = path.join(libdir, "cmake", projectname, (filename:gsub("xxx", target:name())))
