@@ -30,7 +30,11 @@ function main(target, opt)
     end
 
     -- get pkgconfig/.pc file
-    local pcfile = path.join(installdir, opt and opt.libdir or "lib", "pkgconfig", opt.filename or (target:basename() .. ".pc"))
+    local libdir = path.unix(path.normalize(opt.libdir and path.join(installdir, opt.libdir) or target:libdir()))
+    local pcfile = path.join(libdir, "pkgconfig", opt.filename or (target:basename() .. ".pc"))
+    if not libdir:startswith(installdir) then
+        raise("target(%s): libdir(%s) is not in installdir(%s)", target:name(), libdir, installdir)
+    end
 
     -- get includedirs
     local includedirs = opt.includedirs
