@@ -37,14 +37,20 @@ function _get_libfile(target, libdir)
 end
 
 -- get the builtin variables
-function _get_builtinvars(target, libdir)
+function _get_builtinvars(target, installdir, libdir)
     local target_ptrbytes
     if target:is_plat("cross") then
         target_ptrbytes = target:check_sizeof("void*")
     else
         target_ptrbytes = target:is_arch64() and "8" or "4"
     end
-    return {LIBDIR          = libdir,
+    local libsubdir
+    if libdir:startswith(installdir) then
+        libsubdir = path.relative(libdir, installdir)
+    else
+        raise("target(%s): libdir(%s) is not in installdir(%s)", target:name(), libdir, installdir)
+    end
+    return {LIBDIR          = libsubdir,
             TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
             TARGETFILENAME  = target:targetfile() and _get_libfile(target, libdir),
@@ -67,7 +73,7 @@ function _install_cmake_configfile(target, installdir, filename, opt)
     vprint("generating %s ..", importfile_dst)
 
     -- get the builtin variables
-    local builtinvars = _get_builtinvars(target, libdir)
+    local builtinvars = _get_builtinvars(target, installdir, libdir)
 
     -- copy and replace builtin variables
     local content = io.readfile(importfile_src)
@@ -93,7 +99,7 @@ function _append_cmake_configfile(target, installdir, filename, opt)
     local importfile_dst = path.join(libdir, "cmake", projectname, (filename:gsub("xxx", projectname)))
 
     -- get the builtin variables
-    local builtinvars = _get_builtinvars(target, libdir)
+    local builtinvars = _get_builtinvars(target, installdir, libdir)
 
     -- generate the file if not exist / file is outdated
     if target:is_headeronly() or not os.isfile(importfile_dst) or os.mtime(importfile_dst) < os.mtime(target:targetfile()) then
@@ -133,7 +139,7 @@ function _install_cmake_targetfile(target, installdir, filename, opt)
     vprint("generating %s ..", importfile_dst)
 
     -- get the builtin variables
-    local builtinvars = _get_builtinvars(target, libdir)
+    local builtinvars = _get_builtinvars(target, installdir, libdir)
 
     -- copy and replace builtin variables
     local content = io.readfile(importfile_src)
