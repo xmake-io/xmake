@@ -24,11 +24,11 @@ import("core.project.project")
 -- get install libdir
 function _get_install_libdir(target, installdir, opt)
     opt = opt or {}
-    return opt.libdir and path.join(installdir, opt.libdir) or target:libdir()
+    return path.normalize(opt.libdir and path.join(installdir, opt.libdir) or target:libdir())
 end
 
 -- get the lib file of the target
-function _get_libfile(target, libdir)
+function _get_libfilename(target, libdir)
     local libfile = path.filename(target:targetfile())
     if target:is_plat("windows") then
         libfile = libfile:gsub("%.dll$", ".lib")
@@ -59,7 +59,7 @@ function _get_builtinvars(target, installdir, libdir)
     return {LIBDIR          = libsubdir,
             TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
-            TARGETFILENAME  = target:targetfile() and _get_libfile(target, libdir),
+            TARGETFILENAME  = target:targetfile() and _get_libfilename(target, libdir),
             TARGETKIND      = target:is_headeronly() and "INTERFACE" or (target:is_shared() and "SHARED" or "STATIC"),
             PACKAGE_VERSION = target:get("version") or "1.0.0",
             TARGET_PTRBYTES = target_ptrbytes}
@@ -152,14 +152,14 @@ function _install_cmake_targetfile(target, installdir, filename, opt)
             local value = builtinvars[variable]
             return type(value) == "function" and value() or value
         end)
-        local libfile = path.filename(target:targetfile())
+        local libfilename = path.filename(target:targetfile())
         local postfix = is_mode("debug") and "DEBUG" or "RELEASE"
-        if target:is_shared() and (_get_libfile(target, libdir) ~= libfile) then
+        if target:is_shared() and (_get_libfilename(target, libdir) ~= libfilename) then
             -- On DLL platforms, the import library is named differently from the target file
             content = content:gsub("# IMPORTED_IMPLIB_" .. postfix, "IMPORTED_IMPLIB_" .. postfix)
             content = content:gsub(
                 "IMPORTED_LOCATION_" .. postfix .. " \"%${_IMPORT_PREFIX}/lib/.-\"",
-                "IMPORTED_LOCATION_" .. postfix .. " \"${_IMPORT_PREFIX}/bin/" .. libfile .. "\""
+                "IMPORTED_LOCATION_" .. postfix .. " \"${_IMPORT_PREFIX}/bin/" .. libfilename .. "\""
             )
         end
         io.writefile(importfile_dst, content)
@@ -180,6 +180,7 @@ function main(target, opt)
     end
 
     -- do install
+    installdir = path.normalize(installdir)
     _append_cmake_configfile(target, installdir, "xxxConfig.cmake", opt)
     _install_cmake_configfile(target, installdir, "xxxConfigVersion.cmake", opt)
     _install_cmake_targetfile(target, installdir, "xxxTargets.cmake", opt)
