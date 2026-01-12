@@ -286,7 +286,8 @@ function _find_qt(sdkdir, sdkver, sdkdir_host)
     local libdir = qtenvs.QT_INSTALL_LIBS
     local pluginsdir = qtenvs.QT_INSTALL_PLUGINS
     local includedir = qtenvs.QT_INSTALL_HEADERS
-    local mkspecsdir = qtenvs.QMAKE_MKSPECS or path.join(qtenvs.QT_INSTALL_ARCHDATA, "mkspecs")
+    local mkspecsdir = qtenvs.QMAKE_MKSPECS or path.join(qtenvs.QT_HOST_DATA, "mkspecs")
+    local mkspec = qtenvs.QMAKE_XSPEC or qtenvs.QMAKE_SPEC
     -- for 6.2
     local bindir_host = qtenvs.QT_HOST_BINS
     if not bindir_host and libexecdir and is_plat("android", "iphoneos") then
@@ -316,7 +317,7 @@ function _find_qt(sdkdir, sdkver, sdkdir_host)
         end
     end
 
-    return {sdkdir = sdkdir, bindir = bindir, bindir_host = bindir_host, libexecdir = libexecdir, libexecdir_host = libexecdir_host, libdir = libdir, includedir = includedir, qmldir = qmldir, pluginsdir = pluginsdir, mkspecsdir = mkspecsdir, sdkver = sdkver}
+    return {sdkdir = sdkdir, bindir = bindir, bindir_host = bindir_host, libexecdir = libexecdir, libexecdir_host = libexecdir_host, libdir = libdir, includedir = includedir, qmldir = qmldir, pluginsdir = pluginsdir, mkspecsdir = mkspecsdir, mkspec = mkspec, sdkver = sdkver}
 end
 
 -- find qt sdk toolchains
