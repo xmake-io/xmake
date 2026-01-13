@@ -32,17 +32,38 @@ language("pascal")
 
     set_nameflags {
         object = {
-            "target.symbols"
+            "config.includedirs"
+        ,   "config.unitdirs"
+        ,   "target.symbols"
         ,   "target.warnings"
+        ,   "target.defines"
+        ,   "target.undefines"
+        ,   "target.includedirs"
+        ,   "target.unitdirs"
+        ,   "target.languagemode"
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
+        ,   "toolchain.includedirs"
+        ,   "toolchain.unitdirs"
+        ,   "toolchain.languagemode"
+        ,   "toolchain.defines"
+        ,   "toolchain.undefines"
         }
     ,   binary = {
             "config.linkdirs"
+        ,   "config.includedirs"
+        ,   "config.unitdirs"
+        ,   "config.defines"
+        ,   "config.undefines"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
+        ,   "target.defines"
+        ,   "target.undefines"
+        ,   "target.includedirs"
+        ,   "target.unitdirs"
+        ,   "target.languagemode"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
         ,   "config.links"
@@ -53,6 +74,11 @@ language("pascal")
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
+        ,   "toolchain.includedirs"
+        ,   "toolchain.unitdirs"
+        ,   "toolchain.languagemode"
+        ,   "toolchain.defines"
+        ,   "toolchain.undefines"
         }
     ,   shared = {
             "config.linkdirs"
@@ -87,4 +113,3 @@ language("pascal")
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"        }
                 }
             }
-
