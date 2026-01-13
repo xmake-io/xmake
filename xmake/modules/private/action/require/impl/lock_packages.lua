@@ -66,7 +66,17 @@ function main(packages)
             local packagelock_key = _get_packagelock_key(instance)
             results[key][packagelock_key] = _lock_package(instance)
         end
-        io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}), {encoding = "binary"})
+        -- write to temporary file first, then copy if content is different
+        local lockfile = project.requireslock()
+        local content = string.serialize(results, {orderkeys = true})
+        local tmpfile = os.tmpfile()
+        
+        -- write to temporary file
+        io.writefile(tmpfile, content, {encoding = "binary"})
+        
+        -- copy to target file only if content is different
+        os.cp(tmpfile, lockfile, {copy_if_different = true})
+        os.rm(tmpfile)
     end
 end
 
