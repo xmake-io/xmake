@@ -90,11 +90,8 @@ end
 -- has include note?
 function has_include_note(line)
     local note = _g.note
-    if note then
-        if line:startswith(note) then
-            return note
-        end
-        return
+    if note and line:startswith(note) then
+        return note
     end
 
     local notes = get_include_notes()

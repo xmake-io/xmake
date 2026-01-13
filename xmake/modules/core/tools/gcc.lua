@@ -912,6 +912,18 @@ function add_sourceflags(self, sourcefile, fileconfig, target, targetkind)
     end
 end
 
+-- show warnings
+function _show_warnings(self, output)
+    local lines = output:split('\n', {plain = true})
+    if #lines > 0 then
+        if not option.get("diagnosis") then
+            lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
+        end
+        local warnings = table.concat(lines, "\n")
+        progress.show_output("${color.warning}%s", warnings)
+    end
+end
+
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
@@ -1064,14 +1076,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             function (ok, outdata, errdata)
                 -- show warnings?
                 if ok and errdata and #errdata > 0 and policy.build_warnings(opt) then
-                    local lines = errdata:split('\n', {plain = true})
-                    if #lines > 0 then
-                        if not option.get("diagnosis") then
-                            lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
-                        end
-                        local warnings = table.concat(lines, "\n")
-                        progress.show_output("${color.warning}%s", warnings)
-                    end
+                    _show_warnings(self, errdata)
                 end
 
                 -- generate the dependent includes
