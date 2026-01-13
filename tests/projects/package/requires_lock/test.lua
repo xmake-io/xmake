@@ -55,6 +55,12 @@ function remove_zlib_packages()
     os.execv("xmake", {"lua", "private.xrepo", "remove", "--all", "-y", "zlib"})
 end
 
+-- helper function to remove existing lock file
+function remove_lock_file(scriptdir)
+    local lockfile = path.join(scriptdir, "xmake-requires.lock")
+    os.tryrm(lockfile)
+end
+
 -- test lock file generation and basic content validation
 function test_lock_file_generation(scriptdir)
     local lockfile = path.join(scriptdir, "xmake-requires.lock")
@@ -173,14 +179,17 @@ function main(t)
     -- only for x86/x64, because it will take too long time on ci with arm/mips
     if os.subarch():startswith("x") or os.subarch() == "i386" then
 
+        -- get script directory from context filename
+        local scriptdir = path.directory(t.filename)
+
+        -- remove existing lock file before test
+        remove_lock_file(scriptdir)
+
         -- remove installed packages using xmake lua private.xrepo to trigger reinstallation
         remove_zlib_packages()
 
         -- build project and generate requires lock
         t:build()
-
-        -- get script directory from context filename
-        local scriptdir = path.directory(t.filename)
 
         -- test requires lock file generation and content
         test_lock_file_generation(scriptdir)
