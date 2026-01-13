@@ -1,7 +1,7 @@
 import("core.project.config")
 
 -- helper function to count table entries
-local function count_table(t)
+function count_table(t)
     local count = 0
     for _ in pairs(t) do
         count = count + 1
@@ -10,7 +10,7 @@ local function count_table(t)
 end
 
 -- helper function to get all package keys from lock data
-local function get_package_keys(lockdata)
+function get_package_keys(lockdata)
     local keys = {}
     for key, _ in pairs(lockdata) do
         if key ~= "__meta__" then
@@ -20,62 +20,27 @@ local function get_package_keys(lockdata)
     return keys
 end
 
--- helper function to debug lock file content
-local function debug_lock_file_content(lockdata)
-    print("=== Lock file debug info ===")
-    for key, value in pairs(lockdata) do
-        if key == "__meta__" then
-            print("metadata: version = " .. value.version)
-        else
-            print("platform: " .. key)
-            local count = 0
-            for pkgkey, _ in pairs(value) do
-                count = count + 1
-                print("  package: " .. pkgkey)
-            end
-            print("  total packages: " .. count)
-        end
-    end
-    print("==========================")
-end
-
 -- helper function to verify lock file basic structure
-local function verify_lock_file_structure(lockdata)
+function verify_lock_file_structure(lockdata)
     assert(lockdata, "lock file should be loadable")
     assert(lockdata.__meta__, "lock file should have metadata")
     assert(lockdata.__meta__.version == "1.0", "lock file version should be 1.0")
     
-    local plat = config.plat() or os.subhost()
-    local arch = config.arch() or os.subarch()
-    local plat_arch_key = plat .. "|" .. arch
-    
-    -- debug: print platform info for CI debugging
-    print("checking platform: " .. plat .. "|" .. arch)
-    debug_lock_file_content(lockdata)
-    
-    -- if current platform is not found, try to find any platform entry
-    if not lockdata[plat_arch_key] then
-        print("platform " .. plat_arch_key .. " not found, looking for any platform entry...")
-        local found_platform = nil
-        for key, value in pairs(lockdata) do
-            if key ~= "__meta__" then
-                found_platform = key
-                print("found platform entry: " .. key)
-                break
-            end
-        end
-        if found_platform then
-            return lockdata[found_platform]
-        else
-            assert(false, "no platform entries found in lock file")
+    -- find any platform entry
+    local found_platform = nil
+    for key, value in pairs(lockdata) do
+        if key ~= "__meta__" then
+            found_platform = key
+            break
         end
     end
     
-    return lockdata[plat_arch_key]
+    assert(found_platform, "no platform entries found in lock file")
+    return lockdata[found_platform]
 end
 
 -- helper function to count zlib entries
-local function count_zlib_entries(plat_entries)
+function count_zlib_entries(plat_entries)
     local zlib_count = 0
     for key, _ in pairs(plat_entries) do
         if key:find("zlib") then
@@ -147,9 +112,24 @@ function test_lock_file_stability(scriptdir, t)
     assert(lockdata_after_first.__meta__.version == lockdata_after_second.__meta__.version, "lock metadata version should not change")
     assert(count_table(lockdata_after_first) == count_table(lockdata_after_second), "lock file structure should not change")
     
-    -- compare platform-specific entries (use first available platform for cross-platform compatibility)
+    -- compare platform-specific entries using the same platform for consistency
     local plat_entries_after_first = verify_lock_file_structure(lockdata_after_first)
     local plat_entries_after_second = verify_lock_file_structure(lockdata_after_second)
+    
+    -- ensure we're comparing the same platform entries by finding the common platform
+    local first_platform_key = nil
+    for key, value in pairs(lockdata_after_first) do
+        if key ~= "__meta__" then
+            first_platform_key = key
+            break
+        end
+    end
+    
+    assert(first_platform_key, "no platform found in first lock file")
+    assert(lockdata_after_second[first_platform_key], "platform " .. first_platform_key .. " not found in second lock file")
+    
+    plat_entries_after_first = lockdata_after_first[first_platform_key]
+    plat_entries_after_second = lockdata_after_second[first_platform_key]
     
     assert(count_table(plat_entries_after_first) == count_table(plat_entries_after_second), "platform entries count should not change")
     
