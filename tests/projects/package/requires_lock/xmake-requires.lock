@@ -1,0 +1,13 @@
+{
+    __meta__ = {
+        version = "1.0"
+    },
+    ["macosx|x86_64"] = {
+        ["zlib >=1.2.11#f56260b5"] = {
+            version = "v1.3.1"
+        },
+        ["zlib#16fb575b"] = {
+            version = "v1.3.1"
+        }
+    }
+}
