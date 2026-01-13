@@ -39,15 +39,10 @@ function _lock_package(instance)
     result.branch     = instance:branch()
     result.tag        = instance:tag()
     if repo then
-        local lastcommit
-        local manifest = instance:manifest_load()
-        if manifest and manifest.repo then
-            lastcommit = manifest.repo.commit
-        end
-        if not lastcommit then
-            lastcommit = repo:commit()
-        end
-        result.repo   = {url = repo:url(), commit = lastcommit, branch = repo:branch()}
+        -- Even when locking pre-compiled packages,
+        -- we always use the repo and commit info in the current repository (instead of precompiled-artifacts manifest)
+        -- to ensure that the repo information remains stable when reverting to source code installation.
+        result.repo   = {url = repo:url(), commit = repo:commit(), branch = repo:branch()}
     end
     return result
 end
