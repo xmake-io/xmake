@@ -70,10 +70,10 @@ function main(packages)
         local lockfile = project.requireslock()
         local content = string.serialize(results, {orderkeys = true})
         local tmpfile = os.tmpfile()
-        
+
         -- write to temporary file
         io.writefile(tmpfile, content, {encoding = "binary"})
-        
+
         -- copy to target file only if content is different
         os.cp(tmpfile, lockfile, {copy_if_different = true})
         os.rm(tmpfile)

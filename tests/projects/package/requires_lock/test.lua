@@ -25,7 +25,7 @@ function verify_lock_file_structure(lockdata)
     assert(lockdata, "lock file should be loadable")
     assert(lockdata.__meta__, "lock file should have metadata")
     assert(lockdata.__meta__.version == "1.0", "lock file version should be 1.0")
-    
+
     -- find any platform entry
     local found_platform = nil
     for key, value in pairs(lockdata) do
@@ -34,7 +34,7 @@ function verify_lock_file_structure(lockdata)
             break
         end
     end
-    
+
     assert(found_platform, "no platform entries found in lock file")
     return lockdata[found_platform]
 end
@@ -48,6 +48,11 @@ function count_zlib_entries(plat_entries)
         end
     end
     return zlib_count
+end
+
+-- helper function to remove installed packages to trigger reinstallation
+function remove_zlib_packages()
+    os.execv("xmake", {"lua", "private.xrepo", "remove", "--all", "-y", "zlib"})
 end
 
 -- test lock file generation and basic content validation
@@ -92,30 +97,30 @@ end
 -- test lock file stability across rebuilds
 function test_lock_file_stability(scriptdir, t)
     local lockfile = path.join(scriptdir, "xmake-requires.lock")
-    
+
     -- get the lock file content and mtime after first build
     local lockdata_after_first = io.load(lockfile)
     local mtime_after_first = os.mtime(lockfile)
     local keys_after_first = get_package_keys(lockdata_after_first)
-    
+
     -- remove installed packages using xmake lua private.xrepo to trigger reinstallation
-    os.execv("xmake", {"lua", "private.xrepo", "remove", "--all", "-y", "zlib"})
-    
+    remove_zlib_packages()
+
     -- rebuild and verify lock file content doesn't change
     t:build()
-    
+
     local lockdata_after_second = io.load(lockfile)
     local mtime_after_second = os.mtime(lockfile)
     local keys_after_second = get_package_keys(lockdata_after_second)
-    
+
     -- compare lock file content
     assert(lockdata_after_first.__meta__.version == lockdata_after_second.__meta__.version, "lock metadata version should not change")
     assert(count_table(lockdata_after_first) == count_table(lockdata_after_second), "lock file structure should not change")
-    
+
     -- compare platform-specific entries using the same platform for consistency
     local plat_entries_after_first = verify_lock_file_structure(lockdata_after_first)
     local plat_entries_after_second = verify_lock_file_structure(lockdata_after_second)
-    
+
     -- ensure we're comparing the same platform entries by finding the common platform
     local first_platform_key = nil
     for key, value in pairs(lockdata_after_first) do
@@ -124,38 +129,38 @@ function test_lock_file_stability(scriptdir, t)
             break
         end
     end
-    
+
     assert(first_platform_key, "no platform found in first lock file")
     assert(lockdata_after_second[first_platform_key], "platform " .. first_platform_key .. " not found in second lock file")
-    
+
     plat_entries_after_first = lockdata_after_first[first_platform_key]
     plat_entries_after_second = lockdata_after_second[first_platform_key]
-    
+
     assert(count_table(plat_entries_after_first) == count_table(plat_entries_after_second), "platform entries count should not change")
-    
+
     -- verify package key order stability (keys should be in same order)
     assert(#keys_after_first == #keys_after_second, "package keys count should be the same")
     for i, key in ipairs(keys_after_first) do
         assert(keys_after_second[i] == key, "package key order should be stable at index " .. i .. ": " .. key)
     end
-    
+
     -- verify each package entry is identical
     for key, first_data in pairs(plat_entries_after_first) do
         local second_data = plat_entries_after_second[key]
         assert(second_data, "package entry should exist: " .. key)
-        assert(first_data.version == second_data.version, "version should not change for: " .. key)
-        assert(first_data.repo.url == second_data.repo.url, "repo url should not change for: " .. key)
-        assert(first_data.repo.commit == second_data.repo.commit, "repo commit should not change for: " .. key)
-        assert(first_data.repo.branch == second_data.repo.branch, "repo branch should not change for: " .. key)
+        assert(first_data.version == second_data.version, "version should not change for: " .. key .. ", first: " .. (first_data.version or "nil") .. ", second: " .. (second_data.version or "nil"))
+        assert(first_data.repo.url == second_data.repo.url, "repo url should not change for: " .. key .. ", first: " .. (first_data.repo.url or "nil") .. ", second: " .. (second_data.repo.url or "nil"))
+        assert(first_data.repo.commit == second_data.repo.commit, "repo commit should not change for: " .. key .. ", first: " .. (first_data.repo.commit or "nil") .. ", second: " .. (second_data.repo.commit or "nil"))
+        assert(first_data.repo.branch == second_data.repo.branch, "repo branch should not change for: " .. key .. ", first: " .. (first_data.repo.branch or "nil") .. ", second: " .. (second_data.repo.branch or "nil"))
     end
-    
+
     -- verify mtime doesn't change (lock file should only be written when content actually changes)
     -- With copy_if_different, the file should not be rewritten if content is identical
     local time_diff = math.abs(mtime_after_second - mtime_after_first)
     print("lock file mtime difference: " .. time_diff .. "s")
     -- mtime should be exactly the same when content is identical
     assert(time_diff == 0, "lock file mtime should not change when content is identical, diff: " .. time_diff .. "s")
-    
+
     print("✓ lock file stability test passed")
 end
 
@@ -167,6 +172,10 @@ function main(t)
 
     -- only for x86/x64, because it will take too long time on ci with arm/mips
     if os.subarch():startswith("x") or os.subarch() == "i386" then
+
+        -- remove installed packages using xmake lua private.xrepo to trigger reinstallation
+        remove_zlib_packages()
+
         -- build project and generate requires lock
         t:build()
 
