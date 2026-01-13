@@ -1,5 +1,50 @@
 import("core.project.config")
 
+-- helper function to count table entries
+local function count_table(t)
+    local count = 0
+    for _ in pairs(t) do
+        count = count + 1
+    end
+    return count
+end
+
+-- helper function to get all package keys from lock data
+local function get_package_keys(lockdata)
+    local keys = {}
+    for key, _ in pairs(lockdata) do
+        if key ~= "__meta__" then
+            table.insert(keys, key)
+        end
+    end
+    return keys
+end
+
+-- helper function to verify lock file basic structure
+local function verify_lock_file_structure(lockdata)
+    assert(lockdata, "lock file should be loadable")
+    assert(lockdata.__meta__, "lock file should have metadata")
+    assert(lockdata.__meta__.version == "1.0", "lock file version should be 1.0")
+    
+    local plat = config.plat() or os.subhost()
+    local arch = config.arch() or os.subarch()
+    local plat_arch_key = plat .. "|" .. arch
+    assert(lockdata[plat_arch_key], "should have entries for current platform: " .. plat_arch_key)
+    
+    return lockdata[plat_arch_key]
+end
+
+-- helper function to count zlib entries
+local function count_zlib_entries(plat_entries)
+    local zlib_count = 0
+    for key, _ in pairs(plat_entries) do
+        if key:find("zlib") then
+            zlib_count = zlib_count + 1
+        end
+    end
+    return zlib_count
+end
+
 -- test lock file generation and basic content validation
 function test_lock_file_generation(scriptdir)
     local lockfile = path.join(scriptdir, "xmake-requires.lock")
@@ -7,21 +52,10 @@ function test_lock_file_generation(scriptdir)
     
     -- load and verify lock file content
     local lockdata = io.load(lockfile)
-    assert(lockdata, "lock file should be loadable")
-    assert(lockdata.__meta__, "lock file should have metadata")
-    assert(lockdata.__meta__.version == "1.0", "lock file version should be 1.0")
+    local plat_entries = verify_lock_file_structure(lockdata)
     
-    -- check platform-specific entries exist
-    local plat = config.plat() or os.subhost()
-    local arch = config.arch() or os.subarch()
-    local plat_arch_key = plat .. "|" .. arch
-    assert(lockdata[plat_arch_key], "should have entries for current platform: " .. plat_arch_key)
-    
-    -- check zlib entries
-    local plat_entries = lockdata[plat_arch_key]
+    -- check zlib entries and repo info
     local found_zlib = false
-    local found_zlib_shared = false
-    
     for key, package_data in pairs(plat_entries) do
         if key:find("zlib#") then
             found_zlib = true
@@ -32,16 +66,20 @@ function test_lock_file_generation(scriptdir)
         end
     end
     
-    -- we should have two zlib entries (one with version constraint, one with shared config)
-    local zlib_count = 0
-    for key, _ in pairs(plat_entries) do
-        if key:find("zlib") then
-            zlib_count = zlib_count + 1
+    -- we should have three zlib entries (version constraint, specific version, shared config)
+    local zlib_count = count_zlib_entries(plat_entries)
+    assert(zlib_count == 3, "should find 3 zlib entries in lock file, found: " .. zlib_count)
+    assert(found_zlib, "should find zlib entry in lock file")
+    
+    -- verify specific versions are locked correctly
+    local found_old_version = false
+    for key, package_data in pairs(plat_entries) do
+        if key:find("zlib 1.2.13#") then
+            found_old_version = true
+            assert(package_data.version == "v1.2.13", "zlib 1.2.13 should be locked to v1.2.13")
         end
     end
-    
-    assert(zlib_count == 2, "should find 2 zlib entries in lock file, found: " .. zlib_count)
-    assert(found_zlib, "should find zlib entry in lock file")
+    assert(found_old_version, "should find zlib 1.2.13 entry with v1.2.13")
     
     print("✓ lock file generation test passed")
 end
@@ -52,6 +90,7 @@ function test_lock_file_stability(scriptdir, t)
     
     -- get the lock file content after first build
     local lockdata_after_first = io.load(lockfile)
+    local keys_after_first = get_package_keys(lockdata_after_first)
     
     -- remove installed packages using xmake lua private.xrepo to trigger reinstallation
     os.execv("xmake", {"lua", "private.xrepo", "remove", "--all", "-y", "zlib"})
@@ -60,34 +99,27 @@ function test_lock_file_stability(scriptdir, t)
     t:build()
     
     local lockdata_after_second = io.load(lockfile)
+    local keys_after_second = get_package_keys(lockdata_after_second)
     
     -- compare lock file content
     assert(lockdata_after_first.__meta__.version == lockdata_after_second.__meta__.version, "lock metadata version should not change")
-    
-    -- count table entries properly
-    local function count_table(t)
-        local count = 0
-        for _ in pairs(t) do
-            count = count + 1
-        end
-        return count
-    end
-    
     assert(count_table(lockdata_after_first) == count_table(lockdata_after_second), "lock file structure should not change")
     
     -- compare platform-specific entries
-    local plat = config.plat() or os.subhost()
-    local arch = config.arch() or os.subarch()
-    local plat_arch_key = plat .. "|" .. arch
+    local plat_entries_after_first = verify_lock_file_structure(lockdata_after_first)
+    local plat_entries_after_second = verify_lock_file_structure(lockdata_after_second)
     
-    local first_plat_entries = lockdata_after_first[plat_arch_key]
-    local second_plat_entries = lockdata_after_second[plat_arch_key]
+    assert(count_table(plat_entries_after_first) == count_table(plat_entries_after_second), "platform entries count should not change")
     
-    assert(count_table(first_plat_entries) == count_table(second_plat_entries), "platform entries count should not change")
+    -- verify package key order stability (keys should be in same order)
+    assert(#keys_after_first == #keys_after_second, "package keys count should be the same")
+    for i, key in ipairs(keys_after_first) do
+        assert(keys_after_second[i] == key, "package key order should be stable at index " .. i .. ": " .. key)
+    end
     
     -- verify each package entry is identical
-    for key, first_data in pairs(first_plat_entries) do
-        local second_data = second_plat_entries[key]
+    for key, first_data in pairs(plat_entries_after_first) do
+        local second_data = plat_entries_after_second[key]
         assert(second_data, "package entry should exist: " .. key)
         assert(first_data.version == second_data.version, "version should not change for: " .. key)
         assert(first_data.repo.url == second_data.repo.url, "repo url should not change for: " .. key)
