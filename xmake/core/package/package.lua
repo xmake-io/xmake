@@ -3063,7 +3063,7 @@ function package.load_from_repository(packagename, packagedir, opt)
     end
 
     -- new an instance
-    instance = _instance.new(packagename, packageinfo, {scriptdir = path.directory(scriptpath), repo = repo})
+    instance = _instance.new(packagename, packageinfo, {scriptdir = path.directory(scriptpath), repo = opt.repo})
 
     -- reset plat/arch
     if opt.plat then
