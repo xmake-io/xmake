@@ -21,11 +21,13 @@
 -- imports
 import("core.base.option")
 
+-- supported encodings
+local encodings = {"ansi", "ascii", "gb2312", "gbk", "iso8859", "ucs2", "ucs4", "utf16", "utf16be", "utf16le", "utf32", "utf32be", "utf32le", "utf8"}
+
 -- the options
-local options =
-{
-    {'f', "from",   "kv", "utf8", "The source encoding."},
-    {'t', "to",     "kv", "utf8", "The target encoding."},
+local options = {
+    {'f', "from",   "kv", "utf8", "The source encoding.", values = encodings},
+    {'t', "to",     "kv", "utf8", "The target encoding.", values = encodings},
     {'o', "output", "kv", nil,    "The output file."},
     {nil, "file",   "v",  nil,    "The input file."}
 }
@@ -40,43 +42,12 @@ function main(...)
                                              "Usage: xmake l cli.iconv [options] [file]")
 
     -- get arguments
-    local input_file = args.file
-    local output_file = args.output
+    local input_file = assert(args.file, "input file required!")
+    local output_file = assert(args.output, "output file required!")
     local from_code = args.from
     local to_code = args.to
 
-    -- read content
-    local content
-    if input_file then
-        local file, errors = io.open(input_file, "r", {encoding = from_code})
-        if not file then
-            raise(errors)
-        end
-        content = file:read("*all")
-        file:close()
-    else
-        -- TODO: support stdin
-        raise("Input file required.")
-    end
-
-    -- write content
-    if output_file then
-        local file, errors = io.open(output_file, "w", {encoding = to_code})
-        if not file then
-            raise(errors)
-        end
-        file:write(content)
-        file:close()
-    else
-        -- write to stdout
-        -- we try to use /dev/stdout to support encoding conversion
-        local file, errors = io.open("/dev/stdout", "w", {encoding = to_code})
-        if file then
-            file:write(content)
-            file:close()
-        else
-            -- fallback to print directly (it may be not correct if the target encoding is not utf8/ansi)
-            io.write(content)
-        end
-    end
+    -- read and write content
+    local content = io.readfile(input_file, {encoding = from_code})
+    io.writefile(output_file, content, {encoding = to_code})
 end
