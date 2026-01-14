@@ -201,6 +201,17 @@ function sandbox_io.insert(filepath, lineidx, text, opt)
     return data
 end
 
+-- convert file encoding
+function sandbox_io.convert(inputfile, outputfile, opt)
+    assert(inputfile and outputfile)
+    inputfile = vformat(inputfile)
+    outputfile = vformat(outputfile)
+    local ok, errors = io.convert(inputfile, outputfile, opt)
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- get std file
 function sandbox_io.stdfile(filepath)
     assert(filepath)

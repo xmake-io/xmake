@@ -94,3 +94,23 @@ function test_write(t)
 
     os.tryrm("temp")
 end
+
+function test_convert(t)
+    local src = "files/utf8bom-lf-eleof"
+    local dst = "temp/convert_test.txt"
+    os.mkdir("temp")
+    
+    -- utf8 to gbk
+    io.convert(src, dst, {from = "utf8", to = "gbk"})
+    local content = io.readfile(dst, {encoding = "binary"})
+    t:are_equal(content, "123\\\n456\n789\n")
+    
+    -- gbk to utf8
+    local src_gbk = dst
+    local dst_utf8 = "temp/convert_test_utf8.txt"
+    io.convert(src_gbk, dst_utf8, {from = "gbk", to = "utf8"})
+    content = io.readfile(dst_utf8, {encoding = "binary"})
+    t:are_equal(content, "123\\\n456\n789\n")
+
+    os.tryrm("temp")
+end

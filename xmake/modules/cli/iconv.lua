@@ -47,7 +47,6 @@ function main(...)
     local from_code = args.from
     local to_code = args.to
 
-    -- read and write content
-    local content = io.readfile(input_file, {encoding = from_code})
-    io.writefile(output_file, content, {encoding = to_code})
+    -- convert encoding
+    io.convert(input_file, output_file, {from = from_code, to = to_code})
 end
