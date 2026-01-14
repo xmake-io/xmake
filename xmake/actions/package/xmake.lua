@@ -30,7 +30,7 @@ task("package")
             {'a', "all",        "k",  nil,       "Package all targets."},
             {},
             {'f', "format",     "kv", "local",   "Set the package format.",
-                                                 values = {"localpkg", "local", "remote"}},
+                                                 values = {"oldpkg", "local", "remote"}},
             {nil, "homepage",   "kv",  nil,      "Set the homepage of package."},
             {nil, "description","kv",  nil,      "Set the description of package."},
             {nil, "url",        "kv",  nil,      "Set the url of remote package."},
