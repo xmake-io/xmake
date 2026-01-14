@@ -100,7 +100,7 @@ function test_convert(t)
     local dst = "temp/convert_test.txt"
     os.mkdir("temp")
     
-    -- utf8 to gbk
+    -- utf8 to gbk (strip bom)
     io.convert(src, dst, {from = "utf8", to = "gbk"})
     local content = io.readfile(dst, {encoding = "binary"})
     t:are_equal(content, "123\\\n456\n789\n")
@@ -111,6 +111,52 @@ function test_convert(t)
     io.convert(src_gbk, dst_utf8, {from = "gbk", to = "utf8"})
     content = io.readfile(dst_utf8, {encoding = "binary"})
     t:are_equal(content, "123\\\n456\n789\n")
+
+    -- utf8 to utf8bom
+    local dst_utf8bom = "temp/convert_test_utf8bom.txt"
+    io.convert(src, dst_utf8bom, {from = "utf8", to = "utf8bom"})
+    content = io.readfile(dst_utf8bom, {encoding = "binary"})
+    t:are_equal(content:sub(1, 3), "\239\187\191")
+    t:are_equal(content:sub(4), "123\\\n456\n789\n")
+
+    -- utf16le to utf8
+    local src_utf16le = "files/utf16le-crlf-neleof"
+    local dst_utf16le_to_utf8 = "temp/convert_test_utf16le_to_utf8.txt"
+    io.convert(src_utf16le, dst_utf16le_to_utf8, {from = "utf16le", to = "utf8"})
+    content = io.readfile(dst_utf16le_to_utf8, {encoding = "binary"})
+    t:are_equal(content, "123\\\r\n456\r\n789")
+
+    -- utf16be to utf8
+    local src_utf16be = "files/utf16be-lf-eleof"
+    local dst_utf16be_to_utf8 = "temp/convert_test_utf16be_to_utf8.txt"
+    io.convert(src_utf16be, dst_utf16be_to_utf8, {from = "utf16be", to = "utf8"})
+    content = io.readfile(dst_utf16be_to_utf8, {encoding = "binary"})
+    t:are_equal(content, "123\\\n456\n789\n")
+
+    -- utf8 to utf16le
+    local dst_utf8_to_utf16le = "temp/convert_test_utf8_to_utf16le.txt"
+    io.convert(src, dst_utf8_to_utf16le, {from = "utf8", to = "utf16le"})
+    content = io.readfile(dst_utf8_to_utf16le, {encoding = "binary"})
+    t:are_equal(content:sub(1, 2), "1\0") 
+
+    -- utf8 to utf16be
+    local dst_utf8_to_utf16be = "temp/convert_test_utf8_to_utf16be.txt"
+    io.convert(src, dst_utf8_to_utf16be, {from = "utf8", to = "utf16be"})
+    content = io.readfile(dst_utf8_to_utf16be, {encoding = "binary"})
+    t:are_equal(content:sub(1, 2), "\0001")
+
+    -- utf8 to utf16lebom
+    local dst_utf8_to_utf16lebom = "temp/convert_test_utf8_to_utf16lebom.txt"
+    io.convert(src, dst_utf8_to_utf16lebom, {from = "utf8", to = "utf16lebom"})
+    content = io.readfile(dst_utf8_to_utf16lebom, {encoding = "binary"})
+    t:are_equal(content:sub(1, 2), "\255\254")
+
+    -- utf8 to utf16bom
+    local dst_utf8_to_utf16bom = "temp/convert_test_utf8_to_utf16bom.txt"
+    io.convert(src, dst_utf8_to_utf16bom, {from = "utf8", to = "utf16bom"})
+    content = io.readfile(dst_utf8_to_utf16bom, {encoding = "binary"})
+    local bom = content:sub(1, 2)
+    t:require(bom == "\255\254" or bom == "\254\255")
 
     os.tryrm("temp")
 end

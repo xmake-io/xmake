@@ -599,6 +599,12 @@ function io.close(file)
 end
 
 -- convert file encoding
+--
+-- @param inputfile     the input file path
+-- @param outputfile    the output file path
+-- @param opt           the options
+--                      - from: the input encoding (default: utf8)
+--                      - to: the output encoding (default: utf8)
 function io.convert(inputfile, outputfile, opt)
     opt = opt or {}
     inputfile = tostring(inputfile)
