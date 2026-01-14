@@ -65,7 +65,7 @@ function main(argv)
             table.insert(argv, "-D")
         end
         os.execv(os.programfile(), argv)
-        argv = {"p", "-f", "local"}
+        argv = {"p", "-f", "oldpkg"}
         if args.outputdir then
             table.insert(argv, "-o")
             table.insert(argv, args.outputdir)
