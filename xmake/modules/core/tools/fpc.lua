@@ -123,8 +123,8 @@ function nf_undefine(self, macro)
 end
 
 -- make the language flag
-function nf_languagemode(self, language)
-    local table = {
+function nf_language(self, language)
+    local mode = {
         pascal = "-Mfpc",
         fpc = "-Mfpc",
         objfpc = "-Mobjfpc",
@@ -134,7 +134,7 @@ function nf_languagemode(self, language)
         extendedpascal = "-Mextendedpascal",
         delphiunicode = "-Mdelphiunicode",
     }
-    return table[language]
+    return mode[language]
 end
 
 -- make the build arguments list

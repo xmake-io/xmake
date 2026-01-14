@@ -34,7 +34,7 @@ function _get_apis()
     ,   "target.add_includedirs"
     ,   "target.add_defines"
     ,   "target.add_undefines"
-    ,   "target.set_languagemode"
+    ,   "target.add_languages"
         -- option.add_xxx
     ,   "option.add_links"
     ,   "option.add_syslinks"
@@ -47,7 +47,7 @@ function _get_apis()
     ,   "option.add_includedirs"
     ,   "option.add_defines"
     ,   "option.add_undefines"
-    ,   "option.set_languagemode"
+    ,   "option.add_languages"
         -- package.add_xxx
     ,   "package.add_links"
     ,   "package.add_syslinks"
@@ -74,7 +74,7 @@ function _get_apis()
     ,   "toolchain.add_includedirs"
     ,   "toolchain.add_defines"
     ,   "toolchain.add_undefines"
-    ,   "toolchain.set_languagemode"
+    ,   "toolchain.add_languages"
     }
     apis.paths = {
         -- target.add_xxx
