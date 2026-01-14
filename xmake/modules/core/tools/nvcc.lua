@@ -326,6 +326,18 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     os.runv(program, argv, {envs = self:runenvs()})
 end
 
+-- show warnings
+function _show_warnings(self, output)
+    local lines = output:split('\n', {plain = true})
+    if #lines > 0 then
+        if not option.get("diagnosis") then
+            lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
+        end
+        local warnings = table.concat(lines, "\n")
+        progress.show_output("${color.warning}%s", warnings)
+    end
+end
+
 -- support `-MD -MF depfile.d`?
 function _has_flags_md_mf(self)
     local has_md_mf = _g._HAS_MD_MF
@@ -446,11 +458,13 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         },
         finally
         {
-            function (ok, warnings)
-
-                -- print some warnings
-                if warnings and #warnings > 0 and policy.build_warnings(opt) then
-                    progress.show_output("${color.warning}%s", table.concat(table.slice(warnings:split('\n', {plain = true}), 1, 8), '\n'))
+            function (ok, outdata, errdata)
+                -- show warnings?
+                if ok and policy.build_warnings(opt) then
+                    local output = (outdata or "") .. (errdata or "")
+                    if #output > 0 then
+                        _show_warnings(self, output)
+                    end
                 end
 
                 -- generate the dependent includes

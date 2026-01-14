@@ -60,9 +60,12 @@ function _add_lto_optimization(target, sourcekind)
         -- @see https://github.com/xmake-io/xmake/issues/7029
         -- https://clang.llvm.org/docs/CommandGuide/clang.html
         if target:is_plat("macosx", "iphoneos", "watchos") then
-            local lto_objectfile = target:objectfile(target:targetfile() .. ".lto")
-            target:add("ldflags", "-Wl,-object_path_lto," .. lto_objectfile)
-            target:add("shflags", "-Wl,-object_path_lto," .. lto_objectfile)
+            local targetfile = target:targetfile()
+            if targetfile then
+                local lto_objectfile = target:objectfile(targetfile .. ".lto")
+                target:add("ldflags", "-Wl,-object_path_lto," .. lto_objectfile)
+                target:add("shflags", "-Wl,-object_path_lto," .. lto_objectfile)
+            end
         end
     elseif ld == "gcc" or ld == "gxx" then
         target:add("ldflags", "-flto")

@@ -25,7 +25,7 @@ import("core.base.hashset")
 -- main entry
 function main()
     local format = option.get("format") or "local"
-    local maps = hashset.from({"local", "remote", "localpkg"})
+    local maps = hashset.from({"local", "remote", "oldpkg"})
     if maps:has(format) then
         import(format)()
     else

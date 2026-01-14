@@ -28,7 +28,7 @@ task("uninstall")
         options = {
             {nil, "installdir", "kv", nil   , "Set the install directory.",
                                               "e.g.",
-                                              "    $ xmake uninstall -o /usr/local",
+                                              "    $ xmake uninstall --installdir=/usr/local",
                                               "or  $ DESTDIR=/usr/local xmake uninstall",
                                               "or  $ INSTALLDIR=/usr/local xmake uninstall" },
             {'g', "group",      "kv",  nil  , "Uninstall all targets of the given group. It support path pattern matching.",
