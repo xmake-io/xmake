@@ -87,17 +87,27 @@ function get_include_notes()
     return notes
 end
 
--- main entry
-function main(line)
+-- has include note?
+function has_include_note(line)
+    local note = _g.note
+    if note and line:startswith(note) then
+        return note
+    end
+
     local notes = get_include_notes()
     for idx, note in ipairs(notes) do
         if line:startswith(note) then
-            -- optimization: move this note to head
-            if idx ~= 1 then
-                table.insert(notes, 1, note)
-            end
-            return line:sub(#note):trim()
+            _g.note = note
+            return note
         end
+    end
+end
+
+-- parse note includes
+function main(line)
+    local note = has_include_note(line)
+    if note then
+        return line:sub(#note):trim()
     end
 end
 

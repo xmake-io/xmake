@@ -696,6 +696,52 @@ function compargv(self, sourcefile, objectfile, flags, opt)
     return self:program(), (opt and opt.rawargs) and argv or winos.cmdargv(argv)
 end
 
+-- show warnings
+function _show_warnings(self, output, sourcefile)
+    local lines = {}
+    local has_warnings = false
+    local has_source_dependencies = _has_source_dependencies(self)
+    for _, line in ipairs(output:split("\n", {plain = true})) do
+        line = line:rtrim()
+        if #line > 0 then
+            local skip = false
+
+            -- filter includes notes: "Note: including file: xxx.h"
+            if not has_source_dependencies and parse_include.has_include_note(line) then
+                skip = true
+            end
+
+            -- filter source filename echo
+            --
+            -- e.g.
+            -- main.cpp     <-- skip it
+            -- src\main.cpp(2): warning C5295: #warning xxx
+            --
+            if not skip then
+                -- we don't need use isfile() to check it, because it's too slow
+                if sourcefile:endswith(line) and not line:find(":", 1, true) then
+                    skip = true
+                end
+            end
+
+            if not skip then
+                table.insert(lines, line)
+                if line:find("warning", 1, true) then
+                    has_warnings = true
+                end
+            end
+        end
+    end
+
+    if has_warnings and #lines > 0 then
+        if not option.get("diagnosis") then
+            lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
+        end
+        local warnings = table.concat(lines, "\r\n")
+        progress.show_output("${color.warning}%s", warnings)
+    end
+end
+
 -- compile the source file
 function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
@@ -760,7 +806,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                     -- filter includes notes: "Note: including file: xxx.h", @note maybe not english language
                     for _, line in ipairs(tostring(errors):split("\n", {plain = true})) do
                         line = line:rtrim()
-                        if not parse_include(line) then
+                        if not parse_include.has_include_note(line) then
                             results = results .. line .. "\r\n"
                         end
                     end
@@ -774,28 +820,13 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         finally
         {
             function (ok, outdata, errdata)
-
-                -- show warnings?
                 if ok and policy.build_warnings(opt) then
                     local output = outdata or ""
                     if #output:trim() == 0 then
                         output = errdata or ""
                     end
-                    if #output:trim() > 0 then
-                        local lines = {}
-                        for _, line in ipairs(output:split("\n", {plain = true})) do
-                            line = line:rtrim()
-                            if line:match("warning %a+[0-9]+%s*:") then
-                                table.insert(lines, line)
-                            end
-                        end
-                        if #lines > 0 then
-                            if not option.get("diagnosis") then
-                                lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
-                            end
-                            local warnings = table.concat(lines, "\r\n")
-                            progress.show_output("${color.warning}%s", warnings)
-                        end
+                    if #output > 0 then
+                        _show_warnings(self, output, sourcefile)
                     end
                 end
             end
