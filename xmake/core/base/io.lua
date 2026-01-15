@@ -598,6 +598,33 @@ function io.close(file)
     return (file or io.stdout):close()
 end
 
+-- convert file encoding
+--
+-- @param inputfile     the input file path
+-- @param outputfile    the output file path
+-- @param opt           the options
+--                      - from: the input encoding, e.g. utf8, utf8bom, utf16, utf16le, utf16lebom, utf16be, gb2312, gbk, iso8859, ucs2, ucs4, utf32 .. (default: utf8)
+--                      - to: the output encoding, e.g. utf8, utf8bom, utf16, utf16le, utf16lebom, utf16be, gb2312, gbk, iso8859, ucs2, ucs4, utf32 .. (default: utf8)
+function io.convert(inputfile, outputfile, opt)
+    opt = opt or {}
+    inputfile = tostring(inputfile)
+    outputfile = tostring(outputfile)
+    local from = opt.from or "utf8"
+    local to = opt.to or "utf8"
+
+    -- try using c implementation first
+    if io.file_convert and io.file_convert(inputfile, outputfile, from, to) then
+        return true
+    end
+
+    -- fallback to lua implementation (slow but works)
+    local content, errors = io.readfile(inputfile, {encoding = from})
+    if not content then
+        return false, errors
+    end
+    return io.writefile(outputfile, content, {encoding = to})
+end
+
 -- save object the the given filepath
 function io.save(filepath, object, opt)
     opt = opt or {}
