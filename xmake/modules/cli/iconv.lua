@@ -22,14 +22,15 @@
 import("core.base.option")
 
 -- supported encodings
-local encodings = {"ansi", "ascii", "gb2312", "gbk", "iso8859", "ucs2", "ucs4", "utf16", "utf16be", "utf16le", "utf32", "utf32be", "utf32le", "utf8"}
+local encodings = {"ansi", "ascii", "gb2312", "gbk", "iso8859", "ucs2", "ucs4", "utf16", "utf16be", "utf16bom", "utf16le", "utf16lebom", "utf32", "utf32be", "utf32le", "utf8", "utf8bom"}
 
 -- the options
 local options = {
-    {'f', "from",   "kv", "utf8", "The source encoding.", values = encodings},
-    {'t', "to",     "kv", "utf8", "The target encoding.", values = encodings},
-    {'o', "output", "kv", nil,    "The output file."},
-    {nil, "file",   "v",  nil,    "The input file."}
+    {'f', "from",       "kv", "utf8", "The source encoding.", values = encodings},
+    {'t', "to",         "kv", "utf8", "The target encoding.", values = encodings},
+    {'l', "list",       "k",  nil,    "List supported encodings."},
+    {'o', "outputfile", "kv", nil,    "The output file."},
+    {nil, "inputfile",  "v",  nil,    "The input file."}
 }
 
 -- main entry
@@ -39,11 +40,17 @@ function main(...)
     local argv = table.pack(...)
     local args = option.parse(argv, options, "Convert encoding of a file.",
                                              "",
-                                             "Usage: xmake l cli.iconv [options] [file]")
+                                             "Usage: xmake l cli.iconv [options] [inputfile]")
+
+    -- list encodings
+    if args.list then
+        print(table.concat(encodings, " "))
+        return
+    end
 
     -- get arguments
-    local input_file = assert(args.file, "input file required!")
-    local output_file = assert(args.output, "output file required!")
+    local input_file = assert(args.inputfile, "input file required!")
+    local output_file = assert(args.outputfile, "output file required!")
     local from_code = args.from
     local to_code = args.to
 

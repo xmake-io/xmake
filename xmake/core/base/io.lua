@@ -603,8 +603,8 @@ end
 -- @param inputfile     the input file path
 -- @param outputfile    the output file path
 -- @param opt           the options
---                      - from: the input encoding (default: utf8)
---                      - to: the output encoding (default: utf8)
+--                      - from: the input encoding, e.g. utf8, utf8bom, utf16, utf16le, utf16lebom, utf16be, gb2312, gbk, iso8859, ucs2, ucs4, utf32 .. (default: utf8)
+--                      - to: the output encoding, e.g. utf8, utf8bom, utf16, utf16le, utf16lebom, utf16be, gb2312, gbk, iso8859, ucs2, ucs4, utf32 .. (default: utf8)
 function io.convert(inputfile, outputfile, opt)
     opt = opt or {}
     inputfile = tostring(inputfile)
