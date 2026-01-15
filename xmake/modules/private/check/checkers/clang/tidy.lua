@@ -85,6 +85,69 @@ function _add_target_files(sourcefiles, target)
     end
 end
 
+-- get clang-tidy
+function _get_clang_tidy()
+    local clang_tidy = find_tool("clang-tidy")
+    if clang_tidy then
+        return clang_tidy
+    end
+
+    -- enter the environments of llvm
+    local oldenvs = packagenv.enter("llvm")
+
+    -- find clang-tidy
+    local packages = {}
+    local clang_tidy = find_tool("clang-tidy")
+    if not clang_tidy then
+        table.join2(packages, install_packages("llvm"))
+    end
+
+    -- enter the environments of installed packages
+    for _, instance in ipairs(packages) do
+        instance:envs_enter()
+    end
+
+    -- we need to force detect and flush detect cache after loading all environments
+    if not clang_tidy then
+        clang_tidy = find_tool("clang-tidy", {force = true})
+    end
+
+    os.setenvs(oldenvs)
+    return clang_tidy
+end
+
+-- get compile_commands.json file
+function _get_compdb_file(opt)
+    local db_path = opt.compdb
+    if not db_path then
+        -- @see https://github.com/xmake-io/xmake/issues/5583#issuecomment-2337696628
+        local outputdir
+        local extraconf = project.extraconf("target.rules", "plugin.compile_commands.autoupdate")
+        if extraconf then
+            outputdir = extraconf.outputdir
+        end
+        if outputdir then
+            db_path = path.join(outputdir, "compile_commands.json")
+        end
+    end
+    if not db_path then
+        db_path = "compile_commands.json"
+    end
+    if os.isdir(db_path) then
+        local db_file_path = path.join(db_path, "compile_commands.json")
+        if os.isfile(db_file_path) then
+            db_path = db_file_path
+        end
+    end
+    if not os.isfile(db_path) then
+        local outputdir = os.tmpfile() .. ".dir"
+        local filename = path.filename(db_path)
+        db_path = outputdir and path.join(outputdir, filename) or filename
+        task.run("project", {quiet = true, kind = "compile_commands", lsp = "clangd", outputdir = outputdir})
+    end
+    return path.absolute(db_path)
+end
+
 -- check a single sourcefile
 function _check_sourcefile(clang_tidy, sourcefile, opt)
     progress.show(opt.progress, "clang-tidy.analyzing %s", sourcefile)
@@ -181,34 +244,18 @@ function _check(clang_tidy, opt)
     opt = opt or {}
 
     -- generate compile_commands.json first
-    local db_path = opt.compdb
-    if not db_path then
-        -- @see https://github.com/xmake-io/xmake/issues/5583#issuecomment-2337696628
-        local outputdir
-        local extraconf = project.extraconf("target.rules", "plugin.compile_commands.autoupdate")
-        if extraconf then
-            outputdir = extraconf.outputdir
-        end
-        if outputdir then
-            db_path = path.join(outputdir, "compile_commands.json")
-        end
+    opt.compdbfile = _get_compdb_file(opt)
+
+    -- save option context
+    option.save()
+
+    -- set verbose and diagnosis if specified
+    if opt.verbose then
+        option.set("verbose", true)
     end
-    if not db_path then
-        db_path = "compile_commands.json"
+    if opt.diagnosis then
+        option.set("diagnosis", true)
     end
-    if os.isdir(db_path) then
-        local db_file_path = path.join(db_path, "compile_commands.json")
-        if os.isfile(db_file_path) then
-            db_path = db_file_path
-        end
-    end
-    if not os.isfile(db_path) then
-        local outputdir = os.tmpfile() .. ".dir"
-        local filename = path.filename(db_path)
-        db_path = outputdir and path.join(outputdir, filename) or filename
-        task.run("project", {quiet = true, kind = "compile_commands", lsp = "clangd", outputdir = outputdir})
-    end
-    opt.compdbfile = path.absolute(db_path)
 
     -- get sourcefiles
     local sourcefiles = {}
@@ -235,37 +282,9 @@ function _check(clang_tidy, opt)
 
     -- check files
     _check_sourcefiles(clang_tidy, sourcefiles, opt)
-end
 
--- get clang-tidy
-function _get_clang_tidy()
-    local clang_tidy = find_tool("clang-tidy")
-    if clang_tidy then
-        return clang_tidy
-    end
-
-    -- enter the environments of llvm
-    local oldenvs = packagenv.enter("llvm")
-
-    -- find clang-tidy
-    local packages = {}
-    local clang_tidy = find_tool("clang-tidy")
-    if not clang_tidy then
-        table.join2(packages, install_packages("llvm"))
-    end
-
-    -- enter the environments of installed packages
-    for _, instance in ipairs(packages) do
-        instance:envs_enter()
-    end
-
-    -- we need to force detect and flush detect cache after loading all environments
-    if not clang_tidy then
-        clang_tidy = find_tool("clang-tidy", {force = true})
-    end
-
-    os.setenvs(oldenvs)
-    return clang_tidy
+    -- restore option context
+    option.restore()
 end
 
 function main(argv)
@@ -274,17 +293,6 @@ function main(argv)
     local args = option.parse(argv or {}, options, "Use clang-tidy to check project code."
                                            , ""
                                            , "Usage: xmake check clang.tidy [options]")
-
-    -- save option context
-    option.save()
-
-    -- set verbose and diagnosis if specified
-    if args.verbose then
-        option.set("verbose", true)
-    end
-    if args.diagnosis then
-        option.set("diagnosis", true)
-    end
 
     -- find clang-tidy
     local clang_tidy = _get_clang_tidy()
@@ -298,7 +306,5 @@ function main(argv)
     else
         _check(clang_tidy, args)
     end
-
-    -- restore option context
-    option.restore()
 end
+
