@@ -50,10 +50,20 @@ function main(...)
 
     -- get arguments
     local input_file = assert(args.inputfile, "input file required!")
-    local output_file = assert(args.outputfile, "output file required!")
+    local output_file = args.outputfile
     local from_code = args.from
     local to_code = args.to
 
     -- convert encoding
-    io.convert(input_file, output_file, {from = from_code, to = to_code})
+    if output_file then
+        io.convert(input_file, output_file, {from = from_code, to = to_code})
+    else
+        local tmpfile = os.tmpfile()
+        io.convert(input_file, tmpfile, {from = from_code, to = to_code})
+        local data = io.readfile(tmpfile, {encoding = "binary"})
+        if data then
+            io.write(data)
+        end
+        os.rm(tmpfile)
+    end
 end
