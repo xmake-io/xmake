@@ -326,7 +326,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         localcache.clear("package")
         localcache.clear("toolchain")
         localcache.set("config", "recheck", true)
-        localcache.save()
+        if not opt.loadonly then
+            localcache.save()
+        end
 
         -- check platform
         instance_plat:check()
@@ -390,31 +392,34 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         _export_configs()
     end
 
-    -- we need to save it and enable external working mode
-    -- if we configure the given project directory
-    --
-    -- @see https://github.com/xmake-io/xmake/issues/3342
-    --
-    local projectdir = option.get("project")
-    local projectfile = option.get("file")
-    if projectdir or projectfile then
-        localcache.set("project", "projectdir", projectdir)
-        localcache.set("project", "projectfile", projectfile)
-        localcache.save("project")
+    -- save configs and caches
+    if not opt.loadonly then
+        -- we need to save it and enable external working mode
+        -- if we configure the given project directory
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/3342
+        --
+        local projectdir = option.get("project")
+        local projectfile = option.get("file")
+        if projectdir or projectfile then
+            localcache.set("project", "projectdir", projectdir)
+            localcache.set("project", "projectfile", projectfile)
+            localcache.save("project")
+        end
+
+        -- save options and config cache
+        localcache.set("config", "recheck", false)
+        localcache.set("config", "mtimes", project.mtimes())
+        config.save()
+        localcache.set("config", "options", options)
+        localcache.save("config")
+
+        -- save toolchain cache
+        toolchain.save()
+
+        -- save detect cache
+        detectcache:save()
     end
-
-    -- save options and config cache
-    localcache.set("config", "recheck", false)
-    localcache.set("config", "mtimes", project.mtimes())
-    config.save()
-    localcache.set("config", "options", options)
-    localcache.save("config")
-
-    -- save toolchain cache
-    toolchain.save()
-
-    -- save detect cache
-    detectcache:save()
 
     -- unlock the whole project
     project.unlock()
