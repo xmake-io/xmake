@@ -237,6 +237,37 @@ function _check(clang_tidy, opt)
     _check_sourcefiles(clang_tidy, sourcefiles, opt)
 end
 
+-- get clang-tidy
+function _get_clang_tidy()
+    local clang_tidy = find_tool("clang-tidy")
+    if clang_tidy then
+        return clang_tidy
+    end
+
+    -- enter the environments of llvm
+    local oldenvs = packagenv.enter("llvm")
+
+    -- find clang-tidy
+    local packages = {}
+    local clang_tidy = find_tool("clang-tidy")
+    if not clang_tidy then
+        table.join2(packages, install_packages("llvm"))
+    end
+
+    -- enter the environments of installed packages
+    for _, instance in ipairs(packages) do
+        instance:envs_enter()
+    end
+
+    -- we need to force detect and flush detect cache after loading all environments
+    if not clang_tidy then
+        clang_tidy = find_tool("clang-tidy", {force = true})
+    end
+
+    os.setenvs(oldenvs)
+    return clang_tidy
+end
+
 function main(argv)
 
     -- parse arguments
@@ -255,25 +286,8 @@ function main(argv)
         option.set("diagnosis", true)
     end
 
-    -- enter the environments of llvm
-    local oldenvs = packagenv.enter("llvm")
-
     -- find clang-tidy
-    local packages = {}
-    local clang_tidy = find_tool("clang-tidy", {version = true})
-    if not clang_tidy then
-        table.join2(packages, install_packages("llvm"))
-    end
-
-    -- enter the environments of installed packages
-    for _, instance in ipairs(packages) do
-        instance:envs_enter()
-    end
-
-    -- we need to force detect and flush detect cache after loading all environments
-    if not clang_tidy then
-        clang_tidy = find_tool("clang-tidy", {force = true, version = true})
-    end
+    local clang_tidy = _get_clang_tidy()
     assert(clang_tidy, "clang-tidy not found!")
 
     -- list checks
@@ -284,7 +298,6 @@ function main(argv)
     else
         _check(clang_tidy, args)
     end
-    os.setenvs(oldenvs)
 
     -- restore option context
     option.restore()
