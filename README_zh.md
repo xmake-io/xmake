@@ -35,7 +35,7 @@
     <a href="https://discord.gg/xmake">
       <img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?style=flat-square" alt="Discord" />
     </a>
-    <a href="https://xmake.io/zh/about/sponsor">
+    <a href="https://xmake.io/zh/about/sponsor.html">
       <img src="https://img.shields.io/badge/donate-us-orange.svg?style=flat-square" alt="Donate" />
     </a>
   </div>
@@ -46,10 +46,7 @@
 
 ## 项目支持
 
-通过[成为赞助者](https://xmake.io/zh/about/sponsor)来支持该项目。您的logo将显示在此处，并带有指向您网站的链接。🙏
-
-<a href="https://opencollective.com/xmake#sponsors" target="_blank"><img src="https://opencollective.com/xmake/sponsors.svg?width=890"></a>
-<a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=600"></a>
+通过[成为赞助者](https://xmake.io/zh/about/sponsor.html)来支持该项目。您的logo将显示在此处，并带有指向您网站的链接。🙏
 
 ## 简介
 
