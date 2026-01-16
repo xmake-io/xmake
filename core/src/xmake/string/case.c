@@ -31,6 +31,9 @@
 #include "prefix.h"
 #include "../utils/charset.h"
 #include <wctype.h>
+#if defined(TB_CONFIG_OS_WINDOWS)
+#   include <windows.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * helper
@@ -70,16 +73,16 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
 
         // to lower/upper
 #if defined(TB_CONFIG_OS_WINDOWS)
-        tb_uint16_t* p = (tb_uint16_t*)dst_data;
-        tb_size_t    n = (tb_size_t)dst_size / 2;
+        if (lower) CharLowerBuffW((LPWSTR)dst_data, (DWORD)(dst_size / 2));
+        else CharUpperBuffW((LPWSTR)dst_data, (DWORD)(dst_size / 2));
 #else
         tb_uint32_t* p = (tb_uint32_t*)dst_data;
         tb_size_t    n = (tb_size_t)dst_size / 4;
-#endif
         while (n--) {
             *p = (tb_wchar_t)(lower? towlower((wint_t)*p) : towupper((wint_t)*p));
             p++;
         }
+#endif
 
         // convert string back
         tb_long_t  res_size = 0;
