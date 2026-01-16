@@ -106,3 +106,10 @@ function test_replace(t)
     t:are_equal(("123$xyz456xyz789xyz"):replace("123$", "000", {plain = true}), "000xyz456xyz789xyz")
     t:are_equal(("123xyz$456xyz$789xyz$"):replace("xyz$", "000", {plain = true}), "123000456000789000")
 end
+
+function test_case(t)
+    t:are_equal(("Hello"):lower(), "hello")
+    t:are_equal(("Hello"):upper(), "HELLO")
+    t:are_equal(("Звезда Хэнсин"):lower(), "звезда хэнсин")
+    t:are_equal(("Звезда Хэнсин"):upper(), "ЗВЕЗДА ХЭНСИН")
+end
