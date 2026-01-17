@@ -261,7 +261,9 @@ function get_cppversionflag(target)
     if cppversionflag == nil then
         local compinst = target:compiler("cxx")
         local flags = compinst:compflags({target = target})
-        cppversionflag = table.find_if(flags, function(v) string.startswith(v, "/std:c++") end) or "/std:c++latest"
+        local idx = table.find_first_if(flags, function(_, v) return string.startswith(v, "/std:c++") end)
+        cppversionflag = (idx and flags[idx]) or "/std:c++latest"
+        _g.cppversionflag = cppversionflag
     end
     return cppversionflag or nil
 end
