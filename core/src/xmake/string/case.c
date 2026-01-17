@@ -31,9 +31,23 @@
 #include "prefix.h"
 #include <wctype.h>
 #include "tbox/libc/stdlib/setlocale.h"
+/* Include Tbox platform header for spinlocks if not already in prefix.h */
+#include "tbox/platform/spinlock.h" 
+
 #ifdef TB_CONFIG_OS_WINDOWS
 #   include <windows.h>
 #endif
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * globals
+ */
+
+/* 
+ * Define a static Tbox spinlock to protect the non-thread-safe setlocale calls.
+ * This ensures that on non-Windows platforms, only one thread modifies the 
+ * global locale at a time.
+ */
+static tb_spinlock_t g_locale_lock = TB_SPINLOCK_INIT;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * helper
@@ -66,6 +80,7 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
             if (lower) CharLowerBuffW((LPWSTR)wb, (DWORD)wn);
             else CharUpperBuffW((LPWSTR)wb, (DWORD)wn);
 #else
+            tb_spinlock_enter(&g_locale_lock);
             // attempt to set utf-8 locale for towlower/towupper
             // we need this on some platforms like DragonFly BSD, because towlower/towupper depends on the current locale
 #ifdef TB_CONFIG_LIBC_HAVE_SETLOCALE
@@ -84,6 +99,8 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
                 tb_free(old_locale);
             }
 #endif
+            /* Unlock after locale is restored */
+            tb_spinlock_leave(&g_locale_lock);
 #endif
 
             // convert to utf8
