@@ -30,30 +30,33 @@
  */
 #include "prefix.h"
 #include <ctype.h>
-/* Include Tbox platform header for spinlocks */
+#include <wctype.h>
 #include "tbox/platform/spinlock.h"
 
-#ifdef TB_CONFIG_OS_WINDOWS
-#   include <windows.h>
-#else
-#   include <wctype.h>
-#   include <locale.h>
-#   if defined(__APPLE__) || defined(__FreeBSD__) || defined(__DragonFly__)
-#       include <xlocale.h>
-#   elif defined(__NetBSD__)
-#       include <string.h>
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__DragonFly__)
+#   include <xlocale.h>
+#endif
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+
+/* Platforms that lack thread-safe uselocale() and must use setlocale() */
+#if defined(TB_CONFIG_OS_WINDOWS) || defined(__NetBSD__)
+#   include "tbox/libc/stdlib/setlocale.h"
+#   define XM_USE_SETLOCALE
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
 
-/* 
- * Define a static Tbox spinlock.
- * setlocale() is not thread-safe on Windows or Linux, so we protect it globally.
+#ifdef XM_USE_SETLOCALE
+/*
+ * setlocale() is not thread-safe, so we protect it with a spinlock.
  */
 static tb_spinlock_t g_locale_lock = TB_SPINLOCK_INIT;
-#   endif
 #endif
-
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -84,15 +87,29 @@ static tb_bool_t xm_string_case_ascii(lua_State* lua, tb_char_t const* str, tb_s
     for (i = 0; i < size; i++) {
         tb_byte_t c = (tb_byte_t)str[i];
         if (lower) {
-            buf[i] = (tb_char_t)(isupper(c)? tolower(c) : c);
+            buf[i] = (tb_char_t)(isupper(c) ? tolower(c) : c);
         } else {
-            buf[i] = (tb_char_t)(islower(c)? toupper(c) : c);
+            buf[i] = (tb_char_t)(islower(c) ? toupper(c) : c);
         }
     }
 
     lua_pushlstring(lua, buf, size);
     tb_free(buf);
     return tb_true;
+}
+
+/* Perform wide character case conversion in-place
+ */
+static tb_void_t xm_wchar_convert_case(tb_wchar_t* wb, tb_size_t wn, tb_bool_t lower) {
+    tb_size_t i;
+    for (i = 0; i < wn; i++) {
+        tb_wchar_t wc = wb[i];
+        if (lower) {
+            if (!iswlower(wc)) wb[i] = towlower(wc);
+        } else {
+            if (!iswupper(wc)) wb[i] = towupper(wc);
+        }
+    }
 }
 
 /* Unicode case conversion using wide characters
@@ -115,58 +132,38 @@ static tb_bool_t xm_string_case_unicode(lua_State* lua, tb_char_t const* str, tb
     }
 
     // Perform Case Conversion
-    tb_size_t i;
-#ifdef TB_CONFIG_OS_WINDOWS
-    // Windows Implementation
-    for (i = 0; i < wn; i++) {
-        tb_wchar_t wc = wb[i];
-        if (lower) {
-            if (!IsCharLowerW(wc)) {
-                CharLowerBuffW(&wb[i], 1);
-            }
-        } else {
-            if (!IsCharUpperW(wc)) {
-                CharUpperBuffW(&wb[i], 1);
-            }
-        }
-    }
-#else
-#   if defined(__NetBSD__)
-    // NetBSD lacks of uselocale
+#ifdef XM_USE_SETLOCALE
+    // Windows and NetBSD: Use setlocale (protected by spinlock)
     tb_spinlock_enter(&g_locale_lock);
 
-    char* saved_locale = tb_null;
-    char* current_locale = setlocale(LC_CTYPE, NULL);
-    
+    // Save current locale
+    char*       saved_locale   = tb_null;
+    char const* current_locale = setlocale(LC_CTYPE, tb_null);
+
     if (current_locale) {
-        size_t len = tb_strlen(current_locale);
+        tb_size_t len = tb_strlen(current_locale);
         saved_locale = (char*)tb_malloc_bytes(len + 1);
         if (saved_locale) {
             tb_memcpy(saved_locale, current_locale, len + 1);
         }
     }
 
-    if (setlocale(LC_CTYPE, "en_US.UTF-8") == NULL) {
-        setlocale(LC_CTYPE, "UTF-8");
-    }
+    // Force UTF-8 locale
+    tb_setlocale();
 
-    for (i = 0; i < wn; i++) {
-        tb_wchar_t wc = wb[i];
-        if (lower) {
-            if (!iswlower(wc)) wb[i] = towlower(wc);
-        } else {
-            if (!iswupper(wc)) wb[i] = towupper(wc);
-        }
-    }
+    // Convert case
+    xm_wchar_convert_case(wb, wn, lower);
 
+    // Restore original locale
     if (saved_locale) {
         setlocale(LC_CTYPE, saved_locale);
         tb_free(saved_locale);
     }
-    
+
     tb_spinlock_leave(&g_locale_lock);
-#   else
-    // POSIX Thread-Safe Implementation
+
+#else
+    // POSIX Thread-Safe Implementation (Linux/macOS/FreeBSD/DragonFly)
     locale_t new_loc = newlocale(LC_CTYPE_MASK, "en_US.UTF-8", (locale_t)0);
     if (!new_loc) {
         new_loc = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
@@ -174,18 +171,13 @@ static tb_bool_t xm_string_case_unicode(lua_State* lua, tb_char_t const* str, tb
 
     if (new_loc) {
         locale_t old_loc = uselocale(new_loc);
-        for (i = 0; i < wn; i++) {
-            tb_wchar_t wc = wb[i];
-            if (lower) {
-                if (!iswlower(wc)) wb[i] = towlower(wc);
-            } else {
-                if (!iswupper(wc)) wb[i] = towupper(wc);
-            }
-        }
+        xm_wchar_convert_case(wb, wn, lower);
         uselocale(old_loc);
         freelocale(new_loc);
+    } else {
+        // Fallback: try without locale change
+        xm_wchar_convert_case(wb, wn, lower);
     }
-#   endif
 #endif
 
     // Convert Wide Char back to UTF-8
