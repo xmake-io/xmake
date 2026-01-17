@@ -69,7 +69,8 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
             // attempt to set utf-8 locale for towlower/towupper
             // we need this on some platforms like DragonFly BSD, because towlower/towupper depends on the current locale
 #ifdef TB_CONFIG_LIBC_HAVE_SETLOCALE
-            tb_char_t* old_locale = tb_strdup(setlocale(LC_ALL, tb_null));
+            tb_char_t const* old_locale_str = setlocale(LC_ALL, tb_null);
+            tb_char_t* old_locale = old_locale_str? tb_strdup(old_locale_str) : tb_null;
             tb_setlocale();
 #endif
             tb_size_t i = 0;
