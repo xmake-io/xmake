@@ -30,6 +30,7 @@
  */
 #include "prefix.h"
 #include <wctype.h>
+#include "tbox/libc/stdlib/setlocale.h"
 #ifdef TB_CONFIG_OS_WINDOWS
 #   include <windows.h>
 #endif
@@ -65,10 +66,23 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
             if (lower) CharLowerBuffW((LPWSTR)wb, (DWORD)wn);
             else CharUpperBuffW((LPWSTR)wb, (DWORD)wn);
 #else
+            // attempt to set utf-8 locale for towlower/towupper
+            // we need this on some platforms like DragonFly BSD, because towlower/towupper depends on the current locale
+#ifdef TB_CONFIG_LIBC_HAVE_SETLOCALE
+            tb_char_t* old_locale = tb_strdup(setlocale(LC_ALL, tb_null));
+            tb_setlocale();
+#endif
             tb_size_t i = 0;
             for (i = 0; i < wn; i++) {
                 wb[i] = lower? towlower(wb[i]) : towupper(wb[i]);
             }
+
+#ifdef TB_CONFIG_LIBC_HAVE_SETLOCALE
+            if (old_locale) {
+                setlocale(LC_ALL, old_locale);
+                tb_free(old_locale);
+            }
+#endif
 #endif
 
             // convert to utf8
