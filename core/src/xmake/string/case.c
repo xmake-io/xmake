@@ -29,8 +29,6 @@
  * includes
  */
 #include "prefix.h"
-#include "../utils/charset.h"
-#include <wctype.h>
 #include <utf8proc.h>
 
 /* //////////////////////////////////////////////////////////////////////////////////////

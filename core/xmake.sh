@@ -18,7 +18,6 @@ if is_plat "solaris"; then
     add_defines "_XOPEN_SOURCE=600"
 fi
 
-
 # disable some compiler errors
 if is_plat "macosx"; then
     add_cxflags "-Wno-error=deprecated-declarations" "-fno-strict-aliasing" "-Wno-error=nullability-completeness" "-Wno-error=parentheses-equality"
