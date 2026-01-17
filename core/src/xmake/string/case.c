@@ -29,6 +29,7 @@
  * includes
  */
 #include "prefix.h"
+#include <ctype.h>
 
 #ifdef TB_CONFIG_OS_WINDOWS
 #   include <windows.h>
@@ -39,6 +40,119 @@
 #       include <xlocale.h>
 #   endif
 #endif
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * private implementation
+ */
+
+/* Check if string contains only ASCII characters (all bytes < 0x80)
+ */
+static tb_bool_t xm_string_is_ascii(tb_char_t const* str, tb_size_t size) {
+    tb_size_t i;
+    for (i = 0; i < size; i++) {
+        if ((tb_byte_t)str[i] >= 0x80) {
+            return tb_false;
+        }
+    }
+    return tb_true;
+}
+
+/* Fast ASCII-only case conversion using tb_char_t
+ * Returns tb_true on success, tb_false on failure
+ */
+static tb_bool_t xm_string_case_ascii(lua_State* lua, tb_char_t const* str, tb_size_t size, tb_bool_t lower) {
+    tb_char_t* buf = (tb_char_t*)tb_malloc_bytes(size);
+    if (!buf) {
+        return tb_false;
+    }
+
+    tb_size_t i;
+    for (i = 0; i < size; i++) {
+        tb_byte_t c = (tb_byte_t)str[i];
+        if (lower) {
+            buf[i] = (tb_char_t)tolower(c);
+        } else {
+            buf[i] = (tb_char_t)toupper(c);
+        }
+    }
+
+    lua_pushlstring(lua, buf, size);
+    tb_free(buf);
+    return tb_true;
+}
+
+/* Unicode case conversion using wide characters
+ * Returns tb_true on success, tb_false on failure
+ */
+static tb_bool_t xm_string_case_unicode(lua_State* lua, tb_char_t const* str, tb_size_t size, tb_bool_t lower) {
+    tb_bool_t   ok = tb_false;
+    tb_size_t   wn = size + 1;
+    tb_wchar_t* wb = tb_nalloc_type(wn, tb_wchar_t);
+
+    if (!wb) {
+        return tb_false;
+    }
+
+    // Convert input UTF-8 to Wide Char
+    wn = tb_mbstowcs(wb, str, wn);
+    if (wn == (tb_size_t)-1) {
+        tb_free(wb);
+        return tb_false;
+    }
+
+    // Perform Case Conversion
+    tb_size_t i;
+#ifdef TB_CONFIG_OS_WINDOWS
+    // Windows Implementation
+    for (i = 0; i < wn; i++) {
+        tb_wchar_t wc = wb[i];
+        if (lower) {
+            if (!IsCharLowerW(wc)) {
+                CharLowerBuffW(&wb[i], 1);
+            }
+        } else {
+            if (!IsCharUpperW(wc)) {
+                CharUpperBuffW(&wb[i], 1);
+            }
+        }
+    }
+#else
+    // POSIX Thread-Safe Implementation
+    locale_t new_loc = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
+    if (!new_loc) {
+        new_loc = newlocale(LC_CTYPE_MASK, "en_US.UTF-8", (locale_t)0);
+    }
+
+    if (new_loc) {
+        locale_t old_loc = uselocale(new_loc);
+        for (i = 0; i < wn; i++) {
+            tb_wchar_t wc = wb[i];
+            if (lower) {
+                if (!iswlower(wc)) wb[i] = towlower(wc);
+            } else {
+                if (!iswupper(wc)) wb[i] = towupper(wc);
+            }
+        }
+        uselocale(old_loc);
+        freelocale(new_loc);
+    }
+#endif
+
+    // Convert Wide Char back to UTF-8
+    tb_size_t   un = (wn + 1) * 4;
+    tb_char_t*  ub = (tb_char_t*)tb_malloc_bytes(un);
+    if (ub) {
+        tb_size_t n = tb_wcstombs(ub, wb, un);
+        if (n != (tb_size_t)-1) {
+            lua_pushlstring(lua, ub, n);
+            ok = tb_true;
+        }
+        tb_free(ub);
+    }
+
+    tb_free(wb);
+    return ok;
+}
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * helper
@@ -59,78 +173,21 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         return 1;
     }
 
-    tb_bool_t   ok = tb_false;
-    tb_size_t   wn = size + 1;
-    tb_wchar_t* wb = tb_nalloc_type(wn, tb_wchar_t);
+    tb_bool_t ok;
 
-    if (wb) {
-        // Convert input UTF-8 to Wide Char
-        wn = tb_mbstowcs(wb, str, wn);
-        if (wn != -1) {
-            // Perform Case Conversion
-            tb_size_t i = 0;
-#ifdef TB_CONFIG_OS_WINDOWS
-            // Windows Implementation
-            // We iterate manually to check the state before converting
-            for (i = 0; i < wn; i++) {
-                tb_wchar_t wc = wb[i];
-                if (lower) {
-                    // Check if already lower; if not, convert
-                    if (!IsCharLowerW(wc)) {
-                        // CharLowerBuffW operates in-place on the buffer
-                        CharLowerBuffW(&wb[i], 1);
-                    }
-                } else {
-                    // Check if already upper; if not, convert
-                    if (!IsCharUpperW(wc)) {
-                        CharUpperBuffW(&wb[i], 1);
-                    }
-                }
-            }
-#else
-            // POSIX Thread-Safe Implementation
-            // We strictly only convert if we can get a valid UTF-8 thread locale.
-            locale_t new_loc = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
-            if (!new_loc) {
-                new_loc = newlocale(LC_CTYPE_MASK, "en_US.UTF-8", (locale_t)0);
-            }
-
-            if (new_loc) {
-                locale_t old_loc = uselocale(new_loc);
-                for (i = 0; i < wn; i++) {
-                    tb_wchar_t wc = wb[i];
-                    if (lower) {
-                        if (!iswlower(wc)) wb[i] = towlower(wc);
-                    } else {
-                        if (!iswupper(wc)) wb[i] = towupper(wc);
-                    }
-                }
-
-                uselocale(old_loc);
-                freelocale(new_loc);
-            }
-#endif
-
-            // Convert Wide Char back to UTF-8
-            tb_size_t   un = (wn + 1) * 4;
-            tb_char_t*  ub = (tb_char_t*)tb_malloc_bytes(un);
-            if (ub) {
-                tb_size_t n = tb_wcstombs(ub, wb, un);
-                if (n != -1) {
-                    lua_pushlstring(lua, ub, n);
-                    ok = tb_true;
-                }
-                tb_free(ub);
-            }
-        }
-        tb_free(wb);
+    // Fast path: ASCII-only strings don't need wide character conversion
+    if (xm_string_is_ascii(str, size)) {
+        ok = xm_string_case_ascii(lua, str, size, lower);
+    } else {
+        // Slow path: Unicode strings need wide character conversion
+        ok = xm_string_case_unicode(lua, str, size, lower);
     }
 
-    // Fallback: If memory allocation failed or conversion failed, return original string
+    // Fallback: return original string if conversion failed
     if (!ok) {
         lua_pushlstring(lua, str, size);
     }
-    
+
     return 1;
 }
 
