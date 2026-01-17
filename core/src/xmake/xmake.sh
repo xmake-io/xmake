@@ -22,7 +22,7 @@ target "xmake"
             fi
         fi
     else
-        local libs="lua_cjson lz4 sv tbox"
+        local libs="lua_cjson lz4 sv tbox utf8proc"
         for lib in $libs; do
             add_deps "$lib"
         done

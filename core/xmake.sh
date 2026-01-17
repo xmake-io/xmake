@@ -18,16 +18,6 @@ if is_plat "solaris"; then
     add_defines "_XOPEN_SOURCE=600"
 fi
 
-if [ -f "scripts/xrepo.sh" ]; then
-    xrepo_cflags=$(bash scripts/xrepo.sh fetch --cflags utf8proc 2>/dev/null)
-    xrepo_ldflags=$(bash scripts/xrepo.sh fetch --ldflags utf8proc 2>/dev/null)
-    if [ -n "$xrepo_cflags" ]; then
-        add_cxflags "${xrepo_cflags}"
-    fi
-    if [ -n "$xrepo_ldflags" ]; then
-        add_ldflags "${xrepo_ldflags}"
-    fi
-fi
 
 # disable some compiler errors
 if is_plat "macosx"; then
@@ -246,6 +236,7 @@ if ! has_config "external"; then
     includes "src/lz4"
     includes "src/sv"
     includes "src/tbox"
+    includes "src/utf8proc"
 fi
 includes "src/xmake"
 includes "src/cli"
