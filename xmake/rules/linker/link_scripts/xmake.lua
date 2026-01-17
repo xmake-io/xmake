@@ -24,28 +24,26 @@ rule("linker.link_scripts")
         if not target:is_binary() and not target:is_shared() then
             return
         end
-        local scriptfile
         local sourcebatch = target:sourcebatches()["linker.link_scripts"]
-        if sourcebatch then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                scriptfile = sourcefile
-                break
-            end
-        end
-        if not scriptfile then
+        if not sourcebatch or not sourcebatch.sourcefiles or #sourcebatch.sourcefiles == 0 then
             return
         end
+
         -- @note apple's linker does not support it
         if target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
             return
         end
-        if target:has_tool("ld", "gcc", "gxx", "clang", "clangxx") or
-            target:has_tool("sh", "gcc", "gxx", "clang", "clangxx") then
-            target:add(target:is_shared() and "shflags" or "ldflags", "-T " .. scriptfile, {force = true})
-            target:data_add("linkdepfiles", scriptfile)
-        elseif target:has_tool("ld", "ld") or target:has_tool("sh", "ld") then
-            target:add(target:is_shared() and "shflags" or "ldflags", "-T " .. scriptfile, {force = true})
-            target:data_add("linkdepfiles", scriptfile)
+
+        -- Check for supported linkers (GNU and LLVM linkers support multiple -T flags)
+        if target:has_tool("ld", "gcc", "gxx", "clang", "clangxx", "ld") or
+            target:has_tool("sh", "gcc", "gxx", "clang", "clangxx", "ld") then
+
+            -- Add all linker scripts with -T flag
+            -- https://github.com/xmake-io/xmake/issues/7227
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                target:add(target:is_shared() and "shflags" or "ldflags", "-T " .. sourcefile, {force = true})
+                target:data_add("linkdepfiles", sourcefile)
+            end
         end
     end)
 
