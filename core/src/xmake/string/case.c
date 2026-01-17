@@ -35,7 +35,7 @@
 #   include <windows.h>
 #else
 #   include <locale.h>
-#   if TB_CONFIG_OS_MACOS || TB_CONFIG_OS_IOS || TB_CONFIG_OS_BSD
+#   if defined(TB_CONFIG_OS_MACOS) || defined(TB_CONFIG_OS_IOS) || defined(TB_CONFIG_OS_BSD)
 #       include <xlocale.h>
 #   endif
 #endif
@@ -59,70 +59,62 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         return 1;
     }
 
-    // convert to wchar
+    tb_bool_t   ok = tb_false;
     tb_size_t   wn = size + 1;
     tb_wchar_t* wb = tb_nalloc_type(wn, tb_wchar_t);
+
     if (wb) {
+        // Convert input UTF-8 to Wide Char
         wn = tb_mbstowcs(wb, str, wn);
         if (wn != -1) {
             
-            // to case
+            // Perform Case Conversion
 #ifdef TB_CONFIG_OS_WINDOWS
+            // Windows API is naturally thread-safe for this operation
             if (lower) CharLowerBuffW((LPWSTR)wb, (DWORD)wn);
             else CharUpperBuffW((LPWSTR)wb, (DWORD)wn);
 #else 
-            locale_t new_loc = (locale_t)0;
-            locale_t old_loc = (locale_t)0;
-
-            // Create a temporary UTF-8 locale object
-            // LC_CTYPE_MASK: We only care about character classification/case
-            new_loc = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
+            // POSIX Thread-Safe Implementation
+            // We strictly only convert if we can get a valid UTF-8 thread locale.
+            // If newlocale fails, we skip conversion to avoid using an undefined global locale.
+            locale_t new_loc = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
             if (!new_loc) {
-                // Fallback if system calls it en_US.UTF-8
                 new_loc = newlocale(LC_CTYPE_MASK, "en_US.UTF-8", (locale_t)0);
             }
 
-            // Switch thread locale (No global lock needed!)
             if (new_loc) {
-                old_loc = uselocale(new_loc);
-            }
+                locale_t old_loc = uselocale(new_loc);
+                
+                tb_size_t i = 0;
+                for (i = 0; i < wn; i++) {
+                    wb[i] = lower ? towlower(wb[i]) : towupper(wb[i]);
+                }
 
-            // Convert
-            tb_size_t i = 0;
-            for (i = 0; i < wn; i++) {
-                wb[i] = lower? towlower(wb[i]) : towupper(wb[i]);
-            }
-
-            // Restore thread locale and free object
-            if (new_loc) {
                 uselocale(old_loc);
                 freelocale(new_loc);
             }
 #endif
 
-            // convert to utf8
+            // Convert Wide Char back to UTF-8
             tb_size_t   un = (wn + 1) * 4;
             tb_char_t*  ub = (tb_char_t*)tb_malloc_bytes(un);
             if (ub) {
                 tb_size_t n = tb_wcstombs(ub, wb, un);
                 if (n != -1) {
                     lua_pushlstring(lua, ub, n);
-                } else {
-                    lua_pushlstring(lua, str, size);
+                    ok = tb_true;
                 }
                 tb_free(ub);
-            } else {
-                lua_pushlstring(lua, str, size);
             }
-        } else {
-            lua_pushlstring(lua, str, size);
         }
         tb_free(wb);
-    } else {
+    }
+
+    // Fallback: If memory allocation failed or conversion failed, return original string
+    if (!ok) {
         lua_pushlstring(lua, str, size);
     }
     
-    // ok
     return 1;
 }
 
