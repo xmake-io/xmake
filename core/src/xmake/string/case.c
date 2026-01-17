@@ -31,13 +31,7 @@
 #include "prefix.h"
 #include "../utils/charset.h"
 #include <wctype.h>
-#if defined(TB_CONFIG_OS_WINDOWS)
-#   include <windows.h>
-#endif
-#if defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
-#   include <CoreFoundation/CoreFoundation.h>
-#endif
-#include "tbox/libc/stdlib/setlocale.h"
+#include <utf8proc.h>
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * helper
@@ -46,9 +40,6 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
 
     // check
     tb_assert_and_check_return_val(lua, 0);
-
-    // init locale
-    tb_setlocale();
 
     // get the string
     size_t           size = 0;
@@ -61,91 +52,32 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         return 1;
     }
 
-#if defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
-    CFStringRef cf_str = CFStringCreateWithBytes(kCFAllocatorDefault, (tb_byte_t const*)str, size, kCFStringEncodingUTF8, false);
-    if (cf_str) {
-        CFMutableStringRef cf_mutable = CFStringCreateMutableCopy(kCFAllocatorDefault, 0, cf_str);
-        CFRelease(cf_str);
-        if (cf_mutable) {
-            if (lower) CFStringLowercase(cf_mutable, NULL);
-            else CFStringUppercase(cf_mutable, NULL);
-
-            CFIndex len = CFStringGetLength(cf_mutable);
-            CFIndex max_size = CFStringGetMaximumSizeForEncoding(len, kCFStringEncodingUTF8) + 1;
-            tb_char_t* buffer = tb_malloc_bytes(max_size);
-            if (buffer) {
-                if (CFStringGetCString(cf_mutable, buffer, max_size, kCFStringEncodingUTF8)) {
-                    lua_pushstring(lua, buffer);
-                } else {
-                    lua_pushnil(lua);
-                }
-                tb_free(buffer);
-            } else {
-                lua_pushnil(lua);
-            }
-            CFRelease(cf_mutable);
-            return 1;
-        }
-    }
-#endif
-
-    // find charsets
-    xm_charset_entry_ref_t fcharset = xm_charset_find_by_name("utf8");
-#if defined(TB_CONFIG_OS_WINDOWS)
-    xm_charset_entry_ref_t tcharset = xm_charset_find_by_name("utf16");
-#else
-    xm_charset_entry_ref_t tcharset = xm_charset_find_by_name("utf32");
-#endif
-    tb_check_return_val(fcharset && tcharset, 0);
-
     // convert string
-    tb_long_t  dst_size = 0;
     tb_size_t  dst_maxn = (tb_size_t)(size + 1) * 4;
     tb_byte_t* dst_data = tb_malloc_bytes(dst_maxn);
-    if (dst_data && dst_maxn &&
-        (dst_size = tb_charset_conv_data(fcharset->type, tcharset->type, (tb_byte_t const*)str, (tb_size_t)size, dst_data, dst_maxn)) >= 0 &&
-        dst_size < dst_maxn) {
-
-        // to lower/upper
-#if defined(TB_CONFIG_OS_WINDOWS)
-        if (lower) CharLowerBuffW((LPWSTR)dst_data, (DWORD)(dst_size / 2));
-        else CharUpperBuffW((LPWSTR)dst_data, (DWORD)(dst_size / 2));
-#else
-        tb_uint32_t* p = (tb_uint32_t*)dst_data;
-        tb_size_t    n = (tb_size_t)dst_size / 4;
-        while (n--) {
-            if (*p < 0x2000) {
-                if (lower) {
-                     if (iswupper((wint_t)*p))
-                         *p = towlower((wint_t)*p);
-                } else {
-                     if (iswlower((wint_t)*p))
-                         *p = towupper((wint_t)*p);
-                }
+    if (dst_data) {
+        tb_byte_t*       p = dst_data;
+        tb_byte_t const* s = (tb_byte_t const*)str;
+        tb_byte_t const* e = s + size;
+        while (s < e) {
+            utf8proc_int32_t codepoint;
+            utf8proc_ssize_t len = utf8proc_iterate((utf8proc_uint8_t const*)s, e - s, &codepoint);
+            if (len > 0) {
+                if (lower) codepoint = utf8proc_tolower(codepoint);
+                else       codepoint = utf8proc_toupper(codepoint);
+                utf8proc_ssize_t wlen = utf8proc_encode_char(codepoint, (utf8proc_uint8_t*)p);
+                if (wlen > 0) p += wlen;
+                s += len;
+            } else {
+                *p++ = *s++;
             }
-            p++;
         }
-#endif
-
-        // convert string back
-        tb_long_t  res_size = 0;
-        tb_size_t  res_maxn = dst_maxn * 2;
-        tb_byte_t* res_data = tb_malloc_bytes(res_maxn);
-        if (res_data && res_maxn &&
-            (res_size = tb_charset_conv_data(tcharset->type, fcharset->type, dst_data, (tb_size_t)dst_size, res_data, res_maxn)) >= 0 &&
-            res_size < res_maxn) {
-            lua_pushlstring(lua, (tb_char_t const*)res_data, res_size);
-        } else {
-            lua_pushnil(lua);
-        }
-        if (res_data) tb_free(res_data);
+        lua_pushlstring(lua, (tb_char_t const*)dst_data, p - dst_data);
+        tb_free(dst_data);
     } else {
         lua_pushnil(lua);
     }
     
-    // free data
-    if (dst_data) tb_free(dst_data);
-
     // ok
     return 1;
 }
