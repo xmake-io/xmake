@@ -31,6 +31,7 @@
 #include "prefix.h"
 #include <ctype.h>
 #include <wctype.h>
+#include <locale.h>
 #include "tbox/platform/spinlock.h"
 
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__DragonFly__)
