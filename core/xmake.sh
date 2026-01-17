@@ -235,7 +235,6 @@ if ! has_config "external"; then
     includes "src/lz4"
     includes "src/sv"
     includes "src/tbox"
-    includes "src/utf8proc"
 fi
 includes "src/xmake"
 includes "src/cli"

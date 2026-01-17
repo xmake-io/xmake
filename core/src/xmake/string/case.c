@@ -29,7 +29,7 @@
  * includes
  */
 #include "prefix.h"
-#include <utf8proc.h>
+#include <wctype.h>
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * helper
@@ -50,28 +50,37 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         return 1;
     }
 
-    // convert string
-    tb_size_t  dst_maxn = (tb_size_t)(size + 1) * 4;
-    tb_byte_t* dst_data = tb_malloc_bytes(dst_maxn);
-    if (dst_data) {
-        tb_byte_t*       p = dst_data;
-        tb_byte_t const* s = (tb_byte_t const*)str;
-        tb_byte_t const* e = s + size;
-        while (s < e) {
-            utf8proc_int32_t codepoint;
-            utf8proc_ssize_t len = utf8proc_iterate((utf8proc_uint8_t const*)s, e - s, &codepoint);
-            if (len > 0) {
-                if (lower) codepoint = utf8proc_tolower(codepoint);
-                else       codepoint = utf8proc_toupper(codepoint);
-                utf8proc_ssize_t wlen = utf8proc_encode_char(codepoint, (utf8proc_uint8_t*)p);
-                if (wlen > 0) p += wlen;
-                s += len;
-            } else {
-                *p++ = *s++;
+    // convert to wchar
+    tb_size_t   wn = size + 1;
+    tb_wchar_t* wb = tb_nalloc_type(wn, tb_wchar_t);
+    if (wb) {
+        wn = tb_mbstowcs(wb, str, wn);
+        if (wn != -1) {
+            
+            // to case
+            tb_size_t i = 0;
+            for (i = 0; i < wn; i++) {
+                wb[i] = lower? towlower(wb[i]) : towupper(wb[i]);
             }
+
+            // convert to utf8
+            tb_size_t   un = (wn + 1) * 4;
+            tb_char_t*  ub = (tb_char_t*)tb_malloc_bytes(un);
+            if (ub) {
+                tb_size_t n = tb_wcstombs(ub, wb, un);
+                if (n != -1) {
+                    lua_pushlstring(lua, ub, n);
+                } else {
+                    lua_pushnil(lua);
+                }
+                tb_free(ub);
+            } else {
+                lua_pushnil(lua);
+            }
+        } else {
+            lua_pushnil(lua);
         }
-        lua_pushlstring(lua, (tb_char_t const*)dst_data, p - dst_data);
-        tb_free(dst_data);
+        tb_free(wb);
     } else {
         lua_pushnil(lua);
     }

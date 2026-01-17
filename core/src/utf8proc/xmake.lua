@@ -1,5 +1,0 @@
-target("utf8proc")
-    set_kind("static")
-    add_defines("UTF8PROC_STATIC", {public = true})
-    add_includedirs("utf8proc", {public = true})
-    add_files("utf8proc/utf8proc.c")

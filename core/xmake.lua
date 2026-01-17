@@ -132,7 +132,7 @@ if is_plat("windows") then
 end
 
 -- add projects
-includes("src/sv", "src/lz4", "src/xmake", "src/cli", "src/utf8proc")
+includes("src/sv", "src/lz4", "src/xmake", "src/cli")
 if namespace then
     namespace("tbox", function ()
         includes("src/tbox")

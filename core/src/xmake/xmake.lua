@@ -20,8 +20,6 @@ target("xmake")
         add_deps("pdcurses")
     end
 
-    add_deps("utf8proc")
-
     -- add definitions
     add_defines("__tb_prefix__=\"xmake\"")
     if is_mode("debug") then
