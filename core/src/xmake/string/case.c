@@ -79,8 +79,13 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         tb_uint32_t* p = (tb_uint32_t*)dst_data;
         tb_size_t    n = (tb_size_t)dst_size / 4;
         while (n--) {
-            if (*p < 0x10000)
-                 *p = (lower? towlower((wint_t)*p) : towupper((wint_t)*p));
+            if (lower) {
+                 if (iswupper((wint_t)*p))
+                     *p = towlower((wint_t)*p);
+            } else {
+                 if (iswlower((wint_t)*p))
+                     *p = towupper((wint_t)*p);
+            }
             p++;
         }
 #endif
