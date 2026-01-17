@@ -29,13 +29,13 @@
  * includes
  */
 #include "prefix.h"
-#include <wctype.h>
 
 #ifdef TB_CONFIG_OS_WINDOWS
 #   include <windows.h>
 #else
+#   include <wctype.h>
 #   include <locale.h>
-#   if defined(TB_CONFIG_OS_MACOS) || defined(TB_CONFIG_OS_IOS) || defined(TB_CONFIG_OS_BSD)
+#   if defined(__APPLE__) || defined(__FreeBSD__) || defined(__DragonFly__)
 #       include <xlocale.h>
 #   endif
 #endif
