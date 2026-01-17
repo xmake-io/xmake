@@ -30,6 +30,9 @@
  */
 #include "prefix.h"
 #include <wctype.h>
+#ifdef TB_CONFIG_OS_WINDOWS
+#   include <windows.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * helper
@@ -58,10 +61,15 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         if (wn != -1) {
             
             // to case
+#ifdef TB_CONFIG_OS_WINDOWS
+            if (lower) CharLowerBuffW((LPWSTR)wb, (DWORD)wn);
+            else CharUpperBuffW((LPWSTR)wb, (DWORD)wn);
+#else
             tb_size_t i = 0;
             for (i = 0; i < wn; i++) {
                 wb[i] = lower? towlower(wb[i]) : towupper(wb[i]);
             }
+#endif
 
             // convert to utf8
             tb_size_t   un = (wn + 1) * 4;
