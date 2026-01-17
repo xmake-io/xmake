@@ -34,6 +34,9 @@
 #if defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
 #endif
+#if defined(TB_CONFIG_LIBC_HAVE_SETLOCALE)
+#   include <locale.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * helper
@@ -42,6 +45,11 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
 
     // check
     tb_assert_and_check_return_val(lua, 0);
+
+#if defined(TB_CONFIG_LIBC_HAVE_SETLOCALE)
+    // set locale to utf8
+    setlocale(LC_ALL, "");
+#endif
 
     // get the string
     size_t           size = 0;
@@ -79,12 +87,14 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         tb_uint32_t* p = (tb_uint32_t*)dst_data;
         tb_size_t    n = (tb_size_t)dst_size / 4;
         while (n--) {
-            if (lower) {
-                 if (iswupper((wint_t)*p))
-                     *p = towlower((wint_t)*p);
-            } else {
-                 if (iswlower((wint_t)*p))
-                     *p = towupper((wint_t)*p);
+            if (*p < 0x10000) {
+                if (lower) {
+                     if (iswupper((wint_t)*p))
+                         *p = towlower((wint_t)*p);
+                } else {
+                     if (iswlower((wint_t)*p))
+                         *p = towupper((wint_t)*p);
+                }
             }
             p++;
         }

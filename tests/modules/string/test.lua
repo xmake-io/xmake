@@ -112,4 +112,6 @@ function test_case(t)
     t:are_equal(("Hello"):upper(), "HELLO")
     t:are_equal(("Звезда Хэнсин"):lower(), "звезда хэнсин")
     t:are_equal(("Звезда Хэнсин"):upper(), "ЗВЕЗДА ХЭНСИН")
+    t:are_equal(("Test 源文件🎆 Message"):lower(), "test 源文件🎆 message")
+    t:are_equal(("Test 源文件🎆 Message"):upper(), "TEST 源文件🎆 MESSAGE")
 end
