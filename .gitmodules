@@ -19,6 +19,3 @@
 [submodule "core/src/lz4/lz4"]
 	path = core/src/lz4/lz4
 	url = ../../xmake-io/xmake-core-lz4.git
-[submodule "core/src/utf8proc/utf8proc"]
-	path = core/src/utf8proc/utf8proc
-	url = https://github.com/JuliaStrings/utf8proc
