@@ -59,8 +59,6 @@ end
 -- use cosmocc toolchain
 option("cosmocc", {default = false, description = "Use cosmocc toolchain to build once and run anywhere."})
 
-add_requires("utf8proc")
-
 -- embed all script files
 option("embed", {default = false, description = "Embed all script files."})
 
