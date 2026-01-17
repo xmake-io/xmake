@@ -36,18 +36,12 @@
 
 #ifdef TB_CONFIG_OS_WINDOWS
 #   include <windows.h>
+#else
+#   include <locale.h>
+#   if TB_CONFIG_OS_MACOS || TB_CONFIG_OS_IOS || TB_CONFIG_OS_BSD
+#       include <xlocale.h>
+#   endif
 #endif
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * globals
- */
-
-/* 
- * Define a static Tbox spinlock to protect the non-thread-safe setlocale calls.
- * This ensures that on non-Windows platforms, only one thread modifies the 
- * global locale at a time.
- */
-static tb_spinlock_t g_locale_lock = TB_SPINLOCK_INIT;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * helper
@@ -79,28 +73,34 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
 #ifdef TB_CONFIG_OS_WINDOWS
             if (lower) CharLowerBuffW((LPWSTR)wb, (DWORD)wn);
             else CharUpperBuffW((LPWSTR)wb, (DWORD)wn);
-#else
-            tb_spinlock_enter(&g_locale_lock);
-            // attempt to set utf-8 locale for towlower/towupper
-            // we need this on some platforms like DragonFly BSD, because towlower/towupper depends on the current locale
-#ifdef TB_CONFIG_LIBC_HAVE_SETLOCALE
-            tb_char_t const* old_locale_str = setlocale(LC_ALL, tb_null);
-            tb_char_t* old_locale = old_locale_str? tb_strdup(old_locale_str) : tb_null;
-            tb_setlocale();
-#endif
+#else 
+            locale_t new_loc = (locale_t)0;
+            locale_t old_loc = (locale_t)0;
+
+            // Create a temporary UTF-8 locale object
+            // LC_CTYPE_MASK: We only care about character classification/case
+            new_loc = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
+            if (!new_loc) {
+                // Fallback if system calls it en_US.UTF-8
+                new_loc = newlocale(LC_CTYPE_MASK, "en_US.UTF-8", (locale_t)0);
+            }
+
+            // Switch thread locale (No global lock needed!)
+            if (new_loc) {
+                old_loc = uselocale(new_loc);
+            }
+
+            // Convert
             tb_size_t i = 0;
             for (i = 0; i < wn; i++) {
                 wb[i] = lower? towlower(wb[i]) : towupper(wb[i]);
             }
 
-#ifdef TB_CONFIG_LIBC_HAVE_SETLOCALE
-            if (old_locale) {
-                setlocale(LC_ALL, old_locale);
-                tb_free(old_locale);
+            // Restore thread locale and free object
+            if (new_loc) {
+                uselocale(old_loc);
+                freelocale(new_loc);
             }
-#endif
-            /* Unlock after locale is restored */
-            tb_spinlock_leave(&g_locale_lock);
 #endif
 
             // convert to utf8
