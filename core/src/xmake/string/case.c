@@ -30,9 +30,6 @@
  */
 #include "prefix.h"
 #include <wctype.h>
-#include "tbox/libc/stdlib/setlocale.h"
-/* Include Tbox platform header for spinlocks if not already in prefix.h */
-#include "tbox/platform/spinlock.h" 
 
 #ifdef TB_CONFIG_OS_WINDOWS
 #   include <windows.h>
