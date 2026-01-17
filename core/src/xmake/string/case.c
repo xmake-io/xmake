@@ -34,9 +34,7 @@
 #if defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
 #endif
-#if defined(TB_CONFIG_LIBC_HAVE_SETLOCALE)
-#   include <locale.h>
-#endif
+#include "tbox/libc/stdlib/setlocale.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * helper
@@ -46,10 +44,8 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-#if defined(TB_CONFIG_LIBC_HAVE_SETLOCALE)
-    // set locale to utf8
-    setlocale(LC_ALL, "");
-#endif
+    // init locale
+    tb_setlocale();
 
     // get the string
     size_t           size = 0;
