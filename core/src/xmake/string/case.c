@@ -34,6 +34,9 @@
 #if defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
 #endif
+#if defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
+#   include <CoreFoundation/CoreFoundation.h>
+#endif
 #include "tbox/libc/stdlib/setlocale.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -57,6 +60,34 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         lua_pushstring(lua, "");
         return 1;
     }
+
+#if defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
+    CFStringRef cf_str = CFStringCreateWithBytes(kCFAllocatorDefault, (tb_byte_t const*)str, size, kCFStringEncodingUTF8, false);
+    if (cf_str) {
+        CFMutableStringRef cf_mutable = CFStringCreateMutableCopy(kCFAllocatorDefault, 0, cf_str);
+        CFRelease(cf_str);
+        if (cf_mutable) {
+            if (lower) CFStringLowercase(cf_mutable, NULL);
+            else CFStringUppercase(cf_mutable, NULL);
+
+            CFIndex len = CFStringGetLength(cf_mutable);
+            CFIndex max_size = CFStringGetMaximumSizeForEncoding(len, kCFStringEncodingUTF8) + 1;
+            tb_char_t* buffer = tb_malloc_bytes(max_size);
+            if (buffer) {
+                if (CFStringGetCString(cf_mutable, buffer, max_size, kCFStringEncodingUTF8)) {
+                    lua_pushstring(lua, buffer);
+                } else {
+                    lua_pushnil(lua);
+                }
+                tb_free(buffer);
+            } else {
+                lua_pushnil(lua);
+            }
+            CFRelease(cf_mutable);
+            return 1;
+        }
+    }
+#endif
 
     // find charsets
     xm_charset_entry_ref_t fcharset = xm_charset_find_by_name("utf8");
