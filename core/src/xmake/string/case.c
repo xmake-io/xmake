@@ -63,41 +63,6 @@ static tb_spinlock_t g_locale_lock = TB_SPINLOCK_INIT;
  * private implementation
  */
 
-/* Check if string contains only ASCII characters (all bytes < 0x80)
- */
-static tb_bool_t xm_string_is_ascii(tb_char_t const* str, tb_size_t size) {
-    tb_size_t i;
-    for (i = 0; i < size; i++) {
-        if ((tb_byte_t)str[i] >= 0x80) {
-            return tb_false;
-        }
-    }
-    return tb_true;
-}
-
-/* Fast ASCII-only case conversion using tb_char_t
- * Returns tb_true on success, tb_false on failure
- */
-static tb_bool_t xm_string_case_ascii(lua_State* lua, tb_char_t const* str, tb_size_t size, tb_bool_t lower) {
-    tb_char_t* buf = (tb_char_t*)tb_malloc_bytes(size);
-    if (!buf) {
-        return tb_false;
-    }
-
-    tb_size_t i;
-    for (i = 0; i < size; i++) {
-        tb_byte_t c = (tb_byte_t)str[i];
-        if (lower) {
-            buf[i] = (tb_char_t)(isupper(c) ? tolower(c) : c);
-        } else {
-            buf[i] = (tb_char_t)(islower(c) ? toupper(c) : c);
-        }
-    }
-
-    lua_pushlstring(lua, buf, size);
-    tb_free(buf);
-    return tb_true;
-}
 
 /* Perform wide character case conversion in-place
  */
@@ -219,21 +184,51 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         return 1;
     }
 
-    tb_bool_t ok;
+    // allocate buffer for optimistic ascii conversion
+    tb_char_t* buf = (tb_char_t*)tb_malloc_bytes(size);
+    if (!buf) return 0;
 
-    // Fast path: ASCII-only strings don't need wide character conversion
-    if (xm_string_is_ascii(str, size)) {
-        ok = xm_string_case_ascii(lua, str, size, lower);
-    } else {
-        // Slow path: Unicode strings need wide character conversion
-        ok = xm_string_case_unicode(lua, str, size, lower);
+    tb_size_t i;
+    for (i = 0; i < size; i++) {
+        // Stop at first non-ascii char
+        if ((tb_byte_t)str[i] >= 0x80) break;
+
+        // convert ascii
+        tb_byte_t c = (tb_byte_t)str[i];
+        if (lower) {
+            buf[i] = (tb_char_t)(isupper(c) ? tolower(c) : c);
+        } else {
+            buf[i] = (tb_char_t)(islower(c) ? toupper(c) : c);
+        }
     }
 
-    // Fallback: return original string if conversion failed
-    if (!ok) {
-        lua_pushlstring(lua, str, size);
+    // all ascii?
+    if (i == size) {
+        lua_pushlstring(lua, buf, size);
+        tb_free(buf);
+        return 1;
     }
 
+    // push the converted ascii prefix
+    if (i > 0) {
+        lua_pushlstring(lua, buf, i);
+    }
+    tb_free(buf);
+
+    // convert the remaining unicode suffix
+    if (xm_string_case_unicode(lua, str + i, size - i, lower)) {
+        // concat prefix and suffix: prefix (if any) + suffix
+        if (i > 0) {
+            lua_concat(lua, 2);
+        }
+        return 1;
+    }
+
+    // failed? return original string
+    if (i > 0) {
+        lua_pop(lua, 1); 
+    }
+    lua_pushlstring(lua, str, size);
     return 1;
 }
 
