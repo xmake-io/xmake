@@ -42,9 +42,6 @@
 #       include <xlocale.h>
 #   elif defined(__NetBSD__)
 #       include <string.h>
-#   endif
-#endif
-
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -54,6 +51,9 @@
  * setlocale() is not thread-safe on Windows or Linux, so we protect it globally.
  */
 static tb_spinlock_t g_locale_lock = TB_SPINLOCK_INIT;
+#   endif
+#endif
+
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
