@@ -67,16 +67,29 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
         // Convert input UTF-8 to Wide Char
         wn = tb_mbstowcs(wb, str, wn);
         if (wn != -1) {
-            
             // Perform Case Conversion
+            tb_size_t i = 0;
 #ifdef TB_CONFIG_OS_WINDOWS
-            // Windows API is naturally thread-safe for this operation
-            if (lower) CharLowerBuffW((LPWSTR)wb, (DWORD)wn);
-            else CharUpperBuffW((LPWSTR)wb, (DWORD)wn);
-#else 
+            // Windows Implementation
+            // We iterate manually to check the state before converting
+            for (i = 0; i < wn; i++) {
+                tb_wchar_t wc = wb[i];
+                if (lower) {
+                    // Check if already lower; if not, convert
+                    if (!IsCharLowerW(wc)) {
+                        // CharLowerBuffW operates in-place on the buffer
+                        CharLowerBuffW(&wb[i], 1);
+                    }
+                } else {
+                    // Check if already upper; if not, convert
+                    if (!IsCharUpperW(wc)) {
+                        CharUpperBuffW(&wb[i], 1);
+                    }
+                }
+            }
+#else
             // POSIX Thread-Safe Implementation
             // We strictly only convert if we can get a valid UTF-8 thread locale.
-            // If newlocale fails, we skip conversion to avoid using an undefined global locale.
             locale_t new_loc = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
             if (!new_loc) {
                 new_loc = newlocale(LC_CTYPE_MASK, "en_US.UTF-8", (locale_t)0);
@@ -84,10 +97,13 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
 
             if (new_loc) {
                 locale_t old_loc = uselocale(new_loc);
-                
-                tb_size_t i = 0;
                 for (i = 0; i < wn; i++) {
-                    wb[i] = lower ? towlower(wb[i]) : towupper(wb[i]);
+                    tb_wchar_t wc = wb[i];
+                    if (lower) {
+                        if (!iswlower(wc)) wb[i] = towlower(wc);
+                    } else {
+                        if (!iswupper(wc)) wb[i] = towupper(wc);
+                    }
                 }
 
                 uselocale(old_loc);
