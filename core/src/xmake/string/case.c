@@ -118,9 +118,9 @@ static tb_bool_t xm_string_case_unicode(lua_State* lua, tb_char_t const* str, tb
     }
 #else
     // POSIX Thread-Safe Implementation
-    locale_t new_loc = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
+    locale_t new_loc = newlocale(LC_CTYPE_MASK, "en_US.UTF-8", (locale_t)0);
     if (!new_loc) {
-        new_loc = newlocale(LC_CTYPE_MASK, "en_US.UTF-8", (locale_t)0);
+        new_loc = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
     }
 
     if (new_loc) {
