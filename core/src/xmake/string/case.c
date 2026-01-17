@@ -71,18 +71,18 @@ static tb_int_t xm_string_case(lua_State* lua, tb_bool_t lower) {
                 if (n != -1) {
                     lua_pushlstring(lua, ub, n);
                 } else {
-                    lua_pushnil(lua);
+                    lua_pushlstring(lua, str, size);
                 }
                 tb_free(ub);
             } else {
-                lua_pushnil(lua);
+                lua_pushlstring(lua, str, size);
             }
         } else {
-            lua_pushnil(lua);
+            lua_pushlstring(lua, str, size);
         }
         tb_free(wb);
     } else {
-        lua_pushnil(lua);
+        lua_pushlstring(lua, str, size);
     }
     
     // ok
