@@ -31,60 +31,9 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * private implementation
- */
-
-static tb_size_t xm_utf_count(tb_char_t const* str, tb_size_t size) {
-    tb_size_t count = 0;
-    tb_char_t const* p = str;
-    tb_char_t const* e = str + size;
-    while (p < e) {
-        tb_size_t len = 1;
-        tb_byte_t b = (tb_byte_t)*p;
-        if (b >= 0xC0) {
-            if (b >= 0xF0) len = 4;
-            else if (b >= 0xE0) len = 3;
-            else if (b >= 0xC0) len = 2;
-        }
-        if (p + len > e) len = 1;
-        p += len;
-        count++;
-    }
-    return count;
-}
-
-// get offset of the given utf8 char index
-static tb_size_t xm_utf_offset(tb_char_t const* str, tb_size_t size, tb_long_t index) {
-    if (index < 0) {
-        tb_size_t count = xm_utf_count(str, size);
-        index = count + index + 1;
-    }
-
-    if (index <= 1) return 0;
-
-    tb_size_t c = 0;
-    tb_char_t const* p = str;
-    tb_char_t const* e = str + size;
-    while (p < e) {
-        if (c == index - 1) return p - str;
-        
-        tb_size_t len = 1;
-        tb_byte_t b = (tb_byte_t)*p;
-        if (b >= 0xC0) {
-            if (b >= 0xF0) len = 4;
-            else if (b >= 0xE0) len = 3;
-            else if (b >= 0xC0) len = 2;
-        }
-        if (p + len > e) len = 1;
-        p += len;
-        c++;
-    }
-    return size;
-}
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+
 tb_int_t xm_string_utfsub(lua_State* lua) {
     size_t size = 0;
     tb_char_t const* str = luaL_checklstring(lua, 1, &size);
@@ -92,24 +41,70 @@ tb_int_t xm_string_utfsub(lua_State* lua) {
     tb_long_t end_idx = (tb_long_t)luaL_optinteger(lua, 3, -1);
 
     if (start_idx < 0 || (end_idx < 0 && end_idx != -1)) {
-        tb_size_t count = xm_utf_count(str, size);
+        tb_size_t count = 0;
+        tb_char_t const* p = str;
+        tb_char_t const* e = str + size;
+        while (p < e) {
+            tb_size_t len = 1;
+            tb_byte_t b = (tb_byte_t)*p;
+            if (b >= 0xC0) {
+                if (b >= 0xF0) len = 4;
+                else if (b >= 0xE0) len = 3;
+                else if (b >= 0xC0) len = 2;
+            }
+            if (p + len > e) len = 1;
+            p += len;
+            count++;
+        }
+        
         if (start_idx < 0) start_idx = count + start_idx + 1;
         if (end_idx < 0 && end_idx != -1) end_idx = count + end_idx + 1;
     }
 
-    tb_size_t start_offset = xm_utf_offset(str, size, start_idx);
-    tb_size_t end_offset;
-    if (end_idx == -1) {
-        end_offset = size;
-    } else {
-        end_offset = xm_utf_offset(str, size, end_idx + 1);
-    }
+    if (start_idx < 1) start_idx = 1;
     
+    tb_size_t start_offset = size;
+    tb_size_t end_offset = size;
+    
+    tb_size_t current_char_idx = 1; // 1-based index
+    tb_char_t const* p = str;
+    tb_char_t const* e = str + size;
+
+    while (p < e && (current_char_idx <= start_idx || (end_idx != -1 && current_char_idx <= end_idx))) {
+        
+        // Capture start offset
+        if (current_char_idx == start_idx) {
+            start_offset = p - str;
+        }
+
+        tb_size_t len = 1;
+        tb_byte_t b = (tb_byte_t)*p;
+        if (b >= 0xC0) {
+            if (b >= 0xF0) len = 4;
+            else if (b >= 0xE0) len = 3;
+            else if (b >= 0xC0) len = 2;
+        }
+        if (p + len > e) len = 1;
+        p += len;
+
+        // Capture end offset
+        if (end_idx != -1 && current_char_idx == end_idx) {
+            end_offset = p - str;
+        }
+        
+        current_char_idx++;
+    }
+
+    // Handle edge case: if start_idx is beyond string length
+    if (current_char_idx <= start_idx) {
+        start_offset = size;
+    }
+
     if (start_offset >= size || start_offset >= end_offset) {
         lua_pushstring(lua, "");
-        return 1;
+    } else {
+        lua_pushlstring(lua, str + start_offset, end_offset - start_offset);
     }
     
-    lua_pushlstring(lua, str + start_offset, end_offset - start_offset);
     return 1;
 }
