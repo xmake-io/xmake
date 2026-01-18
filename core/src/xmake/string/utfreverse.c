@@ -43,9 +43,6 @@ tb_int_t xm_string_utfreverse(lua_State* lua) {
 
     // allocate a temporary buffer using lua userdata to let garbage collector handle it
     tb_char_t* buffer = (tb_char_t*)lua_newuserdata(lua, size * sizeof(tb_char_t));
-    if (!buffer) {
-        return 0;
-    }
 
     tb_char_t const* p = str;
     tb_char_t const* e = str + size;
