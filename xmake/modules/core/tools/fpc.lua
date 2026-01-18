@@ -104,7 +104,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, includedir)
-    return {"-FI" .. path.translate(includedir)}
+    return {"-Fi" .. path.translate(includedir)}
 end
 
 -- make the unitdir flag
@@ -134,7 +134,17 @@ function nf_language(self, language)
         extendedpascal = "-Mextendedpascal",
         delphiunicode = "-Mdelphiunicode",
     }
-    return mode[language]
+    return mode[language:lower()]
+end
+
+-- make the exception flag
+function nf_exception(self, exp)
+    return {exp:startswith("no-") and "-Sx-" or "-Sx"}
+end
+
+-- make the objectdir flag
+function nf_objectdir(self, objectdir)
+    return {"-FU" .. path.translate(objectdir)}
 end
 
 -- make the build arguments list
