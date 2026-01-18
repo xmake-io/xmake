@@ -292,6 +292,7 @@ tb_int_t xm_string_utfsub(lua_State* lua);
 tb_int_t xm_string_utflen(lua_State* lua);
 tb_int_t xm_string_utffind(lua_State* lua);
 tb_int_t xm_string_utfreverse(lua_State* lua);
+tb_int_t xm_string_utfbyte(lua_State* lua);
 
 // the process functions
 tb_int_t xm_process_open(lua_State *lua);
@@ -601,6 +602,7 @@ static luaL_Reg const g_string_functions[] = {
     { "utflen", xm_string_utflen },
     { "utffind", xm_string_utffind },
     { "utfreverse", xm_string_utfreverse },
+    { "utfbyte", xm_string_utfbyte },
     { tb_null, tb_null },
 };
 

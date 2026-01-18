@@ -179,3 +179,22 @@ function test_utfreverse(t)
     t:are_equal(("Звезда"):utfreverse(), "адзевЗ")
     t:are_equal(("源文件🎆"):utfreverse(), "🎆件文源")
 end
+
+function test_utfbyte(t)
+    t:are_equal({("A"):utfbyte()}, {65})
+    t:are_equal({("AB"):utfbyte(1, 2)}, {65, 66})
+    t:are_equal({("源"):utfbyte()}, {28304}) -- U+6E90
+    t:are_equal({("🎆"):utfbyte()}, {127878}) -- U+1F386
+    
+    local s = "A源🎆"
+    t:are_equal({s:utfbyte(1)}, {65})
+    t:are_equal({s:utfbyte(2)}, {28304})
+    t:are_equal({s:utfbyte(3)}, {127878})
+    t:are_equal({s:utfbyte(1, 3)}, {65, 28304, 127878})
+    
+    -- negative indices
+    t:are_equal({s:utfbyte(-1)}, {127878})
+    t:are_equal({s:utfbyte(-2)}, {28304})
+    t:are_equal({s:utfbyte(-3)}, {65})
+    t:are_equal({s:utfbyte(-3, -1)}, {65, 28304, 127878})
+end
