@@ -95,14 +95,6 @@ tb_int_t xm_string_utffind(lua_State* lua) {
         return 1;
     }
 
-    // handle negative index
-    if (init < 0) {
-        tb_size_t count = xm_utf_char_count(str, str_size);
-        init = count + init + 1;
-    }
-    if (init < 1) init = 1;
-
-    // get start byte offset
     tb_size_t start_offset = xm_utf_offset(str, str_size, init);
     if (start_offset >= str_size) {
         lua_pushnil(lua);

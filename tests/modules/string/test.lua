@@ -172,3 +172,10 @@ function test_utffind(t)
     -- not found
     t:are_equal(("Hello"):utffind("World"), nil)
 end
+
+function test_utfreverse(t)
+    t:are_equal((""):utfreverse(), "")
+    t:are_equal(("Hello"):utfreverse(), "olleH")
+    t:are_equal(("Звезда"):utfreverse(), "адзевЗ")
+    t:are_equal(("源文件🎆"):utfreverse(), "🎆件文源")
+end
