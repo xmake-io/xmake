@@ -115,3 +115,18 @@ function test_case(t)
     t:are_equal(("Test 源文件🎆 Message"):lower(), "test 源文件🎆 message")
     t:are_equal(("Test 源文件🎆 Message"):upper(), "TEST 源文件🎆 MESSAGE")
 end
+
+function test_utfsub(t)
+    t:are_equal(("Hello"):utfsub(2), "ello")
+    t:are_equal(("Hello"):utfsub(2, 3), "el")
+    t:are_equal(("Звезда Хэнсин"):utfsub(1, 1), "З")
+    t:are_equal(("Звезда Хэнсин"):utfsub(2), "везда Хэнсин")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(1, 4), "Test")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(6, 6), "源")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(6, 8), "源文件")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(9, 9), "🎆")
+    t:are_equal(("🎆🎉🌮"):utfsub(1, 1), "🎆")
+    t:are_equal(("🎆🎉🌮"):utfsub(2, 2), "🎉")
+    t:are_equal(("🎆🎉🌮"):utfsub(2), "🎉🌮")
+    t:are_equal(("🎆🎉🌮"):utfsub(3, 3), "🌮")
+end
