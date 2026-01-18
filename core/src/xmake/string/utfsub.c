@@ -83,8 +83,8 @@ static tb_size_t xm_utf_offset(tb_char_t const* str, tb_size_t size, tb_long_t i
 tb_int_t xm_string_utfsub(lua_State* lua) {
     size_t size = 0;
     tb_char_t const* str = luaL_checklstring(lua, 1, &size);
-    tb_long_t start_idx = luaL_checkinteger(lua, 2);
-    tb_long_t end_idx = luaL_optinteger(lua, 3, -1);
+    tb_long_t start_idx = (tb_long_t)luaL_checkinteger(lua, 2);
+    tb_long_t end_idx = (tb_long_t)luaL_optinteger(lua, 3, -1);
 
     tb_size_t start_offset = xm_utf_offset(str, size, start_idx);
     tb_size_t end_offset;

@@ -145,3 +145,11 @@ function test_utfsub(t)
     t:are_equal(("abc"):utfsub(0), "abc")
     t:are_equal(("abc"):utfsub(2, 1), "")
 end
+
+function test_utflen(t)
+    t:are_equal((""):utflen(), 0)
+    t:are_equal(("Hello"):utflen(), 5)
+    t:are_equal(("Звезда Хэнсин"):utflen(), 13)
+    t:are_equal(("Test 源文件🎆 Message"):utflen(), 17)
+    t:are_equal(("🎆🎉🌮"):utflen(), 3)
+end
