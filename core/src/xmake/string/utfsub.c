@@ -34,24 +34,29 @@
  * private implementation
  */
 
+static tb_size_t xm_utf_count(tb_char_t const* str, tb_size_t size) {
+    tb_size_t count = 0;
+    tb_char_t const* p = str;
+    tb_char_t const* e = str + size;
+    while (p < e) {
+        tb_size_t len = 1;
+        tb_byte_t b = (tb_byte_t)*p;
+        if (b >= 0xC0) {
+            if (b >= 0xF0) len = 4;
+            else if (b >= 0xE0) len = 3;
+            else if (b >= 0xC0) len = 2;
+        }
+        if (p + len > e) len = 1;
+        p += len;
+        count++;
+    }
+    return count;
+}
+
 // get offset of the given utf8 char index
 static tb_size_t xm_utf_offset(tb_char_t const* str, tb_size_t size, tb_long_t index) {
     if (index < 0) {
-        tb_size_t count = 0;
-        tb_char_t const* p = str;
-        tb_char_t const* e = str + size;
-        while (p < e) {
-            tb_size_t len = 1;
-            tb_byte_t b = (tb_byte_t)*p;
-            if (b >= 0xC0) {
-                if (b >= 0xF0) len = 4;
-                else if (b >= 0xE0) len = 3;
-                else if (b >= 0xC0) len = 2;
-            }
-            if (p + len > e) len = 1;
-            p += len;
-            count++;
-        }
+        tb_size_t count = xm_utf_count(str, size);
         index = count + index + 1;
     }
 
@@ -87,22 +92,7 @@ tb_int_t xm_string_utfsub(lua_State* lua) {
     tb_long_t end_idx = (tb_long_t)luaL_optinteger(lua, 3, -1);
 
     if (start_idx < 0 || (end_idx < 0 && end_idx != -1)) {
-        tb_size_t count = 0;
-        tb_char_t const* p = str;
-        tb_char_t const* e = str + size;
-        while (p < e) {
-            tb_size_t len = 1;
-            tb_byte_t b = (tb_byte_t)*p;
-            if (b >= 0xC0) {
-                if (b >= 0xF0) len = 4;
-                else if (b >= 0xE0) len = 3;
-                else if (b >= 0xC0) len = 2;
-            }
-            if (p + len > e) len = 1;
-            p += len;
-            count++;
-        }
-        
+        tb_size_t count = xm_utf_count(str, size);
         if (start_idx < 0) start_idx = count + start_idx + 1;
         if (end_idx < 0 && end_idx != -1) end_idx = count + end_idx + 1;
     }
