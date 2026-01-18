@@ -591,8 +591,8 @@ static luaL_Reg const g_string_functions[] = {
     { "convert", xm_string_convert },
     { "endswith", xm_string_endswith },
     { "startswith", xm_string_startswith },
-    { "lower", xm_string_tolower },
-    { "upper", xm_string_toupper },
+    { "lower", xm_string_lower },
+    { "upper", xm_string_upper },
     { tb_null, tb_null },
 };
 
