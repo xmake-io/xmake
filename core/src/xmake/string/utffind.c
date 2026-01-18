@@ -108,12 +108,9 @@ tb_int_t xm_string_utffind(lua_State* lua) {
         return 1;
     }
 
-    // count chars from start_offset to found position
-    tb_size_t offset_bytes = p - (str + start_offset);
-    tb_size_t relative_char_pos = xm_utf_char_count(str + start_offset, offset_bytes);
-    
-    // calculate start char index
-    tb_long_t start_idx = init + relative_char_pos;
+    // count chars from beginning to found position to get absolute index
+    tb_size_t found_offset_bytes = p - str;
+    tb_long_t start_idx = xm_utf_char_count(str, found_offset_bytes) + 1;
 
     // calculate end char index
     tb_size_t sub_len_chars = xm_utf_char_count(substr, sub_size);
