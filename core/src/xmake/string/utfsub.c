@@ -86,6 +86,27 @@ tb_int_t xm_string_utfsub(lua_State* lua) {
     tb_long_t start_idx = (tb_long_t)luaL_checkinteger(lua, 2);
     tb_long_t end_idx = (tb_long_t)luaL_optinteger(lua, 3, -1);
 
+    if (start_idx < 0 || (end_idx < 0 && end_idx != -1)) {
+        tb_size_t count = 0;
+        tb_char_t const* p = str;
+        tb_char_t const* e = str + size;
+        while (p < e) {
+            tb_size_t len = 1;
+            tb_byte_t b = (tb_byte_t)*p;
+            if (b >= 0xC0) {
+                if (b >= 0xF0) len = 4;
+                else if (b >= 0xE0) len = 3;
+                else if (b >= 0xC0) len = 2;
+            }
+            if (p + len > e) len = 1;
+            p += len;
+            count++;
+        }
+        
+        if (start_idx < 0) start_idx = count + start_idx + 1;
+        if (end_idx < 0 && end_idx != -1) end_idx = count + end_idx + 1;
+    }
+
     tb_size_t start_offset = xm_utf_offset(str, size, start_idx);
     tb_size_t end_offset;
     if (end_idx == -1) {
