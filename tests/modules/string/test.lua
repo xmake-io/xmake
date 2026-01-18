@@ -209,3 +209,16 @@ function test_utfchar(t)
     -- empty
     t:are_equal(string.utfchar(), "")
 end
+
+function test_utflastof(t)
+    t:are_equal(("Hello World"):utflastof("l"), 10)
+    t:are_equal(("Hello World"):utflastof("o"), 8)
+    t:are_equal(("Hello World"):utflastof("Hello"), 1)
+    t:are_equal(("Hello World"):utflastof("World"), 7)
+
+    t:are_equal(("Test 源文件🎆 Message"):utflastof("源文件"), 6)
+    t:are_equal(("Test 源文件🎆 Message"):utflastof("🎆"), 9)
+
+    -- not found
+    t:are_equal(("Hello World"):utflastof("x"), nil)
+end
