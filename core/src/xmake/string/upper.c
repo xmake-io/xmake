@@ -52,7 +52,7 @@ tb_int_t xm_string_upper(lua_State *lua) {
     }
 
     // copy string to buffer
-    tb_char_t* buffer = tb_malloc_bytes(size + 1);
+    tb_char_t* buffer = (tb_char_t*)tb_malloc_bytes(size + 1);
     if (buffer) {
         tb_memcpy(buffer, cstr, size);
         buffer[size] = '\0';
