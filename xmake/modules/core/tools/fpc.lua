@@ -138,8 +138,10 @@ function nf_language(self, language)
 end
 
 -- make the exception flag
+-- considering this applies to all dialects,
+-- make this only accept on/off
 function nf_exception(self, exp)
-    return {exp:startswith("no-") and "-Sx-" or "-Sx"}
+    return {exp == "off" and "-Sx-" or "-Sx"}
 end
 
 -- make the objectdir flag
