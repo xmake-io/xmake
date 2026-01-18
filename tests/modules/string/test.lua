@@ -129,4 +129,19 @@ function test_utfsub(t)
     t:are_equal(("🎆🎉🌮"):utfsub(2, 2), "🎉")
     t:are_equal(("🎆🎉🌮"):utfsub(2), "🎉🌮")
     t:are_equal(("🎆🎉🌮"):utfsub(3, 3), "🌮")
+
+    -- negative indices
+    t:are_equal(("Hello"):utfsub(-1), "o")
+    t:are_equal(("Hello"):utfsub(-2), "lo")
+    t:are_equal(("Hello"):utfsub(2, -2), "ell")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(-8), " Message")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(-8, -3), " Messa")
+    t:are_equal(("🎆🎉🌮"):utfsub(-1), "🌮")
+
+    -- edge cases
+    t:are_equal((""):utfsub(1), "")
+    t:are_equal(("abc"):utfsub(4), "")
+    t:are_equal(("abc"):utfsub(1, 4), "abc")
+    t:are_equal(("abc"):utfsub(0), "abc")
+    t:are_equal(("abc"):utfsub(2, 1), "")
 end
