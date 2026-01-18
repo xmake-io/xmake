@@ -160,7 +160,7 @@ function test_utffind(t)
     t:are_equal({("Hello"):utffind("ell")}, {2, 4})
     t:are_equal({("Hello"):utffind("l")}, {3, 3})
     t:are_equal({("Hello"):utffind("l", 4)}, {4, 4})
-    
+
     t:are_equal({("Звезда Хэнсин"):utffind("езда")}, {3, 6})
     t:are_equal({("Test 源文件🎆 Message"):utffind("源文件")}, {6, 8})
     t:are_equal({("Test 源文件🎆 Message"):utffind("🎆")}, {9, 9})
@@ -168,7 +168,7 @@ function test_utffind(t)
 
     -- negative indices
     t:are_equal({("Hello Hello"):utffind("Hello", -5)}, {7, 11})
-    
+
     -- not found
     t:are_equal(("Hello"):utffind("World"), nil)
 end
@@ -185,16 +185,27 @@ function test_utfbyte(t)
     t:are_equal({("AB"):utfbyte(1, 2)}, {65, 66})
     t:are_equal({("源"):utfbyte()}, {28304}) -- U+6E90
     t:are_equal({("🎆"):utfbyte()}, {127878}) -- U+1F386
-    
+
     local s = "A源🎆"
     t:are_equal({s:utfbyte(1)}, {65})
     t:are_equal({s:utfbyte(2)}, {28304})
     t:are_equal({s:utfbyte(3)}, {127878})
     t:are_equal({s:utfbyte(1, 3)}, {65, 28304, 127878})
-    
+
     -- negative indices
     t:are_equal({s:utfbyte(-1)}, {127878})
     t:are_equal({s:utfbyte(-2)}, {28304})
     t:are_equal({s:utfbyte(-3)}, {65})
     t:are_equal({s:utfbyte(-3, -1)}, {65, 28304, 127878})
+end
+
+function test_utfchar(t)
+    t:are_equal(string.utfchar(65), "A")
+    t:are_equal(string.utfchar(28304), "源")
+    t:are_equal(string.utfchar(127878), "🎆")
+    t:are_equal(string.utfchar(65, 66, 67), "ABC")
+    t:are_equal(string.utfchar(65, 28304, 127878), "A源🎆")
+
+    -- empty
+    t:are_equal(string.utfchar(), "")
 end
