@@ -39,15 +39,10 @@ function _lock_package(instance)
     result.branch     = instance:branch()
     result.tag        = instance:tag()
     if repo then
-        local lastcommit
-        local manifest = instance:manifest_load()
-        if manifest and manifest.repo then
-            lastcommit = manifest.repo.commit
-        end
-        if not lastcommit then
-            lastcommit = repo:commit()
-        end
-        result.repo   = {url = repo:url(), commit = lastcommit, branch = repo:branch()}
+        -- Even when locking pre-compiled packages,
+        -- we always use the repo and commit info in the current repository (instead of precompiled-artifacts manifest)
+        -- to ensure that the repo information remains stable when reverting to source code installation.
+        result.repo   = {url = repo:url(), commit = repo:commit(), branch = repo:branch()}
     end
     return result
 end
@@ -66,7 +61,17 @@ function main(packages)
             local packagelock_key = _get_packagelock_key(instance)
             results[key][packagelock_key] = _lock_package(instance)
         end
-        io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}), {encoding = "binary"})
+        -- write to temporary file first, then copy if content is different
+        local lockfile = project.requireslock()
+        local content = string.serialize(results, {orderkeys = true})
+        local tmpfile = os.tmpfile()
+
+        -- write to temporary file
+        io.writefile(tmpfile, content, {encoding = "binary"})
+
+        -- copy to target file only if content is different
+        os.cp(tmpfile, lockfile, {copy_if_different = true})
+        os.rm(tmpfile)
     end
 end
 

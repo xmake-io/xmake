@@ -138,9 +138,7 @@ function main(name, flags, opt)
 
     -- trace
     if option.get("verbose") or option.get("diagnosis") or opt.verbose then
-        cprintf("${dim}checking for flags (")
-        io.write(opt.flagskey)
-        cprint("${dim}) ... %s", result and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+        cprint("${dim}checking for flags (%s) ... %s", opt.flagskey, result and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
         if option.get("diagnosis") then
             cprint("${dim}> %s \"%s\"", path.filename(tool.program), table.concat(checkflags, "\" \""))
             if errors and #tostring(errors) > 0 then

@@ -28,37 +28,71 @@ import("core.project.config")
 import("core.project.target")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
+-- check if pattern matches as a complete path component
+-- e.g. "x86" should match "/x86/" but not "/x86_64/"
+function _match_path_component(file_lower, pattern)
+    local s, e = file_lower:find(pattern, 1, true)
+    while s do
+        -- check boundary: start of string or path separator before
+        local before_ok = (s == 1) or file_lower:sub(s - 1, s - 1):match("[/\\]")
+        -- check boundary: end of string or path separator after
+        local after_ok = (e == #file_lower) or file_lower:sub(e + 1, e + 1):match("[/\\]")
+        if before_ok and after_ok then
+            return true
+        end
+        -- continue searching from next position
+        s, e = file_lower:find(pattern, e + 1, true)
+    end
+    return false
+end
+
+-- match library file by analyzing path components
+-- returns match score (higher is better), 0 means no match
+function _match_libfile(file, libarch, toolset, libmode, runtime)
+    -- architecture aliases for matching
+    local arch_patterns = {
+        x64 = {"x64", "amd64", "x86_64"},
+        Win32 = {"win32", "x86", "i386", "i686"},
+        arm64 = {"arm64", "aarch64"},
+    }
+    local target_archs = arch_patterns[libarch] or {libarch:lower()}
+
+    -- check if file path contains target architecture
+    local file_lower = file:lower()
+    local has_arch = false
+    for _, arch_name in ipairs(target_archs) do
+        if _match_path_component(file_lower, arch_name) then
+            has_arch = true
+            break
+        end
+    end
+
+    -- check if file contains other architecture (should exclude)
+    for arch, patterns in pairs(arch_patterns) do
+        if arch ~= libarch then
+            for _, p in ipairs(patterns) do
+                if _match_path_component(file_lower, p) then
+                    return 0 -- contains wrong architecture
+                end
+            end
+        end
+    end
+
+    -- calculate match score based on path components
+    local score = has_arch and 10 or 1
+    if toolset and file_lower:find(toolset:lower(), 1, true) then
+        score = score + 4
+    end
+    if file_lower:find(libmode:lower(), 1, true) then
+        score = score + 2
+    end
+    if file_lower:find(runtime:lower(), 1, true) then
+        score = score + 1
+    end
+    return score
+end
+
 -- find native package files
--- e.g.
---[[
-    "build/native/include/crc32.h",
-    "build/native/include/deflate.h",
-    "build/native/include/gzguts.h",
-    "build/native/include/inffast.h",
-    "build/native/include/inffixed.h",
-    "build/native/include/inflate.h",
-    "build/native/include/inftrees.h",
-    "build/native/include/trees.h",
-    "build/native/include/zconf.h",
-    "build/native/include/zlib.h",
-    "build/native/include/zutil.h",
-    "build/native/lib/Win32/v140/Debug/zlib.lib",
-    "build/native/lib/Win32/v140/Release/zlib.lib",
-    "build/native/lib/Win32/v141/Debug/zlib.lib",
-    "build/native/lib/Win32/v141/Release/zlib.lib",
-    "build/native/lib/Win32/v142/Debug/MultiThreadedDebug/zlib.lib",
-    "build/native/lib/Win32/v142/Debug/MultiThreadedDebugDLL/zlib.lib",
-    "build/native/lib/Win32/v142/Release/MultiThreaded/zlib.lib",
-    "build/native/lib/Win32/v142/Release/MultiThreadedDLL/zlib.lib",
-    "build/native/lib/x64/v140/Debug/zlib.lib",
-    "build/native/lib/x64/v140/Release/zlib.lib",
-    "build/native/lib/x64/v141/Debug/zlib.lib",
-    "build/native/lib/x64/v141/Release/zlib.lib",
-    "build/native/lib/x64/v142/Debug/MultiThreadedDebug/zlib.lib",
-    "build/native/lib/x64/v142/Debug/MultiThreadedDebugDLL/zlib.lib",
-    "build/native/lib/x64/v142/Release/MultiThreaded/zlib.lib",
-    "build/native/lib/x64/v142/Release/MultiThreadedDLL/zlib.lib",
-]]
 function _find_package(name, result, opt)
     local arch = opt.arch
     local plat = opt.plat
@@ -72,7 +106,6 @@ function _find_package(name, result, opt)
             MD = "MultiThreadedDLL",
             MDd = "MultiThreadedDebugDLL"}
         local installdir = path.join(opt.packagesdir, name)
-        local libdir = "build/native/lib"
         local runtime = assert(runtimes[configs.runtimes], "unknown runtimes %s", configs.runtimes)
         local toolset = toolchain_utils.get_vs_toolset_ver(toolchain.load("msvc", {plat = plat, arch = arch}):config("vs_toolset") or config.get("vs_toolset"))
         local libarch = libarchs[arch] or "x64"
@@ -82,24 +115,44 @@ function _find_package(name, result, opt)
             file = file:trim()
 
             -- get includedirs
-            if file:find("/include/", 1, true) or file:startswith("include/") then
-                result.includedirs = result.includedirs or {}
-                table.insert(result.includedirs, path.join(installdir, "include"))
+            -- support multiple include directory patterns:
+            -- e.g. build/native/include/*.h, build/native/include-winrt/*.h
+            if file:endswith(".h") or file:endswith(".hpp") or file:endswith(".hxx") then
+                local dir = path.directory(file)
+                if dir and (dir:find("include", 1, true) or dir:find("inc", 1, true)) then
+                    result.includedirs = result.includedirs or {}
+                    table.insert(result.includedirs, path.join(installdir, dir))
+                end
             end
 
             -- get linkdirs and links
+            -- use score-based matching to support various directory structures
             if file:endswith(".lib") then
-                local searchdirs = {}
-                table.insert(searchdirs, path.unix(path.join(libdir, libarch, toolset, libmode, runtime)))
-                table.insert(searchdirs, path.unix(path.join(libdir, libarch)))
-                for _, searchdir in ipairs(searchdirs) do
-                    if file:startswith(searchdir .. "/") then
+                local score = _match_libfile(file, libarch, toolset, libmode, runtime)
+                if score > 0 then
+                    local libname = path.filename(filepath)
+                    -- check if we already have this lib with a better match
+                    result._libscores = result._libscores or {}
+                    local existing_score = result._libscores[libname] or 0
+                    if score > existing_score then
+                        -- remove old entry if exists
+                        if existing_score > 0 then
+                            for i, v in ipairs(result.links or {}) do
+                                if target.linkname(libname, {plat = plat}) == v then
+                                    table.remove(result.links, i)
+                                    table.remove(result.linkdirs, i)
+                                    table.remove(result.libfiles, i)
+                                    break
+                                end
+                            end
+                        end
                         result.links = result.links or {}
                         result.linkdirs = result.linkdirs or {}
                         result.libfiles = result.libfiles or {}
                         table.insert(result.linkdirs, path.directory(filepath))
-                        table.insert(result.links, target.linkname(path.filename(filepath), {plat = plat}))
+                        table.insert(result.links, target.linkname(libname, {plat = plat}))
                         table.insert(result.libfiles, filepath)
+                        result._libscores[libname] = score
                     end
                 end
             end
@@ -159,7 +212,16 @@ function main(name, opt)
     if target_root and metainfo.targets and metainfo.libraries and metainfo.packagesdir then
         local result = {}
         _find_package(target_root, result, metainfo)
+        -- clean up internal scoring data
+        result._libscores = nil
         if result.links or result.includedirs then
+            -- deduplicate paths
+            if result.includedirs then
+                result.includedirs = table.unique(result.includedirs)
+            end
+            if result.linkdirs then
+                result.linkdirs = table.unique(result.linkdirs)
+            end
             return result
         end
     end

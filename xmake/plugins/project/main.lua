@@ -87,8 +87,9 @@ function main()
     -- in project generator?
     os.setenv("XMAKE_IN_PROJECT_GENERATOR", "true")
 
-    -- config it first
-    task.run("config")
+    -- load config first
+    -- @note When generating project configuration files, we should not modify the configuration and cache.
+    task.run("config", {}, {loadonly = true})
 
     -- post statistics
     statistics.post()

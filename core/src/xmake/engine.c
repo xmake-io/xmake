@@ -174,6 +174,7 @@ tb_int_t xm_io_file_rawfd(lua_State *lua);
 tb_int_t xm_io_file_write(lua_State *lua);
 tb_int_t xm_io_file_flush(lua_State *lua);
 tb_int_t xm_io_file_close(lua_State *lua);
+tb_int_t xm_io_file_convert(lua_State *lua);
 tb_int_t xm_io_file_isatty(lua_State *lua);
 
 // the io/filelock functions
@@ -285,6 +286,8 @@ tb_int_t xm_string_lastof(lua_State *lua);
 tb_int_t xm_string_convert(lua_State *lua);
 tb_int_t xm_string_endswith(lua_State *lua);
 tb_int_t xm_string_startswith(lua_State *lua);
+tb_int_t xm_string_lower(lua_State *lua);
+tb_int_t xm_string_upper(lua_State *lua);
 
 // the process functions
 tb_int_t xm_process_open(lua_State *lua);
@@ -480,6 +483,7 @@ static luaL_Reg const g_io_functions[] = {
     { "file_flush", xm_io_file_flush },
     { "file_isatty", xm_io_file_isatty },
     { "file_close", xm_io_file_close },
+    { "file_convert", xm_io_file_convert },
     { "file_rawfd", xm_io_file_rawfd },
     { "filelock_open", xm_io_filelock_open },
     { "filelock_lock", xm_io_filelock_lock },
@@ -587,6 +591,8 @@ static luaL_Reg const g_string_functions[] = {
     { "convert", xm_string_convert },
     { "endswith", xm_string_endswith },
     { "startswith", xm_string_startswith },
+    { "lower", xm_string_lower },
+    { "upper", xm_string_upper },
     { tb_null, tb_null },
 };
 
