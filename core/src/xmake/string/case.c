@@ -14,7 +14,7 @@
  *
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
- * @author      ruki
+ * @author      luadebug, ruki
  * @file        case.c
  *
  */
