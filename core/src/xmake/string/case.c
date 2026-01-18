@@ -29,6 +29,10 @@
  * includes
  */
 #include "prefix.h"
+#if defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_SOLARIS)
+#   include <locale.h>
+#   include <wctype.h>
+#endif
 
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -56,8 +60,28 @@ static tb_bool_t xm_string_case_unicode(lua_State* lua, tb_char_t const* str, tb
     }
 
     // Perform Case Conversion
+#if defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_SOLARIS)
+    locale_t loc = newlocale(LC_ALL_MASK, "C.UTF-8", (locale_t)0);
+    if (!loc) loc = newlocale(LC_ALL_MASK, "en_US.UTF-8", (locale_t)0);
+    if (!loc) loc = newlocale(LC_ALL_MASK, "C.utf8", (locale_t)0);
+    if (!loc) loc = newlocale(LC_ALL_MASK, "en_US.utf8", (locale_t)0);
+    if (loc) {
+        locale_t old = uselocale(loc);
+        tb_wchar_t* p = wb;
+        while (*p) {
+            *p = lower ? towlower(*p) : towupper(*p);
+            p++;
+        }
+        uselocale(old);
+        freelocale(loc);
+    } else {
+        if (lower) tb_wcslwr(wb);
+        else tb_wcsupr(wb);
+    }
+#else
     if (lower) tb_wcslwr(wb);
     else tb_wcsupr(wb);
+#endif
 
     // Convert Wide Char back to UTF-8
     tb_size_t   un = (wn + 1) * 4;
