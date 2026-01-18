@@ -154,3 +154,21 @@ function test_utflen(t)
     t:are_equal(("Test 源文件🎆 Message"):utflen(), 17)
     t:are_equal(("🎆🎉🌮"):utflen(), 3)
 end
+
+function test_utffind(t)
+    t:are_equal({("Hello"):utffind("H")}, {1, 1})
+    t:are_equal({("Hello"):utffind("ell")}, {2, 4})
+    t:are_equal({("Hello"):utffind("l")}, {3, 3})
+    t:are_equal({("Hello"):utffind("l", 4)}, {4, 4})
+    
+    t:are_equal({("Звезда Хэнсин"):utffind("езда")}, {3, 6})
+    t:are_equal({("Test 源文件🎆 Message"):utffind("源文件")}, {6, 8})
+    t:are_equal({("Test 源文件🎆 Message"):utffind("🎆")}, {9, 9})
+    t:are_equal({("🎆🎉🌮"):utffind("🎉")}, {2, 2})
+
+    -- negative indices
+    t:are_equal({("Hello Hello"):utffind("Hello", -5)}, {7, 11})
+    
+    -- not found
+    t:are_equal(("Hello"):utffind("World"), nil)
+end
