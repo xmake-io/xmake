@@ -102,6 +102,53 @@ function nf_frameworkdir(self, frameworkdir)
     return {"-k-F", path.translate(frameworkdir)}
 end
 
+-- make the includedir flag
+function nf_includedir(self, includedir)
+    return {"-Fi" .. path.translate(includedir)}
+end
+
+-- make the unitdir flag
+function nf_unitdir(self, unitdir)
+    return {"-Fu" .. path.translate(unitdir)}
+end
+
+-- make the define flag
+function nf_define(self, macro)
+    return {"-d" .. macro}
+end
+
+-- make the undefine flag
+function nf_undefine(self, macro)
+    return {"-u" .. macro}
+end
+
+-- make the language flag
+function nf_language(self, language)
+    local mode = {
+        pascal = "-Mfpc",
+        fpc = "-Mfpc",
+        objfpc = "-Mobjfpc",
+        delphi = "-Mdelphi",
+        macpas = "-Mmacpas",
+        isopas = "-Miso",
+        extendedpascal = "-Mextendedpascal",
+        delphiunicode = "-Mdelphiunicode",
+    }
+    return mode[language:lower()]
+end
+
+-- make the exception flag
+-- considering this applies to all dialects,
+-- make this only accept on/off
+function nf_exception(self, exp)
+    return {exp == "off" and "-Sx-" or "-Sx"}
+end
+
+-- make the objectdir flag
+function nf_objectdir(self, objectdir)
+    return {"-FU" .. path.translate(objectdir)}
+end
+
 -- make the build arguments list
 function buildargv(self, sourcefiles, targetkind, targetfile, flags)
     return self:program(), table.join(flags, "-o" .. targetfile, sourcefiles)
@@ -112,4 +159,3 @@ function build(self, sourcefiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
     os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags))
 end
-
