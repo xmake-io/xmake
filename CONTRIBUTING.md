@@ -22,6 +22,7 @@ try to follow these guidelines when you do so.
 * Use the same coding conventions as the rest of the project.
 * Ensure your edited codes with four spaces instead of TAB.
 * Please commit code to `dev` branch and we will merge into `master` branch in future.
+* If it involves public API changes, please create a corresponding feature request in issues first, then describe the design of the new API in detail. It needs to be approved before you can start creating a PR to add and implement them, rather than directly opening a PR to add or modify new APIs at will.
 
 ### Some suggestions for developing code for this project
 
@@ -64,6 +65,7 @@ Anyone can file an expense. If the expense makes sense for the development of th
 * 确保提交的代码缩进是四个空格，而不是tab
 * 请提交代码到`dev`分支，如果通过，我们会在特定时间合并到`master`分支上
 * 为了规范化提交日志的格式，commit消息，不要用中文，请用英文描述
+* 如果涉及公开的 API 改动，请先在 issues 中创建对应的 feature request ，然后详细描述下 新 API 的设计，并且需要经过赞同后，才能开始创建 pr 去添加和实现它们，而不是直接打开 pr 去随意添加修改新的 API
 
 [1]: https://github.com/xmake-io/xmake/issues
 
