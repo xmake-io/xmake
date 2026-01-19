@@ -115,3 +115,110 @@ function test_case(t)
     t:are_equal(("Test 源文件🎆 Message"):lower(), "test 源文件🎆 message")
     t:are_equal(("Test 源文件🎆 Message"):upper(), "TEST 源文件🎆 MESSAGE")
 end
+
+function test_utfsub(t)
+    t:are_equal(("Hello"):utfsub(2), "ello")
+    t:are_equal(("Hello"):utfsub(2, 3), "el")
+    t:are_equal(("Звезда Хэнсин"):utfsub(1, 1), "З")
+    t:are_equal(("Звезда Хэнсин"):utfsub(2), "везда Хэнсин")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(1, 4), "Test")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(6, 6), "源")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(6, 8), "源文件")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(9, 9), "🎆")
+    t:are_equal(("🎆🎉🌮"):utfsub(1, 1), "🎆")
+    t:are_equal(("🎆🎉🌮"):utfsub(2, 2), "🎉")
+    t:are_equal(("🎆🎉🌮"):utfsub(2), "🎉🌮")
+    t:are_equal(("🎆🎉🌮"):utfsub(3, 3), "🌮")
+
+    -- negative indices
+    t:are_equal(("Hello"):utfsub(-1), "o")
+    t:are_equal(("Hello"):utfsub(-2), "lo")
+    t:are_equal(("Hello"):utfsub(2, -2), "ell")
+    t:are_equal(("Hello"):utfsub(2, -1), "ello")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(-8), " Message")
+    t:are_equal(("Test 源文件🎆 Message"):utfsub(-8, -3), " Messa")
+    t:are_equal(("🎆🎉🌮"):utfsub(-1), "🌮")
+
+    -- edge cases
+    t:are_equal((""):utfsub(1), "")
+    t:are_equal(("abc"):utfsub(4), "")
+    t:are_equal(("abc"):utfsub(1, 4), "abc")
+    t:are_equal(("abc"):utfsub(0), "abc")
+    t:are_equal(("abc"):utfsub(2, 1), "")
+end
+
+function test_utflen(t)
+    t:are_equal((""):utflen(), 0)
+    t:are_equal(("Hello"):utflen(), 5)
+    t:are_equal(("Звезда Хэнсин"):utflen(), 13)
+    t:are_equal(("Test 源文件🎆 Message"):utflen(), 17)
+    t:are_equal(("🎆🎉🌮"):utflen(), 3)
+end
+
+function test_utffind(t)
+    t:are_equal({("Hello"):utffind("H")}, {1, 1})
+    t:are_equal({("Hello"):utffind("ell")}, {2, 4})
+    t:are_equal({("Hello"):utffind("l")}, {3, 3})
+    t:are_equal({("Hello"):utffind("l", 4)}, {4, 4})
+
+    t:are_equal({("Звезда Хэнсин"):utffind("езда")}, {3, 6})
+    t:are_equal({("Test 源文件🎆 Message"):utffind("源文件")}, {6, 8})
+    t:are_equal({("Test 源文件🎆 Message"):utffind("🎆")}, {9, 9})
+    t:are_equal({("🎆🎉🌮"):utffind("🎉")}, {2, 2})
+
+    -- negative indices
+    t:are_equal({("Hello Hello"):utffind("Hello", -5)}, {7, 11})
+
+    -- not found
+    t:are_equal(("Hello"):utffind("World"), nil)
+end
+
+function test_utfreverse(t)
+    t:are_equal((""):utfreverse(), "")
+    t:are_equal(("Hello"):utfreverse(), "olleH")
+    t:are_equal(("Звезда"):utfreverse(), "адзевЗ")
+    t:are_equal(("源文件🎆"):utfreverse(), "🎆件文源")
+end
+
+function test_utfbyte(t)
+    t:are_equal({("A"):utfbyte()}, {65})
+    t:are_equal({("AB"):utfbyte(1, 2)}, {65, 66})
+    t:are_equal({("源"):utfbyte()}, {28304}) -- U+6E90
+    t:are_equal({("🎆"):utfbyte()}, {127878}) -- U+1F386
+
+    local s = "A源🎆"
+    t:are_equal({s:utfbyte(1)}, {65})
+    t:are_equal({s:utfbyte(2)}, {28304})
+    t:are_equal({s:utfbyte(3)}, {127878})
+    t:are_equal({s:utfbyte(1, 3)}, {65, 28304, 127878})
+
+    -- negative indices
+    t:are_equal({s:utfbyte(-1)}, {127878})
+    t:are_equal({s:utfbyte(-2)}, {28304})
+    t:are_equal({s:utfbyte(-3)}, {65})
+    t:are_equal({s:utfbyte(-3, -1)}, {65, 28304, 127878})
+end
+
+function test_utfchar(t)
+    t:are_equal(string.utfchar(65), "A")
+    t:are_equal(string.utfchar(28304), "源")
+    t:are_equal(string.utfchar(127878), "🎆")
+    t:are_equal(string.utfchar(65, 66, 67), "ABC")
+    t:are_equal(string.utfchar(65, 28304, 127878), "A源🎆")
+
+    -- empty
+    t:are_equal(string.utfchar(), "")
+end
+
+function test_utflastof(t)
+    t:are_equal(("Hello World"):utflastof("l"), 10)
+    t:are_equal(("Hello World"):utflastof("o"), 8)
+    t:are_equal(("Hello World"):utflastof("Hello"), 1)
+    t:are_equal(("Hello World"):utflastof("World"), 7)
+
+    t:are_equal(("Test 源文件🎆 Message"):utflastof("源文件"), 6)
+    t:are_equal(("Test 源文件🎆 Message"):utflastof("🎆"), 9)
+
+    -- not found
+    t:are_equal(("Hello World"):utflastof("x"), nil)
+end
