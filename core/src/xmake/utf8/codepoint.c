@@ -62,9 +62,10 @@ tb_int_t xm_utf8_codepoint(lua_State *lua) {
     tb_int_t n = (tb_int_t)(pose - posi) + 1;
     luaL_checkstack(lua, n, "string slice too long");
 
+    int nresults = lua_gettop(lua);
     if (!xm_utf8_codepoint_impl(s, len, posi, pose, !lax, xm_utf8_codepoint_cb, lua)) {
         return luaL_error(lua, XM_UTF8_MSGInvalid);
     }
     
-    return n;
+    return lua_gettop(lua) - nresults;
 }

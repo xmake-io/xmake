@@ -44,7 +44,7 @@ static tb_int_t xm_utf8_codes_iter(lua_State *lua, tb_bool_t strict) {
     } else {
         xm_utf8_int_t code;
         tb_char_t const* next = xm_utf8_decode(s + n, &code, strict);
-        if (next == NULL || xm_utf8_iscontp(next)) {
+        if (next == NULL || (next < s + len && xm_utf8_iscontp(next))) {
             return luaL_error(lua, XM_UTF8_MSGInvalid);
         }
         lua_pushinteger(lua, n + 1);

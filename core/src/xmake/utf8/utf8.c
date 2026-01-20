@@ -35,6 +35,9 @@ tb_char_t const* xm_utf8_decode(tb_char_t const* s, xm_utf8_int_t* val, tb_bool_
     if (c < 0x80) {
         res = c;
     } else {
+        if (xm_utf8_iscont(c)) {
+            return tb_null;
+        }
         tb_int_t count = 0; 
         for (; c & 0x40; c <<= 1) { 
             tb_uint32_t cc = (tb_byte_t)s[++count]; 
