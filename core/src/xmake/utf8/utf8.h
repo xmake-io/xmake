@@ -42,6 +42,8 @@ static __tb_inline__ tb_long_t xm_utf8_posrelat(tb_long_t pos, tb_size_t len) {
 tb_char_t const*    xm_utf8_decode(tb_char_t const* s, xm_utf8_int_t* val, tb_bool_t strict);
 tb_size_t           xm_utf8_encode(tb_char_t* s, xm_utf8_int_t val);
 tb_long_t           xm_utf8_charpos(tb_char_t const* s, tb_size_t len, tb_long_t byte_pos);
+tb_long_t           xm_utf8_charwidth(xm_utf8_int_t val);
+tb_long_t           xm_utf8_strwidth(tb_char_t const* s, tb_size_t len);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation interfaces

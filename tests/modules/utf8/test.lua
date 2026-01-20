@@ -142,3 +142,35 @@ function test_find(t)
     -- "A你好", "%w" -> matches "A".
     t:are_equal({utf8.find("A你好", "%w")}, {1, 1})
 end
+
+function test_width(t)
+    -- char/codepoint width
+    t:are_equal(utf8.width(string.byte("A")), 1)
+    t:are_equal(utf8.width(utf8.codepoint("€")), 1)
+    t:are_equal(utf8.width(utf8.codepoint("你")), 2)
+    t:are_equal(utf8.width(0), 0)
+    t:are_equal(utf8.width(0x09), 4) -- TAB
+
+    -- string width
+    t:are_equal(utf8.width("A"), 1)
+    t:are_equal(utf8.width("ABC"), 3)
+    t:are_equal(utf8.width("你好"), 4)
+    t:are_equal(utf8.width("A你好"), 5)
+    t:are_equal(utf8.width("A\tB"), 6) -- 1 + 4 + 1
+end
+
+function test_wcwidth(t)
+    -- char/codepoint width
+    t:are_equal(utf8.wcwidth(string.byte("A")), 1)
+    t:are_equal(utf8.wcwidth(utf8.codepoint("€")), 1)
+    t:are_equal(utf8.wcwidth(utf8.codepoint("你")), 2)
+end
+
+function test_wcswidth(t)
+    -- string width
+    t:are_equal(utf8.wcswidth("A"), 1)
+    t:are_equal(utf8.wcswidth("ABC"), 3)
+    t:are_equal(utf8.wcswidth("你好"), 4)
+    t:are_equal(utf8.wcswidth("A你好"), 5)
+    t:are_equal(utf8.wcswidth("A\tB"), 6)
+end
