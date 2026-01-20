@@ -28,11 +28,12 @@
  * implementation
  */
 
-/*
-** offset(s, n, [i])  -> index where n-th character counting from
-**   position 'i' starts; 0 means character at 'i'.
-*/
+/* offset(s, n, [i])  -> index where n-th character counting from
+ *   position 'i' starts; 0 means character at 'i'.
+ */
 tb_int_t xm_utf8_offset(lua_State *lua) {
+    tb_assert_and_check_return_val(lua, 0);
+
     size_t len;
     tb_char_t const* s = luaL_checklstring(lua, 1, &len);
     lua_Integer n  = luaL_checkinteger(lua, 2);
@@ -40,10 +41,12 @@ tb_int_t xm_utf8_offset(lua_State *lua) {
     posi = xm_utf8_posrelat(luaL_optinteger(lua, 3, posi), len);
 
     tb_long_t result = xm_utf8_offset_impl(s, len, n, posi);
-    if (result == -1)
+    if (result == -1) {
         return luaL_argerror(lua, 3, "position out of bounds");
-    if (result == -2)
+    }
+    if (result == -2) {
         return luaL_error(lua, "initial position is a continuation byte");
+    }
     if (result == 0) {
         lua_pushnil(lua);
         return 1;

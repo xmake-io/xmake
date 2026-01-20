@@ -28,12 +28,13 @@
  * implementation
  */
 
-/*
-** utf8len(s [, i [, j [, lax]]]) --> number of characters that
-** start in the range [i,j], or nil + current position if 's' is not
-** well formed in that interval
-*/
+/* utf8len(s [, i [, j [, lax]]]) --> number of characters that
+ * start in the range [i,j], or nil + current position if 's' is not
+ * well formed in that interval
+ */
 tb_int_t xm_utf8_len(lua_State *lua) {
+    tb_assert_and_check_return_val(lua, 0);
+
     size_t len;
     tb_char_t const* s = luaL_checklstring(lua, 1, &len);
     lua_Integer posi = xm_utf8_posrelat(luaL_optinteger(lua, 2, 1), len);

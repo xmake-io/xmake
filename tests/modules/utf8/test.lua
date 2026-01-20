@@ -22,7 +22,7 @@ function test_codepoint(t)
     t:are_equal(c1, 65)
     t:are_equal(c2, 66)
     t:are_equal(c3, 67)
-    
+
     -- test range
     t:are_equal(utf8.codepoint("ABC", 2), 66)
     t:are_equal(utf8.codepoint("ABC", 2, 2), 66)
@@ -33,7 +33,7 @@ function test_offset(t)
     t:are_equal(utf8.offset("ABC", 2), 2)
     t:are_equal(utf8.offset("ABC", 4), 4)
     t:are_equal(utf8.offset("ABC", 5), nil)
-    
+
     -- "€" is 3 bytes (0xE2 0x82 0xAC)
     t:are_equal(utf8.offset("€BC", 1), 1)
     t:are_equal(utf8.offset("€BC", 2), 4)

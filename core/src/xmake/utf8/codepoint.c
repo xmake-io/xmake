@@ -29,6 +29,8 @@
  */
 static tb_bool_t xm_utf8_codepoint_cb(xm_utf8_int_t code, tb_cpointer_t udata) {
     lua_State* lua = (lua_State*)udata;
+    tb_assert_and_check_return_val(lua, tb_false);
+
     lua_pushinteger(lua, code);
     return tb_true;
 }
@@ -37,10 +39,9 @@ static tb_bool_t xm_utf8_codepoint_cb(xm_utf8_int_t code, tb_cpointer_t udata) {
  * implementation
  */
 
-/*
-** codepoint(s, [i, [j [, lax]]]) -> returns codepoints for all
-** characters that start in the range [i,j]
-*/
+/* codepoint(s, [i, [j [, lax]]]) -> returns codepoints for all
+ * characters that start in the range [i,j]
+ */
 tb_int_t xm_utf8_codepoint(lua_State *lua) {
     size_t len;
     tb_char_t const* s = luaL_checklstring(lua, 1, &len);
@@ -51,15 +52,19 @@ tb_int_t xm_utf8_codepoint(lua_State *lua) {
     luaL_argcheck(lua, posi >= 1, 2, "out of bounds");
     luaL_argcheck(lua, pose <= (lua_Integer)len, 3, "out of bounds");
 
-    if (posi > pose) return 0;  /* empty interval; return no values */
-    if (pose - posi >= INT_MAX)  /* (lua_Integer -> int) overflow? */
+    if (posi > pose) {
+        return 0;  // empty interval; return no values
+    }
+    if (pose - posi >= INT_MAX) { // (lua_Integer -> int) overflow?
         return luaL_error(lua, "string slice too long");
+    }
     
     tb_int_t n = (tb_int_t)(pose - posi) + 1;
     luaL_checkstack(lua, n, "string slice too long");
 
-    if (!xm_utf8_codepoint_impl(s, len, posi, pose, !lax, xm_utf8_codepoint_cb, lua))
+    if (!xm_utf8_codepoint_impl(s, len, posi, pose, !lax, xm_utf8_codepoint_cb, lua)) {
         return luaL_error(lua, XM_UTF8_MSGInvalid);
+    }
     
     return n;
 }

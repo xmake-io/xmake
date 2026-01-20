@@ -32,30 +32,37 @@ tb_char_t const* xm_utf8_decode(tb_char_t const* s, xm_utf8_int_t* val, tb_bool_
     static const xm_utf8_int_t limits[] = {~(xm_utf8_int_t)0, 0x80, 0x800, 0x10000u, 0x200000u, 0x4000000u};
     tb_uint32_t c = (tb_byte_t)s[0];
     xm_utf8_int_t res = 0; 
-    if (c < 0x80) 
+    if (c < 0x80) {
         res = c;
-    else {
+    } else {
         tb_int_t count = 0; 
         for (; c & 0x40; c <<= 1) { 
             tb_uint32_t cc = (tb_byte_t)s[++count]; 
-            if (!xm_utf8_iscont(cc)) 
+            if (!xm_utf8_iscont(cc)) {
                 return tb_null; 
+            }
             res = (res << 6) | (cc & 0x3F); 
         }
         res |= ((xm_utf8_int_t)(c & 0x7F) << (count * 5)); 
-        if (count > 5 || res > XM_UTF8_MAXUTF || res < limits[count])
+        if (count > 5 || res > XM_UTF8_MAXUTF || res < limits[count]) {
             return tb_null; 
+        }
         s += count; 
     }
     if (strict) {
-        if (res > XM_UTF8_MAXUNICODE || (0xD800u <= res && res <= 0xDFFFu))
+        if (res > XM_UTF8_MAXUNICODE || (0xD800u <= res && res <= 0xDFFFu)) {
             return tb_null;
+        }
     }
-    if (val) *val = res;
+    if (val) {
+        *val = res;
+    }
     return s + 1; 
 }
 
 tb_size_t xm_utf8_encode(tb_char_t* s, xm_utf8_int_t val) {
+    tb_assert_and_check_return_val(s, 0);
+
     if (val < 0x80) {
         s[0] = (tb_char_t)val;
         return 1;
@@ -99,11 +106,15 @@ tb_size_t xm_utf8_encode(tb_char_t* s, xm_utf8_int_t val) {
 }
 
 tb_long_t xm_utf8_len_impl(tb_char_t const* s, tb_size_t len, tb_long_t posi, tb_long_t posj, tb_bool_t strict, tb_size_t* errpos) {
+    tb_assert_and_check_return_val(s, -1);
+
     tb_long_t n = 0;
     while (posi <= posj) {
         tb_char_t const* s1 = xm_utf8_decode(s + posi - 1, tb_null, strict);
         if (s1 == tb_null) {
-            if (errpos) *errpos = posi;
+            if (errpos) {
+                *errpos = posi;
+            }
             return -1;
         }
         posi = s1 - s + 1;
@@ -113,16 +124,22 @@ tb_long_t xm_utf8_len_impl(tb_char_t const* s, tb_size_t len, tb_long_t posi, tb
 }
 
 tb_long_t xm_utf8_offset_impl(tb_char_t const* s, tb_size_t len, tb_long_t n, tb_long_t posi) {
+    tb_assert_and_check_return_val(s, -1);
+
     // check
-    if (1 > posi || --posi > (tb_long_t)len) 
+    if (1 > posi || --posi > (tb_long_t)len) {
         return -1; // error: position out of bounds
+    }
 
     if (n == 0) {
         // find beginning of current byte sequence
-        while (posi > 0 && xm_utf8_iscontp(s + posi)) posi--;
+        while (posi > 0 && xm_utf8_iscontp(s + posi)) {
+            posi--;
+        }
     } else {
-        if (xm_utf8_iscontp(s + posi))
+        if (xm_utf8_iscontp(s + posi)) {
             return -2; // error: initial position is a continuation byte
+        }
         
         if (n < 0) {
             while (n < 0 && posi > 0) {
@@ -142,19 +159,29 @@ tb_long_t xm_utf8_offset_impl(tb_char_t const* s, tb_size_t len, tb_long_t n, tb
         }
     }
 
-    if (n == 0) return posi + 1;
+    if (n == 0) {
+        return posi + 1;
+    }
     return 0; // nil
 }
 
 tb_bool_t xm_utf8_codepoint_impl(tb_char_t const* s, tb_size_t len, tb_long_t posi, tb_long_t posj, tb_bool_t strict, xm_utf8_codepoint_func_t func, tb_cpointer_t udata) {
-    if (posi > posj) return tb_true; 
+    tb_assert_and_check_return_val(s, tb_false);
+
+    if (posi > posj) {
+        return tb_true; 
+    }
     
     tb_char_t const* se = s + posj;
     for (s += posi - 1; s < se;) {
         xm_utf8_int_t code;
         s = xm_utf8_decode(s, &code, strict);
-        if (s == tb_null) return tb_false;
-        if (func && !func(code, udata)) return tb_false;
+        if (s == tb_null) {
+            return tb_false;
+        }
+        if (func && !func(code, udata)) {
+            return tb_false;
+        }
     }
     return tb_true;
 }

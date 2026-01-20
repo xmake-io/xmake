@@ -34,24 +34,26 @@ static void xm_utf8_char_push(lua_State *lua, tb_int_t arg) {
     
     tb_char_t buf[8];
     tb_size_t n = xm_utf8_encode(buf, (xm_utf8_int_t)code);
-    if (n > 0)
+    if (n > 0) {
         lua_pushlstring(lua, buf, n);
-    else
+    } else {
         luaL_error(lua, "value out of range");
+    }
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/*
-** utfchar(n1, n2, ...)  -> char(n1)..char(n2)...
-*/
+/* utfchar(n1, n2, ...)  -> char(n1)..char(n2)...
+ */
 tb_int_t xm_utf8_char(lua_State *lua) {
-    tb_int_t n = lua_gettop(lua);  /* number of arguments */
-    if (n == 1)  /* optimize common case of single char */
+    tb_assert_and_check_return_val(lua, 0);
+
+    tb_int_t n = lua_gettop(lua);  // number of arguments
+    if (n == 1) { // optimize common case of single char
         xm_utf8_char_push(lua, 1);
-    else {
+    } else {
         tb_int_t i;
         luaL_Buffer b;
         luaL_buffinit(lua, &b);

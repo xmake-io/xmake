@@ -26,9 +26,13 @@ typedef tb_bool_t (*xm_utf8_codepoint_func_t)(xm_utf8_int_t code, tb_cpointer_t 
  * inline interfaces
  */
 static __tb_inline__ tb_long_t xm_utf8_posrelat(tb_long_t pos, tb_size_t len) {
-    if (pos >= 0) return pos;
-    else if (0u - (tb_size_t)pos > len) return 0;
-    else return (tb_long_t)len + pos + 1;
+    if (pos >= 0) {
+        return pos;
+    } else if (0u - (tb_size_t)pos > len) {
+        return 0;
+    } else {
+        return (tb_long_t)len + pos + 1;
+    }
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

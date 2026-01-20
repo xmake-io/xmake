@@ -29,19 +29,24 @@
  */
 
 static tb_int_t xm_utf8_codes_iter(lua_State *lua, tb_bool_t strict) {
+    tb_assert_and_check_return_val(lua, 0);
+
     size_t len;
     tb_char_t const* s = luaL_checklstring(lua, 1, &len);
     lua_Unsigned n = (lua_Unsigned)lua_tointeger(lua, 2);
     if (n < len) {
-        while (n < len && xm_utf8_iscontp(s + n)) n++;  /* go to next character */
+        while (n < len && xm_utf8_iscontp(s + n)) {
+            n++;  // go to next character
+        }
     }
-    if (n >= len)  /* (also handles original 'n' being negative) */
-        return 0;  /* no more codepoints */
-    else {
+    if (n >= len) { // (also handles original 'n' being negative)
+        return 0;  // no more codepoints
+    } else {
         xm_utf8_int_t code;
         tb_char_t const* next = xm_utf8_decode(s + n, &code, strict);
-        if (next == NULL || xm_utf8_iscontp(next))
+        if (next == NULL || xm_utf8_iscontp(next)) {
             return luaL_error(lua, XM_UTF8_MSGInvalid);
+        }
         lua_pushinteger(lua, n + 1);
         lua_pushinteger(lua, code);
         return 2;
