@@ -159,4 +159,23 @@ function test_width(t)
     t:are_equal(utf8.width("A\tB"), 6) -- 1 + 4 + 1
 end
 
+function test_byte(t)
+    t:are_equal({utf8.byte("A")}, {65})
+    t:are_equal({utf8.byte("€")}, {0x20AC})
+    t:are_equal({utf8.byte("ABC")}, {65})
+    t:are_equal({utf8.byte("ABC", 2)}, {66})
+    t:are_equal({utf8.byte("ABC", 2, 2)}, {66})
+    t:are_equal({utf8.byte("ABC", 1, 3)}, {65, 66, 67})
+    t:are_equal({utf8.byte("你好")}, {utf8.codepoint("你好", 1, 1)})
+    t:are_equal({utf8.byte("你好", 1, 2)}, {20320, 22909})
 
+    -- negative indices
+    t:are_equal({utf8.byte("ABC", -1)}, {67})
+    t:are_equal({utf8.byte("ABC", -2)}, {66})
+    t:are_equal({utf8.byte("ABC", -2, -1)}, {66, 67})
+    t:are_equal({utf8.byte("ABC", 1, -1)}, {65, 66, 67})
+
+    -- out of bounds
+    t:are_equal({utf8.byte("ABC", 4)}, {})
+    t:are_equal({utf8.byte("ABC", 1, 0)}, {})
+end

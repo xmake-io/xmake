@@ -282,6 +282,7 @@ tb_int_t xm_winos_short_path(lua_State *lua);
 // the utf8 functions
 tb_int_t xm_utf8_len(lua_State *lua);
 tb_int_t xm_utf8_char(lua_State *lua);
+tb_int_t xm_utf8_byte(lua_State *lua);
 tb_int_t xm_utf8_codepoint(lua_State *lua);
 tb_int_t xm_utf8_offset(lua_State *lua);
 tb_int_t xm_utf8_codes(lua_State *lua);
@@ -597,6 +598,7 @@ static luaL_Reg const g_bloom_filter_functions[] = {
 // the utf8 functions
 static luaL_Reg const g_utf8_functions[] = {
     {"char", xm_utf8_char},
+    {"byte", xm_utf8_byte},
     {"codes", xm_utf8_codes},
     {"codepoint", xm_utf8_codepoint},
     {"len", xm_utf8_len},

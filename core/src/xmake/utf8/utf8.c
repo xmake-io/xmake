@@ -399,6 +399,31 @@ tb_long_t xm_utf8_lastof_impl(tb_char_t const* s, tb_size_t len, tb_char_t const
     return 0;
 }
 
+tb_long_t xm_utf8_byte_impl(tb_char_t const* s, tb_size_t len, tb_long_t i, tb_long_t j, xm_utf8_codepoint_func_t func, tb_cpointer_t udata) {
+    tb_size_t sublen = 0;
+    tb_char_t const* sub = xm_utf8_sub_impl(s, len, i, j, &sublen);
+    if (sub && sublen > 0) {
+        
+        // decode and push codepoints
+        tb_long_t n = 0;
+        tb_char_t const* p = sub;
+        tb_char_t const* e = sub + sublen;
+        while (p < e) {
+            xm_utf8_int_t val;
+            tb_char_t const* next = xm_utf8_decode(p, &val, tb_true);
+            if (next) {
+                if (func && !func(val, udata)) break;
+                n++;
+                p = next;
+            } else {
+                p++; 
+            }
+        }
+        return n;
+    }
+    return 0;
+}
+
 tb_char_t const* xm_utf8_sub_impl(tb_char_t const* s, tb_size_t len, tb_long_t i, tb_long_t j, tb_size_t* psublen) {
     tb_assert_and_check_return_val(s && psublen, tb_null);
     *psublen = 0;
