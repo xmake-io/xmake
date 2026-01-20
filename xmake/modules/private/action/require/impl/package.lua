@@ -345,9 +345,10 @@ end
 -- select version from scheme
 function _select_version_from_scheme(scheme, requireinfo)
 
-    -- has git url?
+    -- check urls
+    local urls = scheme:urls()
     local has_giturl = false
-    for _, url in ipairs(scheme:urls()) do
+    for _, url in ipairs(urls) do
         if git.checkurl(url) then
             has_giturl = true
             break
@@ -361,7 +362,7 @@ function _select_version_from_scheme(scheme, requireinfo)
     local require_verify  = requireinfo.verify
     local is_system = requireinfo.system
     local has_versionlist = scheme:get("versions") or scheme:get("versionfiles")
-    if (not has_versionlist or require_verify == false)
+    if #urls > 0 and (not has_versionlist or require_verify == false)
         and (semver.is_valid(require_version) or semver.is_valid_range(require_version)) then
         -- no version list in package() or need not verify sha256sum? try selecting this version directly
         -- @see
@@ -381,7 +382,7 @@ function _select_version_from_scheme(scheme, requireinfo)
         end
     end
     -- local source package? we use a phony version
-    if not version and require_version == "latest" and #scheme:urls() == 0 then
+    if not version and require_version == "latest" and #urls == 0 then
         version = "latest"
         source = "version"
     end
