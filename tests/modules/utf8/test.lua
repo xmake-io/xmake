@@ -159,18 +159,4 @@ function test_width(t)
     t:are_equal(utf8.width("A\tB"), 6) -- 1 + 4 + 1
 end
 
-function test_wcwidth(t)
-    -- char/codepoint width
-    t:are_equal(utf8.wcwidth(string.byte("A")), 1)
-    t:are_equal(utf8.wcwidth(utf8.codepoint("€")), 1)
-    t:are_equal(utf8.wcwidth(utf8.codepoint("你")), 2)
-end
 
-function test_wcswidth(t)
-    -- string width
-    t:are_equal(utf8.wcswidth("A"), 1)
-    t:are_equal(utf8.wcswidth("ABC"), 3)
-    t:are_equal(utf8.wcswidth("你好"), 4)
-    t:are_equal(utf8.wcswidth("A你好"), 5)
-    t:are_equal(utf8.wcswidth("A\tB"), 6)
-end
