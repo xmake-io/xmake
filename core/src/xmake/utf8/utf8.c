@@ -105,6 +105,27 @@ tb_size_t xm_utf8_encode(tb_char_t* s, xm_utf8_int_t val) {
     return 0;
 }
 
+tb_long_t xm_utf8_charpos(tb_char_t const* s, tb_size_t len, tb_long_t byte_pos) {
+    if (byte_pos <= 0) return 0;
+    if (byte_pos > len + 1) byte_pos = len + 1;
+
+    // adjust byte_pos to the start of the character
+    // 
+    // performance: 
+    // 0(1) complexity, because utf8 sequence is max 4 bytes
+    while (byte_pos > 1 && xm_utf8_iscont(s[byte_pos - 1])) {
+        byte_pos--;
+    }
+    
+    // get character position
+    tb_long_t count = xm_utf8_len_impl(s, len, 1, byte_pos - 1, tb_true, tb_null);
+    return count >= 0? count + 1 : -1;
+}
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * implementation interfaces
+ */
+
 tb_long_t xm_utf8_len_impl(tb_char_t const* s, tb_size_t len, tb_long_t posi, tb_long_t posj, tb_bool_t strict, tb_size_t* errpos) {
     tb_assert_and_check_return_val(s, -1);
 
@@ -313,3 +334,4 @@ tb_char_t const* xm_utf8_sub_impl(tb_char_t const* s, tb_size_t len, tb_long_t i
     *psublen = end_byte - start_byte;
     return s + start_byte - 1;
 }
+

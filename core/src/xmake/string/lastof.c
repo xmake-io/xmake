@@ -29,39 +29,7 @@
  * includes
  */
 #include "prefix.h"
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * private implementation
- */
-static tb_void_t xm_string_lastof_str(
-    lua_State *lua, tb_char_t const *cstr, tb_size_t nstr, tb_char_t const *csubstr, tb_size_t nsubstr) {
-    // find it
-    tb_char_t const *curr = tb_null;
-    tb_char_t const *next = cstr;
-    do {
-        next = tb_strstr(next, csubstr); // faster than tb_strnstr()
-        if (next) {
-            curr = next;
-            next += nsubstr;
-        }
-
-    } while (!next);
-
-    // found?
-    if (curr) {
-        lua_pushinteger(lua, curr - cstr + 1);
-    } else {
-        lua_pushnil(lua);
-    }
-}
-static tb_void_t xm_string_lastof_chr(lua_State *lua, tb_char_t const *cstr, tb_size_t nstr, tb_char_t ch) {
-    tb_char_t const *pos = tb_strrchr(cstr, ch); // faster than tb_strnrchr()
-    if (pos) {
-        lua_pushinteger(lua, pos - cstr + 1);
-    } else {
-        lua_pushnil(lua);
-    }
-}
+#include "../utf8/utf8.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -84,11 +52,11 @@ tb_int_t xm_string_lastof(lua_State *lua) {
     tb_char_t const *csubstr = luaL_checklstring(lua, 2, &nsubstr);
 
     // lastof it
-    lua_newtable(lua);
-    if (nsubstr == 1) {
-        xm_string_lastof_chr(lua, cstr, (tb_size_t)nstr, csubstr[0]);
+    tb_long_t char_pos = xm_utf8_lastof_impl(cstr, nstr, csubstr, nsubstr);
+    if (char_pos > 0) {
+        lua_pushinteger(lua, char_pos);
     } else {
-        xm_string_lastof_str(lua, cstr, (tb_size_t)nstr, csubstr, nsubstr);
+        lua_pushnil(lua);
     }
     return 1;
 }
