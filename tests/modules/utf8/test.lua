@@ -179,3 +179,9 @@ function test_byte(t)
     t:are_equal({utf8.byte("ABC", 4)}, {})
     t:are_equal({utf8.byte("ABC", 1, 0)}, {})
 end
+
+function test_reverse(t)
+    t:are_equal(utf8.reverse("hello"), "olleh")
+    t:are_equal(utf8.reverse("你好"), "好你")
+    t:are_equal(utf8.reverse("hello 你好"), "好你 olleh")
+end

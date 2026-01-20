@@ -287,6 +287,7 @@ tb_int_t xm_utf8_codepoint(lua_State *lua);
 tb_int_t xm_utf8_offset(lua_State *lua);
 tb_int_t xm_utf8_codes(lua_State *lua);
 tb_int_t xm_utf8_sub(lua_State *lua);
+tb_int_t xm_utf8_reverse(lua_State *lua);
 tb_int_t xm_utf8_lastof(lua_State *lua);
 tb_int_t xm_utf8_find(lua_State *lua);
 tb_int_t xm_utf8_width(lua_State *lua);
@@ -604,6 +605,7 @@ static luaL_Reg const g_utf8_functions[] = {
     {"len", xm_utf8_len},
     {"offset", xm_utf8_offset},
     {"sub", xm_utf8_sub},
+    {"reverse", xm_utf8_reverse},
     {"lastof", xm_utf8_lastof},
     {"find", xm_utf8_find},
     {"width", xm_utf8_width},

@@ -55,5 +55,6 @@ tb_long_t           xm_utf8_find_impl(tb_char_t const* s, tb_size_t len, tb_char
 tb_long_t           xm_utf8_lastof_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* sub, tb_size_t sublen);
 tb_long_t           xm_utf8_byte_impl(tb_char_t const* s, tb_size_t len, tb_long_t i, tb_long_t j, xm_utf8_codepoint_func_t func, tb_cpointer_t udata);
 tb_char_t const*    xm_utf8_sub_impl(tb_char_t const* s, tb_size_t len, tb_long_t i, tb_long_t j, tb_size_t* psublen);
+tb_char_t*          xm_utf8_reverse_impl(tb_char_t const* s, tb_size_t len, tb_char_t* buf);
 
 #endif

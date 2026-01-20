@@ -476,3 +476,31 @@ tb_char_t const* xm_utf8_sub_impl(tb_char_t const* s, tb_size_t len, tb_long_t i
     return s + start_byte - 1;
 }
 
+tb_char_t* xm_utf8_reverse_impl(tb_char_t const* s, tb_size_t len, tb_char_t* buf) {
+    tb_assert_and_check_return_val(s && len && buf, tb_null);
+
+    tb_char_t const* p = s;
+    tb_char_t const* e = s + len;
+    tb_char_t* d = buf + len;
+
+    while (p < e) {
+        xm_utf8_int_t code;
+        tb_char_t const* next = xm_utf8_decode(p, &code, tb_false);
+        
+        // invalid utf8? treat as 1 byte
+        tb_size_t n = 1;
+        if (next) {
+            n = next - p;
+        }
+        
+        // safety check
+        if (p + n > e) n = e - p;
+
+        d -= n;
+        tb_memcpy(d, p, n);
+        p += n;
+    }
+    buf[len] = '\0';
+    return buf;
+}
+
