@@ -131,18 +131,6 @@ function string:rtrim(trimchars)
     return string._trim(self, trimchars, 1)
 end
 
--- encode: ' ', '=', '\"', '<' (deprecated)
-function string:encode()
-    deprecated.add(nil, "string:encode()")
-    return (self:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end))
-end
-
--- decode: ' ', '=', '\"' (deprecated)
-function string:decode()
-    deprecated.add(nil, "string:decode()")
-    return (self:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end))
-end
-
 -- replace text
 function string:replace(old, new, opt)
     if opt and opt.plain then
@@ -261,33 +249,6 @@ function string:deserialize()
     return serialize.load(self)
 end
 
--- unicode character width in the given index (deprecated)
-function string:wcwidth(idx)
-
-    -- deprecated
-    deprecated.add("utf8.width(char)", "string:wcwidth(idx)")
-
-    -- get codepoint and width
-    local utf8 = utf8 or require("base/utf8")
-    local code = utf8.codepoint(self, idx)
-    return utf8.width(code)
-end
-
--- unicode string width in given start index (deprecated)
-function string:wcswidth(idx)
-
-    -- deprecated
-    deprecated.add("utf8.width(str)", "string:wcswidth(idx)")
-
-    -- get width
-    local utf8 = utf8 or require("base/utf8")
-    if idx and idx > 1 then
-        return utf8.width(self:sub(idx))
-    else
-        return utf8.width(self)
-    end
-end
-
 -- compute the Levenshtein distance between two strings
 --
 -- @param str2  the string to compare against
@@ -329,6 +290,45 @@ function string:levenshtein(str2, opt)
         row1, row2 = row2, row1
     end
     return row1[len2 + 1]
+end
+
+-- encode: ' ', '=', '\"', '<' (deprecated)
+function string:encode()
+    deprecated.add(nil, "string:encode()")
+    return (self:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end))
+end
+
+-- decode: ' ', '=', '\"' (deprecated)
+function string:decode()
+    deprecated.add(nil, "string:decode()")
+    return (self:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end))
+end
+
+-- unicode character width in the given index (deprecated)
+function string:wcwidth(idx)
+
+    -- deprecated
+    deprecated.add("utf8.width(char)", "string:wcwidth(idx)")
+
+    -- get codepoint and width
+    local utf8 = utf8 or require("base/utf8")
+    local code = utf8.codepoint(self, idx)
+    return utf8.width(code)
+end
+
+-- unicode string width in given start index (deprecated)
+function string:wcswidth(idx)
+
+    -- deprecated
+    deprecated.add("utf8.width(str)", "string:wcswidth(idx)")
+
+    -- get width
+    local utf8 = utf8 or require("base/utf8")
+    if idx and idx > 1 then
+        return utf8.width(self:sub(idx))
+    else
+        return utf8.width(self)
+    end
 end
 
 -- return module: string
