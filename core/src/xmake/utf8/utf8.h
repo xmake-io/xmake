@@ -45,5 +45,7 @@ tb_size_t           xm_utf8_encode(tb_char_t* s, xm_utf8_int_t val);
 tb_long_t           xm_utf8_len_impl(tb_char_t const* s, tb_size_t len, tb_long_t posi, tb_long_t posj, tb_bool_t strict, tb_size_t* errpos);
 tb_long_t           xm_utf8_offset_impl(tb_char_t const* s, tb_size_t len, tb_long_t n, tb_long_t posi);
 tb_bool_t           xm_utf8_codepoint_impl(tb_char_t const* s, tb_size_t len, tb_long_t posi, tb_long_t posj, tb_bool_t strict, xm_utf8_codepoint_func_t func, tb_cpointer_t udata);
+tb_long_t           xm_utf8_find_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* sub, tb_size_t sublen, tb_long_t init, tb_long_t* pchar_end);
+tb_char_t const*    xm_utf8_sub_impl(tb_char_t const* s, tb_size_t len, tb_long_t i, tb_long_t j, tb_size_t* psublen);
 
 #endif

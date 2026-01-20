@@ -185,3 +185,108 @@ tb_bool_t xm_utf8_codepoint_impl(tb_char_t const* s, tb_size_t len, tb_long_t po
     }
     return tb_true;
 }
+
+tb_long_t xm_utf8_find_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* sub, tb_size_t sublen, tb_long_t init, tb_long_t* pchar_end) {
+    tb_assert_and_check_return_val(s && sub, 0);
+
+    if (sublen == 0) {
+        if (init > (tb_long_t)len + 1) init = len + 1;
+        
+        tb_long_t start_byte = 1;
+        if (init > 0) {
+            start_byte = xm_utf8_offset_impl(s, len, init, 1);
+        } else if (init < 0) {
+            start_byte = xm_utf8_offset_impl(s, len, init, len + 1);
+        }
+        if (start_byte <= 0) start_byte = 1; 
+        
+        tb_long_t char_pos = 1;
+        if (start_byte > 1) {
+            tb_long_t c = xm_utf8_len_impl(s, len, 1, start_byte - 1, tb_true, tb_null);
+            if (c >= 0) char_pos = c + 1;
+        }
+        
+        if (pchar_end) *pchar_end = char_pos - 1;
+        return char_pos;
+    }
+
+    tb_long_t start_byte = 1;
+    if (init > 0) {
+        start_byte = xm_utf8_offset_impl(s, len, init, 1);
+    } else if (init < 0) {
+        start_byte = xm_utf8_offset_impl(s, len, init, len + 1);
+    }
+    if (start_byte <= 0) return 0; 
+
+    tb_char_t const* p = tb_strstr(s + start_byte - 1, sub);
+    if (!p) return 0;
+
+    tb_long_t found_byte_start = p - s + 1;
+
+    tb_long_t char_start = 1;
+    if (found_byte_start > 1) {
+        tb_long_t c = xm_utf8_len_impl(s, len, 1, found_byte_start - 1, tb_true, tb_null);
+        if (c < 0) return 0; 
+        char_start = c + 1;
+    }
+
+    if (pchar_end) {
+        tb_long_t match_len = xm_utf8_len_impl(s, len, found_byte_start, found_byte_start + sublen - 1, tb_true, tb_null);
+        if (match_len < 0) return 0;
+        *pchar_end = char_start + match_len - 1;
+    }
+
+    return char_start;
+}
+
+tb_char_t const* xm_utf8_sub_impl(tb_char_t const* s, tb_size_t len, tb_long_t i, tb_long_t j, tb_size_t* psublen) {
+    tb_assert_and_check_return_val(s && psublen, tb_null);
+    *psublen = 0;
+
+    // map i (char index) to byte offset
+    tb_long_t start_byte = 0;
+    if (i > 0) {
+        start_byte = xm_utf8_offset_impl(s, len, i, 1);
+    } else if (i < 0) {
+        start_byte = xm_utf8_offset_impl(s, len, i, len + 1);
+    } else {
+        start_byte = 1;
+    }
+
+    if (start_byte == -1) {
+        if (i > 0) {
+            return ""; 
+        } else {
+            start_byte = 1;
+        }
+    } else if (start_byte == 0) {
+        if (i < 0) {
+            start_byte = 1;
+        } else {
+            return ""; 
+        }
+    }
+
+    // map j (char index) to byte offset (end)
+    tb_long_t end_byte = 0;
+    if (j >= 0) {
+        end_byte = xm_utf8_offset_impl(s, len, j + 1, 1);
+    } else {
+        end_byte = xm_utf8_offset_impl(s, len, j + 1, len + 1);
+    }
+
+    if (end_byte == -1) {
+        if (j >= 0) end_byte = len + 1;
+        else end_byte = 1;
+    } else if (end_byte == 0) {
+         if (j >= 0) end_byte = len + 1;
+         else end_byte = 1;
+    }
+
+    if (end_byte <= start_byte) {
+        return "";
+    }
+
+    *psublen = end_byte - start_byte;
+    return s + start_byte - 1;
+}

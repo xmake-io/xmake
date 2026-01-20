@@ -28,7 +28,89 @@
  * implementation
  */
 
-/* utf8.find(s, target [, init])
+static tb_int_t xm_utf8_find_impl_plain(lua_State* lua, tb_char_t const* s, size_t len, tb_char_t const* sub, size_t sublen, lua_Integer init) {
+    tb_long_t char_end = 0;
+    tb_long_t char_start = xm_utf8_find_impl(s, len, sub, sublen, init, &char_end);
+    if (char_start > 0) {
+        lua_pushinteger(lua, char_start);
+        lua_pushinteger(lua, char_end);
+        return 2;
+    }
+    lua_pushnil(lua);
+    return 1;
+}
+
+static tb_int_t xm_utf8_find_impl_pattern(lua_State* lua, tb_char_t const* s, size_t len, lua_Integer init) {
+    int base = lua_gettop(lua);
+    tb_long_t byte_init = 1;
+    if (init > 0) {
+        if (init > 1) {
+            byte_init = xm_utf8_offset_impl(s, len, init, 1);
+            if (byte_init <= 0) {
+                lua_pushnil(lua);
+                return 1;
+            }
+        }
+    } else if (init < 0) {
+        byte_init = xm_utf8_offset_impl(s, len, init, len + 1);
+        if (byte_init <= 0) {
+            lua_pushnil(lua);
+            return 1;
+        }
+    }
+    
+    lua_getglobal(lua, "string");
+    lua_getfield(lua, -1, "find");
+    lua_pushvalue(lua, 1); // s
+    lua_pushvalue(lua, 2); // pattern
+    lua_pushinteger(lua, byte_init); // init (byte)
+    lua_pushboolean(lua, 0); // plain
+    
+    lua_call(lua, 4, LUA_MULTRET);
+    
+    // Stack: [args, string_table, results...]
+    int nres = lua_gettop(lua) - (base + 1);
+    if (nres <= 0 || lua_isnil(lua, base + 2)) {
+         lua_pushnil(lua);
+         lua_remove(lua, base + 1);
+         return 1;
+    }
+    
+    lua_Integer b_start = lua_tointeger(lua, base + 2);
+    lua_Integer b_end = lua_tointeger(lua, base + 3);
+    
+    tb_long_t char_start = 1;
+    if (b_start > 1) {
+        tb_long_t count = xm_utf8_len_impl(s, len, 1, b_start - 1, tb_true, tb_null);
+        if (count < 0) { 
+            lua_pushnil(lua); 
+            lua_remove(lua, base + 1);
+            return 1; 
+        }
+        char_start = count + 1;
+    }
+    
+    tb_long_t match_char_len = 0;
+    if (b_end >= b_start) {
+        match_char_len = xm_utf8_len_impl(s, len, b_start, b_end, tb_true, tb_null);
+        if (match_char_len < 0) { 
+            lua_pushnil(lua); 
+            lua_remove(lua, base + 1);
+            return 1; 
+        }
+    }
+    
+    lua_pushinteger(lua, char_start);
+    lua_replace(lua, base + 2);
+    lua_pushinteger(lua, char_start + match_char_len - 1);
+    lua_replace(lua, base + 3);
+    
+    lua_remove(lua, base + 1);
+    
+    return nres;
+}
+
+/* utf8.find(s, target [, init [, plain]])
  */
 tb_int_t xm_utf8_find(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
@@ -38,61 +120,11 @@ tb_int_t xm_utf8_find(lua_State *lua) {
     size_t sublen;
     tb_char_t const* sub = luaL_checklstring(lua, 2, &sublen);
     lua_Integer init = luaL_optinteger(lua, 3, 1);
-
-    if (init > (lua_Integer)len) {
-        lua_pushnil(lua);
-        return 1;
-    }
-
-    if (sublen == 0) {
-        if (init <= 1) {
-             lua_pushinteger(lua, 1);
-             lua_pushinteger(lua, 0);
-             return 2;
-        } else {
-             lua_pushinteger(lua, init);
-             lua_pushinteger(lua, init - 1);
-             return 2;
-        }
-    }
-
-    tb_long_t start_byte = 0;
-    if (init > 0) {
-        start_byte = xm_utf8_offset_impl(s, len, init, 1);
-    } else if (init < 0) {
-        start_byte = xm_utf8_offset_impl(s, len, init, len + 1);
+    tb_int_t plain = lua_toboolean(lua, 4);
+    
+    if (plain) {
+        return xm_utf8_find_impl_plain(lua, s, len, sub, sublen, init);
     } else {
-        start_byte = 1; 
+        return xm_utf8_find_impl_pattern(lua, s, len, init);
     }
-    
-    if (start_byte <= 0) { 
-         lua_pushnil(lua);
-         return 1;
-    }
-    
-    tb_char_t const* p = tb_strstr(s + start_byte - 1, sub);
-    if (!p) {
-        lua_pushnil(lua);
-        return 1;
-    }
-    
-    tb_long_t found_byte_start = p - s + 1; 
-    
-    tb_long_t char_start = 0;
-    if (found_byte_start > 1) {
-        char_start = xm_utf8_len_impl(s, len, 1, found_byte_start - 1, tb_true, tb_null);
-        if (char_start < 0) {
-             lua_pushnil(lua); return 1;
-        }
-    }
-    char_start += 1; 
-    
-    tb_long_t match_char_len = xm_utf8_len_impl(s, len, found_byte_start, found_byte_start + sublen - 1, tb_true, tb_null);
-     if (match_char_len < 0) {
-         lua_pushnil(lua); return 1;
-    }
-    
-    lua_pushinteger(lua, char_start);
-    lua_pushinteger(lua, char_start + match_char_len - 1);
-    return 2;
 }

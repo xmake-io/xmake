@@ -108,23 +108,28 @@ function test_lastof(t)
 end
 
 function test_find(t)
-    t:are_equal({utf8.find("A", "A")}, {1, 1})
-    t:are_equal({utf8.find("ABC", "A")}, {1, 1})
+    -- plain
+    t:are_equal({utf8.find("你好", "你", 1, true)}, {1, 1})
+    t:are_equal({utf8.find("你好你", "你", 2, true)}, {3, 3})
+    t:are_equal({utf8.find("A你好A", "A", 2, true)}, {4, 4})
+    t:are_equal(utf8.find("ABC", "D", 1, true), nil)
+    t:are_equal({utf8.find("ABC", "", 1, true)}, {1, 0})
+
+    -- pattern matching (default)
     t:are_equal({utf8.find("ABC", "B")}, {2, 2})
-    t:are_equal({utf8.find("ABC", "C")}, {3, 3})
-    t:are_equal({utf8.find("ABCA", "A")}, {1, 1})
-    t:are_equal({utf8.find("ABCA", "A", 2)}, {4, 4})
-    t:are_equal({utf8.find("ABCA", "A", 1)}, {1, 1})
+    t:are_equal({utf8.find("ABC", "([BC])")}, {2, 2, "B"}) -- Capture
+    t:are_equal({utf8.find("ABC", "(.)(.)")}, {1, 2, "A", "B"})
 
-    t:are_equal({utf8.find("你好", "你")}, {1, 1})
+    -- UTF-8 pattern matching (byte-based)
+    -- "你" is 3 bytes. "." matches first byte.
+    t:are_equal({utf8.find("你好", ".")}, {1, 1})
+    
+    -- "你好", "好" -> bytes 4-6.
     t:are_equal({utf8.find("你好", "好")}, {2, 2})
-    t:are_equal({utf8.find("你好你", "你", 2)}, {3, 3})
-
-    t:are_equal({utf8.find("A你好A", "A")}, {1, 1})
-    t:are_equal({utf8.find("A你好A", "A", 2)}, {4, 4})
-    t:are_equal({utf8.find("A你好A", "好")}, {3, 3})
-
-    t:are_equal(utf8.find("ABC", "D"), nil)
-    t:are_equal({utf8.find("ABC", "")}, {1, 0})
-    t:are_equal({utf8.find("ABC", "", 2)}, {2, 1})
+    
+    -- "你好", "..." (3 dots) -> matches 3 bytes (whole "你").
+    t:are_equal({utf8.find("你好", "...")}, {1, 1})
+    
+    -- "A你好", "%w" -> matches "A".
+    t:are_equal({utf8.find("A你好", "%w")}, {1, 1})
 end

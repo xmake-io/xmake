@@ -36,53 +36,12 @@ tb_int_t xm_utf8_sub(lua_State *lua) {
     lua_Integer i = luaL_checkinteger(lua, 2);
     lua_Integer j = luaL_optinteger(lua, 3, -1);
 
-    // map i (char index) to byte offset
-    tb_long_t start_byte = 0;
-    if (i > 0) {
-        start_byte = xm_utf8_offset_impl(s, len, i, 1);
-    } else if (i < 0) {
-        start_byte = xm_utf8_offset_impl(s, len, i, len + 1);
+    tb_size_t sublen = 0;
+    tb_char_t const* sub = xm_utf8_sub_impl(s, len, i, j, &sublen);
+    if (sub) {
+        lua_pushlstring(lua, sub, sublen);
     } else {
-        start_byte = 1;
-    }
-
-    if (start_byte == -1) {
-        if (i > 0) {
-            lua_pushliteral(lua, "");
-            return 1;
-        } else {
-            start_byte = 1;
-        }
-    } else if (start_byte == 0) {
-        if (i < 0) {
-            start_byte = 1;
-        } else {
-            lua_pushliteral(lua, "");
-            return 1;
-        }
-    }
-
-    // map j (char index) to byte offset (end)
-    tb_long_t end_byte = 0;
-    if (j >= 0) {
-        end_byte = xm_utf8_offset_impl(s, len, j + 1, 1);
-    } else {
-        end_byte = xm_utf8_offset_impl(s, len, j + 1, len + 1);
-    }
-
-    if (end_byte == -1) {
-        if (j >= 0) end_byte = len + 1;
-        else end_byte = 1;
-    } else if (end_byte == 0) {
-         if (j >= 0) end_byte = len + 1;
-         else end_byte = 1;
-    }
-
-    if (end_byte <= start_byte) {
         lua_pushliteral(lua, "");
-        return 1;
     }
-
-    lua_pushlstring(lua, s + start_byte - 1, end_byte - start_byte);
     return 1;
 }
