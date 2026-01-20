@@ -16,6 +16,10 @@
 --
 -- @author      ruki
 -- @file        utf8.lua
+
+-- define module: utf8
+local utf8 = utf8 or {}
+
 -- @desc        The utf8 module
 --              It provides basic support for UTF-8 encoding.
 --              It is compatible with Lua 5.3+ utf8 library.
@@ -27,8 +31,10 @@
 -- @interface   utf8.codes(s [, lax])
 --
 
--- define module: utf8
-local utf8 = utf8 or {}
+-- the char pattern
+if not utf8.charpattern then
+    utf8.charpattern = "[\0-\x7F\xC2-\xFD][\x80-\xBF]*"
+end
 
 -- return module: utf8
 return utf8

@@ -1569,9 +1569,6 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
 
         // bind utf8 functions
         xm_lua_register(engine->lua, "utf8", g_utf8_functions);
-        lua_pushstring(engine->lua, "[\0-\x7F\xC2-\xFD][\x80-\xBF]*");
-        lua_setfield(engine->lua, -2, "charpattern");
-        lua_pop(engine->lua, 1);
 
         // bind string functions
         xm_lua_register(engine->lua, "string", g_string_functions);
