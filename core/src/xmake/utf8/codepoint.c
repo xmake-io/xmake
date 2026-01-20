@@ -25,14 +25,17 @@
 #include "utf8.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * private implementation
  */
-
 static tb_bool_t xm_utf8_codepoint_cb(xm_utf8_int_t code, tb_cpointer_t udata) {
     lua_State* lua = (lua_State*)udata;
     lua_pushinteger(lua, code);
     return tb_true;
 }
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * implementation
+ */
 
 /*
 ** codepoint(s, [i, [j [, lax]]]) -> returns codepoints for all

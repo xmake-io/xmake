@@ -28,7 +28,7 @@
  * private implementation
  */
 
-static tb_int_t iter_aux (lua_State *lua, tb_bool_t strict) {
+static tb_int_t xm_utf8_codes_iter(lua_State *lua, tb_bool_t strict) {
     size_t len;
     tb_char_t const* s = luaL_checklstring(lua, 1, &len);
     lua_Unsigned n = (lua_Unsigned)lua_tointeger(lua, 2);
@@ -48,12 +48,12 @@ static tb_int_t iter_aux (lua_State *lua, tb_bool_t strict) {
     }
 }
 
-static int iter_auxstrict (lua_State *lua) {
-    return iter_aux(lua, tb_true);
+static int xm_utf8_codes_iter_strict(lua_State *lua) {
+    return xm_utf8_codes_iter(lua, tb_true);
 }
 
-static int iter_auxlax (lua_State *lua) {
-    return iter_aux(lua, tb_false);
+static int xm_utf8_codes_iter_lax(lua_State *lua) {
+    return xm_utf8_codes_iter(lua, tb_false);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ tb_int_t xm_utf8_codes(lua_State *lua) {
     tb_bool_t lax = lua_toboolean(lua, 2);
     tb_char_t const* s = luaL_checkstring(lua, 1);
     luaL_argcheck(lua, !xm_utf8_iscontp(s), 1, XM_UTF8_MSGInvalid);
-    lua_pushcfunction(lua, lax ? iter_auxlax : iter_auxstrict);
+    lua_pushcfunction(lua, lax ? xm_utf8_codes_iter_lax : xm_utf8_codes_iter_strict);
     lua_pushvalue(lua, 1);
     lua_pushinteger(lua, 0);
     return 3;
