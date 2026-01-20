@@ -287,6 +287,7 @@ tb_int_t xm_utf8_offset(lua_State *lua);
 tb_int_t xm_utf8_codes(lua_State *lua);
 tb_int_t xm_utf8_sub(lua_State *lua);
 tb_int_t xm_utf8_lastof(lua_State *lua);
+tb_int_t xm_utf8_find(lua_State *lua);
 
 // the string functions
 tb_int_t xm_string_trim(lua_State *lua);
@@ -601,6 +602,7 @@ static luaL_Reg const g_utf8_functions[] = {
     {"offset", xm_utf8_offset},
     {"sub", xm_utf8_sub},
     {"lastof", xm_utf8_lastof},
+    {"find", xm_utf8_find},
     {tb_null, tb_null}
 };
 

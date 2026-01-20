@@ -106,3 +106,25 @@ function test_lastof(t)
 
     t:are_equal(utf8.lastof("ABC", "D"), nil)
 end
+
+function test_find(t)
+    t:are_equal({utf8.find("A", "A")}, {1, 1})
+    t:are_equal({utf8.find("ABC", "A")}, {1, 1})
+    t:are_equal({utf8.find("ABC", "B")}, {2, 2})
+    t:are_equal({utf8.find("ABC", "C")}, {3, 3})
+    t:are_equal({utf8.find("ABCA", "A")}, {1, 1})
+    t:are_equal({utf8.find("ABCA", "A", 2)}, {4, 4})
+    t:are_equal({utf8.find("ABCA", "A", 1)}, {1, 1})
+
+    t:are_equal({utf8.find("你好", "你")}, {1, 1})
+    t:are_equal({utf8.find("你好", "好")}, {2, 2})
+    t:are_equal({utf8.find("你好你", "你", 2)}, {3, 3})
+
+    t:are_equal({utf8.find("A你好A", "A")}, {1, 1})
+    t:are_equal({utf8.find("A你好A", "A", 2)}, {4, 4})
+    t:are_equal({utf8.find("A你好A", "好")}, {3, 3})
+
+    t:are_equal(utf8.find("ABC", "D"), nil)
+    t:are_equal({utf8.find("ABC", "")}, {1, 0})
+    t:are_equal({utf8.find("ABC", "", 2)}, {2, 1})
+end
