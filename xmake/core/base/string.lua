@@ -131,13 +131,15 @@ function string:rtrim(trimchars)
     return string._trim(self, trimchars, 1)
 end
 
--- encode: ' ', '=', '\"', '<'
+-- encode: ' ', '=', '\"', '<' (deprecated)
 function string:encode()
+    deprecated.add(nil, "string:encode()")
     return (self:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end))
 end
 
--- decode: ' ', '=', '\"'
+-- decode: ' ', '=', '\"' (deprecated)
 function string:decode()
+    deprecated.add(nil, "string:decode()")
     return (self:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end))
 end
 
