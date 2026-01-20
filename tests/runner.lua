@@ -8,7 +8,7 @@ function main(script, opt)
         script = path.join(script, "test.lua")
     end
     script = path.absolute(script)
-    assert(path.filename(script) == "test.lua", "file should named `test.lua`")
+    assert(path.filename(script) == "test.lua", "file(%s) should named `test.lua`", script)
     assert(os.isfile(script), "should be a file")
 
     -- disable statistics
