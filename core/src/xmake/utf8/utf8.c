@@ -239,6 +239,29 @@ tb_long_t xm_utf8_find_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* 
     return char_start;
 }
 
+tb_long_t xm_utf8_lastof_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* sub, tb_size_t sublen) {
+    tb_assert_and_check_return_val(s && sub, 0);
+
+    if (sublen == 0) return 0;
+
+    tb_char_t const* p = s;
+    tb_char_t const* last = tb_null;
+    
+    while (1) {
+        p = tb_strstr(p, sub);
+        if (!p) break;
+        last = p;
+        p += 1; 
+    }
+
+    if (last) {
+        tb_long_t count = xm_utf8_len_impl(s, len, 1, last - s, tb_true, tb_null);
+        if (count < 0) return 0;
+        return count + 1;
+    }
+    return 0;
+}
+
 tb_char_t const* xm_utf8_sub_impl(tb_char_t const* s, tb_size_t len, tb_long_t i, tb_long_t j, tb_size_t* psublen) {
     tb_assert_and_check_return_val(s && psublen, tb_null);
     *psublen = 0;

@@ -105,6 +105,15 @@ function test_lastof(t)
     t:are_equal(utf8.lastof("A你好A", "好"), 3)
 
     t:are_equal(utf8.lastof("ABC", "D"), nil)
+    
+    -- plain
+    t:are_equal(utf8.lastof("ABC", "A", true), 1)
+    t:are_equal(utf8.lastof("ABC", "B", true), 2)
+    t:are_equal(utf8.lastof("ABC", ".", true), nil)
+
+    -- pattern
+    t:are_equal(utf8.lastof("ABC", "."), 3)
+    t:are_equal(utf8.lastof("你好", "."), 2)
 end
 
 function test_find(t)

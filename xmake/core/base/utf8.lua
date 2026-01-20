@@ -30,8 +30,8 @@ local utf8 = utf8 or {}
 -- @interface   utf8.offset(s, n [, i])
 -- @interface   utf8.codes(s [, lax])
 -- @interface   utf8.sub(s, i [, j])
--- @interface   utf8.lastof(s, substr)
--- @interface   utf8.find(s, target [, init])
+-- @interface   utf8.lastof(s, pattern [, plain])
+-- @interface   utf8.find(s, pattern [, init [, plain]])
 --
 
 -- the char pattern

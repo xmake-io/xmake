@@ -25,7 +25,7 @@
 #include "utf8.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * private implementation
  */
 
 static tb_int_t xm_utf8_find_impl_plain(lua_State* lua, tb_char_t const* s, size_t len, tb_char_t const* sub, size_t sublen, lua_Integer init) {
@@ -109,6 +109,10 @@ static tb_int_t xm_utf8_find_impl_pattern(lua_State* lua, tb_char_t const* s, si
     
     return nres;
 }
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * implementation
+ */
 
 /* utf8.find(s, target [, init [, plain]])
  */
