@@ -29,6 +29,8 @@ local utf8 = utf8 or {}
 -- @interface   utf8.codepoint(s [, i [, j]])
 -- @interface   utf8.offset(s, n [, i])
 -- @interface   utf8.codes(s [, lax])
+-- @interface   utf8.sub(s, i [, j])
+-- @interface   utf8.lastof(s, substr)
 --
 
 -- the char pattern

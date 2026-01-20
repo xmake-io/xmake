@@ -62,3 +62,47 @@ end
 function test_charpattern(t)
     t:require(utf8.charpattern)
 end
+
+function test_sub(t)
+    t:are_equal(utf8.sub("ABC", 1, 1), "A")
+    t:are_equal(utf8.sub("ABC", 2, 2), "B")
+    t:are_equal(utf8.sub("ABC", 1, 2), "AB")
+    t:are_equal(utf8.sub("你好", 1, 1), "你")
+    t:are_equal(utf8.sub("你好", 2, 2), "好")
+    t:are_equal(utf8.sub("你好", 1, 2), "你好")
+    
+    -- mixed
+    t:are_equal(utf8.sub("A你好B", 2, 3), "你好")
+    t:are_equal(utf8.sub("A你好B", 1, 3), "A你好")
+    t:are_equal(utf8.sub("A你好B", 2, 4), "你好B")
+
+    -- negative
+    t:are_equal(utf8.sub("ABC", -1), "C")
+    t:are_equal(utf8.sub("ABC", -2), "BC")
+    t:are_equal(utf8.sub("你好", -1), "好")
+    t:are_equal(utf8.sub("你好", -2), "你好")
+    t:are_equal(utf8.sub("你好", 1, -1), "你好")
+    t:are_equal(utf8.sub("你好", 1, -2), "你")
+
+    -- out of bounds
+    t:are_equal(utf8.sub("ABC", 4), "")
+    t:are_equal(utf8.sub("ABC", 1, 5), "ABC")
+    t:are_equal(utf8.sub("ABC", 0), "ABC")
+    t:are_equal(utf8.sub("ABC", -10), "ABC")
+end
+
+function test_lastof(t)
+    t:are_equal(utf8.lastof("ABC", "A"), 1)
+    t:are_equal(utf8.lastof("ABC", "B"), 2)
+    t:are_equal(utf8.lastof("ABC", "C"), 3)
+    t:are_equal(utf8.lastof("ABCA", "A"), 4)
+
+    t:are_equal(utf8.lastof("你好", "你"), 1)
+    t:are_equal(utf8.lastof("你好", "好"), 2)
+    t:are_equal(utf8.lastof("你好你", "你"), 3)
+
+    t:are_equal(utf8.lastof("A你好A", "A"), 4)
+    t:are_equal(utf8.lastof("A你好A", "好"), 3)
+
+    t:are_equal(utf8.lastof("ABC", "D"), nil)
+end
