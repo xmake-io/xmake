@@ -30,7 +30,7 @@
 
 static tb_int_t xm_utf8_find_impl_plain(lua_State* lua, tb_char_t const* s, size_t len, tb_char_t const* sub, size_t sublen, lua_Integer init) {
     tb_long_t char_end = 0;
-    tb_long_t char_start = xm_utf8_find_impl(s, len, sub, sublen, init, &char_end);
+    tb_long_t char_start = xm_utf8_find_impl(s, len, sub, sublen, (tb_long_t)init, &char_end);
     if (char_start > 0) {
         lua_pushinteger(lua, char_start);
         lua_pushinteger(lua, char_end);
@@ -45,14 +45,14 @@ static tb_int_t xm_utf8_find_impl_pattern(lua_State* lua, tb_char_t const* s, si
     tb_long_t byte_init = 1;
     if (init > 0) {
         if (init > 1) {
-            byte_init = xm_utf8_offset_impl(s, len, init, 1);
+            byte_init = xm_utf8_offset_impl(s, len, (tb_long_t)init, 1);
             if (byte_init <= 0) {
                 lua_pushnil(lua);
                 return 1;
             }
         }
     } else if (init < 0) {
-        byte_init = xm_utf8_offset_impl(s, len, init, len + 1);
+        byte_init = xm_utf8_offset_impl(s, len, (tb_long_t)init, len + 1);
         if (byte_init <= 0) {
             lua_pushnil(lua);
             return 1;
@@ -81,7 +81,7 @@ static tb_int_t xm_utf8_find_impl_pattern(lua_State* lua, tb_char_t const* s, si
     
     tb_long_t char_start = 1;
     if (b_start > 1) {
-        tb_long_t count = xm_utf8_len_impl(s, len, 1, b_start - 1, tb_true, tb_null);
+        tb_long_t count = xm_utf8_len_impl(s, len, 1, (tb_long_t)b_start - 1, tb_true, tb_null);
         if (count < 0) { 
             lua_pushnil(lua); 
             lua_remove(lua, base + 1);
@@ -92,7 +92,7 @@ static tb_int_t xm_utf8_find_impl_pattern(lua_State* lua, tb_char_t const* s, si
     
     tb_long_t match_char_len = 0;
     if (b_end >= b_start) {
-        match_char_len = xm_utf8_len_impl(s, len, b_start, b_end, tb_true, tb_null);
+        match_char_len = xm_utf8_len_impl(s, len, (tb_long_t)b_start, (tb_long_t)b_end, tb_true, tb_null);
         if (match_char_len < 0) { 
             lua_pushnil(lua); 
             lua_remove(lua, base + 1);

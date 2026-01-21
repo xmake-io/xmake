@@ -48,5 +48,5 @@ tb_int_t xm_utf8_byte(lua_State* lua) {
     lua_Integer i = luaL_optinteger(lua, 2, 1);
     lua_Integer j = luaL_optinteger(lua, 3, i);
 
-    return (tb_int_t)xm_utf8_byte_impl(s, len, i, j, xm_utf8_byte_cb, lua);
+    return (tb_int_t)xm_utf8_byte_impl(s, len, (tb_long_t)i, (tb_long_t)j, xm_utf8_byte_cb, lua);
 }

@@ -37,7 +37,7 @@ tb_int_t xm_utf8_sub(lua_State *lua) {
     lua_Integer j = luaL_optinteger(lua, 3, -1);
 
     tb_size_t sublen = 0;
-    tb_char_t const* sub = xm_utf8_sub_impl(s, len, i, j, &sublen);
+    tb_char_t const* sub = xm_utf8_sub_impl(s, len, (tb_long_t)i, (tb_long_t)j, &sublen);
     if (sub) {
         lua_pushlstring(lua, sub, sublen);
     } else {

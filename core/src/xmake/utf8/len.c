@@ -44,7 +44,7 @@ tb_int_t xm_utf8_len(lua_State *lua) {
     luaL_argcheck(lua, --posj < (lua_Integer)len, 3, "final position out of bounds");
 
     tb_size_t errpos = 0;
-    tb_long_t n = xm_utf8_len_impl(s, len, posi + 1, posj + 1, !lax, &errpos);
+    tb_long_t n = xm_utf8_len_impl(s, len, (tb_long_t)posi + 1, (tb_long_t)posj + 1, !lax, &errpos);
     if (n < 0) {
         lua_pushnil(lua);
         lua_pushinteger(lua, errpos);
