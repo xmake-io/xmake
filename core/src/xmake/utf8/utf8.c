@@ -381,8 +381,13 @@ tb_long_t xm_utf8_find_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* 
 
 tb_long_t xm_utf8_lastof_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* sub, tb_size_t sublen) {
     tb_assert_and_check_return_val(s && sub, 0);
+    tb_check_return_val(sublen, 0);
 
-    if (sublen == 0) return 0;
+    // optimize for single character search
+    if (sublen == 1) {
+        tb_char_t const* p = tb_strrchr(s, sub[0]);
+        return p ? (tb_long_t)(p - s + 1) : 0;
+    }
 
     tb_char_t const* p = s;
     tb_char_t const* last = tb_null;
