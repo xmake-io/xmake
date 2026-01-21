@@ -37,8 +37,8 @@ tb_int_t xm_utf8_len(lua_State *lua) {
 
     size_t len;
     tb_char_t const* s = luaL_checklstring(lua, 1, &len);
-    lua_Integer posi = xm_utf8_posrelat(luaL_optinteger(lua, 2, 1), len);
-    lua_Integer posj = xm_utf8_posrelat(luaL_optinteger(lua, 3, -1), len);
+    lua_Integer posi = xm_utf8_posrelat((tb_long_t)luaL_optinteger(lua, 2, 1), len);
+    lua_Integer posj = xm_utf8_posrelat((tb_long_t)luaL_optinteger(lua, 3, -1), len);
     tb_bool_t lax = lua_toboolean(lua, 4);
     luaL_argcheck(lua, 1 <= posi && --posi <= (lua_Integer)len, 2, "initial position out of bounds");
     luaL_argcheck(lua, --posj < (lua_Integer)len, 3, "final position out of bounds");
