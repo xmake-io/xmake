@@ -38,9 +38,9 @@ tb_int_t xm_utf8_offset(lua_State *lua) {
     tb_char_t const* s = luaL_checklstring(lua, 1, &len);
     lua_Integer n  = luaL_checkinteger(lua, 2);
     lua_Integer posi = (n >= 0) ? 1 : len + 1;
-    posi = xm_utf8_posrelat(luaL_optinteger(lua, 3, posi), len);
+    posi = xm_utf8_posrelat((tb_long_t)luaL_optinteger(lua, 3, posi), len);
 
-    tb_long_t result = xm_utf8_offset_impl(s, len, n, posi);
+    tb_long_t result = xm_utf8_offset_impl(s, len, (tb_long_t)n, (tb_long_t)posi);
     if (result == -1) {
         return luaL_argerror(lua, 3, "position out of bounds");
     }

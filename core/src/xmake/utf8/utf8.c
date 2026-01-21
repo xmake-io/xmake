@@ -31,26 +31,26 @@
 tb_char_t const* xm_utf8_decode(tb_char_t const* s, xm_utf8_int_t* val, tb_bool_t strict) {
     static const xm_utf8_int_t limits[] = {~(xm_utf8_int_t)0, 0x80, 0x800, 0x10000u, 0x200000u, 0x4000000u};
     tb_uint32_t c = (tb_byte_t)s[0];
-    xm_utf8_int_t res = 0; 
+    xm_utf8_int_t res = 0;
     if (c < 0x80) {
         res = c;
     } else {
         if (xm_utf8_iscont(c)) {
             return tb_null;
         }
-        tb_int_t count = 0; 
-        for (; c & 0x40; c <<= 1) { 
-            tb_uint32_t cc = (tb_byte_t)s[++count]; 
+        tb_int_t count = 0;
+        for (; c & 0x40; c <<= 1) {
+            tb_uint32_t cc = (tb_byte_t)s[++count];
             if (!xm_utf8_iscont(cc)) {
-                return tb_null; 
+                return tb_null;
             }
-            res = (res << 6) | (cc & 0x3F); 
+            res = (res << 6) | (cc & 0x3F);
         }
-        res |= ((xm_utf8_int_t)(c & 0x7F) << (count * 5)); 
+        res |= ((xm_utf8_int_t)(c & 0x7F) << (count * 5));
         if (count > 5 || res > XM_UTF8_MAXUTF || res < limits[count]) {
-            return tb_null; 
+            return tb_null;
         }
-        s += count; 
+        s += count;
     }
     if (strict) {
         if (res > XM_UTF8_MAXUNICODE || (0xD800u <= res && res <= 0xDFFFu)) {
@@ -60,7 +60,7 @@ tb_char_t const* xm_utf8_decode(tb_char_t const* s, xm_utf8_int_t* val, tb_bool_
     if (val) {
         *val = res;
     }
-    return s + 1; 
+    return s + 1;
 }
 
 tb_size_t xm_utf8_encode(tb_char_t* s, xm_utf8_int_t val) {
@@ -113,13 +113,13 @@ tb_long_t xm_utf8_charpos(tb_char_t const* s, tb_size_t len, tb_long_t byte_pos)
     if (byte_pos > len + 1) byte_pos = len + 1;
 
     // adjust byte_pos to the start of the character
-    // 
-    // performance: 
+    //
+    // performance:
     // 0(1) complexity, because utf8 sequence is max 4 bytes
     while (byte_pos > 1 && xm_utf8_iscont(s[byte_pos - 1])) {
         byte_pos--;
     }
-    
+
     // get character position
     tb_long_t count = xm_utf8_len_impl(s, len, 1, byte_pos - 1, tb_true, tb_null);
     return count >= 0? count + 1 : -1;
@@ -128,7 +128,7 @@ tb_long_t xm_utf8_charpos(tb_char_t const* s, tb_size_t len, tb_long_t byte_pos)
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation interfaces
  */
-static struct { xm_utf8_int_t first; xm_utf8_int_t last; } const g_non_spacing[] = 
+static struct { xm_utf8_int_t first; xm_utf8_int_t last; } const g_non_spacing[] =
 {
     {0x0300, 0x036F},   {0x0483, 0x0486},   {0x0488, 0x0489},
     {0x0591, 0x05BD},   {0x05BF, 0x05BF},   {0x05C1, 0x05C2},
@@ -226,7 +226,7 @@ tb_long_t xm_utf8_charwidth(xm_utf8_int_t val) {
 
 tb_long_t xm_utf8_strwidth(tb_char_t const* s, tb_size_t len) {
     tb_assert_and_check_return_val(s, -1);
-    
+
     tb_long_t width = 0;
     tb_char_t const* p = s;
     tb_char_t const* e = s + len;
@@ -280,7 +280,7 @@ tb_long_t xm_utf8_offset_impl(tb_char_t const* s, tb_size_t len, tb_long_t n, tb
         if (xm_utf8_iscontp(s + posi)) {
             return -2; // error: initial position is a continuation byte
         }
-        
+
         if (n < 0) {
             while (n < 0 && posi > 0) {
                 do {
@@ -309,9 +309,9 @@ tb_bool_t xm_utf8_codepoint_impl(tb_char_t const* s, tb_size_t len, tb_long_t po
     tb_assert_and_check_return_val(s, tb_false);
 
     if (posi > posj) {
-        return tb_true; 
+        return tb_true;
     }
-    
+
     tb_char_t const* se = s + posj;
     for (s += posi - 1; s < se;) {
         xm_utf8_int_t code;
@@ -331,21 +331,21 @@ tb_long_t xm_utf8_find_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* 
 
     if (sublen == 0) {
         if (init > (tb_long_t)len + 1) init = len + 1;
-        
+
         tb_long_t start_byte = 1;
         if (init > 0) {
             start_byte = xm_utf8_offset_impl(s, len, init, 1);
         } else if (init < 0) {
             start_byte = xm_utf8_offset_impl(s, len, init, len + 1);
         }
-        if (start_byte <= 0) start_byte = 1; 
-        
+        if (start_byte <= 0) start_byte = 1;
+
         tb_long_t char_pos = 1;
         if (start_byte > 1) {
             tb_long_t c = xm_utf8_len_impl(s, len, 1, start_byte - 1, tb_true, tb_null);
             if (c >= 0) char_pos = c + 1;
         }
-        
+
         if (pchar_end) *pchar_end = char_pos - 1;
         return char_pos;
     }
@@ -356,7 +356,7 @@ tb_long_t xm_utf8_find_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* 
     } else if (init < 0) {
         start_byte = xm_utf8_offset_impl(s, len, init, len + 1);
     }
-    if (start_byte <= 0) return 0; 
+    if (start_byte <= 0) return 0;
 
     tb_char_t const* p = tb_strstr(s + start_byte - 1, sub);
     if (!p) return 0;
@@ -366,7 +366,7 @@ tb_long_t xm_utf8_find_impl(tb_char_t const* s, tb_size_t len, tb_char_t const* 
     tb_long_t char_start = 1;
     if (found_byte_start > 1) {
         tb_long_t c = xm_utf8_len_impl(s, len, 1, found_byte_start - 1, tb_true, tb_null);
-        if (c < 0) return 0; 
+        if (c < 0) return 0;
         char_start = c + 1;
     }
 
@@ -386,12 +386,12 @@ tb_long_t xm_utf8_lastof_impl(tb_char_t const* s, tb_size_t len, tb_char_t const
 
     tb_char_t const* p = s;
     tb_char_t const* last = tb_null;
-    
+
     while (1) {
         p = tb_strstr(p, sub);
         if (!p) break;
         last = p;
-        p += 1; 
+        p += 1;
     }
 
     if (last) {
@@ -404,7 +404,7 @@ tb_long_t xm_utf8_byte_impl(tb_char_t const* s, tb_size_t len, tb_long_t i, tb_l
     tb_size_t sublen = 0;
     tb_char_t const* sub = xm_utf8_sub_impl(s, len, i, j, &sublen);
     if (sub && sublen > 0) {
-        
+
         // decode and push codepoints
         tb_long_t n = 0;
         tb_char_t const* p = sub;
@@ -417,7 +417,7 @@ tb_long_t xm_utf8_byte_impl(tb_char_t const* s, tb_size_t len, tb_long_t i, tb_l
                 n++;
                 p = next;
             } else {
-                p++; 
+                p++;
             }
         }
         return n;
@@ -441,7 +441,7 @@ tb_char_t const* xm_utf8_sub_impl(tb_char_t const* s, tb_size_t len, tb_long_t i
 
     if (start_byte == -1) {
         if (i > 0) {
-            return ""; 
+            return "";
         } else {
             start_byte = 1;
         }
@@ -449,7 +449,7 @@ tb_char_t const* xm_utf8_sub_impl(tb_char_t const* s, tb_size_t len, tb_long_t i
         if (i < 0) {
             start_byte = 1;
         } else {
-            return ""; 
+            return "";
         }
     }
 
@@ -487,13 +487,13 @@ tb_char_t* xm_utf8_reverse_impl(tb_char_t const* s, tb_size_t len, tb_char_t* bu
     while (p < e) {
         xm_utf8_int_t code;
         tb_char_t const* next = xm_utf8_decode(p, &code, tb_false);
-        
+
         // invalid utf8? treat as 1 byte
         tb_size_t n = 1;
         if (next) {
             n = next - p;
         }
-        
+
         // safety check
         if (p + n > e) n = e - p;
 

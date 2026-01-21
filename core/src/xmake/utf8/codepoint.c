@@ -45,8 +45,8 @@ static tb_bool_t xm_utf8_codepoint_cb(xm_utf8_int_t code, tb_cpointer_t udata) {
 tb_int_t xm_utf8_codepoint(lua_State *lua) {
     size_t len;
     tb_char_t const* s = luaL_checklstring(lua, 1, &len);
-    lua_Integer posi = xm_utf8_posrelat(luaL_optinteger(lua, 2, 1), len);
-    lua_Integer pose = xm_utf8_posrelat(luaL_optinteger(lua, 3, posi), len);
+    lua_Integer posi = xm_utf8_posrelat((tb_long_t)luaL_optinteger(lua, 2, 1), len);
+    lua_Integer pose = xm_utf8_posrelat((tb_long_t)luaL_optinteger(lua, 3, posi), len);
     tb_bool_t lax = lua_toboolean(lua, 4);
 
     luaL_argcheck(lua, posi >= 1, 2, "out of bounds");
@@ -63,7 +63,7 @@ tb_int_t xm_utf8_codepoint(lua_State *lua) {
     luaL_checkstack(lua, n, "string slice too long");
 
     int nresults = lua_gettop(lua);
-    if (!xm_utf8_codepoint_impl(s, len, posi, pose, !lax, xm_utf8_codepoint_cb, lua)) {
+    if (!xm_utf8_codepoint_impl(s, len, (tb_long_t)posi, (tb_long_t)pose, !lax, xm_utf8_codepoint_cb, lua)) {
         return luaL_error(lua, XM_UTF8_MSGInvalid);
     }
     
