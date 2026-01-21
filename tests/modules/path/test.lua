@@ -34,6 +34,23 @@ function test_extension(t)
     t:are_equal(path.extension("\\home\\foo.so"), ".so")
 end
 
+function test_filename(t)
+    t:are_equal(path.filename("foo"), "foo")
+    t:are_equal(path.filename("foo.so"), "foo.so")
+    t:are_equal(path.filename("/tmp/foo.so"), "foo.so")
+    t:are_equal(path.filename("c:\\tmp\\foo.so"), "foo.so")
+    t:are_equal(path.filename("/tmp/.."), "..")
+    t:are_equal(path.filename("/tmp/."), ".")
+    t:are_equal(path.filename("/"), "")
+    t:are_equal(path.filename(""), "")
+    
+    -- unicode
+    t:are_equal(path.filename("Unicode 测试/test.lua"), "test.lua")
+    t:are_equal(path.filename("Unicode 测试/foo/test.lua"), "test.lua")
+    t:are_equal(path.filename("测试/test.lua"), "test.lua")
+    t:are_equal(path.filename("测试\\test.lua"), "test.lua")
+end
+
 function test_directory(t)
     t:are_equal(path.directory(""), nil)
     t:are_equal(path.directory("."), nil)

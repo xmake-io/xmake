@@ -110,6 +110,16 @@ function test_lastof(t)
     t:are_equal(utf8.lastof("ABC", "A", true), 1)
     t:are_equal(utf8.lastof("ABC", "B", true), 2)
     t:are_equal(utf8.lastof("ABC", ".", true), nil)
+    t:are_equal(utf8.lastof("你好", "好", true), 2)
+    t:are_equal(utf8.lastof("C你好D", "好", true), 3)
+    t:are_equal(utf8.lastof("C你好D", "D", true), 4)
+
+    -- long string
+    local longstr = ("你"):rep(1000) .. "好"
+    t:are_equal(utf8.lastof(longstr, "好"), 1001)
+    t:are_equal(utf8.lastof(longstr, "你"), 1000)
+    t:are_equal(utf8.lastof(longstr, "好", true), 1001)
+    t:are_equal(utf8.lastof(longstr, "你", true), 1000)
 
     -- pattern
     t:are_equal(utf8.lastof("ABC", "."), 3)

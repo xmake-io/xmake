@@ -395,9 +395,7 @@ tb_long_t xm_utf8_lastof_impl(tb_char_t const* s, tb_size_t len, tb_char_t const
     }
 
     if (last) {
-        tb_long_t count = xm_utf8_len_impl(s, len, 1, last - s, tb_true, tb_null);
-        if (count < 0) return 0;
-        return count + 1;
+        return (tb_long_t)(last - s + 1);
     }
     return 0;
 }
