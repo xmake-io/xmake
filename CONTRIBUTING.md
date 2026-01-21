@@ -70,6 +70,13 @@ Run `scripts\srcenv.bat` directly.
 
 After loading the environment, we can directly modify the Lua script in the source code directory, and then run `xmake` to verify the modification effect in real time, without reinstalling.
 
+### Environment Variables for Debugging
+
+* `XMAKE_PROGRAM_DIR`: This environment variable specifies the directory containing Xmake's Lua scripts. By setting this to your local `xmake` source directory (e.g., `path/to/xmake/xmake`), you can force Xmake to use your local scripts. This allows you to test changes to Lua scripts immediately without re-compiling or re-installing.
+* `XMAKE_PROGRAM_FILE`: This environment variable specifies the path to the `xmake` executable. It ensures that the correct binary is used, which is useful when you have multiple Xmake versions or want to test a locally compiled binary.
+
+The `source scripts/srcenv.profile` (or `srcenv.bat`) command automatically sets these variables for you.
+
 ### Run Tests
 
 Run the tests using the following command (Please ensure the local environment is loaded):
@@ -170,6 +177,13 @@ xmake --version
 直接运行 `scripts\srcenv.bat`。
 
 加载环境后，我们就可以直接修改源码目录下的 Lua 脚本，然后运行 `xmake` 即可实时验证修改效果，无需重新安装。
+
+### 调试环境变量
+
+* `XMAKE_PROGRAM_DIR`: 指定 Xmake 的 Lua 脚本目录。将其设置为本地源码中的 `xmake` 目录（例如 `path/to/xmake/xmake`），可以让 Xmake 直接加载本地脚本。这样修改 Lua 脚本后无需重新编译安装即可生效，非常适合调试脚本逻辑。
+* `XMAKE_PROGRAM_FILE`: 指定 `xmake` 可执行文件的路径。确保使用指定的二进制文件运行，适用于多版本共存或测试本地编译生成的二进制文件。
+
+`source scripts/srcenv.profile` (或 `srcenv.bat`) 脚本会自动为你设置这些环境变量。
 
 ### 运行测试
 
