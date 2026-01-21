@@ -70,7 +70,7 @@ function test_sub(t)
     t:are_equal(utf8.sub("你好", 1, 1), "你")
     t:are_equal(utf8.sub("你好", 2, 2), "好")
     t:are_equal(utf8.sub("你好", 1, 2), "你好")
-    
+
     -- mixed
     t:are_equal(utf8.sub("A你好B", 2, 3), "你好")
     t:are_equal(utf8.sub("A你好B", 1, 3), "A你好")
@@ -105,7 +105,7 @@ function test_lastof(t)
     t:are_equal(utf8.lastof("A你好A", "好"), 3)
 
     t:are_equal(utf8.lastof("ABC", "D"), nil)
-    
+
     -- plain
     t:are_equal(utf8.lastof("ABC", "A", true), 1)
     t:are_equal(utf8.lastof("ABC", "B", true), 2)
@@ -142,13 +142,13 @@ function test_find(t)
     -- UTF-8 pattern matching (byte-based)
     -- "你" is 3 bytes. "." matches first byte.
     t:are_equal({utf8.find("你好", ".")}, {1, 1})
-    
+
     -- "你好", "好" -> bytes 4-6.
     t:are_equal({utf8.find("你好", "好")}, {2, 2})
-    
+
     -- "你好", "..." (3 dots) -> matches 3 bytes (whole "你").
     t:are_equal({utf8.find("你好", "...")}, {1, 1})
-    
+
     -- "A你好", "%w" -> matches "A".
     t:are_equal({utf8.find("A你好", "%w")}, {1, 1})
 end

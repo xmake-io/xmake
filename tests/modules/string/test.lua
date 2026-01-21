@@ -94,7 +94,7 @@ function test_lastof(t)
     t:are_equal(("/home/file.txt"):lastof('/', true), 6)
     t:are_equal(("/home/file.txt"):lastof('/home', true), 1)
     t:are_equal(("/home/file.txt"):lastof('[/\\]home'), 1)
-    
+
     -- long string
     local longstr = ("a"):rep(1000) .. "b"
     t:are_equal(longstr:lastof("b"), 1001)
