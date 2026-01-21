@@ -15,48 +15,53 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        lastof.c
+ * @file        char.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * trace
- */
-#define TB_TRACE_MODULE_NAME "string_lastof"
-#define TB_TRACE_MODULE_DEBUG (0)
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-#include "../utf8/utf8.h"
+#include "utf8.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * private implementation
+ */
+
+static void xm_utf8_char_push(lua_State *lua, tb_int_t arg) {
+    lua_Unsigned code = (lua_Unsigned)luaL_checkinteger(lua, arg);
+    luaL_argcheck(lua, code <= XM_UTF8_MAXUTF, arg, "value out of range");
+    
+    tb_char_t buf[8];
+    tb_size_t n = xm_utf8_encode(buf, (xm_utf8_int_t)code);
+    if (n > 0) {
+        lua_pushlstring(lua, buf, n);
+    } else {
+        luaL_error(lua, "value out of range");
+    }
+}
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/* lastof string (only support plain text)
- *
- * @param str             the string
- * @param substr          the substring
+/* utfchar(n1, n2, ...)  -> char(n1)..char(n2)...
  */
-tb_int_t xm_string_lastof(lua_State *lua) {
+tb_int_t xm_utf8_char(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    // get string
-    size_t nstr = 0;
-    tb_char_t const *cstr = luaL_checklstring(lua, 1, &nstr);
-
-    // get substring
-    size_t nsubstr = 0;
-    tb_char_t const *csubstr = luaL_checklstring(lua, 2, &nsubstr);
-
-    // lastof it
-    tb_long_t char_pos = xm_utf8_lastof_impl(cstr, nstr, csubstr, nsubstr);
-    if (char_pos > 0) {
-        lua_pushinteger(lua, char_pos);
+    tb_int_t n = lua_gettop(lua);  // number of arguments
+    if (n == 1) { // optimize common case of single char
+        xm_utf8_char_push(lua, 1);
     } else {
-        lua_pushnil(lua);
+        tb_int_t i;
+        luaL_Buffer b;
+        luaL_buffinit(lua, &b);
+        for (i = 1; i <= n; i++) {
+            xm_utf8_char_push(lua, i);
+            luaL_addvalue(&b);
+        }
+        luaL_pushresult(&b);
     }
     return 1;
 }

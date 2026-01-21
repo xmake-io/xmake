@@ -15,48 +15,31 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        lastof.c
+ * @file        width.c
  *
  */
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * trace
- */
-#define TB_TRACE_MODULE_NAME "string_lastof"
-#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-#include "../utf8/utf8.h"
+#include "utf8.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * interfaces
  */
 
-/* lastof string (only support plain text)
- *
- * @param str             the string
- * @param substr          the substring
+/* utf8.width(char)
+ * utf8.width(str)
+ * utf8.width(codepoint)
  */
-tb_int_t xm_string_lastof(lua_State *lua) {
-    tb_assert_and_check_return_val(lua, 0);
-
-    // get string
-    size_t nstr = 0;
-    tb_char_t const *cstr = luaL_checklstring(lua, 1, &nstr);
-
-    // get substring
-    size_t nsubstr = 0;
-    tb_char_t const *csubstr = luaL_checklstring(lua, 2, &nsubstr);
-
-    // lastof it
-    tb_long_t char_pos = xm_utf8_lastof_impl(cstr, nstr, csubstr, nsubstr);
-    if (char_pos > 0) {
-        lua_pushinteger(lua, char_pos);
+tb_int_t xm_utf8_width(lua_State* lua) {
+    if (lua_isnumber(lua, 1)) {
+        xm_utf8_int_t val = (xm_utf8_int_t)lua_tointeger(lua, 1);
+        lua_pushinteger(lua, xm_utf8_charwidth(val));
     } else {
-        lua_pushnil(lua);
+        size_t len = 0;
+        tb_char_t const* s = luaL_checklstring(lua, 1, &len);
+        lua_pushinteger(lua, xm_utf8_strwidth(s, len));
     }
     return 1;
 }

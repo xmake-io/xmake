@@ -15,48 +15,43 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        lastof.c
+ * @file        reverse.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * trace
- */
-#define TB_TRACE_MODULE_NAME "string_lastof"
-#define TB_TRACE_MODULE_DEBUG (0)
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-#include "../utf8/utf8.h"
+#include "utf8.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/* lastof string (only support plain text)
- *
- * @param str             the string
- * @param substr          the substring
+/* utf8.reverse(s)
  */
-tb_int_t xm_string_lastof(lua_State *lua) {
-    tb_assert_and_check_return_val(lua, 0);
+tb_int_t xm_utf8_reverse(lua_State *lua) {
+    size_t len;
+    tb_char_t const* s = luaL_checklstring(lua, 1, &len);
+    if (len == 0) {
+        lua_pushliteral(lua, "");
+        return 1;
+    }
 
-    // get string
-    size_t nstr = 0;
-    tb_char_t const *cstr = luaL_checklstring(lua, 1, &nstr);
-
-    // get substring
-    size_t nsubstr = 0;
-    tb_char_t const *csubstr = luaL_checklstring(lua, 2, &nsubstr);
-
-    // lastof it
-    tb_long_t char_pos = xm_utf8_lastof_impl(cstr, nstr, csubstr, nsubstr);
-    if (char_pos > 0) {
-        lua_pushinteger(lua, char_pos);
+    // do reverse
+    if (len < 1024) {
+        tb_char_t buf[1024 + 1];
+        xm_utf8_reverse_impl(s, len, buf);
+        lua_pushlstring(lua, buf, len);
     } else {
-        lua_pushnil(lua);
+        tb_char_t* buf = (tb_char_t*)tb_malloc_bytes(len + 1);
+        if (buf) {
+            xm_utf8_reverse_impl(s, len, buf);
+            lua_pushlstring(lua, buf, len);
+            tb_free(buf);
+        } else {
+            lua_pushnil(lua);
+        }
     }
     return 1;
 }

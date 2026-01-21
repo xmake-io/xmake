@@ -279,6 +279,19 @@ tb_int_t xm_winos_registry_values(lua_State *lua);
 tb_int_t xm_winos_short_path(lua_State *lua);
 #endif
 
+// the utf8 functions
+tb_int_t xm_utf8_len(lua_State *lua);
+tb_int_t xm_utf8_char(lua_State *lua);
+tb_int_t xm_utf8_byte(lua_State *lua);
+tb_int_t xm_utf8_codepoint(lua_State *lua);
+tb_int_t xm_utf8_offset(lua_State *lua);
+tb_int_t xm_utf8_codes(lua_State *lua);
+tb_int_t xm_utf8_sub(lua_State *lua);
+tb_int_t xm_utf8_reverse(lua_State *lua);
+tb_int_t xm_utf8_lastof(lua_State *lua);
+tb_int_t xm_utf8_find(lua_State *lua);
+tb_int_t xm_utf8_width(lua_State *lua);
+
 // the string functions
 tb_int_t xm_string_trim(lua_State *lua);
 tb_int_t xm_string_split(lua_State *lua);
@@ -583,6 +596,24 @@ static luaL_Reg const g_bloom_filter_functions[] = {
     { tb_null, tb_null },
 };
 
+// the utf8 functions
+static luaL_Reg const g_utf8_functions[] = {
+    {"char", xm_utf8_char},
+    {"byte", xm_utf8_byte},
+    {"codes", xm_utf8_codes},
+    {"codepoint", xm_utf8_codepoint},
+    {"len", xm_utf8_len},
+    {"offset", xm_utf8_offset},
+    {"sub", xm_utf8_sub},
+    {"reverse", xm_utf8_reverse},
+    {"lastof", xm_utf8_lastof},
+    {"find", xm_utf8_find},
+    {"width", xm_utf8_width},
+    {"wcwidth", xm_utf8_width},
+    {"wcswidth", xm_utf8_width},
+    {tb_null, tb_null}
+};
+
 // the string functions
 static luaL_Reg const g_string_functions[] = {
     { "trim", xm_string_trim },
@@ -721,6 +752,9 @@ static luaL_Reg const g_thread_functions[] = {
     { "sharedata_get", xm_thread_sharedata_get_ },
     { tb_null, tb_null },
 };
+
+// the utf8 functions
+
 
 // the lua global instance for signal handler
 static lua_State *g_lua = tb_null;
@@ -1546,6 +1580,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const *name, xm_engine_lni_initalizer_c
 
         // bind base64 functions
         xm_lua_register(engine->lua, "base64", g_base64_functions);
+
+        // bind utf8 functions
+        xm_lua_register(engine->lua, "utf8", g_utf8_functions);
 
         // bind string functions
         xm_lua_register(engine->lua, "string", g_string_functions);

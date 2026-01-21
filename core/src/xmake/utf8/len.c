@@ -15,48 +15,41 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        lastof.c
+ * @file        len.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * trace
- */
-#define TB_TRACE_MODULE_NAME "string_lastof"
-#define TB_TRACE_MODULE_DEBUG (0)
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-#include "../utf8/utf8.h"
+#include "utf8.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/* lastof string (only support plain text)
- *
- * @param str             the string
- * @param substr          the substring
+/* utf8len(s [, i [, j [, lax]]]) --> number of characters that
+ * start in the range [i,j], or nil + current position if 's' is not
+ * well formed in that interval
  */
-tb_int_t xm_string_lastof(lua_State *lua) {
+tb_int_t xm_utf8_len(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
 
-    // get string
-    size_t nstr = 0;
-    tb_char_t const *cstr = luaL_checklstring(lua, 1, &nstr);
+    size_t len;
+    tb_char_t const* s = luaL_checklstring(lua, 1, &len);
+    lua_Integer posi = xm_utf8_posrelat((tb_long_t)luaL_optinteger(lua, 2, 1), len);
+    lua_Integer posj = xm_utf8_posrelat((tb_long_t)luaL_optinteger(lua, 3, -1), len);
+    tb_bool_t lax = lua_toboolean(lua, 4);
+    luaL_argcheck(lua, 1 <= posi && --posi <= (lua_Integer)len, 2, "initial position out of bounds");
+    luaL_argcheck(lua, --posj < (lua_Integer)len, 3, "final position out of bounds");
 
-    // get substring
-    size_t nsubstr = 0;
-    tb_char_t const *csubstr = luaL_checklstring(lua, 2, &nsubstr);
-
-    // lastof it
-    tb_long_t char_pos = xm_utf8_lastof_impl(cstr, nstr, csubstr, nsubstr);
-    if (char_pos > 0) {
-        lua_pushinteger(lua, char_pos);
-    } else {
+    tb_size_t errpos = 0;
+    tb_long_t n = xm_utf8_len_impl(s, len, (tb_long_t)posi + 1, (tb_long_t)posj + 1, !lax, &errpos);
+    if (n < 0) {
         lua_pushnil(lua);
+        lua_pushinteger(lua, errpos);
+        return 2;
     }
+    lua_pushinteger(lua, n);
     return 1;
 }
