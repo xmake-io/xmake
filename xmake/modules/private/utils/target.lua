@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
+import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 
 -- Is this target has these tools?
 function has_tool(toolname, tools)
@@ -204,3 +205,62 @@ function config_targets(opt)
         end
     end
 end
+
+function get_target_package_libfiles(target, opt)
+    opt = opt or {}
+    local libfiles = {}
+    for _, pkg in ipairs(target:orderpkgs(opt)) do
+        if pkg:enabled() and pkg:get("libfiles") then
+            for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
+                local filename = path.filename(libfile)
+                if filename:endswith(".dll") or filename:endswith(".so") or filename:find("%.so[%.%d+]+$") or filename:endswith(".dylib") then
+                    table.insert(libfiles, libfile)
+                end
+            end
+        end
+    end
+    -- we can only reserve used libraries
+    if project.policy("install.strip_packagelibs") then
+        if target:is_binary() or target:is_shared() or opt.binaryfile then
+            -- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
+            -- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
+            local deplibs = get_depend_libraries(opt.binaryfile or target:targetfile(), {
+                plat = target:plat(), arch = target:arch(),
+                recursive = true, resolve_path = true, resolve_hint_paths = libfiles})
+            if deplibs then
+                local depends = hashset.from(deplibs)
+                table.remove_if(libfiles, function (_, libfile) return not depends:has(libfile) end)
+            end
+        end
+    end
+    return libfiles
+end
+
+-- get target libraries
+function get_target_libfiles(target, libfiles, binaryfile, refs, opt)
+    if not refs[target] then
+        local plaindeps = target:get("deps")
+        if plaindeps then
+            for _, depname in ipairs(plaindeps) do
+                local dep = target:dep(depname)
+                if dep then
+                    if dep:is_shared() then
+                        local depfile = dep:targetfile()
+                        if os.isfile(depfile) then
+                            table.insert(libfiles, depfile)
+                        end
+                        get_target_libfiles(dep, libfiles, dep:targetfile(), refs, opt)
+                    elseif dep:is_library() then
+                        get_target_libfiles(dep, libfiles, binaryfile, refs, opt)
+                    end
+                end
+            end
+        end
+        table.join2(libfiles, get_target_package_libfiles(target, table.join({binaryfile = binaryfile}, opt)))
+        refs[target] = true
+    end
+end
+
+
+
+

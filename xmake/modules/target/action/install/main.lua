@@ -23,6 +23,7 @@ import("core.base.hashset")
 import("core.project.project")
 import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("utils.binary.rpath", {alias = "rpath_utils"})
+import("private.utils.target", {alias = "target_utils"})
 
 function _get_target_libdir(target, opt)
     if not opt.installdir then
@@ -48,63 +49,7 @@ function _get_target_includedir(target, opt)
     return path.join(opt.installdir, opt.includedir)
 end
 
-function _get_target_package_libfiles(target, opt)
-    opt = opt or {}
-    if not opt.packages then
-        return {}
-    end
-    local libfiles = {}
-    for _, pkg in ipairs(target:orderpkgs(opt)) do
-        if pkg:enabled() and pkg:get("libfiles") then
-            for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
-                local filename = path.filename(libfile)
-                if filename:endswith(".dll") or filename:endswith(".so") or filename:find("%.so[%.%d+]+$") or filename:endswith(".dylib") then
-                    table.insert(libfiles, libfile)
-                end
-            end
-        end
-    end
-    -- we can only reserve used libraries
-    if project.policy("install.strip_packagelibs") then
-        if target:is_binary() or target:is_shared() or opt.binaryfile then
-            -- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
-            -- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
-            local deplibs = get_depend_libraries(opt.binaryfile or target:targetfile(), {
-                plat = target:plat(), arch = target:arch(),
-                recursive = true, resolve_path = true, resolve_hint_paths = libfiles})
-            if deplibs then
-                local depends = hashset.from(deplibs)
-                table.remove_if(libfiles, function (_, libfile) return not depends:has(libfile) end)
-            end
-        end
-    end
-    return libfiles
-end
 
--- get target libraries
-function _get_target_libfiles(target, libfiles, binaryfile, refs, opt)
-    if not refs[target] then
-        local plaindeps = target:get("deps")
-        if plaindeps then
-            for _, depname in ipairs(plaindeps) do
-                local dep = target:dep(depname)
-                if dep then
-                    if dep:is_shared() then
-                        local depfile = dep:targetfile()
-                        if os.isfile(depfile) then
-                            table.insert(libfiles, depfile)
-                        end
-                        _get_target_libfiles(dep, libfiles, dep:targetfile(), refs, opt)
-                    elseif dep:is_library() then
-                        _get_target_libfiles(dep, libfiles, binaryfile, refs, opt)
-                    end
-                end
-            end
-        end
-        table.join2(libfiles, _get_target_package_libfiles(target, table.join({binaryfile = binaryfile}, opt)))
-        refs[target] = true
-    end
-end
 
 -- copy file with symlinks
 function _copy_file_with_symlinks(srcfile, outputdir)
@@ -162,7 +107,7 @@ function _install_shared_libraries(target, opt)
 
     -- get all dependent shared libraries
     local libfiles = {}
-    _get_target_libfiles(target, libfiles, target:targetfile(), {}, opt)
+    target_utils.get_target_libfiles(target, libfiles, target:targetfile(), {}, opt)
     libfiles = table.unique(libfiles)
 
     -- do install

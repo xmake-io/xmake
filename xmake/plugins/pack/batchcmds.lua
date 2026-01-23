@@ -25,7 +25,9 @@ import("core.project.project")
 import("utils.archive")
 import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("private.utils.batchcmds")
+import("private.utils.target", {alias = "target_utils"})
 
+-- get target bindir
 function _get_target_bindir(package, target)
     local bindir = package:bindir()
     local prefixdir = target:prefixdir()
@@ -35,6 +37,7 @@ function _get_target_bindir(package, target)
     return path.normalize(bindir)
 end
 
+-- get target libdir
 function _get_target_libdir(package, target)
     local libdir = package:libdir()
     local prefixdir = target:prefixdir()
@@ -44,6 +47,7 @@ function _get_target_libdir(package, target)
     return path.normalize(libdir)
 end
 
+-- get target includedir
 function _get_target_includedir(package, target)
     local includedir = package:includedir()
     local prefixdir = target:prefixdir()
@@ -53,6 +57,7 @@ function _get_target_includedir(package, target)
     return path.normalize(includedir)
 end
 
+-- get target installdir
 function _get_target_installdir(package, target)
     local installdir = package:installdir()
     local prefixdir = target:prefixdir()
@@ -62,60 +67,9 @@ function _get_target_installdir(package, target)
     return path.normalize(installdir)
 end
 
-function _get_target_package_libfiles(target, opt)
-    opt = opt or {}
-    local libfiles = {}
-    for _, pkg in ipairs(target:orderpkgs(opt)) do
-        if pkg:enabled() and pkg:get("libfiles") then
-            for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
-                local filename = path.filename(libfile)
-                if filename:endswith(".dll") or filename:endswith(".so") or filename:find("%.so[%.%d+]+$") or filename:endswith(".dylib") then
-                    table.insert(libfiles, libfile)
-                end
-            end
-        end
-    end
-    -- we can only reserve used libraries
-    if project.policy("install.strip_packagelibs") then
-        if target:is_binary() or target:is_shared() or opt.binaryfile then
-            -- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
-            -- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
-            local deplibs = get_depend_libraries(opt.binaryfile or target:targetfile(), {
-                plat = target:plat(), arch = target:arch(),
-                recursive = true, resolve_path = true, resolve_hint_paths = libfiles})
-            if deplibs then
-                local depends = hashset.from(deplibs)
-                table.remove_if(libfiles, function (_, libfile) return not depends:has(libfile) end)
-            end
-        end
-    end
-    return libfiles
-end
 
--- get target libraries
-function _get_target_libfiles(target, libfiles, binaryfile, refs)
-    if not refs[target] then
-        local plaindeps = target:get("deps")
-        if plaindeps then
-            for _, depname in ipairs(plaindeps) do
-                local dep = target:dep(depname)
-                if dep then
-                    if dep:is_shared() then
-                        local depfile = dep:targetfile()
-                        if os.isfile(depfile) then
-                            table.insert(libfiles, depfile)
-                        end
-                        _get_target_libfiles(dep, libfiles, dep:targetfile(), refs)
-                    elseif dep:is_library() then
-                        _get_target_libfiles(dep, libfiles, binaryfile, refs)
-                    end
-                end
-            end
-        end
-        table.join2(libfiles, _get_target_package_libfiles(target, {binaryfile = binaryfile}))
-        refs[target] = true
-    end
-end
+
+
 
 -- copy file with symlinks
 function _copy_file_with_symlinks(batchcmds_, srcfile, outputdir)
@@ -131,37 +85,10 @@ function _copy_file_with_symlinks(batchcmds_, srcfile, outputdir)
     end
 end
 
--- update install rpath, we can only get and update rpathdirs with `{installonly = true}`
--- e.g. add_rpathdirs("@loader_path/../lib", {installonly = true})
-function _update_target_install_rpath(target, batchcmds_, opt)
-    if target:is_plat("windows", "mingw") then
-        return
-    end
-    local package = opt.package
-    local bindir = _get_target_bindir(package, target)
-    local targetfile = path.join(bindir, target:filename())
-    if target:policy("install.rpath") then
-        batchcmds_:clean_rpath(targetfile, {plat = target:plat(), arch = target:arch()})
-        local result, sources = target:get_from("rpathdirs", "*")
-        if result and sources then
-            for idx, rpathdirs in ipairs(result) do
-                local source = sources[idx]
-                local extraconf = target:extraconf_from("rpathdirs", source)
-                if extraconf then
-                    for _, rpathdir in ipairs(rpathdirs) do
-                        local extra = extraconf[rpathdir]
-                        if extra and extra.installonly then
-                            batchcmds_:insert_rpath(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
+
 
 -- install target files
-function _install_target_files(target, batchcmds_, opt)
+function install_target_files(target, batchcmds_, opt)
     local package = opt.package
     local srcfiles, dstfiles = target:installfiles(_get_target_installdir(package, target))
     if srcfiles and dstfiles then
@@ -199,13 +126,13 @@ function _install_target_headers(target, batchcmds_, opt)
 end
 
 -- install target shared libraries
-function _install_target_shared_libraries(target, batchcmds_, opt)
+function install_target_shared_libraries(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
+    local bindir = opt.bindir or (target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target))
 
     -- get all dependent shared libraries
     local libfiles = {}
-    _get_target_libfiles(target, libfiles, target:targetfile(), {})
+    target_utils.get_target_libfiles(target, libfiles, target:targetfile(), {})
     libfiles = table.unique(libfiles)
 
     -- do install
@@ -251,13 +178,42 @@ function _uninstall_target_shared_libraries(target, batchcmds_, opt)
 
     -- get all dependent shared libraries
     local libfiles = {}
-    _get_target_libfiles(target, libfiles, target:targetfile(), {})
+    target_utils.get_target_libfiles(target, libfiles, target:targetfile(), {})
     libfiles = table.unique(libfiles)
 
     -- do uninstall
     for _, libfile in ipairs(libfiles) do
         local filename = path.filename(libfile)
         batchcmds_:rm(path.join(bindir, filename), {emptydirs = true})
+    end
+end
+
+-- update install rpath, we can only get and update rpathdirs with `{installonly = true}`
+-- e.g. add_rpathdirs("@loader_path/../lib", {installonly = true})
+function update_target_install_rpath(target, batchcmds, opt)
+    if target:is_plat("windows", "mingw") then
+        return
+    end
+    local package = opt.package
+    local bindir = _get_target_bindir(package, target)
+    local targetfile = path.join(bindir, target:filename())
+    if target:policy("install.rpath") then
+        batchcmds:clean_rpath(targetfile, {plat = target:plat(), arch = target:arch()})
+        local result, sources = target:get_from("rpathdirs", "*")
+        if result and sources then
+            for idx, rpathdirs in ipairs(result) do
+                local source = sources[idx]
+                local extraconf = target:extraconf_from("rpathdirs", source)
+                if extraconf then
+                    for _, rpathdir in ipairs(rpathdirs) do
+                        local extra = extraconf[rpathdir]
+                        if extra and extra.installonly then
+                            batchcmds:insert_rpath(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -269,8 +225,8 @@ function _on_target_installcmd_binary(target, batchcmds_, opt)
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
     end
-    _install_target_shared_libraries(target, batchcmds_, opt)
-    _update_target_install_rpath(target, batchcmds_, opt)
+    install_target_shared_libraries(target, batchcmds_, opt)
+    update_target_install_rpath(target, batchcmds_, opt)
 end
 
 -- on install shared target command
@@ -293,7 +249,7 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
     end
 
     _install_target_headers(target, batchcmds_, opt)
-    _install_target_shared_libraries(target, batchcmds_, opt)
+    install_target_shared_libraries(target, batchcmds_, opt)
 end
 
 -- on install static target command
@@ -358,7 +314,7 @@ function _on_target_installcmd(target, batchcmds_, opt)
     end
 
     -- install target files
-    _install_target_files(target, batchcmds_, opt)
+    install_target_files(target, batchcmds_, opt)
 end
 
 -- on uninstall binary target command
