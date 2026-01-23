@@ -591,6 +591,7 @@ $ xmake l
 
 <img src="https://raw.githubusercontent.com/xmake-io/xmake-idea/master/res/problem.gif" width="650px" />
 
+* [xmake-zed](https://github.com/xmake-io/xmake-zed) (thanks [@jeleferai](https://github.com/jeleferai))
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 
 * [xmake-visualstudio](https://github.com/HelloWorld886/xmake-visualstudio) (third-party, thanks [@HelloWorld886](https://github.com/HelloWorld886))

@@ -129,17 +129,20 @@ function label:splitext(text, width)
         local line = lines[idx]
         while #line > width do
             local size = 0
-            for i = 1, #line do
-                if bit.band(line:byte(i), 0xc0) ~= 0x80 then
-                    size = size + line:wcwidth(i)
-                    if size > width then
-                        table.insert(result, line:sub(1, i - 1))
-                        line = line:sub(i)
-                        break
-                    end
+            local split_idx = 0
+            for p, c in utf8.codes(line) do
+                local w = utf8.width(c)
+                size = size + w
+                if size > width then
+                    split_idx = p
+                    break
                 end
             end
-            if size <= width then
+
+            if split_idx > 0 then
+                table.insert(result, line:sub(1, split_idx - 1))
+                line = line:sub(split_idx)
+            else
                 break
             end
         end

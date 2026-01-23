@@ -132,6 +132,25 @@ function _get_makefile_type(verilator)
     return support_json, makefile_type
 end
 
+-- get the custom verilator flags
+--
+-- add_values("verilator.flags", "--x-assign", "fast")
+-- add_values("verilator.flags", {"--x-assign", "fast"}, {"--x-initial", "fast"})
+--
+-- https://github.com/xmake-io/xmake/issues/7239
+function _get_verilator_flags(target)
+    local result = {}
+    local flags = target:values("verilator.flags")
+    if flags then
+        for _, flag in ipairs(flags) do
+            table.join2(result, flag)
+        end
+    end
+    if #result > 0 then
+        return result
+    end
+end
+
 function config(target)
     local toolchain = assert(target:toolchain("verilator"), 'we need to set_toolchains("verilator") in target("%s")',
         target:name())
@@ -142,7 +161,7 @@ function config(target)
     local makefile = path.join(tmpdir, "test." .. makefile_type)
     local sourcefile = path.join(tmpdir, "main.v")
     local argv = { "--cc", "--make", makefile_type, "--prefix", "test", "--Mdir", tmpdir, "main.v" }
-    local flags = target:values("verilator.flags")
+    local flags = _get_verilator_flags(target)
     local switches_flags = hashset.of("sc", "coverage", "timing", "trace", "trace-vcd", "trace-fst", "trace-saif",
         "threads")
     if flags then
@@ -283,7 +302,7 @@ function build_cppfiles(target, jobgraph, sourcebatch, opt)
     -- build verilog files
     depend.on_changed(function()
         local argv = { "--cc", "--make", makefile_type, "--prefix", targetname, "--Mdir", autogendir }
-        local flags = target:values("verilator.flags")
+        local flags = _get_verilator_flags(target)
         if flags then
             table.join2(argv, flags)
         end
@@ -348,7 +367,7 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     local dependfile = makefile .. ".d"
 
     local argv = { "--cc", "--make", makefile_type, "--prefix", targetname, "--Mdir", path(autogendir) }
-    local flags = target:values("verilator.flags")
+    local flags = _get_verilator_flags(target)
     if flags then
         table.join2(argv, flags)
     end

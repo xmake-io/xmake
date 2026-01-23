@@ -15,48 +15,38 @@
  * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
- * @file        lastof.c
+ * @file        byte.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * trace
- */
-#define TB_TRACE_MODULE_NAME "string_lastof"
-#define TB_TRACE_MODULE_DEBUG (0)
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-#include "../utf8/utf8.h"
+#include "utf8.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * private implementation
+ */
+static tb_bool_t xm_utf8_byte_cb(xm_utf8_int_t code, tb_cpointer_t udata) {
+    lua_State* lua = (lua_State*)udata;
+    tb_assert_and_check_return_val(lua, tb_false);
+
+    luaL_checkstack(lua, 1, "too many results");
+    lua_pushinteger(lua, code);
+    return tb_true;
+}
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/* lastof string (only support plain text)
- *
- * @param str             the string
- * @param substr          the substring
+/* utf8.byte(s, i [, j])
  */
-tb_int_t xm_string_lastof(lua_State *lua) {
-    tb_assert_and_check_return_val(lua, 0);
+tb_int_t xm_utf8_byte(lua_State* lua) {
+    size_t len;
+    tb_char_t const* s = luaL_checklstring(lua, 1, &len);
+    lua_Integer i = luaL_optinteger(lua, 2, 1);
+    lua_Integer j = luaL_optinteger(lua, 3, i);
 
-    // get string
-    size_t nstr = 0;
-    tb_char_t const *cstr = luaL_checklstring(lua, 1, &nstr);
-
-    // get substring
-    size_t nsubstr = 0;
-    tb_char_t const *csubstr = luaL_checklstring(lua, 2, &nsubstr);
-
-    // lastof it
-    tb_long_t char_pos = xm_utf8_lastof_impl(cstr, nstr, csubstr, nsubstr);
-    if (char_pos > 0) {
-        lua_pushinteger(lua, char_pos);
-    } else {
-        lua_pushnil(lua);
-    }
-    return 1;
+    return (tb_int_t)xm_utf8_byte_impl(s, len, (tb_long_t)i, (tb_long_t)j, xm_utf8_byte_cb, lua);
 }
