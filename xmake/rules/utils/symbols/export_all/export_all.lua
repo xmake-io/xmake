@@ -83,14 +83,13 @@ function _get_allsymbols_by_dumpbin(target, dumpbin, opt)
                                 allsymbols:insert(symbol)
                             end
                         elseif not symbol:startswith("__") then
-                            if export_classes or not symbol:startswith("?") then
-                                if export_classes then
-                                    if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
-                                        allsymbols:insert(symbol)
-                                    end
-                                else
+                            if export_classes then
+                                if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
                                     allsymbols:insert(symbol)
                                 end
+                            else
+                                -- e.g. _add, ?add@@YAHHH@Z
+                                allsymbols:insert(symbol)
                             end
                         end
                     end
@@ -129,14 +128,13 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
                                 allsymbols:insert(symbol)
                             end
                         elseif not symbol:startswith("__") then
-                            if export_classes or not symbol:startswith("?") then
-                                if export_classes then
-                                    if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
-                                        allsymbols:insert(symbol)
-                                    end
-                                else
+                            if export_classes then
+                                if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
                                     allsymbols:insert(symbol)
                                 end
+                            else
+                                -- e.g. _add, ?add@@YAHHH@Z
+                                allsymbols:insert(symbol)
                             end
                         end
                     end
@@ -180,14 +178,13 @@ function _get_allsymbols_by_readsyms(target, opt)
                                         allsymbols:insert(symbol)
                                     end
                                 elseif not symbol:startswith("__") then
-                                    if export_classes or not symbol:startswith("?") then
-                                        if export_classes then
-                                            if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
-                                                allsymbols:insert(symbol)
-                                            end
-                                        else
+                                    if export_classes then
+                                        if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
                                             allsymbols:insert(symbol)
                                         end
+                                    else
+                                        -- e.g. _add, ?add@@YAHHH@Z
+                                        allsymbols:insert(symbol)
                                     end
                                 end
                             end
