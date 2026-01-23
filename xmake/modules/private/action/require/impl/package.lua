@@ -956,7 +956,11 @@ function _load_package(packagename, requireinfo, opt)
         local tips
         local possible_package = get_possible_package(packagename)
         if possible_package then
-            tips = string.format(", maybe ${bright}%s %s${clear} in %s", possible_package.name, possible_package.version, possible_package.reponame)
+            local possible_name = possible_package.name
+            if possible_package.version then
+                possible_name = possible_name .. " " .. possible_package.version
+            end
+            tips = string.format(", maybe ${bright}%s${clear} in %s", possible_name, possible_package.reponame)
         end
         cprint("  -> %s%s", packagename, tips or "")
         raise("package(%s) not found!", packagename)
