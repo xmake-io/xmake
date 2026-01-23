@@ -30,7 +30,6 @@ function _get_apis()
     ,   "target.add_arflags"
     ,   "target.add_shflags"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
-    ,   "target.add_unitdirs"
     ,   "target.add_includedirs"
     ,   "target.add_defines"
     ,   "target.add_undefines"
@@ -42,7 +41,6 @@ function _get_apis()
     ,   "option.add_arflags"
     ,   "option.add_shflags"
     ,   "option.add_rpathdirs"
-    ,   "option.add_unitdirs"
     ,   "option.add_includedirs"
     ,   "option.add_defines"
     ,   "option.add_undefines"
@@ -55,7 +53,6 @@ function _get_apis()
     ,   "package.add_shflags"
     ,   "package.add_rpathdirs"
     ,   "package.add_linkdirs"
-    ,   "package.add_unitdirs"
     ,   "package.add_includedirs"
     ,   "package.add_defines"
     ,   "package.add_undefines"
@@ -68,26 +65,21 @@ function _get_apis()
     ,   "toolchain.add_shflags"
     ,   "toolchain.add_rpathdirs"
     ,   "toolchain.add_linkdirs"
-    ,   "toolchain.add_unitdirs"
     ,   "toolchain.add_includedirs"
     ,   "toolchain.add_defines"
     ,   "toolchain.add_undefines"
     ,   "toolchain.set_languages"
         -- target.set_xxx
     ,   "target.set_languages"
-    ,   "target.set_objectdirs"
     ,   "target.set_exceptions"
         -- option.set_xxx
     ,   "option.set_languages"
-    ,   "option.set_objectdirs"
     ,   "option.set_exceptions"
         -- package.set_xxx
     ,   "package.set_languages"
-    ,   "package.set_objectdirs"
     ,   "package.set_exceptions"
         -- toolchain.set_xxx
     ,   "toolchain.set_languages"
-    ,   "toolchain.set_objectdirs"
     ,   "toolchain.set_exceptions"
     }
     apis.paths = {

@@ -107,11 +107,6 @@ function nf_includedir(self, includedir)
     return {"-Fi" .. path.translate(includedir)}
 end
 
--- make the unitdir flag
-function nf_unitdir(self, unitdir)
-    return {"-Fu" .. path.translate(unitdir)}
-end
-
 -- make the define flag
 function nf_define(self, macro)
     return {"-d" .. macro}
@@ -144,14 +139,15 @@ function nf_exception(self, exp)
     return {exp == "off" and "-Sx-" or "-Sx"}
 end
 
--- make the objectdir flag
-function nf_objectdir(self, objectdir)
-    return {"-FU" .. path.translate(objectdir)}
-end
-
 -- make the build arguments list
-function buildargv(self, sourcefiles, targetkind, targetfile, flags)
-    return self:program(), table.join(flags, "-o" .. targetfile, sourcefiles)
+function buildargv(self, sourcefiles, targetkind, targetfile, flags, opt)
+    opt = opt or {}
+    local extraflags = {}
+    local objectdir = opt.target and opt.target:objectdir()
+    if objectdir then
+        table.insert(extraflags, "-FU" .. path.translate(objectdir))
+    end
+    return self:program(), table.join(flags, extraflags, "-o" .. targetfile, sourcefiles)
 end
 
 -- build the target file
