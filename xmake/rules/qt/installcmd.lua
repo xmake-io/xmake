@@ -19,7 +19,11 @@
 --
 
 -- imports
+import("core.project.project")
+import("core.base.hashset")
+import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("rules.qt.install.windeployqt", {rootdir = os.programdir()})
+import("plugins.pack.batchcmds", {alias = "pack_batchcmds", rootdir = os.programdir()})
 
 -- install application for xpack
 function main(target, batchcmds, opt)
@@ -73,6 +77,9 @@ function main(target, batchcmds, opt)
         -- copy all deployed files and directories from deploydir to root install directory via batchcmds
         local installdir = package:installdir()
         batchcmds:cp(path.join(deploydir, "*"), installdir, {rootdir = deploydir})
+
+        -- install other shared libraries (e.g. from packages)
+        pack_batchcmds.install_target_shared_libraries(target, batchcmds, {bindir = installdir, package = package})
     else
         -- Linux: copy all files from bindir (plugins, translations, etc. should be handled separately)
         local bindir = target:bindir()
@@ -80,7 +87,17 @@ function main(target, batchcmds, opt)
             local package_bindir = package:installdir("bin")
             -- copy all files and directories from bindir
             batchcmds:cp(path.join(bindir, "*"), package_bindir, {rootdir = bindir})
+            
+            -- install shared libraries
+            local package_libdir = package:installdir("lib")
+            pack_batchcmds.install_target_shared_libraries(target, batchcmds, {bindir = package_libdir, package = package})
         end
     end
-end
 
+    -- install target files (resources, etc.)
+    -- for macosx, we have already installed them in deploy rule
+    if not target:is_plat("macosx") then
+        pack_batchcmds.install_target_files(target, batchcmds, opt)
+        pack_batchcmds.update_target_install_rpath(target, batchcmds, opt)
+    end
+end

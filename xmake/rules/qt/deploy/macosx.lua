@@ -29,6 +29,7 @@ import("lib.detect.find_path")
 import("detect.sdks.find_qt")
 import("utils.progress")
 import("private.tools.codesign")
+import("private.utils.target", {alias = "target_utils"})
 
 -- save Info.plist
 function _save_info_plist(target, info_plist_file)
@@ -74,6 +75,38 @@ function _save_info_plist(target, info_plist_file)
 </plist>]], name, name, name, name, target_minver or (macos.version():major() .. "." .. macos.version():minor())))
 end
 
+-- copy install files to Contents/Resources
+function _install_target_files(target, target_contents)
+    local srcfiles, dstfiles = target:installfiles(path.join(target_contents, "Resources"))
+    if srcfiles and dstfiles then
+        for idx, srcfile in ipairs(srcfiles) do
+            os.cp(srcfile, dstfiles[idx])
+        end
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local srcfiles, dstfiles = dep:installfiles(path.join(target_contents, "Resources"), {interface = true})
+        if srcfiles and dstfiles then
+            for idx, srcfile in ipairs(srcfiles) do
+                os.cp(srcfile, dstfiles[idx])
+            end
+        end
+    end
+end
+
+-- copy package libraries to Contents/Frameworks
+function _install_target_frameworks(target, target_contents)
+    local libfiles = {}
+    target_utils.get_target_libfiles(target, libfiles, target:targetfile(), {})
+    libfiles = table.unique(libfiles)
+    if #libfiles > 0 then
+        local frameworks_dir = path.join(target_contents, "Frameworks")
+        os.mkdir(frameworks_dir)
+        for _, libfile in ipairs(libfiles) do
+            os.cp(libfile, path.join(frameworks_dir, path.filename(libfile)))
+        end
+    end
+end
+
 -- deploy application package for macosx
 function main(target, opt)
 
@@ -102,11 +135,18 @@ function main(target, opt)
     -- generate target app
     local target_contents = path.join(target_app, "Contents")
     os.tryrm(target_app)
-    os.cp(target:targetfile(), path.join(target_contents, "MacOS", target:basename()))
+    local target_binary = path.join(target_contents, "MacOS", target:basename())
+    os.cp(target:targetfile(), target_binary)
     os.cp(path.join(os.programdir(), "scripts", "PkgInfo"), target_contents)
 
     -- generate Info.plist
     _save_info_plist(target, path.join(target_contents, "Info.plist"))
+
+    -- copy install files to Contents/Resources
+    _install_target_files(target, target_contents)
+
+    -- copy package libraries to Contents/Frameworks
+    _install_target_frameworks(target, target_contents)
 
     -- find qml directory
     local qmldir = target:values("qt.deploy.qmldir")
