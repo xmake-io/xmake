@@ -151,7 +151,7 @@ function buildargv(self, sourcefiles, targetkind, targetfile, flags, opt)
 end
 
 -- build the target file
-function build(self, sourcefiles, targetkind, targetfile, flags)
+function build(self, sourcefiles, targetkind, targetfile, flags, opt)
     os.mkdir(path.directory(targetfile))
-    os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags))
+    os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags, opt))
 end
