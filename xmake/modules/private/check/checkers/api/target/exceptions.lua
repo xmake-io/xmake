@@ -23,5 +23,10 @@ import(".api_checker")
 
 function main(opt)
     opt = opt or {}
-    api_checker.check_targets("exceptions", table.join(opt, {values = {"none", "cxx", "objc", "no-cxx", "no-objc"}}))
+
+    local acceptable_values = { "none", "cxx", "objc", "no-cxx", "no-objc", "fpc" }
+    api_checker.check_targets(
+        "exceptions",
+        table.join(opt, { values = acceptable_values })
+    )
 end
