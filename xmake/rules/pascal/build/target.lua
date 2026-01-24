@@ -46,7 +46,7 @@ function build_sourcefiles(target, sourcebatch, opt)
     local compinst = compiler.load(sourcekind, {target = target})
 
     -- get compile flags
-    local compflags = compinst:compflags({target = target})
+    local compflags = compinst:compflags({ target = target })
 
     -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
@@ -58,7 +58,7 @@ function build_sourcefiles(target, sourcebatch, opt)
     end
 
     -- trace progress into
-    progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", path.filename(targetfile))
+    progress.show(opt.progress, "${color.build.target}compiling.$(mode) %s", path.filename(targetfile))
 
     -- trace verbose info
     if verbose then
@@ -67,7 +67,9 @@ function build_sourcefiles(target, sourcebatch, opt)
 
     -- compile it
     dependinfo.files = {}
-    assert(compinst:build(sourcefiles, targetfile, {target = target, dependinfo = dependinfo, compflags = compflags}))
+    if not option.get("dry-run") then
+        assert(compinst:build(sourcefiles, targetfile, {target = target, dependinfo = dependinfo, compflags = compflags}))
+    end
 
     -- update files and values to the dependent file
     dependinfo.values = depvalues

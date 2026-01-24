@@ -40,7 +40,6 @@ language("pascal")
         ,   "target.undefines"
         ,   "target.includedirs"
         ,   "target.unitdirs"
-        ,   "target.objectdirs"
         ,   "target.exceptions"
         ,   "target.languages"
         ,   "target.optimize:check"
@@ -50,7 +49,6 @@ language("pascal")
         ,   "toolchain.languages"
         ,   "toolchain.defines"
         ,   "toolchain.undefines"
-        ,   "toolchain.objectdirs"
         ,   "toolchain.exceptions"
         }
     ,   binary = {
@@ -73,7 +71,6 @@ language("pascal")
         ,   "target.undefines"
         ,   "target.includedirs"
         ,   "target.unitdirs"
-        ,   "target.objectdirs"
         ,   "target.exceptions"
         ,   "target.languages"
         ,   "target.optimize:check"
@@ -83,7 +80,6 @@ language("pascal")
         ,   "toolchain.languages"
         ,   "toolchain.defines"
         ,   "toolchain.undefines"
-        ,   "toolchain.objectdirs"
         ,   "toolchain.exceptions"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
@@ -112,7 +108,6 @@ language("pascal")
         ,   "target.undefines"
         ,   "target.includedirs"
         ,   "target.unitdirs"
-        ,   "target.objectdirs"
         ,   "target.exceptions"
         ,   "target.languages"
         ,   "target.optimize:check"
@@ -122,7 +117,6 @@ language("pascal")
         ,   "toolchain.languages"
         ,   "toolchain.defines"
         ,   "toolchain.undefines"
-        ,   "toolchain.objectdirs"
         ,   "toolchain.exceptions"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
@@ -140,7 +134,7 @@ language("pascal")
                 ,   {nil, "pc",         "kv", nil,          "The Pascal Compiler"                }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"            }
-                ,   {nil, "pcld",       "kv", nil,          "The Pascal Linker"                  }
+                ,   {nil, "pcld",       "kv", nil,          "The Pascal Binary Linker"                  }
                 ,   {nil, "pcsh",       "kv", nil,          "The Pascal Shared Library Linker"   }
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"     }

@@ -141,21 +141,36 @@ end
 -- considering this applies to all dialects,
 -- make this only accept on/off
 function nf_exception(self, exp)
-    return {exp == "off" and "-Sx-" or "-Sx"}
+    return {exp == "none" and "-Sx-" or "-Sx"}
 end
 
--- make the objectdir flag
-function nf_objectdir(self, objectdir)
-    return {"-FU" .. path.translate(objectdir)}
+-- make the compile arguments list
+function buildargv(self, sourcefile, targetfile, flags, opt)
+    opt = opt or {}
+    local argv = table.join(flags)
+
+    -- -FE sets the output path for exes AND unit outputs (.o and .ppu).
+    -- (note that .o still get procuded for executables)
+    -- -FU sets the output path for unit outputs only, overriding -FE.
+    local objectdir = opt.target and opt.target:objectdir()
+    if objectdir then
+        table.insert(argv, "-FU" .. objectdir)
+    end
+
+    -- Practically -FE is the same as -o for executables (except that one
+    -- needs a folder path, one needs a file path)
+    if opt.target and opt.target:kind() == "binary" then
+        table.insert(argv, "-o" .. targetfile)
+    end
+
+    table.insert(argv, sourcefile)
+
+    return self:program(), argv
 end
 
--- make the build arguments list
-function buildargv(self, sourcefiles, targetkind, targetfile, flags)
-    return self:program(), table.join(flags, "-o" .. targetfile, sourcefiles)
-end
-
--- build the target file
-function build(self, sourcefiles, targetkind, targetfile, flags)
-    os.mkdir(path.directory(targetfile))
-    os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags))
+-- compile the target file
+-- @note: -s flag can be used to skip assembling+linking files.
+function build(self, sourcefile, targetfile, dependinfo, flags, opt)
+    opt = opt or {}
+    os.runv(buildargv(self, sourcefile, targetfile, flags, opt))
 end

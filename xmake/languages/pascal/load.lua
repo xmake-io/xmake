@@ -75,19 +75,15 @@ function _get_apis()
     ,   "toolchain.set_languages"
         -- target.set_xxx
     ,   "target.set_languages"
-    ,   "target.set_objectdirs"
     ,   "target.set_exceptions"
         -- option.set_xxx
     ,   "option.set_languages"
-    ,   "option.set_objectdirs"
     ,   "option.set_exceptions"
         -- package.set_xxx
     ,   "package.set_languages"
-    ,   "package.set_objectdirs"
     ,   "package.set_exceptions"
         -- toolchain.set_xxx
     ,   "toolchain.set_languages"
-    ,   "toolchain.set_objectdirs"
     ,   "toolchain.set_exceptions"
     }
     apis.paths = {
