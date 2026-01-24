@@ -53,6 +53,32 @@ function _get_sourcefiles_map(target, sourcefiles_map)
     end
 end
 
+function _try_add_symbol(allsymbols, symbol, target, opt)
+    opt = opt or {}
+    local export_classes = opt.export_classes
+    local export_filter = opt.export_filter
+    -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
+    if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
+        symbol = symbol:sub(2)
+    end
+    if export_filter then
+        if export_filter(symbol, {objectfile = opt.objectfile, sourcefile = opt.sourcefile}) then
+            allsymbols:insert(symbol)
+        end
+    else
+        if not symbol:startswith("__") then
+            if export_classes then
+                if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
+                    allsymbols:insert(symbol)
+                end
+            else
+                -- e.g. _add, ?add@@YAHHH@Z
+                allsymbols:insert(symbol)
+            end
+        end
+    end
+end
+
 -- use dumpbin to get all symbols from object files
 function _get_allsymbols_by_dumpbin(target, dumpbin, opt)
     opt = opt or {}
@@ -74,24 +100,12 @@ function _get_allsymbols_by_dumpbin(target, dumpbin, opt)
                     local symbol = line:match(".*External%s+| (.*)")
                     if symbol then
                         symbol = symbol:split('%s')[1]
-                        -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
-                        if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
-                            symbol = symbol:sub(2)
-                        end
-                        if export_filter then
-                            if export_filter(symbol, {objectfile = objectfile, sourcefile = sourcefile}) then
-                                allsymbols:insert(symbol)
-                            end
-                        elseif not symbol:startswith("__") then
-                            if export_classes then
-                                if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
-                                    allsymbols:insert(symbol)
-                                end
-                            else
-                                -- e.g. _add, ?add@@YAHHH@Z
-                                allsymbols:insert(symbol)
-                            end
-                        end
+                        _try_add_symbol(allsymbols, symbol, target, {
+                            export_classes = export_classes,
+                            export_filter = export_filter,
+                            objectfile = objectfile,
+                            sourcefile = sourcefile
+                        })
                     end
                 end
             end
@@ -119,24 +133,12 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
                     local splitinfo = line:split("%s")
                     local symbol = splitinfo[#splitinfo]
                     if symbol then
-                        -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
-                        if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
-                            symbol = symbol:sub(2)
-                        end
-                        if export_filter then
-                            if export_filter(symbol, {objectfile = objectfile, sourcefile = sourcefile}) then
-                                allsymbols:insert(symbol)
-                            end
-                        elseif not symbol:startswith("__") then
-                            if export_classes then
-                                if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
-                                    allsymbols:insert(symbol)
-                                end
-                            else
-                                -- e.g. _add, ?add@@YAHHH@Z
-                                allsymbols:insert(symbol)
-                            end
-                        end
+                        _try_add_symbol(allsymbols, symbol, target, {
+                            export_classes = export_classes,
+                            export_filter = export_filter,
+                            objectfile = objectfile,
+                            sourcefile = sourcefile
+                        })
                     end
                 end
             end
@@ -169,24 +171,11 @@ function _get_allsymbols_by_readsyms(target, opt)
                             -- skip data (D/d), bss (B/b), other sections (S/s), and undefined (U) symbols
                             if sym.type == "T" or sym.type == "t" then
                                 local symbol = sym.name
-                                -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
-                                if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
-                                    symbol = symbol:sub(2)
-                                end
-                                if export_filter then
-                                    if export_filter(symbol, {sourcefile = sourcefile}) then
-                                        allsymbols:insert(symbol)
-                                    end
-                                elseif not symbol:startswith("__") then
-                                    if export_classes then
-                                        if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
-                                            allsymbols:insert(symbol)
-                                        end
-                                    else
-                                        -- e.g. _add, ?add@@YAHHH@Z
-                                        allsymbols:insert(symbol)
-                                    end
-                                end
+                                _try_add_symbol(allsymbols, symbol, target, {
+                                    export_classes = export_classes,
+                                    export_filter = export_filter,
+                                    sourcefile = sourcefile
+                                })
                             end
                         end
                     end
@@ -258,4 +247,3 @@ function main(target, opt)
 
     end, {dependfile = dependfile, files = target:objectfiles(), changed = target:is_rebuilt()})
 end
-
