@@ -20,7 +20,10 @@
 
 rule("c.build.pcheader")
     on_config(function (target, opt)
-        import("private.action.build.pcheader").config(target, "c", opt)
+        import("private.action.build.pcheader")
+        if not pcheader.config(target, "c", opt) then
+            target:rule_enable("c.build.pcheader", false)
+        end
     end)
 
     before_build(function (target, jobgraph, opt)
@@ -31,7 +34,10 @@ rule("c.build.pcheader")
 
 rule("c++.build.pcheader")
     on_config(function (target, opt)
-        import("private.action.build.pcheader").config(target, "cxx", opt)
+        import("private.action.build.pcheader")
+        if not pcheader.config(target, "cxx", opt) then
+            target:rule_enable("c++.build.pcheader", false)
+        end
     end)
 
     -- If the current target has a C++ modules file,
