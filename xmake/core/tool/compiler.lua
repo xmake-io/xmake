@@ -203,6 +203,73 @@ function compiler.load(sourcekind, target)
     return instance
 end
 
+--[[
+-- build the source files (compile and link)
+function compiler:build(sourcefiles, targetfile, opt)
+    opt = opt or {}
+    local target = opt.target or self:target()
+    if not opt.target and target then
+        opt = table.copy(opt)
+        opt.target = target
+    end
+
+    -- get compile flags
+    local compflags = opt.compflags
+    if not compflags then
+        -- patch sourcefile to get flags of the given source file
+        if type(sourcefiles) == "string" then
+            opt.sourcefile = sourcefiles
+        end
+        compflags = self:compflags(opt)
+    end
+
+    -- make flags
+    local flags = compflags
+    if target then
+        flags = table.join(flags, target:linkflags())
+    end
+
+    -- get target kind
+    local targetkind = opt.targetkind
+    if not targetkind and target and target.targetkind then
+        targetkind = target:kind()
+    end
+    return sandbox.load(self:_tool().build, self:_tool(), sourcefiles, targetkind or "binary", targetfile, flags, opt)
+end
+
+-- get the build arguments list (compile and link)
+function compiler:buildargv(sourcefiles, targetfile, opt)
+    opt = opt or {}
+    local target = opt.target or self:target()
+    if not opt.target and target then
+        opt = table.copy(opt)
+        opt.target = target
+    end
+
+    -- get compile flags
+    local compflags = opt.compflags
+    if not compflags then
+        -- patch sourcefile to get flags of the given source file
+        if type(sourcefiles) == "string" then
+            opt.sourcefile = sourcefiles
+        end
+        compflags = self:compflags(opt)
+    end
+
+    -- make flags
+    local flags = compflags
+    if target then
+        flags = table.join(flags, target:linkflags())
+    end
+
+    -- get target kind
+    local targetkind = opt.targetkind
+    if not targetkind and target and target.targetkind then
+        targetkind = target:kind()
+    end
+    return self:_tool():buildargv(sourcefiles, targetkind or "binary", targetfile, flags, opt)
+end]]
+
 -- build the source files (compile and link)
 function compiler:build(sourcefiles, targetfile, opt)
     opt = opt or {}
@@ -266,9 +333,15 @@ end
 
 -- compile the source files
 function compiler:compile(sourcefiles, objectfile, opt)
+    opt = opt or {}
+    --[[
+    local target = opt.target or self:target()
+    if not opt.target and target then
+        opt = table.copy(opt)
+        opt.target = target
+    end]]
 
     -- get compile flags
-    opt = opt or {}
     local compflags = opt.compflags
     if not compflags then
         -- patch sourcefile to get flags of the given source file
@@ -289,9 +362,13 @@ end
 
 -- get the compile arguments list
 function compiler:compargv(sourcefiles, objectfile, opt)
-
-    -- init options
     opt = opt or {}
+    --[[
+    local target = opt.target or self:target()
+    if not opt.target and target then
+        opt = table.copy(opt)
+        opt.target = target
+    end]]
 
     -- get compile flags
     local compflags = opt.compflags

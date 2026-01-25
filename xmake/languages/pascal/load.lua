@@ -30,6 +30,8 @@ function _get_apis()
     ,   "target.add_arflags"
     ,   "target.add_shflags"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
+    ,   "target.add_defines"
+    ,   "target.add_undefines"
         -- option.add_xxx
     ,   "option.add_links"
     ,   "option.add_syslinks"
@@ -38,6 +40,9 @@ function _get_apis()
     ,   "option.add_arflags"
     ,   "option.add_shflags"
     ,   "option.add_rpathdirs"
+    ,   "option.add_includedirs"
+    ,   "option.add_defines"
+    ,   "option.add_undefines"
         -- package.add_xxx
     ,   "package.add_links"
     ,   "package.add_syslinks"
@@ -47,6 +52,9 @@ function _get_apis()
     ,   "package.add_shflags"
     ,   "package.add_rpathdirs"
     ,   "package.add_linkdirs"
+    ,   "package.add_includedirs"
+    ,   "package.add_defines"
+    ,   "package.add_undefines"
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
     ,   "toolchain.add_syslinks"
@@ -56,10 +64,14 @@ function _get_apis()
     ,   "toolchain.add_shflags"
     ,   "toolchain.add_rpathdirs"
     ,   "toolchain.add_linkdirs"
+    ,   "toolchain.add_includedirs"
+    ,   "toolchain.add_defines"
+    ,   "toolchain.add_undefines"
     }
     apis.paths = {
         -- target.add_xxx
         "target.add_linkdirs"
+    ,   "target.add_includedirs"
     ,   "target.add_frameworkdirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
@@ -70,5 +82,3 @@ end
 function main()
     return {apis = _get_apis()}
 end
-
-
