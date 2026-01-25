@@ -30,7 +30,6 @@ function _get_apis()
     ,   "target.add_arflags"
     ,   "target.add_shflags"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
-    ,   "target.add_includedirs"
     ,   "target.add_defines"
     ,   "target.add_undefines"
         -- option.add_xxx
@@ -72,6 +71,7 @@ function _get_apis()
     apis.paths = {
         -- target.add_xxx
         "target.add_linkdirs"
+    ,   "target.add_includedirs"
     ,   "target.add_frameworkdirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
