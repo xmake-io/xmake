@@ -20,18 +20,32 @@
 
 rule("objc.build.pcheader")
     on_config(function (target, opt)
-        import("private.action.build.pcheader").config(target, "m", opt)
+        import("private.action.build.pcheader")
+        if not pcheader.config(target, "m", opt) then
+            target:rule_enable("objc.build.pcheader", false)
+        end
     end)
-    before_prepare(function (target, jobgraph, opt)
-        import("private.action.build.pcheader").build(target, jobgraph, "m", opt)
+
+    before_build(function (target, jobgraph, opt)
+        if not os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR") then
+            import("private.action.build.pcheader").build(target, jobgraph, "m", opt)
+        end
     end, {jobgraph = true})
 
 rule("objc++.build.pcheader")
     add_orders("objc++.build.pcheader", "c++.build.modules.builder")
     on_config(function (target, opt)
-        import("private.action.build.pcheader").config(target, "mxx", opt)
+        import("private.action.build.pcheader")
+        if not pcheader.config(target, "mxx", opt) then
+            target:rule_enable("objc++.build.pcheader", false)
+        end
     end)
-    before_prepare(function (target, jobgraph, opt)
+
+    -- Since Objective-C typically does not have C++ modules,
+    -- we can always enable parallel compilation across targets
+    -- without blocking the compilation of other cpp files,
+    -- we perform this as much as possible during the before_build stage.
+    before_build(function (target, jobgraph, opt)
         import("private.action.build.pcheader").build(target, jobgraph, "mxx", opt)
     end, {jobgraph = true})
 

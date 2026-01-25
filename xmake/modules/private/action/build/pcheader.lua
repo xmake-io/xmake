@@ -51,6 +51,9 @@ function config(target, langkind, opt)
                 target:pcheaderfile_set(langkind, headerfile)
             end
         end
+
+        -- enable precompiled header?
+        return true
     end
 end
 
