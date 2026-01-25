@@ -68,19 +68,6 @@ function _get_apis()
     ,   "toolchain.add_includedirs"
     ,   "toolchain.add_defines"
     ,   "toolchain.add_undefines"
-    ,   "toolchain.set_languages"
-        -- target.set_xxx
-    ,   "target.set_languages"
-    ,   "target.set_exceptions"
-        -- option.set_xxx
-    ,   "option.set_languages"
-    ,   "option.set_exceptions"
-        -- package.set_xxx
-    ,   "package.set_languages"
-    ,   "package.set_exceptions"
-        -- toolchain.set_xxx
-    ,   "toolchain.set_languages"
-    ,   "toolchain.set_exceptions"
     }
     apis.paths = {
         -- target.add_xxx
