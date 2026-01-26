@@ -79,8 +79,20 @@ function build(target, jobgraph, langkind, opt)
         end
 
         if target:has_tool(sourcekind, "gcc", "gxx", "clang", "clang++") then
-            configs.force = configs.force or {}
-            configs.force.cxflags = (sourcekind == "cxx" and "-x c++-header" or "-x c-header")
+            local EXTENSIONS = {
+                [".h"] = true,
+                [".hh"] = true,
+                [".hpp"] = true,
+                [".hxx"] = true,
+                [".h++"] = true,
+                [".tcc"] = true,
+                [".inl"] = true,
+                [".ii"] = true
+            }
+            if not EXTENSIONS[path.extension(pcheaderfile):lower()] then
+                configs.force = configs.force or {}
+                configs.force.cxflags = (sourcekind == "cxx" and "-x c++-header" or "-x c-header")
+            end
         end
         local compflags = compinst:compflags({target = target, sourcefile = sourcefile, configs = configs})
 
