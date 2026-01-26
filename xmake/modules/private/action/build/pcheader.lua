@@ -95,9 +95,6 @@ function build(target, jobgraph, langkind, opt)
             if target:has_tool(sourcekind, "gcc", "gxx", "clang", "clang++") then
                 configs.force = configs.force or {}
                 configs.force.cxflags = (sourcekind == "cxx" and "-x c++-header" or "-x c-header")
-            elseif target:has_tool(sourcekind, "cl", "clang_cl") then
-                configs.force = configs.force or {}
-                configs.force.cxflags = (sourcekind == "cxx" and "/TP" or "/TC")
             end
         end
         local compflags = compinst:compflags({target = target, sourcefile = sourcefile, configs = configs})
@@ -144,7 +141,7 @@ function build(target, jobgraph, langkind, opt)
 
             -- do compile
             dependinfo.files = {}
-            assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+            assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags, pcheader = true}))
 
             -- update files and values to the dependent file
             dependinfo.values = depvalues

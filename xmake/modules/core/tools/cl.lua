@@ -671,7 +671,7 @@ function compargv(self, sourcefile, objectfile, flags, opt)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
-    if (extension:startswith(".h") or extension == ".inl") then
+    if opt.pcheader or (extension:startswith(".h") or extension == ".inl") then
         return _compargv_pch(self, sourcefile, objectfile, flags)
     end
 
