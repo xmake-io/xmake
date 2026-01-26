@@ -396,6 +396,8 @@ function tty.term()
                     term = "xterm"
                 elseif TERM == "cygwin" then
                     term = "cygwin"
+                elseif TERM:find("alacritty", 1, true) then
+                    term = "alacritty"
                 end
             end
         end
