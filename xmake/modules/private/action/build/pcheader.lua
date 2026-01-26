@@ -87,7 +87,10 @@ function build(target, jobgraph, langkind, opt)
                 [".h++"] = true,
                 [".tcc"] = true,
                 [".inl"] = true,
-                [".ii"] = true
+                [".ii"] = true,
+                [".ixx"] = true,
+                [".cppm"] = true,
+                [".mpp"] = true,
             }
             if not EXTENSIONS[path.extension(pcheaderfile):lower()] then
                 configs.force = configs.force or {}
@@ -140,7 +143,9 @@ function build(target, jobgraph, langkind, opt)
             dependinfo.files = {}
             assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
-            -- save dependent info
+            -- update files and values to the dependent file
+            dependinfo.values = depvalues
+            table.insert(dependinfo.files, sourcefile)
             depend.save(dependinfo, dependfile)
 
         end, {distcc = opt.distcc})
