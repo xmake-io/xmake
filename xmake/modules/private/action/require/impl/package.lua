@@ -444,7 +444,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
     local is_system = requireinfo.system
     if not version and not package:is_thirdparty() and is_system ~= true then
         local require_version = requireinfo.version
-        raise("package(%s): version(%s) not found!", package:displayname(), require_version)
+        raise("package(%s): version(%s) not found!", package:name(), require_version)
     end
     return version, source
 end
