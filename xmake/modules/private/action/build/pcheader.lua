@@ -20,7 +20,9 @@
 
 -- imports
 import("core.language.language")
-import("object", {alias = "build_objects"})
+import("core.tool.compiler")
+import("core.project.depend")
+import("private.cache.build_cache")
 
 function config(target, langkind, opt)
     local pcheaderfile = target:pcheaderfile(langkind)
@@ -59,13 +61,76 @@ end
 
 -- add batch jobs to build the precompiled header file
 function build(target, jobgraph, langkind, opt)
+    opt = opt or {}
     local pcheaderfile = target:pcheaderfile(langkind)
     if pcheaderfile then
         local sourcefile = pcheaderfile
         local objectfile = target:pcoutputfile(langkind)
         local dependfile = target:dependfile(objectfile)
         local sourcekind = language.langkinds()[langkind]
-        local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-        build_objects(target, jobgraph, sourcebatch, opt)
+
+        -- load compiler
+        local compinst = compiler.load(sourcekind, {target = target})
+
+        -- get compile flags
+        local configs = {}
+        if opt and opt.configs then
+            configs = table.clone(opt.configs)
+        end
+
+        if target:has_tool(sourcekind, "gcc", "gxx", "clang", "clang++") then
+            configs.force = configs.force or {}
+            configs.force.cxflags = (sourcekind == "cxx" and "-x c++-header" or "-x c-header")
+        end
+        local compflags = compinst:compflags({target = target, sourcefile = sourcefile, configs = configs})
+
+        -- filter flags
+        local compflags_new = {}
+        local skip = 0
+        for i, flag in ipairs(compflags) do
+            if skip > 0 then
+                skip = skip - 1
+            elseif flag == "-include-pch" then
+                skip = 1
+            elseif flag == "-include" then
+                local nextval = compflags[i + 1]
+                if nextval and (nextval:find(path.filename(pcheaderfile), 1, true) or path.absolute(nextval) == path.absolute(pcheaderfile)) then
+                    skip = 1
+                else
+                    table.insert(compflags_new, flag)
+                end
+            else
+                table.insert(compflags_new, flag)
+            end
+        end
+        compflags = compflags_new
+
+        -- add job
+        local jobname = target:fullname() .. "/pch/" .. sourcefile
+        jobgraph:add(jobname, function (index, total, jobopt)
+
+            -- trace
+            if not opt.quiet then
+                print(compinst:compcmd(sourcefile, objectfile, {compflags = compflags}))
+            end
+
+            -- load dependent info
+            local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile, {target = target}) or {})
+
+            -- need build this object?
+            local depvalues = {compinst:program(), compflags}
+            local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
+            if not depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
+                return
+            end
+
+            -- do compile
+            dependinfo.files = {}
+            assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+
+            -- save dependent info
+            depend.save(dependinfo, dependfile)
+
+        end, {distcc = opt.distcc})
     end
 end
