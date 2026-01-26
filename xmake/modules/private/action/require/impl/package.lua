@@ -439,7 +439,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
             return true
         end
     end)
-    assert(#package:schemes_orderlist() > 0, "package(%s): no available schemes", package:name())
+    assert(#package:schemes_orderlist() > 0, "package(%s): no available schemes with urls and versions", package:name())
 
     local is_system = requireinfo.system
     if not version and not package:is_thirdparty() and is_system ~= true then
