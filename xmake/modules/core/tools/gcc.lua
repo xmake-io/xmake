@@ -23,10 +23,10 @@ import("core.base.option")
 import("core.base.tty")
 import("core.base.colors")
 import("core.base.global")
-import("core.base.hashset")
 import("core.cache.memcache")
 import("core.project.config")
 import("core.project.policy")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 import("core.project.project")
 import("core.language.language")
 import("utils.progress")
@@ -981,30 +981,13 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     end
 end
 
--- check if the file is a header file
-function _is_header_file(extension)
-    if extension:startswith(".h") then
-        return true
-    end
-
-    local headerexts = _g.headerexts
-    if not headerexts then
-        local other_header_extensions = {
-            ".inl", ".ipp", ".tcc", ".tpl", ".inc"
-        }
-        headerexts = hashset.from(other_header_extensions)
-        _g.headerexts = headerexts
-    end
-    return headerexts:has(extension) or false
-end
-
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags, opt)
     opt = opt or {}
 
     -- is precompiled header or module files? remove the force includes.
     local extension = path.extension(sourcefile)
-    if _is_header_file(extension) then
+    if toolchain_utils.is_cxx_headerext(extension) then
         flags = _translate_flags_for_pch(self, flags)
     elseif support.has_module_extension(sourcefile, {extension = extension}) then
         flags = _translate_flags_for_mpp(self, flags)

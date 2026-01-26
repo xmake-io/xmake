@@ -26,6 +26,7 @@ import("core.cache.memcache")
 import("core.project.project")
 import("core.project.policy")
 import("core.language.language")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 import("private.tools.vstool")
 import("core.tools.cl.parse_include")
 import("private.cache.build_cache")
@@ -557,7 +558,7 @@ function _preprocess(program, argv, opt)
            flag:startswith("-external:") or flag:startswith("/external:") then
             skipped = 1
         -- @note we cannot ignore precompiled flags when compiling pch, @see https://github.com/xmake-io/xmake/issues/2885
-        elseif not extension:startswith(".h") and (
+        elseif not toolchain_utils.is_cxx_headerext(extension) and (
            flag:startswith("-Yu") or flag:startswith("/Yu") or
            flag:startswith("-FI") or flag:startswith("/FI") or
            flag:startswith("-Fp") or flag:startswith("/Fp")) then
@@ -671,7 +672,7 @@ function compargv(self, sourcefile, objectfile, flags, opt)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
-    if (extension:startswith(".h") or extension == ".inl") then
+    if toolchain_utils.is_cxx_headerext(extension) then
         return _compargv_pch(self, sourcefile, objectfile, flags)
     end
 

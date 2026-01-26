@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.base.semver")
+import("core.base.hashset")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
@@ -554,4 +555,22 @@ function get_sanitizer_flags(target, opt)
         result.shflags = ldflags
     end
     return result
+end
+
+-- check if the file is a c++ header file extension
+function is_cxx_headerext(extension)
+    -- prioritize .h* extensions to filter out most cases quickly
+    if extension:startswith(".h") then
+        return true
+    end
+
+    local headerexts = _g.headerexts
+    if not headerexts then
+        local other_header_extensions = {
+            ".inl", ".ipp", ".tcc", ".tpl", ".inc"
+        }
+        headerexts = hashset.from(other_header_extensions)
+        _g.headerexts = headerexts
+    end
+    return headerexts:has(extension) or false
 end
