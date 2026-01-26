@@ -314,7 +314,7 @@ function tty.shell()
 
                     if shell_name then
                         shell_name = shell_name:gsub("^-", "")
-                        for _, name in ipairs({"zsh", "bash", "fish", "nu", "elvish", "sh"}) do
+                        for _, name in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "sh"}) do
                             if shell_name == name then
                                 shell = name
                                 break
@@ -335,7 +335,7 @@ function tty.shell()
         if not shell then
             shell = os.getenv("SHELL")
             if shell then
-                for _, shellname in ipairs({"zsh", "bash", "fish", "nu", "elvish", "sh"}) do
+                for _, shellname in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "sh"}) do
                     if shell:find(shellname) then
                         shell = shellname
                         break
