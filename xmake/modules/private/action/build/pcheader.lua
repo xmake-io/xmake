@@ -78,23 +78,26 @@ function build(target, jobgraph, langkind, opt)
             configs = table.clone(opt.configs)
         end
 
-        if target:has_tool(sourcekind, "gcc", "gxx", "clang", "clang++") then
-            local EXTENSIONS = {
-                [".h"] = true,
-                [".hh"] = true,
-                [".hpp"] = true,
-                [".hxx"] = true,
-                [".h++"] = true,
-                [".tcc"] = true,
-                [".inl"] = true,
-                [".ii"] = true,
-                [".ixx"] = true,
-                [".cppm"] = true,
-                [".mpp"] = true,
-            }
-            if not EXTENSIONS[path.extension(pcheaderfile):lower()] then
+        local EXTENSIONS = {
+            [".h"] = true,
+            [".hh"] = true,
+            [".hpp"] = true,
+            [".hxx"] = true,
+            [".h++"] = true,
+            [".tcc"] = true,
+            [".inl"] = true,
+            [".ii"] = true,
+            [".ixx"] = true,
+            [".cppm"] = true,
+            [".mpp"] = true,
+        }
+        if not EXTENSIONS[path.extension(pcheaderfile):lower()] then
+            if target:has_tool(sourcekind, "gcc", "gxx", "clang", "clang++") then
                 configs.force = configs.force or {}
                 configs.force.cxflags = (sourcekind == "cxx" and "-x c++-header" or "-x c-header")
+            elseif target:has_tool(sourcekind, "cl", "clang_cl") then
+                configs.force = configs.force or {}
+                configs.force.cxflags = (sourcekind == "cxx" and "/TP" or "/TC")
             end
         end
         local compflags = compinst:compflags({target = target, sourcefile = sourcefile, configs = configs})
