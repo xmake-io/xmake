@@ -23,6 +23,7 @@ local tty = tty or {}
 
 -- load modules
 local io = require("base/io")
+local path = require("base/path")
 
 -- save metatable and builtin functions
 tty._term_mode = tty._term_mode or tty.term_mode
@@ -256,13 +257,85 @@ function tty.shell()
                 end
             end
         end
+        -- try to find the shell from the parent process (linux)
+        if not shell and os.host() == "linux" and os.isfile("/proc/self/stat") then
+            local pid = os.getpid()
+            for i = 1, 10 do
+                local stat = io.readfile("/proc/" .. pid .. "/stat")
+                if not stat or #stat == 0 then
+                    local tmpfile = path.join(os.tmpdir(), "xmake_stat_" .. os.getpid())
+                    os.execv("cp", {"/proc/" .. pid .. "/stat", tmpfile})
+                    stat = io.readfile(tmpfile)
+                    os.rm(tmpfile)
+                end
+
+                -- find last ')' to handle "pid (comm) state ppid"
+                local start = stat and stat:find(")", 1, true)
+                while start do
+                    local next_p = stat:find(")", start + 1, true)
+                    if not next_p then break end
+                    start = next_p
+                end
+
+                if start then
+                    local suffix = stat:sub(start + 1)
+                    local fields = {}
+                    for field in suffix:gmatch("%S+") do
+                        table.insert(fields, field)
+                        if #fields >= 2 then break end
+                    end
+
+                    local ppid = tonumber(fields[2])
+                    if not ppid or ppid == 0 then break end
+
+                    local shell_name = nil
+                    local shell_path = nil
+                    if os.isfile("/proc/" .. ppid .. "/exe") then
+                        local ok, link = pcall(os.readlink, "/proc/" .. ppid .. "/exe")
+                        if ok and link then
+                            shell_path = link
+                        end
+                    end
+                    if not shell_path and os.isfile("/proc/" .. ppid .. "/comm") then
+                        shell_name = io.readfile("/proc/" .. ppid .. "/comm")
+                        if not shell_name or #shell_name == 0 then
+                            local tmpfile = path.join(os.tmpdir(), "xmake_comm_" .. os.getpid())
+                            os.execv("cp", {"/proc/" .. ppid .. "/comm", tmpfile})
+                            shell_name = io.readfile(tmpfile)
+                            os.rm(tmpfile)
+                        end
+                        if shell_name then
+                            shell_name = shell_name:match("^%s*(.-)%s*$")
+                        end
+                    end
+                    if shell_path then
+                        shell_name = path.filename(shell_path)
+                    end
+
+                    if shell_name then
+                        shell_name = shell_name:gsub("^-", "")
+                        for _, name in ipairs({"zsh", "bash", "fish", "nu", "elvish", "sh"}) do
+                            if shell_name == name then
+                                shell = name
+                                break
+                            end
+                        end
+                        if shell then break end
+                    end
+                    pid = ppid
+                else
+                    break
+                end
+            end
+        end
+
         if not shell then
             shell = os.getenv("XMAKE_SHELL")
         end
         if not shell then
             shell = os.getenv("SHELL")
             if shell then
-                for _, shellname in ipairs({"zsh", "bash", "sh"}) do
+                for _, shellname in ipairs({"zsh", "bash", "fish", "nu", "elvish", "sh"}) do
                     if shell:find(shellname) then
                         shell = shellname
                         break
