@@ -83,6 +83,33 @@ function build_sourcefiles(target, sourcebatch, opt)
     -- get compile flags
     local compflags = compinst:compflags({target = target})
 
+    -- add rpathdirs to linker flags (for shared lib support)
+    local rpathdirs = target:get("rpathdirs") or {}
+    local rpathdirs_wrap = {}
+    if rpathdirs then
+        table.join2(rpathdirs_wrap, table.wrap(rpathdirs))
+    end
+
+    -- add rpathdirs from dependencies
+    if target:kind() == "binary" or target:kind() == "shared" then
+        for _, dep in ipairs(target:orderdeps()) do
+            if dep:kind() == "shared" then
+                table.insert(rpathdirs_wrap, dep:targetdir())
+            end
+        end
+    end
+
+    if #rpathdirs_wrap > 0 then
+        -- deduplicate
+        rpathdirs_wrap = table.unique(rpathdirs_wrap)
+        for _, rpathdir in ipairs(rpathdirs_wrap) do
+             local rpathflags = compinst:_tool():nf_rpathdir(rpathdir)
+             if rpathflags then
+                 table.join2(compflags, rpathflags)
+             end
+        end
+    end
+
     -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 

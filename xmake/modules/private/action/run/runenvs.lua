@@ -21,8 +21,8 @@
 -- imports
 import("core.base.hashset")
 
--- add search directories for all dependent shared libraries
-function _make_runpath(target, envname)
+-- add search directories for all dependent shared libraries on windows
+function _make_runpath_on_windows(target)
     local pathenv = {}
     local searchdirs = hashset.new()
     local function insert(dir)
@@ -59,8 +59,8 @@ function _make_runpath(target, envname)
             end
             for _, toolchain in ipairs(target:toolchains()) do
                 local runenvs = toolchain:runenvs()
-                if runenvs and runenvs[envname] then
-                    for _, env in ipairs(path.splitenv(runenvs[envname])) do
+                if runenvs and runenvs.PATH then
+                    for _, env in ipairs(path.splitenv(runenvs.PATH)) do
                         insert(env)
                     end
                 end
@@ -151,24 +151,12 @@ function make(target)
     -- add package run environments
     _add_target_pkgenvs(addenvs, target, {})
 
-    -- add search directories for all dependent shared libraries
+    -- add search directories for all dependent shared libraries on windows
     if target:is_plat("windows") or (target:is_plat("mingw") and is_host("windows")) then
         local pathenv = addenvs["PATH"] or setenvs["PATH"]
-        local runpath = _make_runpath(target, "PATH")
+        local runpath = _make_runpath_on_windows(target)
         if pathenv == nil then
             addenvs["PATH"] = runpath
-        else
-            table.join2(pathenv, runpath)
-        end
-    else
-        local envname = "LD_LIBRARY_PATH"
-        if target:is_plat("macosx") then
-            envname = "DYLD_LIBRARY_PATH"
-        end
-        local pathenv = addenvs[envname] or setenvs[envname]
-        local runpath = _make_runpath(target, envname)
-        if pathenv == nil then
-            addenvs[envname] = runpath
         else
             table.join2(pathenv, runpath)
         end
