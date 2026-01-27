@@ -80,7 +80,7 @@ function build_sourcefiles(target, sourcebatch, opt)
     -- run nim --genScript to generate .deps file
     local program = compinst:program()
     local argv = table.join("c", flags, sourcefiles)
-    os.runv(program, argv, {envs = compinst:_tool():runenvs()})
+    os.runv(program, argv, {envs = compinst:runenvs()})
 
     -- parse .deps file
     if nimcache then
