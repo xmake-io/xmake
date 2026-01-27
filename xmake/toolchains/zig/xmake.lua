@@ -137,7 +137,20 @@ toolchain("zig")
         local target = toolchain:cross()
 
         if target then
-            local tarch = target:match("^(.-)-") or target
+            local tarch = target:split("%-")[1] or target
+
+            if arch == "i686" then
+                arch = "i386"
+            elseif arch == "aarch64" then
+                arch = "arm64"
+            end
+
+            if tarch == "i686" then
+                tarch = "i386"
+            elseif tarch == "aarch64" then
+                tarch = "arm64"
+            end
+
             if arch ~= tarch then
                 target = nil
             end
