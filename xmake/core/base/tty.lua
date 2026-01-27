@@ -247,7 +247,6 @@ function tty._find_shell_from_parent()
     local count = 0
     while pid ~= 0 and count < 10 do
         count = count + 1
-        print(count)
         local shell_name = nil
         local shell_path = nil
         if os.isfile("/proc/" .. pid .. "/exe") then
