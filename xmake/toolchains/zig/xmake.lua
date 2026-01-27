@@ -135,6 +135,16 @@ toolchain("zig")
 
         -- init target
         local target = toolchain:cross()
+
+        if target then
+            local tarch = target:match("^(.-)-") or target
+            if arch == "x86_64" and tarch ~= "x86_64" then
+                target = nil
+            elseif arch == "aarch64" and tarch ~= "aarch64" then
+                target = nil
+            end
+        end
+
         if target == nil then
             if toolchain:is_plat("cross") then
                 -- xmake f -p cross --toolchain=zig --cross=mips64el-linux-gnuabi64
