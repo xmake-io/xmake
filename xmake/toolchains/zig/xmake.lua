@@ -138,9 +138,7 @@ toolchain("zig")
 
         if target then
             local tarch = target:match("^(.-)-") or target
-            if arch == "x86_64" and tarch ~= "x86_64" then
-                target = nil
-            elseif arch == "aarch64" and tarch ~= "aarch64" then
+            if arch ~= tarch then
                 target = nil
             end
         end
