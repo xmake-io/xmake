@@ -435,10 +435,11 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         if (not has_versionlist or require_verify == false)
             and (semver.is_valid(require_version) or semver.is_valid_range(require_version)) then
             local scheme_version = require_version
+            local scheme_source = "version"
             scheme_version_map[current_scheme] = scheme_version
             current_scheme:version_set(scheme_version, scheme_source)
             version = scheme_version
-            source = "version"
+            source = scheme_source
         end
     end
     if not version then
