@@ -274,8 +274,8 @@ function tty._find_shell_from_parent()
             local shell_name = nil
             local shell_path = nil
             if os.isfile("/proc/" .. ppid .. "/exe") then
-                local ok, link = pcall(os.readlink, "/proc/" .. ppid .. "/exe")
-                if ok and link then
+                local link = os.readlink("/proc/" .. ppid .. "/exe")
+                if link then
                     shell_path = link
                 end
             end
