@@ -245,7 +245,7 @@ function tty._find_shell_from_parent()
     local pid = os.getpid()
     local tmpfile = os.tmpfile()
     local count = 0
-    while pid ~= 0 and count < 10 do
+    while pid ~= 0 and count < 4 do
         count = count + 1
         local shell_name = nil
         local shell_path = nil
