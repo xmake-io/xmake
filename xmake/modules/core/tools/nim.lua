@@ -34,6 +34,37 @@ function init(self)
 
     -- init shflags
     self:set("ncshflags", "--app:lib", "--noMain")
+
+    -- init arch flags
+    local arch = self:arch()
+    if arch then
+        if arch == "x86" or arch == "i386" then
+            self:add("ncflags", "--cpu:i386", "--define:bit32")
+            self:add("ncshflags", "--cpu:i386", "--define:bit32")
+            self:add("ncarflags", "--cpu:i386", "--define:bit32")
+            self:add("ldflags", "--cpu:i386", "--define:bit32")
+            if self:is_plat("linux", "macosx", "bsd", "mingw") then
+                self:add("ncflags", "--passC:\"-m32\"", "--passL:\"-m32\"")
+                self:add("ncshflags", "--passC:\"-m32\"", "--passL:\"-m32\"")
+                self:add("ldflags", "--passL:\"-m32\"")
+            end
+        elseif arch == "x86_64" then
+            self:add("ncflags", "--cpu:amd64", "--define:bit64")
+            self:add("ncshflags", "--cpu:amd64", "--define:bit64")
+            self:add("ncarflags", "--cpu:amd64", "--define:bit64")
+            self:add("ldflags", "--cpu:amd64", "--define:bit64")
+        elseif arch == "arm64" then
+            self:add("ncflags", "--cpu:arm64", "--define:bit64")
+            self:add("ncshflags", "--cpu:arm64", "--define:bit64")
+            self:add("ncarflags", "--cpu:arm64", "--define:bit64")
+            self:add("ldflags", "--cpu:arm64", "--define:bit64")
+        elseif arch:startswith("arm") then
+            self:add("ncflags", "--cpu:arm", "--define:bit32")
+            self:add("ncshflags", "--cpu:arm", "--define:bit32")
+            self:add("ncarflags", "--cpu:arm", "--define:bit32")
+            self:add("ldflags", "--cpu:arm", "--define:bit32")
+        end
+    end
 end
 
 -- make the warning flag
