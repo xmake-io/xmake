@@ -26,6 +26,7 @@ import("core.base.global")
 import("core.cache.memcache")
 import("core.project.config")
 import("core.project.policy")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 import("core.project.project")
 import("core.language.language")
 import("utils.progress")
@@ -986,7 +987,7 @@ function compargv(self, sourcefile, objectfile, flags, opt)
 
     -- is precompiled header or module files? remove the force includes.
     local extension = path.extension(sourcefile)
-    if (extension:startswith(".h") or extension == ".inl") then
+    if toolchain_utils.is_cxx_headerext(extension) then
         flags = _translate_flags_for_pch(self, flags)
     elseif support.has_module_extension(sourcefile, {extension = extension}) then
         flags = _translate_flags_for_mpp(self, flags)
