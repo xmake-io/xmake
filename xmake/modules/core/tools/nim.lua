@@ -142,6 +142,19 @@ function nf_link(self, lib)
     end
 end
 
+-- make the syslink flag
+function nf_syslink(self, lib)
+    if self:is_plat("windows") then
+        return string.format("--passL:\"%s.lib\"", lib)
+    else
+        if lib == "pthread" then
+            return "--threads:on --passL:\"-lpthread\" --dynlibOverride:\"pthread\""
+        else
+            return string.format("--passL:\"-l%s\"", lib)
+        end
+    end
+end
+
 -- make the linkdir flag
 function nf_linkdir(self, dir)
     if self:is_plat("windows") then
