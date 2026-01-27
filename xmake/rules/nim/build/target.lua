@@ -109,6 +109,26 @@ function build_sourcefiles(target, sourcebatch, opt)
              end
         end
     end
+    
+    -- add includedirs from dependencies (for static/shared lib with exportc)
+    -- the dependencies will be compiled via imported symbol at the end
+    -- we need pass includedirs of static/shared lib to the target
+    local includedirs = {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:kind() == "static" or dep:kind() == "shared" then
+            table.join2(includedirs, dep:get("includedirs"))
+        end
+    end
+    if #includedirs > 0 then
+        -- deduplicate
+        includedirs = table.unique(includedirs)
+        for _, includedir in ipairs(includedirs) do
+             local includeflags = compinst:_tool():nf_includedir(includedir)
+             if includeflags then
+                 table.join2(compflags, includeflags)
+             end
+        end
+    end
 
     -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
