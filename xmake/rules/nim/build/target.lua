@@ -25,6 +25,45 @@ import("core.tool.compiler")
 import("core.project.depend")
 import("utils.progress")
 
+-- generate dependency info
+function _generate_dependinfo(compinst, compflags, sourcefiles, dependinfo)
+
+    -- generate dependency file (.deps)
+    local flags = {}
+    local nimcache
+    for _, flag in ipairs(compflags) do
+        table.insert(flags, flag)
+        if flag:startswith("--nimcache:") then
+            nimcache = flag:sub(12)
+        end
+    end
+    table.insert(flags, "--genScript")
+
+    -- run nim --genScript to generate .deps file
+    local program = compinst:program()
+    local argv = table.join("c", flags, sourcefiles)
+    os.runv(program, argv, {envs = compinst:runenvs()})
+
+    -- parse .deps file
+    if nimcache then
+        for _, sourcefile in ipairs(sourcefiles) do
+            local filename = path.basename(sourcefile)
+            local depsfile = path.join(nimcache, filename .. ".deps")
+            if os.isfile(depsfile) then
+                local depsdata = io.readfile(depsfile)
+                if depsdata then
+                    for _, line in ipairs(depsdata:split("\n")) do
+                        line = line:trim()
+                        if #line > 0 then
+                            table.insert(dependinfo.files, line)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 -- build the source files
 function build_sourcefiles(target, sourcebatch, opt)
 
@@ -67,39 +106,7 @@ function build_sourcefiles(target, sourcebatch, opt)
     assert(compinst:build(sourcefiles, targetfile, {target = target, dependinfo = dependinfo, compflags = compflags}))
 
     -- generate dependency file (.deps)
-    local flags = {}
-    local nimcache
-    for _, flag in ipairs(compflags) do
-        table.insert(flags, flag)
-        if flag:startswith("--nimcache:") then
-            nimcache = flag:sub(12)
-        end
-    end
-    table.insert(flags, "--genScript")
-    
-    -- run nim --genScript to generate .deps file
-    local program = compinst:program()
-    local argv = table.join("c", flags, sourcefiles)
-    os.runv(program, argv, {envs = compinst:runenvs()})
-
-    -- parse .deps file
-    if nimcache then
-        for _, sourcefile in ipairs(sourcefiles) do
-            local filename = path.basename(sourcefile)
-            local depsfile = path.join(nimcache, filename .. ".deps")
-            if os.isfile(depsfile) then
-                local depsdata = io.readfile(depsfile)
-                if depsdata then
-                    for _, line in ipairs(depsdata:split("\n")) do
-                        line = line:trim()
-                        if #line > 0 then
-                            table.insert(dependinfo.files, line)
-                        end
-                    end
-                end
-            end
-        end
-    end
+    _generate_dependinfo(compinst, compflags, sourcefiles, dependinfo)
 
     -- update files and values to the dependent file
     dependinfo.values = depvalues
