@@ -78,6 +78,7 @@ toolchain("zig")
 
     on_load(function (toolchain)
         import("core.base.semver")
+        import("private.core.base.is_cross")
 
         -- set toolset
         -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
@@ -106,57 +107,42 @@ toolchain("zig")
         toolchain:set("toolset", "zcld", zig)
         toolchain:set("toolset", "zcsh", zig)
 
-        -- init arch
-        if toolchain:is_arch("arm64", "arm64-v8a") then
-            arch = "aarch64"
-        elseif toolchain:is_arch("arm", "armv7") then
-            arch = "arm"
-        elseif toolchain:is_arch("i386", "x86") then
-            if zig_version and semver.compare(zig_version, "0.11") >= 0 then
-                arch = "x86"
+        -- get target from cross only for cross-compilation
+        -- @see https://github.com/xmake-io/xmake/issues/7180
+        local target
+        if not target and is_cross(toolchain:plat(), toolchain:arch()) then
+            target = toolchain:cross()
+        end
+
+        -- get target from arch
+        if not target then
+            local arch
+            if toolchain:is_arch("arm64", "arm64-v8a") then
+                arch = "aarch64"
+            elseif toolchain:is_arch("arm", "armv7") then
+                arch = "arm"
+            elseif toolchain:is_arch("i386", "x86") then
+                if zig_version and semver.compare(zig_version, "0.11") >= 0 then
+                    arch = "x86"
+                else
+                    arch = "i386"
+                end
+            elseif toolchain:is_arch("riscv64") then
+                arch = "riscv64"
+            elseif toolchain:is_arch("loong64") then
+                arch = "loongarch64"
+            elseif toolchain:is_arch("mips.*") then
+                arch = toolchain:arch()
+            elseif toolchain:is_arch("ppc64") then
+                arch = "powerpc64"
+            elseif toolchain:is_arch("ppc") then
+                arch = "powerpc"
+            elseif toolchain:is_arch("s390x") then
+                arch = "s390x"
             else
-                arch = "i386"
-            end
-        elseif toolchain:is_arch("riscv64") then
-            arch = "riscv64"
-        elseif toolchain:is_arch("loong64") then
-            arch = "loongarch64"
-        elseif toolchain:is_arch("mips.*") then
-            arch = toolchain:arch()
-        elseif toolchain:is_arch("ppc64") then
-            arch = "powerpc64"
-        elseif toolchain:is_arch("ppc") then
-            arch = "powerpc"
-        elseif toolchain:is_arch("s390x") then
-            arch = "s390x"
-        else
-            arch = "x86_64"
-        end
-
-        -- init target
-        local target = toolchain:cross()
-
-        if target then
-            local tarch = target:split("%-")[1] or target
-
-            if arch == "i686" then
-                arch = "i386"
-            elseif arch == "aarch64" then
-                arch = "arm64"
+                arch = "x86_64"
             end
 
-            if tarch == "i686" then
-                tarch = "i386"
-            elseif tarch == "aarch64" then
-                tarch = "arm64"
-            end
-
-            if arch ~= tarch then
-                target = nil
-            end
-        end
-
-        if target == nil then
             if toolchain:is_plat("cross") then
                 -- xmake f -p cross --toolchain=zig --cross=mips64el-linux-gnuabi64
             elseif toolchain:is_plat("macosx") then
@@ -176,6 +162,8 @@ toolchain("zig")
                 target = arch .. "-windows-gnu"
             end
         end
+
+        -- set target flags
         if target then
             toolchain:add("asflags", "-target", target)
             toolchain:add("cxflags", "-target", target)
