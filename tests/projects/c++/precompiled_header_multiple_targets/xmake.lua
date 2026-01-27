@@ -36,3 +36,33 @@ target("consumer")
     set_kind("binary")
     add_files("src/consumer.cpp")
     add_deps("lib1")
+
+-- Target 7: PCH with .ipp extension
+target("test_ipp_pch")
+    set_kind("binary")
+    set_pcxxheader("src/pch_test.ipp")
+    add_files("src/test_ipp.cpp")
+
+-- Target 8: PCH with .inc extension  
+target("test_inc_pch")
+    set_kind("binary")
+    set_pcxxheader("src/pch_test.inc")
+    add_files("src/test_inc.cpp")
+
+-- Target 9: PCH with .inl extension
+target("test_inl_pch")
+    set_kind("binary")
+    set_pcxxheader("src/pch_test.inl")
+    add_files("src/test_inl.cpp")
+
+-- Target 10: PCH with .tcc extension
+target("test_tcc_pch")
+    set_kind("binary")
+    set_pcxxheader("src/pch_test.tcc")
+    add_files("src/test_tcc.cpp")
+
+-- Target 11: PCH with .tpl extension
+target("test_tpl_pch")
+    set_kind("binary")
+    set_pcxxheader("src/pch_test.tpl")
+    add_files("src/test_tpl.cpp")
