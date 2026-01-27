@@ -362,6 +362,7 @@ function _select_version_from_scheme(scheme, requireinfo)
     local require_verify  = requireinfo.verify
     local is_system = requireinfo.system
     local has_versionlist = scheme:get("versions") or scheme:get("versionfiles")
+    -- We need to strictly limit the number of valid URLs to filter out schemes that don't have any URLs, prioritizing them.
     if #urls > 0 and (not has_versionlist or require_verify == false)
         and (semver.is_valid(require_version) or semver.is_valid_range(require_version)) then
         -- no version list in package() or need not verify sha256sum? try selecting this version directly
@@ -422,6 +423,22 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
                 version_latest = scheme_version
                 source_latest = scheme_source
             end
+        end
+    end
+    if not version then
+        -- If no version is available for any scheme and no URLs are available, we will use the specified version by default.
+        -- https://github.com/xmake-io/xmake/issues/7265
+        local require_version = requireinfo.version
+        local require_verify  = requireinfo.verify
+        local current_scheme = package:current_scheme()
+        local has_versionlist = current_scheme:get("versions") or current_scheme:get("versionfiles")
+        if (not has_versionlist or require_verify == false)
+            and (semver.is_valid(require_version) or semver.is_valid_range(require_version)) then
+            local scheme_version = require_version
+            scheme_version_map[current_scheme] = scheme_version
+            current_scheme:version_set(scheme_version, scheme_source)
+            version = scheme_version
+            source = "version"
         end
     end
     if not version then
