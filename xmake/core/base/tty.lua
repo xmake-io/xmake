@@ -263,8 +263,8 @@ function tty.shell()
             for i = 1, 10 do
                 local stat = io.readfile("/proc/" .. pid .. "/stat")
                 if not stat or #stat == 0 then
-                    local tmpfile = path.join(os.tmpdir(), "xmake_stat_" .. os.getpid())
-                    os.execv("cp", {"/proc/" .. pid .. "/stat", tmpfile})
+                    local tmpfile = os.tmpfile()
+                    os.runv("cp", {"/proc/" .. pid .. "/stat", tmpfile})
                     stat = io.readfile(tmpfile)
                     os.rm(tmpfile)
                 end
@@ -299,8 +299,8 @@ function tty.shell()
                     if not shell_path and os.isfile("/proc/" .. ppid .. "/comm") then
                         shell_name = io.readfile("/proc/" .. ppid .. "/comm")
                         if not shell_name or #shell_name == 0 then
-                            local tmpfile = path.join(os.tmpdir(), "xmake_comm_" .. os.getpid())
-                            os.execv("cp", {"/proc/" .. ppid .. "/comm", tmpfile})
+                            local tmpfile = os.tmpfile()
+                            os.runv("cp", {"/proc/" .. ppid .. "/comm", tmpfile})
                             shell_name = io.readfile(tmpfile)
                             os.rm(tmpfile)
                         end
