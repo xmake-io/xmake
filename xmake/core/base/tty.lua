@@ -243,73 +243,53 @@ function tty._find_shell_from_parent()
 
     local shell
     local pid = os.getpid()
-    for i = 1, 10 do
+    local tmpfile = os.tmpfile()
+    while pid ~= 0 do
+        local shell_name = nil
+        local shell_path = nil
+        if os.isfile("/proc/" .. pid .. "/exe") then
+            local link = os.readlink("/proc/" .. pid .. "/exe")
+            if link then
+                shell_path = link
+            end
+        end
+
+        if not shell_path and os.isfile("/proc/" .. pid .. "/comm") then
+             shell_name = io.readfile("/proc/" .. pid .. "/comm")
+             if not shell_name or #shell_name == 0 then
+                 os.runv("cp", {"/proc/" .. pid .. "/comm", tmpfile})
+                 shell_name = io.readfile(tmpfile)
+             end
+             if shell_name then
+                 shell_name = shell_name:match("^%s*(.-)%s*$")
+             end
+        end
+        if shell_path then
+            shell_name = path.filename(shell_path)
+        end
+
+        if shell_name then
+            shell_name = shell_name:gsub("^-", "")
+            for _, name in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "sh"}) do
+                if shell_name == name then
+                    shell = name
+                    break
+                end
+            end
+            if shell then break end
+        end
+
         local stat = io.readfile("/proc/" .. pid .. "/stat")
         if not stat or #stat == 0 then
-            local tmpfile = os.tmpfile()
             os.runv("cp", {"/proc/" .. pid .. "/stat", tmpfile})
             stat = io.readfile(tmpfile)
-            os.rm(tmpfile)
         end
 
-        -- find last ')' to handle "pid (comm) state ppid"
-        local start = stat and stat:find(")", 1, true)
-        while start do
-            local next_p = stat:find(")", start + 1, true)
-            if not next_p then break end
-            start = next_p
-        end
-
-        if start then
-            local suffix = stat:sub(start + 1)
-            local fields = {}
-            for field in suffix:gmatch("%S+") do
-                table.insert(fields, field)
-                if #fields >= 2 then break end
-            end
-
-            local ppid = tonumber(fields[2])
-            if not ppid or ppid == 0 then break end
-
-            local shell_name = nil
-            local shell_path = nil
-            if os.isfile("/proc/" .. ppid .. "/exe") then
-                local link = os.readlink("/proc/" .. ppid .. "/exe")
-                if link then
-                    shell_path = link
-                end
-            end
-            if not shell_path and os.isfile("/proc/" .. ppid .. "/comm") then
-                shell_name = io.readfile("/proc/" .. ppid .. "/comm")
-                if not shell_name or #shell_name == 0 then
-                    local tmpfile = os.tmpfile()
-                    os.runv("cp", {"/proc/" .. ppid .. "/comm", tmpfile})
-                    shell_name = io.readfile(tmpfile)
-                    os.rm(tmpfile)
-                end
-                if shell_name then
-                    shell_name = shell_name:match("^%s*(.-)%s*$")
-                end
-            end
-            if shell_path then
-                shell_name = path.filename(shell_path)
-            end
-
-            if shell_name then
-                shell_name = shell_name:gsub("^-", "")
-                for _, name in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "sh"}) do
-                    if shell_name == name then
-                        shell = name
-                        break
-                    end
-                end
-                if shell then break end
-            end
-            pid = ppid
-        else
-            break
-        end
+        local ppid = stat and tonumber(stat:match(".*%) %S+ (%d+)"))
+        if not ppid or ppid == 0 then break end
+        pid = ppid
     end
+    os.rm(tmpfile)
     return shell
 end
 
