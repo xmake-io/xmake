@@ -93,7 +93,7 @@ rule("mode.releasedbg")
                 end
             end
 
-            -- strip all symbols, but it will generate debug symbol file because debug/symbols is setted
+            -- strip executable on Windows which generates a separate debugs symbol file
             if target:is_plat("windows") and not target:get("strip") then
                 target:set("strip", "all")
             end
