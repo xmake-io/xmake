@@ -148,7 +148,7 @@ function nf_syslink(self, lib)
         return string.format("--passL:\"%s.lib\"", lib)
     else
         if lib == "pthread" then
-            return "--threads:on --passL:\"-lpthread\" --dynlibOverride:\"pthread\""
+            return string.format("--threads:on --passL:\"-l%s\" --dynlibOverride:\"pthread\"", lib)
         else
             return string.format("--passL:\"-l%s\"", lib)
         end
