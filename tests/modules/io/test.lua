@@ -160,3 +160,17 @@ function test_convert(t)
 
     os.tryrm("temp")
 end
+
+function test_read_proc_cpuinfo(t)
+    if not is_host("linux") then
+        return t:skip("wrong host platform")
+    end
+    if not os.isfile("/proc/cpuinfo") then
+        return t:skip("missing /proc/cpuinfo")
+    end
+    local data = io.readfile("/proc/cpuinfo", {encoding = "binary"})
+    t:require(data and #data > 0)
+
+    local data2 = io.readfile("/proc/cpuinfo")
+    t:require(data2 and #data2 > 0)
+end

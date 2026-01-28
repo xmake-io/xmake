@@ -43,6 +43,31 @@ typedef enum __xm_pushline_state_e {
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+static tb_bool_t xm_io_file_stream_skip_sequential(tb_stream_ref_t stream, tb_hize_t size) {
+    tb_byte_t discard[TB_STREAM_BLOCK_MAXN];
+    tb_hize_t left = size;
+    while (left) {
+        tb_size_t need = left > (tb_hize_t)sizeof(discard) ? (tb_size_t)sizeof(discard) : (tb_size_t)left;
+        tb_long_t read = tb_stream_read(stream, discard, need);
+        if (read > 0) {
+            left -= read;
+        } else if (!read) {
+            read = tb_stream_wait(stream, TB_STREAM_WAIT_READ, -1);
+            tb_check_return_val(read > 0, tb_false);
+        } else {
+            return tb_false;
+        }
+    }
+    return tb_true;
+}
+
+static tb_bool_t xm_io_file_stream_skip(tb_stream_ref_t stream, tb_hize_t size, tb_bool_t sequential) {
+    if (sequential) {
+        return xm_io_file_stream_skip_sequential(stream, size);
+    }
+    return tb_stream_skip(stream, size);
+}
+
 static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_ref_t line) {
     tb_assert_and_check_return_val(stream && line, -1);
 
@@ -51,20 +76,21 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     tb_hize_t offset = 0;
     tb_byte_t *data = tb_null;
     tb_hong_t size = tb_stream_size(stream);
-    while (size < 0 || (offset = tb_stream_offset(stream)) < size) {
+    tb_bool_t sequential_consume = (size == 0);
+    while (sequential_consume || (offset = tb_stream_offset(stream)) < size) {
         tb_long_t real = tb_stream_peek(stream, &data, XM_IO_BLOCK_MAXN);
         if (real > 0) {
             tb_char_t const *e = tb_strnchr((tb_char_t const *)data, real, '\n');
             if (e) {
                 tb_size_t n = (tb_byte_t const *)e + 1 - data;
-                if (!tb_stream_skip(stream, n))
-                    return -1;
                 tb_buffer_memncat(line, data, n);
+                if (!xm_io_file_stream_skip(stream, n, sequential_consume))
+                    return -1;
                 break;
             } else {
-                if (!tb_stream_skip(stream, real))
-                    return -1;
                 tb_buffer_memncat(line, data, real);
+                if (!xm_io_file_stream_skip(stream, (tb_hize_t)real, sequential_consume))
+                    return -1;
             }
         } else if (!real) {
             real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, -1);
@@ -184,7 +210,10 @@ static tb_int_t xm_io_file_read_all_directly(lua_State *lua, xm_io_file_t *file)
 
     // read all
     tb_stream_ref_t stream = file->u.file_ref;
-    while (!tb_stream_beof(stream)) {
+    tb_hize_t offset = 0;
+    tb_hong_t size = tb_stream_size(stream);
+    tb_bool_t sequential_consume = (size == 0);
+    while (sequential_consume || (offset = tb_stream_offset(stream)) < size) {
         tb_long_t real = tb_stream_read(stream, data, XM_IO_BLOCK_MAXN);
         if (real > 0) {
             tb_buffer_memncat(&buf, data, real);
@@ -204,6 +233,57 @@ static tb_int_t xm_io_file_read_all_directly(lua_State *lua, xm_io_file_t *file)
     tb_buffer_exit(&buf);
     return 1;
 }
+
+static tb_bool_t xm_io_file_read_all_to_buffer(xm_io_file_t *file, tb_buffer_ref_t buf) {
+    tb_assert(file && xm_io_file_is_file(file) && file->u.file_ref && buf);
+
+    tb_byte_t *data = tb_buffer_resize(&file->rcache, XM_IO_BLOCK_MAXN);
+    tb_assert_and_check_return_val(data, tb_false);
+
+    tb_stream_ref_t stream = file->u.file_ref;
+    tb_hize_t offset = 0;
+    tb_hong_t size = tb_stream_size(stream);
+    tb_bool_t sequential_consume = (size == 0);
+    while (sequential_consume || (offset = tb_stream_offset(stream)) < size) {
+        tb_long_t real = tb_stream_read(stream, data, XM_IO_BLOCK_MAXN);
+        if (real > 0) {
+            tb_buffer_memncat(buf, data, real);
+        } else if (!real) {
+            real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, -1);
+            tb_check_break(real > 0);
+        } else {
+            break;
+        }
+    }
+    return tb_true;
+}
+
+static tb_int_t xm_io_file_read_all_with_continuation(lua_State *lua, xm_io_file_t *file, tb_char_t const *continuation) {
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
+
+    tb_buffer_t buf;
+    if (!tb_buffer_init(&buf)) {
+        xm_io_return_error(lua, "init buffer failed!");
+    }
+    while (1) {
+        tb_int_t state = xm_io_file_buffer_pushline(&buf, file, continuation, tb_true);
+        if (state == PL_EOF) {
+            break;
+        }
+        if (state == PL_FAIL) {
+            tb_buffer_exit(&buf);
+            xm_io_return_error(lua, "failed to readall");
+        }
+    }
+    if (tb_buffer_size(&buf)) {
+        lua_pushlstring(lua, (tb_char_t const *)tb_buffer_data(&buf), tb_buffer_size(&buf));
+    } else {
+        lua_pushliteral(lua, "");
+    }
+    tb_buffer_exit(&buf);
+    return 1;
+}
+
 static tb_int_t xm_io_file_read_all(lua_State *lua, xm_io_file_t *file, tb_char_t const *continuation) {
     tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
 
@@ -213,35 +293,86 @@ static tb_int_t xm_io_file_read_all(lua_State *lua, xm_io_file_t *file, tb_char_
         return xm_io_file_read_all_directly(lua, file);
     }
 
-    // init buffer
-    tb_buffer_t buf;
-    if (!tb_buffer_init(&buf)) {
-        xm_io_return_error(lua, "init buffer failed!");
+    if (*continuation != '\0') {
+        return xm_io_file_read_all_with_continuation(lua, file, continuation);
     }
 
-    // read all
-    tb_bool_t has_content = tb_false;
-    while (1) {
-        switch (xm_io_file_buffer_pushline(&buf, file, continuation, tb_true)) {
-        case PL_EOF:
-            if (!has_content) {
-                lua_pushliteral(lua, "");
-            } else {
-                lua_pushlstring(lua, (tb_char_t const *)tb_buffer_data(&buf), tb_buffer_size(&buf));
-            }
-            tb_buffer_exit(&buf);
-            return 1;
-        case PL_FIN:
-        case PL_CONL:
-            has_content = tb_true;
-            continue;
-        case PL_FAIL:
-        default:
-            tb_buffer_exit(&buf);
-            xm_io_return_error(lua, "failed to read all");
+    tb_buffer_t raw;
+    tb_buffer_t out;
+    tb_bool_t raw_ok = tb_false;
+    tb_bool_t out_ok = tb_false;
+    tb_int_t result = 0;
+    tb_char_t const *errors = tb_null;
+    do {
+        if (!tb_buffer_init(&raw)) {
+            errors = "init buffer failed!";
+            result = 2;
             break;
         }
+        raw_ok = tb_true;
+
+        if (!xm_io_file_read_all_to_buffer(file, &raw)) {
+            errors = "failed to read all";
+            result = 2;
+            break;
+        }
+
+        tb_size_t rawsize = tb_buffer_size(&raw);
+
+        if (!tb_buffer_init(&out)) {
+            errors = "init buffer failed!";
+            result = 2;
+            break;
+        }
+        out_ok = tb_true;
+
+        if (!rawsize) {
+            lua_pushliteral(lua, "");
+            result = 1;
+            break;
+        }
+
+        tb_byte_t const *rawdata = (tb_byte_t const *)tb_buffer_data(&raw);
+        tb_byte_t const *p = rawdata;
+        tb_byte_t const *b = rawdata;
+        tb_byte_t const *e = rawdata + rawsize;
+        while (p < e) {
+            if (*p == '\r' && p + 1 < e && p[1] == '\n') {
+                if (p > b) {
+                    tb_buffer_memncat(&out, b, p - b);
+                }
+                tb_buffer_memncat(&out, (tb_byte_t const *)"\n", 1);
+                p += 2;
+                b = p;
+            } else {
+                p++;
+            }
+        }
+        if (tb_buffer_size(&out)) {
+            if (e > b) {
+                tb_buffer_memncat(&out, b, e - b);
+            }
+            lua_pushlstring(lua, (tb_char_t const *)tb_buffer_data(&out), tb_buffer_size(&out));
+            result = 1;
+            break;
+        }
+
+        lua_pushlstring(lua, (tb_char_t const *)rawdata, rawsize);
+        result = 1;
+
+    } while (0);
+
+    if (out_ok) {
+        tb_buffer_exit(&out);
     }
+    if (raw_ok) {
+        tb_buffer_exit(&raw);
+    }
+    if (result == 2) {
+        lua_pushnil(lua);
+        lua_pushstring(lua, errors);
+    }
+    return result;
 }
 
 static tb_int_t xm_io_file_read_line(lua_State *lua,
