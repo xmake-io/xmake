@@ -49,10 +49,14 @@ static tb_bool_t xm_io_file_stream_skip_sequential(tb_stream_ref_t stream, tb_hi
     while (left) {
         tb_size_t need = left > (tb_hize_t)sizeof(discard) ? (tb_size_t)sizeof(discard) : (tb_size_t)left;
         tb_long_t read = tb_stream_read(stream, discard, need);
-        if (read != (tb_long_t)need) {
+        if (read > 0) {
+            left -= read;
+        } else if (!read) {
+            read = tb_stream_wait(stream, TB_STREAM_WAIT_READ, -1);
+            tb_check_return_val(read > 0, tb_false);
+        } else {
             return tb_false;
         }
-        left -= need;
     }
     return tb_true;
 }
