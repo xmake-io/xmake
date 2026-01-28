@@ -17,3 +17,14 @@ echo "STB Image: Flip vertically on load set to 1"
 echo "Calling static lib addTwo(10): ", addTwo(10)
 echo "Calling static lib getAlphabet(): ", getAlphabet()
 echo "Calling shared lib getMsg('test'): ", getMsg()
+
+{.emit: """
+#include <test_header.h>
+""".}
+
+var testHeaderVal {.importc: "TEST_HEADER_VAL", nodecl.}: cint
+echo "TEST_HEADER_VAL: ", testHeaderVal
+
+proc test_add_five(x: cint): cint {.importc: "test_add_five", nodecl.}
+echo "test_add_five(55): ", test_add_five(55)
+
