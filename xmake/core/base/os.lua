@@ -1158,7 +1158,7 @@ function os.isexec(filepath)
     if os.isfile(filepath) then
         if os.host() == "windows" then
             local ext = path.extension(filepath):lower()
-            if ext == ".exe" or ext == ".cmd" or ext == ".bat" or ext == ".ps1" then
+            if ext == ".cmd" or ext == ".bat" or ext == ".ps1" then
                 return true
             end
             -- check for PE header
@@ -1189,9 +1189,32 @@ function os.isexec(filepath)
         end
     end
     if os.host() == "windows" then
-        for _, suffix in ipairs({".exe", ".cmd", ".bat", ".ps1"}) do
+        for _, suffix in ipairs({".cmd", ".bat", ".ps1"}) do
             if os.isfile(filepath .. suffix) then
                 return true
+            end
+        end
+        -- check for PE header
+        local peinfo = io.parse_pe(filepath .. ".exe")
+        if peinfo then
+            local pe_arch = peinfo.arch
+            -- x64 or x86
+            if pe_arch == "x86" or pe_arch == "x64" and os.is_arch("x86_64") then
+                return true
+            else
+                return false
+            end
+            -- arm64
+            if pe_arch == "arm64" and os.is_arch("arm64") then
+                return true
+            else
+                return false
+            end
+            -- arm32
+            if pe_arch == "arm" and os.is_arch("arm.*") then
+                return true
+            else
+                return false
             end
         end
     end
