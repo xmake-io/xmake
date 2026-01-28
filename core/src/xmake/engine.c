@@ -151,6 +151,7 @@ tb_int_t xm_os_cpuinfo(lua_State *lua);
 tb_int_t xm_os_meminfo(lua_State *lua);
 tb_int_t xm_os_readlink(lua_State *lua);
 tb_int_t xm_os_filesize(lua_State *lua);
+tb_int_t xm_os_access(lua_State *lua);
 tb_int_t xm_os_emptydir(lua_State *lua);
 tb_int_t xm_os_syserror(lua_State *lua);
 tb_int_t xm_os_strerror(lua_State *lua);
@@ -446,6 +447,7 @@ static luaL_Reg const g_os_functions[] = {
     { "fscase", xm_os_fscase },
     { "rename", xm_os_rename },
     { "exists", xm_os_exists },
+    { "access", xm_os_access },
     { "setenv", xm_os_setenv },
     { "getenv", xm_os_getenv },
     { "getenvs", xm_os_getenvs },

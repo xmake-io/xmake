@@ -46,6 +46,7 @@ os._getenvs  = os._getenvs or os.getenvs
 os._cpuinfo  = os._cpuinfo or os.cpuinfo
 os._meminfo  = os._meminfo or os.meminfo
 os._readlink = os._readlink or os.readlink
+os._access   = os._access or os.access
 
 -- syserror code
 os.SYSERR_UNKNOWN     = -1
@@ -1155,15 +1156,9 @@ function os.isexec(filepath)
 
     -- check executable program exist
     if os.isfile(filepath) then
-        return true
+        return os._access(filepath, "x")
     end
-    if os.host() == "windows" then
-        for _, suffix in ipairs({".exe", ".cmd", ".bat"}) do
-            if os.isfile(filepath .. suffix) then
-                return true
-            end
-        end
-    end
+    return false
 end
 
 -- get system host
