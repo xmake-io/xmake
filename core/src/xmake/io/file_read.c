@@ -43,6 +43,27 @@ typedef enum __xm_pushline_state_e {
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+static tb_bool_t xm_io_file_stream_skip_sequential(tb_stream_ref_t stream, tb_hize_t size) {
+    tb_byte_t discard[TB_STREAM_BLOCK_MAXN];
+    tb_hize_t left = size;
+    while (left) {
+        tb_size_t need = left > (tb_hize_t)sizeof(discard) ? (tb_size_t)sizeof(discard) : (tb_size_t)left;
+        tb_long_t read = tb_stream_read(stream, discard, need);
+        if (read != (tb_long_t)need) {
+            return tb_false;
+        }
+        left -= need;
+    }
+    return tb_true;
+}
+
+static tb_bool_t xm_io_file_stream_skip(tb_stream_ref_t stream, tb_hize_t size, tb_bool_t sequential) {
+    if (sequential) {
+        return xm_io_file_stream_skip_sequential(stream, size);
+    }
+    return tb_stream_skip(stream, size);
+}
+
 static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_ref_t line) {
     tb_assert_and_check_return_val(stream && line, -1);
 
@@ -51,20 +72,21 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     tb_hize_t offset = 0;
     tb_byte_t *data = tb_null;
     tb_hong_t size = tb_stream_size(stream);
-    while (size < 0 || (offset = tb_stream_offset(stream)) < size) {
+    tb_bool_t sequential_consume = (size == 0);
+    while (sequential_consume || (offset = tb_stream_offset(stream)) < size) {
         tb_long_t real = tb_stream_peek(stream, &data, XM_IO_BLOCK_MAXN);
         if (real > 0) {
             tb_char_t const *e = tb_strnchr((tb_char_t const *)data, real, '\n');
             if (e) {
                 tb_size_t n = (tb_byte_t const *)e + 1 - data;
-                if (!tb_stream_skip(stream, n))
-                    return -1;
                 tb_buffer_memncat(line, data, n);
+                if (!xm_io_file_stream_skip(stream, n, sequential_consume))
+                    return -1;
                 break;
             } else {
-                if (!tb_stream_skip(stream, real))
-                    return -1;
                 tb_buffer_memncat(line, data, real);
+                if (!xm_io_file_stream_skip(stream, (tb_hize_t)real, sequential_consume))
+                    return -1;
             }
         } else if (!real) {
             real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, -1);
@@ -184,7 +206,10 @@ static tb_int_t xm_io_file_read_all_directly(lua_State *lua, xm_io_file_t *file)
 
     // read all
     tb_stream_ref_t stream = file->u.file_ref;
-    while (!tb_stream_beof(stream)) {
+    tb_hize_t offset = 0;
+    tb_hong_t size = tb_stream_size(stream);
+    tb_bool_t sequential_consume = (size == 0);
+    while (sequential_consume || (offset = tb_stream_offset(stream)) < size) {
         tb_long_t real = tb_stream_read(stream, data, XM_IO_BLOCK_MAXN);
         if (real > 0) {
             tb_buffer_memncat(&buf, data, real);
