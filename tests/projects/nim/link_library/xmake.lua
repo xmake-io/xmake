@@ -1,10 +1,13 @@
 set_project("link_libs")
 add_rules("mode.debug", "mode.release")
 
+add_requires("zlib", {system = false})
+
 target("executablestatic")
     set_kind("binary")
     add_files("mainlib.nim")
     add_deps("staticlib")
+    add_packages("zlib")
     add_syslinks("pthread", "m")
 
 target("executableshared")
