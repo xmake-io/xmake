@@ -83,6 +83,29 @@ function build_sourcefiles(target, sourcebatch, opt)
     -- get compile flags
     local compflags = compinst:compflags({target = target})
 
+    -- add includedirs from packages
+    for _, pkg in ipairs(target:orderpkgs()) do
+        local pkg_includedirs = pkg:get("includedirs")
+        if pkg_includedirs then
+            for _, dir in ipairs(pkg_includedirs) do
+                local includeflags = compinst:_tool():nf_includedir(dir)
+                if includeflags then
+                     table.join2(compflags, includeflags)
+                end
+            end
+        end
+        local pkg_sysincludedirs = pkg:get("sysincludedirs")
+        if pkg_sysincludedirs then
+            for _, dir in ipairs(pkg_sysincludedirs) do
+                local tool = compinst:_tool()
+                local includeflags = tool.nf_sysincludedir and tool:nf_sysincludedir(dir) or tool:nf_includedir(dir)
+                if includeflags then
+                     table.join2(compflags, includeflags)
+                end
+            end
+        end
+    end
+
     -- add rpathdirs to linker flags (for shared lib support)
     local rpathdirs = target:get("rpathdirs") or {}
     local rpathdirs_wrap = {}
@@ -115,8 +138,9 @@ function build_sourcefiles(target, sourcebatch, opt)
     -- we need pass includedirs of static/shared lib to the target
     local includedirs = {}
     for _, dep in ipairs(target:orderdeps()) do
-        if dep:kind() == "static" or dep:kind() == "shared" then
+        if dep:kind() == "static" or dep:kind() == "shared" or dep:kind() == "headeronly" then
             table.join2(includedirs, dep:get("includedirs"))
+            table.join2(includedirs, dep:get("sysincludedirs"))
         end
     end
     if #includedirs > 0 then

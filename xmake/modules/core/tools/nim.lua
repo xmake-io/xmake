@@ -133,6 +133,11 @@ function nf_includedir(self, dir)
     return {string.format("--passC:\"-I%s\"", path.translate(dir))}
 end
 
+-- make the sysincludedir flag
+function nf_sysincludedir(self, dir)
+    return nf_includedir(self, dir)
+end
+
 -- make the link flag
 function nf_link(self, lib)
     if self:is_plat("windows") then
