@@ -1165,8 +1165,14 @@ function os.isexec(filepath)
             local peinfo = io.parse_pe(filepath)
             if peinfo then
                 local pe_arch = peinfo.arch
-                -- x64 or x86
-                if pe_arch == "x86" or pe_arch == "x64" and os.is_arch("x86_64") then
+                -- x86
+                if pe_arch == "x86" and os.is_arch("x86_64", "i686") then
+                    return true
+                else
+                    return false
+                end
+                -- x64
+                if pe_arch == "x64" and os.is_arch("x86_64") then
                     return true
                 else
                     return false
@@ -1198,8 +1204,14 @@ function os.isexec(filepath)
         local peinfo = io.parse_pe(filepath .. ".exe")
         if peinfo then
             local pe_arch = peinfo.arch
-            -- x64 or x86
-            if pe_arch == "x86" or pe_arch == "x64" and os.is_arch("x86_64") then
+            -- x86
+            if pe_arch == "x86" and os.is_arch("x86_64", "i686") then
+                return true
+            else
+                return false
+            end
+            -- x64
+            if pe_arch == "x64" and os.is_arch("x86_64") then
                 return true
             else
                 return false
