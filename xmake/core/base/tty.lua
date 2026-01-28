@@ -23,6 +23,7 @@ local tty = tty or {}
 
 -- load modules
 local io = require("base/io")
+local path = require("base/path")
 
 -- save metatable and builtin functions
 tty._term_mode = tty._term_mode or tty.term_mode
@@ -234,6 +235,59 @@ function tty.flush()
     return tty
 end
 
+-- find the shell from the parent process (linux)
+function tty._find_shell_from_parent()
+    if os.host() ~= "linux" or not os.isfile("/proc/self/stat") then
+        return
+    end
+
+    local shell
+    local pid = os.getpid()
+    local count = 0
+    while pid ~= 0 and count < 4 do
+        count = count + 1
+        local shell_name = nil
+        local shell_path = nil
+        if os.isfile("/proc/" .. pid .. "/exe") then
+            local link = os.readlink("/proc/" .. pid .. "/exe")
+            if link then
+                shell_path = link
+            end
+        end
+
+        if not shell_path and os.isfile("/proc/" .. pid .. "/comm") then
+             shell_name = io.readfile("/proc/" .. pid .. "/comm")
+             if shell_name then
+                 shell_name = shell_name:trim()
+             end
+        end
+        if shell_path then
+            shell_name = path.filename(shell_path)
+        end
+
+        if shell_name then
+            shell_name = shell_name:ltrim("-")
+            for _, name in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "sh"}) do
+                if shell_name == name then
+                    shell = name
+                    break
+                end
+            end
+            if shell then
+                break
+            end
+        end
+
+        local stat = io.readfile("/proc/" .. pid .. "/stat")
+        local ppid = stat and tonumber(stat:match(".*%) %S+ (%d+)"))
+        if not ppid or ppid == 0 then
+            break
+        end
+        pid = ppid
+    end
+    return shell
+end
+
 -- get shell name
 function tty.shell()
     local shell = tty._SHELL
@@ -256,13 +310,18 @@ function tty.shell()
                 end
             end
         end
+        -- try to find the shell from the parent process (linux)
+        if not shell then
+            shell = tty._find_shell_from_parent()
+        end
+
         if not shell then
             shell = os.getenv("XMAKE_SHELL")
         end
         if not shell then
             shell = os.getenv("SHELL")
             if shell then
-                for _, shellname in ipairs({"zsh", "bash", "sh"}) do
+                for _, shellname in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "sh"}) do
                     if shell:find(shellname) then
                         shell = shellname
                         break
@@ -323,6 +382,8 @@ function tty.term()
                     term = "xterm"
                 elseif TERM == "cygwin" then
                     term = "cygwin"
+                elseif TERM:find("alacritty", 1, true) then
+                    term = "alacritty"
                 end
             end
         end
@@ -560,4 +621,3 @@ end
 
 -- return module
 return tty
-
