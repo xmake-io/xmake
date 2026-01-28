@@ -107,11 +107,7 @@ function build_sourcefiles(target, sourcebatch, opt)
     end
 
     -- add rpathdirs to linker flags (for shared lib support)
-    local rpathdirs = target:get("rpathdirs") or {}
     local rpathdirs_wrap = {}
-    if rpathdirs then
-        table.join2(rpathdirs_wrap, table.wrap(rpathdirs))
-    end
 
     -- add rpathdirs from dependencies
     if target:kind() == "binary" or target:kind() == "shared" then
