@@ -243,7 +243,6 @@ function tty._find_shell_from_parent()
 
     local shell
     local pid = os.getpid()
-    local tmpfile = os.tmpfile()
     local count = 0
     while pid ~= 0 and count < 4 do
         count = count + 1
@@ -258,12 +257,8 @@ function tty._find_shell_from_parent()
 
         if not shell_path and os.isfile("/proc/" .. pid .. "/comm") then
              shell_name = io.readfile("/proc/" .. pid .. "/comm")
-             if not shell_name or #shell_name == 0 then
-                 os.runv("cp", {"/proc/" .. pid .. "/comm", tmpfile})
-                 shell_name = io.readfile(tmpfile)
-             end
              if shell_name then
-                 shell_name = shell_name:match("^%s*(.-)%s*$")
+                 shell_name = shell_name:trim()
              end
         end
         if shell_path then
@@ -271,27 +266,25 @@ function tty._find_shell_from_parent()
         end
 
         if shell_name then
-            shell_name = shell_name:gsub("^-", "")
+            shell_name = shell_name:ltrim("-")
             for _, name in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "sh"}) do
                 if shell_name == name then
                     shell = name
                     break
                 end
             end
-            if shell then break end
+            if shell then
+                break
+            end
         end
 
         local stat = io.readfile("/proc/" .. pid .. "/stat")
-        if not stat or #stat == 0 then
-            os.runv("cp", {"/proc/" .. pid .. "/stat", tmpfile})
-            stat = io.readfile(tmpfile)
-        end
-
         local ppid = stat and tonumber(stat:match(".*%) %S+ (%d+)"))
-        if not ppid or ppid == 0 then break end
+        if not ppid or ppid == 0 then
+            break
+        end
         pid = ppid
     end
-    os.rm(tmpfile)
     return shell
 end
 
@@ -628,4 +621,3 @@ end
 
 -- return module
 return tty
-
