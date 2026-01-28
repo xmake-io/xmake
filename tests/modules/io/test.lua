@@ -160,3 +160,51 @@ function test_convert(t)
 
     os.tryrm("temp")
 end
+
+function test_parse_pe(t)
+    local workdir = path.join(os.tmpdir(), "xmake_test_parse_pe")
+    os.tryrm(workdir)
+    os.mkdir(workdir)
+
+    -- create a local repository
+    local repodir = path.join(workdir, "repo")
+    local pkgdir = path.join(repodir, "packages", "p", "putty_test")
+    os.mkdir(pkgdir)
+
+    io.writefile(path.join(pkgdir, "xmake.lua"), [[
+package("putty_test")
+    set_kind("binary")
+    add_urls("https://the.earth.li/~sgtatham/putty/$(version)/w64/putty.zip")
+    add_versions("0.83", "9a4376156971c17896fdb80b550b6f1c1dffd7bac40de5d7b16e774bad49cf76")
+    on_install(function (package)
+        os.cp("PUTTY.EXE", package:installdir("bin"))
+    end)
+]])
+
+    -- create a project to install it
+    local projdir = path.join(workdir, "proj")
+    os.mkdir(projdir)
+    io.writefile(path.join(projdir, "xmake.lua"), string.format([[
+add_repositories("myrepo %s")
+add_requires("putty_test")
+target("test")
+    set_kind("phony")
+]], repodir:gsub("\\", "/")))
+
+    -- install package using a custom install directory
+    local installdir = path.join(workdir, "packages")
+    local envs = {XMAKE_PKG_INSTALLDIR = installdir}
+    local out, err = os.iorunv("xmake", {"require", "-y", "putty_test"}, {curdir = projdir, envs = envs})
+
+    -- find the installed executable
+    local files = os.files(path.join(installdir, "p", "putty_test", "*", "*", "bin", "PUTTY.EXE"))
+    if #files > 0 then
+        local file_x64 = files[1]
+        local info = io.parse_pe(file_x64)
+        t:are_equal(info.arch, "x64")
+    else
+        t:fail("putty_test not installed. output:\n" .. out .. "\n" .. err)
+    end
+
+    os.tryrm(workdir)
+end
