@@ -1157,7 +1157,10 @@ function os.isexec(filepath)
     -- check executable program exist
     if os.isfile(filepath) then
         if os.host() == "windows" then
-            return true
+            local ext = path.extension(filepath):lower()
+            if ext == ".exe" or ext == ".cmd" or ext == ".bat" then
+                return true
+            end
         else
             return os._access(filepath, "x")
         end
