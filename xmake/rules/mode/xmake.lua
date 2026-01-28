@@ -94,7 +94,7 @@ rule("mode.releasedbg")
             end
 
             -- strip all symbols, but it will generate debug symbol file because debug/symbols is setted
-            if not target:get("strip") then
+            if target:is_plat("windows") and not target:get("strip") then
                 target:set("strip", "all")
             end
 
