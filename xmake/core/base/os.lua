@@ -1163,7 +1163,11 @@ function os.isexec(filepath)
             end
 
             -- detect file header
-            if winos.is_pefile(filepath) then
+            local format = nil
+            if binutils and binutils.format then
+                format = binutils.format(filepath)
+            end
+            if format == "pe" then
                 return true
             end
 
@@ -1638,4 +1642,3 @@ end
 
 -- return module
 return os
-

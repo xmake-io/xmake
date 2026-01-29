@@ -278,7 +278,6 @@ tb_int_t xm_winos_registry_query(lua_State *lua);
 tb_int_t xm_winos_registry_keys(lua_State *lua);
 tb_int_t xm_winos_registry_values(lua_State *lua);
 tb_int_t xm_winos_short_path(lua_State *lua);
-tb_int_t xm_winos_is_pefile(lua_State *lua);
 #endif
 
 // the utf8 functions
@@ -363,6 +362,7 @@ tb_int_t xm_binutils_deplibs(lua_State *lua);
 tb_int_t xm_binutils_rpath_list(lua_State *lua);
 tb_int_t xm_binutils_rpath_clean(lua_State *lua);
 tb_int_t xm_binutils_extractlib(lua_State *lua);
+tb_int_t xm_binutils_format(lua_State *lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses functions
@@ -483,7 +483,6 @@ static luaL_Reg const g_winos_functions[] = {
     { "registry_keys", xm_winos_registry_keys },
     { "registry_values", xm_winos_registry_values },
     { "short_path", xm_winos_short_path },
-    { "is_pefile", xm_winos_ispefile },
     { tb_null, tb_null },
 };
 #endif
@@ -715,6 +714,7 @@ static luaL_Reg const g_binutils_functions[] = {
     { "rpath_list", xm_binutils_rpath_list },
     { "rpath_clean", xm_binutils_rpath_clean },
     { "extractlib", xm_binutils_extractlib },
+    { "format", xm_binutils_format },
     { tb_null, tb_null },
 };
 

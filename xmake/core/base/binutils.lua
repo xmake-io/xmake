@@ -34,6 +34,7 @@ binutils._deplibs = binutils._deplibs or binutils.deplibs
 binutils._rpath_list = binutils._rpath_list or binutils.rpath_list
 binutils._rpath_clean = binutils._rpath_clean or binutils.rpath_clean
 binutils._extractlib = binutils._extractlib or binutils.extractlib
+binutils._format = binutils._format or binutils.format
 
 -- generate c/c++ code from the binary file
 function binutils.bin2c(binaryfile, outputfile, opt)
@@ -94,12 +95,20 @@ function binutils.bin2obj(binaryfile, outputfile, opt)
     end
 end
 
+-- get binary file format (auto-detect format: coff, elf, macho, ar, pe, unknown)
+function binutils.format(binaryfile)
+    if binutils._format then
+        return binutils._format(binaryfile)
+    else
+        return nil, "format: C implementation not available"
+    end
+end
+
 
 -- read symbols from object file (auto-detect format: COFF, ELF, or Mach-O)
 function binutils.readsyms(binaryfile)
     if binutils._readsyms then
         return binutils._readsyms(binaryfile)
-    else
         return nil, "readsyms: C implementation not available"
     end
 end
