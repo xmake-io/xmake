@@ -38,16 +38,16 @@ function init(self)
     -- init arch flags
     local arch = self:arch()
     if arch then
-        if arch == "x86" or arch == "i386" then
+        if self:is_arch("x86", "i386") then
             self:add("ncflags", "--cpu:i386", "--define:bit32")
             if self:is_plat("linux", "macosx", "bsd", "mingw") then
                 self:add("ncflags", "--passC:\"-m32\"", "--passL:\"-m32\"")
             end
-        elseif arch == "x86_64" then
+        elseif self:is_arch("x64", "x86_64") then
             self:add("ncflags", "--cpu:amd64", "--define:bit64")
-        elseif arch == "arm64" then
+        elseif self:is_arch("arm64.*") then
             self:add("ncflags", "--cpu:arm64", "--define:bit64")
-        elseif arch:startswith("arm") then
+        elseif self:is_arch("arm.*") then
             self:add("ncflags", "--cpu:arm", "--define:bit32")
         end
     end
