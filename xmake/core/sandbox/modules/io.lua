@@ -372,13 +372,6 @@ function sandbox_io.tail(filepath, linecount, opt)
     io.tail(filepath, linecount, opt)
 end
 
--- parse pe
-function sandbox_io.parse_pe(filepath)
-    assert(filepath)
-    filepath = vformat(filepath)
-    return io.parse_pe(filepath)
-end
-
 -- lazy loading stdfile
 setmetatable(sandbox_io, { __index = function (tbl, key)
         local val = rawget(tbl, key)
