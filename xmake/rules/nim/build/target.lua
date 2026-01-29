@@ -88,6 +88,33 @@ function _add_dependency_flags(target, compinst, compflags)
                 end
             end
         end
+        local pkg_linkdirs = pkg:get("linkdirs")
+        if pkg_linkdirs then
+            for _, dir in ipairs(pkg_linkdirs) do
+                local linkflags = compinst:_tool():nf_linkdir(dir)
+                if linkflags then
+                     table.join2(compflags, linkflags)
+                end
+            end
+        end
+        local pkg_links = pkg:get("links")
+        if pkg_links then
+            for _, link in ipairs(pkg_links) do
+                local linkflags = compinst:_tool():nf_link(link)
+                if linkflags then
+                     table.join2(compflags, {linkflags})
+                end
+            end
+        end
+        local pkg_syslinks = pkg:get("syslinks")
+        if pkg_syslinks then
+            for _, link in ipairs(pkg_syslinks) do
+                local linkflags = compinst:_tool():nf_syslink(link)
+                if linkflags then
+                     table.join2(compflags, {linkflags})
+                end
+            end
+        end
     end
 
     -- add rpathdirs to linker flags (for shared lib support)
