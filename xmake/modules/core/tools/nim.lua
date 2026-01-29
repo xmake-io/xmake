@@ -41,7 +41,7 @@ function init(self)
         if self:is_arch("x86", "i386") then
             self:add("ncflags", "--cpu:i386", "--define:bit32")
             if self:is_plat("linux", "macosx", "bsd", "mingw") then
-                self:add("ncflags", "--passC:\"-m32\"", "--passL:\"-m32\"")
+                self:add("ncflags", '--passC:"-m32"', '--passL:"-m32"')
             end
         elseif self:is_arch("x64", "x86_64") then
             self:add("ncflags", "--cpu:amd64", "--define:bit64")
@@ -109,14 +109,14 @@ end
 function nf_strip(self, level)
     if self:is_plat("linux", "macosx", "bsd") then
         if level == "debug" or level == "all" then
-            return "--passL:\"-s\""
+            return '--passL:"-s"'
         end
     end
 end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return {string.format("--passC:\"-I%s\"", path.translate(dir))}
+    return {string.format('--passC:"-I%s"', path.translate(dir))}
 end
 
 -- make the sysincludedir flag
@@ -127,21 +127,21 @@ end
 -- make the link flag
 function nf_link(self, lib)
     if self:is_plat("windows") then
-        return string.format("--passL:\"%s.lib\"", lib)
+        return string.format('--passL:"%s.lib"', lib)
     else
-        return string.format("--passL:\"-l%s\"", lib)
+        return string.format('--passL:"-l%s"', lib)
     end
 end
 
 -- make the syslink flag
 function nf_syslink(self, lib)
     if self:is_plat("windows") then
-        return string.format("--passL:\"%s.lib\"", lib)
+        return string.format('--passL:"%s.lib"', lib)
     else
         if lib == "pthread" then
-            return string.format("--threads:on --passL:\"-l%s\" --dynlibOverride:\"pthread\"", lib)
+            return string.format('--threads:on --passL:"-l%s" --dynlibOverride:"pthread"', lib)
         else
-            return string.format("--passL:\"-l%s\"", lib)
+            return string.format('--passL:"-l%s"', lib)
         end
     end
 end
@@ -149,9 +149,9 @@ end
 -- make the linkdir flag
 function nf_linkdir(self, dir)
     if self:is_plat("windows") then
-        return {string.format("--passL:\"-libpath:%s\"", path.translate(dir))}
+        return {string.format('--passL:"-libpath:%s"', path.translate(dir))}
     else
-        return {string.format("--passL:\"-L%s\"", path.translate(dir))}
+        return {string.format('--passL:"-L%s"', path.translate(dir))}
     end
 end
 
@@ -179,34 +179,34 @@ function nf_rpathdir(self, dir, opt)
             return name
          end)
         local rpath = string.format("-Wl,-rpath=%s", dir)
-        local flags = {string.format("--passL:\"%s\"", rpath)}
+        local flags = {string.format('--passL:"%s"', rpath)}
         if extra then
-            if extra.runpath == false and self:has_flags(string.format("--passL:\"%s,--disable-new-dtags\"", rpath), "ldflags") then
-                flags[1] = string.format("--passL:\"%s,--disable-new-dtags\"", rpath)
-            elseif extra.runpath == true and self:has_flags(string.format("--passL:\"%s,--enable-new-dtags\"", rpath), "ldflags") then
-                flags[1] = string.format("--passL:\"%s,--enable-new-dtags\"", rpath)
+            if extra.runpath == false and self:has_flags(string.format('--passL:"%s,--disable-new-dtags"', rpath), "ldflags") then
+                flags[1] = string.format('--passL:"%s,--disable-new-dtags"', rpath)
+            elseif extra.runpath == true and self:has_flags(string.format('--passL:"%s,--enable-new-dtags"', rpath), "ldflags") then
+                flags[1] = string.format('--passL:"%s,--enable-new-dtags"', rpath)
             end
         end
         return flags
     end
 
     -- fallback
-    if self:has_flags(string.format("--passL:\"-Wl,-rpath=%s\"", dir), "ldflags") then
-        local flags = {string.format("--passL:\"-Wl,-rpath=%s\"", (dir:gsub("@[%w_]+", function (name)
+    if self:has_flags(string.format('--passL:"-Wl,-rpath=%s"', dir), "ldflags") then
+        local flags = {string.format('--passL:"-Wl,-rpath=%s"', (dir:gsub("@[%w_]+", function (name)
             local maps = { ["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN" }
             return maps[name]
         end)))}
         -- add_rpathdirs("...", {runpath = false})
         if extra then
-            if extra.runpath == false and self:has_flags(string.format("--passL:\"-Wl,-rpath=%s,--disable-new-dtags\"", dir), "ldflags") then
-                flags[1] = string.format("--passL:\"-Wl,-rpath=%s,--disable-new-dtags\"", dir)
-            elseif extra.runpath == true and self:has_flags(string.format("--passL:\"-Wl,-rpath=%s,--enable-new-dtags\"", dir), "ldflags") then
-                flags[1] = string.format("--passL:\"-Wl,-rpath=%s,--enable-new-dtags\"", dir)
+            if extra.runpath == false and self:has_flags(string.format('--passL:"-Wl,-rpath=%s,--disable-new-dtags"', dir), "ldflags") then
+                flags[1] = string.format('--passL:"-Wl,-rpath=%s,--disable-new-dtags"', dir)
+            elseif extra.runpath == true and self:has_flags(string.format('--passL:"-Wl,-rpath=%s,--enable-new-dtags"', dir), "ldflags") then
+                flags[1] = string.format('--passL:"-Wl,-rpath=%s,--enable-new-dtags"', dir)
             end
         end
         return flags
-    elseif self:has_flags("--passL:\"-Xlinker\" --passL:\"-rpath\" --passL:\"-Xlinker\" " .. string.format("--passL:\"%s\"", dir), "ldflags") then
-        return {"--passL:\"-Xlinker\"", "--passL:\"-rpath\"", "--passL:\"-Xlinker\"", string.format("--passL:\"%s\"", (dir:gsub("%$ORIGIN", "@loader_path")))}
+    elseif self:has_flags('--passL:"-Xlinker" --passL:"-rpath" --passL:"-Xlinker" ' .. string.format('--passL:"%s"', dir), "ldflags") then
+        return {'--passL:"-Xlinker"', '--passL:"-rpath"', '--passL:"-Xlinker"', string.format('--passL:"%s"', (dir:gsub("%$ORIGIN", "@loader_path")))}
     end
 end
 
