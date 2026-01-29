@@ -64,7 +64,6 @@ language("nim")
         ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
-        ,   "target.syslinks"
         ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
