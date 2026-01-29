@@ -298,7 +298,7 @@ tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base
         tb_hize_t header_offset = current_pos - sizeof(xm_mslib_header_t);
 
         // detect format
-        tb_int_t format = xm_binutils_detect_format(istream);
+        tb_int_t format = xm_binutils_format_detect(istream);
         if (format != XM_BINUTILS_FORMAT_UNKNOWN && format != XM_BINUTILS_FORMAT_AR) {
             // create entry table
             lua_newtable(lua);

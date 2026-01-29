@@ -75,7 +75,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
         }
 
         // detect format
-        tb_int_t format = xm_binutils_detect_format(istream);
+        tb_int_t format = xm_binutils_format_detect(istream);
         if (format < 0) {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "readsyms: cannot detect file format");
@@ -163,4 +163,3 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
 
     return ok ? 1 : 2;
 }
-

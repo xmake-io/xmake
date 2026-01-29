@@ -87,7 +87,7 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
         }
 
         // detect format
-        tb_int_t format = xm_binutils_detect_format(istream);
+        tb_int_t format = xm_binutils_format_detect(istream);
         if (format < 0) {
             error_msg = "cannot detect format";
             break;
