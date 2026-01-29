@@ -51,8 +51,10 @@ language("nim")
         ,   "toolchain.rpathdirs"
         ,   "config.links"
         ,   "target.links"
-        ,   "target.syslinks"
         ,   "toolchain.links"
+        ,   "config.syslinks" 
+        ,   "target.syslinks" 
+        ,   "toolchain.syslinks"
         }
     ,   shared = {
             "config.linkdirs"
@@ -64,6 +66,9 @@ language("nim")
         ,   "target.links"
         ,   "target.syslinks"
         ,   "toolchain.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   static = {
             "target.strip"
