@@ -1151,23 +1151,39 @@ end
 function os.isexec(filepath)
     assert(filepath)
 
-    -- TODO
-    -- check permission
-
-    -- check executable program exist
-    if os.isfile(filepath) then
-        if os.host() == "windows" then
-            return true
-        else
-            return os._access(filepath, "x")
-        end
-    end
     if os.host() == "windows" then
-        for _, suffix in ipairs({".exe", ".cmd", ".bat", ".ps1"}) do
+        local exts = {".exe", ".cmd", ".bat", ".ps1", ".sh"}
+        if os.isfile(filepath) then
+            -- detect file extension first
+            local extension = path.extension(filepath):lower()
+            if extension then
+                if table.contains(exts, extension) then
+                    return true
+                end
+            end
+
+            -- detect file header
+            if winos.is_pefile(filepath) then
+                return true
+            end
+
+            -- detect shebang scripts
+            local file = io.open(filepath, "rb")
+            if file then
+                local header = file:read(2)
+                file:close()
+                if header == "#!" then
+                    return true
+                end
+            end
+        end
+        for _, suffix in ipairs(exts) do
             if os.isfile(filepath .. suffix) then
                 return true
             end
         end
+    elseif os.isfile(filepath) then
+        return os._access(filepath, "x")
     end
     return false
 end
