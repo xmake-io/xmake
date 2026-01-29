@@ -64,24 +64,8 @@ function _generate_dependinfo(compinst, compflags, sourcefiles, dependinfo)
     end
 end
 
--- build the source files
-function build_sourcefiles(target, sourcebatch, opt)
-
-    -- get the target file
-    local targetfile = target:targetfile()
-
-    -- get source files and kind
-    local sourcefiles = sourcebatch.sourcefiles
-    local sourcekind  = sourcebatch.sourcekind
-
-    -- get depend file
-    local dependfile = target:dependfile(targetfile)
-
-    -- load compiler
-    local compinst = compiler.load(sourcekind, {target = target})
-
-    -- get compile flags
-    local compflags = compinst:compflags({target = target})
+-- add dependency flags
+function _add_dependency_flags(target, compinst, compflags)
 
     -- add includedirs from packages
     for _, pkg in ipairs(target:orderpkgs()) do
@@ -128,7 +112,7 @@ function build_sourcefiles(target, sourcebatch, opt)
              end
         end
     end
-    
+
     -- add includedirs from dependencies (for static/shared lib with exportc)
     -- the dependencies will be compiled via imported symbol at the end
     -- we need pass includedirs of static/shared lib to the target
@@ -149,6 +133,29 @@ function build_sourcefiles(target, sourcebatch, opt)
              end
         end
     end
+end
+
+-- build the source files
+function build_sourcefiles(target, sourcebatch, opt)
+
+    -- get the target file
+    local targetfile = target:targetfile()
+
+    -- get source files and kind
+    local sourcefiles = sourcebatch.sourcefiles
+    local sourcekind  = sourcebatch.sourcekind
+
+    -- get depend file
+    local dependfile = target:dependfile(targetfile)
+
+    -- load compiler
+    local compinst = compiler.load(sourcekind, {target = target})
+
+    -- get compile flags
+    local compflags = compinst:compflags({target = target})
+
+    -- add dependency flags
+    _add_dependency_flags(target, compinst, compflags)
 
     -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
