@@ -1158,7 +1158,7 @@ function os.isexec(filepath)
     if os.isfile(filepath) then
         if os.host() == "windows" then
             local ext = path.extension(filepath):lower()
-            if ext == ".exe" or ext == ".cmd" or ext == ".bat" or ext == ".ps1" then
+            if ext == ".exe" or ext == ".cmd" or ext == ".bat" or ext == ".ps1" or ext == ".sh" then
                 return true
             end
         else
@@ -1166,7 +1166,7 @@ function os.isexec(filepath)
         end
     end
     if os.host() == "windows" then
-        for _, suffix in ipairs({".exe", ".cmd", ".bat", ".ps1"}) do
+        for _, suffix in ipairs({".exe", ".cmd", ".bat", ".ps1", ".sh"}) do
             if os.isfile(filepath .. suffix) then
                 return true
             end
