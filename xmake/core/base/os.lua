@@ -1162,6 +1162,13 @@ function os.isexec(filepath)
             return os._access(filepath, "x")
         end
     end
+    if os.host() == "windows" then
+        for _, suffix in ipairs({".exe", ".cmd", ".bat", ".ps1"}) do
+            if os.isfile(filepath .. suffix) then
+                return true
+            end
+        end
+    end
     return false
 end
 
