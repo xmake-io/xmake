@@ -14,20 +14,26 @@ target("executablestatic")
     add_files("mainlib.nim")
     add_deps("staticlib")
     add_packages("zlib", "stb")
-    add_syslinks("pthread", "m")
+    if is_plat("linux") then
+        add_syslinks("pthread", "m")
+    end
 
 target("executableshared")
     set_kind("binary")
     add_files("maindll.nim")
     add_deps("sharedlib")
-    add_syslinks("pthread", "m")
+    if is_plat("linux") then
+        add_syslinks("pthread", "m")
+    end
 
 target("staticlib")
     set_kind("static")
     add_files("static.nim")
     add_includedirs("inc")
     add_headerfiles("inc/*.h")
-    add_syslinks("pthread", "m")
+    if is_plat("linux") then
+        add_syslinks("pthread", "m")
+    end
     add_deps("headers")
 
 target("sharedlib")
@@ -35,5 +41,7 @@ target("sharedlib")
     add_files("shared.nim")
     add_includedirs("inc")
     add_headerfiles("inc/*.h")
-    add_syslinks("pthread", "m")
+    if is_plat("linux") then
+        add_syslinks("pthread", "m")
+    end
     add_deps("headers")
