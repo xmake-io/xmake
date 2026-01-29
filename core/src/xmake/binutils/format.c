@@ -32,7 +32,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_bool_t xm_binutils_format_detect_pe(tb_stream_ref_t istream, tb_byte_t* first8) {
+static tb_bool_t xm_binutils_format_is_pe(tb_stream_ref_t istream, tb_byte_t* first8) {
     tb_assert_and_check_return_val(istream && first8, tb_false);
     if (!((first8[0] == 'M' && first8[1] == 'Z') || (first8[0] == 'Z' && first8[1] == 'M'))) {
         return tb_false;
@@ -70,6 +70,38 @@ static tb_bool_t xm_binutils_format_detect_pe(tb_stream_ref_t istream, tb_byte_t
     return ok;
 }
 
+static __tb_inline__ tb_bool_t xm_binutils_format_is_ar(tb_byte_t const* first8) {
+    return first8[0] == '!' && first8[1] == '<' && first8[2] == 'a' &&
+           first8[3] == 'r' && first8[4] == 'c' && first8[5] == 'h' &&
+           (first8[6] == '>' || first8[6] == '\n') &&
+           (first8[7] == '\n' || first8[7] == '\r');
+}
+
+static __tb_inline__ tb_bool_t xm_binutils_format_is_elf(tb_byte_t const* first8) {
+    return first8[0] == 0x7f && first8[1] == 'E' && first8[2] == 'L' && first8[3] == 'F';
+}
+
+static __tb_inline__ tb_bool_t xm_binutils_format_is_macho(tb_byte_t const* first8) {
+    return (first8[0] == 0xfe && first8[1] == 0xed && first8[2] == 0xfa && (first8[3] == 0xce || first8[3] == 0xcf)) ||
+           (first8[0] == 0xce && first8[1] == 0xfa && first8[2] == 0xed && first8[3] == 0xfe) ||
+           (first8[0] == 0xcf && first8[1] == 0xfa && first8[2] == 0xed && first8[3] == 0xfe);
+}
+
+static __tb_inline__ tb_bool_t xm_binutils_format_is_coff(tb_byte_t const* first8) {
+    tb_uint16_t machine = (tb_uint16_t)((first8[1] << 8) | first8[0]);
+    if (machine == 0x0000) {
+        tb_uint16_t machine2 = (tb_uint16_t)((first8[3] << 8) | first8[2]);
+        if (machine2 == 0xffff) {
+            return tb_true;
+        }
+    }
+
+    return machine == XM_BINUTILS_COFF_MACHINE_I386 ||
+           machine == XM_BINUTILS_COFF_MACHINE_AMD64 ||
+           machine == XM_BINUTILS_COFF_MACHINE_ARM ||
+           machine == XM_BINUTILS_COFF_MACHINE_ARM64;
+}
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
@@ -95,52 +127,27 @@ tb_int_t xm_binutils_format_detect(tb_stream_ref_t istream) {
             break;
         }
 
-        if (p[0] == '!' && p[1] == '<' && p[2] == 'a' &&
-            p[3] == 'r' && p[4] == 'c' && p[5] == 'h' &&
-            (p[6] == '>' || p[6] == '\n') &&
-            (p[7] == '\n' || p[7] == '\r')) {
+        if (xm_binutils_format_is_ar(p)) {
             format = XM_BINUTILS_FORMAT_AR;
             break;
         }
 
-        if (xm_binutils_format_detect_pe(istream, p)) {
+        if (xm_binutils_format_is_pe(istream, p)) {
             format = XM_BINUTILS_FORMAT_PE;
             break;
         }
 
-        if (p[0] == 0x7f && p[1] == 'E' && p[2] == 'L' && p[3] == 'F') {
+        if (xm_binutils_format_is_elf(p)) {
             format = XM_BINUTILS_FORMAT_ELF;
             break;
         }
 
-        if (p[0] == 0xfe && p[1] == 0xed && p[2] == 0xfa &&
-            (p[3] == 0xce || p[3] == 0xcf)) {
-            format = XM_BINUTILS_FORMAT_MACHO;
-            break;
-        }
-        if (p[0] == 0xce && p[1] == 0xfa && p[2] == 0xed && p[3] == 0xfe) {
-            format = XM_BINUTILS_FORMAT_MACHO;
-            break;
-        }
-        if (p[0] == 0xcf && p[1] == 0xfa && p[2] == 0xed && p[3] == 0xfe) {
+        if (xm_binutils_format_is_macho(p)) {
             format = XM_BINUTILS_FORMAT_MACHO;
             break;
         }
 
-        tb_uint16_t machine = (tb_uint16_t)((p[1] << 8) | p[0]);
-
-        if (machine == 0x0000) {
-            tb_uint16_t machine2 = (tb_uint16_t)((p[3] << 8) | p[2]);
-            if (machine2 == 0xffff) {
-                format = XM_BINUTILS_FORMAT_COFF;
-                break;
-            }
-        }
-
-        if (machine == XM_BINUTILS_COFF_MACHINE_I386 ||
-            machine == XM_BINUTILS_COFF_MACHINE_AMD64 ||
-            machine == XM_BINUTILS_COFF_MACHINE_ARM ||
-            machine == XM_BINUTILS_COFF_MACHINE_ARM64) {
+        if (xm_binutils_format_is_coff(p)) {
             format = XM_BINUTILS_FORMAT_COFF;
             break;
         }
