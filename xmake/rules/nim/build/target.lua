@@ -64,6 +64,104 @@ function _generate_dependinfo(compinst, compflags, sourcefiles, dependinfo)
     end
 end
 
+-- add dependency flags
+function _add_dependency_flags(target, compinst, compflags)
+
+    -- add includedirs from packages
+    for _, pkg in ipairs(target:orderpkgs()) do
+        local pkg_includedirs = pkg:get("includedirs")
+        if pkg_includedirs then
+            for _, dir in ipairs(pkg_includedirs) do
+                local includeflags = compinst:_tool():nf_includedir(dir)
+                if includeflags then
+                     table.join2(compflags, includeflags)
+                end
+            end
+        end
+        local pkg_sysincludedirs = pkg:get("sysincludedirs")
+        if pkg_sysincludedirs then
+            for _, dir in ipairs(pkg_sysincludedirs) do
+                local tool = compinst:_tool()
+                local includeflags = tool.nf_sysincludedir and tool:nf_sysincludedir(dir) or tool:nf_includedir(dir)
+                if includeflags then
+                     table.join2(compflags, includeflags)
+                end
+            end
+        end
+        local pkg_linkdirs = pkg:get("linkdirs")
+        if pkg_linkdirs then
+            for _, dir in ipairs(pkg_linkdirs) do
+                local linkflags = compinst:_tool():nf_linkdir(dir)
+                if linkflags then
+                     table.join2(compflags, linkflags)
+                end
+            end
+        end
+        local pkg_links = pkg:get("links")
+        if pkg_links then
+            for _, link in ipairs(pkg_links) do
+                local linkflags = compinst:_tool():nf_link(link)
+                if linkflags then
+                     table.join2(compflags, {linkflags})
+                end
+            end
+        end
+        local pkg_syslinks = pkg:get("syslinks")
+        if pkg_syslinks then
+            for _, link in ipairs(pkg_syslinks) do
+                local linkflags = compinst:_tool():nf_syslink(link)
+                if linkflags then
+                     table.join2(compflags, {linkflags})
+                end
+            end
+        end
+    end
+
+    -- add rpathdirs to linker flags (for shared lib support)
+    local rpathdirs_wrap = {}
+
+    -- add rpathdirs from dependencies
+    if target:kind() == "binary" or target:kind() == "shared" then
+        for _, dep in ipairs(target:orderdeps()) do
+            if dep:kind() == "shared" then
+                table.insert(rpathdirs_wrap, dep:targetdir())
+            end
+        end
+    end
+
+    if #rpathdirs_wrap > 0 then
+        -- deduplicate
+        rpathdirs_wrap = table.unique(rpathdirs_wrap)
+        for _, rpathdir in ipairs(rpathdirs_wrap) do
+             local rpathflags = compinst:_tool():nf_rpathdir(rpathdir)
+             if rpathflags then
+                 table.join2(compflags, rpathflags)
+             end
+        end
+    end
+
+    -- add includedirs from dependencies (for static/shared lib with exportc)
+    -- the dependencies will be compiled via imported symbol at the end
+    -- we need pass includedirs of static/shared lib to the target
+    local includedirs = {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:kind() == "static" or dep:kind() == "shared" or dep:kind() == "headeronly" then
+            table.join2(includedirs, dep:get("includedirs"))
+            table.join2(includedirs, dep:get("sysincludedirs"))
+        end
+    end
+    if #includedirs > 0 then
+        -- deduplicate
+        includedirs = table.unique(includedirs)
+        for _, includedir in ipairs(includedirs) do
+             local includeflags = compinst:_tool():nf_includedir(includedir)
+             if includeflags then
+                 table.join2(compflags, includeflags)
+             end
+        end
+    end
+end
+
 -- build the source files
 function build_sourcefiles(target, sourcebatch, opt)
 
@@ -82,6 +180,9 @@ function build_sourcefiles(target, sourcebatch, opt)
 
     -- get compile flags
     local compflags = compinst:compflags({target = target})
+
+    -- add dependency flags
+    _add_dependency_flags(target, compinst, compflags)
 
     -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
