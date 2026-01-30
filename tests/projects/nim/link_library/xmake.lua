@@ -1,7 +1,7 @@
 set_project("link_libs")
 add_rules("mode.debug", "mode.release")
 
-add_requires("zlib", {system = false, config = {shared = true}})
+add_requires("zlib", {system = false, configs = {shared = true}})
 add_requires("stb", {system = false})
 
 target("headers")
