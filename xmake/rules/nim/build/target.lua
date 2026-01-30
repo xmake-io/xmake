@@ -143,7 +143,7 @@ function _add_dependency_flags(target, compinst, compflags)
     -- we need pass includedirs of static/shared lib to the target
     local includedirs = {}
     for _, dep in ipairs(target:orderdeps()) do
-        if dep:kind() == "static" or dep:kind() == "shared" or dep:kind() == "headeronly" then
+        if dep:kind() == "static" or dep:kind() == "shared" or dep:is_headeronly() then
             table.join2(includedirs, table.wrap(dep:get("includedirs")))
             table.join2(includedirs, table.wrap(dep:get("sysincludedirs")))
         end
