@@ -1154,20 +1154,19 @@ function os.isexec(filepath)
     if os.host() == "windows" then
         local exts = {".exe", ".com", ".cmd", ".bat", ".ps1", ".sh"}
         if os.isfile(filepath) then
-            -- detect file extension first
             local extension = path.extension(filepath):lower()
             if extension then
                 if table.contains(exts, extension) then
                     return true
                 end
-            end
-
-            local format = nil
-            if binutils and binutils.format then
-                format = binutils.format(filepath)
-            end
-            if format == "pe" or format == "ape" or format == "shebang" then
-                return true
+            else
+                local format = nil
+                if binutils and binutils.format then
+                    format = binutils.format(filepath)
+                end
+                if format == "pe" or format == "ape" or format == "shebang" then
+                    return true
+                end
             end
         end
         for _, suffix in ipairs(exts) do
