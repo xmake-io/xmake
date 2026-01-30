@@ -84,6 +84,10 @@ static __tb_inline__ tb_bool_t xm_binutils_format_is_ar(tb_byte_t const* first8)
            (first8[7] == '\n' || first8[7] == '\r');
 }
 
+static __tb_inline__ tb_bool_t xm_binutils_format_is_shebang(tb_byte_t const* first2) {
+    return first2[0] == '#' && first2[1] == '!';
+}
+
 static __tb_inline__ tb_bool_t xm_binutils_format_is_elf(tb_byte_t const* first8) {
     return first8[0] == 0x7f && first8[1] == 'E' && first8[2] == 'L' && first8[3] == 'F';
 }
@@ -125,6 +129,19 @@ tb_int_t xm_binutils_format_detect(tb_stream_ref_t istream) {
 
     tb_int_t format = -1;
     do {
+        tb_byte_t* p2 = tb_null;
+        if (!tb_stream_peek(istream, &p2, 2)) {
+            tb_hong_t size = tb_stream_size(istream);
+            if (size > 0 && size < 2) {
+                format = XM_BINUTILS_FORMAT_UNKNOWN;
+            }
+            break;
+        }
+        if (xm_binutils_format_is_shebang(p2)) {
+            format = XM_BINUTILS_FORMAT_SHEBANG;
+            break;
+        }
+
         tb_byte_t* p = tb_null;
         if (!tb_stream_peek(istream, &p, 8)) {
             tb_hong_t size = tb_stream_size(istream);
@@ -210,6 +227,7 @@ tb_int_t xm_binutils_format(lua_State *lua) {
         case XM_BINUTILS_FORMAT_MACHO: lua_pushliteral(lua, "macho"); break;
         case XM_BINUTILS_FORMAT_AR:    lua_pushliteral(lua, "ar"); break;
         case XM_BINUTILS_FORMAT_PE:    lua_pushliteral(lua, "pe"); break;
+        case XM_BINUTILS_FORMAT_SHEBANG: lua_pushliteral(lua, "shebang"); break;
         default:                       lua_pushliteral(lua, "unknown"); break;
         }
 

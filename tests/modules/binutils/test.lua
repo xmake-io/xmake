@@ -10,6 +10,10 @@ function test_format(t)
     local format = binutils.format(unknown)
     t:are_equal(format, "unknown")
 
+    local scriptfile = path.join(tempdir, "a.sh")
+    io.writefile(scriptfile, "#!/bin/sh\nexit 0\n")
+    t:are_equal(binutils.format(scriptfile), "shebang")
+
     local programfile = os.programfile()
     if programfile then
         local expected = "elf"

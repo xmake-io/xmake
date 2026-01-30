@@ -1162,23 +1162,12 @@ function os.isexec(filepath)
                 end
             end
 
-            -- detect file header
             local format = nil
             if binutils and binutils.format then
                 format = binutils.format(filepath)
             end
-            if format == "pe" then
+            if format == "pe" or format == "shebang" then
                 return true
-            end
-
-            -- detect shebang scripts
-            local file = io.open(filepath, "rb")
-            if file then
-                local header = file:read(2)
-                file:close()
-                if header == "#!" then
-                    return true
-                end
             end
         end
         for _, suffix in ipairs(exts) do
