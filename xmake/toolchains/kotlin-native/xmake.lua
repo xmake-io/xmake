@@ -78,7 +78,6 @@ toolchain("kotlin-native")
     end)
 
     on_load(function (toolchain)
-        import("private.core.base.is_cross")
 
         -- bind runenvs for java
         local runenvs = toolchain:config("runenvs")
@@ -91,7 +90,7 @@ toolchain("kotlin-native")
         -- kotlinc-native -list-targets
         local target_plat = toolchain:plat()
         local target_arch = toolchain:arch()
-        if target_plat and target_arch and is_cross(target_plat, target_arch) then
+        if target_plat and target_arch and toolchain:is_cross() then
             if target_plat == "macosx" then
                 target_plat = "macos"
             elseif target_plat == "iphoneos" then

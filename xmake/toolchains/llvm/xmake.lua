@@ -57,14 +57,16 @@ toolchain("llvm")
         -- add llvm runenvs
         toolchain_utils.add_llvm_runenvs(toolchain)
 
-        -- add target flags
-        local flags = toolchain_utils.get_clang_target_flags(toolchain)
-        if flags then
-            toolchain:add("cxflags", flags)
-            toolchain:add("mxflags", flags)
-            toolchain:add("asflags", flags)
-            toolchain:add("ldflags", flags)
-            toolchain:add("shflags", flags)
+        -- add target flags if it's cross-compilation
+        if toolchain:is_cross() then
+            local flags = toolchain_utils.get_clang_target_flags(toolchain)
+            if flags then
+                toolchain:add("cxflags", flags)
+                toolchain:add("mxflags", flags)
+                toolchain:add("asflags", flags)
+                toolchain:add("ldflags", flags)
+                toolchain:add("shflags", flags)
+            end
         end
 
         -- add target flags for swift
