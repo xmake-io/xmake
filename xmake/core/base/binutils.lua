@@ -109,6 +109,7 @@ end
 function binutils.readsyms(binaryfile)
     if binutils._readsyms then
         return binutils._readsyms(binaryfile)
+    else
         return nil, "readsyms: C implementation not available"
     end
 end
