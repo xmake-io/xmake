@@ -1149,14 +1149,12 @@ end
 
 -- is executable program file?
 function os.isexec(filepath)
-    assert(filepath)
-
     if os.host() == "windows" then
         local exts = {".exe", ".com", ".cmd", ".bat", ".ps1", ".sh"}
         if os.isfile(filepath) then
-            local extension = path.extension(filepath):lower()
+            local extension = path.extension(filepath)
             if extension and #extension > 0 then
-                if table.contains(exts, extension) then
+                if table.contains(exts, extension:lower()) then
                     return true
                 end
             else
