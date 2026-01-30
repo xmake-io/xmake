@@ -213,7 +213,7 @@ tb_int_t xm_binutils_format(lua_State *lua) {
     tb_stream_ref_t istream = tb_stream_init_from_file(binaryfile, TB_FILE_MODE_RO);
     if (!istream) {
         lua_pushnil(lua);
-        lua_pushfstring(lua, "format: open %s failed", binaryfile);
+        lua_pushfstring(lua, "open %s failed", binaryfile);
         return 2;
     }
 
@@ -221,14 +221,14 @@ tb_int_t xm_binutils_format(lua_State *lua) {
     do {
         if (!tb_stream_open(istream)) {
             lua_pushnil(lua);
-            lua_pushfstring(lua, "format: open %s failed", binaryfile);
+            lua_pushfstring(lua, "open %s failed", binaryfile);
             break;
         }
 
         tb_int_t format = xm_binutils_format_detect(istream);
         if (format < 0) {
             lua_pushnil(lua);
-            lua_pushliteral(lua, "format: cannot detect file format");
+            lua_pushliteral(lua, "cannot detect file format");
             break;
         }
 

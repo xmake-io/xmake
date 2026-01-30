@@ -34,7 +34,7 @@ function test_format(t)
         elseif is_host("macosx", "iphoneos", "watchos", "appletvos") then
             expected = "macho"
         end
-        t:are_equal(binutils.format(programfile), expected)
+        t:are_equal(binutils.format(path.absolute(programfile)), expected)
     end
 
     local ar = path.join(tempdir, "a.a")
