@@ -32,17 +32,24 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
+/* check PE by validating DOS header (MZ/ZM) and PE signature at e_lfanew
+ *
+ * note: unlike ELF/Mach-O/AR, PE needs an additional read/peek to locate the PE signature.
+ */
 static tb_bool_t xm_binutils_format_is_pe(tb_stream_ref_t istream, tb_byte_t* first8) {
     tb_assert_and_check_return_val(istream && first8, tb_false);
     tb_bool_t ok = tb_false;
     do {
+        // fast reject: DOS magic
         tb_check_break((first8[0] == 'M' && first8[1] == 'Z') || (first8[0] == 'Z' && first8[1] == 'M'));
 
+        // ensure we can read enough for DOS stub + PE signature
         tb_hong_t size = tb_stream_size(istream);
         if (size > 0 && size < XM_BINUTILS_PE_DOS_STUB_MIN_SIZE + 4) {
             break;
         }
 
+        // peek a bounded prefix to locate e_lfanew and PE\\0\\0 signature
         tb_size_t max_peek = 4096;
         if (size > 0) {
             max_peek = (tb_size_t)tb_min((tb_hize_t)max_peek, (tb_hize_t)size);
@@ -53,6 +60,7 @@ static tb_bool_t xm_binutils_format_is_pe(tb_stream_ref_t istream, tb_byte_t* fi
             break;
         }
 
+        // e_lfanew points to PE signature offset
         tb_uint32_t e_lfanew = (tb_uint32_t)(  (tb_uint32_t)p[XM_BINUTILS_PE_DOS_ELFANEW_OFFSET]
                                             | ((tb_uint32_t)p[XM_BINUTILS_PE_DOS_ELFANEW_OFFSET + 1] << 8)
                                             | ((tb_uint32_t)p[XM_BINUTILS_PE_DOS_ELFANEW_OFFSET + 2] << 16)
@@ -68,6 +76,7 @@ static tb_bool_t xm_binutils_format_is_pe(tb_stream_ref_t istream, tb_byte_t* fi
     return ok;
 }
 
+// quick header checks from the first 8 bytes
 static __tb_inline__ tb_bool_t xm_binutils_format_is_ar(tb_byte_t const* first8) {
     return first8[0] == '!' && first8[1] == '<' && first8[2] == 'a' &&
            first8[3] == 'r' && first8[4] == 'c' && first8[5] == 'h' &&
@@ -108,7 +117,7 @@ static __tb_inline__ tb_bool_t xm_binutils_format_is_coff(tb_byte_t const* first
  *
  * @param istream the input stream
  * @return        XM_BINUTILS_FORMAT_COFF, XM_BINUTILS_FORMAT_ELF, XM_BINUTILS_FORMAT_MACHO,
- *                 XM_BINUTILS_FORMAT_AR, XM_BINUTILS_FORMAT_PE, XM_BINUTILS_FORMAT_UNKNOWN, or -1 on error
+ *                XM_BINUTILS_FORMAT_AR, XM_BINUTILS_FORMAT_PE, XM_BINUTILS_FORMAT_UNKNOWN, or -1 on error
  */
 tb_int_t xm_binutils_format_detect(tb_stream_ref_t istream) {
     tb_assert_and_check_return_val(istream, -1);
