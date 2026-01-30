@@ -1155,7 +1155,7 @@ function os.isexec(filepath)
         local exts = {".exe", ".com", ".cmd", ".bat", ".ps1", ".sh"}
         if os.isfile(filepath) then
             local extension = path.extension(filepath):lower()
-            if extension then
+            if extension and #extension > 0 then
                 if table.contains(exts, extension) then
                     return true
                 end
