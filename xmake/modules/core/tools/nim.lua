@@ -169,7 +169,16 @@ function nf_rpathdir(self, dir, opt)
 
     -- Use --passL:"-Wl,-rpath=<dir>" to pass rpath to the linker
     -- We use standard -Wl,-rpath for gcc/clang on linux/macosx/bsd without check mainly.
-    if self:is_plat("linux", "macosx", "bsd", "iphoneos", "android") then
+    if self:is_plat("macosx", "iphoneos") then
+         dir = dir:gsub("([@$][%w_]+)", function (name)
+            if name == "$ORIGIN" then
+                return "@loader_path"
+            end
+            return name
+         end)
+        local rpath = string.format("-Wl,-rpath,%s", dir)
+        return {string.format('--passL:"%s"', rpath)}
+    elseif self:is_plat("linux", "bsd", "android") then
          dir = dir:gsub("([@$][%w_]+)", function (name)
             if name == "@loader_path" or name == "@executable_path" then
                 return "\\$ORIGIN"
