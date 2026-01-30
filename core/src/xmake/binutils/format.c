@@ -61,10 +61,7 @@ static tb_bool_t xm_binutils_format_is_pe(tb_stream_ref_t istream, tb_byte_t* fi
         }
 
         // e_lfanew points to PE signature offset
-        tb_uint32_t e_lfanew = (tb_uint32_t)(  (tb_uint32_t)p[XM_BINUTILS_PE_DOS_ELFANEW_OFFSET]
-                                            | ((tb_uint32_t)p[XM_BINUTILS_PE_DOS_ELFANEW_OFFSET + 1] << 8)
-                                            | ((tb_uint32_t)p[XM_BINUTILS_PE_DOS_ELFANEW_OFFSET + 2] << 16)
-                                            | ((tb_uint32_t)p[XM_BINUTILS_PE_DOS_ELFANEW_OFFSET + 3] << 24));
+        tb_uint32_t e_lfanew = tb_bits_get_u32_le(p + XM_BINUTILS_PE_DOS_ELFANEW_OFFSET);
         tb_check_break(e_lfanew >= XM_BINUTILS_PE_DOS_STUB_MIN_SIZE);
         tb_check_break((tb_size_t)e_lfanew + 4 <= max_peek);
         tb_check_break(size <= 0 || (tb_hize_t)e_lfanew + 4 <= (tb_hize_t)size);
@@ -105,9 +102,9 @@ static __tb_inline__ tb_bool_t xm_binutils_format_is_macho(tb_byte_t const* firs
 }
 
 static __tb_inline__ tb_bool_t xm_binutils_format_is_coff(tb_byte_t const* first8) {
-    tb_uint16_t machine = (tb_uint16_t)((first8[1] << 8) | first8[0]);
+    tb_uint16_t machine = tb_bits_get_u16_le(first8);
     if (machine == 0x0000) {
-        tb_uint16_t machine2 = (tb_uint16_t)((first8[3] << 8) | first8[2]);
+        tb_uint16_t machine2 = tb_bits_get_u16_le(first8 + 2);
         if (machine2 == 0xffff) {
             return tb_true;
         }
