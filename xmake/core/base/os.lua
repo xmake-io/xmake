@@ -1150,11 +1150,19 @@ end
 -- is executable program file?
 function os.isexec(filepath)
     if os.host() == "windows" then
-        local exts = {".exe", ".com", ".cmd", ".bat", ".ps1", ".sh"}
+        local exts_map = os._ISEXEC_WINDOWS_EXTS_MAP
+        if not exts_map then
+            local exts = {".exe", ".com", ".cmd", ".bat", ".ps1", ".sh"}
+            exts_map = {}
+            for _, ext in ipairs(exts) do
+                exts_map[ext] = true
+            end
+            os._ISEXEC_WINDOWS_EXTS_MAP = exts_map
+        end
         if os.isfile(filepath) then
             local extension = path.extension(filepath)
             if extension and #extension > 0 then
-                if table.contains(exts, extension:lower()) then
+                if exts_map[extension:lower()] then
                     return true
                 end
             else
@@ -1173,7 +1181,7 @@ function os.isexec(filepath)
                 end
             end
         end
-        for _, suffix in ipairs(exts) do
+        for suffix, _ in pairs(exts_map) do
             if os.isfile(filepath .. suffix) then
                 return true
             end
