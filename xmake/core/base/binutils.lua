@@ -34,6 +34,7 @@ binutils._deplibs = binutils._deplibs or binutils.deplibs
 binutils._rpath_list = binutils._rpath_list or binutils.rpath_list
 binutils._rpath_clean = binutils._rpath_clean or binutils.rpath_clean
 binutils._extractlib = binutils._extractlib or binutils.extractlib
+binutils._format = binutils._format or binutils.format
 
 -- generate c/c++ code from the binary file
 function binutils.bin2c(binaryfile, outputfile, opt)
@@ -42,7 +43,7 @@ function binutils.bin2c(binaryfile, outputfile, opt)
         return binutils._bin2c(binaryfile, outputfile, opt.linewidth or 32, opt.nozeroend or false)
     else
         -- fallback to old implementation if C implementation not available
-        return nil, "bin2c: C implementation not available"
+        return nil, "C implementation not available"
     end
 end
 
@@ -76,21 +77,30 @@ function binutils.bin2obj(binaryfile, outputfile, opt)
 
     if format == "coff" then
         if not binutils._bin2coff then
-            return nil, "bin2obj: binutils._bin2coff not available (C implementation not compiled)"
+            return nil, "binutils._bin2coff not available (C implementation not compiled)"
         end
         return binutils._bin2coff(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.arch or "x86_64", opt.basename, opt.zeroend or false)
     elseif format == "macho" then
         if not binutils._bin2macho then
-            return nil, "bin2obj: binutils._bin2macho not available (C implementation not compiled)"
+            return nil, "binutils._bin2macho not available (C implementation not compiled)"
         end
         return binutils._bin2macho(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.plat or "macosx", opt.arch or "x86_64", opt.basename, opt.target_minver, opt.xcode_sdkver, opt.zeroend or false)
     elseif format == "elf" then
         if not binutils._bin2elf then
-            return nil, "bin2obj: binutils._bin2elf not available (C implementation not compiled)"
+            return nil, "binutils._bin2elf not available (C implementation not compiled)"
         end
         return binutils._bin2elf(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.arch or "x86_64", opt.basename, opt.zeroend or false)
     else
-        return nil, string.format("bin2obj: unsupported format '%s' (supported: coff, elf, macho)", format)
+        return nil, string.format("unsupported format '%s' (supported: coff, elf, macho)", format)
+    end
+end
+
+-- get binary file format (auto-detect format: coff, elf, macho, ar, pe, unknown)
+function binutils.format(binaryfile)
+    if binutils._format then
+        return binutils._format(binaryfile)
+    else
+        return nil, "C implementation not available"
     end
 end
 
@@ -100,7 +110,7 @@ function binutils.readsyms(binaryfile)
     if binutils._readsyms then
         return binutils._readsyms(binaryfile)
     else
-        return nil, "readsyms: C implementation not available"
+        return nil, "C implementation not available"
     end
 end
 
@@ -109,7 +119,7 @@ function binutils.deplibs(binaryfile)
     if binutils._deplibs then
         return binutils._deplibs(binaryfile)
     else
-        return nil, "deplibs: C implementation not available"
+        return nil, "C implementation not available"
     end
 end
 
@@ -118,7 +128,7 @@ function binutils.rpath_list(binaryfile)
     if binutils._rpath_list then
         return binutils._rpath_list(binaryfile)
     else
-        return nil, "binutils: internal rpath_list not supported!"
+        return nil, "internal rpath_list not supported!"
     end
 end
 
@@ -129,7 +139,7 @@ function binutils.rpath_clean(binaryfile)
     if binutils._rpath_clean then
         return binutils._rpath_clean(binaryfile)
     else
-        return false, "binutils: internal rpath_clean not supported!"
+        return false, "internal rpath_clean not supported!"
     end
 end
 
@@ -146,10 +156,10 @@ function binutils.extractlib(libraryfile, outputdir, opt)
         if ok then
             return true
         else
-            return false, errors or "extractlib: unknown error"
+            return false, errors or "unknown error"
         end
     else
-        return false, "extractlib: C implementation not available"
+        return false, "C implementation not available"
     end
 end
 

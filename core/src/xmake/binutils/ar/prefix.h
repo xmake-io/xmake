@@ -35,7 +35,6 @@
 extern tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 extern tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
-extern tb_int_t xm_binutils_detect_format(tb_stream_ref_t istream);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types

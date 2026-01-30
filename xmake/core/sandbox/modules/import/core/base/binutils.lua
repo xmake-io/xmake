@@ -41,6 +41,16 @@ function sandbox_core_base_binutils.bin2obj(binaryfile, outputfile, opt)
     end
 end
 
+-- get binary file format (auto-detect format: coff, elf, macho, ar, pe, unknown)
+function sandbox_core_base_binutils.format(binaryfile)
+    local format, errors = binutils.format(binaryfile)
+    if format then
+        return format
+    else
+        raise("format: %s", errors or "unknown errors")
+    end
+end
+
 
 -- read symbols from object file (auto-detect format: ELF, COFF, Mach-O)
 function sandbox_core_base_binutils.readsyms(binaryfile)

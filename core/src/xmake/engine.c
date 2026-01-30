@@ -151,6 +151,7 @@ tb_int_t xm_os_cpuinfo(lua_State *lua);
 tb_int_t xm_os_meminfo(lua_State *lua);
 tb_int_t xm_os_readlink(lua_State *lua);
 tb_int_t xm_os_filesize(lua_State *lua);
+tb_int_t xm_os_access(lua_State *lua);
 tb_int_t xm_os_emptydir(lua_State *lua);
 tb_int_t xm_os_syserror(lua_State *lua);
 tb_int_t xm_os_strerror(lua_State *lua);
@@ -361,6 +362,7 @@ tb_int_t xm_binutils_deplibs(lua_State *lua);
 tb_int_t xm_binutils_rpath_list(lua_State *lua);
 tb_int_t xm_binutils_rpath_clean(lua_State *lua);
 tb_int_t xm_binutils_extractlib(lua_State *lua);
+tb_int_t xm_binutils_format(lua_State *lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses functions
@@ -446,6 +448,7 @@ static luaL_Reg const g_os_functions[] = {
     { "fscase", xm_os_fscase },
     { "rename", xm_os_rename },
     { "exists", xm_os_exists },
+    { "access", xm_os_access },
     { "setenv", xm_os_setenv },
     { "getenv", xm_os_getenv },
     { "getenvs", xm_os_getenvs },
@@ -711,6 +714,7 @@ static luaL_Reg const g_binutils_functions[] = {
     { "rpath_list", xm_binutils_rpath_list },
     { "rpath_clean", xm_binutils_rpath_clean },
     { "extractlib", xm_binutils_extractlib },
+    { "format", xm_binutils_format },
     { tb_null, tb_null },
 };
 
@@ -911,7 +915,13 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t *engine, tb_char_t **arg
         if (!ok && argv) {
             tb_char_t const *p = argv[0];
             if (p && tb_file_info(p, tb_null)) {
-                tb_strlcpy(path, p, maxn);
+                if (tb_path_is_absolute(p)) {
+                    tb_strlcpy(path, p, maxn);
+                } else {
+                    if (!tb_path_absolute(p, path, maxn)) {
+                        tb_strlcpy(path, p, maxn);
+                    }
+                }
                 ok = tb_true;
             }
         }

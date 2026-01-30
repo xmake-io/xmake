@@ -28,11 +28,6 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * private implementation
- */
-
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
@@ -351,7 +346,7 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
         tb_hize_t current_pos = tb_stream_offset(istream);
 
         // detect format
-        tb_int_t format = xm_binutils_detect_format(istream);
+        tb_int_t format = xm_binutils_format_detect(istream);
         if (format != XM_BINUTILS_FORMAT_AR) {
             // create entry table
             lua_newtable(lua);

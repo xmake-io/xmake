@@ -74,7 +74,7 @@ tb_int_t xm_binutils_rpath_list(lua_State *lua) {
         }
 
         // detect format
-        tb_int_t format = xm_binutils_detect_format(istream);
+        tb_int_t format = xm_binutils_format_detect(istream);
         if (format < 0) {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "rpath_list: cannot detect file format");
@@ -142,7 +142,7 @@ tb_int_t xm_binutils_rpath_clean(lua_State *lua) {
         }
 
         // detect format
-        tb_int_t format = xm_binutils_detect_format(istream);
+        tb_int_t format = xm_binutils_format_detect(istream);
         if (format < 0) {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "rpath_clean: cannot detect file format");

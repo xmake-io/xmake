@@ -46,6 +46,7 @@ os._getenvs  = os._getenvs or os.getenvs
 os._cpuinfo  = os._cpuinfo or os.cpuinfo
 os._meminfo  = os._meminfo or os.meminfo
 os._readlink = os._readlink or os.readlink
+os._access   = os._access or os.access
 
 -- syserror code
 os.SYSERR_UNKNOWN     = -1
@@ -1148,22 +1149,47 @@ end
 
 -- is executable program file?
 function os.isexec(filepath)
-    assert(filepath)
-
-    -- TODO
-    -- check permission
-
-    -- check executable program exist
-    if os.isfile(filepath) then
-        return true
-    end
     if os.host() == "windows" then
-        for _, suffix in ipairs({".exe", ".cmd", ".bat"}) do
+        local exts_map = os._ISEXEC_WINDOWS_EXTS_MAP
+        if not exts_map then
+            local exts = {".exe", ".com", ".cmd", ".bat", ".ps1", ".sh"}
+            exts_map = {}
+            for _, ext in ipairs(exts) do
+                exts_map[ext] = true
+            end
+            os._ISEXEC_WINDOWS_EXTS_MAP = exts_map
+        end
+        if os.isfile(filepath) then
+            local extension = path.extension(filepath)
+            if extension and #extension > 0 then
+                if exts_map[extension:lower()] then
+                    return true
+                end
+            else
+                -- detect executable file header
+                --
+                -- @note only for files without extension, because .dll is also PE
+                -- pe: native windows executables
+                -- ape: cosmocc/APE executables (e.g. `cosmocc -o foo.exe ...`)
+                -- shebang: scripts starting with `#!`
+                local format = nil
+                if binutils and binutils.format then
+                    format = binutils.format(filepath)
+                end
+                if format == "pe" or format == "ape" or format == "shebang" then
+                    return true
+                end
+            end
+        end
+        for suffix, _ in pairs(exts_map) do
             if os.isfile(filepath .. suffix) then
                 return true
             end
         end
+    elseif os.isfile(filepath) then
+        return os._access(filepath, "x")
     end
+    return false
 end
 
 -- get system host
@@ -1616,4 +1642,3 @@ end
 
 -- return module
 return os
-
