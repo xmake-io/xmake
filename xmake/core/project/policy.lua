@@ -98,6 +98,8 @@ function policy.policies()
             -- Force C++ modules fallback dependency scanner for msvc
             ["build.c++.modules.msvc.fallbackscanner"]  = {description = "Force msvc fallback module dependency scanner.", default = false, type = "boolean"},
             ["build.c++.msvc.fallbackscanner"]          = {description = "Force msvc fallback module dependency scanner. (deprecated)", default = false, type = "boolean"},
+            -- Enable compile_commands
+            ["build.compile_commands"]                  = {description = "Enable compile_commands.", default = true, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for gcc
             ["build.c++.modules.gcc.fallbackscanner"]   = {description = "Force gcc fallback module dependency scanner.", default = false, type = "boolean"},
             ["build.c++.gcc.fallbackscanner"]           = {description = "Force gcc fallback module dependency scanner. (deprecated)", default = false, type = "boolean"},
