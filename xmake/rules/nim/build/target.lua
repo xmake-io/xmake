@@ -25,16 +25,6 @@ import("core.tool.compiler")
 import("core.project.depend")
 import("utils.progress")
 
--- get values from target
--- @see https://github.com/xmake-io/xmake/issues/3930 
-local function _get_values_from_target(target, name)
-    local values = {}
-    for _, value in ipairs((target:get_from(name, "*"))) do
-        table.join2(values, value)
-    end
-    return table.unique(values)
-end
-
 -- generate dependency info
 function _generate_dependinfo(compinst, compflags, sourcefiles, dependinfo)
 
@@ -74,90 +64,6 @@ function _generate_dependinfo(compinst, compflags, sourcefiles, dependinfo)
     end
 end
 
--- add dependency flags
-function _add_dependency_flags(target, compinst, compflags)
-
-    -- add flags from target (includedirs, links, ...)
-    local pathmaps = {
-        {"includedirs",    "includedir"},
-        {"sysincludedirs", "sysincludedir"},
-        {"linkdirs",       "linkdir"}
-    }
-    for _, pathmap in ipairs(pathmaps) do
-        local flags = compiler.map_flags("nim", pathmap[2], _get_values_from_target(target, pathmap[1]))
-        if flags then
-             table.join2(compflags, flags)
-        end
-    end
-
-    local linkmaps = {
-        {"links",    "link"},
-        {"syslinks", "syslink"}
-    }
-    for _, linkmap in ipairs(linkmaps) do
-        local flags = compiler.map_flags("nim", linkmap[2], _get_values_from_target(target, linkmap[1]))
-        if flags then
-             table.join2(compflags, flags)
-        end
-    end
-
-    -- add flags from packages
-    for _, pkg in ipairs(target:orderpkgs()) do
-        for _, pathmap in ipairs(pathmaps) do
-            local flags = compiler.map_flags("nim", pathmap[2], pkg:get(pathmap[1]))
-            if flags then
-                 table.join2(compflags, flags)
-            end
-        end
-        for _, linkmap in ipairs(linkmaps) do
-            local flags = compiler.map_flags("nim", linkmap[2], pkg:get(linkmap[1]))
-            if flags then
-                 table.join2(compflags, flags)
-            end
-        end
-    end
-
-    -- add rpathdirs to linker flags (for shared lib support)
-    local rpathdirs_wrap = {}
-
-    -- add rpathdirs from dependencies
-    if target:is_binary() or target:is_shared() then
-        for _, dep in ipairs(target:orderdeps()) do
-            if dep:is_shared() then
-                table.insert(rpathdirs_wrap, dep:targetdir())
-            end
-        end
-    end
-
-    if #rpathdirs_wrap > 0 then
-        -- deduplicate
-        rpathdirs_wrap = table.unique(rpathdirs_wrap)
-        local rpathflags = compiler.map_flags("nim", "rpathdir", rpathdirs_wrap)
-        if rpathflags then
-             table.join2(compflags, rpathflags)
-        end
-    end
-
-    -- add includedirs from dependencies (for static/shared lib with exportc)
-    -- the dependencies will be compiled via imported symbol at the end
-    -- we need pass includedirs of static/shared lib to the target
-    local includedirs = {}
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:kind() == "static" or dep:kind() == "shared" or dep:is_headeronly() then
-            table.join2(includedirs, table.wrap(dep:get("includedirs")))
-            table.join2(includedirs, table.wrap(dep:get("sysincludedirs")))
-        end
-    end
-    if #includedirs > 0 then
-        -- deduplicate
-        includedirs = table.unique(includedirs)
-        local includeflags = compiler.map_flags("nim", "includedir", includedirs)
-        if includeflags then
-             table.join2(compflags, includeflags)
-        end
-    end
-end
-
 -- build the source files
 function build_sourcefiles(target, sourcebatch, opt)
 
@@ -176,9 +82,6 @@ function build_sourcefiles(target, sourcebatch, opt)
 
     -- get compile flags
     local compflags = compinst:compflags({target = target})
-
-    -- add dependency flags
-    _add_dependency_flags(target, compinst, compflags)
 
     -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})

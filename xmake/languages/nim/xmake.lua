@@ -39,10 +39,13 @@ language("nim")
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
         ,   "target.includedirs"
+        ,   "target.sysincludedirs"
         ,   "toolchain.includedirs"
         }
     ,   binary = {
             "config.linkdirs"
+        ,   "target.includedirs"
+        ,   "target.sysincludedirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
         ,   "target.strip"
@@ -52,12 +55,14 @@ language("nim")
         ,   "config.links"
         ,   "target.links"
         ,   "toolchain.links"
-        ,   "config.syslinks" 
-        ,   "target.syslinks" 
+        ,   "config.syslinks"
+        ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
     ,   shared = {
             "config.linkdirs"
+        ,   "target.includedirs"
+        ,   "target.sysincludedirs"
         ,   "target.linkdirs"
         ,   "target.strip"
         ,   "target.symbols"
@@ -72,6 +77,8 @@ language("nim")
     ,   static = {
             "target.strip"
         ,   "target.symbols"
+        ,   "target.includedirs"
+        ,   "target.sysincludedirs"
         }
     }
 
