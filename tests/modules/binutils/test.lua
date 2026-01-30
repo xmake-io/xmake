@@ -1,4 +1,4 @@
-local binutils = import("core.base.binutils")
+import("core.base.binutils")
 
 function test_format(t)
     local tempdir = "temp/binutils_format"
