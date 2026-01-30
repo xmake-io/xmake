@@ -16,7 +16,7 @@ echo "STB Image: Flip vertically on load set to 1"
 
 echo "Calling static lib addTwo(10): ", addTwo(10)
 echo "Calling static lib getAlphabet(): ", getAlphabet()
-echo "Calling shared lib getMsg('test'): ", getMsg()
+echo "Calling static lib getMsg('test'): ", getMsg()
 
 {.emit: """
 #include <test_header.h>
