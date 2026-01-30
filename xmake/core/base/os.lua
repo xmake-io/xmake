@@ -1158,6 +1158,12 @@ function os.isexec(filepath)
                     return true
                 end
             else
+                -- detect executable file header
+                --
+                -- @note only for files without extension, because .dll is also PE
+                -- pe: native windows executables
+                -- ape: cosmocc/APE executables (e.g. `cosmocc -o foo.exe ...`)
+                -- shebang: scripts starting with `#!`
                 local format = nil
                 if binutils and binutils.format then
                     format = binutils.format(filepath)
