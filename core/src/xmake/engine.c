@@ -915,7 +915,13 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t *engine, tb_char_t **arg
         if (!ok && argv) {
             tb_char_t const *p = argv[0];
             if (p && tb_file_info(p, tb_null)) {
-                tb_strlcpy(path, p, maxn);
+                if (tb_path_is_absolute(p)) {
+                    tb_strlcpy(path, p, maxn);
+                } else {
+                    if (!tb_path_absolute(p, path, maxn)) {
+                        tb_strlcpy(path, p, maxn);
+                    }
+                }
                 ok = tb_true;
             }
         }
