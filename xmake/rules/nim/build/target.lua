@@ -25,6 +25,16 @@ import("core.tool.compiler")
 import("core.project.depend")
 import("utils.progress")
 
+-- get values from target
+-- @see https://github.com/xmake-io/xmake/issues/3930 
+local function _get_values_from_target(target, name)
+    local values = {}
+    for _, value in ipairs((target:get_from(name, "*"))) do
+        table.join2(values, value)
+    end
+    return table.unique(values)
+end
+
 -- generate dependency info
 function _generate_dependinfo(compinst, compflags, sourcefiles, dependinfo)
 
@@ -67,52 +77,42 @@ end
 -- add dependency flags
 function _add_dependency_flags(target, compinst, compflags)
 
-    -- add includedirs from packages
+    -- add flags from target (includedirs, links, ...)
+    local pathmaps = {
+        {"includedirs",    "includedir"},
+        {"sysincludedirs", "sysincludedir"},
+        {"linkdirs",       "linkdir"}
+    }
+    for _, pathmap in ipairs(pathmaps) do
+        local flags = compiler.map_flags("nim", pathmap[2], _get_values_from_target(target, pathmap[1]))
+        if flags then
+             table.join2(compflags, flags)
+        end
+    end
+
+    local linkmaps = {
+        {"links",    "link"},
+        {"syslinks", "syslink"}
+    }
+    for _, linkmap in ipairs(linkmaps) do
+        local flags = compiler.map_flags("nim", linkmap[2], _get_values_from_target(target, linkmap[1]))
+        if flags then
+             table.join2(compflags, flags)
+        end
+    end
+
+    -- add flags from packages
     for _, pkg in ipairs(target:orderpkgs()) do
-        local pkg_includedirs = pkg:get("includedirs")
-        if pkg_includedirs then
-            for _, dir in ipairs(pkg_includedirs) do
-                local includeflags = compinst:_tool():nf_includedir(dir)
-                if includeflags then
-                     table.join2(compflags, includeflags)
-                end
+        for _, pathmap in ipairs(pathmaps) do
+            local flags = compiler.map_flags("nim", pathmap[2], pkg:get(pathmap[1]))
+            if flags then
+                 table.join2(compflags, flags)
             end
         end
-        local pkg_sysincludedirs = pkg:get("sysincludedirs")
-        if pkg_sysincludedirs then
-            for _, dir in ipairs(pkg_sysincludedirs) do
-                local tool = compinst:_tool()
-                local includeflags = tool.nf_sysincludedir and tool:nf_sysincludedir(dir) or tool:nf_includedir(dir)
-                if includeflags then
-                     table.join2(compflags, includeflags)
-                end
-            end
-        end
-        local pkg_linkdirs = pkg:get("linkdirs")
-        if pkg_linkdirs then
-            for _, dir in ipairs(pkg_linkdirs) do
-                local linkflags = compinst:_tool():nf_linkdir(dir)
-                if linkflags then
-                     table.join2(compflags, linkflags)
-                end
-            end
-        end
-        local pkg_links = pkg:get("links")
-        if pkg_links then
-            for _, link in ipairs(pkg_links) do
-                local linkflags = compinst:_tool():nf_link(link)
-                if linkflags then
-                     table.join2(compflags, {linkflags})
-                end
-            end
-        end
-        local pkg_syslinks = pkg:get("syslinks")
-        if pkg_syslinks then
-            for _, link in ipairs(pkg_syslinks) do
-                local linkflags = compinst:_tool():nf_syslink(link)
-                if linkflags then
-                     table.join2(compflags, {linkflags})
-                end
+        for _, linkmap in ipairs(linkmaps) do
+            local flags = compiler.map_flags("nim", linkmap[2], pkg:get(linkmap[1]))
+            if flags then
+                 table.join2(compflags, flags)
             end
         end
     end
@@ -121,9 +121,9 @@ function _add_dependency_flags(target, compinst, compflags)
     local rpathdirs_wrap = {}
 
     -- add rpathdirs from dependencies
-    if target:kind() == "binary" or target:kind() == "shared" then
+    if target:is_binary() or target:is_shared() then
         for _, dep in ipairs(target:orderdeps()) do
-            if dep:kind() == "shared" then
+            if dep:is_shared() then
                 table.insert(rpathdirs_wrap, dep:targetdir())
             end
         end
@@ -132,11 +132,9 @@ function _add_dependency_flags(target, compinst, compflags)
     if #rpathdirs_wrap > 0 then
         -- deduplicate
         rpathdirs_wrap = table.unique(rpathdirs_wrap)
-        for _, rpathdir in ipairs(rpathdirs_wrap) do
-             local rpathflags = compinst:_tool():nf_rpathdir(rpathdir)
-             if rpathflags then
-                 table.join2(compflags, rpathflags)
-             end
+        local rpathflags = compiler.map_flags("nim", "rpathdir", rpathdirs_wrap)
+        if rpathflags then
+             table.join2(compflags, rpathflags)
         end
     end
 
@@ -146,18 +144,16 @@ function _add_dependency_flags(target, compinst, compflags)
     local includedirs = {}
     for _, dep in ipairs(target:orderdeps()) do
         if dep:kind() == "static" or dep:kind() == "shared" or dep:kind() == "headeronly" then
-            table.join2(includedirs, dep:get("includedirs"))
-            table.join2(includedirs, dep:get("sysincludedirs"))
+            table.join2(includedirs, table.wrap(dep:get("includedirs")))
+            table.join2(includedirs, table.wrap(dep:get("sysincludedirs")))
         end
     end
     if #includedirs > 0 then
         -- deduplicate
         includedirs = table.unique(includedirs)
-        for _, includedir in ipairs(includedirs) do
-             local includeflags = compinst:_tool():nf_includedir(includedir)
-             if includeflags then
-                 table.join2(compflags, includeflags)
-             end
+        local includeflags = compiler.map_flags("nim", "includedir", includedirs)
+        if includeflags then
+             table.join2(compflags, includeflags)
         end
     end
 end
