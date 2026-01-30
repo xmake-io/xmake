@@ -169,3 +169,34 @@ function test_async(t)
     t:require(os.isdir(tmpdir2))
     os.rm(tmpdir2, {async = true, detach = true})
 end
+
+function test_isexec(t)
+    local tempdir = "temp/isexec"
+    os.tryrm(tempdir)
+    os.mkdir(tempdir)
+
+    local programfile = os.programfile()
+    if programfile then
+        t:require(os.isexec(programfile))
+    end
+
+    local filepath = path.join(tempdir, "script")
+    io.writefile(filepath, "echo test\n")
+
+    if is_host("windows") then
+        local batfile = path.join(tempdir, "a.bat")
+        io.writefile(batfile, "echo test\r\n")
+        t:require(os.isexec(batfile))
+
+        local suffix = path.join(tempdir, "prog")
+        io.writefile(suffix .. ".exe", "")
+        t:require(os.isexec(suffix))
+    else
+        os.vrunv("chmod", {"-x", filepath})
+        t:require_not(os.isexec(filepath))
+        os.vrunv("chmod", {"+x", filepath})
+        t:require(os.isexec(filepath))
+    end
+
+    os.tryrm(tempdir)
+end
