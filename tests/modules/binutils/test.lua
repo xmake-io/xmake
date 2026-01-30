@@ -14,6 +14,18 @@ function test_format(t)
     io.writefile(scriptfile, "#!/bin/sh\nexit 0\n")
     t:are_equal(binutils.format(scriptfile), "shebang")
 
+    local apefile = path.join(tempdir, "a.ape")
+    io.writefile(apefile, "MZqFpD00")
+    t:are_equal(binutils.format(apefile), "ape")
+
+    local apecom = path.join(tempdir, "a.com")
+    io.writefile(apecom, "MZqFpD00")
+    t:are_equal(binutils.format(apecom), "ape")
+
+    local comfile = path.join(tempdir, "b.com")
+    io.writefile(comfile, "12345678")
+    t:are_equal(binutils.format(comfile), "unknown")
+
     local programfile = os.programfile()
     if programfile then
         local expected = "elf"

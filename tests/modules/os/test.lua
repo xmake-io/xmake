@@ -188,9 +188,17 @@ function test_isexec(t)
         io.writefile(batfile, "echo test\r\n")
         t:require(os.isexec(batfile))
 
+        local comfile = path.join(tempdir, "a.com")
+        io.writefile(comfile, "12345678")
+        t:require(os.isexec(comfile))
+
         local suffix = path.join(tempdir, "prog")
         io.writefile(suffix .. ".exe", "")
         t:require(os.isexec(suffix))
+
+        local suffix2 = path.join(tempdir, "prog2")
+        io.writefile(suffix2 .. ".com", "")
+        t:require(os.isexec(suffix2))
     else
         os.vrunv("chmod", {"-x", filepath})
         t:require_not(os.isexec(filepath))

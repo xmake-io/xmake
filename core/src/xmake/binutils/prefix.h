@@ -35,6 +35,7 @@
 #define XM_BINUTILS_FORMAT_AR      4
 #define XM_BINUTILS_FORMAT_PE      5
 #define XM_BINUTILS_FORMAT_SHEBANG 6
+#define XM_BINUTILS_FORMAT_APE     7
 #define XM_BINUTILS_FORMAT_UNKNOWN 0
 
 // COFF machine types (for format detection)

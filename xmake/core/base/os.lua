@@ -1152,7 +1152,7 @@ function os.isexec(filepath)
     assert(filepath)
 
     if os.host() == "windows" then
-        local exts = {".exe", ".cmd", ".bat", ".ps1", ".sh"}
+        local exts = {".exe", ".com", ".cmd", ".bat", ".ps1", ".sh"}
         if os.isfile(filepath) then
             -- detect file extension first
             local extension = path.extension(filepath):lower()
@@ -1166,7 +1166,7 @@ function os.isexec(filepath)
             if binutils and binutils.format then
                 format = binutils.format(filepath)
             end
-            if format == "pe" or format == "shebang" then
+            if format == "pe" or format == "ape" or format == "shebang" then
                 return true
             end
         end
