@@ -34,12 +34,10 @@
  */
 static tb_bool_t xm_binutils_format_is_pe(tb_stream_ref_t istream, tb_byte_t* first8) {
     tb_assert_and_check_return_val(istream && first8, tb_false);
-    if (!((first8[0] == 'M' && first8[1] == 'Z') || (first8[0] == 'Z' && first8[1] == 'M'))) {
-        return tb_false;
-    }
-
     tb_bool_t ok = tb_false;
     do {
+        tb_check_break((first8[0] == 'M' && first8[1] == 'Z') || (first8[0] == 'Z' && first8[1] == 'M'));
+
         tb_hong_t size = tb_stream_size(istream);
         if (size > 0 && size < XM_BINUTILS_PE_DOS_STUB_MIN_SIZE + 4) {
             break;
@@ -132,11 +130,6 @@ tb_int_t xm_binutils_format_detect(tb_stream_ref_t istream) {
             break;
         }
 
-        if (xm_binutils_format_is_pe(istream, p)) {
-            format = XM_BINUTILS_FORMAT_PE;
-            break;
-        }
-
         if (xm_binutils_format_is_elf(p)) {
             format = XM_BINUTILS_FORMAT_ELF;
             break;
@@ -144,6 +137,11 @@ tb_int_t xm_binutils_format_detect(tb_stream_ref_t istream) {
 
         if (xm_binutils_format_is_macho(p)) {
             format = XM_BINUTILS_FORMAT_MACHO;
+            break;
+        }
+
+        if (xm_binutils_format_is_pe(istream, p)) {
+            format = XM_BINUTILS_FORMAT_PE;
             break;
         }
 
