@@ -6,7 +6,7 @@ add_requires("stb", {system = false})
 
 target("headers")
     set_kind("headeronly")
-    add_files("headers/*.h")
+    add_headerfiles("headers/*.h")
     add_includedirs("headers", {public = true})
 
 target("executablestatic")
