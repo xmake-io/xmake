@@ -267,7 +267,7 @@ function _add_target(jsonfile, target)
     target:data_set("plugin.project.kind", "compile_commands")
 
     -- disable compile_commands?
-    if target:policy("build.compile_commands") == false then
+    if target:policy("generator.compile_commands") == false then
         return
     end
 
