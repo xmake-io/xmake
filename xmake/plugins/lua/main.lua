@@ -73,15 +73,6 @@ function main()
             end
         end
 
-        -- enable diagnosis to get the stack traceback
-        local get_old = option.get
-        option.get = function (name)
-            if name == "diagnosis" then
-                return true
-            end
-            return get_old(name)
-        end
-
         try {
             function ()
                 if script then
@@ -101,7 +92,6 @@ function main()
             },
             finally {
                 function ()
-                    option.get = get_old
                     if scriptfile_stdin then
                         os.rm(scriptfile_stdin)
                     end
