@@ -181,7 +181,7 @@ target("test")
         end
  
         -- test 2: redirect from a .lua file
-        -- FIX: Use cat and merge stderr (2>&1) to ensure we capture output robustly without hanging
+        -- FIX: Use cat and merge stderr (2>&1) to ensure we capture output robustly without hanging on Win
         local scriptfile = path.join(os.curdir(), "test.lua")
         io.writefile(scriptfile, 'print("hello from file")\n')
  
@@ -251,14 +251,23 @@ target("test")
             end
             os.rm(scriptfile)
  
-            -- test 7: pwsh pipe error (skipped error checks for brevity)
+            -- test 7: pwsh pipe error
+            local pwsh_error_pipe_cmd = string.format("Write-Output \"raise(`\"error_pwsh_pipe`\")\" | & '%s' lua --from-stdin", xmake)
+            print("running pwsh: " .. pwsh_error_pipe_cmd)
+            ok, out, err = run_with_pwsh(pwsh_error_pipe_cmd)
+            print("STDOUT 7:\n" .. (out or ""))
+            print("STDERR 7:\n" .. (err or ""))
+            assert(not ok, "test 7 failed: command should have returned error") 
+            assert((err and err:find("error_pwsh_pipe")) or (out and out:find("error_pwsh_pipe")), "test 7 failed: missing error message")
  
             -- test 8: pwsh file redirect error
-             local errorfile = path.join(os.curdir(), "error_pwsh.lua")
+            local errorfile = path.join(os.curdir(), "error_pwsh.lua")
             io.writefile(errorfile, 'raise("error_pwsh_file")\n')
             local pwsh_error_file_cmd = string.format("Get-Content '%s' | & '%s' lua --from-stdin", errorfile, xmake)
             print("running pwsh: " .. pwsh_error_file_cmd)
             ok, out, err = run_with_pwsh(pwsh_error_file_cmd)
+            print("STDOUT 8:\n" .. (out or ""))
+            print("STDERR 8:\n" .. (err or ""))
             assert(not ok, "test 8 failed: command should have returned error") 
             assert((err and err:find("error_pwsh_file")) or (out and out:find("error_pwsh_file")), "test 8 failed: missing error message")
             os.rm(errorfile)
