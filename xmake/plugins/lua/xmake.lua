@@ -48,7 +48,7 @@ task("lua")
                 ,   {nil, "from-stdin"  , "k"   , nil   ,   "Run script from stdin",
                                                             "e.g.",
                                                             "    - CMD",
-                                                            "      - Single:    echo print('hello') | xmake lua --from-stdin",
+                                                            "      - Single:    echo print(\"hello\") | xmake lua --from-stdin",
                                                             "      - Multiline: (echo print('1') && echo print('2')) | xmake lua --from-stdin",
                                                             "      - File:      type script.lua | xmake lua --from-stdin",
                                                             "    - PWSH",
