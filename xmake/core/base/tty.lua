@@ -237,11 +237,53 @@ end
 
 -- find the shell from the parent process (linux)
 function tty._find_shell_from_parent()
+    local shell
+    if os.host() == "windows" then
+        local winos = require("base/winos")
+        if winos.processes then
+            local processes = winos.processes()
+            if processes then
+                local pid = os.getpid()
+                local processes_map = {}
+                for _, process in ipairs(processes) do
+                    processes_map[process.pid] = process
+                end
+                local count = 0
+                while pid and pid ~= 0 and count < 10 do
+                    count = count + 1
+                    local process = processes_map[pid]
+                    if not process then
+                        break
+                    end
+                    local name = process.name
+                    if name then
+                        name = name:lower()
+                        if name:sub(-4) == ".exe" then
+                            name = name:sub(1, #name - 4)
+                        end
+                        for _, shellname in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "powershell", "cmd", "sh"}) do
+                            if name == shellname then
+                                shell = shellname
+                                break
+                            end
+                        end
+                    end
+                    if shell then
+                        break
+                    end
+                    pid = process.ppid
+                end
+            end
+        end
+    end
+    if shell then
+        return shell
+    end
+
     if os.host() ~= "linux" or not os.isfile("/proc/self/stat") then
         return
     end
 
-    local shell
     local pid = os.getpid()
     local count = 0
     while pid ~= 0 and count < 4 do
@@ -295,22 +337,7 @@ function tty.shell()
         if os.getenv("NU_VERSION") then
             shell = "nu"
         end
-        if not shell then
-            local subhost = xmake._SUBHOST
-            if subhost == "windows" then
-                if os.getenv("PROMPT") then
-                    shell = "cmd"
-                else
-                    local ok, result = os.iorun("pwsh -v")
-                    if ok then
-                        shell = "pwsh"
-                    else
-                        shell = "powershell"
-                    end
-                end
-            end
-        end
-        -- try to find the shell from the parent process (linux)
+        -- try to find the shell from the parent process
         if not shell then
             shell = tty._find_shell_from_parent()
         end

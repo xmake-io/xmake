@@ -31,6 +31,7 @@ winos._oem_cp          = winos._oem_cp  or winos.oem_cp
 winos._registry_query  = winos._registry_query or winos.registry_query
 winos._registry_keys   = winos._registry_keys or winos.registry_keys
 winos._registry_values = winos._registry_values or winos.registry_values
+winos._processes       = winos._processes or winos.processes
 
 function winos.ansi_cp()
     if not winos._ANSI_CP then
@@ -44,6 +45,10 @@ function winos.oem_cp()
          winos._OEM_CP = winos._oem_cp()
     end
     return winos._OEM_CP
+end
+
+if not winos.processes then
+    winos.processes = winos._processes
 end
 
 -- get windows version from name

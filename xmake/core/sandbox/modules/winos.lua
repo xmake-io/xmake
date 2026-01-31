@@ -33,6 +33,7 @@ sandbox_winos.console_cp              = winos.console_cp
 sandbox_winos.console_output_cp       = winos.console_output_cp
 sandbox_winos.logical_drives          = winos.logical_drives
 sandbox_winos.cmdargv                 = winos.cmdargv
+sandbox_winos.processes               = winos.processes
 sandbox_winos.inherit_handles_safely  = winos.inherit_handles_safely
 
 -- get windows system version
