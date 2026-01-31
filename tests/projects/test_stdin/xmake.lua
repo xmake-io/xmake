@@ -6,7 +6,7 @@ target("test")
         local xmake_dir = os.getenv("XMAKE_PROGRAM_DIR")
         print("XMAKE_PROGRAM_DIR: " .. (xmake_dir or "nil"))
         print("xmake binary: " .. xmake)
-        
+
         local function run_with_env(cmd_str)
             local outfile = os.tmpfile()
             local errfile = os.tmpfile()
@@ -16,7 +16,7 @@ target("test")
             end
             -- Redirect in shell using subshell to capture all output
             shell_cmd = string.format("(%s) > %s 2> %s", shell_cmd, outfile, errfile)
-            
+
             local code = 0
             try
             {
@@ -33,10 +33,10 @@ target("test")
 
             local out = io.readfile(outfile)
             local err = io.readfile(errfile)
-            
+
             os.rm(outfile)
             os.rm(errfile)
-            
+
             return (code == 0), out, err
         end
 
@@ -51,7 +51,7 @@ target("test")
             -- Note: We must explicitly exit with $LASTEXITCODE because pwsh script blocks 
             -- do not automatically propagate native command exit codes to process exit status.
             shell_cmd = string.format("& { %s; exit $LASTEXITCODE } > '%s' 2> '%s'", shell_cmd, outfile, errfile)
-            
+
             local code = 0
             try
             {
@@ -68,10 +68,10 @@ target("test")
 
             local out = io.readfile(outfile)
             local err = io.readfile(errfile)
-            
+
             os.rm(outfile)
             os.rm(errfile)
-            
+
             return (code == 0), out, err
         end
 
@@ -116,7 +116,7 @@ target("test")
         ok, out, err = run_with_env(error_pipe_cmd)
         print("STDOUT 3:\n" .. (out or ""))
         print("STDERR 3:\n" .. (err or ""))
-        assert(not ok, "test 3 failed: command should have returned error") 
+        assert(not ok, "test 3 failed: command should have returned error")
         assert((err and err:find("error_pipe")) or (out and out:find("error_pipe")), "test 3 failed: missing error message")
 
         -- test 4: verify traceback on error via file
@@ -134,7 +134,7 @@ target("test")
         -- pwsh tests
         if os.execv("pwsh", {"-v"}) == 0 then
             print("pwsh detected, running pwsh tests...")
-            
+
             -- test 5: pwsh pipe success
             -- Note: quoting for pwsh inside lua string inside pwsh -c requires care.
             -- We want pwsh to execute: Write-Output "print(`"hello from pwsh pipe`")" | & 'xmake' ...
@@ -169,7 +169,7 @@ target("test")
             ok, out, err = run_with_pwsh(pwsh_error_pipe_cmd)
             print("STDOUT 7:\n" .. (out or ""))
             print("STDERR 7:\n" .. (err or ""))
-            assert(not ok, "test 7 failed: command should have returned error") 
+            assert(not ok, "test 7 failed: command should have returned error")
             assert((err and err:find("error_pwsh_pipe")) or (out and out:find("error_pwsh_pipe")), "test 7 failed: missing error message")
 
             -- test 8: pwsh file redirect error
@@ -180,7 +180,7 @@ target("test")
             ok, out, err = run_with_pwsh(pwsh_error_file_cmd)
             print("STDOUT 8:\n" .. (out or ""))
             print("STDERR 8:\n" .. (err or ""))
-            assert(not ok, "test 8 failed: command should have returned error") 
+            assert(not ok, "test 8 failed: command should have returned error")
             assert((err and err:find("error_pwsh_file")) or (out and out:find("error_pwsh_file")), "test 8 failed: missing error message")
             os.rm(errorfile)
         else
