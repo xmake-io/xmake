@@ -1106,6 +1106,51 @@ function os.iorunv(program, argv, opt)
     return ok == 0, outdata, errdata, errors
 end
 
+-- run command in the given shell and return output and error data
+--
+-- @param shell     the shell name (e.g. sh, bash, zsh, cmd, pwsh, powershell)
+-- @param cmd       the command string
+-- @param opt       the options
+--
+-- @return          ok, stdout, stderr, errors
+--
+function os.iorun_in_shell(shell, cmd, opt)
+    
+    -- check
+    if not shell or not cmd then
+        return false, nil, nil, "invalid arguments"
+    end
+
+    -- run in pwsh/powershell
+    if shell == "pwsh" or shell == "powershell" then
+        local shell_cmd = string.format("& { %s; exit $LASTEXITCODE }", cmd)
+        return os.iorunv(shell, {"-c", shell_cmd}, opt)
+    
+    -- run in cmd
+    elseif shell == "cmd" then
+        
+        -- use batfile to robust pipe handling
+        local batfile = os.tmpfile() .. ".bat"
+        local batch_content = "@echo off\n"
+        
+        -- append command
+        batch_content = batch_content .. cmd .. "\n"
+        
+        -- append exit code check
+        batch_content = batch_content .. "if %errorlevel% neq 0 exit /b %errorlevel%\n"
+        
+        io.writefile(batfile, batch_content)
+        
+        local ok, out, err, errors = os.iorunv(batfile, {}, opt)
+        os.rm(batfile)
+        return ok, out, err, errors
+
+    -- run in sh/bash/zsh...
+    else 
+        return os.iorunv(shell, {"-c", cmd}, opt)
+    end
+end
+
 -- raise an exception and abort the current script
 --
 -- the parent function will capture it if we uses pcall or xpcall

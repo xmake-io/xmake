@@ -324,6 +324,12 @@ function sandbox_os.iorunv(program, argv, opt)
     return outdata, errdata
 end
 
+-- run command in shell with io redirection and return (ok, out, err)
+function sandbox_os.iorun_in_shell(shell, cmd, ...)
+    cmd = vformat(cmd, ...)
+    return os.iorun_in_shell(shell, cmd)
+end
+
 -- execute command
 function sandbox_os.exec(cmd, ...)
     cmd = vformat(cmd, ...)
