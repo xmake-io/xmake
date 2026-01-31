@@ -169,21 +169,21 @@ target("test")
             end
         end
  
-        -- test 1: pipe a few lines of lua code from echo
-        local pipe_cmd = string.format("echo 'print(\"hello from pipe\")' | '%s' lua --from-stdin", xmake)
+        -- test 1: pipe a few lines of lua code from echo (multiline)
+        local pipe_cmd = string.format("(echo 'print(\"hello\")'; echo 'print(\"from pipe\")') | '%s' lua --from-stdin", xmake)
         print("running: " .. pipe_cmd)
         ok, out, err = run_with_env(pipe_cmd)
         print("STDOUT 1:\n" .. (out or ""))
         print("STDERR 1:\n" .. (err or ""))
         assert(ok, "test 1 failed: command returned error")
         if out then
-            assert(out:find("hello from pipe"), "test 1 failed: output mismatch")
+            assert(out:find("hello") and out:find("from pipe"), "test 1 failed: output mismatch")
         end
  
-        -- test 2: redirect from a .lua file
+        -- test 2: redirect from a .lua file (multiline)
         -- FIX: Use cat and merge stderr (2>&1) to ensure we capture output robustly without hanging on Win
         local scriptfile = path.join(os.curdir(), "test.lua")
-        io.writefile(scriptfile, 'print("hello from file")\n')
+        io.writefile(scriptfile, 'print("hello")\nprint("from file")\n')
  
         local cat_cmd = string.format("cat '%s' | '%s' lua --from-stdin 2>&1", path.unix(scriptfile), xmake)
         print("running: " .. cat_cmd)
@@ -193,22 +193,23 @@ target("test")
  
         assert(ok, "test 2 failed: command returned error")
         if out then
-            assert(out:find("hello from file"), "test 2 failed: output mismatch")
+            assert(out:find("hello") and out:find("from file"), "test 2 failed: output mismatch")
         end
         os.rm(scriptfile)
  
-        -- test 3: verify traceback on error via pipe
-        local error_pipe_cmd = string.format("echo 'raise(\"error_pipe\")' | '%s' lua --from-stdin", xmake)
+        -- test 3: verify traceback on error via pipe (multiline)
+        local error_pipe_cmd = string.format("(echo 'print(\"ok step\")'; echo 'raise(\"error_pipe\")') | '%s' lua --from-stdin", xmake)
         print("running: " .. error_pipe_cmd)
         ok, out, err = run_with_env(error_pipe_cmd)
         print("STDOUT 3:\n" .. (out or ""))
         print("STDERR 3:\n" .. (err or ""))
         assert(not ok, "test 3 failed: command should have returned error") 
+        if out then assert(out:find("ok step"), "test 3 failed: missing ok step output") end
         assert((err and err:find("error_pipe")) or (out and out:find("error_pipe")), "test 3 failed: missing error message")
  
-        -- test 4: verify traceback on error via file
+        -- test 4: verify traceback on error via file (multiline)
         local errorfile = path.join(os.curdir(), "error.lua")
-        io.writefile(errorfile, 'raise("error_file")\n')
+        io.writefile(errorfile, 'print("ok step")\nraise("error_file")\n')
  
         -- FIX: Use cat and merge stderr (2>&1)
         local error_file_cmd = string.format("cat '%s' | '%s' lua --from-stdin 2>&1", path.unix(errorfile), xmake)
@@ -219,6 +220,7 @@ target("test")
  
         assert(not ok, "test 4 failed: command should have returned error")
         -- Check out (merged) or err just in case
+        if out then assert(out:find("ok step"), "test 4 failed: missing ok step output") end
         assert((err and err:find("error_file")) or (out and out:find("error_file")), "test 4 failed: missing error message")
         os.rm(errorfile)
  
@@ -226,20 +228,20 @@ target("test")
         if os.execv("pwsh", {"-v"}) == 0 then
             print("pwsh detected, running pwsh tests...")
  
-            -- test 5: pwsh pipe success
-            local pwsh_pipe_cmd = string.format("Write-Output \"print(`\"hello from pwsh pipe`\")\" | & '%s' lua --from-stdin", xmake)
+            -- test 5: pwsh pipe success (multiline)
+            local pwsh_pipe_cmd = string.format("Write-Output \"print(`\"hello`\")`nprint(`\"from pwsh pipe`\")\" | & '%s' lua --from-stdin", xmake)
             print("running pwsh: " .. pwsh_pipe_cmd)
             ok, out, err = run_with_pwsh(pwsh_pipe_cmd)
             print("STDOUT 5:\n" .. (out or ""))
             print("STDERR 5:\n" .. (err or ""))
             assert(ok, "test 5 failed: command returned error")
             if out then
-                assert(out:find("hello from pwsh pipe"), "test 5 failed: output mismatch")
+                assert(out:find("hello") and out:find("from pwsh pipe"), "test 5 failed: output mismatch")
             end
  
-            -- test 6: pwsh file redirect success
+            -- test 6: pwsh file redirect success (multiline)
             local scriptfile = path.join(os.curdir(), "test_pwsh.lua")
-            io.writefile(scriptfile, 'print("hello from pwsh file")\n')
+            io.writefile(scriptfile, 'print("hello")\nprint("from pwsh file")\n')
             local pwsh_redirect_cmd = string.format("Get-Content '%s' | & '%s' lua --from-stdin", scriptfile, xmake)
             print("running pwsh: " .. pwsh_redirect_cmd)
             ok, out, err = run_with_pwsh(pwsh_redirect_cmd)
@@ -247,28 +249,30 @@ target("test")
             print("STDERR 6:\n" .. (err or ""))
             assert(ok, "test 6 failed: command returned error")
             if out then
-                assert(out:find("hello from pwsh file"), "test 6 failed: output mismatch")
+                assert(out:find("hello") and out:find("from pwsh file"), "test 6 failed: output mismatch")
             end
             os.rm(scriptfile)
  
-            -- test 7: pwsh pipe error
-            local pwsh_error_pipe_cmd = string.format("Write-Output \"raise(`\"error_pwsh_pipe`\")\" | & '%s' lua --from-stdin", xmake)
+            -- test 7: pwsh pipe error (multiline)
+            local pwsh_error_pipe_cmd = string.format("Write-Output \"print(`\"ok step`\")`nraise(`\"error_pwsh_pipe`\")\" | & '%s' lua --from-stdin", xmake)
             print("running pwsh: " .. pwsh_error_pipe_cmd)
             ok, out, err = run_with_pwsh(pwsh_error_pipe_cmd)
             print("STDOUT 7:\n" .. (out or ""))
             print("STDERR 7:\n" .. (err or ""))
             assert(not ok, "test 7 failed: command should have returned error") 
+            if out then assert(out:find("ok step"), "test 7 failed: missing ok step output") end
             assert((err and err:find("error_pwsh_pipe")) or (out and out:find("error_pwsh_pipe")), "test 7 failed: missing error message")
  
-            -- test 8: pwsh file redirect error
+            -- test 8: pwsh file redirect error (multiline)
             local errorfile = path.join(os.curdir(), "error_pwsh.lua")
-            io.writefile(errorfile, 'raise("error_pwsh_file")\n')
+            io.writefile(errorfile, 'print("ok step")\nraise("error_pwsh_file")\n')
             local pwsh_error_file_cmd = string.format("Get-Content '%s' | & '%s' lua --from-stdin", errorfile, xmake)
             print("running pwsh: " .. pwsh_error_file_cmd)
             ok, out, err = run_with_pwsh(pwsh_error_file_cmd)
             print("STDOUT 8:\n" .. (out or ""))
             print("STDERR 8:\n" .. (err or ""))
             assert(not ok, "test 8 failed: command should have returned error") 
+            if out then assert(out:find("ok step"), "test 8 failed: missing ok step output") end
             assert((err and err:find("error_pwsh_file")) or (out and out:find("error_pwsh_file")), "test 8 failed: missing error message")
             os.rm(errorfile)
         else
@@ -280,20 +284,20 @@ target("test")
             print("windows detected, running cmd.exe tests...")
             local win_xmake = xmake:gsub("/", "\\")
  
-            -- test 9: cmd pipe success
-            local cmd_pipe_cmd = string.format("echo print(\"hello from cmd pipe\") | \"%s\" lua --from-stdin", win_xmake)
+            -- test 9: cmd pipe success (multiline)
+            local cmd_pipe_cmd = string.format("(echo print\"hello\" && echo print\"from cmd pipe\") | \"%s\" lua --from-stdin", win_xmake)
             print("running cmd: " .. cmd_pipe_cmd)
             ok, out, err = run_with_cmd(cmd_pipe_cmd)
             print("STDOUT 9:\n" .. (out or ""))
             print("STDERR 9:\n" .. (err or ""))
             assert(ok, "test 9 failed: command returned error")
-            if out then assert(out:find("hello from cmd pipe"), "test 9 failed: output mismatch") end
+            if out then assert(out:find("hello") and out:find("from cmd pipe"), "test 9 failed: output mismatch") end
  
-            -- test 10: cmd file pipe success
+            -- test 10: cmd file pipe success (multiline)
             local scriptfile = path.join(os.curdir(), "test_cmd.lua")
             local win_scriptfile = scriptfile:gsub("/", "\\")
             -- FIX: Add newline for robust 'type' piping
-            io.writefile(scriptfile, 'print("hello from cmd file")\n')
+            io.writefile(scriptfile, 'print("hello")\nprint("from cmd file")\n')
  
             local cmd_file_cmd = string.format("type \"%s\" | \"%s\" lua --from-stdin", win_scriptfile, win_xmake)
             print("running cmd: " .. cmd_file_cmd)
@@ -301,22 +305,23 @@ target("test")
             print("STDOUT 10:\n" .. (out or ""))
             print("STDERR 10:\n" .. (err or ""))
             assert(ok, "test 10 failed: command returned error")
-            if out then assert(out:find("hello from cmd file"), "test 10 failed: output mismatch") end
+            if out then assert(out:find("hello") and out:find("from cmd file"), "test 10 failed: output mismatch") end
             os.rm(scriptfile)
  
-            -- test 11: cmd pipe error
-            local cmd_err_pipe_cmd = string.format("echo raise(\"error_cmd_pipe\") | \"%s\" lua --from-stdin", win_xmake)
+            -- test 11: cmd pipe error (multiline)
+            local cmd_err_pipe_cmd = string.format("(echo print\"ok step\" && echo raise\"error_cmd_pipe\") | \"%s\" lua --from-stdin", win_xmake)
             print("running cmd: " .. cmd_err_pipe_cmd)
             ok, out, err = run_with_cmd(cmd_err_pipe_cmd)
             print("STDOUT 11:\n" .. (out or ""))
             print("STDERR 11:\n" .. (err or ""))
             assert(not ok, "test 11 failed: command should have returned error")
+            if out then assert(out:find("ok step"), "test 11 failed: missing ok step output") end
             assert((err and err:find("error_cmd_pipe")) or (out and out:find("error_cmd_pipe")), "test 11 failed: missing error message")
  
-             -- test 12: cmd file pipe error
+             -- test 12: cmd file pipe error (multiline)
             local errorfile = path.join(os.curdir(), "error_cmd.lua")
             local win_errorfile = errorfile:gsub("/", "\\")
-            io.writefile(errorfile, 'raise("error_cmd_file")\n')
+            io.writefile(errorfile, 'print("ok step")\nraise("error_cmd_file")\n')
  
             local cmd_err_file_cmd = string.format("type \"%s\" | \"%s\" lua --from-stdin", win_errorfile, win_xmake)
             print("running cmd: " .. cmd_err_file_cmd)
@@ -324,6 +329,7 @@ target("test")
             print("STDOUT 12:\n" .. (out or ""))
             print("STDERR 12:\n" .. (err or ""))
             assert(not ok, "test 12 failed: command should have returned error") 
+            if out then assert(out:find("ok step"), "test 12 failed: missing ok step output") end
             assert((err and err:find("error_cmd_file")) or (out and out:find("error_cmd_file")), "test 12 failed: missing error message")
             os.rm(errorfile)
         end
