@@ -54,14 +54,60 @@ function main()
 
     -- run script
     local script = option.get("script")
-    if script then
-        run_script(script, {
-            curdir = os.workingdir(),
-            verbose = option.get("verbose"),
-            diagnosis = option.get("diagnosis"),
-            command = option.get("command"),
-            arguments = option.get("arguments"),
-            deserialize = option.get("deserialize")})
+    local arguments = option.get("arguments")
+    local from_stdin = option.get("from_stdin") or option.get("from-stdin")
+    if script or from_stdin then
+
+        -- run script from stdin?
+        local scriptfile_stdin
+        if script == "-" or from_stdin then
+            local script_content = io.stdin:read("*a")
+            if script_content then
+                scriptfile_stdin = os.tmpfile("xmake_lua_stdin") .. ".lua"
+                io.writefile(scriptfile_stdin, script_content)
+                if from_stdin and script and script ~= "-" then
+                    arguments = arguments or {}
+                    table.insert(arguments, 1, script)
+                end
+                script = scriptfile_stdin
+            end
+        end
+
+        -- enable diagnosis to get the stack traceback
+        local get_old = option.get
+        option.get = function (name)
+            if name == "diagnosis" then
+                return true
+            end
+            return get_old(name)
+        end
+
+        try {
+            function ()
+                if script then
+                    run_script(script, {
+                        curdir = os.workingdir(),
+                        verbose = option.get("verbose"),
+                        diagnosis = option.get("diagnosis"),
+                        command = option.get("command"),
+                        arguments = arguments,
+                        deserialize = option.get("deserialize")})
+                end
+            end,
+            catch {
+                function (errors)
+                    raise(errors)
+                end
+            },
+            finally {
+                function ()
+                    option.get = get_old
+                    if scriptfile_stdin then
+                        os.rm(scriptfile_stdin)
+                    end
+                end
+            }
+        }
     else
         -- enter interactive mode
         sandbox.interactive()

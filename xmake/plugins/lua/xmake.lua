@@ -45,6 +45,7 @@ task("lua")
                     {'l', "list"        , "k"   , nil   ,   "List all scripts."                                             }
                 ,   {'c', "command"     , "k"   , nil   ,   "Run script as command"                                         }
                 ,   {'d', "deserialize" , "kv"  , nil   ,   "Deserialize arguments starts with given prefix"                }
+                ,   {nil, "from-stdin"  , "k"   , nil   ,   "Run script from stdin"                                         }
                 ,   {nil, "script"      , "v"   , nil   ,   "Run the given lua script name, file or module and enter interactive mode if no given script.",
                                                             "e.g.",
                                                             "    - xmake lua (enter interactive mode)",
