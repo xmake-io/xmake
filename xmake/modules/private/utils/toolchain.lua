@@ -168,9 +168,10 @@ function get_clang_target(toolchain)
 end
 
 -- get clang target flags
+-- @see https://github.com/xmake-io/xmake/issues/7271
 function get_clang_target_flags(toolchain)
     local target
-    if toolchain:is_cross() then
+    if toolchain:is_cross() or toolchain:is_plat("windows") then
         target = get_clang_target(toolchain)
         if target then
             return "--target=" .. target
