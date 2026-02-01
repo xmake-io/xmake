@@ -61,7 +61,7 @@ function main()
         -- run script from stdin?
         local scriptfile_stdin
         if script == "-" or from_stdin then
-            local script_content = io.stdin:read("*a")
+            local script_content = io.read("*a")
             if script_content then
                 scriptfile_stdin = os.tmpfile("xmake_lua_stdin_" .. hash.uuid4()) .. ".lua"
                 io.writefile(scriptfile_stdin, script_content)
