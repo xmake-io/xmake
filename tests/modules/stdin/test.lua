@@ -98,31 +98,32 @@ function main(t)
 		end
 
 		if pwsh ~= "" then
+			local run_stdin = string.format('env "%s" l --stdin', xmake)
 			test_shell(
 				"pwsh_single",
-				string.format('%s -c "echo \\"print(\'hello_pwsh\')\\" | sh -c \\"%s l --stdin\\""', pwsh, xmake),
+				string.format('%s -c "echo \\"print(\'hello_pwsh\')\\" | %s"', pwsh, run_stdin),
 				"hello_pwsh"
 			)
 			test_shell(
 				"pwsh_calc",
-				string.format('%s -c "echo \\"local f = 1+1; print(f)\\" | sh -c \\"%s l --stdin\\""', pwsh, xmake),
+				string.format('%s -c "echo \\"local f = 1+1; print(f)\\" | %s"', pwsh, run_stdin),
 				"2"
 			)
 			test_shell(
 				"pwsh_main",
 				string.format(
-					'%s -c "echo \\"function main() print(\'in_pwsh_main\') end\\" | sh -c \\"%s l --stdin\\""',
+					'%s -c "echo \\"function main() print(\'in_pwsh_main\') end\\" | %s"',
 					pwsh,
-					xmake
+					run_stdin
 				),
 				"in_pwsh_main"
 			)
 			test_shell(
 				"pwsh_multi",
 				string.format(
-					'%s -c "echo \\"print(\'pline1\')\\" \\"print(\'pline2\')\\" | sh -c \\"%s l --stdin\\""',
+					'%s -c "echo \\"print(\'pline1\')\\" \\"print(\'pline2\')\\" | %s"',
 					pwsh,
-					xmake
+					run_stdin
 				),
 				"pline1[\r\n]+pline2"
 			)
