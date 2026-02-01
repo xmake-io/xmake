@@ -59,45 +59,24 @@ function main()
     if script or from_stdin then
 
         -- run script from stdin?
-        local scriptfile_stdin
+        local script_content
         if script == "-" or from_stdin then
-            local script_content = io.read("*a")
-            if script_content then
-                scriptfile_stdin = os.tmpfile("xmake_lua_stdin_" .. hash.uuid4()) .. ".lua"
-                io.writefile(scriptfile_stdin, script_content)
-                if from_stdin and script and script ~= "-" then
-                    arguments = arguments or {}
-                    table.insert(arguments, 1, script)
-                end
-                script = scriptfile_stdin
+            script_content = io.read("*a")
+            if not script or script == "-" then
+                script = "xmake_lua_stdin"
             end
         end
 
-        try {
-            function ()
-                if script then
-                    run_script(script, {
-                        curdir = os.workingdir(),
-                        verbose = option.get("verbose"),
-                        diagnosis = option.get("diagnosis"),
-                        command = option.get("command"),
-                        arguments = arguments,
-                        deserialize = option.get("deserialize")})
-                end
-            end,
-            catch {
-                function (errors)
-                    raise(errors)
-                end
-            },
-            finally {
-                function ()
-                    if scriptfile_stdin then
-                        os.rm(scriptfile_stdin)
-                    end
-                end
-            }
-        }
+        if script then
+            run_script(script, {
+                curdir = os.workingdir(),
+                verbose = option.get("verbose"),
+                diagnosis = option.get("diagnosis"),
+                command = option.get("command"),
+                arguments = arguments,
+                content = script_content,
+                deserialize = option.get("deserialize")})
+        end
     else
         -- enter interactive mode
         sandbox.interactive()

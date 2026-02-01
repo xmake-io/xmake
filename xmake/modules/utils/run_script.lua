@@ -61,7 +61,12 @@ function _run_script(script, args, opt)
     local script_type, script_name
 
     -- import and run script
-    if path.extension(script) == ".lua" and os.isfile(script) then
+    if opt.content then
+
+        -- run the given lua script content
+        script_type, script_name = "given lua script content", script
+        func = import(script, {anonymous = true, content = opt.content})
+    elseif path.extension(script) == ".lua" and os.isfile(script) then
 
         -- run the given lua script file (xmake lua /tmp/script.lua)
         script_type, script_name = "given lua script file", path.relative(script)
