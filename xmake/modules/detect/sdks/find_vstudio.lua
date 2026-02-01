@@ -394,7 +394,7 @@ function _check_vcvarsall_env(vars)
     if not option.get("diagnosis") then
         return
     end
-    local check_vars = {"PATH", "INCLUDE", "LIBPATH"}
+    local check_vars = {"PATH", "INCLUDE", "LIB", "LIBPATH"}
     for _, name in ipairs(check_vars) do
         local value_org = _env_orgs[name]
         if value_org == nil then
