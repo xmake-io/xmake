@@ -391,7 +391,10 @@ end
 -- check if the environment variables are truncated
 -- https://github.com/xmake-io/xmake/issues/7281
 function _check_vcvarsall_env(vars)
-    local check_vars = {"PATH", "INCLUDE", "LIB", "LIBPATH"}
+    if not option.get("diagnosis") then
+        return
+    end
+    local check_vars = {"PATH", "INCLUDE", "LIBPATH"}
     for _, name in ipairs(check_vars) do
         local value_org = _env_orgs[name]
         if value_org == nil then
@@ -408,12 +411,10 @@ function _check_vcvarsall_env(vars)
             local values_new = hashset.from(path.splitenv(value_new))
             for _, p in ipairs(value_org) do
                 if not values_new:has(p) then
-                    if option.get("diagnosis") then
-                        if #p > 256 then
-                            p = p:sub(1, 256) .. "..."
-                        end
-                        wprint("%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!\n  > %s", name, p)
+                    if #p > 256 then
+                        p = p:sub(1, 256) .. "..."
                     end
+                    cprint("${color.warning}%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!\n  > %s", name, p)
                     break
                 end
             end
