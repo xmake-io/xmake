@@ -116,6 +116,9 @@ function main(t)
 
         if pwsh ~= "" then
             local run_stdin = string.format("%s l --stdin", xmake)
+            if os.host() == "macosx" then
+				run_stdin = string.format('sh -c \\"%s\\"', run_stdin)
+			end
             test_shell(
                 "pwsh_single",
                 string.format('%s -c "echo \\"print(\'hello_pwsh\')\\" | %s"', pwsh, run_stdin),
