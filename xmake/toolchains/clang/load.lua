@@ -42,16 +42,14 @@ function main(toolchain, suffix)
         toolchain:set("toolset", "ranlib",  "llvm-ranlib" .. suffix)
     end
 
-    -- add target flags if it's cross-compilation
-    if toolchain:is_cross() then
-        local flags = toolchain_utils.get_clang_target_flags(toolchain)
-        if flags then
-            toolchain:add("cxflags", flags)
-            toolchain:add("mxflags", flags)
-            toolchain:add("asflags", flags)
-            toolchain:add("ldflags", flags)
-            toolchain:add("shflags", flags)
-        end
+    -- add target flags
+    local flags = toolchain_utils.get_clang_target_flags(toolchain)
+    if flags then
+        toolchain:add("cxflags", flags)
+        toolchain:add("mxflags", flags)
+        toolchain:add("asflags", flags)
+        toolchain:add("ldflags", flags)
+        toolchain:add("shflags", flags)
     end
 
     -- set llvm runtimes

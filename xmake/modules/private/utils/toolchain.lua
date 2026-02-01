@@ -169,9 +169,12 @@ end
 
 -- get clang target flags
 function get_clang_target_flags(toolchain)
-    local target = get_clang_target(toolchain)
-    if target then
-        return "--target=" .. target
+    local target
+    if toolchain:is_cross() then
+        target = get_clang_target(toolchain)
+        if target then
+            return "--target=" .. target
+        end
     end
     if toolchain:is_arch("x86_64", "x64") then
         return "-m64"
