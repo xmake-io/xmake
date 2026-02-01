@@ -278,6 +278,7 @@ tb_int_t xm_winos_registry_query(lua_State *lua);
 tb_int_t xm_winos_registry_keys(lua_State *lua);
 tb_int_t xm_winos_registry_values(lua_State *lua);
 tb_int_t xm_winos_short_path(lua_State *lua);
+tb_int_t xm_winos_processes(lua_State* lua);
 #endif
 
 // the utf8 functions
@@ -483,6 +484,7 @@ static luaL_Reg const g_winos_functions[] = {
     { "registry_keys", xm_winos_registry_keys },
     { "registry_values", xm_winos_registry_values },
     { "short_path", xm_winos_short_path },
+    { "processes", xm_winos_processes },
     { tb_null, tb_null },
 };
 #endif
