@@ -398,9 +398,9 @@ function _check_vcvarsall_env(vars)
     for _, name in ipairs(check_vars) do
         local value_org = _env_orgs[name]
         if value_org == nil then
-            value_org = os.getenv(name)
-            if value_org then
-                _env_orgs[name] = path.splitenv(value_org)
+            local value_str = os.getenv(name)
+            if value_str then
+                _env_orgs[name] = path.splitenv(value_str)
             else
                 _env_orgs[name] = false
             end
