@@ -47,18 +47,8 @@ task("lua")
                 ,   {'d', "deserialize" , "kv"  , nil   ,   "Deserialize arguments starts with given prefix"                }
                 ,   {nil, "stdin"  , "k"   , nil   ,   "Run script from stdin",
                                                             "e.g.",
-                                                            "    - CMD",
-                                                            "      - Single:    echo print(\"hello\") | xmake lua --stdin",
-                                                            "      - Multiline: (echo print('1') && echo print('2')) | xmake lua --stdin",
-                                                            "      - File:      type script.lua | xmake lua --stdin",
-                                                            "    - PWSH",
-                                                            "      - Single:    Write-Output 'print(\"hello\")' | xmake lua --stdin",
-                                                            "      - Multiline: Write-Output \"print('1')`nprint('2')\" | xmake lua --stdin",
-                                                            "      - File:      Get-Content script.lua | xmake lua --stdin",
-                                                            "    - SH",
-                                                            "      - Single:    echo 'print(\"hello\")' | xmake lua --stdin",
-                                                            "      - Multiline: (echo 'print(\"1\")'; echo 'print(\"2\")') | xmake lua --stdin",
-                                                            "      - File:      cat script.lua | xmake lua --stdin"
+                                                            "    - echo 'print(\"hello\")' | xmake lua --stdin",
+                                                            "    - cat script.lua | xmake lua --stdin"
                                                                                                                         }
                 ,   {nil, "script"      , "v"   , nil   ,   "Run the given lua script name, file or module and enter interactive mode if no given script.",
                                                             "e.g.",

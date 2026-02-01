@@ -60,7 +60,7 @@ function main()
 
         -- run script from stdin?
         local script_file_to_remove
-        if script == "-" or from_stdin then
+        if from_stdin then
             local script_content = io.read("*a")
             if script_content then
                 -- remove utf8 bom
