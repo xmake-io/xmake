@@ -414,7 +414,7 @@ function _check_vcvarsall_env(vars)
                     if #p > 256 then
                         p = p:sub(1, 256) .. "..."
                     end
-                    wprint("%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!\n  > %s", name, p)
+                    wprint("%%%s%% is too long and truncated, msvc detection may fail, please clear some unused variables!\n  > %s", name, p)
                     break
                 end
             end
