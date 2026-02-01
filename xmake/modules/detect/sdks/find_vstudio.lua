@@ -401,8 +401,7 @@ function _check_vcvarsall_env(vars)
         if value_org and value_new and #value_org > 0 then
             for _, p in ipairs(path.splitenv(value_org)) do
                 if not value_new:find(p, 1, true) then
-                    wprint("%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!", name)
-                    wprint("  > %s", p)
+                    wprint("%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!\n  > %s", name, p)
                     break
                 end
             end
