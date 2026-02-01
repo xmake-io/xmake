@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.semver")
+import("core.base.hashset")
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
@@ -395,13 +396,24 @@ function _check_vcvarsall_env(vars)
         local value_org = _env_orgs[name]
         if value_org == nil then
             value_org = os.getenv(name)
-            _env_orgs[name] = value_org or false
+            if value_org then
+                _env_orgs[name] = path.splitenv(value_org)
+            else
+                _env_orgs[name] = false
+            end
+            value_org = _env_orgs[name]
         end
         local value_new = vars[name] or vars[name:lower()]
         if value_org and value_new and #value_org > 0 then
-            for _, p in ipairs(path.splitenv(value_org)) do
-                if not value_new:find(p, 1, true) then
-                    wprint("%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!\n  > %s", name, p:sub(1, 1024))
+            local values_new = hashset.from(path.splitenv(value_new))
+            for _, p in ipairs(value_org) do
+                if not values_new:has(p) then
+                    if option.get("diagnosis") then
+                        if #p > 256 then
+                            p = p:sub(1, 256) .. "..."
+                        end
+                        wprint("%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!\n  > %s", name, p)
+                    end
                     break
                 end
             end
