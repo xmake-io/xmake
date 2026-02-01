@@ -49,6 +49,7 @@ local pwsh = ""
 if os.host() == "windows" then
     -- Test cmd
     test_shell("cmd_single", string.format('cmd /c echo "print(\'hello_cmd\')" | %s l --stdin', xmake), "hello_cmd")
+    test_shell("cmd_calc", string.format('cmd /c echo "local f = 1+1; print(f)" | %s l --stdin', xmake), "2")
     test_shell("cmd_multi", string.format('cmd /c echo "print(\'line1\')\\nprint(\'line2\')" | %s l --stdin', xmake), "line1[\r\n]+line2")
     -- Test powershell (if available)
     local pwsh = "powershell"
@@ -56,6 +57,7 @@ if os.host() == "windows" then
         pwsh = "pwsh"
     end
     test_shell("pwsh_single", string.format('%s -c "echo \\"print(\'hello_pwsh\')\\" | %s l --stdin"', pwsh, xmake), "hello_pwsh")
+    test_shell("pwsh_calc", string.format('%s -c "echo \\"local f = 1+1; print(f)\\" | %s l --stdin"', pwsh, xmake), "2")
     test_shell("pwsh_multi", string.format('%s -c "echo \\"print(\'pline1\')\\nprint(\'pline2\')\\" | %s l --stdin"', pwsh, xmake), "pline1[\r\n]+pline2")
 else
     -- Linux/MacOS
@@ -67,10 +69,12 @@ else
 
     if pwsh ~= "" then
         test_shell("pwsh_single", string.format('%s -c "echo \\"print(\'hello_pwsh\')\\" | %s l --stdin"', pwsh, xmake), "hello_pwsh")
+        test_shell("pwsh_calc", string.format('%s -c "echo \\"local f = 1+1; print(f)\\" | %s l --stdin"', pwsh, xmake), "2")
         test_shell("pwsh_multi", string.format('%s -c "echo \\"print(\'pline1\')\\nprint(\'pline2\')\\" | %s l --stdin"', pwsh, xmake), "pline1[\r\n]+pline2")
     end
 
     test_shell("sh_single", string.format('echo "print(\'hello_sh\')" | %s l --stdin', xmake), "hello_sh")
+    test_shell("sh_calc", string.format('echo "local f = 1+1; print(f)" | %s l --stdin', xmake), "2")
     test_shell("sh_multi", string.format('printf "print(\'shell_line1\')\\nprint(\'shell_line2\')" | %s l --stdin', xmake), "shell_line1[\r\n]+shell_line2")
 end
 end
