@@ -548,7 +548,16 @@ function core_sandbox_module.import(name, opt)
     -- rootdir is optional
     local rootdir = opt.rootdir or instance:rootdir()
 
-    -- load module from content?
+    -- init module directories (disable local packages?)
+    local modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
+
+    -- load module
+    local loadopt = table.clone(opt) or {}
+    loadopt.instance = instance
+    loadopt.modules = modules
+    loadopt.modules_directories = modules_directories
+
+    -- load module
     local module
     local errors
     local found = false
@@ -561,15 +570,6 @@ function core_sandbox_module.import(name, opt)
             end
         end
     else
-
-        -- init module directories (disable local packages?)
-        local modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
-
-        -- load module
-        local loadopt = table.clone(opt) or {}
-        loadopt.instance = instance
-        loadopt.modules = modules
-        loadopt.modules_directories = modules_directories
         found, module, errors = core_sandbox_module._find_and_load(name, loadopt)
     end
     
