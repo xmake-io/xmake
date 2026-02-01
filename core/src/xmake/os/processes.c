@@ -56,7 +56,7 @@ tb_int_t xm_winos_processes(lua_State* lua) {
 
                 // name
                 tb_char_t name[MAX_PATH * 4];
-                tb_size_t size = tb_charset_conv_data(TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE, TB_CHARSET_TYPE_UTF8, (tb_byte_t const*)pe32.szExeFile, tb_wcslen(pe32.szExeFile) * sizeof(tb_wchar_t), (tb_byte_t*)name, sizeof(name));
+                tb_size_t size = tb_wtoa(name, pe32.szExeFile, sizeof(name));
                 if (size != -1) {
                     lua_pushlstring(lua, name, size);
                 } else {
@@ -70,7 +70,7 @@ tb_int_t xm_winos_processes(lua_State* lua) {
 
                 // ppid
                 lua_pushinteger(lua, (tb_int_t)pe32.th32ParentProcessID);
-                lua_setfield(lua, -2, "ppid");
+                lua_setfield(lua, -2, "parent_pid");
 
                 // result[i++] = entry
                 lua_rawseti(lua, -2, i++);

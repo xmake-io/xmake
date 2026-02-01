@@ -235,57 +235,68 @@ function tty.flush()
     return tty
 end
 
--- find the shell from the parent process (linux)
-function tty._find_shell_from_parent()
+function tty._find_shell_from_parent_on_windows()
     local shell
-    if os.host() == "windows" then
-        local winos = require("base/winos")
-        if winos.processes then
-            local processes = winos.processes()
-            if processes then
-                local pid = os.getpid()
-                local processes_map = {}
-                for _, process in ipairs(processes) do
-                    processes_map[process.pid] = process
+    local winos = require("base/winos")
+    if winos.processes then
+        local processes = winos.processes()
+        if processes then
+            local pid = os.getpid()
+            local processes_map = {}
+            for _, process in ipairs(processes) do
+                processes_map[process.pid] = process
+            end
+            local count = 0
+            while pid and pid ~= 0 and count < 10 do
+                count = count + 1
+                local process = processes_map[pid]
+                if not process then
+                    break
                 end
-                local count = 0
-                while pid and pid ~= 0 and count < 10 do
-                    count = count + 1
-                    local process = processes_map[pid]
-                    if not process then
-                        break
+                local name = process.name
+                if name then
+                    name = name:lower()
+                    if name:sub(-4) == ".exe" then
+                        name = name:sub(1, #name - 4)
                     end
-                    local name = process.name
-                    if name then
-                        name = name:lower()
-                        if name:sub(-4) == ".exe" then
-                            name = name:sub(1, #name - 4)
-                        end
-                        for _, shellname in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "powershell", "cmd", "sh"}) do
-                            if name == shellname then
-                                shell = shellname
-                                break
-                            end
+                    for _, shellname in ipairs({"zsh", "bash", "fish", "nu", "elvish", "pwsh", "powershell", "cmd", "sh"}) do
+                        if name == shellname then
+                            shell = shellname
+                            break
                         end
                     end
-                    if shell then
-                        break
-                    end
-                    pid = process.ppid
+                end
+                if shell then
+                    break
+                end
+                pid = process.parent_pid or process.ppid -- for backward compatibility
+            end
+        end
+    end
+
+    if not shell then
+        local subhost = xmake._SUBHOST
+        if subhost == "windows" then
+            if os.getenv("PROMPT") then
+                shell = "cmd"
+            else
+                local ok, result = os.iorun("pwsh -v")
+                if ok then
+                    shell = "pwsh"
+                else
+                    shell = "powershell"
                 end
             end
         end
     end
-    if shell then
-        return shell
-    end
+    return shell
+end
 
-    if os.host() ~= "linux" or not os.isfile("/proc/self/stat") then
-        return
-    end
 
+function tty._find_shell_from_parent_on_linux()
     local pid = os.getpid()
     local count = 0
+    local shell
     while pid ~= 0 and count < 4 do
         count = count + 1
         local shell_name = nil
@@ -328,6 +339,20 @@ function tty._find_shell_from_parent()
         pid = ppid
     end
     return shell
+end
+
+-- find the shell from the parent process
+function tty._find_shell_from_parent()
+
+    -- for windows
+    if os.host() == "windows" then
+        return tty._find_shell_from_parent_on_windows()
+    end
+
+    -- for linux
+    if os.host() == "linux" and os.isfile("/proc/self/stat") then
+        return tty._find_shell_from_parent_on_linux()
+    end
 end
 
 -- get shell name
