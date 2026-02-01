@@ -266,6 +266,11 @@ function _add_target(jsonfile, target)
     -- https://github.com/xmake-io/xmake/issues/2337
     target:data_set("plugin.project.kind", "compile_commands")
 
+    -- disable compile_commands?
+    if target:policy("generator.compile_commands") == false then
+        return
+    end
+
     -- enter package environments
     local oldenvs = os.addenvs(target:pkgenvs())
 

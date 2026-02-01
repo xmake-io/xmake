@@ -192,6 +192,8 @@ function policy.policies()
             ["network.mode"]                      = {description = "Set the network mode", type = "string"},
             -- Set the compatibility version, e.g. 2.0, 3.0
             ["compatibility.version"]             = {description = "Set the compatibility version", type = "string", default = "3.0", values = {"2.0", "3.0"}},
+            -- Enable compile_commands
+            ["generator.compile_commands"]        = {description = "Enable compile_commands.", default = true, type = "boolean"},
             -- Generate the solution file in root output directory
             -- @see https://github.com/xmake-io/xmake/issues/6519
             ["generator.vsxmake.root_sln"]        = {description = "Generate the solution file in root output directory", default = false, type = "boolean"}
