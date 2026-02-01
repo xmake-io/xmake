@@ -63,6 +63,10 @@ function main()
         if script == "-" or from_stdin then
             local script_content = io.read("*a")
             if script_content then
+                -- remove utf8 bom
+                if script_content:startswith("\239\187\191") then
+                    script_content = script_content:sub(4)
+                end
                 import("core.base.tty")
                 local shell = tty.shell()
                 if shell == "cmd" or shell == "powershell" or shell == "pwsh" or os.host() == "windows" then
@@ -72,7 +76,11 @@ function main()
                     end
                     script_content = script_content:replace("\\n", "\n", {plain = true}):replace("\\r", "\r", {plain = true})
                 end
-                script_content = "function main(...)\n" .. script_content .. "\nend"
+
+                if not script_content:find("function main", 1, true) then
+                    script_content = "function main(...)\n" .. script_content .. "\nend"
+                end
+
                 script = os.tmpfile() .. ".lua"
                 io.writefile(script, script_content)
                 script_file_to_remove = script
