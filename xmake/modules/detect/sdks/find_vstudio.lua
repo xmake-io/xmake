@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.semver")
+import("core.base.hashset")
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
@@ -92,6 +93,9 @@ local vsenvs =
 ,   ["5.0"]  = "VS50COMNTOOLS"
 ,   ["4.2"]  = "VS42COMNTOOLS"
 }
+
+-- the original environment variables
+local _env_orgs = {}
 
 -- get all known Visual Studio environment variables
 function get_vcvars()
@@ -310,6 +314,9 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
             variables[name] = value
         end
     end
+
+    -- check if the environment variables are truncated
+    _check_vcvarsall_env(variables)
     if not variables.path then
         return
     end
@@ -381,6 +388,40 @@ function _strip_toolset_ver(vs_toolset)
     return vs_toolset
 end
 
+-- check if the environment variables are truncated
+-- https://github.com/xmake-io/xmake/issues/7281
+function _check_vcvarsall_env(vars)
+    if not option.get("diagnosis") then
+        return
+    end
+    local check_vars = {"PATH", "INCLUDE", "LIB", "LIBPATH"}
+    for _, name in ipairs(check_vars) do
+        local value_org = _env_orgs[name]
+        if value_org == nil then
+            local value_str = os.getenv(name)
+            if value_str then
+                _env_orgs[name] = path.splitenv(value_str)
+            else
+                _env_orgs[name] = false
+            end
+            value_org = _env_orgs[name]
+        end
+        local value_new = vars[name] or vars[name:lower()]
+        if value_org and value_new and #value_org > 0 then
+            local values_new = hashset.from(path.splitenv(value_new))
+            for _, p in ipairs(value_org) do
+                if not values_new:has(p) then
+                    if #p > 256 then
+                        p = p:sub(1, 256) .. "..."
+                    end
+                    wprint("%%%s%% is too long and truncated, msvc detection may fail, please clear some unused variables!\n  > %s", name, p)
+                    break
+                end
+            end
+        end
+    end
+end
+
 function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     opt = opt or {}
     local vs_toolset = opt.toolset or opt.vcvars_ver
@@ -413,6 +454,9 @@ end
 -- find vstudio for msvc
 function _find_vstudio(opt)
     opt = opt or {}
+
+    -- clear local cache of environment variables
+    _env_orgs = {}
 
     -- find the single current MSVC/VS from environment variables
     local VCInstallDir = os.getenv("VCInstallDir")
