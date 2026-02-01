@@ -4,6 +4,20 @@ function main(t)
 		xmake = xmake:gsub("/", "\\")
 	end
 
+	-- APE/Cosmocc workaround: force xmake name to avoid APE loader mode issues (e.g. ape-x86_64.elf)
+	local function setup_xmake_alias(xmake)
+		if path.filename(xmake):find("ape-", 1, true) then
+			local xmake_dir = path.join(os.tmpdir(), "xmake_ape_" .. os.time())
+			os.mkdir(xmake_dir)
+			local xmake_alias = path.join(xmake_dir, os.host() == "windows" and "xmake.exe" or "xmake")
+			os.trycp(xmake, xmake_alias)
+			return xmake_alias
+		end
+		return xmake
+	end
+
+	xmake = setup_xmake_alias(xmake)
+
 	local function test_shell(name, cmd, expect)
 		print("testing " .. name .. ": " .. cmd)
 		local outfile = os.tmpfile()
@@ -114,20 +128,12 @@ function main(t)
 			)
 			test_shell(
 				"pwsh_main",
-				string.format(
-					'%s -c "echo \\"function main() print(\'in_pwsh_main\') end\\" | %s"',
-					pwsh,
-					run_stdin
-				),
+				string.format('%s -c "echo \\"function main() print(\'in_pwsh_main\') end\\" | %s"', pwsh, run_stdin),
 				"in_pwsh_main"
 			)
 			test_shell(
 				"pwsh_multi",
-				string.format(
-					'%s -c "echo \\"print(\'pline1\')\\" \\"print(\'pline2\')\\" | %s"',
-					pwsh,
-					run_stdin
-				),
+				string.format('%s -c "echo \\"print(\'pline1\')\\" \\"print(\'pline2\')\\" | %s"', pwsh, run_stdin),
 				"pline1[\r\n]+pline2"
 			)
 		end
