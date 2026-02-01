@@ -53,9 +53,11 @@ if os.host() == "windows" then
     test_shell("cmd_multi", string.format('cmd /c echo "print(\'line1\')\\nprint(\'line2\')" | %s l --stdin', xmake), "line1[\r\n]+line2")
     -- Test powershell (if available)
     local pwsh = "powershell"
-    if os.exec("pwsh -v") == 0 then
-        pwsh = "pwsh"
-    end
+    try { function ()
+        if os.exec("pwsh -v") == 0 then
+            pwsh = "pwsh"
+        end
+    end }
     test_shell("pwsh_single", string.format('%s -c "echo \\"print(\'hello_pwsh\')\\" | %s l --stdin"', pwsh, xmake), "hello_pwsh")
     test_shell("pwsh_calc", string.format('%s -c "echo \\"local f = 1+1; print(f)\\" | %s l --stdin"', pwsh, xmake), "2")
     test_shell("pwsh_multi", string.format('%s -c "echo \\"print(\'pline1\')\\nprint(\'pline2\')\\" | %s l --stdin"', pwsh, xmake), "pline1[\r\n]+pline2")
