@@ -63,7 +63,7 @@ function main()
         if script == "-" or from_stdin then
             local script_content = io.stdin:read("*a")
             if script_content then
-                scriptfile_stdin = os.tmpfile("xmake_lua_stdin") .. ".lua"
+                scriptfile_stdin = os.tmpfile("xmake_lua_stdin_" .. hash.uuid4()) .. ".lua"
                 io.writefile(scriptfile_stdin, script_content)
                 if from_stdin and script and script ~= "-" then
                     arguments = arguments or {}
