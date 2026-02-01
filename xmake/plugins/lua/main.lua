@@ -55,15 +55,26 @@ function main()
     -- run script
     local script = option.get("script")
     local arguments = option.get("arguments")
-    local from_stdin = option.get("from_stdin") or option.get("from-stdin")
+    local from_stdin = option.get("stdin")
     if script or from_stdin then
 
         -- run script from stdin?
-        local script_content
+        local script_file_to_remove
         if script == "-" or from_stdin then
-            script_content = io.read("*a")
-            if not script or script == "-" then
-                script = "xmake_lua_stdin"
+            local script_content = io.read("*a")
+            if script_content then
+                import("core.base.tty")
+                local shell = tty.shell()
+                if shell == "cmd" or shell == "powershell" or shell == "pwsh" or os.host() == "windows" then
+                    script_content = script_content:trim()
+                    if script_content:startswith('"') and script_content:endswith('"') then
+                        script_content = script_content:sub(2, -2)
+                    end
+                    script_content = script_content:replace("\\n", "\n", {plain = true}):replace("\\r", "\r", {plain = true})
+                end
+                script = os.tmpfile() .. ".lua"
+                io.writefile(script, script_content)
+                script_file_to_remove = script
             end
         end
 
@@ -74,8 +85,11 @@ function main()
                 diagnosis = option.get("diagnosis"),
                 command = option.get("command"),
                 arguments = arguments,
-                content = script_content,
                 deserialize = option.get("deserialize")})
+
+            if script_file_to_remove then
+                os.tryrm(script_file_to_remove)
+            end
         end
     else
         -- enter interactive mode

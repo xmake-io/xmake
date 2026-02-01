@@ -45,20 +45,20 @@ task("lua")
                     {'l', "list"        , "k"   , nil   ,   "List all scripts."                                             }
                 ,   {'c', "command"     , "k"   , nil   ,   "Run script as command"                                         }
                 ,   {'d', "deserialize" , "kv"  , nil   ,   "Deserialize arguments starts with given prefix"                }
-                ,   {nil, "from-stdin"  , "k"   , nil   ,   "Run script from stdin",
+                ,   {nil, "stdin"  , "k"   , nil   ,   "Run script from stdin",
                                                             "e.g.",
                                                             "    - CMD",
-                                                            "      - Single:    echo print(\"hello\") | xmake lua --from-stdin",
-                                                            "      - Multiline: (echo print('1') && echo print('2')) | xmake lua --from-stdin",
-                                                            "      - File:      type script.lua | xmake lua --from-stdin",
+                                                            "      - Single:    echo print(\"hello\") | xmake lua --stdin",
+                                                            "      - Multiline: (echo print('1') && echo print('2')) | xmake lua --stdin",
+                                                            "      - File:      type script.lua | xmake lua --stdin",
                                                             "    - PWSH",
-                                                            "      - Single:    Write-Output 'print(\"hello\")' | xmake lua --from-stdin",
-                                                            "      - Multiline: Write-Output \"print('1')`nprint('2')\" | xmake lua --from-stdin",
-                                                            "      - File:      Get-Content script.lua | xmake lua --from-stdin",
+                                                            "      - Single:    Write-Output 'print(\"hello\")' | xmake lua --stdin",
+                                                            "      - Multiline: Write-Output \"print('1')`nprint('2')\" | xmake lua --stdin",
+                                                            "      - File:      Get-Content script.lua | xmake lua --stdin",
                                                             "    - SH",
-                                                            "      - Single:    echo 'print(\"hello\")' | xmake lua --from-stdin",
-                                                            "      - Multiline: (echo 'print(\"1\")'; echo 'print(\"2\")') | xmake lua --from-stdin",
-                                                            "      - File:      cat script.lua | xmake lua --from-stdin"
+                                                            "      - Single:    echo 'print(\"hello\")' | xmake lua --stdin",
+                                                            "      - Multiline: (echo 'print(\"1\")'; echo 'print(\"2\")') | xmake lua --stdin",
+                                                            "      - File:      cat script.lua | xmake lua --stdin"
                                                                                                                         }
                 ,   {nil, "script"      , "v"   , nil   ,   "Run the given lua script name, file or module and enter interactive mode if no given script.",
                                                             "e.g.",

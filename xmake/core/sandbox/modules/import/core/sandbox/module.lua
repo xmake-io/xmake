@@ -67,41 +67,6 @@ function core_sandbox_module._modulepath(name)
     return modulepath
 end
 
--- load module from string
-function core_sandbox_module._loadstring(content, instance, name)
-    assert(content)
-
-    -- load module script
-    local script, errors = load(content, name)
-    if not script then
-        return nil, errors
-    end
-
-    -- with sandbox?
-    if instance then
-
-        -- fork a new sandbox for this script
-        instance, errors = instance:fork(script, instance:rootdir())
-        if not instance then
-            return nil, errors
-        end
-
-        -- load module
-        local result, errors = instance:module()
-        if not result then
-            return nil, errors
-        end
-        return result, instance:script()
-    end
-
-    -- load module without sandbox
-    local ok, result = utils.trycall(script)
-    if not ok then
-        return nil, result
-    end
-    return result, script
-end
-
 -- load module from file
 function core_sandbox_module._loadfile(filepath, instance)
     assert(filepath)
@@ -545,7 +510,7 @@ function core_sandbox_module.import(name, opt)
     local instance = sandbox.instance()
     assert(instance)
 
-    -- rootdir is optional
+    -- the root directory for this sandbox script
     local rootdir = opt.rootdir or instance:rootdir()
 
     -- init module directories (disable local packages?)
@@ -556,26 +521,10 @@ function core_sandbox_module.import(name, opt)
     loadopt.instance = instance
     loadopt.modules = modules
     loadopt.modules_directories = modules_directories
+    local found, module, errors = core_sandbox_module._find_and_load(name, loadopt)
 
-    -- load module
-    local module
-    local errors
-    local found = false
-    if opt.content then
-        found = true
-        module, errors = core_sandbox_module._loadstring(opt.content, instance, name)
-        if module then
-            if not opt.nocache then
-                modules[name] = {module, nil}
-            end
-        end
-    else
-        found, module, errors = core_sandbox_module._find_and_load(name, loadopt)
-    end
-    
     -- not found? attempt to load module.interface
     if not found and not opt.inherit then
-
         -- get module name
         local found2 = false
         local errors2 = nil
