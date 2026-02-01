@@ -11,6 +11,9 @@ function main(t)
 			os.mkdir(xmake_dir)
 			local xmake_alias = path.join(xmake_dir, os.host() == "windows" and "xmake.exe" or "xmake")
 			os.trycp(xmake, xmake_alias)
+			if os.host() ~= "windows" then
+				os.exec("chmod +x " .. xmake_alias)
+			end
 			return xmake_alias
 		end
 		return xmake
