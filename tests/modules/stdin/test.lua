@@ -7,10 +7,10 @@ function main(t)
     -- APE/Cosmocc workaround: force xmake name to avoid APE loader mode issues (e.g. ape-x86_64.elf)
     local function setup_xmake_alias(xmake)
         if path.filename(xmake):find("ape-", 1, true) then
-            local xmake_dir = path.join(os.tmpdir(), "xmake_ape_" .. os.time())
+            local xmake_dir = path.join(os.tmpdir(), "xm_alias_" .. os.time())
             os.mkdir(xmake_dir)
             local xmake_alias = path.join(xmake_dir, os.host() == "windows" and "xmake.exe" or "xmake")
-            os.trycp(xmake, xmake_alias)
+            os.cp(xmake, xmake_alias)
             if os.host() ~= "windows" then
                 os.exec("chmod +x " .. xmake_alias)
             end
@@ -19,7 +19,16 @@ function main(t)
         return xmake
     end
 
+    local is_ape = path.filename(xmake):find("ape-", 1, true)
+
+    -- Fix pwsh and cosmocc "err: ape error: l: not found (maybe chmod +x or ./ needed)" for Linux
     xmake = setup_xmake_alias(xmake)
+
+    local run_stdin = string.format('env "%s" l --stdin', xmake)
+     -- Fix pwsh and cosmocc "exec format error" for MacOS
+     if is_ape and os.host() == "macosx" then
+		run_stdin = string.format('sh -c \\"%s\\"', run_stdin)
+	end
 
     local function test_shell(name, cmd, expect)
         print("testing " .. name .. ": " .. cmd)
@@ -115,10 +124,6 @@ function main(t)
         end
 
         if pwsh ~= "" then
-            local run_stdin = string.format("%s l --stdin", xmake)
-            if os.host() == "macosx" then
-				run_stdin = string.format('sh -c \\"%s\\"', run_stdin)
-			end
             test_shell(
                 "pwsh_single",
                 string.format('%s -c "echo \\"print(\'hello_pwsh\')\\" | %s"', pwsh, run_stdin),
