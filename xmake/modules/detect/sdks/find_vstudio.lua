@@ -313,6 +313,9 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
             variables[name] = value
         end
     end
+
+    -- check if the environment variables are truncated
+    _check_vcvarsall_env(variables)
     if not variables.path then
         return
     end
@@ -394,7 +397,7 @@ function _check_vcvarsall_env(vars)
             value_org = os.getenv(name)
             _env_orgs[name] = value_org or false
         end
-        local value_new = vars[name]
+        local value_new = vars[name] or vars[name:lower()]
         if value_org and value_new and #value_org > 0 then
             -- we only check the first/last 512 bytes to verify if the original path is present
             -- because the path maybe too long and be truncated
@@ -443,9 +446,6 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
             opt.toolset = _strip_toolset_ver(latest_toolset)
             result = _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
         end
-    end
-    if result then
-        _check_vcvarsall_env(result)
     end
     return result
 end
