@@ -390,7 +390,7 @@ end
 -- check if the environment variables are truncated
 -- https://github.com/xmake-io/xmake/issues/7281
 function _check_vcvarsall_env(vars)
-    local check_vars = {"PATH", "INCLUDE", "LIBPATH"}
+    local check_vars = {"PATH", "INCLUDE", "LIB", "LIBPATH"}
     for _, name in ipairs(check_vars) do
         local value_org = _env_orgs[name]
         if value_org == nil then
@@ -399,23 +399,12 @@ function _check_vcvarsall_env(vars)
         end
         local value_new = vars[name] or vars[name:lower()]
         if value_org and value_new and #value_org > 0 then
-            -- we only check the first/last 512 bytes to verify if the original path is present
-            -- because the path maybe too long and be truncated
-            local part = value_org
-            if #part > 512 then
-                part = part:sub(1, 512)
-            end
-            if not value_new:find(part, 1, true) then
-                wprint("%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!", name)
-                break
-            end
-            local part_end = value_org
-            if #part_end > 512 then
-                part_end = part_end:sub(#part_end - 512 + 1)
-            end
-            if not value_new:find(part_end, 1, true) then
-                wprint("%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!", name)
-                break
+            for _, p in ipairs(path.splitenv(value_org)) do
+                if not value_new:find(p, 1, true) then
+                    wprint("%%%s%% is too long and truncated, detect msvc may be failed, please clear some unused variables!", name)
+                    wprint("  > %s", p)
+                    break
+                end
             end
         end
     end
