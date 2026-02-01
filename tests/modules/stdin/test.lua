@@ -100,18 +100,18 @@ function main(t)
 		if pwsh ~= "" then
 			test_shell(
 				"pwsh_single",
-				string.format('%s -c "echo \\"print(\'hello_pwsh\')\\" | %s l --stdin"', pwsh, xmake),
+				string.format('%s -c "echo \\"print(\'hello_pwsh\')\\" | sh -c \\"%s l --stdin\\""', pwsh, xmake),
 				"hello_pwsh"
 			)
 			test_shell(
 				"pwsh_calc",
-				string.format('%s -c "echo \\"local f = 1+1; print(f)\\" | %s l --stdin"', pwsh, xmake),
+				string.format('%s -c "echo \\"local f = 1+1; print(f)\\" | sh -c \\"%s l --stdin\\""', pwsh, xmake),
 				"2"
 			)
 			test_shell(
 				"pwsh_main",
 				string.format(
-					'%s -c "echo \\"function main() print(\'in_pwsh_main\') end\\" | %s l --stdin"',
+					'%s -c "echo \\"function main() print(\'in_pwsh_main\') end\\" | sh -c \\"%s l --stdin\\""',
 					pwsh,
 					xmake
 				),
@@ -120,7 +120,7 @@ function main(t)
 			test_shell(
 				"pwsh_multi",
 				string.format(
-					'%s -c "echo \\"print(\'pline1\')\\" \\"print(\'pline2\')\\" | %s l --stdin"',
+					'%s -c "echo \\"print(\'pline1\')\\" \\"print(\'pline2\')\\" | sh -c \\"%s l --stdin\\""',
 					pwsh,
 					xmake
 				),
