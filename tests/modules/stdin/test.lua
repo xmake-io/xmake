@@ -26,7 +26,7 @@ function main(t)
 
     local run_stdin = string.format('env "%s" l --stdin', xmake)
      -- Fix pwsh and cosmocc "exec format error" for MacOS
-     if is_ape and os.host() == "macosx" then
+     if is_ape and (os.host() == "macosx" or os.host() == "linux") then
 		run_stdin = string.format('sh -c \\"%s\\"', run_stdin)
 	end
 
