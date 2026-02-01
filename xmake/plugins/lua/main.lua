@@ -72,6 +72,7 @@ function main()
                     end
                     script_content = script_content:replace("\\n", "\n", {plain = true}):replace("\\r", "\r", {plain = true})
                 end
+                script_content = "function main(...)\n" .. script_content .. "\nend"
                 script = os.tmpfile() .. ".lua"
                 io.writefile(script, script_content)
                 script_file_to_remove = script
