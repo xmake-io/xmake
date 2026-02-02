@@ -67,12 +67,11 @@ function main()
                 if script_content:startswith("\239\187\191") then
                     script_content = script_content:sub(4)
                 end
-                import("core.base.tty")
-                local shell = tty.shell()
-                if shell == "cmd" or shell == "powershell" or shell == "pwsh" or os.host() == "windows" then
+                local shell = os.shell()
+                if shell == "cmd" or shell == "powershell" or shell == "pwsh" or is_host("windows") then
                     script_content = script_content:trim()
                     if script_content:startswith('"') and script_content:endswith('"') then
-                        script_content = script_content:sub(2, -2)
+                        script_content = script_content:trim('\"')
                     end
                     script_content = script_content:replace("\\n", "\n", {plain = true}):replace("\\r", "\r", {plain = true})
                 end
