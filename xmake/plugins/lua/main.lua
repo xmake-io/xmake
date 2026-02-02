@@ -50,9 +50,7 @@ function _get_script_from_stdin()
     local script_content = io.read("*a")
     if script_content then
         -- remove utf8 bom
-        if script_content:startswith(utf8.bom) then
-            script_content = script_content:sub(#utf8.bom + 1)
-        end
+        script_content = script_content:ltrim(utf8.bom)
         local shell = os.shell()
         if shell == "cmd" or shell == "powershell" or shell == "pwsh" or is_host("windows") then
             script_content = script_content:trim()
