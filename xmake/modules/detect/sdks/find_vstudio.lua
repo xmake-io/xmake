@@ -322,10 +322,16 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
         local p = line:find('=', 1, true)
         if p then
             local name = line:sub(1, p - 1):trim()
-            local value = line:sub(p + 1):trim()
             local required_name = required_vcvars[name:upper()]
-            if required_name and #value > 0 then
-                variables[required_name] = value
+            if required_name then
+                local value = line:sub(p + 1):trim()
+                -- parse value, remove the double quotes
+                -- PATH = "C:\Users\WANGRU~1\AppData\Local\xxx",
+                -- remove the double quotes
+                value = value:rtrim(","):trim('\"'):trim()
+                if #value > 0 then
+                    variables[required_name] = value
+                end
             end
         end
     end
