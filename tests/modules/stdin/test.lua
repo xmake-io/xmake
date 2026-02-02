@@ -36,16 +36,6 @@ function main(t)
     xmake = fix_ape_programfile(xmake)
 
     local is_ape = path.filename(xmake):find("ape", 1, true) ~= nil or xmake:endswith(".com")
-    if not is_ape and is_host("linux") and os.isfile(xmake) then
-        local file = io.open(xmake, "rb")
-        if file then
-            local header = file:read(2)
-            file:close()
-            if header == "MZ" then
-                is_ape = true
-            end
-        end
-    end
 
     local run_stdin = string.format('"%s" l --stdin', xmake)
     if not is_host("windows") then
