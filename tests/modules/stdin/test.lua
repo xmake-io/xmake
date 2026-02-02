@@ -1,3 +1,5 @@
+import("core.base.binutils")
+
 function resolve_path(p)
     if path.is_absolute(p) then return p end
     local root = path.join(os.scriptdir(), "../../..")
@@ -7,7 +9,6 @@ function resolve_path(p)
     return p
 end
 
--- Fix /usr/bin/ape loader mode on Linux
 function fix_ape_programfile(xmake)
     if is_host("linux") and path.filename(xmake):find("ape", 1, true) and os.isfile("/proc/self/cmdline") then
         local content = io.readfile("/proc/self/cmdline", {encoding = "binary"})
@@ -27,15 +28,11 @@ end
 
 function main(t)
     local xmake = path.unix(os.programfile())
-    if is_host("windows") then
-        xmake = xmake:gsub("/", "\\")
-    end
-    xmake = resolve_path(xmake)
 
     -- Fix pwsh and cosmocc "err: ape error: l: not found (maybe chmod +x or ./ needed)" for Linux
     xmake = fix_ape_programfile(xmake)
 
-    local is_ape = path.filename(xmake):find("ape", 1, true) ~= nil or xmake:endswith(".com")
+    local is_ape = binutils.format(os.programfile()) == "ape"
 
     local run_stdin = string.format('"%s" l --stdin', xmake)
     if not is_host("windows") then
