@@ -113,8 +113,13 @@ function main(t)
             "2"
         )
         test_shell(
+            "pwsh_main",
+            string.format('%s -c "echo \\"function main() print(\'in_pwsh_main\') end\\" | %s"', pwsh, run_stdin),
+            "in_pwsh_main"
+        )
+        test_shell(
             "pwsh_multi",
-            string.format("%s -c \"echo \\\"print('pline1')\\nprint('pline2')\\\" | %s l --stdin\"", pwsh, xmake),
+            string.format('%s -c "echo \\"print(\'pline1\')\\" \\"print(\'pline2\')\\" | %s"', pwsh, run_stdin),
             "pline1[\r\n]+pline2"
         )
     else

@@ -53,9 +53,14 @@ function _get_script_from_stdin()
         script_content = script_content:ltrim(utf8.bom)
         local shell = os.shell()
         if shell == "cmd" or shell == "powershell" or shell == "pwsh" or is_host("windows") then
-            script_content = script_content:trim()
-            script_content = script_content:trim('\"')
-            script_content = script_content:replace("\\n", "\n", {plain = true}):replace("\\r", "\r", {plain = true})
+            local trimmed = script_content:trim()
+            if trimmed:startswith('"') and trimmed:endswith('"') then
+                script_content = trimmed:trim('"')
+                script_content = script_content:replace("\\n", "\n", {plain = true})
+                                               :replace("\\r", "\r", {plain = true})
+            else
+                script_content = trimmed
+            end
         end
 
         if not script_content:find("function main", 1, true) then
