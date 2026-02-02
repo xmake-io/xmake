@@ -92,9 +92,14 @@ function main(t)
         test_shell("cmd_single", string.format("cmd /c echo \"print('hello_cmd')\" | %s l --stdin", xmake), "hello_cmd")
         test_shell("cmd_calc", string.format('cmd /c echo "local f = 1+1; print(f)" | %s l --stdin', xmake), "2")
         test_shell(
-            "cmd_multi",
+            "cmd_multi_lines",
             string.format("cmd /c \"(echo print 'line1'& echo print 'line2')\" | %s l --stdin", xmake),
             "line1[\r\n]+line2"
+        )
+        test_shell(
+            "cmd_multi_semicolon",
+            string.format("cmd /c echo \"print('semi1'); print('semi2')\" | %s l --stdin", xmake),
+            "semi1[\r\n]+semi2"
         )
         -- Test powershell (if available)
         local pwsh = "powershell"
