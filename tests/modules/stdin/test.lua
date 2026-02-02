@@ -10,19 +10,15 @@ end
 -- Fix /usr/bin/ape loader mode on Linux
 function fix_ape_programfile(xmake)
     if is_host("linux") and path.filename(xmake):find("ape", 1, true) and os.isfile("/proc/self/cmdline") then
-        local file = io.open("/proc/self/cmdline", "rb")
-        if file then
-            local content = io.readfile("/proc/self/cmdline")
-            file:close()
-            if content then
-                local args = {}
-                for arg in content:gmatch("[^\0]+") do
-                    table.insert(args, arg)
-                end
-                if #args >= 2 and path.unix(args[1]) == xmake then
-                    xmake = path.unix(args[2])
-                    xmake = resolve_path(xmake)
-                end
+        local content = io.readfile("/proc/self/cmdline")
+        if content then
+            local args = {}
+            for arg in content:gmatch("[^\0]+") do
+                table.insert(args, arg)
+            end
+            if #args >= 2 and path.unix(args[1]) == xmake then
+                xmake = path.unix(args[2])
+                xmake = resolve_path(xmake)
             end
         end
     end
@@ -48,7 +44,6 @@ function main(t)
     end
 
     local function test_shell(name, cmd, expect)
-        print("testing " .. name .. ": " .. cmd)
         local outfile = os.tmpfile()
         local errfile = os.tmpfile()
         local full_cmd = string.format('%s > "%s" 2> "%s"', cmd, outfile, errfile)
