@@ -4,6 +4,27 @@ function main(t)
         xmake = xmake:gsub("/", "\\")
     end
 
+    -- Fix /usr/bin/ape loader mode on Linux
+    if os.host() == "linux" and path.filename(xmake) == "ape" and os.isfile("/proc/self/cmdline") then
+        local file = io.open("/proc/self/cmdline", "rb")
+        if file then
+            local content = file:read("*a")
+            file:close()
+            if content then
+                local args = {}
+                for arg in content:gmatch("[^\0]+") do
+                    table.insert(args, arg)
+                end
+                if #args >= 2 and path.unix(args[1]) == xmake then
+                    xmake = path.unix(args[2])
+                    if not path.is_absolute(xmake) then
+                        xmake = path.absolute(xmake)
+                    end
+                end
+            end
+        end
+    end
+
     -- APE/Cosmocc workaround: force xmake name to avoid APE loader mode issues (e.g. ape-x86_64.elf)
     local function setup_xmake_alias(xmake)
         if path.filename(xmake):find("ape-", 1, true) then
@@ -22,11 +43,11 @@ function main(t)
     local is_ape = path.filename(xmake):find("ape-", 1, true)
 
     -- Fix pwsh and cosmocc "err: ape error: l: not found (maybe chmod +x or ./ needed)" for Linux
-    xmake = setup_xmake_alias(xmake)
+    --xmake = setup_xmake_alias(xmake)
 
     local run_stdin = string.format('env "%s" l --stdin', xmake)
      -- Fix pwsh and cosmocc "exec format error" for MacOS
-     if is_ape and os.host() ~= "windows" then
+     if is_ape and (os.host() == "macosx" or os.host() == "linux") then
         run_stdin = string.format("sh -c ' \\\"%s\\\" l --stdin '", xmake)
     end
 
