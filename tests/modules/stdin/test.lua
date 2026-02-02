@@ -10,13 +10,13 @@ end
 -- Fix /usr/bin/ape loader mode on Linux
 function fix_ape_programfile(xmake)
     if is_host("linux") and path.filename(xmake):find("ape", 1, true) and os.isfile("/proc/self/cmdline") then
-        local content = io.readfile("/proc/self/cmdline")
+        local content = io.readfile("/proc/self/cmdline", {encoding = "binary"})
         if content then
             local args = {}
             for arg in content:gmatch("[^\0]+") do
                 table.insert(args, arg)
             end
-            if #args >= 2 and path.unix(args[1]) == xmake then
+            if #args >= 2 and (path.unix(args[1]) == xmake or path.filename(path.unix(args[1])) == path.filename(xmake)) then
                 xmake = path.unix(args[2])
                 xmake = resolve_path(xmake)
             end
@@ -35,7 +35,17 @@ function main(t)
     -- Fix pwsh and cosmocc "err: ape error: l: not found (maybe chmod +x or ./ needed)" for Linux
     xmake = fix_ape_programfile(xmake)
 
-    local is_ape = path.filename(xmake):find("ape-", 1, true) ~= nil
+    local is_ape = path.filename(xmake):find("ape", 1, true) ~= nil or xmake:endswith(".com")
+    if not is_ape and is_host("linux") and os.isfile(xmake) then
+        local file = io.open(xmake, "rb")
+        if file then
+            local header = file:read(2)
+            file:close()
+            if header == "MZ" then
+                is_ape = true
+            end
+        end
+    end
 
     local run_stdin = string.format('env "%s" l --stdin', xmake)
      -- Fix pwsh and cosmocc "exec format error" for MacOS
