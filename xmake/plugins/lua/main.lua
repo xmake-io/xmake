@@ -45,6 +45,31 @@ function _list()
     end
 end
 
+-- get script from stdin
+function _get_script_from_stdin()
+    local script_content = io.read("*a")
+    if script_content then
+        -- remove utf8 bom
+        if script_content:startswith(utf8.bom) then
+            script_content = script_content:sub(#utf8.bom + 1)
+        end
+        local shell = os.shell()
+        if shell == "cmd" or shell == "powershell" or shell == "pwsh" or is_host("windows") then
+            script_content = script_content:trim()
+            script_content = script_content:trim('\"')
+            script_content = script_content:replace("\\n", "\n", {plain = true}):replace("\\r", "\r", {plain = true})
+        end
+
+        if not script_content:find("function main", 1, true) then
+            script_content = "function main(...)\n" .. script_content .. "\nend"
+        end
+
+        local script = os.tmpfile() .. ".lua"
+        io.writefile(script, script_content)
+        return script
+    end
+end
+
 function main()
 
     -- list builtin scripts
@@ -61,24 +86,10 @@ function main()
         -- run script from stdin?
         local script_file_to_remove
         if from_stdin then
-            local script_content = io.read("*a")
-            if script_content then
-                -- remove utf8 bom
-                script_content = script_content:ltrim(utf8.bom)
-                local shell = os.shell()
-                if shell == "cmd" or shell == "powershell" or shell == "pwsh" or is_host("windows") then
-                    script_content = script_content:trim()
-                    script_content = script_content:trim('\"')
-                    script_content = script_content:replace("\\n", "\n", {plain = true}):replace("\\r", "\r", {plain = true})
-                end
-
-                if not script_content:find("function main", 1, true) then
-                    script_content = "function main(...)\n" .. script_content .. "\nend"
-                end
-
-                script = os.tmpfile() .. ".lua"
-                io.writefile(script, script_content)
-                script_file_to_remove = script
+            local script_path = _get_script_from_stdin()
+            if script_path then
+                script = script_path
+                script_file_to_remove = script_path
             end
         end
 
