@@ -32,14 +32,14 @@ end
 
 function test_sh(t)
     _run_sh(t, "sh_single", "echo \"print('hello_sh')\"", "hello_sh")
-    _run_sh(t, "sh_calc", 'echo "local f = 1+1; print(f)"', "2")
+    _run_sh(t, "sh_calc", "echo \"local f = 1+1; print(f)\"", "2")
     _run_sh(t, "sh_main", "echo \"function main() print('in_sh_main') end\"", "in_sh_main")
     _run_sh(t, "sh_multi", "printf \"print('shell_line1')\\nprint('shell_line2')\"", "shell_line1\nshell_line2")
 end
 
 function test_cmd(t)
     _run_cmd(t, "cmd_single", "echo print 'hello_cmd'", "hello_cmd")
-    _run_cmd(t, "cmd_calc", "echo local f = 1+1; print^(f^)", "2")
+    _run_cmd(t, "cmd_calc", "echo local f = 1+1; print(f)", "2")
     _run_cmd(t, "cmd_multi_lines", "(echo print 'line1'&& echo print 'line2')", "line1\r\nline2")
     _run_cmd(t, "cmd_multi_semicolon", "echo \"print('semi1'); print('semi2')\"", "semi1\r\nsemi2")
 end
@@ -48,5 +48,5 @@ function test_pwsh(t)
     _run_pwsh(t, "pwsh_single", "echo \"print('hello_pwsh')\"", "hello_pwsh")
     _run_pwsh(t, "pwsh_calc", "echo \"local f = 1+1; print(f)\"", "2")
     _run_pwsh(t, "pwsh_main", "echo \"function main() print('in_pwsh_main') end\"", "in_pwsh_main")
-    _run_pwsh(t, "pwsh_multi", "echo \"print('pline1')`nprint('pline2')\"", "pline1\r\npline2")
+    _run_pwsh(t, "pwsh_multi", "echo \"print('pline1')\"; echo \"print('pline2')\"", "pline1\r\npline2")
 end
