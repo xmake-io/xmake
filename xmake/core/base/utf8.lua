@@ -37,6 +37,11 @@ local utf8 = utf8 or {}
 -- @interface   utf8.byte(s [, i [, j]])
 --
 
+-- the utf8 bom
+if not utf8.bom then
+    utf8.bom = "\239\187\191"
+end
+
 -- the char pattern
 if not utf8.charpattern then
     utf8.charpattern = "[\0-\x7F\xC2-\xFD][\x80-\xBF]*"
