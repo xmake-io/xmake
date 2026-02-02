@@ -9,10 +9,10 @@ end
 
 -- Fix /usr/bin/ape loader mode on Linux
 function fix_ape_programfile(xmake)
-    if os.host() == "linux" and path.filename(xmake):find("ape", 1, true) and os.isfile("/proc/self/cmdline") then
+    if is_host("linux") and path.filename(xmake):find("ape", 1, true) and os.isfile("/proc/self/cmdline") then
         local file = io.open("/proc/self/cmdline", "rb")
         if file then
-            local content = file:read("*a")
+            local content = io.readfile("/proc/self/cmdline")
             file:close()
             if content then
                 local args = {}
@@ -31,7 +31,7 @@ end
 
 function main(t)
     local xmake = path.unix(os.programfile())
-    if os.host() == "windows" then
+    if is_host("windows") then
         xmake = xmake:gsub("/", "\\")
     end
     xmake = resolve_path(xmake)
@@ -43,7 +43,7 @@ function main(t)
 
     local run_stdin = string.format('env "%s" l --stdin', xmake)
      -- Fix pwsh and cosmocc "exec format error" for MacOS
-     if is_ape and os.host() ~= "windows" then
+     if is_ape and not is_host("windows") then
         run_stdin = string.format("sh -c ' \"%s\" l --stdin '", xmake)
     end
 
@@ -55,7 +55,7 @@ function main(t)
         local ret = -1
         try({
             function()
-                if os.host() ~= "windows" then
+                if not is_host("windows") then
                     ret = os.execv("sh", { "-c", full_cmd })
                 else
                     ret = os.exec(full_cmd)
@@ -89,7 +89,7 @@ function main(t)
     end
 
     local pwsh = ""
-    if os.host() == "windows" then
+    if is_host("windows") then
         -- Test cmd
         test_shell("cmd_single", string.format("cmd /c echo \"print('hello_cmd')\" | %s l --stdin", xmake), "hello_cmd")
         test_shell("cmd_calc", string.format('cmd /c echo "local f = 1+1; print(f)" | %s l --stdin', xmake), "2")
