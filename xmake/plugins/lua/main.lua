@@ -56,8 +56,6 @@ function _get_script_from_stdin()
             local trimmed = script_content:trim()
             if trimmed:startswith('"') and trimmed:endswith('"') then
                 script_content = trimmed:trim('"')
-                script_content = script_content:replace("\\n", "\n", {plain = true})
-                                               :replace("\\r", "\r", {plain = true})
             else
                 script_content = trimmed
             end
