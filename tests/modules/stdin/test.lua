@@ -1,13 +1,13 @@
-function main(t)
-    local function resolve_path(p)
-        if path.is_absolute(p) then return p end
-        local root = path.join(os.scriptdir(), "../../..") 
-        local p_root = path.join(root, p)
-        if os.isfile(p_root) then return path.absolute(p_root) end
-        if os.isfile(p) then return path.absolute(p) end
-        return p
-    end
+function resolve_path(p)
+    if path.is_absolute(p) then return p end
+    local root = path.join(os.scriptdir(), "../../..")
+    local p_root = path.join(root, p)
+    if os.isfile(p_root) then return path.absolute(p_root) end
+    if os.isfile(p) then return path.absolute(p) end
+    return p
+end
 
+function main(t)
     local xmake = path.unix(os.programfile())
     if os.host() == "windows" then
         xmake = xmake:gsub("/", "\\")
