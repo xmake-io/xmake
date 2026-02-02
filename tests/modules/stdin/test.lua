@@ -47,7 +47,10 @@ function main(t)
         end
     end
 
-    local run_stdin = string.format('env "%s" l --stdin', xmake)
+    local run_stdin = string.format('"%s" l --stdin', xmake)
+    if not is_host("windows") then
+        run_stdin = string.format('env "%s" l --stdin', xmake)
+    end
      -- Fix pwsh and cosmocc "exec format error" for MacOS
      if is_ape and not is_host("windows") then
         run_stdin = string.format("sh -c ' \"%s\" l --stdin '", xmake)
@@ -100,7 +103,7 @@ function main(t)
         test_shell("cmd_calc", string.format('cmd /c echo "local f = 1+1; print(f)" | %s l --stdin', xmake), "2")
         test_shell(
             "cmd_multi",
-            string.format("cmd /c echo \"print('line1')\\nprint('line2')\" | %s l --stdin", xmake),
+            string.format("cmd /c \"(echo print 'line1'& echo print 'line2')\" | %s l --stdin", xmake),
             "line1[\r\n]+line2"
         )
         -- Test powershell (if available)
