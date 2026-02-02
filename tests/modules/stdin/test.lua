@@ -7,34 +7,34 @@ function resolve_path(p)
     return p
 end
 
+-- Fix /usr/bin/ape loader mode on Linux
+function fix_ape_programfile(xmake)
+    if os.host() == "linux" and path.filename(xmake):find("ape", 1, true) and os.isfile("/proc/self/cmdline") then
+        local file = io.open("/proc/self/cmdline", "rb")
+        if file then
+            local content = file:read("*a")
+            file:close()
+            if content then
+                local args = {}
+                for arg in content:gmatch("[^\0]+") do
+                    table.insert(args, arg)
+                end
+                if #args >= 2 and path.unix(args[1]) == xmake then
+                    xmake = path.unix(args[2])
+                    xmake = resolve_path(xmake)
+                end
+            end
+        end
+    end
+    return xmake
+end
+
 function main(t)
     local xmake = path.unix(os.programfile())
     if os.host() == "windows" then
         xmake = xmake:gsub("/", "\\")
     end
     xmake = resolve_path(xmake)
-
-    -- Fix /usr/bin/ape loader mode on Linux
-    local function fix_ape_programfile(xmake)
-        if os.host() == "linux" and path.filename(xmake):find("ape", 1, true) and os.isfile("/proc/self/cmdline") then
-            local file = io.open("/proc/self/cmdline", "rb")
-            if file then
-                local content = file:read("*a")
-                file:close()
-                if content then
-                    local args = {}
-                    for arg in content:gmatch("[^\0]+") do
-                        table.insert(args, arg)
-                    end
-                    if #args >= 2 and path.unix(args[1]) == xmake then
-                        xmake = path.unix(args[2])
-                        xmake = resolve_path(xmake)
-                    end
-                end
-            end
-        end
-        return xmake
-    end
 
     -- Fix pwsh and cosmocc "err: ape error: l: not found (maybe chmod +x or ./ needed)" for Linux
     xmake = fix_ape_programfile(xmake)
