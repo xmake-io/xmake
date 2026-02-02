@@ -6,7 +6,7 @@ function main(t)
 
     -- Fix /usr/bin/ape loader mode on Linux
     local function fix_ape_programfile(xmake)
-        if os.host() == "linux" and path.filename(xmake) == "ape" and os.isfile("/proc/self/cmdline") then
+        if os.host() == "linux" and path.filename(xmake):find("ape", 1, true) and os.isfile("/proc/self/cmdline") then
             local file = io.open("/proc/self/cmdline", "rb")
             if file then
                 local content = file:read("*a")
@@ -36,7 +36,7 @@ function main(t)
 
     local run_stdin = string.format('env "%s" l --stdin', xmake)
      -- Fix pwsh and cosmocc "exec format error" for MacOS
-     if is_ape and os.host() == "macosx" then
+     if is_ape and os.host() ~= "windows" then
         run_stdin = string.format("sh -c ' \\\"%s\\\" l --stdin '", xmake)
     end
 
