@@ -27,7 +27,7 @@ function fix_ape_programfile(xmake)
 end
 
 function main(t)
-    local xmake = path.unix(os.programfile())
+    local xmake = path.translate(os.programfile())
 
     -- Fix pwsh and cosmocc "err: ape error: l: not found (maybe chmod +x or ./ needed)" for Linux
     xmake = fix_ape_programfile(xmake)
