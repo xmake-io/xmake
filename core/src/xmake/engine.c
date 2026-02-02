@@ -874,6 +874,30 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t *engine, tb_char_t **arg
         ssize_t size = readlink(XM_PROC_SELF_FILE, path, (size_t)maxn);
         if (size > 0 && size < maxn) {
             path[size] = '\0';
+#if defined(TB_CONFIG_OS_LINUX)
+            // fix /usr/bin/ape for cosmocc
+        if (size > 3 && !tb_strcmp(path + size - 3, "ape")) {
+            FILE* fp = fopen("/proc/self/cmdline", "rb");
+            if (fp) {
+                tb_char_t line[TB_PATH_MAXN * 2];
+                if (fread(line, 1, sizeof(line), fp) > 0) {
+                    tb_char_t* p = line;
+                    // if argv[0] is /usr/bin/ape, we use argv[1]
+                    if (tb_strstr(p, "ape")) {
+                        p += tb_strlen(p) + 1;
+                    }
+                    // get absolute path
+                    if (p < line + sizeof(line) && *p) {
+                        tb_char_t buf[TB_PATH_MAXN];
+                        if (tb_path_absolute(p, buf, sizeof(buf))) {
+                            tb_strlcpy(path, buf, maxn);
+                        }
+                    }
+                }
+                fclose(fp);
+            }
+        }
+#endif
             ok = tb_true;
         }
 #elif defined(TB_CONFIG_OS_BSD) && defined(KERN_PROC_PATHNAME)

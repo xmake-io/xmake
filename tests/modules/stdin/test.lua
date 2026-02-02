@@ -1,31 +1,5 @@
 import("core.base.binutils")
 
-function resolve_path(p)
-    if path.is_absolute(p) then return p end
-    local root = path.join(os.scriptdir(), "../../..")
-    local p_root = path.join(root, p)
-    if os.isfile(p_root) then return path.absolute(p_root) end
-    if os.isfile(p) then return path.absolute(p) end
-    return p
-end
-
-function fix_ape_programfile(xmake)
-    if is_host("linux") and path.filename(xmake):find("ape", 1, true) and os.isfile("/proc/self/cmdline") then
-        local content = io.readfile("/proc/self/cmdline", {encoding = "binary"})
-        if content then
-            local args = {}
-            for arg in content:gmatch("[^\0]+") do
-                table.insert(args, arg)
-            end
-            if #args >= 2 and (path.unix(args[1]) == xmake or path.filename(path.unix(args[1])) == path.filename(xmake)) then
-                xmake = path.unix(args[2])
-                xmake = resolve_path(xmake)
-            end
-        end
-    end
-    return xmake
-end
-
 function test_shell(t, name, cmd, expect)
     local outfile = os.tmpfile()
     local errfile = os.tmpfile()
@@ -60,17 +34,10 @@ end
 function main(t)
     local xmake = path.translate(os.programfile())
 
-    -- Fix pwsh and cosmocc "err: ape error: l: not found (maybe chmod +x or ./ needed)" for Linux
-    xmake = fix_ape_programfile(xmake)
-
     local is_ape = binutils.format(xmake) == "ape"
-
     local run_stdin = string.format('"%s" l --stdin', xmake)
-    if not is_host("windows") then
-        run_stdin = string.format('env "%s" l --stdin', xmake)
-    end
-     -- Fix pwsh and cosmocc "exec format error" for MacOS
-     if is_ape and not is_host("windows") then
+    -- Fix pwsh and cosmocc "exec format error" for MacOS
+    if is_ape and not is_host("windows") then
         run_stdin = string.format("sh -c ' \"%s\" l --stdin '", xmake)
     end
 
@@ -78,7 +45,7 @@ function main(t)
     if is_host("windows") then
         -- Test cmd
         test_shell(t, "cmd_single", string.format("cmd /c echo print 'hello_cmd' | %s l --stdin", xmake), "hello_cmd")
-        test_shell(t, "cmd_calc", string.format('cmd /c echo local f = 1+1; print^(f^) | %s l --stdin', xmake), "2")
+        test_shell(t, "cmd_calc", string.format("cmd /c echo local f = 1+1; print^(f^) | %s l --stdin", xmake), "2")
         test_shell(
             t,
             "cmd_multi_lines",
