@@ -36,7 +36,7 @@ function main(t)
     local is_ape = binutils.format(xmake) == "ape"
     local run_stdin = string.format('"%s" l --stdin', xmake)
     -- Fix pwsh and cosmocc "exec format error" for MacOS
-    if is_ape and is_host("macosx") then
+    if is_ape and not is_host("windows") then
         run_stdin = string.format("sh -c ' \"%s\" l --stdin '", xmake)
     end
     local pwsh = ""
