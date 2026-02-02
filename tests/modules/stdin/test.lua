@@ -1,4 +1,3 @@
-import("core.base.binutils")
 import("lib.detect.find_tool")
 
 function _run_sh(t, name, cmd, expect)
@@ -20,12 +19,14 @@ function _run_cmd(t, name, cmd, expect)
 end
 
 function _run_pwsh(t, name, cmd, expect)
-    local xmake = path.translate(os.programfile())
-    local run_stdin = string.format('"%s" l --stdin', xmake)
-    local pwsh = find_tool("powershell")
-    if pwsh then
-        local outdata = os.iorunv(pwsh.program, {"-c", cmd .. " | " .. run_stdin}) or ""
-        t:are_equal(outdata:trim(), expect)
+    if is_host("windows") then
+        local xmake = path.translate(os.programfile())
+        local run_stdin = string.format('"%s" l --stdin', xmake)
+        local pwsh = find_tool("powershell")
+        if pwsh then
+            local outdata = os.iorunv(pwsh.program, {"-c", cmd .. " | " .. run_stdin}) or ""
+            t:are_equal(outdata:trim(), expect)
+        end
     end
 end
 
@@ -47,5 +48,5 @@ function test_pwsh(t)
     _run_pwsh(t, "pwsh_single", "echo \"print('hello_pwsh')\"", "hello_pwsh")
     _run_pwsh(t, "pwsh_calc", "echo \"local f = 1+1; print(f)\"", "2")
     _run_pwsh(t, "pwsh_main", "echo \"function main() print('in_pwsh_main') end\"", "in_pwsh_main")
-    _run_pwsh(t, "pwsh_multi", "echo \"print('pline1')\"; echo \"print('pline2')\"", "pline1\r\npline2")
+    _run_pwsh(t, "pwsh_multi", "echo \"print('pline1')`nprint('pline2')\"", "pline1\r\npline2")
 end
