@@ -1,8 +1,18 @@
 function main(t)
+    local function resolve_path(p)
+        if path.is_absolute(p) then return p end
+        local root = path.join(os.scriptdir(), "../../..") 
+        local p_root = path.join(root, p)
+        if os.isfile(p_root) then return path.absolute(p_root) end
+        if os.isfile(p) then return path.absolute(p) end
+        return p
+    end
+
     local xmake = path.unix(os.programfile())
     if os.host() == "windows" then
         xmake = xmake:gsub("/", "\\")
     end
+    xmake = resolve_path(xmake)
 
     -- Fix /usr/bin/ape loader mode on Linux
     local function fix_ape_programfile(xmake)
@@ -18,9 +28,7 @@ function main(t)
                     end
                     if #args >= 2 and path.unix(args[1]) == xmake then
                         xmake = path.unix(args[2])
-                        if not path.is_absolute(xmake) then
-                            xmake = path.absolute(xmake)
-                        end
+                        xmake = resolve_path(xmake)
                     end
                 end
             end
@@ -31,13 +39,12 @@ function main(t)
     -- Fix pwsh and cosmocc "err: ape error: l: not found (maybe chmod +x or ./ needed)" for Linux
     xmake = fix_ape_programfile(xmake)
 
-    local is_ape = path.filename(xmake):find("ape-", 1, true)
-    print("Using xmake programfile is_ape = ", is_ape)
+    local is_ape = path.filename(xmake):find("ape-", 1, true) ~= nil
 
     local run_stdin = string.format('env "%s" l --stdin', xmake)
      -- Fix pwsh and cosmocc "exec format error" for MacOS
      if is_ape and os.host() ~= "windows" then
-        run_stdin = string.format("sh -c ' \\\"%s\\\" l --stdin '", xmake)
+        run_stdin = string.format("sh -c ' \"%s\" l --stdin '", xmake)
     end
 
     local function test_shell(name, cmd, expect)
