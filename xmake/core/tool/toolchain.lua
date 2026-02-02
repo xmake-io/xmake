@@ -32,6 +32,7 @@ local option         = require("base/option")
 local hashset        = require("base/hashset")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
+local is_cross       = require("base/private/is_cross")
 local config         = require("project/config")
 local memcache       = require("cache/memcache")
 local localcache     = require("cache/localcache")
@@ -203,8 +204,13 @@ function _instance:formats()
     return self:info():get("formats")
 end
 
--- is cross-compilation toolchain?
+-- is cross-compilation?
 function _instance:is_cross()
+    return is_cross(self:plat(), self:arch()) or self:is_cross_toolchain()
+end
+
+-- is cross-compilation toolchain?
+function _instance:is_cross_toolchain()
     if self:kind() == "cross" then
         return true
     elseif self:kind() == "standalone" and (self:cross() or self:config("sdkdir") or self:info():get("sdkdir")) then

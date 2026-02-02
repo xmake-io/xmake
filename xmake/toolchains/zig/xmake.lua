@@ -78,7 +78,6 @@ toolchain("zig")
 
     on_load(function (toolchain)
         import("core.base.semver")
-        import("private.core.base.is_cross")
 
         -- set toolset
         -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
@@ -110,7 +109,7 @@ toolchain("zig")
         -- get target from cross only for cross-compilation
         -- @see https://github.com/xmake-io/xmake/issues/7180
         local target
-        if not target and is_cross(toolchain:plat(), toolchain:arch()) then
+        if not target and toolchain:is_cross() then
             target = toolchain:cross()
         end
 
