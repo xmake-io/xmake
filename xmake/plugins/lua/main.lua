@@ -64,15 +64,11 @@ function main()
             local script_content = io.read("*a")
             if script_content then
                 -- remove utf8 bom
-                if script_content:startswith(utf8.bom) then
-                    script_content = script_content:ltrim(utf8.bom)
-                end
+                script_content = script_content:ltrim(utf8.bom)
                 local shell = os.shell()
                 if shell == "cmd" or shell == "powershell" or shell == "pwsh" or is_host("windows") then
                     script_content = script_content:trim()
-                    if script_content:startswith('"') and script_content:endswith('"') then
-                        script_content = script_content:trim('\"')
-                    end
+                    script_content = script_content:trim('\"')
                     script_content = script_content:replace("\\n", "\n", {plain = true}):replace("\\r", "\r", {plain = true})
                 end
 
