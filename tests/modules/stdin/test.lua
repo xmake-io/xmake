@@ -39,7 +39,6 @@ function main(t)
     if is_ape and is_host("macosx") then
         run_stdin = string.format("sh -c ' \"%s\" l --stdin '", xmake)
     end
-
     local pwsh = ""
     if is_host("windows") then
         -- Test cmd
