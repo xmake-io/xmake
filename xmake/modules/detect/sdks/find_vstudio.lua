@@ -28,32 +28,6 @@ import("lib.detect.find_tool")
 import("lib.detect.find_directory")
 import("core.cache.global_detectcache")
 
--- init vc variables
-local vcvars = {"path",
-                "lib",
-                "libpath",
-                "include",
-                "DevEnvdir",
-                "VSInstallDir",
-                "VCInstallDir",
-                "WindowsSdkDir",
-                "WindowsLibPath",
-                "WindowsSDKVersion",
-                "WindowsSdkBinPath",
-                "WindowsSdkVerBinPath",
-                "ExtensionSdkDir",
-                "UniversalCRTSdkDir",
-                "UCRTVersion",
-                "VCToolsVersion",
-                "VCIDEInstallDir",
-                "VCToolsInstallDir",
-                "VCToolsRedistDir",
-                "VisualStudioVersion",
-                "VSCMD_VER",
-                "VSCMD_ARG_app_plat",
-                "VSCMD_ARG_HOST_ARCH",
-                "VSCMD_ARG_TGT_ARCH"}
-
 -- init vsvers
 local vsvers =
 {
@@ -99,9 +73,38 @@ local _env_orgs = {}
 
 -- get all known Visual Studio environment variables
 function get_vcvars()
-    local realvcvars = vcvars
+    local vcvars = {
+        "PATH",
+        "LIB",
+        "LIBPATH",
+        "INCLUDE",
+        "DevEnvdir",
+        "VSInstallDir",
+        "VCInstallDir",
+        "WindowsSdkDir",
+        "WindowsLibPath",
+        "WindowsSDKVersion",
+        "WindowsSdkBinPath",
+        "WindowsSdkVerBinPath",
+        "ExtensionSdkDir",
+        "UniversalCRTSdkDir",
+        "UCRTVersion",
+        "VCToolsVersion",
+        "VCIDEInstallDir",
+        "VCToolsInstallDir",
+        "VCToolsRedistDir",
+        "VisualStudioVersion",
+        "VSCMD_VER",
+        "VSCMD_ARG_app_plat",
+        "VSCMD_ARG_HOST_ARCH",
+        "VSCMD_ARG_TGT_ARCH"}
+
+    local realvcvars = {}
+    for _, v in ipairs(vcvars) do
+        realvcvars[v:upper()] = v
+    end
     for _, v in pairs(vsenvs) do
-        table.insert(realvcvars, v)
+        realvcvars[v:upper()] = v
     end
     return realvcvars
 end
@@ -290,9 +293,17 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
             file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver or "")
         end
     end
+    --[[
     for idx, var in ipairs(get_vcvars()) do
         file:print("echo " .. var .. " = %%" .. var .. "%%")
-    end
+    end]]
+    -- Use a separate process to display environment variables, bypassing the cmd 8191 length limit.
+    -- Furthermore, we need to reset some variables to avoid interfering with xmake's output of colorcode and exceptions.
+    -- https://github.com/xmake-io/xmake/issues/7281
+    file:print("set XMAKE_COLORTERM=nocolor")
+    file:print("set XMAKE_RCFILES=\"\"")
+    file:print("set XMAKE_PROJECT_DIR=%%TEMP%%")
+    file:print("\"%s\" l os.getenvs", path.absolute(os.programfile()))
     file:close()
 
     -- run genvcvars.bat
@@ -306,26 +317,23 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
 
     -- load all envirnoment variables
     local variables = {}
+    local required_vcvars = get_vcvars()
     for _, line in ipairs(outdata:split("\n")) do
         local p = line:find('=', 1, true)
         if p then
             local name = line:sub(1, p - 1):trim()
             local value = line:sub(p + 1):trim()
-            variables[name] = value
+            local required_name = required_vcvars[name:upper()]
+            if required_name and #value > 0 then
+                variables[required_name] = value
+            end
         end
     end
 
     -- check if the environment variables are truncated
     _check_vcvarsall_env(variables)
-    if not variables.path then
+    if not variables.PATH then
         return
-    end
-
-    -- remove some empty entries
-    for _, name in ipairs(vcvars) do
-        if variables[name] and #variables[name]:trim() == 0 then
-            variables[name] = nil
-        end
     end
 
     -- fix WindowsSDKVersion
@@ -353,29 +361,20 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
     --
     local UCRTVersion = variables["UCRTVersion"]
     if UCRTVersion and WindowsSDKVersion and UCRTVersion ~= WindowsSDKVersion and WindowsSDKVersion ~= "" then
-        local lib = variables["lib"]
+        local lib = variables["LIB"]
         if lib then
             lib = lib:gsub(UCRTVersion, WindowsSDKVersion)
-            variables["lib"] = lib
+            variables["LIB"] = lib
         end
-        local include = variables["include"]
+        local include = variables["INCLUDE"]
         if include then
             include = include:gsub(UCRTVersion, WindowsSDKVersion)
-            variables["include"] = include
+            variables["INCLUDE"] = include
         end
         UCRTVersion = WindowsSDKVersion
         variables["UCRTVersion"] = UCRTVersion
     end
 
-    -- convert path/lib/include to PATH/LIB/INCLUDE
-    variables.PATH    = variables.path
-    variables.LIB     = variables.lib
-    variables.LIBPATH = variables.libpath
-    variables.INCLUDE = variables.include
-    variables.path    = nil
-    variables.lib     = nil
-    variables.include = nil
-    variables.libpath = nil
     return variables
 end
 
@@ -406,7 +405,7 @@ function _check_vcvarsall_env(vars)
             end
             value_org = _env_orgs[name]
         end
-        local value_new = vars[name] or vars[name:lower()]
+        local value_new = vars[name]
         if value_org and value_new and #value_org > 0 then
             local values_new = hashset.from(path.splitenv(value_new))
             for _, p in ipairs(value_org) do
@@ -562,7 +561,7 @@ function _find_vstudio(opt)
         if vsenvs[version] then
             table.insert(paths, format("$(env %s)\\..\\..\\VC", vsenvs[version]))
         end
-        
+
         if vswhere_VCAuxiliaryBuildDir then
             for _, vc_path in ipairs(vswhere_VCAuxiliaryBuildDir) do
                 if os.isdir(vc_path) then
