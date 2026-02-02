@@ -293,10 +293,6 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
             file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver or "")
         end
     end
-    --[[
-    for idx, var in ipairs(get_vcvars()) do
-        file:print("echo " .. var .. " = %%" .. var .. "%%")
-    end]]
     -- Use a separate process to display environment variables, bypassing the cmd 8191 length limit.
     -- Furthermore, we need to reset some variables to avoid interfering with xmake's output of colorcode and exceptions.
     -- https://github.com/xmake-io/xmake/issues/7281
