@@ -874,7 +874,11 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t *engine, tb_char_t **arg
         ssize_t size = readlink(XM_PROC_SELF_FILE, path, (size_t)maxn);
         if (size > 0 && size < maxn) {
             path[size] = '\0';
-            ok = tb_true;
+            // ignore cosmocc ape binary, we fallback to argv[0], .e.g /usr/bin/ape, /home/ruki/.ape-1.10
+            tb_char_t const* filename = tb_strrchr(path, '/');
+            if (!tb_strstr(filename ? filename + 1 : path, "ape")) {
+                ok = tb_true;
+            }
         }
 #elif defined(TB_CONFIG_OS_BSD) && defined(KERN_PROC_PATHNAME)
         // only for FreeBSD and OpenBSD, https://github.com/xmake-io/xmake/issues/2948

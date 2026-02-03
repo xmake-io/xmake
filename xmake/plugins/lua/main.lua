@@ -45,6 +45,22 @@ function _list()
     end
 end
 
+-- get script from stdin
+function _get_script_from_stdin()
+    local script_content = io.read("*a")
+    if script_content then
+        -- remove utf8 bom
+        script_content = script_content:ltrim(utf8.bom)
+        if not script_content:find("function main", 1, true) then
+            script_content = "function main(...)\n" .. script_content .. "\nend"
+        end
+
+        local script = os.tmpfile() .. ".lua"
+        io.writefile(script, script_content)
+        return script
+    end
+end
+
 function main()
 
     -- list builtin scripts
@@ -54,14 +70,33 @@ function main()
 
     -- run script
     local script = option.get("script")
-    if script then
-        run_script(script, {
-            curdir = os.workingdir(),
-            verbose = option.get("verbose"),
-            diagnosis = option.get("diagnosis"),
-            command = option.get("command"),
-            arguments = option.get("arguments"),
-            deserialize = option.get("deserialize")})
+    local arguments = option.get("arguments")
+    local from_stdin = option.get("stdin")
+    if script or from_stdin then
+
+        -- run script from stdin?
+        local script_file_to_remove
+        if from_stdin then
+            local script_path = _get_script_from_stdin()
+            if script_path then
+                script = script_path
+                script_file_to_remove = script_path
+            end
+        end
+
+        if script then
+            run_script(script, {
+                curdir = os.workingdir(),
+                verbose = option.get("verbose"),
+                diagnosis = option.get("diagnosis"),
+                command = option.get("command"),
+                arguments = arguments,
+                deserialize = option.get("deserialize")})
+
+            if script_file_to_remove then
+                os.tryrm(script_file_to_remove)
+            end
+        end
     else
         -- enter interactive mode
         sandbox.interactive()
