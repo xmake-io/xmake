@@ -704,7 +704,7 @@ function _show_vstudio_diagnosis_result(vstudio)
         end
     end
     table.sort(found, function (a, b) return a > b end)
-    cprint("${dim}detecting vstudio environment ... found: %s", table.concat(found, ", "))
+    cprint("${dim}detecting vstudio environment ... ${color.success}found: %s", table.concat(found, ", "))
 end
 
 -- find vstudio environment
@@ -741,7 +741,7 @@ function main(opt)
     end
 
     -- find and cache result
-    cprint("${color.warning}detecting vstudio environment, it will be cached; run `xmake global --clean` if vs updated.")
+    cprint("${color.warning}Detecting Visual Studio environment (cached); run `xmake global --clean` first if vs updated.")
     vstudio = _find_vstudio(opt)
     if vstudio then
         local mtime = _get_last_mtime(vstudio)
