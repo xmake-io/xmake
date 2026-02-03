@@ -308,9 +308,9 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
         local p = line:find('=', 1, true)
         if p then
             local name = line:sub(1, p - 1):trim()
-            if name and #name > 0 then
+            if #name > 0 then
                 local value = line:sub(p + 1):trim()
-                if value and #value > 0 then
+                if #value > 0 then
                     variables[name] = value
                 end
             end
