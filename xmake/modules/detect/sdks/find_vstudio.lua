@@ -29,8 +29,7 @@ import("lib.detect.find_directory")
 import("core.cache.global_detectcache")
 
 -- init vsvers
-local vsvers =
-{
+local vsvers = {
     ["18.0"] = "2026"
 ,   ["17.0"] = "2022"
 ,   ["16.0"] = "2019"
@@ -49,8 +48,7 @@ local vsvers =
 }
 
 -- init vsenvs
-local vsenvs =
-{
+local vsenvs = {
     ["18.0"] = "VS180COMNTOOLS"
 ,   ["17.0"] = "VS170COMNTOOLS"
 ,   ["16.0"] = "VS160COMNTOOLS"
