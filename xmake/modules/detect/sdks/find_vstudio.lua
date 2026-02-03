@@ -704,7 +704,7 @@ function _show_vstudio_diagnosis_result(vstudio)
         end
     end
     table.sort(found, function (a, b) return a > b end)
-    cprint("${dim}detecting vstudio environment ... ${color.success}found: %s", table.concat(found, ", "))
+    cprint("${dim}detecting vstudio environment ... ${color.success}%s", table.concat(found, ", "))
 end
 
 -- find vstudio environment
@@ -753,7 +753,7 @@ function main(opt)
         if vstudio and not table.empty(vstudio) then
             _show_vstudio_diagnosis_result(vstudio)
         else
-            cprint("${dim}detecting vstudio environment ... not found")
+            cprint("${dim}detecting vstudio environment ...${color.failure}${text.failure}")
         end
     end
     return vstudio
