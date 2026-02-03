@@ -875,7 +875,8 @@ static tb_bool_t xm_engine_get_program_file(xm_engine_t *engine, tb_char_t **arg
         if (size > 0 && size < maxn) {
             path[size] = '\0';
             // ignore cosmocc ape binary, we fallback to argv[0], .e.g /usr/bin/ape, /home/ruki/.ape-1.10
-            if (!tb_strstr(path, "ape")) {
+            tb_char_t const* filename = tb_strrchr(path, '/');
+            if (!tb_strstr(filename ? filename + 1 : path, "ape")) {
                 ok = tb_true;
             }
         }
