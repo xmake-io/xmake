@@ -684,7 +684,21 @@ function _show_vstudio_diagnosis_result(vstudio)
     local found = {}
     for vsver, msvc in pairs(vstudio) do
         if type(msvc) == "table" and msvc.version then
-            table.insert(found, tostring(vsver) .. "(" .. tostring(msvc.version) .. ")")
+            local toolset
+            local vcvarsall = msvc.vcvarsall
+            if type(vcvarsall) == "table" then
+                for _, envs in pairs(vcvarsall) do
+                    if type(envs) == "table" and envs.VCToolsVersion then
+                        toolset = _strip_toolset_ver(envs.VCToolsVersion)
+                        break
+                    end
+                end
+            end
+            if toolset then
+                table.insert(found, tostring(vsver) .. "(" .. tostring(msvc.version) .. ", toolset:" .. tostring(toolset) .. ")")
+            else
+                table.insert(found, tostring(vsver) .. "(" .. tostring(msvc.version) .. ")")
+            end
         else
             table.insert(found, tostring(vsver))
         end
@@ -727,10 +741,7 @@ function main(opt)
     end
 
     -- find and cache result
-    if option.get("diagnosis") then
-        wprint("Detecting Visual Studio environment (first run uses cache later). If VS is updated, run `xmake global --clean` to refresh.")
-        cprint("${dim}detecting vstudio environment (toolset: %s, sdk: %s) ...", opt.toolset or "", opt.sdkver or "")
-    end
+    cprint("${color.warning}detecting vstudio environment, it will be cached; run `xmake global --clean` if vs updated.")
     vstudio = _find_vstudio(opt)
     if vstudio then
         local mtime = _get_last_mtime(vstudio)
