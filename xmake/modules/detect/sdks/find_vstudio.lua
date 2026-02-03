@@ -28,32 +28,6 @@ import("lib.detect.find_tool")
 import("lib.detect.find_directory")
 import("core.cache.global_detectcache")
 
--- init vc variables
-local vcvars = {"path",
-                "lib",
-                "libpath",
-                "include",
-                "DevEnvdir",
-                "VSInstallDir",
-                "VCInstallDir",
-                "WindowsSdkDir",
-                "WindowsLibPath",
-                "WindowsSDKVersion",
-                "WindowsSdkBinPath",
-                "WindowsSdkVerBinPath",
-                "ExtensionSdkDir",
-                "UniversalCRTSdkDir",
-                "UCRTVersion",
-                "VCToolsVersion",
-                "VCIDEInstallDir",
-                "VCToolsInstallDir",
-                "VCToolsRedistDir",
-                "VisualStudioVersion",
-                "VSCMD_VER",
-                "VSCMD_ARG_app_plat",
-                "VSCMD_ARG_HOST_ARCH",
-                "VSCMD_ARG_TGT_ARCH"}
-
 -- init vsvers
 local vsvers =
 {
@@ -99,6 +73,32 @@ local _env_orgs = {}
 
 -- get all known Visual Studio environment variables
 function get_vcvars()
+    local vcvars = {
+        "PATH",
+        "LIB",
+        "LIBPATH",
+        "INCLUDE",
+        "DevEnvdir",
+        "VSInstallDir",
+        "VCInstallDir",
+        "WindowsSdkDir",
+        "WindowsLibPath",
+        "WindowsSDKVersion",
+        "WindowsSdkBinPath",
+        "WindowsSdkVerBinPath",
+        "ExtensionSdkDir",
+        "UniversalCRTSdkDir",
+        "UCRTVersion",
+        "VCToolsVersion",
+        "VCIDEInstallDir",
+        "VCToolsInstallDir",
+        "VCToolsRedistDir",
+        "VisualStudioVersion",
+        "VSCMD_VER",
+        "VSCMD_ARG_app_plat",
+        "VSCMD_ARG_HOST_ARCH",
+        "VSCMD_ARG_TGT_ARCH"}
+
     local realvcvars = vcvars
     for _, v in pairs(vsenvs) do
         table.insert(realvcvars, v)
@@ -310,39 +310,36 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
         local p = line:find('=', 1, true)
         if p then
             local name = line:sub(1, p - 1):trim()
-            local value = line:sub(p + 1):trim()
-            variables[name] = value
+            if name and #name > 0 then
+                local value = line:sub(p + 1):trim()
+                if value and #value > 0 then
+                    variables[name] = value
+                end
+            end
         end
     end
 
     -- check if the environment variables are truncated
     _check_vcvarsall_env(variables)
-    if not variables.path then
+    if not variables.PATH then
         return
     end
 
-    -- remove some empty entries
-    for _, name in ipairs(vcvars) do
-        if variables[name] and #variables[name]:trim() == 0 then
-            variables[name] = nil
-        end
-    end
-
     -- fix WindowsSDKVersion
-    local WindowsSDKVersion = variables["WindowsSDKVersion"]
+    local WindowsSDKVersion = variables.WindowsSDKVersion
     if WindowsSDKVersion then
         WindowsSDKVersion = WindowsSDKVersion:gsub("\\", ""):trim()
         if WindowsSDKVersion ~= "" then
-            variables["WindowsSDKVersion"] = WindowsSDKVersion
+            variables.WindowsSDKVersion = WindowsSDKVersion
         end
     else
         -- sometimes the variable `WindowsSDKVersion` is not available
         -- then parse it from `WindowsSdkBinPath`, such as: `C:\\Program Files (x86)\\Windows Kits\\8.1\\bin`
-        local WindowsSdkBinPath = variables["WindowsSdkBinPath"]
+        local WindowsSdkBinPath = variables.WindowsSdkBinPath
         if WindowsSdkBinPath then
             WindowsSDKVersion = string.match(WindowsSdkBinPath, "\\(%d+%.%d+)\\bin$")
             if WindowsSDKVersion then
-                variables["WindowsSDKVersion"] = WindowsSDKVersion
+                variables.WindowsSDKVersion = WindowsSDKVersion
             end
         end
     end
@@ -351,31 +348,21 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
     --
     -- @note vcvarsall.bat maybe detect error if install WDK and SDK at same time (multi-sdk version exists in include directory).
     --
-    local UCRTVersion = variables["UCRTVersion"]
+    local UCRTVersion = variables.UCRTVersion
     if UCRTVersion and WindowsSDKVersion and UCRTVersion ~= WindowsSDKVersion and WindowsSDKVersion ~= "" then
-        local lib = variables["lib"]
+        local lib = variables.LIB
         if lib then
             lib = lib:gsub(UCRTVersion, WindowsSDKVersion)
-            variables["lib"] = lib
+            variables.LIB = lib
         end
-        local include = variables["include"]
+        local include = variables.INCLUDE
         if include then
             include = include:gsub(UCRTVersion, WindowsSDKVersion)
-            variables["include"] = include
+            variables.INCLUDE = include
         end
         UCRTVersion = WindowsSDKVersion
-        variables["UCRTVersion"] = UCRTVersion
+        variables.UCRTVersion = UCRTVersion
     end
-
-    -- convert path/lib/include to PATH/LIB/INCLUDE
-    variables.PATH    = variables.path
-    variables.LIB     = variables.lib
-    variables.LIBPATH = variables.libpath
-    variables.INCLUDE = variables.include
-    variables.path    = nil
-    variables.lib     = nil
-    variables.include = nil
-    variables.libpath = nil
     return variables
 end
 
@@ -406,7 +393,7 @@ function _check_vcvarsall_env(vars)
             end
             value_org = _env_orgs[name]
         end
-        local value_new = vars[name] or vars[name:lower()]
+        local value_new = vars[name]
         if value_org and value_new and #value_org > 0 then
             local values_new = hashset.from(path.splitenv(value_new))
             for _, p in ipairs(value_org) do
