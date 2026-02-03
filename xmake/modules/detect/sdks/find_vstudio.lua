@@ -547,7 +547,7 @@ function _find_vstudio(opt)
         if vsenvs[version] then
             table.insert(paths, format("$(env %s)\\..\\..\\VC", vsenvs[version]))
         end
-        
+
         if vswhere_VCAuxiliaryBuildDir then
             for _, vc_path in ipairs(vswhere_VCAuxiliaryBuildDir) do
                 if os.isdir(vc_path) then
@@ -680,6 +680,19 @@ function _get_last_mtime(vstudio)
     return mtime
 end
 
+function _show_vstudio_diagnosis_result(vstudio)
+    local found = {}
+    for vsver, msvc in pairs(vstudio) do
+        if type(msvc) == "table" and msvc.version then
+            table.insert(found, tostring(vsver) .. "(" .. tostring(msvc.version) .. ")")
+        else
+            table.insert(found, tostring(vsver))
+        end
+    end
+    table.sort(found, function (a, b) return a > b end)
+    cprint("${dim}detecting vstudio environment ... found: %s", table.concat(found, ", "))
+end
+
 -- find vstudio environment
 --
 -- @param opt   the options, e.g. {toolset = 14.0, sdkver = "10.0.15063.0"}
@@ -714,6 +727,10 @@ function main(opt)
     end
 
     -- find and cache result
+    if option.get("diagnosis") then
+        wprint("Detecting Visual Studio environment (first run uses cache later). If VS is updated, run `xmake global --clean` to refresh.")
+        cprint("${dim}detecting vstudio environment (toolset: %s, sdk: %s) ...", opt.toolset or "", opt.sdkver or "")
+    end
     vstudio = _find_vstudio(opt)
     if vstudio then
         local mtime = _get_last_mtime(vstudio)
@@ -721,6 +738,12 @@ function main(opt)
         global_detectcache:set2(key, "mtime", mtime)
         global_detectcache:save()
     end
+    if option.get("diagnosis") then
+        if vstudio and not table.empty(vstudio) then
+            _show_vstudio_diagnosis_result(vstudio)
+        else
+            cprint("${dim}detecting vstudio environment ... not found")
+        end
+    end
     return vstudio
 end
-
