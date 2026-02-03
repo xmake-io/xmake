@@ -48,5 +48,5 @@ function test_pwsh(t)
     _run_pwsh(t, "pwsh_single", "echo \"print('hello_pwsh')\"", "hello_pwsh")
     _run_pwsh(t, "pwsh_calc", "echo \"local f = 1+1; print(f)\"", "2")
     _run_pwsh(t, "pwsh_main", "echo \"function main() print('in_pwsh_main') end\"", "in_pwsh_main")
-    _run_pwsh(t, "pwsh_multi", "echo \"print('pline1')\"; echo \"print('pline2')\"", "pline1\npline2")
+    _run_pwsh(t, "pwsh_multi", "echo \"print('pline1')\" \"print('pline2')\"", "pline1\npline2")
 end
