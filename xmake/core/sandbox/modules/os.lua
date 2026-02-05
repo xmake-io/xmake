@@ -509,8 +509,6 @@ function sandbox_os.execv(program, argv, opt)
                 local missing_dlls = _get_missing_dlls(program)
                 if #missing_dlls > 0 then
                     errors = string.format("execv(%s) failed(%d): system error 0xC0000135 (STATUS_DLL_NOT_FOUND).\nThe application failed to start because the following DLLs were not found:\n  - %s\nPlease check your PATH environment variable or copy the missing DLLs to the executable directory.", cmd, ok, table.concat(missing_dlls, "\n  - "))
-                else
-                    errors = string.format("execv(%s) failed(%d): system error 0xC0000135 (STATUS_DLL_NOT_FOUND).\nThe application failed to start because a dependent DLL was not found.\nPlease check your PATH environment variable or copy the missing DLL to the executable directory.", cmd, ok)
                 end
             else
                 errors = string.format("execv(%s) failed(%d)", cmd, ok)
