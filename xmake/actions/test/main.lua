@@ -33,6 +33,9 @@ import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"}
 import("utils.progress")
 import("private.utils.target", {alias = "target_utils"})
 
+-- Load expected outputs from files for pass_output_files/fail_output_files.
+-- Resolve relative paths from the target scriptdir.
+-- https://github.com/xmake-io/xmake/issues/7255
 function _load_output_files(target, files, opt)
     files = table.wrap(files)
     if #files == 0 then
