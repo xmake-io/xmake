@@ -33,6 +33,30 @@ import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"}
 import("utils.progress")
 import("private.utils.target", {alias = "target_utils"})
 
+-- Load expected outputs from files for pass_output_files/fail_output_files.
+-- Resolve relative paths from the target scriptdir.
+-- https://github.com/xmake-io/xmake/issues/7255
+function _load_output_files(target, files, opt)
+    files = table.wrap(files)
+    if #files == 0 then
+        return {}
+    end
+    local scriptdir = target and target:scriptdir() or nil
+    local outputs = {}
+    for _, file in ipairs(files) do
+        local filepath = path.absolute(file, scriptdir)
+        if not os.isfile(filepath) then
+            raise("file not found: %s", filepath)
+        end
+        local data = io.readfile(filepath)
+        if opt.trim_output and data then
+            data = data:trim()
+        end
+        table.insert(outputs, data)
+    end
+    return outputs
+end
+
 -- test target
 function _do_test_target(target, opt)
     opt = opt or {}
@@ -65,7 +89,8 @@ function _do_test_target(target, opt)
     if opt.realtime_output then
         outfile = nil
         errfile = nil
-        assert(not opt.pass_outputs and not opt.fail_outputs, "add_tests(%s): we cannot check pass_outputs/fail_outputs in real output mode", opt.name)
+        assert(not opt.pass_outputs and not opt.fail_outputs and not opt.pass_output_files and not opt.fail_output_files,
+            "add_tests(%s): we cannot check pass_outputs/fail_outputs in real output mode", opt.name)
     else
         os.tryrm(outfile)
         os.tryrm(errfile)
@@ -110,6 +135,8 @@ function _do_test_target(target, opt)
     if ok == 0 then
         local pass_outputs = table.wrap(opt.pass_outputs)
         local fail_outputs = table.wrap(opt.fail_outputs)
+        table.join2(pass_outputs, _load_output_files(target, opt.pass_output_files, opt))
+        table.join2(fail_outputs, _load_output_files(target, opt.fail_output_files, opt))
         for _, pass_output in ipairs(pass_outputs) do
             if opt.plain then
                 if pass_output == outdata then

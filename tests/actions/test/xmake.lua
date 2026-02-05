@@ -13,6 +13,13 @@ for _, file in ipairs(os.files("src/test_*.cpp")) do
         add_tests("fail_output", {fail_outputs = {"hello2 .*", "hello xmake"}})
 end
 
+target("test_output_files")
+    set_kind("binary")
+    set_default(false)
+    add_files("src/test_1.cpp")
+    add_tests("pass_output_file", {trim_output = true, runargs = "foo", pass_output_files = "outputs/pass_hello_foo.txt"})
+    add_tests("fail_output_file", {trim_output = true, should_fail = true, fail_output_files = "outputs/fail_hello_xmake.txt"})
+
 target("test_10")
     set_kind("binary")
     set_default(false)
@@ -48,4 +55,3 @@ target("test_timeout")
     set_default(false)
     add_files("src/run_timeout.cpp")
     add_tests("run_timeout", {run_timeout = 1000})
-
