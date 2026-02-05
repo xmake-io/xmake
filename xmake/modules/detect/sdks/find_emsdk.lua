@@ -100,7 +100,6 @@ function main(sdkdir, opt)
         if opt.verbose or option.get("verbose") then
             cprint("checking for emsdk directory ... ${color.success}%s", sdk.sdkdir)
         end
-
     else
         if opt.verbose or option.get("verbose") then
             cprint("checking for emsdk directory ... ${color.nothing}${text.nothing}")
