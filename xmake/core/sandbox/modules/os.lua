@@ -21,6 +21,7 @@
 -- load modules
 local io        = require("base/io")
 local os        = require("base/os")
+local path      = require("base/path")
 local utils     = require("base/utils")
 local xmake     = require("base/xmake")
 local option    = require("base/option")
@@ -339,6 +340,139 @@ function sandbox_os.exec(cmd, ...)
 end
 
 -- execute command with arguments list
+-- get missing dlls
+local function _get_missing_dlls(program)
+    local missing = {}
+    local program_dir = path.directory(program)
+    local pathenv = os.getenv("PATH") or ""
+    local paths = path.splitenv(pathenv)
+    table.insert(paths, 1, program_dir)
+
+    local function _find_dll(name)
+        for _, p in ipairs(paths) do
+            if os.isfile(path.join(p, name)) then
+                return true
+            end
+        end
+        return false
+    end
+
+    local imports = {}
+    local file = io.open(program, "rb")
+    if file then
+        local function read_uint16()
+            local str = file:read(2)
+            if not str then return 0 end
+            local b1, b2 = string.byte(str, 1, 2)
+            return b1 + b2 * 256
+        end
+        local function read_uint32()
+            local str = file:read(4)
+            if not str then return 0 end
+            local b1, b2, b3, b4 = string.byte(str, 1, 4)
+            return b1 + b2 * 256 + b3 * 65536 + b4 * 16777216
+        end
+
+        local mz = file:read(2)
+        if mz == "MZ" then
+            file:seek("set", 0x3C)
+            local e_lfanew = read_uint32()
+            file:seek("set", e_lfanew)
+            if file:read(4) == "PE\0\0" then
+                -- file header
+                file:seek("cur", 2) -- Machine (2)
+                local number_of_sections = read_uint16()
+                file:seek("cur", 12) -- TimeDateStamp(4) + PointerToSymbolTable(4) + NumberOfSymbols(4)
+                local size_of_optional_header = read_uint16()
+                file:seek("cur", 2) -- Characteristics (2)
+
+                -- optional header
+                local magic = read_uint16()
+                local is_pe64 = (magic == 0x20b)
+                
+                -- skip standard fields and some windows fields to reach DataDirectories
+                -- Standard(24/22) + Windows(68/88)
+                -- PE32: 24 + 68 = 92 bytes from magic to DataDirectories
+                -- PE32+: 24 + 88 = 112 bytes from magic to DataDirectories
+                -- Minus magic(2) that we just read
+                local skip = (is_pe64 and (24 + 88 - 2) or (24 + 68 - 2))
+                file:seek("cur", skip)
+                
+                -- Data Directories
+                -- Export Table (8)
+                file:seek("cur", 8) 
+
+                -- Import Table
+                local import_rva = read_uint32()
+                local import_size = read_uint32()
+                
+                if import_rva > 0 then
+                    -- Section Headers
+                    file:seek("set", e_lfanew + 4 + 20 + size_of_optional_header)
+                    local sections = {}
+                    for i = 1, number_of_sections do
+                        local s = {}
+                        file:seek("cur", 8) -- name
+                        s.vsize = read_uint32()
+                        s.vaddr = read_uint32()
+                        s.rawsize = read_uint32()
+                        s.rawaddr = read_uint32()
+                        file:seek("cur", 16)
+                        table.insert(sections, s)
+                    end
+                    
+                    local function rva_to_offset(rva)
+                        for _, s in ipairs(sections) do
+                            if rva >= s.vaddr and rva < s.vaddr + s.vsize then
+                                return s.rawaddr + (rva - s.vaddr)
+                            end
+                        end
+                        return nil
+                    end
+                    
+                    local import_offset = rva_to_offset(import_rva)
+                    if import_offset then
+                        file:seek("set", import_offset)
+                        while true do
+                            local original_ft = read_uint32() -- OriginalFirstThunk
+                            local time_date = read_uint32()
+                            local forwarder = read_uint32()
+                            local name_rva = read_uint32()
+                            local first_thunk = read_uint32()
+                            
+                            if original_ft == 0 and name_rva == 0 then break end
+                            
+                            if name_rva > 0 then
+                                local name_offset = rva_to_offset(name_rva)
+                                if name_offset then
+                                    local save_pos = file:seek()
+                                    file:seek("set", name_offset)
+                                    local chars = {}
+                                    while true do
+                                        local b = string.byte(file:read(1))
+                                        if b == 0 then break end
+                                        table.insert(chars, string.char(b))
+                                    end
+                                    table.insert(imports, table.concat(chars))
+                                    file:seek("set", save_pos)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        file:close()
+    end
+
+    for _, dll in ipairs(imports) do
+        if not _find_dll(dll) then
+             table.insert(missing, dll)
+        end
+    end
+    return missing
+end
+
 function sandbox_os.execv(program, argv, opt)
 
     -- make program
@@ -371,7 +505,16 @@ function sandbox_os.execv(program, argv, opt)
 
         -- get errors
         if ok ~= nil then
-            errors = string.format("execv(%s) failed(%d)", cmd, ok)
+            if ok == -1073741515 then -- 0xC0000135
+                local missing_dlls = _get_missing_dlls(program)
+                if #missing_dlls > 0 then
+                    errors = string.format("execv(%s) failed(%d): system error 0xC0000135 (STATUS_DLL_NOT_FOUND).\nThe application failed to start because the following DLLs were not found:\n  - %s\nPlease check your PATH environment variable or copy the missing DLLs to the executable directory.", cmd, ok, table.concat(missing_dlls, "\n  - "))
+                else
+                    errors = string.format("execv(%s) failed(%d): system error 0xC0000135 (STATUS_DLL_NOT_FOUND).\nThe application failed to start because a dependent DLL was not found.\nPlease check your PATH environment variable or copy the missing DLL to the executable directory.", cmd, ok)
+                end
+            else
+                errors = string.format("execv(%s) failed(%d)", cmd, ok)
+            end
         else
             errors = string.format("cannot execv(%s), %s", cmd, errors and errors or "unknown reason")
         end
