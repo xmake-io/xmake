@@ -59,6 +59,16 @@ function _do_run_target(target)
         targetfile = wine.program
     end
 
+    -- run wasm target in browser
+    if target:is_plat("wasm") then
+        local python = assert(find_tool("python3"), "python not found! python is required for running wasm target in browser!")
+        local url = "http://localhost:8000/" .. path.relative(targetfile, rundir):gsub("\\", "/")
+        print("please open the url in browser")
+        cprint("${color.success}%s${clear}", url)
+        os.execv(python.program, {"-m", "http.server"}, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
+        return
+    end
+
     -- debugging?
     if option.get("debug") then
         debugger.run(targetfile, args, {curdir = rundir, addenvs = addenvs, setenvs = setenvs})
