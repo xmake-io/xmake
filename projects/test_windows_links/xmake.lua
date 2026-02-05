@@ -1,5 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
+set_policy("run.gui_error_dialogs", true)
+
 target("foo")
     set_kind("shared")
     add_files("src/foo.c")

@@ -34,6 +34,8 @@ function policy.policies()
     local policies = policy._POLICIES
     if not policies then
         policies = {
+            -- Enable/Disable Windows Error Reporting Dialogs
+            ["run.gui_error_dialogs"]             = {description = "Enable Windows Error Reporting Dialogs during execution.", default = false, type = "boolean"},
             -- We will check and ignore all unsupported flags by default, but we can also pass `{force = true}` to force to set flags, e.g. add_ldflags("-static", {force = true})
             ["check.auto_ignore_flags"]           = {description = "Enable check and ignore unsupported flags automatically.", default = true, type = "boolean"},
             -- We will map gcc flags to the current compiler and linker by default.

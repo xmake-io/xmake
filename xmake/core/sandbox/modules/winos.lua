@@ -35,6 +35,7 @@ sandbox_winos.logical_drives          = winos.logical_drives
 sandbox_winos.cmdargv                 = winos.cmdargv
 sandbox_winos.processes               = winos.processes
 sandbox_winos.inherit_handles_safely  = winos.inherit_handles_safely
+sandbox_winos.seterrormode            = winos.seterrormode
 
 -- get windows system version
 function sandbox_winos.version()

@@ -63,7 +63,7 @@ function _do_run_target(target)
     if option.get("debug") then
         debugger.run(targetfile, args, {curdir = rundir, addenvs = addenvs, setenvs = setenvs})
     else
-        os.execv(targetfile, args, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
+        os.execv(targetfile, args, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs, winos_error_mode_gui = target:policy("run.gui_error_dialogs")})
     end
 end
 
