@@ -34,6 +34,9 @@
     defined(TB_CONFIG_OS_HAIKU) || defined(TB_COMPILER_IS_MINGW)
 #include <signal.h>
 #endif
+#ifdef TB_CONFIG_OS_WINDOWS
+#include <windows.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -100,6 +103,12 @@ tb_int_t xm_process_openv(lua_State *lua) {
     // init attributes
     tb_process_attr_t attr = { 0 };
 
+#ifdef TB_CONFIG_OS_WINDOWS
+    // the error mode
+    UINT old_error_mode = 0;
+    tb_bool_t set_error_mode = tb_false;
+#endif
+
     // get option arguments
     tb_bool_t exclusive = tb_false;
     tb_size_t envn = 0;
@@ -129,6 +138,17 @@ tb_int_t xm_process_openv(lua_State *lua) {
             exclusive = tb_true;
         }
         lua_pop(lua, 1);
+
+#ifdef TB_CONFIG_OS_WINDOWS
+        // save winos error mode?
+        lua_pushstring(lua, "winos_error_mode_gui");
+        lua_gettable(lua, 3);
+        if (lua_toboolean(lua, -1)) {
+             old_error_mode = SetErrorMode(0);
+             set_error_mode = tb_true;
+        }
+        lua_pop(lua, 1);
+#endif
 
         // get curdir
         lua_pushstring(lua, "curdir");
@@ -322,6 +342,13 @@ tb_int_t xm_process_openv(lua_State *lua) {
     } else {
         lua_pushnil(lua);
     }
+
+#ifdef TB_CONFIG_OS_WINDOWS
+    // restore error mode
+    if (set_error_mode) {
+        SetErrorMode(old_error_mode);
+    }
+#endif
 
     // exit argv
     if (argv) {
