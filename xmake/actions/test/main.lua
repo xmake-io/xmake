@@ -44,13 +44,7 @@ function _load_output_files(target, files, opt)
     local scriptdir = target and target:scriptdir() or nil
     local outputs = {}
     for _, file in ipairs(files) do
-        local filepath = file
-        if filepath and not path.is_absolute(filepath) then
-            if scriptdir then
-                filepath = path.join(scriptdir, filepath)
-            end
-        end
-        filepath = path.absolute(filepath)
+        local filepath = path.absolute(file, scriptdir)
         if not os.isfile(filepath) then
             raise("file not found: %s", filepath)
         end
