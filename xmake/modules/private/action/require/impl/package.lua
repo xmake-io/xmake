@@ -866,7 +866,8 @@ function _select_package_runtimes(package)
     local runtimes = package:config("runtimes")
     if runtimes then
         local runtimes_supported = hashset.new()
-        local toolchains = package:toolchains() or platform.load(package:plat(), package:arch()):toolchains()
+        local toolchains = package:toolchains() or
+            platform.load(package:plat(), package:arch(), {host = package:is_host()}):toolchains()
         if toolchains then
             for _, toolchain_inst in ipairs(toolchains) do
                 if toolchain_inst:is_standalone() and toolchain_inst:get("runtimes") then
