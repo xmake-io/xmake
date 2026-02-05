@@ -1187,7 +1187,7 @@ function os.isexec(filepath)
             end
         end
     elseif os.isfile(filepath) then
-        return os._access(filepath, "x")
+        return os._access and os._access(filepath, "x") or true
     end
     return false
 end
