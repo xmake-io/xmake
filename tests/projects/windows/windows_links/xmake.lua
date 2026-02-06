@@ -6,7 +6,7 @@ target("foo")
     set_kind("shared")
     add_files("src/foo.c")
 
-target("test_mingw_dll")
+target("test_foo_dll_presence")
     set_kind("binary")
     add_files("src/main.c")
     add_deps("foo")

@@ -340,34 +340,36 @@ function sandbox_os.exec(cmd, ...)
     end
 end
 
--- execute command with arguments list
 -- get missing dlls
-local function _get_missing_dlls(program)
-    local missing = {}
-    local program_dir = path.directory(program)
+function sandbox_os._get_missing_dlls(program)
+
+    -- check
+    assert(program)
+
+    -- get paths
     local pathenv = os.getenv("PATH") or ""
     local paths = path.splitenv(pathenv)
-    table.insert(paths, 1, program_dir)
+    table.insert(paths, 1, path.directory(program))
 
-    local function _find_dll(name)
+    -- find missing dlls
+    local missing = {}
+    local imports = binutils.deplibs(program) or {}
+    for _, dll in ipairs(imports) do
+        local found = false
         for _, p in ipairs(paths) do
-            if os.isfile(path.join(p, name)) then
-                return true
+            if os.isfile(path.join(p, dll)) then
+                found = true
+                break
             end
         end
-        return false
-    end
-
-    local imports = binutils.deplibs(program) or {}
-
-    for _, dll in ipairs(imports) do
-        if not _find_dll(dll) then
+        if not found then
              table.insert(missing, dll)
         end
     end
     return missing
 end
 
+-- execute command with arguments list
 function sandbox_os.execv(program, argv, opt)
 
     -- make program
@@ -418,7 +420,7 @@ function sandbox_os.execv(program, argv, opt)
         -- get errors
         if ok ~= nil then
             if ok == -1073741515 then -- 0xC0000135
-                local missing_dlls = _get_missing_dlls(program)
+                local missing_dlls = sandbox_os._get_missing_dlls(program)
                 if #missing_dlls > 0 then
                     errors = string.format("execv(%s) failed(%d): system error 0xC0000135 (STATUS_DLL_NOT_FOUND).\nThe application failed to start because the following DLLs were not found:\n  - %s\nPlease check your PATH environment variable or copy the missing DLLs to the executable directory.", cmd, ok, table.concat(missing_dlls, "\n  - "))
                 else
