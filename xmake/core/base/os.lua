@@ -1020,6 +1020,9 @@ function os.execv(program, argv, opt)
             local waitok, status = proc:wait(opt.timeout or -1)
             if waitok > 0 then
                 ok = status
+                if ok and ok ~= 0 then
+                    errors = process.get_exit_errors(filename, ok)
+                end
             elseif waitok == 0 and opt.timeout then
                 proc:kill()
                 waitok, status = proc:wait(-1)
@@ -1093,7 +1096,7 @@ function os.iorunv(program, argv, opt)
         if argv then
             cmd = cmd .. " " .. os.args(argv)
         end
-        errors = string.format("cannot runv(%s), %s", cmd, errors and errors or "unknown reason")
+        errors = string.format("cannot runv(%s), %s", cmd, errors or "unknown reason")
     end
 
     -- get output and error data

@@ -59,11 +59,23 @@ function _do_run_target(target)
         targetfile = wine.program
     end
 
+    -- enable GUI error dialogs (Windows only)
+    -- @see https://github.com/xmake-io/xmake/issues/7176
+    local old_errormode
+    if target:policy("run.windows_error_dialog") and winos.set_error_mode then
+        old_errormode = winos.set_error_mode(0)
+    end
+
     -- debugging?
     if option.get("debug") then
         debugger.run(targetfile, args, {curdir = rundir, addenvs = addenvs, setenvs = setenvs})
     else
-        os.execv(targetfile, args, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs, winos_error_mode_gui = target:policy("run.gui_error_dialogs")})
+        os.execv(targetfile, args, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
+    end
+
+    -- restore error mode
+    if old_errormode then
+        winos.set_error_mode(old_errormode)
     end
 end
 

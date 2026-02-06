@@ -21,12 +21,10 @@
 -- load modules
 local io        = require("base/io")
 local os        = require("base/os")
-local path      = require("base/path")
 local utils     = require("base/utils")
 local xmake     = require("base/xmake")
 local option    = require("base/option")
 local semver    = require("base/semver")
-local binutils  = require("base/binutils")
 local scheduler = require("base/scheduler")
 local sandbox   = require("sandbox/sandbox")
 local vformat   = require("sandbox/modules/vformat")
@@ -332,41 +330,12 @@ function sandbox_os.exec(cmd, ...)
     local ok, errors = os.exec(cmd)
     if ok ~= 0 then
         if ok ~= nil then
-            errors = string.format("exec(%s) failed(%d)", cmd, ok)
+            errors = string.format("exec(%s) failed(%d), %s", cmd, ok, errors or "unknown reason")
         else
-            errors = string.format("cannot exec(%s), %s", cmd, errors and errors or "unknown reason")
+            errors = string.format("cannot exec(%s), %s", cmd, errors or "unknown reason")
         end
         os.raise(errors)
     end
-end
-
--- get missing dlls
-function sandbox_os._get_missing_dlls(program)
-
-    -- check
-    assert(program)
-
-    -- get paths
-    local pathenv = os.getenv("PATH") or ""
-    local paths = path.splitenv(pathenv)
-    table.insert(paths, 1, path.directory(program))
-
-    -- find missing dlls
-    local missing = {}
-    local imports = binutils.deplibs(program) or {}
-    for _, dll in ipairs(imports) do
-        local found = false
-        for _, p in ipairs(paths) do
-            if os.isfile(path.join(p, dll)) then
-                found = true
-                break
-            end
-        end
-        if not found then
-             table.insert(missing, dll)
-        end
-    end
-    return missing
 end
 
 -- execute command with arguments list
@@ -391,24 +360,7 @@ function sandbox_os.execv(program, argv, opt)
 
     -- run it
     opt = opt or {}
-
-    -- check policy for GUI error dialogs (Windows only)
-    local old_mode
-    local winos 
-    if os.is_host("windows") and opt.winos_error_mode_gui then
-        winos = require("sandbox/modules/winos") 
-        if winos.seterrormode then
-            old_mode = winos.seterrormode(0)
-        end
-    end
-
     local ok, errors = os.execv(program, argv, opt)
-
-    -- restore error mode
-    if old_mode then
-        winos.seterrormode(old_mode)
-    end
-
     if ok ~= 0 and not opt.try then
 
         -- get command
@@ -419,18 +371,9 @@ function sandbox_os.execv(program, argv, opt)
 
         -- get errors
         if ok ~= nil then
-            if ok == -1073741515 then -- 0xC0000135
-                local missing_dlls = sandbox_os._get_missing_dlls(program)
-                if #missing_dlls > 0 then
-                    errors = string.format("execv(%s) failed(%d): system error 0xC0000135 (STATUS_DLL_NOT_FOUND).\nThe application failed to start because the following DLLs were not found:\n  - %s\nPlease check your PATH environment variable or copy the missing DLLs to the executable directory.", cmd, ok, table.concat(missing_dlls, "\n  - "))
-                else
-                    errors = string.format("execv(%s) failed(%d): system error 0xC0000135 (STATUS_DLL_NOT_FOUND).\nThe application failed to start because a dependent DLL was not found.\nPlease check your PATH environment variable or copy the missing DLL to the executable directory.", cmd, ok)
-                end
-            else
-                errors = string.format("execv(%s) failed(%d)", cmd, ok)
-            end
+            errors = string.format("execv(%s) failed(%d), %s", cmd, ok, errors or "unknown reason")
         else
-            errors = string.format("cannot execv(%s), %s", cmd, errors and errors or "unknown reason")
+            errors = string.format("cannot execv(%s), %s", cmd, errors or "unknown reason")
         end
         os.raise(errors)
     end

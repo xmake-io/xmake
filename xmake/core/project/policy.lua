@@ -34,8 +34,6 @@ function policy.policies()
     local policies = policy._POLICIES
     if not policies then
         policies = {
-            -- Enable/Disable Windows Error Reporting Dialogs
-            ["run.gui_error_dialogs"]             = {description = "Enable Windows Error Reporting Dialogs during execution.", default = false, type = "boolean"},
             -- We will check and ignore all unsupported flags by default, but we can also pass `{force = true}` to force to set flags, e.g. add_ldflags("-static", {force = true})
             ["check.auto_ignore_flags"]           = {description = "Enable check and ignore unsupported flags automatically.", default = true, type = "boolean"},
             -- We will map gcc flags to the current compiler and linker by default.
@@ -129,6 +127,8 @@ function policy.policies()
             ["windows.manifest.uac.ui"]           = {description = "Enable ui access for windows UAC.", type = "boolean"},
             -- Automatically build before running
             ["run.autobuild"]                     = {description = "Automatically build before running.", type = "boolean"},
+            -- Enable/Disable Windows Error Reporting Dialogs
+            ["run.windows_error_dialog"]          = {description = "Enable Windows Error Reporting Dialogs during execution.", default = false, type = "boolean"},
             -- Enable install rpath
             ["install.rpath"]                     = {description = "Enable install rpath.", default = true, type = "boolean"},
             -- Strip package libraries for installation

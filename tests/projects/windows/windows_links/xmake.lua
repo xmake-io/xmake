@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-set_policy("run.gui_error_dialogs", true)
+set_policy("run.windows_error_dialog", true)
 
 target("foo")
     set_kind("shared")

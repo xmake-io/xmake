@@ -486,7 +486,7 @@ static luaL_Reg const g_winos_functions[] = {
     { "registry_values", xm_winos_registry_values },
     { "short_path", xm_winos_short_path },
     { "processes", xm_winos_processes },
-    { "seterrormode", xm_winos_set_error_mode },
+    { "set_error_mode", xm_winos_set_error_mode },
     { tb_null, tb_null },
 };
 #endif
