@@ -72,7 +72,9 @@ function main()
                     sudo.execl(path.join(os.scriptdir(), "uninstall_admin.lua"), {
                         targetname or "__all",
                         option.get("installdir") or "",
-                        option.get("prefix")})
+                        option.get("bindir"),
+                        option.get("libdir"),
+                        option.get("includedir")})
 
                     -- trace
                     cprint("${color.success}uninstall ok!")

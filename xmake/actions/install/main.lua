@@ -111,7 +111,9 @@ function main()
                     sudo.execl(path.join(os.scriptdir(), "install_admin.lua"), {
                         targetname or (option.get("all") and "__all" or "__def"),
                         group_pattern or "", option.get("installdir") or "",
-                        option.get("prefix")})
+                        option.get("bindir"),
+                        option.get("libdir"),
+                        option.get("includedir")})
                     cprint("${color.success}install ok!")
                     ok = true
                 end

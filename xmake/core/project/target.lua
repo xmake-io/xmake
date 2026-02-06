@@ -1767,7 +1767,11 @@ end
 
 -- get the installed binary directory
 function _instance:bindir()
-    local bindir = self:extraconf("prefixdir", self:prefixdir(), "bindir")
+    local bindir = baseoption.get("bindir")
+    if bindir then
+        return path.is_absolute(bindir) and path.normalize(bindir) or self:installdir(bindir)
+    end
+    bindir = self:extraconf("prefixdir", self:prefixdir(), "bindir")
     if bindir == nil then
         bindir = "bin"
     end
@@ -1776,7 +1780,11 @@ end
 
 -- get the installed library directory
 function _instance:libdir()
-    local libdir = self:extraconf("prefixdir", self:prefixdir(), "libdir")
+    local libdir = baseoption.get("libdir")
+    if libdir then
+        return path.is_absolute(libdir) and path.normalize(libdir) or self:installdir(libdir)
+    end
+    libdir = self:extraconf("prefixdir", self:prefixdir(), "libdir")
     if libdir == nil then
         libdir = "lib"
     end
@@ -1785,7 +1793,11 @@ end
 
 -- get the installed include directory
 function _instance:includedir()
-    local includedir = self:extraconf("prefixdir", self:prefixdir(), "includedir")
+    local includedir = baseoption.get("includedir")
+    if includedir then
+        return path.is_absolute(includedir) and path.normalize(includedir) or self:installdir(includedir)
+    end
+    includedir = self:extraconf("prefixdir", self:prefixdir(), "includedir")
     if includedir == nil then
         includedir = "include"
     end
