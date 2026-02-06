@@ -307,6 +307,7 @@ end
 
 -- get process exit errors
 function process.get_exit_errors(program, exitcode)
+    local errors
     if os.is_host("windows") then
         -- DLL is missing, 0xC0000135
         if exitcode == -1073741515 then
@@ -318,6 +319,7 @@ function process.get_exit_errors(program, exitcode)
             end
         end
     end
+    return errors
 end
 
 
