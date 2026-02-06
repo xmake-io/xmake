@@ -40,16 +40,18 @@ function _run_wasm_target_in_browser(targetfile, opt)
     local setenvs = opt.setenvs
     local emrun = find_tool("emrun")
     if emrun then
-        os.execv(emrun.program, {targetfile}, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
+        os.execv(emrun.program, {targetfile}, {
+            curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
     else
         local python = find_tool("python3")
         if not python then
             raise("emrun or python not found, which is required for running wasm target in browser!")
         end
-        local url = "http://localhost:8000/" .. path.relative(targetfile, rundir):gsub("\\", "/")
+        local url = "http://localhost:8000/" .. path.unix(path.relative(targetfile, rundir))
         print("please open the url in browser")
         cprint("${color.success}%s${clear}", url)
-        os.execv(python.program, {"-m", "http.server", "--bind", "127.0.0.1", "8000"}, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
+        os.execv(python.program, {"-m", "http.server", "--bind", "127.0.0.1", "8000"}, {
+            curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
     end
 end
 
