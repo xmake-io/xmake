@@ -63,4 +63,3 @@ function main(targetname, installdir, bindir, libdir, includedir)
     uninstall(targetname ~= "__all" and targetname or nil)
     option.restore()
 end
-end
