@@ -31,15 +31,14 @@ task("uninstall")
                                               "    $ xmake uninstall --installdir=/usr/local",
                                               "or  $ DESTDIR=/usr/local xmake uninstall",
                                               "or  $ INSTALLDIR=/usr/local xmake uninstall" },
+            {nil, "bindir",     "kv", nil   , "Set install binaries directory in INSTALLDIR/DIR. (default: ${installdir}/bin)"},
+            {nil, "libdir",     "kv", nil   , "Set install libraries directory in INSTALLDIR/DIR. (default: ${installdir}/lib)"},
+            {nil, "includedir", "kv", nil   , "Set install includes directory in INSTALLDIR/DIR. (default: ${installdir}/include)"},
             {'g', "group",      "kv",  nil  , "Uninstall all targets of the given group. It support path pattern matching.",
                                               "e.g.",
                                               "    xmake uninstall -g test",
                                               "    xmake uninstall -g test_*",
                                               "    xmake uninstall --group=benchmark/*"     },
-            {'p', "prefix",     "kv", nil   , "Set the prefix directory.",
-                                              "e.g.",
-                                              "    $ xmake uninstall --prefix=local",
-                                              "or  $ PREFIX=local xmake uninstall"          },
             {nil, "admin",      "k",  nil   , "Try to request administrator permission to uninstall"},
             {                                                                               },
             {nil, "target",     "v",  nil   , "The target name. It will uninstall all default targets if this parameter is not specified.",
@@ -48,6 +47,4 @@ task("uninstall")
                                               end}
         }
     }
-
-
 

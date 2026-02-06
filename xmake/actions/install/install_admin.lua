@@ -25,13 +25,22 @@ import("core.project.project")
 import("core.platform.platform")
 import("install")
 
-function main(targetname, group_pattern, installdir, prefix)
+function main(targetname, group_pattern, installdir, bindir, libdir, includedir)
     local verbose = option.get("verbose")
     if group_pattern and #group_pattern == 0 then
         group_pattern = nil
     end
     if installdir and #installdir == 0 then
         installdir = nil
+    end
+    if bindir and #bindir == 0 then
+        bindir = nil
+    end
+    if libdir and #libdir == 0 then
+        libdir = nil
+    end
+    if includedir and #includedir == 0 then
+        includedir = nil
     end
 
     os.cd(project.directory())
@@ -44,8 +53,14 @@ function main(targetname, group_pattern, installdir, prefix)
     if installdir then
         option.set("installdir", installdir)
     end
-    if prefix then
-        option.set("prefix", prefix)
+    if bindir then
+        option.set("bindir", bindir)
+    end
+    if libdir then
+        option.set("libdir", libdir)
+    end
+    if includedir then
+        option.set("includedir", includedir)
     end
 
     -- install target

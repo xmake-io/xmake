@@ -25,10 +25,19 @@ import("core.project.project")
 import("core.platform.platform")
 import("uninstall")
 
-function main(targetname, installdir, prefix)
+function main(targetname, installdir, bindir, libdir, includedir)
     local verbose = option.get("verbose")
     if installdir and #installdir == 0 then
         installdir = nil
+    end
+    if bindir and #bindir == 0 then
+        bindir = nil
+    end
+    if libdir and #libdir == 0 then
+        libdir = nil
+    end
+    if includedir and #includedir == 0 then
+        includedir = nil
     end
 
     os.cd(project.directory())
@@ -41,10 +50,15 @@ function main(targetname, installdir, prefix)
     if installdir then
         option.set("installdir", installdir)
     end
-    if prefix then
-        option.set("prefix", prefix)
+    if bindir then
+        option.set("bindir", bindir)
     end
-
+    if libdir then
+        option.set("libdir", libdir)
+    end
+    if includedir then
+        option.set("includedir", includedir)
+    end
     -- uninstall target
     uninstall(targetname ~= "__all" and targetname or nil)
     option.restore()

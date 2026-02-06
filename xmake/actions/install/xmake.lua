@@ -31,6 +31,9 @@ task("install")
                                               "    $ xmake install -o /usr/local",
                                               "or  $ DESTDIR=/usr/local xmake install",
                                               "or  $ INSTALLDIR=/usr/local xmake install" },
+            {nil, "bindir",     "kv", nil   , "Set install binaries directory in INSTALLDIR/DIR. (default: ${installdir}/bin)"},
+            {nil, "libdir",     "kv", nil   , "Set install libraries directory in INSTALLDIR/DIR. (default: ${installdir}/lib)"},
+            {nil, "includedir", "kv", nil   , "Set install includes directory in INSTALLDIR/DIR. (default: ${installdir}/include)"},
             {'g', "group",      "kv",  nil  , "Install all targets of the given group. It support path pattern matching.",
                                               "e.g.",
                                               "    xmake install -g test",
@@ -50,6 +53,4 @@ task("install")
                                               end}
         }
     }
-
-
 
