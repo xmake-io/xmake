@@ -6,3 +6,4 @@ __declspec(dllexport)
 void foo() {
     printf("foo called\n");
 }
+
