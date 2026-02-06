@@ -273,6 +273,10 @@ end
 
 -- get missing dlls
 function process._get_missing_dlls(program)
+    local missing = {}
+    if not os.isexec(program) then
+        return missing
+    end
 
     -- get paths
     local pathenv = os.getenv("PATH") or ""
@@ -280,7 +284,6 @@ function process._get_missing_dlls(program)
     table.insert(paths, 1, path.directory(program))
 
     -- find missing dlls
-    local missing = {}
     local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
     local get_depend_libraries = sandbox_module.import("utils.binary.deplibs", {anonymous = true})
     local imports = get_depend_libraries(program, {recursive = true}) or {}
@@ -304,9 +307,9 @@ end
 
 -- get process exit errors
 function process.get_exit_errors(program, exitcode)
-    if is_host("windows") then
+    if os.is_host("windows") then
         -- DLL is missing, 0xC0000135
-        if exitcode == -1073741515 and os.isexec(program) then
+        if exitcode == -1073741515 then
             local missing_dlls = process._get_missing_dlls(program)
             if #missing_dlls > 0 then
                 errors = string.format("system error 0xC0000135 (STATUS_DLL_NOT_FOUND).\nThe application failed to start because the following DLLs were not found:\n  - %s\nPlease check your PATH environment variable or copy the missing DLLs to the executable directory.", table.concat(missing_dlls, "\n  - "))
