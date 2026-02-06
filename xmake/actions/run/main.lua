@@ -75,16 +75,17 @@ function _do_run_target(target)
     -- get run arguments
     local args = table.wrap(option.get("arguments") or target:get("runargs"))
 
-    if not is_host("windows") and target:is_plat("windows") then
-        local wine = assert(find_tool("wine"), "wine not found!")
-        table.insert(args, 1, targetfile)
-        targetfile = wine.program
-    end
-
     -- run wasm target in browser
     if target:is_plat("wasm") then
         _run_wasm_target_in_browser(targetfile, {rundir = rundir, addenvs = addenvs, setenvs = setenvs})
         return
+    end
+
+    -- run windows target on non-windows host via wine
+    if not is_host("windows") and target:is_plat("windows") then
+        local wine = assert(find_tool("wine"), "wine not found!")
+        table.insert(args, 1, targetfile)
+        targetfile = wine.program
     end
 
     -- debugging?
