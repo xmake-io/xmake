@@ -17,3 +17,4 @@ target("test_mingw_dll")
             os.tryrm(foo:targetfile())
         end
     end)
+
