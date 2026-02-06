@@ -33,6 +33,26 @@ import("private.detect.check_targetname")
 import("lib.detect.find_tool")
 import("private.action.utils", {alias = "action_utils"})
 
+function _run_wasm_target_in_browser(targetfile, opt)
+    opt = opt or {}
+    local rundir = opt.rundir
+    local addenvs = opt.addenvs
+    local setenvs = opt.setenvs
+    local emrun = find_tool("emrun")
+    if emrun then
+        os.execv(emrun.program, {targetfile}, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
+    else
+        local python = find_tool("python3")
+        if not python then
+            raise("emrun or python not found, which is required for running wasm target in browser!")
+        end
+        local url = "http://localhost:8000/" .. path.relative(targetfile, rundir):gsub("\\", "/")
+        print("please open the url in browser")
+        cprint("${color.success}%s${clear}", url)
+        os.execv(python.program, {"-m", "http.server", "--bind", "127.0.0.1", "8000"}, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
+    end
+end
+
 -- run target
 function _do_run_target(target)
 
@@ -61,21 +81,7 @@ function _do_run_target(target)
 
     -- run wasm target in browser
     if target:is_plat("wasm") then
-        -- try to run with emrun
-        local emrun = find_tool("emrun")
-        if emrun then
-            os.execv(emrun.program, {targetfile}, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
-        else
-            -- try to run with python
-            local python = find_tool("python3")
-            if not python then
-                raise("emrun or python not found, which is required for running wasm target in browser!")
-            end
-            local url = "http://localhost:8000/" .. path.relative(targetfile, rundir):gsub("\\", "/")
-            print("please open the url in browser")
-            cprint("${color.success}%s${clear}", url)
-            os.execv(python.program, {"-m", "http.server", "--bind", "127.0.0.1", "8000"}, {curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
-        end
+        _run_wasm_target_in_browser(targetfile, {rundir = rundir, addenvs = addenvs, setenvs = setenvs})
         return
     end
 
@@ -269,4 +275,3 @@ function main()
     -- leave project directory
     os.cd(oldir)
 end
-
