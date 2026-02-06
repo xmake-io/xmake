@@ -2,11 +2,7 @@
 #include <psapi.h>
 #include <stdio.h>
 
-#ifdef _WIN32
 __declspec(dllimport) void foo();
-#else
-void foo();
-#endif
 
 int main() {
     PROCESS_MEMORY_COUNTERS pmc;
@@ -22,3 +18,4 @@ int main() {
     printf("Done.\n");
     return 0;
 }
+
