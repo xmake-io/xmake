@@ -281,8 +281,12 @@ function process._get_missing_dlls(program)
 
     -- find missing dlls
     local missing = {}
-    local binutils = require("base/binutils")
-    local imports = binutils.deplibs(program) or {}
+    local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
+    local get_depend_libraries = sandbox_module.import("utils.binary.deplibs", {anonymous = true})
+    local imports = get_depend_libraries(program, {recursive = true}) or {}
+    for i, dll in ipairs(imports) do
+        imports[i] = path.filename(dll)
+    end
     for _, dll in ipairs(imports) do
         local found = false
         for _, p in ipairs(paths) do
@@ -292,7 +296,7 @@ function process._get_missing_dlls(program)
             end
         end
         if not found then
-             table.insert(missing, dll)
+            table.insert(missing, dll)
         end
     end
     return missing
