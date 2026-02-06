@@ -994,8 +994,7 @@ function os.execv(program, argv, opt)
         stderr = opt.stderr,
         curdir = opt.curdir,
         detach = opt.detach,
-        exclusive = opt.exclusive,
-        winos_error_mode_gui = opt.winos_error_mode_gui}
+        exclusive = opt.exclusive}
 
     -- profile process performance
     local runtime
