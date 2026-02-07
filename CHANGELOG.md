@@ -2,6 +2,67 @@
 
 ## master (unreleased)
 
+## v3.0.7
+
+### New features
+
+* [#7178](https://github.com/xmake-io/xmake/pull/7178): Switch Verilator build file parsing from cmake to json format
+* [#7186](https://github.com/xmake-io/xmake/pull/7186): Add alpine ci
+* [#7187](https://github.com/xmake-io/xmake/pull/7187): Add suffix support for CUDA architecture
+* [#7190](https://github.com/xmake-io/xmake/pull/7190): Nix Package Manager: Add Semantic Versioning and Improve Version Selection
+* [#7189](https://github.com/xmake-io/xmake/pull/7189): Add package schemes
+* [#7208](https://github.com/xmake-io/xmake/pull/7208): Support dynamic mkspec selection for Qt SDK
+* [#7219](https://github.com/xmake-io/xmake/pull/7219): Add cli.iconv module
+* [#7235](https://github.com/xmake-io/xmake/pull/7235): Add string case conversion functions: lower and upper
+* [#7246](https://github.com/xmake-io/xmake/pull/7246): Add utf8 module
+* [#7268](https://github.com/xmake-io/xmake/pull/7268): Add dependency file generation for Nim source files
+* [#7269](https://github.com/xmake-io/xmake/pull/7269): Add target architecture validation for cross-compilation in zig toolchain
+* [#7274](https://github.com/xmake-io/xmake/pull/7274): Add os.access function for file access checking
+* [#7284](https://github.com/xmake-io/xmake/pull/7284): Add `--stdin`
+* [#7293](https://github.com/xmake-io/xmake/pull/7293): Add support for running wasm target in browser
+* [#7300](https://github.com/xmake-io/xmake/pull/7300): Add libdir,includedir,bindir support for install/uninstall
+* [#7295](https://github.com/xmake-io/xmake/pull/7295): Support test output files
+
+### Changes
+
+* [#7203](https://github.com/xmake-io/xmake/pull/7203): Improve mingw toolchain
+* [#7206](https://github.com/xmake-io/xmake/pull/7206): WDK: Add shared directory to KMDF include path
+* [#7214](https://github.com/xmake-io/xmake/pull/7214): Improve warnings output
+* [#7216](https://github.com/xmake-io/xmake/pull/7216): Improve requirelock
+* [#7223](https://github.com/xmake-io/xmake/pull/7223): Improve NuGet library file matching with score-based selection
+* [#7226](https://github.com/xmake-io/xmake/pull/7226): Improve to find clang-tidy
+* [#7232](https://github.com/xmake-io/xmake/pull/7232): Improve linker.link_scripts
+* [#7237](https://github.com/xmake-io/xmake/pull/7237): Update tbox to support case
+* [#7240](https://github.com/xmake-io/xmake/pull/7240): Improve verilator flags
+* [#7258](https://github.com/xmake-io/xmake/pull/7258): Improve qt xpack
+* [#7262](https://github.com/xmake-io/xmake/pull/7262): Improve pch concurrently to other targets
+* [#7260](https://github.com/xmake-io/xmake/pull/7260): Improve fpc
+* [#7270](https://github.com/xmake-io/xmake/pull/7270): Improve to select scheme version
+* [#7272](https://github.com/xmake-io/xmake/pull/7272): Enhance Nim support for shared libraries and rpath handling
+* [#7273](https://github.com/xmake-io/xmake/pull/7273): Improve io.read and io.readfile
+* [#7267](https://github.com/xmake-io/xmake/pull/7267): Enhance shell detection for Linux by checking parent process
+* [#7278](https://github.com/xmake-io/xmake/pull/7278): Improve os.isexec
+* [#7283](https://github.com/xmake-io/xmake/pull/7283): Enhance compile_commands support and add test cases
+* [#7285](https://github.com/xmake-io/xmake/pull/7285): Improve Windows shell detection for cmd/powershell
+* [#7286](https://github.com/xmake-io/xmake/pull/7286): Check long env values when detecting vs
+* [#7280](https://github.com/xmake-io/xmake/pull/7280): Add target flags only for cross-compilation
+* [#7290](https://github.com/xmake-io/xmake/pull/7290): Improve vcvars
+* [#7302](https://github.com/xmake-io/xmake/pull/7302): Improve run process errors
+* [#7298](https://github.com/xmake-io/xmake/pull/7298): Add initial implementation for Windows DLL foo/main example
+
+### Bugs fixed
+
+* [#7210](https://github.com/xmake-io/xmake/pull/7210): Fix package version
+* [#7213](https://github.com/xmake-io/xmake/pull/7213): Fix installdir of imporfiles
+* [#7231](https://github.com/xmake-io/xmake/pull/7231): Fix get flag in module support
+* [#7245](https://github.com/xmake-io/xmake/pull/7245): Fix to select scheme version
+* [#7259](https://github.com/xmake-io/xmake/pull/7259): Fix export c++ function symbols
+* [#7266](https://github.com/xmake-io/xmake/pull/7266): Fix pch header extension
+* [#7282](https://github.com/xmake-io/xmake/pull/7282): find_cuda: revert breaking change
+* [#7294](https://github.com/xmake-io/xmake/pull/7294): Fix package toolchain
+* [#7296](https://github.com/xmake-io/xmake/pull/7296): Fix find emsdk
+* [#7202](https://github.com/xmake-io/xmake/pull/7202): Fix getfenv
+
 ## v3.0.6
 
 ### New features
@@ -2244,6 +2305,67 @@
 # 更新日志
 
 ## master (开发中)
+
+## v3.0.7
+
+### 新特性
+
+* [#7178](https://github.com/xmake-io/xmake/pull/7178): 改进 Verilator 构建文件解析，从 cmake 格式切换到 json 格式
+* [#7186](https://github.com/xmake-io/xmake/pull/7186): 添加 Alpine CI 支持
+* [#7187](https://github.com/xmake-io/xmake/pull/7187): 为 CUDA 架构添加后缀支持
+* [#7190](https://github.com/xmake-io/xmake/pull/7190): Nix 包管理器：添加语义化版本控制并改进版本选择
+* [#7189](https://github.com/xmake-io/xmake/pull/7189): 添加包方案（package schemes）支持
+* [#7208](https://github.com/xmake-io/xmake/pull/7208): 支持 Qt SDK 动态 mkspec 选择
+* [#7219](https://github.com/xmake-io/xmake/pull/7219): 添加 cli.iconv 模块
+* [#7235](https://github.com/xmake-io/xmake/pull/7235): 添加字符串大小写转换函数：lower 和 upper
+* [#7246](https://github.com/xmake-io/xmake/pull/7246): 添加 utf8 模块
+* [#7268](https://github.com/xmake-io/xmake/pull/7268): 为 Nim 源文件添加依赖文件生成
+* [#7269](https://github.com/xmake-io/xmake/pull/7269): 为 zig 工具链添加交叉编译的目标架构验证
+* [#7274](https://github.com/xmake-io/xmake/pull/7274): 添加 os.access 函数用于文件访问检查
+* [#7284](https://github.com/xmake-io/xmake/pull/7284): 添加 `--stdin` 支持
+* [#7293](https://github.com/xmake-io/xmake/pull/7293): 添加在浏览器中运行 wasm 目标的支持
+* [#7300](https://github.com/xmake-io/xmake/pull/7300): 为安装/卸载添加 libdir、includedir、bindir 支持
+* [#7295](https://github.com/xmake-io/xmake/pull/7295): 支持测试输出文件
+
+### 改进
+
+* [#7203](https://github.com/xmake-io/xmake/pull/7203): 改进 MinGW 工具链
+* [#7206](https://github.com/xmake-io/xmake/pull/7206): WDK：为 KMDF 包含路径添加共享目录
+* [#7214](https://github.com/xmake-io/xmake/pull/7214): 改进警告输出
+* [#7216](https://github.com/xmake-io/xmake/pull/7216): 改进依赖锁定（requirelock）
+* [#7223](https://github.com/xmake-io/xmake/pull/7223): 改进 NuGet 库文件匹配，采用基于分数的选择机制
+* [#7226](https://github.com/xmake-io/xmake/pull/7226): 改进 clang-tidy 查找
+* [#7232](https://github.com/xmake-io/xmake/pull/7232): 改进链接器脚本配置
+* [#7237](https://github.com/xmake-io/xmake/pull/7237): 更新 tbox 库以支持大小写敏感
+* [#7240](https://github.com/xmake-io/xmake/pull/7240): 改进 Verilator 标志处理
+* [#7258](https://github.com/xmake-io/xmake/pull/7258): 改进 Qt xpack 打包
+* [#7262](https://github.com/xmake-io/xmake/pull/7262): 改进预编译头文件（PCH）与其他目标的并发处理
+* [#7260](https://github.com/xmake-io/xmake/pull/7260): 改进 Free Pascal 编译器支持
+* [#7270](https://github.com/xmake-io/xmake/pull/7270): 改进方案版本选择机制
+* [#7272](https://github.com/xmake-io/xmake/pull/7272): 增强 Nim 对共享库和 rpath 处理的支持
+* [#7273](https://github.com/xmake-io/xmake/pull/7273): 改进 io.read 和 io.readfile 函数
+* [#7267](https://github.com/xmake-io/xmake/pull/7267): 通过检查父进程增强 Linux 的 shell 检测
+* [#7278](https://github.com/xmake-io/xmake/pull/7278): 改进 os.isexec 函数
+* [#7283](https://github.com/xmake-io/xmake/pull/7283): 增强 compile_commands 支持并添加测试用例
+* [#7285](https://github.com/xmake-io/xmake/pull/7285): 改进 Windows 的 cmd/powershell shell 检测
+* [#7286](https://github.com/xmake-io/xmake/pull/7286): 检测 VS 时检查长环境变量值
+* [#7280](https://github.com/xmake-io/xmake/pull/7280): 仅在交叉编译时添加目标标志
+* [#7290](https://github.com/xmake-io/xmake/pull/7290): 改进 vcvars 处理
+* [#7302](https://github.com/xmake-io/xmake/pull/7302): 改进运行进程错误处理
+* [#7298](https://github.com/xmake-io/xmake/pull/7298): 为 Windows DLL 的 foo/main 示例添加初始实现
+
+### Bugs 修复
+
+* [#7210](https://github.com/xmake-io/xmake/pull/7210): 修复包版本问题
+* [#7213](https://github.com/xmake-io/xmake/pull/7213): 修复导入文件的安装目录问题
+* [#7231](https://github.com/xmake-io/xmake/pull/7231): 修复模块支持中的标志获取问题
+* [#7245](https://github.com/xmake-io/xmake/pull/7245): 修复方案版本选择问题
+* [#7259](https://github.com/xmake-io/xmake/pull/7259): 修复 C++ 函数符号导出问题
+* [#7266](https://github.com/xmake-io/xmake/pull/7266): 修复预编译头文件扩展名问题
+* [#7282](https://github.com/xmake-io/xmake/pull/7282): find_cuda：回滚破坏性变更
+* [#7294](https://github.com/xmake-io/xmake/pull/7294): 修复包工具链问题
+* [#7296](https://github.com/xmake-io/xmake/pull/7296): 修复 emsdk 查找问题
+* [#7202](https://github.com/xmake-io/xmake/pull/7202): 修复 getfenv 函数
 
 ## v3.0.6
 
