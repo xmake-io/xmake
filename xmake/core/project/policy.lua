@@ -127,6 +127,8 @@ function policy.policies()
             ["windows.manifest.uac.ui"]           = {description = "Enable ui access for windows UAC.", type = "boolean"},
             -- Automatically build before running
             ["run.autobuild"]                     = {description = "Automatically build before running.", type = "boolean"},
+            -- Enable/Disable Windows Error Reporting Dialogs
+            ["run.windows_error_dialog"]          = {description = "Enable Windows Error Reporting Dialogs during execution.", default = false, type = "boolean"},
             -- Enable install rpath
             ["install.rpath"]                     = {description = "Enable install rpath.", default = true, type = "boolean"},
             -- Strip package libraries for installation
