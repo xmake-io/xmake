@@ -469,20 +469,10 @@ function remote_build_client:_init_host()
         if host_name then
             -- find host by name or address
             for _, host in ipairs(remote_build_config.hosts) do
-                local host_ip, host_port = host.connect:split(":", {plain = true})
-
-                -- match by name
-                if host.name == host_name then
-                    address = host.connect
-                    token = host.token
-                    break
-                -- match by full address
-                elseif host.connect == host_name then
-                    address = host.connect
-                    token = host.token
-                    break
-                -- match by IP only (when user doesn't specify port)
-                elseif host_ip == host_name and not host_name:find(":", 1, true) then
+                local host_ip, _ = host.connect:split(":", {plain = true})
+                if host.name == host_name or
+                   host.connect == host_name or
+                   (host_ip == host_name and not host_name:find(":", 1, true)) then
                     address = host.connect
                     token = host.token
                     break
