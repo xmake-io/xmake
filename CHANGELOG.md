@@ -48,6 +48,7 @@
 * [#7280](https://github.com/xmake-io/xmake/pull/7280): Add target flags only for cross-compilation
 * [#7290](https://github.com/xmake-io/xmake/pull/7290): Improve vcvars
 * [#7302](https://github.com/xmake-io/xmake/pull/7302): Improve run process errors
+* [#7306](https://github.com/xmake-io/xmake/pull/7306): Improve remote build with multi-host configuration and `--host` option
 * [#7298](https://github.com/xmake-io/xmake/pull/7298): Add initial implementation for Windows DLL foo/main example
 
 ### Bugs fixed
@@ -2352,6 +2353,7 @@
 * [#7280](https://github.com/xmake-io/xmake/pull/7280): 仅在交叉编译时添加目标标志
 * [#7290](https://github.com/xmake-io/xmake/pull/7290): 改进 vcvars 处理
 * [#7302](https://github.com/xmake-io/xmake/pull/7302): 改进运行进程错误处理
+* [#7306](https://github.com/xmake-io/xmake/pull/7306): 改进远程构建，支持多主机配置和 `--host` 选项
 * [#7298](https://github.com/xmake-io/xmake/pull/7298): 为 Windows DLL 的 foo/main 示例添加初始实现
 
 ### Bugs 修复
