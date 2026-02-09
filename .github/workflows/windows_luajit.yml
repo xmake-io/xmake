@@ -19,17 +19,17 @@ jobs:
           script: |
             const fs = require('fs');
             const outputFile = process.env.GITHUB_OUTPUT;
-            
+
             // Always run for release events
             if (context.eventName === 'release') {
               fs.appendFileSync(outputFile, `should-run=true\n`);
               core.info('Release event detected. Will run tests.');
               return;
             }
-            
+
             // Execution probability (default 20%, can be overridden via env)
             const probability = parseFloat(process.env.RUN_PROBABILITY || '0.2');
-            
+
             // Generate deterministic "random" number based on commit SHA, run ID, and current time
             // Adding time ensures better randomness while keeping same commit/run consistent
             const timeSeed = Math.floor(Date.now() / (1000 * 60 * 60)); // Round to hour for consistency
@@ -43,7 +43,7 @@ jobs:
             // Normalize to 0-1 range
             const random = Math.abs(hash) / 2147483647;
             const shouldRun = random < probability;
-            
+
             // Use environment file instead of deprecated set-output
             fs.appendFileSync(outputFile, `should-run=${shouldRun}\n`);
             if (shouldRun) {
