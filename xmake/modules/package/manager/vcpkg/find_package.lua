@@ -163,7 +163,7 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
     
     -- find dependency package
     local result = nil
-    local _, dependinfo = os.iorunv(vcpkg, {"depend-info", name})
+    local _, dependinfo = os.iorunv(vcpkg, {"depend-info", name, "--sort=reverse"})
     if dependinfo then
         for _, line in ipairs(dependinfo:split("\n", {plain = true})) do
             if not line:startswith("vcpkg-") then
