@@ -174,9 +174,7 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
                         result = result or {}
                         for key, dependencylist in pairs(dependencyresult) do
                             result[key] = result[key] or {}
-                            for _, value in ipairs(dependencylist) do
-                                table.insert(result[key], value)
-                            end
+                            table.join2(result[key], dependencylist)
                         end
                     end
                 end
@@ -198,14 +196,14 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
 
     -- remove repeat
     if result then
-        if result.linkdirs then
-            result.linkdirs = table.unique(result.linkdirs)
-        end
-        if result.includedirs then
-            result.includedirs = table.unique(result.includedirs)
+        for k, v in pairs(result) do
+            if k == "links" or k == "syslinks" or k == "frameworks" then
+                result[k] = table.unwrap(table.reverse_unique(v))
+            else
+                result[k] = table.unwrap(table.unique(v))
+            end
         end
     end
-
     return result
 end
 
