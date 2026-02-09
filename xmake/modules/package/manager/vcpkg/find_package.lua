@@ -63,6 +63,74 @@ function _find_package_from_pkgconfig(pkgconfig_files, opt)
     end
 end
 
+function _get_package_info(name, triplet, infodirs, arch, plat, mode)
+    -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
+    local infofile = find_file(format("%s_*_%s.list", name, triplet), infodirs)
+    if not infofile then
+        return
+    end
+    local installdir = path.directory(path.directory(path.directory(infofile)))
+
+    -- save includedirs, linkdirs and links
+    local result = nil
+    local pkgconfig_files = {}
+    local info = io.readfile(infofile)
+    if info then
+        for _, line in ipairs(info:split('\n')) do
+            line = line:trim()
+            if plat == "windows" then
+                line = line:lower()
+            end
+
+            -- get pkgconfig files
+            if line:find(triplet .. (mode == "debug" and "/debug" or "") .. "/lib/pkgconfig/", 1, true) and line:endswith(".pc") then
+                table.insert(pkgconfig_files, line)
+            end
+
+            -- get includedirs
+            if line:endswith("/include/") then
+                result = result or {}
+                result.includedirs = result.includedirs or {}
+                table.insert(result.includedirs, path.join(installdir, line))
+            end
+
+            -- get linkdirs and links
+            if (plat == "windows" and line:endswith(".lib")) or line:endswith(".a") or line:endswith(".so") then
+                if line:find(triplet .. (mode == "debug" and "/debug" or "") .. "/lib/", 1, true) then
+                    result = result or {}
+                    result.links = result.links or {}
+                    result.linkdirs = result.linkdirs or {}
+                    result.libfiles = result.libfiles or {}
+                    table.insert(result.linkdirs, path.join(installdir, path.directory(line)))
+                    table.insert(result.links, target.linkname(path.filename(line), {plat = plat}))
+                    table.insert(result.libfiles, path.join(installdir, path.directory(line), path.filename(line)))
+                end
+            end
+
+            -- add shared library directory (/bin/) to linkdirs for running with PATH on windows
+            if plat == "windows" and line:endswith(".dll") then
+                if line:find(plat .. (mode == "debug" and "/debug" or "") .. "/bin/", 1, true) then
+                    result = result or {}
+                    result.linkdirs = result.linkdirs or {}
+                    result.libfiles = result.libfiles or {}
+                    table.insert(result.linkdirs, path.join(installdir, path.directory(line)))
+                    table.insert(result.libfiles, path.join(installdir, path.directory(line), path.filename(line)))
+                end
+            end
+        end
+    end
+
+    -- find result from pkgconfig first
+    if #pkgconfig_files > 0 then
+        local pkgconfig_result = _find_package_from_pkgconfig(pkgconfig_files, {installdir = installdir, linkdirs = result and result.linkdirs})
+        if pkgconfig_result then
+            result = pkgconfig_result
+        end
+    end
+
+    return result
+end
+
 function _find_package(vcpkg, vcpkgdir, name, opt)
 
     -- get configs
@@ -80,20 +148,6 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
     arch = configurations.arch(arch)
     local triplet = configurations.triplet(configs, plat, arch)
 
-    -- find dependency package
-    local dependencypackage = {}
-    local _, dependinfo = os.iorunv(vcpkg, {"depend-info", name})
-    if dependinfo then
-        for _, line in ipairs(dependinfo:split("\n", {plain = true})) do
-            if not line:startswith("vcpkg-") then
-                local packagename = line:match("^([^%[:]+)[^:]*:")
-                if packagename then
-                    table.insert(dependencypackage, packagename)
-                end
-            end
-        end
-    end
-
     -- get the vcpkg info directories
     local infodirs = {}
 	if opt.installdir then
@@ -101,85 +155,45 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
 	end
     table.join2(infodirs, path.join(vcpkgdir, "installed", "vcpkg", "info"))
 
+    -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
+    local infofile = find_file(format("%s_*_%s.list", name, triplet), infodirs)
+    if not infofile then
+        return
+    end
+    
+    -- find dependency package
     local result = nil
-    for _, dependencyname in ipairs(dependencypackage) do
-        -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
-        local infofile = find_file(format("%s_*_%s.list", dependencyname, triplet), infodirs)
-        if not infofile then
-            goto continue
-            -- return
-        end
-        local installdir = path.directory(path.directory(path.directory(infofile)))
-
-        -- save includedirs, linkdirs and links
-        local pkgconfig_files = {}
-        local info = io.readfile(infofile)
-        if info then
-            for _, line in ipairs(info:split('\n')) do
-                line = line:trim()
-                if plat == "windows" then
-                    line = line:lower()
-                end
-
-                -- get pkgconfig files
-                if line:find(triplet .. (mode == "debug" and "/debug" or "") .. "/lib/pkgconfig/", 1, true) and line:endswith(".pc") then
-                    table.insert(pkgconfig_files, line)
-                end
-
-                -- get includedirs
-                if line:endswith("/include/") then
-                    result = result or {}
-                    result.includedirs = result.includedirs or {}
-                    table.insert(result.includedirs, path.join(installdir, line))
-                end
-
-                -- get linkdirs and links
-                if (plat == "windows" and line:endswith(".lib")) or line:endswith(".a") or line:endswith(".so") then
-                    if line:find(triplet .. (mode == "debug" and "/debug" or "") .. "/lib/", 1, true) then
+    local _, dependinfo = os.iorunv(vcpkg, {"depend-info", name})
+    if dependinfo then
+        for _, line in ipairs(dependinfo:split("\n", {plain = true})) do
+            if not line:startswith("vcpkg-") then
+                local packagename = line:match("^([^%[:]+)[^:]*:")
+                if packagename then
+                    local dependencyresult = _get_package_info(packagename, triplet, infodirs, arch, plat, mode)
+                    if dependencyresult then
                         result = result or {}
-                        result.links = result.links or {}
-                        result.linkdirs = result.linkdirs or {}
-                        result.libfiles = result.libfiles or {}
-                        table.insert(result.linkdirs, path.join(installdir, path.directory(line)))
-                        table.insert(result.links, target.linkname(path.filename(line), {plat = plat}))
-                        table.insert(result.libfiles, path.join(installdir, path.directory(line), path.filename(line)))
-                    end
-                end
-
-                -- add shared library directory (/bin/) to linkdirs for running with PATH on windows
-                if plat == "windows" and line:endswith(".dll") then
-                    if line:find(plat .. (mode == "debug" and "/debug" or "") .. "/bin/", 1, true) then
-                        result = result or {}
-                        result.linkdirs = result.linkdirs or {}
-                        result.libfiles = result.libfiles or {}
-                        table.insert(result.linkdirs, path.join(installdir, path.directory(line)))
-                        table.insert(result.libfiles, path.join(installdir, path.directory(line), path.filename(line)))
+                        for key, dependencylist in pairs(dependencyresult) do
+                            result[key] = result[key] or {}
+                            for _, value in ipairs(dependencylist) do
+                                table.insert(result[key], value)
+                            end
+                        end
                     end
                 end
             end
         end
+    end
 
-        -- find result from pkgconfig first
-        if #pkgconfig_files > 0 then
-            local pkgconfig_result = _find_package_from_pkgconfig(pkgconfig_files, {installdir = installdir, linkdirs = result and result.linkdirs})
-            if pkgconfig_result then
-                result = pkgconfig_result
-            end
+    -- save version
+    if result then
+        local infoname = path.basename(infofile)
+        local prefix = name
+        -- name maybe contains lua pattern characters, we need escape it. e.g. `-`
+        prefix = prefix:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+        result.version = infoname:match(prefix .. "_(%d+%.?%d*%.?%d*.-)_" .. arch)
+        if not result.version then
+            result.version = infoname:match(prefix .. "_(%d+%.?%d*%.-)_" .. arch)
         end
-
-        -- save version
-        if result then
-            local infoname = path.basename(infofile)
-            local prefix = dependencyname
-            -- dependencyname maybe contains lua pattern characters, we need escape it. e.g. `-`
-            prefix = prefix:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
-            result.version = infoname:match(prefix .. "_(%d+%.?%d*%.?%d*.-)_" .. arch)
-            if not result.version then
-                result.version = infoname:match(prefix .. "_(%d+%.?%d*%.-)_" .. arch)
-            end
-        end
-
-        ::continue::
     end
 
     -- remove repeat
@@ -191,6 +205,7 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
             result.includedirs = table.unique(result.includedirs)
         end
     end
+
     return result
 end
 
