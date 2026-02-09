@@ -41,10 +41,6 @@ local super = remote_build_client:class()
 function remote_build_client:init()
     super.init(self)
 
-    -- init address
-    local address = assert(config.get("remote_build.connect"), "config(remote_build.connect): not found!")
-    self:address_set(address)
-
     -- get project directory
     local projectdir = os.projectdir()
     local projectfile = os.projectfile()
@@ -54,6 +50,9 @@ function remote_build_client:init()
     else
         raise("we need to enter a project directory with xmake.lua first!")
     end
+
+    -- init host
+    self:_init_host()
 
     -- init filesync
     local filesync = new_filesync(self:projectdir(), path.join(self:workdir(), "manifest.txt"))
@@ -80,18 +79,22 @@ function remote_build_client:connect()
     end
 
     -- Do we need user authorization?
-    local token = config.get("remote_build.token")
-    if not token and self:user() then
+    local user = self:user()
+    local token = self:token()
+    if not token and user then
 
         -- get user password
-        cprint("Please input user ${bright}%s${clear} password to connect <%s:%d>:", self:user(), self:addr(), self:port())
+        cprint("Please input user ${bright}%s${clear} password to connect <%s:%d>:", user, self:addr(), self:port())
         io.flush()
         local pass = (io.read() or ""):trim()
         assert(pass ~= "", "password is empty!")
 
         -- compute user authorization
-        token = base64.encode(self:user() .. ":" .. pass)
+        token = base64.encode(user .. ":" .. pass)
         token = hash.md5(bytes(token))
+
+        -- update the computed token
+        self:token_set(token)
     end
 
     -- do connect
@@ -127,6 +130,7 @@ function remote_build_client:connect()
     status.addr = addr
     status.port = port
     status.token = token
+    status.user = user
     status.connected = ok
     status.session_id = session_id
     self:status_save()
@@ -397,12 +401,107 @@ end
 
 -- get user token
 function remote_build_client:token()
-    return self:status().token
+    return self._TOKEN or self:status().token
+end
+
+-- set user token
+function remote_build_client:token_set(token)
+    self._TOKEN = token
 end
 
 -- get the session id, only for unique project
 function remote_build_client:session_id()
     return self:status().session_id or hash.uuid(option.get("session")):split("-", {plain = true})[1]:lower()
+end
+
+-- init host address and token
+--
+-- Supported configuration formats:
+--
+-- New format (multiple hosts):
+--   remote_build = {
+--       hosts = {
+--           {
+--               name = "windows",
+--               connect = "10.5.139.8:9691",
+--               token = "0e052f8c7153a6111d5a418e514020ee"
+--           },
+--           {
+--               name = "linux",
+--               connect = "192.168.1.100:9691",
+--               token = "abc123def456"
+--           }
+--       }
+--   }
+--
+-- Old format (single host, backward compatible):
+--   remote_build = {
+--       connect = "10.5.139.8:9691",
+--       token = "0e052f8c7153a6111d5a418e514020ee"
+--   }
+--
+-- Usage:
+--   xmake service --connect --host=windows    # connect by name
+--   xmake service --connect --host=10.5.139.8:9691  # connect by address
+--   xmake service --connect                 # use default host
+function remote_build_client:_init_host()
+    local remote_build_config = config.get("remote_build") or {}
+    local address
+    local token
+
+    -- if already connected, use status first
+    if self:is_connected() then
+        local status = self:status()
+        if status.addr and status.port then
+            address = status.addr .. ":" .. status.port
+            token = status.token
+            self:address_set(address)
+            if token then
+                self:token_set(token)
+            end
+            return
+        end
+    end
+
+    -- support new hosts format
+    if remote_build_config.hosts then
+        local host_name = option.get("host")
+        if host_name then
+            -- find host by name or address
+            for _, host in ipairs(remote_build_config.hosts) do
+                local host_ip, _ = host.connect:split(":", {plain = true})
+                if host.name == host_name or
+                   host.connect == host_name or
+                   (host_ip == host_name and not host_name:find(":", 1, true)) then
+                    address = host.connect
+                    token = host.token
+                    break
+                end
+            end
+            if not address then
+                raise("host '%s' not found in configuration!", host_name)
+            end
+        else
+            -- use first host as default
+            if #remote_build_config.hosts > 0 then
+                address = remote_build_config.hosts[1].connect
+                token = remote_build_config.hosts[1].token
+            end
+        end
+    -- support old format for backward compatibility
+    elseif remote_build_config.connect then
+        address = remote_build_config.connect
+        token = remote_build_config.token
+    end
+
+    if not address then
+        raise("config(remote_build.connect) or config(remote_build.hosts) not found!")
+    end
+
+    self:address_set(address)
+    if token then
+        self:token_set(token)
+    end
 end
 
 -- set the given client address
@@ -415,17 +514,17 @@ end
 
 -- get user name
 function remote_build_client:user()
-    return self._USER
+    return self._USER or self:status().user
 end
 
 -- get the ip address
 function remote_build_client:addr()
-    return self._ADDR
+    return self._ADDR or self:status().addr
 end
 
 -- get the address port
 function remote_build_client:port()
-    return self._PORT
+    return self._PORT or self:status().port
 end
 
 -- get filesync
