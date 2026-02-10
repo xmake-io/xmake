@@ -192,15 +192,8 @@ end
 function get_xcode_target_triple(toolchain)
     local arch = toolchain:arch()
     local plat = toolchain:plat()
-    if plat == "macosx" then
-        plat = "macos"
-    elseif plat == "iphoneos" then
-        plat = "ios"
-    elseif plat == "appletvos" then
-        plat = "tvos"
-    elseif plat == "applexros" then
-        plat = "xros"
-    end
+    local platmap = {macosx = "macos", iphoneos = "ios", watchos = "watchos", appletvos = "tvos", applexros = "xros"}
+    plat = platmap[plat] or plat
     local target_minver = toolchain:config("target_minver") or config.get("target_minver")
     local appledev = toolchain:config("appledev") or config.get("appledev")
     local target = format("%s-apple-%s", arch, plat)

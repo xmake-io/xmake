@@ -21,8 +21,10 @@
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- set toolset programs from xcode toolchain bindir/arch/appledev
-function _set_toolset(toolchain, bindir, arch, appledev)
+function _set_toolset(toolchain, appledev)
 
+    local bindir = toolchain:bindir()
+    local arch = toolchain:arch()
     local xc_clang          = bindir and path.join(bindir, "clang") or "clang"
     local xc_clangxx        = bindir and path.join(bindir, "clang++") or "clang++"
     local xc_ar             = bindir and path.join(bindir, "ar") or "ar"
@@ -119,8 +121,6 @@ end
 -- main entry
 function main(toolchain)
 
-    local bindir = toolchain:bindir()
-    local arch = toolchain:arch()
     local appledev = toolchain:config("appledev")
     local xcode_sysroot = toolchain:config("xcode_sysroot")
     if toolchain:is_plat("macosx") then
@@ -128,7 +128,7 @@ function main(toolchain)
     end
 
     -- init toolset
-    _set_toolset(toolchain, bindir, arch, appledev)
+    _set_toolset(toolchain, appledev)
 
     -- init flags
     _add_common_flags(toolchain, xcode_sysroot)
