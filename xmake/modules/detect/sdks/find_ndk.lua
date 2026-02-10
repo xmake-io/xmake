@@ -302,12 +302,15 @@ function main(sdkdir, opt)
         config.set("ndk_sdkver", ndk.sdkver, {force = true, readonly = true})
         config.set("ndk_toolchains_ver", ndk.toolchains_ver, {force = true, readonly = true})
         if opt.verbose or option.get("verbose") then
-            cprint("checking for NDK directory ... ${color.success}%s", ndk.sdkdir)
-            cprint("checking for SDK version of NDK ... ${color.success}%s", ndk.sdkver)
+            local extra = ""
+            if ndk.sdkver then
+                extra = " (sdk: " .. ndk.sdkver .. ")"
+            end
+            cprint("checking for Android NDK ... ${color.success}%s%s", ndk.sdkdir, extra)
         end
     else
         if opt.verbose or option.get("verbose") then
-            cprint("checking for NDK directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for Android NDK ... ${color.nothing}${text.nothing}")
         end
     end
 

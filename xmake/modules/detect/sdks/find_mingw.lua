@@ -152,11 +152,11 @@ function main(sdkdir, opt)
     if mingw and mingw.sdkdir then
         config.set("mingw", mingw.sdkdir, {force = true, readonly = true})
         if opt.verbose or option.get("verbose") then
-            cprint("checking for mingw directory ... ${color.success}%s (%s)", mingw.sdkdir, mingw.cross)
+            cprint("checking for Mingw SDK ... ${color.success}%s (%s)", mingw.sdkdir, mingw.cross)
         end
     else
         if opt.verbose or option.get("verbose") then
-            cprint("checking for mingw directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for Mingw SDK ... ${color.nothing}${text.nothing}")
         end
     end
 

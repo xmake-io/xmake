@@ -25,6 +25,26 @@ import("lib.detect.find_tool")
 import("detect.sdks.find_xcode")
 import("detect.sdks.find_cross_toolchain")
 
+-- print Xcode SDK summary (single line)
+function _show_checkinfo(toolchain, xcode_sdkdir, xcode_sdkver, target_minver)
+    if xcode_sdkdir then
+        local extras = {}
+        if xcode_sdkver then
+            table.insert(extras, "sdk: " .. xcode_sdkver)
+        end
+        if target_minver then
+            table.insert(extras, "target: " .. target_minver)
+        end
+        local extra = ""
+        if #extras > 0 then
+            extra = " (" .. table.concat(extras, ", ") .. ")"
+        end
+        cprint("checking for Xcode SDK ... ${color.success}%s%s", xcode_sdkdir, extra)
+    else
+        cprint("checking for Xcode SDK ... ${color.nothing}${text.nothing}")
+    end
+end
+
 -- find xcode on macos
 function _find_xcode(toolchain)
 
@@ -44,7 +64,7 @@ function _find_xcode(toolchain)
                                                    plat = toolchain:plat(),
                                                    arch = toolchain:arch()})
     if not xcode then
-        cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
+        cprint("checking for Xcode SDK ... ${color.nothing}${text.nothing}")
         return
     end
 
@@ -52,7 +72,6 @@ function _find_xcode(toolchain)
     xcode_sdkver = xcode.sdkver
     if toolchain:is_global() then
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
-        cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
     end
     local target_minver = toolchain:config("target_minver") or config.get("target_minver")
     if xcode_sdkver and not target_minver then
@@ -62,7 +81,9 @@ function _find_xcode(toolchain)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
     toolchain:config_set("target_minver", target_minver)
     toolchain:config_set("appledev", appledev)
-    cprint("checking for SDK version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), xcode_sdkver)
+    if toolchain:is_global() then
+        _show_checkinfo(toolchain, xcode.sdkdir, xcode_sdkver, target_minver)
+    end
 end
 
 -- check the cross toolchain
@@ -130,4 +151,3 @@ function main(toolchain)
     end
     return cross_toolchain
 end
-
