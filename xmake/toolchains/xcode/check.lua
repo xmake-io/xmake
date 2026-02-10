@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_xcode")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 import("private.utils.executable_path")
 import("private.tools.codesign")
 
@@ -32,8 +33,9 @@ function _show_checkinfo(toolchain, xcode, xcode_sdkver, target_minver)
         if xcode_sdkver then
             table.insert(extras, "sdk: " .. xcode_sdkver)
         end
-        if target_minver then
-            table.insert(extras, "target: " .. target_minver)
+        local target_triple = toolchain_utils.get_xcode_target_triple(toolchain)
+        if target_triple then
+            table.insert(extras, target_triple)
         end
         local extra = ""
         if #extras > 0 then

@@ -184,6 +184,41 @@ function get_clang_target_flags(toolchain)
     end
 end
 
+-- get xcode/apple target triple for clang -target, e.g. x86_64-apple-ios18.2-simulator
+--
+-- configs:
+-- - appledev: simulator/catalyst
+-- - target_minver: deployment target version (ios 32-bit will be capped to 10)
+function get_xcode_target_triple(toolchain)
+    local arch = toolchain:arch()
+    local plat = toolchain:plat()
+    if plat == "macosx" then
+        plat = "macos"
+    elseif plat == "iphoneos" then
+        plat = "ios"
+    elseif plat == "appletvos" then
+        plat = "tvos"
+    elseif plat == "applexros" then
+        plat = "xros"
+    end
+    local target_minver = toolchain:config("target_minver") or config.get("target_minver")
+    local appledev = toolchain:config("appledev") or config.get("appledev")
+    local target = format("%s-apple-%s", arch, plat)
+    if target_minver then
+        if plat == "ios" and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "i386") then
+            target_minver = "10"
+        end
+        target = target .. target_minver
+    end
+    if appledev == "simulator" then
+        target = target .. "-simulator"
+    end
+    if appledev == "catalyst" then
+        target = target .. "-macabi"
+    end
+    return target
+end
+
 -- add vs environments
 function add_vsenvs(toolchain, opt)
     opt = opt or {}

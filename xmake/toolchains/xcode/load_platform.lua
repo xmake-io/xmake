@@ -17,39 +17,29 @@
 -- @author      ruki
 -- @file        load_platform.lua
 --
+-- imports
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
-function main(toolchain, plat)
-    -- init architecture
-    local arch = toolchain:arch()
-    local xcode_sysroot = toolchain:config("xcode_sysroot")
+-- main entry
+function main(toolchain)
 
-    -- is simulator?
-    local appledev = toolchain:config("appledev")
-    local simulator = appledev == "simulator"
-
-    -- init target minimal version
-    local target_minver = toolchain:config("target_minver")
-    if target_minver then
-        if plat == "ios" and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "i386") then
-            target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
-        end
-    end
-    local targetflag = format("%s-apple-%s%s%s", arch, plat, target_minver or "", simulator and "-simulator" or "")
-    targetflag = {"-target", targetflag}
+    -- init target triple flags
+    local targetflag = {"-target", toolchain_utils.get_xcode_target_triple(toolchain)}
 
     -- init flags for c/c++
-    toolchain:add("cxflags", {"-arch", arch}, targetflag, "-isysroot", xcode_sysroot)
-    toolchain:add("ldflags", {"-arch", arch}, targetflag, "-isysroot", xcode_sysroot, "-ObjC", "-fobjc-link-runtime")
-    toolchain:add("shflags", {"-arch", arch}, targetflag, "-isysroot", xcode_sysroot, "-ObjC", "-fobjc-link-runtime")
+    local xcode_sysroot = toolchain:config("xcode_sysroot")
+    toolchain:add("cxflags", targetflag, "-isysroot", xcode_sysroot)
+    toolchain:add("ldflags", targetflag, "-isysroot", xcode_sysroot, "-ObjC", "-fobjc-link-runtime")
+    toolchain:add("shflags", targetflag, "-isysroot", xcode_sysroot, "-ObjC", "-fobjc-link-runtime")
 
     -- init flags for objc/c++
-    toolchain:add("mxflags", {"-arch", arch}, targetflag, "-isysroot", xcode_sysroot)
+    toolchain:add("mxflags", targetflag, "-isysroot", xcode_sysroot)
 
     -- we can use `add_mxflags("-fno-objc-arc")` to override it in xmake.lua
     toolchain:add("mxflags", "-fobjc-arc")
 
     -- init flags for asm
-    toolchain:add("asflags", {"-arch", arch}, targetflag, "-isysroot", xcode_sysroot)
+    toolchain:add("asflags", targetflag, "-isysroot", xcode_sysroot)
 
     -- init flags for swift (with toolchain:add("ldflags and toolchain:add("shflags)
     toolchain:add("scflags", {"-sdk", xcode_sysroot}, targetflag)

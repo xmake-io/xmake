@@ -21,5 +21,5 @@
 import("load_platform")
 
 function main(toolchain)
-    load_platform(toolchain, "ios")
+    load_platform(toolchain)
 end

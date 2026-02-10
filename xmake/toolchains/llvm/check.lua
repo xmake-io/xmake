@@ -24,16 +24,19 @@ import("lib.detect.find_path")
 import("lib.detect.find_tool")
 import("detect.sdks.find_xcode")
 import("detect.sdks.find_cross_toolchain")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- print Xcode SDK summary (single line)
-function _show_checkinfo(toolchain, xcode_sdkdir, xcode_sdkver, target_minver)
+function _show_checkinfo(toolchain, xcode_sdkdir)
     if xcode_sdkdir then
+        local xcode_sdkver = toolchain:config("xcode_sdkver")
         local extras = {}
         if xcode_sdkver then
             table.insert(extras, "sdk: " .. xcode_sdkver)
         end
-        if target_minver then
-            table.insert(extras, "target: " .. target_minver)
+        local target_triple = toolchain_utils.get_xcode_target_triple(toolchain)
+        if target_triple then
+            table.insert(extras, target_triple)
         end
         local extra = ""
         if #extras > 0 then
@@ -64,7 +67,9 @@ function _find_xcode(toolchain)
                                                    plat = toolchain:plat(),
                                                    arch = toolchain:arch()})
     if not xcode then
-        cprint("checking for Xcode SDK ... ${color.nothing}${text.nothing}")
+        if toolchain:is_global() then
+            _show_checkinfo(toolchain, nil)
+        end
         return
     end
 
@@ -82,7 +87,7 @@ function _find_xcode(toolchain)
     toolchain:config_set("target_minver", target_minver)
     toolchain:config_set("appledev", appledev)
     if toolchain:is_global() then
-        _show_checkinfo(toolchain, xcode.sdkdir, xcode_sdkver, target_minver)
+        _show_checkinfo(toolchain, xcode.sdkdir)
     end
 end
 

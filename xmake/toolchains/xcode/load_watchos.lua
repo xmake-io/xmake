@@ -21,6 +21,5 @@
 import("load_platform")
 
 function main(toolchain)
-    load_platform(toolchain, "watchos")
+    load_platform(toolchain)
 end
-

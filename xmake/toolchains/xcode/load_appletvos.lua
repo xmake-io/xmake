@@ -21,6 +21,5 @@
 import("load_platform")
 
 function main(toolchain)
-    load_platform(toolchain, "tvos")
+    load_platform(toolchain)
 end
-

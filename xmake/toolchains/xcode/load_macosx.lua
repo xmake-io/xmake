@@ -17,42 +17,34 @@
 -- @author      ruki
 -- @file        load_macosx.lua
 --
+-- imports
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
+-- main entry
 function main(toolchain)
-    -- init architecture
-    local arch = toolchain:arch()
-    local xcode_sysroot = toolchain:config("xcode_sysroot")
 
     -- is simulator?
     local appledev = toolchain:config("appledev")
-    local simulator = appledev == "simulator"
-    assert(not simulator)
+    assert(appledev ~= "simulator")
     local catalyst = appledev == "catalyst"
 
-    -- init target minimal version
-    local target_minver = toolchain:config("target_minver")
-    local targetflag = format("%s-apple-macos", arch)
-    if target_minver then
-        targetflag = targetflag .. target_minver
-    end
-    if catalyst then
-        targetflag = targetflag .. "-macabi"
-    end
-    targetflag = {"-target", targetflag}
+    -- init target triple flags
+    local targetflag = {"-target", toolchain_utils.get_xcode_target_triple(toolchain)}
 
     -- init flags for c/c++
-    toolchain:add("cxflags", {"-arch", arch}, targetflag, {"-isysroot", xcode_sysroot})
-    toolchain:add("ldflags", {"-arch", arch}, targetflag, {"-isysroot", xcode_sysroot}, "-lz")
-    toolchain:add("shflags", {"-arch", arch}, targetflag, {"-isysroot", xcode_sysroot}, "-lz")
+    local xcode_sysroot = toolchain:config("xcode_sysroot")
+    toolchain:add("cxflags", targetflag, {"-isysroot", xcode_sysroot})
+    toolchain:add("ldflags", targetflag, {"-isysroot", xcode_sysroot}, "-lz")
+    toolchain:add("shflags", targetflag, {"-isysroot", xcode_sysroot}, "-lz")
 
     -- init flags for objc/c++
-    toolchain:add("mxflags", {"-arch", arch}, targetflag, {"-isysroot", xcode_sysroot})
+    toolchain:add("mxflags", targetflag, {"-isysroot", xcode_sysroot})
 
     -- we can use `add_mxflags("-fno-objc-arc")` to override it in xmake.lua
     toolchain:add("mxflags", "-fobjc-arc")
 
     -- init flags for asm
-    toolchain:add("asflags", {"-arch", arch}, targetflag, "-isysroot", xcode_sysroot)
+    toolchain:add("asflags", targetflag, "-isysroot", xcode_sysroot)
 
     -- init flags for swift (with toolchain:add("ldflags and toolchain:add("shflags)
     toolchain:add("scflags", {"-sdk", xcode_sysroot}, targetflag)
