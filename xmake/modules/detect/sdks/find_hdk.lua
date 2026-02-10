@@ -99,11 +99,11 @@ function main(sdkdir, opt)
     if hdk and hdk.sdkdir then
         config.set("hdk", hdk.sdkdir, {force = true, readonly = true})
         if opt.verbose or option.get("verbose") then
-            cprint("checking for Harmony SDK directory ... ${color.success}%s", hdk.sdkdir)
+            cprint("checking for Harmony SDK ... ${color.success}%s", hdk.sdkdir)
         end
     else
         if opt.verbose or option.get("verbose") then
-            cprint("checking for Harmony SDK directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for Harmony SDK ... ${color.nothing}${text.nothing}")
         end
     end
 
