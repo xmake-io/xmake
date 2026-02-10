@@ -184,7 +184,16 @@ function get_clang_target_flags(toolchain)
     end
 end
 
--- get xcode/apple target triple for clang -target, e.g. x86_64-apple-ios18.2-simulator
+-- get xcode/apple target triple for clang -target
+--
+-- e.g.
+-- - macosx: x86_64-apple-macos14.0
+-- - macosx(catalyst): arm64-apple-macos14.0-macabi
+-- - iphoneos: arm64-apple-ios18.2
+-- - iphoneos(simulator): x86_64-apple-ios18.2-simulator
+-- - appletvos: arm64-apple-tvos17.0
+-- - watchos: armv7k-apple-watchos10.0
+-- - applexros(simulator): x86_64-apple-xros1.0-simulator
 --
 -- configs:
 -- - appledev: simulator/catalyst
@@ -203,11 +212,14 @@ function get_xcode_target_triple(toolchain)
         end
         target = target .. target_minver
     end
-    if appledev == "simulator" then
-        target = target .. "-simulator"
-    end
-    if appledev == "catalyst" then
-        target = target .. "-macabi"
+    if plat == "macos" then
+        if appledev == "catalyst" then
+            target = target .. "-macabi"
+        end
+    else
+        if appledev == "simulator" then
+            target = target .. "-simulator"
+        end
     end
     return target
 end
