@@ -664,20 +664,11 @@ end
 
 -- should keep package source code after installing?
 function _instance:has_source()
-    if self:is_debug() then
-        return true
-    end
-    if self:is_source_embed() then
-        return true
-    end
     local project = package._project()
-    if project and project.policy("package.keep_source") then
-        return true
-    end
-    if self:policy("package.keep_source") then
-        return true
-    end
-    return false
+    return self:is_debug() or
+           self:is_source_embed() or
+           (project and project.policy("package.keep_source")) or
+           self:policy("package.keep_source")
 end
 
 -- is the supported package?
