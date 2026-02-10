@@ -3,7 +3,7 @@
 %undefine   __brp_mangle_shebangs
 
 Name:       xmake
-Version:    3.0.6
+Version:    3.0.7
 Release:    1%{?dist}
 Summary:    A cross-platform build utility based on Lua
 
