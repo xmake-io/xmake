@@ -25,6 +25,43 @@ import("detect.sdks.find_xcode")
 import("private.utils.executable_path")
 import("private.tools.codesign")
 
+-- print Xcode SDK summary (single line) and optional codesign infos
+function _show_checkinfo(toolchain, xcode, xcode_sdkver, target_minver)
+    if xcode and xcode.sdkdir then
+        local extras = {}
+        if xcode_sdkver then
+            table.insert(extras, "sdk: " .. xcode_sdkver)
+        end
+        if target_minver then
+            table.insert(extras, "target: " .. target_minver)
+        end
+        local extra = ""
+        if #extras > 0 then
+            extra = " (" .. table.concat(extras, ", ") .. ")"
+        end
+        cprint("checking for Xcode SDK ... ${color.success}%s%s", xcode.sdkdir, extra)
+    else
+        cprint("checking for Xcode SDK ... ${color.nothing}${text.nothing}")
+    end
+
+    if option.get("verbose") then
+        local codesign_identity = codesign.xcode_codesign_identity()
+        if codesign_identity then
+            cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", codesign_identity)
+        else
+            cprint("checking for Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
+        end
+        if toolchain:is_plat("iphoneos") then
+            local mobile_provision = codesign.xcode_mobile_provision()
+            if mobile_provision then
+                cprint("checking for Mobile Provision of Xcode ... ${color.success}%s", mobile_provision)
+            else
+                cprint("checking for Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
+            end
+        end
+    end
+end
+
 -- main entry
 function main(toolchain)
 
@@ -47,7 +84,7 @@ function main(toolchain)
                                                    plat = toolchain:plat(),
                                                    arch = toolchain:arch()})
     if not xcode then
-        cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
+        cprint("checking for Xcode SDK ... ${color.nothing}${text.nothing}")
         return false
     end
 
@@ -55,27 +92,6 @@ function main(toolchain)
     xcode_sdkver = xcode.sdkver
     if toolchain:is_global() then
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
-        if xcode.sdkdir then
-            cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
-        else
-            cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
-        end
-        if option.get("verbose") then
-            local codesign_identity = codesign.xcode_codesign_identity()
-            if codesign_identity then
-                cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", codesign_identity)
-            else
-                cprint("checking for Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
-            end
-            if toolchain:is_plat("iphoneos") then
-                local mobile_provision = codesign.xcode_mobile_provision()
-                if mobile_provision then
-                    cprint("checking for Mobile Provision of Xcode ... ${color.success}%s", mobile_provision)
-                else
-                    cprint("checking for Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
-                end
-            end
-        end
     end
 
     -- get xcode bin directory
@@ -152,11 +168,8 @@ function main(toolchain)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
     toolchain:config_set("target_minver", target_minver)
     toolchain:config_set("appledev", appledev)
-    if xcode_sdkver then
-        cprint("checking for SDK version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), xcode_sdkver)
-    end
-    if target_minver then
-        cprint("checking for Minimal target version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), target_minver)
+    if toolchain:is_global() then
+        _show_checkinfo(toolchain, xcode, xcode_sdkver, target_minver)
     end
     return true
 end

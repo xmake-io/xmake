@@ -110,14 +110,17 @@ function main(sdkdir, opt)
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for Android SDK directory ... ${color.success}%s", sdk.sdkdir)
-            cprint("checking for Build Tools Version of Android SDK ... ${color.success}%s", sdk.build_toolver)
+            local extra = ""
+            if sdk.build_toolver then
+                extra = " (buildtools: " .. sdk.build_toolver .. ")"
+            end
+            cprint("checking for Android SDK ... ${color.success}%s%s", sdk.sdkdir, extra)
         end
     else
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for Android SDK directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for Android SDK ... ${color.nothing}${text.nothing}")
         end
     end
 

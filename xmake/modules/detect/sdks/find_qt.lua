@@ -351,25 +351,19 @@ function main(sdkdir, opt)
     local sdkdir_host = opt.sdkdir_host or config.get("qt_host") or global.get("qt_host")
     local qt = _find_qt(sdkdir, sdkver, sdkdir_host)
     if qt then
-
-        -- save to config
         config.set("qt", qt.sdkdir, {force = true, readonly = true})
         config.set("qt_sdkver", qt.sdkver, {force = true, readonly = true})
 
-        -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for Qt SDK directory ... ${color.success}%s", qt.sdkdir)
+            local extra = ""
             if qt.sdkver then
-                cprint("checking for Qt SDK version ... ${color.success}%s", qt.sdkver)
-            else
-                cprint("checking for Qt SDK version ... ${color.nothing}${text.nothing}")
+                extra = " (" .. qt.sdkver .. ")"
             end
+            cprint("checking for Qt SDK ... ${color.success}%s%s", qt.sdkdir, extra)
         end
     else
-
-        -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for Qt SDK directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for Qt SDK ... ${color.nothing}${text.nothing}")
         end
     end
 
