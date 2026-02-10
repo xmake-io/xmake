@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
     // test for openimageio.
     auto write_image = OIIO::ImageInput::open("test.png");
 
-    // test for boost-system, boost-system is one of the dependencies of boost-system.
+    // test for boost-system, boost-system is one of the dependencies of boost-filesystem.
     boost::system::error_code ec;
 
     // test for boost-filesystem.
