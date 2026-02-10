@@ -662,6 +662,15 @@ function _instance:is_debug()
     return self:config("debug") or self:config("asan")
 end
 
+-- should keep package source code after installing?
+function _instance:has_source()
+    local project = package._project()
+    return self:is_debug() or
+           self:is_source_embed() or
+           (project and project.policy("package.keep_source")) or
+           self:policy("package.keep_source")
+end
+
 -- is the supported package?
 function _instance:is_supported()
     -- attempt to get the install script with the current plat/arch

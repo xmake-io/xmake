@@ -151,6 +151,8 @@ function policy.policies()
             ["package.install_always"]            = {description = "Always install packages every time.", type = "boolean"},
             -- Install packages in the local project folder
             ["package.install_locally"]           = {description = "Install packages in the local project folder.", default = false, type = "boolean"},
+            -- Keep package source code after installing (disable source dir cleanup)
+            ["package.keep_source"]               = {description = "Keep package source code after installing.", default = false, type = "boolean"},
             -- Set custom headers when downloading package
             ["package.download.http_headers"]     = {description = "Set the custom http headers when downloading package.", type = "table"},
             -- Use includes as external header files? e.g. -isystem ..
