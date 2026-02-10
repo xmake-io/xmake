@@ -426,6 +426,9 @@ function _get_configs_for_generic(package, configs, opt)
     if package:is_library() then
         envs.BUILD_SHARED_LIBS = package:config("shared") and "ON" or "OFF"
     end
+    if package:has_source() then
+        envs.CMAKE_EXPORT_COMPILE_COMMANDS = "ON"
+    end
     -- https://cmake.org/cmake/help/latest/variable/CMAKE_LINKER_TYPE.html
     if package:has_tool("ld", "link") then
         envs.CMAKE_LINKER_TYPE = "MSVC"
