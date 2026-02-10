@@ -63,30 +63,7 @@ function _find_package_from_pkgconfig(pkgconfig_files, opt)
     end
 end
 
-function _find_package(vcpkgdir, name, opt)
-
-    -- get configs
-    local configs = opt.configs or {}
-
-    -- fix name, e.g. ffmpeg[x264] as ffmpeg
-    -- @see https://github.com/xmake-io/xmake/issues/925
-    name = name:gsub("%[.-%]", "")
-
-    -- init triplet
-    local arch = opt.arch
-    local plat = opt.plat
-    local mode = opt.mode
-    plat = configurations.plat(plat)
-    arch = configurations.arch(arch)
-    local triplet = configurations.triplet(configs, plat, arch)
-
-    -- get the vcpkg info directories
-    local infodirs = {}
-	if opt.installdir then
-        table.join2(infodirs, path.join(opt.installdir, "vcpkg_installed", "vcpkg", "info"))
-	end
-    table.join2(infodirs, path.join(vcpkgdir, "installed", "vcpkg", "info"))
-
+function _get_package_info(name, triplet, infodirs, arch, plat, mode)
     -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
     local infofile = find_file(format("%s_*_%s.list", name, triplet), infodirs)
     if not infofile then
@@ -151,6 +128,60 @@ function _find_package(vcpkgdir, name, opt)
         end
     end
 
+    return result
+end
+
+function _find_package(vcpkg, vcpkgdir, name, opt)
+
+    -- get configs
+    local configs = opt.configs or {}
+
+    -- fix name, e.g. ffmpeg[x264] as ffmpeg
+    -- @see https://github.com/xmake-io/xmake/issues/925
+    name = name:gsub("%[.-%]", "")
+
+    -- init triplet
+    local arch = opt.arch
+    local plat = opt.plat
+    local mode = opt.mode
+    plat = configurations.plat(plat)
+    arch = configurations.arch(arch)
+    local triplet = configurations.triplet(configs, plat, arch)
+
+    -- get the vcpkg info directories
+    local infodirs = {}
+	if opt.installdir then
+        table.join2(infodirs, path.join(opt.installdir, "vcpkg_installed", "vcpkg", "info"))
+	end
+    table.join2(infodirs, path.join(vcpkgdir, "installed", "vcpkg", "info"))
+
+    -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
+    local infofile = find_file(format("%s_*_%s.list", name, triplet), infodirs)
+    if not infofile then
+        return
+    end
+
+    -- find dependency package
+    local result = nil
+    local _, dependinfo = try { function () return os.iorunv(vcpkg, {"depend-info", name, "--sort=reverse", "--triplet=" .. triplet}) end }
+    if dependinfo then
+        for _, line in ipairs(dependinfo:split("\n", {plain = true})) do
+            if not line:startswith("vcpkg-") then
+                local packagename = line:match("^([^%[:]+)[^:]*:")
+                if packagename then
+                    local dependencyresult = _get_package_info(packagename, triplet, infodirs, arch, plat, mode)
+                    if dependencyresult then
+                        result = result or {}
+                        for key, dependencylist in pairs(dependencyresult) do
+                            result[key] = result[key] or {}
+                            table.join2(result[key], dependencylist)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     -- save version
     if result then
         local infoname = path.basename(infofile)
@@ -165,11 +196,12 @@ function _find_package(vcpkgdir, name, opt)
 
     -- remove repeat
     if result then
-        if result.linkdirs then
-            result.linkdirs = table.unique(result.linkdirs)
-        end
-        if result.includedirs then
-            result.includedirs = table.unique(result.includedirs)
+        for k, v in pairs(result) do
+            if k == "links" or k == "syslinks" or k == "frameworks" then
+                result[k] = table.unwrap(table.reverse_unique(v))
+            else
+                result[k] = table.unwrap(table.unique(v))
+            end
         end
     end
     return result
@@ -192,6 +224,12 @@ function main(name, opt)
         return
     end
 
+    -- attempt to find vcpkg
+    local vcpkg = find_tool("vcpkg")
+    if not vcpkg then
+        raise("vcpkg not found!")
+    end
+
     -- do find package
-    return _find_package(vcpkgdir, name, opt)
+    return _find_package(vcpkg.program, vcpkgdir, name, opt)
 end
