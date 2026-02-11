@@ -53,6 +53,8 @@ tb_int_t xm_os_access(lua_State *lua) {
         mode_str++;
     }
 
+    tb_trace_i("access: %s, mode: %d -> %d", path, mode, tb_file_access(path, mode));
+
     // os.access(path, mode)
     lua_pushboolean(lua, tb_file_access(path, mode));
     return 1;
