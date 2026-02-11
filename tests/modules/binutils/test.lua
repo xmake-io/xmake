@@ -141,5 +141,39 @@ function test_readsyms(t)
     t:are_equal(resultslink[1].symbols[1].name, "add")
     t:are_equal(resultslink[1].symbols[1].type, "T")
 
+    local wasmar = path.join(tempdir, "libbar.a")
+    local function _pad(str, n)
+        if #str < n then
+            return str .. string.rep(" ", n - #str)
+        end
+        return str:sub(1, n)
+    end
+    local function _ar_header(name, size)
+        return _pad(name, 16) ..
+               _pad("0", 12) ..
+               _pad("0", 6) ..
+               _pad("0", 6) ..
+               _pad("644", 8) ..
+               _pad(tostring(size), 10) ..
+               "`\n"
+    end
+    local wasmobj = string.char(
+        0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+        0x01, 0x04, 0x01, 0x60, 0x00, 0x00,
+        0x03, 0x02, 0x01, 0x00,
+        0x0a, 0x04, 0x01, 0x02, 0x00, 0x0b,
+        0x00, 0x13, 0x07, 0x6c, 0x69, 0x6e, 0x6b, 0x69, 0x6e, 0x67, 0x02, 0x08, 0x08, 0x01, 0x00, 0x00, 0x00, 0x03, 0x61, 0x64, 0x64)
+    local symtab = string.char(0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x50) .. "add\0"
+    local ardata = "!<arch>\n" ..
+                   _ar_header("/", #symtab) .. symtab .. ((#symtab % 2 == 1) and "\n" or "") ..
+                   _ar_header("foo.cpp.o/", #wasmobj) .. wasmobj .. ((#wasmobj % 2 == 1) and "\n" or "")
+    io.writefile(wasmar, ardata)
+    local resultsar = binutils.readsyms(wasmar)
+    t:are_equal(#resultsar, 1)
+    t:are_equal(resultsar[1].objectfile, "foo.cpp.o")
+    t:are_equal(#resultsar[1].symbols, 1)
+    t:are_equal(resultsar[1].symbols[1].name, "add")
+    t:are_equal(resultsar[1].symbols[1].type, "T")
+
     os.tryrm(tempdir)
 end

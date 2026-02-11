@@ -30,6 +30,30 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+static tb_int_t xm_binutils_ar_detect_member_format(tb_stream_ref_t istream, tb_hize_t base_offset) {
+    tb_uint8_t magic[8] = {0};
+    if (!tb_stream_seek(istream, base_offset)) {
+        return -1;
+    }
+    if (!tb_stream_bread(istream, magic, 8)) {
+        tb_stream_seek(istream, base_offset);
+        return -1;
+    }
+    tb_stream_seek(istream, base_offset);
+
+    if (magic[0] == 0x00 && magic[1] == 0x61 && magic[2] == 0x73 && magic[3] == 0x6d) {
+        return XM_BINUTILS_FORMAT_WASM;
+    }
+    if (magic[0] == 0x7f && magic[1] == 'E' && magic[2] == 'L' && magic[3] == 'F') {
+        return XM_BINUTILS_FORMAT_ELF;
+    }
+    if ((magic[0] == 0xfe && magic[1] == 0xed && magic[2] == 0xfa && (magic[3] == 0xce || magic[3] == 0xcf)) ||
+        (magic[0] == 0xce && magic[1] == 0xfa && magic[2] == 0xed && magic[3] == 0xfe) ||
+        (magic[0] == 0xcf && magic[1] == 0xfa && magic[2] == 0xed && magic[3] == 0xfe)) {
+        return XM_BINUTILS_FORMAT_MACHO;
+    }
+    return XM_BINUTILS_FORMAT_UNKNOWN;
+}
 
 /* parse BSD symbol table (__.SYMDEF or __.SYMDEF SORTED)
  *
@@ -346,7 +370,7 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
         tb_hize_t current_pos = tb_stream_offset(istream);
 
         // detect format
-        tb_int_t format = xm_binutils_format_detect(istream);
+        tb_int_t format = xm_binutils_ar_detect_member_format(istream, current_pos);
         if (format != XM_BINUTILS_FORMAT_AR) {
             // create entry table
             lua_newtable(lua);
@@ -365,6 +389,8 @@ tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_of
                 read_ok = xm_binutils_elf_read_symbols(istream, current_pos, lua);
             } else if (format == XM_BINUTILS_FORMAT_MACHO) {
                 read_ok = xm_binutils_macho_read_symbols(istream, current_pos, lua);
+            } else if (format == XM_BINUTILS_FORMAT_WASM) {
+                read_ok = xm_binutils_wasm_read_symbols(istream, current_pos, lua);
             }
 
             if (!read_ok) {
