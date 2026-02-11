@@ -91,6 +91,10 @@ static __tb_inline__ tb_bool_t xm_binutils_format_is_ape(tb_byte_t const* first8
            first8[4] == 'p' && first8[5] == 'D';
 }
 
+static __tb_inline__ tb_bool_t xm_binutils_format_is_wasm(tb_byte_t const* first8) {
+    return first8[0] == 0x00 && first8[1] == 0x61 && first8[2] == 0x73 && first8[3] == 0x6d;
+}
+
 static __tb_inline__ tb_bool_t xm_binutils_format_is_elf(tb_byte_t const* first8) {
     return first8[0] == 0x7f && first8[1] == 'E' && first8[2] == 'L' && first8[3] == 'F';
 }
@@ -161,6 +165,11 @@ tb_int_t xm_binutils_format_detect(tb_stream_ref_t istream) {
 
         if (xm_binutils_format_is_ape(p)) {
             format = XM_BINUTILS_FORMAT_APE;
+            break;
+        }
+
+        if (xm_binutils_format_is_wasm(p)) {
+            format = XM_BINUTILS_FORMAT_WASM;
             break;
         }
 
@@ -237,6 +246,7 @@ tb_int_t xm_binutils_format(lua_State *lua) {
         case XM_BINUTILS_FORMAT_PE:    lua_pushliteral(lua, "pe"); break;
         case XM_BINUTILS_FORMAT_SHEBANG: lua_pushliteral(lua, "shebang"); break;
         case XM_BINUTILS_FORMAT_APE:   lua_pushliteral(lua, "ape"); break;
+        case XM_BINUTILS_FORMAT_WASM:  lua_pushliteral(lua, "wasm"); break;
         default:                       lua_pushliteral(lua, "unknown"); break;
         }
 

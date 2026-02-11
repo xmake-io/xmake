@@ -44,6 +44,10 @@ function test_format(t)
     io.writefile(ar, "!<arch>\n")
     t:are_equal(binutils.format(ar), "ar")
 
+    local wasmso = path.join(tempdir, "libfoo.so")
+    io.writefile(wasmso, string.char(0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00))
+    t:are_equal(binutils.format(wasmso), "wasm")
+
     local elf = path.join(tempdir, "a.elf")
     io.writefile(elf, string.char(0x7f, string.byte("E"), string.byte("L"), string.byte("F"), 0, 0, 0, 0))
     t:are_equal(binutils.format(elf), "elf")
