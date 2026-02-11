@@ -55,8 +55,6 @@ jobs:
           RUN_PROBABILITY: ${{ vars.DRAGONFLYBSD_RUN_PROBABILITY || '0.2' }}
 
   build:
-    needs: check
-    if: needs.check.outputs.should-run == 'true'
     runs-on: ubuntu-latest
 
     concurrency:
