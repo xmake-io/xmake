@@ -93,3 +93,53 @@ function test_deplibs(t)
 
     os.tryrm(tempdir)
 end
+
+function test_readsyms(t)
+    local tempdir = "temp/binutils_readsyms"
+    os.tryrm(tempdir)
+    os.mkdir(tempdir)
+
+    local wasmso = path.join(tempdir, "libfoo.so")
+    io.writefile(wasmso, string.char(
+        0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+        0x02, 0x0b, 0x01, 0x03, 0x65, 0x6e, 0x76, 0x03, 0x62, 0x61, 0x72, 0x00, 0x00,
+        0x07, 0x07, 0x01, 0x03, 0x66, 0x6f, 0x6f, 0x00, 0x00))
+    local results = binutils.readsyms(wasmso)
+    t:are_equal(#results, 1)
+    t:are_equal(results[1].objectfile, "libfoo.so")
+    t:are_equal(#results[1].symbols, 2)
+    t:are_equal(results[1].symbols[1].name, "bar")
+    t:are_equal(results[1].symbols[1].type, "U")
+    t:are_equal(results[1].symbols[2].name, "foo")
+    t:are_equal(results[1].symbols[2].type, "T")
+
+    local wasmso64 = path.join(tempdir, "libfoo64.so")
+    io.writefile(wasmso64, string.char(
+        0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+        0x02, 0x0c, 0x01, 0x03, 0x65, 0x6e, 0x76, 0x03, 0x6d, 0x65, 0x6d, 0x02, 0x04, 0x01,
+        0x07, 0x07, 0x01, 0x03, 0x66, 0x6f, 0x6f, 0x00, 0x00))
+    local results64 = binutils.readsyms(wasmso64)
+    t:are_equal(#results64, 1)
+    t:are_equal(results64[1].objectfile, "libfoo64.so")
+    t:are_equal(#results64[1].symbols, 2)
+    t:are_equal(results64[1].symbols[1].name, "mem")
+    t:are_equal(results64[1].symbols[1].type, "U")
+    t:are_equal(results64[1].symbols[2].name, "foo")
+    t:are_equal(results64[1].symbols[2].type, "T")
+
+    local wasmlink = path.join(tempdir, "liblink.so")
+    io.writefile(wasmlink, string.char(
+        0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+        0x01, 0x04, 0x01, 0x60, 0x00, 0x00,
+        0x03, 0x02, 0x01, 0x00,
+        0x0a, 0x04, 0x01, 0x02, 0x00, 0x0b,
+        0x00, 0x13, 0x07, 0x6c, 0x69, 0x6e, 0x6b, 0x69, 0x6e, 0x67, 0x02, 0x08, 0x08, 0x01, 0x00, 0x00, 0x00, 0x03, 0x61, 0x64, 0x64))
+    local resultslink = binutils.readsyms(wasmlink)
+    t:are_equal(#resultslink, 1)
+    t:are_equal(resultslink[1].objectfile, "liblink.so")
+    t:are_equal(#resultslink[1].symbols, 1)
+    t:are_equal(resultslink[1].symbols[1].name, "add")
+    t:are_equal(resultslink[1].symbols[1].type, "T")
+
+    os.tryrm(tempdir)
+end

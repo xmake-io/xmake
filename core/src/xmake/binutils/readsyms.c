@@ -41,6 +41,7 @@ extern tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, tb_hize_t
 extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 extern tb_bool_t xm_binutils_ar_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 extern tb_bool_t xm_binutils_mslib_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
+extern tb_bool_t xm_binutils_wasm_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -140,6 +141,8 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
                 read_ok = xm_binutils_elf_read_symbols(istream, 0, lua);
             } else if (format == XM_BINUTILS_FORMAT_MACHO) {
                 read_ok = xm_binutils_macho_read_symbols(istream, 0, lua);
+            } else if (format == XM_BINUTILS_FORMAT_WASM) {
+                read_ok = xm_binutils_wasm_read_symbols(istream, 0, lua);
             }
 
             if (read_ok) {
