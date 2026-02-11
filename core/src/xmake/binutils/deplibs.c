@@ -133,6 +133,7 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
                  lua_pushfstring(lua, "failed to parse ELF");
                  break;
             }
+        } else if (format == XM_BINUTILS_FORMAT_WASM) {
         } else {
             lua_pop(lua, 1); // pop table
             lua_pushboolean(lua, tb_false);

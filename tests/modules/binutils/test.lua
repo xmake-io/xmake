@@ -80,3 +80,16 @@ function test_format(t)
 
     os.tryrm(tempdir)
 end
+
+function test_deplibs(t)
+    local tempdir = "temp/binutils_deplibs"
+    os.tryrm(tempdir)
+    os.mkdir(tempdir)
+
+    local wasmso = path.join(tempdir, "libfoo.so")
+    io.writefile(wasmso, string.char(0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00))
+    local libs = binutils.deplibs(wasmso)
+    t:are_equal(#libs, 0)
+
+    os.tryrm(tempdir)
+end
