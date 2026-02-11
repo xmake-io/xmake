@@ -29,6 +29,12 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
+// ELF file magic: 0x7f 'E' 'L' 'F'
+#define XM_ELF_MAGIC0 0x7f
+#define XM_ELF_MAGIC1 'E'
+#define XM_ELF_MAGIC2 'L'
+#define XM_ELF_MAGIC3 'F'
+
 // ELF class
 #define XM_ELF_EI_CLASS 4
 #define XM_ELF_CLASS32  1

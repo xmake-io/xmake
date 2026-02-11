@@ -41,15 +41,15 @@ static tb_int_t xm_binutils_ar_detect_member_format(tb_stream_ref_t istream, tb_
     }
     tb_stream_seek(istream, base_offset);
 
-    if (magic[0] == 0x00 && magic[1] == 0x61 && magic[2] == 0x73 && magic[3] == 0x6d) {
+    if (magic[0] == XM_WASM_MAGIC0 && magic[1] == XM_WASM_MAGIC1 && magic[2] == XM_WASM_MAGIC2 && magic[3] == XM_WASM_MAGIC3) {
         return XM_BINUTILS_FORMAT_WASM;
     }
-    if (magic[0] == 0x7f && magic[1] == 'E' && magic[2] == 'L' && magic[3] == 'F') {
+    if (magic[0] == XM_ELF_MAGIC0 && magic[1] == XM_ELF_MAGIC1 && magic[2] == XM_ELF_MAGIC2 && magic[3] == XM_ELF_MAGIC3) {
         return XM_BINUTILS_FORMAT_ELF;
     }
-    if ((magic[0] == 0xfe && magic[1] == 0xed && magic[2] == 0xfa && (magic[3] == 0xce || magic[3] == 0xcf)) ||
-        (magic[0] == 0xce && magic[1] == 0xfa && magic[2] == 0xed && magic[3] == 0xfe) ||
-        (magic[0] == 0xcf && magic[1] == 0xfa && magic[2] == 0xed && magic[3] == 0xfe)) {
+    tb_uint32_t macho_magic = tb_bits_get_u32_be(magic);
+    if (macho_magic == XM_MACHO_MAGIC_32 || macho_magic == XM_MACHO_MAGIC_64 ||
+        macho_magic == XM_MACHO_MAGIC_32_BE || macho_magic == XM_MACHO_MAGIC_64_BE) {
         return XM_BINUTILS_FORMAT_MACHO;
     }
     return XM_BINUTILS_FORMAT_UNKNOWN;
