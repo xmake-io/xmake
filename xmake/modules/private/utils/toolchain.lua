@@ -184,6 +184,46 @@ function get_clang_target_flags(toolchain)
     end
 end
 
+-- get xcode/apple target triple for clang -target
+--
+-- e.g.
+-- - macosx: x86_64-apple-macos14.0
+-- - macosx(catalyst): arm64-apple-macos14.0-macabi
+-- - iphoneos: arm64-apple-ios18.2
+-- - iphoneos(simulator): x86_64-apple-ios18.2-simulator
+-- - appletvos: arm64-apple-tvos17.0
+-- - watchos: armv7k-apple-watchos10.0
+-- - applexros(simulator): x86_64-apple-xros1.0-simulator
+--
+-- configs:
+-- - appledev: simulator/catalyst
+-- - target_minver: deployment target version (ios 32-bit will be capped to 10)
+function get_xcode_target_triple(toolchain)
+    local arch = toolchain:arch()
+    local plat = toolchain:plat()
+    local platmap = {macosx = "macos", iphoneos = "ios", watchos = "watchos", appletvos = "tvos", applexros = "xros"}
+    plat = platmap[plat] or plat
+    local target_minver = toolchain:config("target_minver") or config.get("target_minver")
+    local appledev = toolchain:config("appledev") or config.get("appledev")
+    local target = format("%s-apple-%s", arch, plat)
+    if target_minver then
+        if plat == "ios" and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "i386") then
+            target_minver = "10"
+        end
+        target = target .. target_minver
+    end
+    if plat == "macos" then
+        if appledev == "catalyst" then
+            target = target .. "-macabi"
+        end
+    else
+        if appledev == "simulator" then
+            target = target .. "-simulator"
+        end
+    end
+    return target
+end
+
 -- add vs environments
 function add_vsenvs(toolchain, opt)
     opt = opt or {}
