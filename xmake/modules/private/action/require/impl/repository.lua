@@ -153,7 +153,7 @@ end
 -- get package directory from repositories
 function packagedir(packagename, opt)
 
-    -- strip trailng ~tag, e.g. zlib~debug
+    -- strip trailing ~tag, e.g. zlib~debug
     opt = opt or {}
     packagename = packagename:lower()
     if packagename:find('~', 1, true) then
