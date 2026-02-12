@@ -99,8 +99,12 @@ function test_readsyms(t)
     os.tryrm(tempdir)
     os.mkdir(tempdir)
 
+    local function _writebin(filepath, data)
+        io.writefile(filepath, data, {encoding = "binary"})
+    end
+
     local wasmso = path.join(tempdir, "libfoo.so")
-    io.writefile(wasmso, string.char(
+    _writebin(wasmso, string.char(
         0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
         0x02, 0x0b, 0x01, 0x03, 0x65, 0x6e, 0x76, 0x03, 0x62, 0x61, 0x72, 0x00, 0x00,
         0x07, 0x07, 0x01, 0x03, 0x66, 0x6f, 0x6f, 0x00, 0x00))
@@ -114,7 +118,7 @@ function test_readsyms(t)
     t:are_equal(results[1].symbols[2].type, "T")
 
     local wasmso64 = path.join(tempdir, "libfoo64.so")
-    io.writefile(wasmso64, string.char(
+    _writebin(wasmso64, string.char(
         0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
         0x02, 0x0c, 0x01, 0x03, 0x65, 0x6e, 0x76, 0x03, 0x6d, 0x65, 0x6d, 0x02, 0x04, 0x01,
         0x07, 0x07, 0x01, 0x03, 0x66, 0x6f, 0x6f, 0x00, 0x00))
@@ -128,7 +132,7 @@ function test_readsyms(t)
     t:are_equal(results64[1].symbols[2].type, "T")
 
     local wasmlink = path.join(tempdir, "liblink.so")
-    io.writefile(wasmlink, string.char(
+    _writebin(wasmlink, string.char(
         0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
         0x01, 0x04, 0x01, 0x60, 0x00, 0x00,
         0x03, 0x02, 0x01, 0x00,
@@ -167,7 +171,7 @@ function test_readsyms(t)
     local ardata = "!<arch>\n" ..
                    _ar_header("/", #symtab) .. symtab .. ((#symtab % 2 == 1) and "\n" or "") ..
                    _ar_header("foo.cpp.o/", #wasmobj) .. wasmobj .. ((#wasmobj % 2 == 1) and "\n" or "")
-    io.writefile(wasmar, ardata)
+    _writebin(wasmar, ardata)
     local resultsar = binutils.readsyms(wasmar)
     t:are_equal(#resultsar, 1)
     t:are_equal(resultsar[1].objectfile, "foo.cpp.o")
