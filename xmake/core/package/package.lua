@@ -160,7 +160,29 @@ function _instance:set(name, ...)
             os.raise("'%s' can only be initied in on_source() or the description scope.", name)
         end
     end
+    print("----------------------\n  function _instance:set(name, ...)")
+    utils.dump(self._NAME)
+    utils.dump(name, ...)
     self._INFO:apival_set(name, ...)
+    print("-----------------------")
+
+    if name == "kind" then
+        -- the package kind is modified, the buildhash need to be re-computed
+        self._CONFIG_DIRTY = true
+        if (...) == "binary" then
+            -- remove shared config if this package is originally a library
+            local configs = self:configs()
+            if configs then
+                -- this can remove shared config from `manifest.txt` 
+                configs.shared = nil
+            end
+            local requireinfo = self:requireinfo()
+            if requireinfo then
+                requireinfo.ignored_configs_for_buildhash = requireinfo.ignored_configs_for_buildhash or {}
+                table.insert(requireinfo.ignored_configs_for_buildhash, "shared")
+            end
+        end
+    end
 end
 
 -- add the value to the package info
@@ -1086,7 +1108,18 @@ function _instance:_load()
         if on_load then
             on_load(self)
         end
-        
+
+        if self._CONFIG_DIRTY then
+            -- drop the old buildhash and its configs
+            self._BUILDHASH = nil
+            self._CONFIGS_FOR_BUILDHASH = nil
+
+            -- re-compute buildhash for `config_set`
+            self:_compute_buildhash()
+
+            self._CONFIG_DIRTY = nil
+        end
+
         -- load all components
         self:_load_components()
 
@@ -1548,7 +1581,25 @@ function _instance:config_set(name, value)
     local configs = self:configs()
     if configs then
         configs[name] = value
+        utils.warning("package(%s) had automatically set config[%s] to %s", self._NAME, name, value)
     end
+    print("-----------------------\n  _instance:config_set(name, value)")
+    utils.dump(self._NAME)
+    utils.dump(name, value)
+
+    -- update overridden configs for buildhash.
+    -- `self:requireinfo().configs` should remain readonly
+    local requireinfo = self:requireinfo()
+    if requireinfo then
+        requireinfo.configs_overrided = requireinfo.configs_overrided or {}
+        requireinfo.configs_overrided[name] = value
+    end
+    
+    print("\n  after update overridden configs:")
+    utils.dump(requireinfo.configs, requireinfo.configs_overrided)
+    print("-----------------------")
+
+    self._CONFIG_DIRTY = true
 end
 
 -- get the configurations of package
