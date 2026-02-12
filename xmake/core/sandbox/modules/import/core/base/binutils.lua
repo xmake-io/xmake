@@ -82,8 +82,6 @@ function sandbox_core_base_binutils.rpath_list(binaryfile)
     end
 end
 
--- insert rpath to binary file (auto-detect format: ELF or Mach-O)
-
 -- clean rpaths from binary file (auto-detect format: ELF or Mach-O)
 function sandbox_core_base_binutils.rpath_clean(binaryfile)
     local ok, errors = binutils.rpath_clean(binaryfile)

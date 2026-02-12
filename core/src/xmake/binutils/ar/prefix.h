@@ -28,6 +28,7 @@
 #include "../coff/prefix.h"
 #include "../elf/prefix.h"
 #include "../macho/prefix.h"
+#include "../wasm/prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * forward declarations
@@ -35,6 +36,7 @@
 extern tb_bool_t xm_binutils_coff_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 extern tb_bool_t xm_binutils_elf_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 extern tb_bool_t xm_binutils_macho_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
+extern tb_bool_t xm_binutils_wasm_read_symbols(tb_stream_ref_t istream, tb_hize_t base_offset, lua_State *lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
@@ -155,6 +157,18 @@ static __tb_inline__ tb_bool_t xm_binutils_ar_get_member_name(tb_stream_ref_t is
             *bytes_read = (tb_hize_t)total_length;
             return tb_true;
         }
+    }
+
+    if (header->name[0] == '/') {
+        if (header->name[1] == '/') {
+            tb_strlcpy(name, "//", name_size);
+            *name_len = 2;
+        } else {
+            tb_strlcpy(name, "/", name_size);
+            *name_len = 1;
+        }
+        *bytes_read = 0;
+        return tb_true;
     }
 
     // regular name (null-terminated or space-padded)

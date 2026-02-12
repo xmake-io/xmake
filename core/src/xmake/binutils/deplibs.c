@@ -60,7 +60,7 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
     tb_stream_ref_t istream = tb_stream_init_from_file(binaryfile, TB_FILE_MODE_RO);
     if (!istream) {
         lua_pushboolean(lua, tb_false);
-        lua_pushfstring(lua, "deplibs: open %s failed", binaryfile);
+        lua_pushfstring(lua, "open %s failed", binaryfile);
         return 2;
     }
 
@@ -68,7 +68,7 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
     do {
         if (!tb_stream_open(istream)) {
             lua_pushboolean(lua, tb_false);
-            lua_pushfstring(lua, "deplibs: open %s failed", binaryfile);
+            lua_pushfstring(lua, "open %s failed", binaryfile);
             break;
         }
 
@@ -76,7 +76,7 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
         tb_int_t format = xm_binutils_format_detect(istream);
         if (format < 0) {
             lua_pushboolean(lua, tb_false);
-            lua_pushfstring(lua, "deplibs: cannot detect file format");
+            lua_pushfstring(lua, "cannot detect file format");
             break;
         }
 
@@ -88,7 +88,7 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
             if (!xm_binutils_coff_deplibs(istream, 0, lua)) {
                  lua_pop(lua, 1); // pop table
                  lua_pushboolean(lua, tb_false);
-                 lua_pushfstring(lua, "deplibs: failed to parse COFF");
+                 lua_pushfstring(lua, "failed to parse COFF");
                  break;
             }
         } else if (format == XM_BINUTILS_FORMAT_PE) {
@@ -96,7 +96,7 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
             if (!tb_stream_seek(istream, 0x3c)) {
                  lua_pop(lua, 1); // pop table
                  lua_pushboolean(lua, tb_false);
-                 lua_pushfstring(lua, "deplibs: failed to seek to e_lfanew");
+                 lua_pushfstring(lua, "failed to seek to e_lfanew");
                  break;
             }
 
@@ -105,7 +105,7 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
             if (!tb_stream_bread(istream, (tb_byte_t*)&e_lfanew, 4)) {
                  lua_pop(lua, 1); // pop table
                  lua_pushboolean(lua, tb_false);
-                 lua_pushfstring(lua, "deplibs: failed to read e_lfanew");
+                 lua_pushfstring(lua, "failed to read e_lfanew");
                  break;
             }
 
@@ -116,30 +116,30 @@ tb_int_t xm_binutils_deplibs(lua_State *lua) {
             if (!xm_binutils_coff_deplibs(istream, e_lfanew + 4, lua)) {
                  lua_pop(lua, 1); // pop table
                  lua_pushboolean(lua, tb_false);
-                 lua_pushfstring(lua, "deplibs: failed to parse PE/COFF");
+                 lua_pushfstring(lua, "failed to parse PE/COFF");
                  break;
             }
         } else if (format == XM_BINUTILS_FORMAT_MACHO) {
             if (!xm_binutils_macho_deplibs(istream, 0, lua)) {
                  lua_pop(lua, 1); // pop table
                  lua_pushboolean(lua, tb_false);
-                 lua_pushfstring(lua, "deplibs: failed to parse Mach-O");
+                 lua_pushfstring(lua, "failed to parse Mach-O");
                  break;
             }
         } else if (format == XM_BINUTILS_FORMAT_ELF) {
             if (!xm_binutils_elf_deplibs(istream, 0, lua)) {
                  lua_pop(lua, 1); // pop table
                  lua_pushboolean(lua, tb_false);
-                 lua_pushfstring(lua, "deplibs: failed to parse ELF");
+                 lua_pushfstring(lua, "failed to parse ELF");
                  break;
             }
+        } else if (format == XM_BINUTILS_FORMAT_WASM) {
         } else {
             lua_pop(lua, 1); // pop table
             lua_pushboolean(lua, tb_false);
-            lua_pushfstring(lua, "deplibs: unsupported format %d", format);
+            lua_pushfstring(lua, "unsupported format %d", format);
             break;
         }
-
 
         ok = tb_true;
 
