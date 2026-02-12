@@ -157,7 +157,7 @@ function _instance:set(name, ...)
         -- @see https://github.com/xmake-io/xmake/issues/5148
         -- https://github.com/xmake-io/xmake-repo/pull/4204
         if self:_sourceset():has(name) and self:get(name) == nil then
-            os.raise("'%s' can only be initied in on_source() or the description scope.", name)
+            os.raise("'%s' can only be initialized in on_source() or the description scope.", name)
         end
     end
 
@@ -186,7 +186,7 @@ end
 function _instance:add(name, ...)
     if self._SOURCE_INITED then
         if self:_sourceset():has(name) and self:get(name) == nil then
-            os.raise("'%s' can only be initied in on_source() or the description scope.", name)
+            os.raise("'%s' can only be initialized in on_source() or the description scope.", name)
         end
     end
     self._INFO:apival_add(name, ...)
@@ -1671,7 +1671,7 @@ end
 
 -- compute the build hash
 function _instance:_compute_buildhash()
-    self._BUILDHASH_PREPRARED = true
+    self._BUILDHASH_PREPARED = true
     self:buildhash()
 end
 
@@ -1685,7 +1685,7 @@ end
 function _instance:buildhash()
     local buildhash = self._BUILDHASH
     if buildhash == nil then
-        if not self._BUILDHASH_PREPRARED then
+        if not self._BUILDHASH_PREPARED then
             os.raise("package:buildhash() must be called after loading package")
         end
         local function _get_buildhash(configs, opt)
@@ -2829,7 +2829,7 @@ function package.targetplat()
     return plat
 end
 
--- get global target architecture of pacakge
+-- get global target architecture of package
 function package.targetarch()
     local arch = package._memcache():get("target_arch")
     if arch == nil then

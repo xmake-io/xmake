@@ -912,7 +912,7 @@ function _load_package(packagename, requireinfo, opt)
         end
     end
 
-    -- strip trailng ~tag, e.g. zlib~debug
+    -- strip trailing ~tag, e.g. zlib~debug
     local displayname
     if packagename:find('~', 1, true) then
         displayname = packagename
