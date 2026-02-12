@@ -160,11 +160,14 @@ function _instance:set(name, ...)
             os.raise("'%s' can only be initied in on_source() or the description scope.", name)
         end
     end
-    print("----------------------\n  function _instance:set(name, ...)")
-    utils.dump(self._NAME)
-    utils.dump(name, ...)
-    self._INFO:apival_set(name, ...)
-    print("-----------------------")
+
+    if self._NAME == "libuv" then
+        print("----------------------\n  function _instance:set(name, ...)")
+        utils.dump(self._NAME)
+        utils.dump(name, ...)
+        self._INFO:apival_set(name, ...)
+        print("-----------------------")
+    end
 
     if name == "kind" then
         -- the package kind is modified, the buildhash need to be re-computed
@@ -893,6 +896,11 @@ function _instance:installdir(...)
                 installdir = path.join(installdir, version_str)
             end
             installdir = path.join(installdir, self:buildhash())
+            if self._NAME == "libuv" then
+                print("----------------------------------")
+                utils.dump(self._NAME, self:buildhash(), installdir)
+                print("----------------------------------")
+            end
         end
         self._INSTALLDIR = installdir
     end
@@ -1109,15 +1117,22 @@ function _instance:_load()
             on_load(self)
         end
 
+        if self._NAME == "libuv" then
+            print("- before:")
+            utils.dump(self._NAME, self._BUILDHASH)
+        end
         if self._CONFIG_DIRTY then
             -- drop the old buildhash and its configs
             self._BUILDHASH = nil
             self._CONFIGS_FOR_BUILDHASH = nil
 
-            -- re-compute buildhash for `config_set`
             self:_compute_buildhash()
 
             self._CONFIG_DIRTY = nil
+        end
+        if self._NAME == "libuv" then
+            print("- after:")
+            utils.dump(self._NAME, self._BUILDHASH)
         end
 
         -- load all components
@@ -1583,10 +1598,11 @@ function _instance:config_set(name, value)
         configs[name] = value
         utils.warning("package(%s) had automatically set config[%s] to %s", self._NAME, name, value)
     end
-    print("-----------------------\n  _instance:config_set(name, value)")
-    utils.dump(self._NAME)
-    utils.dump(name, value)
-
+    if self._NAME == "libuv" then
+        print("-----------------------\n  _instance:config_set(name, value)")
+        utils.dump(self._NAME)
+        utils.dump(name, value)
+    end
     -- update overridden configs for buildhash.
     -- `self:requireinfo().configs` should remain readonly
     local requireinfo = self:requireinfo()
@@ -1595,9 +1611,11 @@ function _instance:config_set(name, value)
         requireinfo.configs_overrided[name] = value
     end
     
-    print("\n  after update overridden configs:")
-    utils.dump(requireinfo.configs, requireinfo.configs_overrided)
-    print("-----------------------")
+    if self._NAME == "libuv" then
+        print("\n  after update overridden configs:")
+        utils.dump(requireinfo.configs, requireinfo.configs_overrided)
+        print("-----------------------")
+    end
 
     self._CONFIG_DIRTY = true
 end
@@ -1613,7 +1631,10 @@ function _instance:configs()
             local configs_required = requireinfo and requireinfo.configs or {}
             local configs_overrided = requireinfo and requireinfo.configs_overrided or {}
             for _, name in ipairs(table.wrap(configs_defined)) do
-                local value = configs_overrided[name] or configs_required[name]
+                local value = configs_overrided[name]
+                if value == nil then
+                    value = configs_required[name]
+                end
                 if value == nil then
                     value = self:extraconf("configs", name, "default")
                     -- support for the deprecated vs_runtime in add_configs
@@ -1653,9 +1674,22 @@ function _instance:_configs_for_buildhash()
             local configs_required = requireinfo and requireinfo.configs or {}
             local configs_overrided = requireinfo and requireinfo.configs_overrided or {}
             local ignored_configs_for_buildhash = hashset.from(requireinfo and requireinfo.ignored_configs_for_buildhash or {})
+            if self._NAME == "libuv" then
+                utils.dump(ignored_configs_for_buildhash)
+            end
             for _, name in ipairs(table.wrap(configs_defined)) do
                 if not ignored_configs_for_buildhash:has(name) then
-                    local value = configs_overrided[name] or configs_required[name]
+                    local value = configs_overrided[name]
+                    if value == nil then
+                        -- if value==false, false should be able to override true
+                        value = configs_required[name]
+                    end
+                    if name == "shared" then
+                        print("**********************************")
+                        utils.dump(name, value)
+                        utils.dump(configs_overrided[name], configs_required[name])
+                        print("**********************************")
+                    end
                     if value == nil then
                         value = self:extraconf("configs", name, "default")
                         -- support for the deprecated vs_runtime in add_configs
@@ -1671,6 +1705,9 @@ function _instance:_configs_for_buildhash()
         end
         self._CONFIGS_FOR_BUILDHASH = configs
     end
+    -- if self._NAME == "libuv" then
+    --     utils.dump(configs)
+    -- end
     return configs and configs or nil
 end
 
