@@ -63,7 +63,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
     tb_stream_ref_t istream = tb_stream_init_from_file(objectfile, TB_FILE_MODE_RO);
     if (!istream) {
         lua_pushboolean(lua, tb_false);
-        lua_pushfstring(lua, "readsyms: open %s failed", objectfile);
+        lua_pushfstring(lua, "open %s failed", objectfile);
         return 2;
     }
 
@@ -71,7 +71,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
     do {
         if (!tb_stream_open(istream)) {
             lua_pushboolean(lua, tb_false);
-            lua_pushfstring(lua, "readsyms: open %s failed", objectfile);
+            lua_pushfstring(lua, "open %s failed", objectfile);
             break;
         }
 
@@ -79,7 +79,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
         tb_int_t format = xm_binutils_format_detect(istream);
         if (format < 0) {
             lua_pushboolean(lua, tb_false);
-            lua_pushfstring(lua, "readsyms: cannot detect file format");
+            lua_pushfstring(lua, "cannot detect file format");
             break;
         }
         
@@ -102,14 +102,14 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
                      // fallback to ar
                      if (!xm_binutils_ar_read_symbols(istream, 0, lua)) {
                         lua_pushboolean(lua, tb_false);
-                        lua_pushfstring(lua, "readsyms: read AR/MSLIB archive symbols failed");
+                        lua_pushfstring(lua, "read AR/MSLIB archive symbols failed");
                         break;
                      }
                  }
             } else {
                 if (!xm_binutils_ar_read_symbols(istream, 0, lua)) {
                     lua_pushboolean(lua, tb_false);
-                    lua_pushfstring(lua, "readsyms: read AR archive symbols failed");
+                    lua_pushfstring(lua, "read AR archive symbols failed");
                     break;
                 }
             }
@@ -151,7 +151,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
             } else {
                 lua_pop(lua, 2); // pop entry table and result list
                 lua_pushboolean(lua, tb_false);
-                lua_pushfstring(lua, "readsyms: read symbols failed");
+                lua_pushfstring(lua, "read symbols failed");
                 break;
             }
         }

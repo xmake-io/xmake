@@ -74,7 +74,7 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
     tb_stream_ref_t istream = tb_stream_init_from_file(libraryfile, TB_FILE_MODE_RO);
     if (!istream) {
         lua_pushboolean(lua, tb_false);
-        lua_pushfstring(lua, "extractlib: open %s failed", libraryfile);
+        lua_pushfstring(lua, "open %s failed", libraryfile);
         return 2;
     }
 
@@ -139,9 +139,9 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
     } else {
         lua_pushboolean(lua, tb_false);
         if (error_msg) {
-             lua_pushfstring(lua, "extractlib: %s %s", error_msg, libraryfile);
+             lua_pushfstring(lua, "%s %s", error_msg, libraryfile);
         } else {
-             lua_pushfstring(lua, "extractlib: unknown error for %s", libraryfile);
+             lua_pushfstring(lua, "unknown error for %s", libraryfile);
         }
         return 2;
     }
