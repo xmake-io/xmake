@@ -2222,7 +2222,7 @@ function _instance:components_deps()
         for _, name in ipairs(table.wrap(self:get("components"))) do
             components_deps[name] = self:extraconf("components", name, "deps") or self:component(name):get("deps")
         end
-        self._COMPONENTS_DEPS = component_deps
+        self._COMPONENTS_DEPS = components_deps
     end
     return components_deps
 end
