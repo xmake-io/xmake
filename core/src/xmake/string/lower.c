@@ -59,7 +59,7 @@ tb_int_t xm_string_lower(lua_State *lua) {
 
         // to lower
         tb_long_t real_size = tb_charset_utf8_tolower(buffer, size);
-        
+
         // push result
         if (real_size >= 0) {
             lua_pushlstring(lua, buffer, real_size);
