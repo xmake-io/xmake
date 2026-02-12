@@ -75,7 +75,7 @@ jobs:
           mem: 4096
           copyback: false
           prepare: |
-            /usr/sbin/pkg_add curl git unzip gmake llvm libcxx gsed bash perl
+            /usr/sbin/pkg_add -u curl git unzip gmake llvm libcxx gsed bash perl
             ln -sf /usr/pkg/bin/gmake /usr/pkg/bin/make
           run: |
             ./configure
