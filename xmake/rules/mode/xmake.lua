@@ -62,7 +62,7 @@ rule("mode.release")
             end
 
             -- strip all symbols
-            if not target:get("strip") then
+            if target:policy("build.release.strip") and not target:get("strip") then
                 target:set("strip", "all")
             end
 
@@ -94,7 +94,7 @@ rule("mode.releasedbg")
             end
 
             -- strip all symbols, but it will generate debug symbol file because debug/symbols is setted
-            if not target:get("strip") then
+            if target:policy("build.release.strip") and not target:get("strip") then
                 target:set("strip", "all")
             end
 

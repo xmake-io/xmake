@@ -70,6 +70,8 @@ function policy.policies()
             ["build.sanitizer.undefined"]         = {description = "Enable undefined sanitizer for c/c++ building.", type = "boolean"},
             -- Enable build rpath
             ["build.rpath"]                       = {description = "Enable build rpath.", default = true, type = "boolean"},
+            -- Strip symbols by default in release mode (mode.release)
+            ["build.release.strip"]               = {description = "Strip symbols by default in release mode.", default = true, type = "boolean"},
             -- Enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
             -- Enable non cascading changes (experimental)
