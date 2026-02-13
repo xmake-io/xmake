@@ -98,9 +98,6 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
 
                 -- raise errors
                 local results = #lines > 0 and table.concat(lines, "\n") or ""
-                if not option.get("verbose") then
-                    results = results .. "\n  ${yellow}> in ${bright}" .. sourcefile
-                end
                 raise(results)
             end
         },
