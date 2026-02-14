@@ -69,11 +69,9 @@ jobs:
           prepare: |
             pkgman install -y git curl unzip make bash perl
           run: |
-            pwd
             ./configure --prefix=`pwd`/dist
             make -j2
             make install
-            ls -l ./dist/
             export XMAKE_ROOT=y
             export PATH=`pwd`/dist/bin:$PATH
             xrepo --version
