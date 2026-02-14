@@ -53,8 +53,8 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: Haiku-${{ github.event.repository.owner.login }}-${{ github.event.repository.name }}
-      cancel-in-progress: false
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Haiku
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:

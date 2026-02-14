@@ -66,8 +66,8 @@ jobs:
 
     concurrency:
         # Prevent concurrent runs of the same workflow
-        group: Windows-Luajit-${{ github.event.repository.owner.login }}-${{ github.event.repository.name }}-${{ matrix.os }}-${{ matrix.arch }}
-        cancel-in-progress: false
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-Windows-Luajit
+        cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:
