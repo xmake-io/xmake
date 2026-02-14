@@ -165,9 +165,13 @@ function config.builddir(opt)
         builddir = path.absolute(builddir, rootdir)
     end
 
-    -- adjust path for the current directory
+    -- Adjust path for the current directory,
+    -- If it's an external directory, use the absolute path directly.
     if not opt.absolute then
-        builddir = path.relative(builddir, os.curdir())
+        local relativedir = path.relative(builddir, os.curdir())
+        if not relativedir:startswith("..") then
+            builddir = relativedir
+        end
     end
     return builddir
 end
