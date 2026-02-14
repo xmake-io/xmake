@@ -362,7 +362,9 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets, preprocessors
     end
 
     -- trace
-    cprint("generating %s ... ${color.success}${text.success}", srcfile)
+    if option.get("verbose") then
+        cprint("${dim}generating %s ... ${color.success}${text.success}", srcfile)
+    end
 end
 
 -- the main entry function
