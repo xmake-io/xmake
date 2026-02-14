@@ -78,4 +78,4 @@ jobs:
             export PATH=`pwd`/dist/bin:$PATH
             xrepo --version
             xmake l os.meminfo
-            xmake l string.lower "Test 源文件🎆 Message"
+            xmake lua -v -D tests/run.lua
