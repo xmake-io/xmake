@@ -179,6 +179,8 @@ function _get_configs(package, configs)
                 loong64 = "loongarch64-linux-gnu"
             }
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples.i386))
+	elseif package:is_plat("bsd") and package:is_cross() then
+            table.insert(configs, "--host=x86_64-freebsd")
         elseif package:is_plat("cross") and package:targetos() then
             local host = package:arch()
             if package:is_arch("arm64") then
