@@ -24,7 +24,7 @@ local sandbox_lib_detect_find_program = sandbox_lib_detect_find_program or {}
 -- load modules
 local os          = require("base/os")
 local path        = require("base/path")
-local option      = require("base/winos")
+local winos       = require("base/winos")
 local table       = require("base/table")
 local utils       = require("base/utils")
 local option      = require("base/option")
@@ -39,6 +39,14 @@ local scheduler   = require("sandbox/modules/import/core/base/scheduler")
 
 -- do check
 function sandbox_lib_detect_find_program._do_check(program, opt)
+
+    -- avoid gcc.exe signed by GIGA-BYTE
+    if winos.file_signature and program:lower():match("gcc%.exe$") then
+        local signer = winos.file_signature(program)
+        if signer and signer.signer and signer.signer:find("GIGA-BYTE", 1, true) then
+            return false
+        end
+    end
 
     -- do not attempt to run program? check it fastly
     if opt.norun then
