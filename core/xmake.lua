@@ -41,7 +41,7 @@ end]]
 -- for the windows platform (msvc)
 if is_plat("windows") then
     set_runtimes("MT")
-    add_links("kernel32", "user32", "gdi32")
+    add_links("kernel32", "user32", "gdi32", "wintrust", "crypt32")
 end
 
 -- for mode coverage

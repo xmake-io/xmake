@@ -29,7 +29,7 @@ target("cli")
 
     -- add links
     if is_plat("windows") then
-        add_syslinks("ws2_32", "advapi32", "shell32")
+        add_syslinks("ws2_32", "advapi32", "shell32", "wintrust", "crypt32")
         add_ldflags("/export:malloc", "/export:free", "/export:memmove")
     elseif is_plat("android") then
         add_syslinks("m", "c")
