@@ -40,7 +40,7 @@ local scheduler   = require("sandbox/modules/import/core/base/scheduler")
 -- do check
 function sandbox_lib_detect_find_program._do_check(program, opt)
 
-    -- avoid gcc.exe signed by GIGA-BYTE
+    -- avoid gcc.exe signed by GIGA-BYTE ref: https://github.com/xmake-io/xmake/issues/5629
     if winos.file_signature and program:lower():endswith("gcc.exe") then
         local check_signature = function (program)
             if os.isfile(program) then
