@@ -41,9 +41,9 @@ local scheduler   = require("sandbox/modules/import/core/base/scheduler")
 function sandbox_lib_detect_find_program._do_check(program, opt)
 
     -- avoid gcc.exe signed by GIGA-BYTE
-    if winos.file_signature and program:lower():match("gcc%.exe") then
+    if winos.file_signature and program:lower():endswith("gcc.exe") then
         local signer = winos.file_signature(program)
-        if signer and signer.signer_name and signer.signer_name:find("GIGA-BYTE", 1, true) then
+        if signer and signer.signer_name and signer.signer_name:startswith("GIGA-BYTE") then
             return false
         end
     end
