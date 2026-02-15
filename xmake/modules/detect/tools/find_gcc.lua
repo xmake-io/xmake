@@ -22,21 +22,6 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 import("core.cache.detectcache")
-import("core.base.option")
-
--- check for Gigabyte's GCC.exe
-function _check_gigabyte_gcc(program)
-    if is_host("windows") then 
-        local winos = import("core.base.winos", {try = true})
-        if winos and winos.file_signature then
-            local sig = try { function () return winos.file_signature(program) end }
-            if sig and sig.signer_name and sig.signer_name:find("GIGA-BYTE", 1, true) then
-                return false
-            end
-        end
-    end
-    return true
-end
 
 -- detect whether the current gcc compiler is clang
 function check_clang(program, opt)
@@ -69,25 +54,6 @@ end
 function main(opt)
     opt = opt or {}
     opt.norunfile = true
-
-    -- select GIGABYTE/GCC.exe?
-    local check_orig = opt.check
-    opt.check = function (program)
-        if not _check_gigabyte_gcc(program) then
-            return false
-        end
-        if check_orig then
-            if type(check_orig) == "function" then
-                return check_orig(program)
-            elseif type(check_orig) == "string" then
-                return os.runv(program, {check_orig}, {envs = opt.envs, shell = opt.shell})
-            elseif type(check_orig) == "table" then
-                return os.runv(program, check_orig, {envs = opt.envs, shell = opt.shell})
-            end
-        end
-        return os.runv(program, {"--version"}, {envs = opt.envs, shell = opt.shell})
-    end
-
     local program = find_program(opt.program or "gcc", opt)
     local version = nil
     if program and opt.version then
