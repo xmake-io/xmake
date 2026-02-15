@@ -1,5 +1,5 @@
 function main(t)
-    if is_host("bsd", "solaris") or is_subhost("msys") then
+    if is_host("bsd", "solaris", "haiku") or is_subhost("msys") then
         return
     end
     if is_host("linux") and linuxos.name() == "alpine" then

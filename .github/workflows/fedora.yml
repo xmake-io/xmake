@@ -63,8 +63,8 @@ jobs:
 
     concurrency:
         # Prevent concurrent runs of the same workflow
-        group: Fedora-${{ github.event.repository.owner.login }}-${{ github.event.repository.name }}
-        cancel-in-progress: false
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Fedora
+        cancel-in-progress: true
     steps:
       - name: Prepare build tools
         run: |
@@ -90,4 +90,3 @@ jobs:
         run: |
           xmake lua -v -D tests/run.lua
           xrepo --version
-
