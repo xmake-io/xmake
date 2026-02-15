@@ -36,7 +36,6 @@ target("cli")
     elseif is_plat("macosx") and is_config("runtime", "luajit") then
         add_ldflags("-all_load", "-pagezero_size 10000", "-image_base 100000000")
     elseif is_plat("mingw") then
-        add_syslinks("wintrust", "crypt32")
         add_ldflags("-static-libgcc", {force = true})
     elseif is_plat("haiku") then
         add_syslinks("pthread", "network", "m", "c")
