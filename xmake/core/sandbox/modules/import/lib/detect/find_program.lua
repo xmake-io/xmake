@@ -67,7 +67,9 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
         local ok_or_errors
         ok, ok_or_errors = sandbox.load(opt.check, program)
         if ok then
-            ok = ok_or_errors
+            if ok_or_errors ~= nil then
+                ok = ok_or_errors
+            end
         else
             errors = ok_or_errors
         end
