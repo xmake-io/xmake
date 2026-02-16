@@ -38,8 +38,7 @@
  * types
  */
 /// the file signature info type
-typedef struct __tb_file_signature_info_t
-{
+typedef struct __tb_file_signature_info_t {
     /// is the file digitally signed?
     tb_bool_t           is_signed;
 
@@ -55,8 +54,7 @@ typedef struct __tb_file_signature_info_t
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_wchar_t* tb_path_to_wchar(tb_char_t const* path, tb_wchar_t* buffer, tb_size_t size)
-{
+static tb_wchar_t* tb_path_to_wchar(tb_char_t const* path, tb_wchar_t* buffer, tb_size_t size) {
     // check
     tb_assert_and_check_return_val(path && buffer && size, tb_null);
 
@@ -67,8 +65,7 @@ static tb_wchar_t* tb_path_to_wchar(tb_char_t const* path, tb_wchar_t* buffer, t
     return tb_null;
 }
 
-static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_signature_info_t* info)
-{
+static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_signature_info_t* info) {
     // check
     tb_assert_and_check_return_val(filepath && info, tb_false);
 
@@ -108,28 +105,20 @@ static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_s
     WinVerifyTrust(NULL, &guid_action, &trust_data);
 
     // check status
-    if (status == ERROR_SUCCESS)
-    {
+    if (status == ERROR_SUCCESS) {
         info->is_signed = tb_true;
         info->is_trusted = tb_true;
-    }
-    else if (status == TRUST_E_NOSIGNATURE)
-    {
+    } else if (status == TRUST_E_NOSIGNATURE) {
         return tb_true;
-    }
-    else if (status == TRUST_E_EXPLICIT_DISTRUST || status == TRUST_E_SUBJECT_NOT_TRUSTED)
-    {
+    } else if (status == TRUST_E_EXPLICIT_DISTRUST || status == TRUST_E_SUBJECT_NOT_TRUSTED) {
         info->is_signed = tb_true;
         info->is_trusted = tb_false;
-    }
-    else
-    {
+    } else {
         return tb_false;
     }
 
     // extract signer name
-    if (info->is_signed)
-    {
+    if (info->is_signed) {
         HCERTSTORE hStore = NULL;
         HCRYPTMSG hMsg = NULL;
         DWORD dwEncoding = 0;
@@ -151,16 +140,12 @@ static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_s
                                    &hMsg,
                                    NULL);
 
-        if (bResult)
-        {
+        if (bResult) {
             DWORD cbSignerInfo = 0;
-            if (CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, NULL, &cbSignerInfo))
-            {
+            if (CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, NULL, &cbSignerInfo)) {
                 pSignerInfo = (PCMSG_SIGNER_INFO)tb_malloc(cbSignerInfo);
-                if (pSignerInfo)
-                {
-                    if (CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, (void*)pSignerInfo, &cbSignerInfo))
-                    {
+                if (pSignerInfo) {
+                    if (CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, (void*)pSignerInfo, &cbSignerInfo)) {
                         CERT_INFO certInfo;
                         certInfo.Issuer = pSignerInfo->Issuer;
                         certInfo.SerialNumber = pSignerInfo->SerialNumber;
@@ -172,16 +157,14 @@ static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_s
                                                                   (PVOID)&certInfo,
                                                                   NULL);
 
-                        if (pCertContext)
-                        {
+                        if (pCertContext) {
                             tb_wchar_t wName[256] = {0};
                             if (CertGetNameStringW(pCertContext,
                                                    CERT_NAME_SIMPLE_DISPLAY_TYPE,
                                                    0,
                                                    NULL,
                                                    wName,
-                                                   256))
-                            {
+                                                   256)) {
                                 WideCharToMultiByte(CP_UTF8, 0, wName, -1, info->signer_name, sizeof(info->signer_name), NULL, NULL);
                             }
                             CertFreeCertificateContext(pCertContext);
