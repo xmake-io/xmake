@@ -30,6 +30,44 @@ rule("qt._wasm_app")
             if os.isfile(path.join(pluginsdir, "platforms/wasm_shell.html")) then
                 os.vcp(path.join(pluginsdir, "platforms/wasm_shell.html"), htmlfile)
                 io.gsub(htmlfile, "@APPNAME@", target:name())
+                import("core.base.semver")
+                cprint("qt.sdkver: %s", qt.sdkver)
+                if qt.sdkver and semver.new(qt.sdkver):ge("6.0") then
+                    local data1, count1 = io.gsub(htmlfile, "@APPEXPORTNAME@", "createQtAppInstance")
+                    cprint("replaced APPEXPORTNAME: %s", count1)
+                    local data2, count2 = io.gsub(htmlfile, "@PRELOAD@", "")
+                    cprint("replaced PRELOAD: %s", count2)
+                    local preload = ""
+                    -- @see https://github.com/xmake-io/xmake/issues/6182
+                    local preloadfiles = target:values("wasm.preloadfiles")
+                    if preloadfiles then
+                        local filelist = {}
+                        for _, preloadfile in ipairs(preloadfiles) do
+                            table.insert(filelist, string.format("'%s'", path.filename(preloadfile)))
+                        end
+                        if #filelist > 0 then
+                            preload = string.format("preload: [%s],", table.concat(filelist, ", "))
+                        end
+                    end
+                    -- Patch old containerElements (pre-Qt 6.5)
+                    io.gsub(htmlfile, "containerElements: %[screen%],", function (w)
+                        return w .. " " .. preload
+                    end)
+                    -- Patch new qtContainerElements (Qt 6.5+)
+                    io.gsub(htmlfile, "qtContainerElements: %[screen%],", function (w)
+                        return w .. " " .. preload
+                    end)
+                    io.gsub(htmlfile, "@PRELOAD@", "")
+                    -- Fix qt-app.js errors
+                    local jsfile = path.join(targetdir, target:basename() .. ".js")
+                    if os.isfile(jsfile) then
+                        -- Remove "use strict"; to avoid issues with `this` being undefined in strict mode
+                        io.gsub(jsfile, "\"use strict\";", "")
+                        io.gsub(jsfile, "'use strict';", "")
+                        -- Patch visualViewport access issue if present (undefined this context) 
+                        io.gsub(jsfile, "this%.visualViewport", "(typeof window !== 'undefined' ? window.visualViewport : null)")
+                    end
+                end
                 os.vcp(path.join(pluginsdir, "platforms/qtloader.js"), targetdir)
                 os.vcp(path.join(pluginsdir, "platforms/qtlogo.svg"), targetdir)
             end
@@ -104,7 +142,14 @@ rule("qt.widgetapp")
         if qt_sdkver and qt_sdkver:lt("5.0") then
             frameworks = {"QtGui", "QtCore"} -- qt4.x has not QtWidgets, it is in QtGui
         end
-        import("load")(target, {gui = true, frameworks = frameworks})
+
+        local plugins = {}
+        if target:is_plat("wasm") then
+            local static_frameworks, static_plugins = import("config_static")(target)
+            table.join2(frameworks, static_frameworks)
+            plugins = static_plugins
+        end
+        import("load")(target, {gui = true, frameworks = frameworks, plugins = plugins})
     end)
 
     -- deploy application
@@ -162,7 +207,14 @@ rule("qt.quickapp")
     end)
 
     on_config(function (target)
-        import("load")(target, {gui = true, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore", "QtNetwork"}})
+        local frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore", "QtNetwork"}
+        local plugins = {}
+        if target:is_plat("wasm") then
+            local static_frameworks, static_plugins = import("config_static")(target)
+            table.join2(frameworks, static_frameworks)
+            plugins = static_plugins
+        end
+        import("load")(target, {gui = true, frameworks = frameworks, plugins = plugins})
     end)
 
     -- deploy application
@@ -184,6 +236,7 @@ rule("qt.quickapp_static")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
+        print("qt.quickapp_static on_load")
         target:set("kind", target:is_plat("android") and "shared" or "binary")
     end)
 
