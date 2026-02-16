@@ -58,6 +58,11 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     -- link it
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     os.runv(program, argv, {envs = self:runenvs(), shell = opt.shell})
+
+    print("ar link")
+    print(os.curdir())
+    print(os.files("/home/runner/work/xmake/xmake/tests/plugins/create/build/haiku/x86_64/release/*"))
+    print(os.files("../../../../../../../home/runner/work/xmake/xmake/tests/plugins/create/build/haiku/x86_64/release/*"))
 end
 
 
