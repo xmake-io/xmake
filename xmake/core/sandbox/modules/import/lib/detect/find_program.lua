@@ -40,34 +40,6 @@ local scheduler   = require("sandbox/modules/import/core/base/scheduler")
 -- do check
 function sandbox_lib_detect_find_program._do_check(program, opt)
 
-    -- avoid gcc.exe signed by GIGA-BYTE ref: https://github.com/xmake-io/xmake/issues/5629
-    if winos.file_signature and program:lower():endswith("gcc.exe") then
-        local check_signature = function (program)
-            if os.isfile(program) then
-                local signer = winos.file_signature(program)
-                if signer and signer.signer_name and signer.signer_name:startswith("GIGA-BYTE") then
-                    return true
-                end
-            end
-        end
-        if path.is_absolute(program) then
-            if check_signature(program) then
-                return false
-            end
-        else
-            local paths = path.splitenv(vformat("$(env PATH)"))
-            for _, p in ipairs(paths) do
-                local prog = path.join(p, program)
-                if os.isfile(prog) then
-                    if check_signature(prog) then
-                        return false
-                    end
-                    break
-                end
-            end
-        end
-    end
-
     -- do not attempt to run program? check it fastly
     if opt.norun then
         return os.isfile(program)
