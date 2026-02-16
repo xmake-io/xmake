@@ -43,7 +43,7 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
     -- do not attempt to run program? check it fastly
     if opt.norun then
         return os.isfile(program)
-    elseif opt.norunfile and path.is_absolute(program) and os.isfile(program) then
+    elseif not opt.check and opt.norunfile and path.is_absolute(program) and os.isfile(program) then
         return true
     end
 
