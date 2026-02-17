@@ -26,7 +26,7 @@ import("core.cache.detectcache")
 -- check gigabyte gcc
 function _check_gigabyte_gcc(program)
     -- avoid gcc.exe signed by GIGA-BYTE ref: https://github.com/xmake-io/xmake/issues/5629
-    if is_host("windows") then -- is_plat("windows", "mingw")
+    if is_host("windows") then
         local is_gigabyte = false
         if program:lower():endswith("gcc.exe") then
             import("core.base.winos")
@@ -95,7 +95,11 @@ end
 function main(opt)
     opt = opt or {}
     opt.norunfile = true
-    opt.check = _check_gigabyte_gcc
+    if is_host("windows") then
+        opt.check = _check_gcc
+    else
+        opt.norunfile = true
+    end
     local program = find_program(opt.program or "gcc", opt)
     local version = nil
     if program and opt.version then
