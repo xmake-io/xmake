@@ -22,6 +22,7 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 import("core.cache.detectcache")
+import("core.base.winos")
 
 -- check gigabyte gcc
 function _check_gigabyte_gcc(program)
@@ -29,7 +30,6 @@ function _check_gigabyte_gcc(program)
     if is_host("windows") then
         local is_gigabyte = false
         if program:lower():endswith("gcc.exe") then
-            import("core.base.winos")
             if winos.file_signature then
                 local check_signature = function (program)
                     if os.isfile(program) then
@@ -43,25 +43,13 @@ function _check_gigabyte_gcc(program)
                     if check_signature(program) then
                         is_gigabyte = true
                     end
-                else
-                    local paths = path.splitenv(vformat("$(env PATH)"))
-                    for _, p in ipairs(paths) do
-                        local prog = path.join(p, program)
-                        if os.isfile(prog) then
-                            if check_signature(prog) then
-                                is_gigabyte = true
-                            end
-                            break
-                        end
-                    end
                 end
             end
         end
         if is_gigabyte then
-            return false
+            raise("gcc.exe signed by GIGA-BYTE is not supported, please use the official gcc.exe instead.")
         end
     end
-    return true
 end
 
 -- detect whether the current gcc compiler is clang
