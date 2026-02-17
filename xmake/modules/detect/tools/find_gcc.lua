@@ -26,7 +26,7 @@ import("core.cache.detectcache")
 -- check gigabyte gcc
 function _check_gigabyte_gcc(program, opt)
     -- avoid gcc.exe signed by GIGA-BYTE ref: https://github.com/xmake-io/xmake/issues/5629
-    if is_host("windows") then
+    if is_host("windows") or is_subhost("msys", "cygwin") then
         local is_gigabyte = false
         if program:lower():endswith("gcc.exe") then
             if winos.file_signature then
@@ -57,7 +57,7 @@ function _check_gigabyte_gcc(program, opt)
             end
         end
         if is_gigabyte then
-            return false
+            raise("gcc.exe signed by GIGA-BYTE is not supported, please use the official gcc from https://gcc.gnu.org/")
         end
     end
 
