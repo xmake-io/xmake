@@ -104,7 +104,7 @@ function main(opt)
     -- save the original check
     opt.check_gcc = opt.check
     opt.check = _check_gigabyte_gcc
-    opt.norunfile = true
+    -- opt.norunfile = true
     local program = find_program(opt.program or "gcc", opt)
     local version = nil
     if program and opt.version then
