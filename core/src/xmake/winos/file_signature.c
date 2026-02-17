@@ -37,19 +37,19 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
-/// the file signature info type
+// the file signature info type
 typedef struct __tb_file_signature_info_t {
-    /// is the file digitally signed?
+    // is the file digitally signed?
     tb_bool_t           is_signed;
 
-    /// is the signature valid and trusted by the OS?
+    // is the signature valid and trusted by the OS?
     tb_bool_t           is_trusted;
 
-    /// the name of the signer (e.g., "Microsoft Corporation")
-    /// tbox uses UTF-8 by default for tb_char_t
+    /* the name of the signer (e.g., "Microsoft Corporation")
+       tbox uses UTF-8 by default for tb_char_t*/
     tb_char_t           signer_name[256];
 
-}tb_file_signature_info_t;
+} tb_file_signature_info_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -74,7 +74,7 @@ static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_s
 
     // convert path
     tb_wchar_t wide_path[TB_PATH_MAXN];
-    if (!tb_path_to_wchar(filepath, wide_path, TB_PATH_MAXN)) return tb_false;
+    if (!tb_path_absolute_w(filepath, wide_path, TB_PATH_MAXN)) return tb_false;
 
     // init file info
     WINTRUST_FILE_INFO file_data = {0};
@@ -87,7 +87,7 @@ static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_s
     WINTRUST_DATA trust_data = {0};
     trust_data.cbStruct = sizeof(trust_data);
     trust_data.dwUIChoice = WTD_UI_NONE;
-    trust_data.fdwRevocationChecks = WTD_REVOKE_NONE;
+    trust_data.fdwRevocationChecks = WTD_REVOKE_WHOLECHAIN;
     trust_data.dwUnionChoice = WTD_CHOICE_FILE;
     trust_data.dwStateAction = WTD_STATEACTION_VERIFY;
     trust_data.hWVTStateData = NULL;
