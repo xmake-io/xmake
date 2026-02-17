@@ -22,9 +22,6 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 import("core.cache.detectcache")
-if is_host("windows") then
-    import("core.base.winos")
-end
 
 -- check gigabyte gcc
 function _check_gigabyte_gcc(program, opt)
