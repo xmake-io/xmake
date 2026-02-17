@@ -26,41 +26,40 @@ import("core.cache.detectcache")
 -- check gigabyte gcc
 function _check_gcc(program, opt)
     -- avoid gcc.exe signed by GIGA-BYTE ref: https://github.com/xmake-io/xmake/issues/5629
-    if is_host("windows") or is_subhost("msys", "cygwin") then
-        local is_gigabyte = false
-        if program:lower():endswith("gcc.exe") then
-            if winos.file_signature then
-                local check_signature = function (program)
-                    local filepath = path.translate(program)
-                    if os.isfile(filepath) then
-                        local signer = winos.file_signature(filepath)
-                        if signer and signer.signer_name then
-                            if signer.signer_name:find("GIGA-BYTE", 1, true) then
-                                return true
-                            end
-                        end
-                    end
+    if is_host("windows") then
+        local check_signature = function (program)
+            local filepath = program
+            if path.is_absolute(filepath) then
+                filepath = path.translate(filepath)
+            end
+            if os.isfile(filepath) then
+                local signer = nil
+                if winos.file_signature then
+                    signer = winos.file_signature(filepath)
                 end
-                if path.is_absolute(program) then
-                    if check_signature(program) then
-                        is_gigabyte = true
-                    end
-                else
-                    local paths = path.splitenv(vformat("$(env PATH)"))
-                    for _, p in ipairs(paths) do
-                        local prog = path.join(p, program)
-                        if os.isfile(prog) then
-                            if check_signature(prog) then
-                                is_gigabyte = true
-                            end
-                            break
-                        end
+                if signer and signer.signer_name then
+                    local signer_name = signer.signer_name:upper()
+                    if signer_name:find("GIGA-BYTE", 1, true) then
+                        return true
                     end
                 end
             end
         end
-        if is_gigabyte then
+
+        if check_signature(program) then
             return false
+        end
+
+        if not path.is_absolute(program) then
+            local paths = path.splitenv(vformat("$(env PATH)"))
+            if paths then
+                for _, p in ipairs(paths) do
+                    local prog = path.join(p, program)
+                    if os.isfile(prog) and check_signature(prog) then
+                        return false
+                    end
+                end
+            end
         end
     end
 
