@@ -31,10 +31,13 @@ function _check_gigabyte_gcc(program, opt)
         if program:lower():endswith("gcc.exe") then
             if winos.file_signature then
                 local check_signature = function (program)
-                    if os.isfile(program) then
-                        local signer = winos.file_signature(program)
-                        if signer and signer.signer_name and signer.signer_name:find("GIGA-BYTE", 1, true) then
-                            return true
+                    local filepath = path.translate(program)
+                    if os.isfile(filepath) then
+                        local signer = winos.file_signature(filepath)
+                        if signer and signer.signer_name then
+                            if signer.signer_name:find("GIGA-BYTE", 1, true) then
+                                return true
+                            end
                         end
                     end
                 end
