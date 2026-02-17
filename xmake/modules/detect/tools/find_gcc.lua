@@ -60,7 +60,7 @@ function _check_gcc(program, opt)
             end
         end
         if is_gigabyte then
-            raise("gcc.exe signed by GIGA-BYTE is not supported, please use the official gcc from https://gcc.gnu.org/")
+            return false
         end
     end
 
