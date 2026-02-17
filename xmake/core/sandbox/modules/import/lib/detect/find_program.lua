@@ -64,15 +64,7 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
     elseif type(opt.check) == "table" then
         ok, errors = os.runv(program, opt.check, {envs = opt.envs, shell = opt.shell})
     else
-        local ok_or_errors
-        ok, ok_or_errors = sandbox.load(opt.check, program)
-        if ok then
-            if ok_or_errors ~= nil then
-                ok = ok_or_errors
-            end
-        else
-            errors = ok_or_errors
-        end
+        ok, errors = sandbox.load(opt.check, program)
     end
 
     -- check failed? print verbose error info
