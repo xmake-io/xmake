@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 import("core.cache.detectcache")
 
 -- check gigabyte gcc
-function _check_gigabyte_gcc(program, opt)
+function _check_gcc(program, opt)
     -- avoid gcc.exe signed by GIGA-BYTE ref: https://github.com/xmake-io/xmake/issues/5629
     if is_host("windows") or is_subhost("msys", "cygwin") then
         local is_gigabyte = false
@@ -104,7 +104,7 @@ function main(opt)
     -- save the original check
     opt.check_gcc = opt.check
     if is_host("windows") then
-        opt.check = _check_gigabyte_gcc
+        opt.check = _check_gcc
     else
         opt.norunfile = true
     end
