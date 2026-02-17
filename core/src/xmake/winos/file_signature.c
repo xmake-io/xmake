@@ -165,7 +165,7 @@ static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_s
                                                    NULL,
                                                    wName,
                                                    256)) {
-                                WideCharToMultiByte(CP_UTF8, 0, wName, -1, info->signer_name, sizeof(info->signer_name), NULL, NULL);
+                                tb_wtoa(info->signer_name, wName, sizeof(info->signer_name));
                             }
                             CertFreeCertificateContext(pCertContext);
                         }
