@@ -32,6 +32,10 @@ function _check_gcc(program, opt)
             if path.is_absolute(filepath) then
                 filepath = path.translate(filepath)
             end
+            -- we only check signature for gcc.exe
+            if not filepath:lower():endswith("gcc.exe") then
+                return
+            end
             if os.isfile(filepath) then
                 local signer = nil
                 if winos.file_signature then
@@ -46,11 +50,11 @@ function _check_gcc(program, opt)
             end
         end
 
-        if check_signature(program) then
-            raise("gcc.exe signed by GIGA-BYTE is not allowed!")
-        end
-
-        if not path.is_absolute(program) then
+        if path.is_absolute(program) then
+            if check_signature(program) then
+                raise("gcc.exe signed by GIGA-BYTE is not allowed!")
+            end
+        else
             local paths = path.splitenv(vformat("$(env PATH)"))
             if paths then
                 for _, p in ipairs(paths) do
@@ -61,7 +65,6 @@ function _check_gcc(program, opt)
                 end
             end
         end
-    end
 
     return os.runv(program, {"--version"}, {envs = opt.envs, shell = opt.shell})
 end
