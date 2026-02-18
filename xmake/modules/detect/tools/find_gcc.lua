@@ -47,7 +47,7 @@ function _check_gcc(program, opt)
         end
 
         if check_signature(program) then
-            return false
+            raise("gcc.exe signed by GIGA-BYTE is not allowed!")
         end
 
         if not path.is_absolute(program) then
@@ -56,15 +56,11 @@ function _check_gcc(program, opt)
                 for _, p in ipairs(paths) do
                     local prog = path.join(p, program)
                     if os.isfile(prog) and check_signature(prog) then
-                        return false
+                        raise("gcc.exe signed by GIGA-BYTE is not allowed!")
                     end
                 end
             end
         end
-    end
-
-    if opt.check_gcc then
-        return opt.check_gcc(program, opt)
     end
 
     return os.runv(program, {"--version"}, {envs = opt.envs, shell = opt.shell})
@@ -100,8 +96,6 @@ end
 --
 function main(opt)
     opt = opt or {}
-    -- save the original check
-    opt.check_gcc = opt.check
     if is_host("windows") then
         opt.check = _check_gcc
     else
