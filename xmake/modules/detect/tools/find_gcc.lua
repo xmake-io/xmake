@@ -65,6 +65,7 @@ function _check_gcc(program, opt)
                 end
             end
         end
+    end
 
     return os.runv(program, {"--version"}, {envs = opt.envs, shell = opt.shell})
 end
