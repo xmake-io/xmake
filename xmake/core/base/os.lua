@@ -200,6 +200,15 @@ function os._ramdir()
     return ramdir_root or nil
 end
 
+-- if tmpdir_root is a symbolic link, os.tmpdir() may return a path that differs
+-- from the path style returned by os.curdir() (e.g. on Haiku).
+function os._resolve_tmpdir(tmpdir_root)
+    if os.islink(tmpdir_root) then
+        tmpdir_root = os.readlink(tmpdir_root) or tmpdir_root
+    end
+    return tmpdir_root
+end
+
 -- set on change environments callback for scheduler
 function os._sched_chenvs_set(envs)
     os._SCHED_CHENVS = envs
@@ -771,19 +780,14 @@ function os.tmpdir(opt)
         tmpdir_root = os._ROOT_TMPDIR
         if os._ROOT_TMPDIR == nil then
             tmpdir_root = (os.getenv("XMAKE_TMPDIR") or os.getenv("TMPDIR") or os._tmpdir()):trim()
-            -- TODO
-            if os.islink(tmpdir_root) then
-                tmpdir_root = os.readlink(tmpdir_root) or tmpdir_root
-            end
+            tmpdir_root = os._resolve_tmpdir(tmpdir_root)
             os._ROOT_TMPDIR = tmpdir_root
         end
     else
         tmpdir_root = os._ROOT_TMPDIR_RAM
         if os._ROOT_TMPDIR_RAM == nil then
             tmpdir_root = (os.getenv("XMAKE_TMPDIR") or os._ramdir() or os.getenv("TMPDIR") or os._tmpdir()):trim()
-            if os.islink(tmpdir_root) then
-                tmpdir_root = os.readlink(tmpdir_root) or tmpdir_root
-            end
+            tmpdir_root = os._resolve_tmpdir(tmpdir_root)
             os._ROOT_TMPDIR_RAM = tmpdir_root
         end
     end
