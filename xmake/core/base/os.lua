@@ -202,6 +202,12 @@ end
 
 -- if tmpdir_root is a symbolic link, os.tmpdir() may return a path that differs
 -- from the path style returned by os.curdir() (e.g. on Haiku).
+--
+-- Using a consistent root path can avoid errors in relative path resolution.
+--
+-- e.g.
+-- tmpdir: /tmp/.xmake0/260217/ -> /boot/system/cache/tmp/.xmake0/260217
+-- curdir: /boot/system/cache/tmp/.xmake0/260217
 function os._resolve_tmpdir(tmpdir_root)
     if os.islink(tmpdir_root) then
         tmpdir_root = os.readlink(tmpdir_root) or tmpdir_root
