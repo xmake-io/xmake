@@ -48,8 +48,8 @@ jobs:
           RUN_PROBABILITY: ${{ vars.HAIKU_RUN_PROBABILITY || '0.2' }}
 
   build:
-    #needs: check
-    #if: needs.check.outputs.should-run == 'true'
+    needs: check
+    if: needs.check.outputs.should-run == 'true'
     runs-on: ubuntu-latest
 
     concurrency:
