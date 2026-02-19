@@ -768,15 +768,24 @@ function os.tmpdir(opt)
     -- get root tmpdir
     local tmpdir_root = nil
     if opt and opt.ramdisk == false then
-        if os._ROOT_TMPDIR == nil then
-            os._ROOT_TMPDIR = (os.getenv("XMAKE_TMPDIR") or os.getenv("TMPDIR") or os._tmpdir()):trim()
-        end
         tmpdir_root = os._ROOT_TMPDIR
-    else
-        if os._ROOT_TMPDIR_RAM == nil then
-            os._ROOT_TMPDIR_RAM = (os.getenv("XMAKE_TMPDIR") or os._ramdir() or os.getenv("TMPDIR") or os._tmpdir()):trim()
+        if os._ROOT_TMPDIR == nil then
+            tmpdir_root = (os.getenv("XMAKE_TMPDIR") or os.getenv("TMPDIR") or os._tmpdir()):trim()
+            -- TODO
+            if os.islink(tmpdir_root) then
+                tmpdir_root = os.readlink(tmpdir_root) or tmpdir_root
+            end
+            os._ROOT_TMPDIR = tmpdir_root
         end
+    else
         tmpdir_root = os._ROOT_TMPDIR_RAM
+        if os._ROOT_TMPDIR_RAM == nil then
+            tmpdir_root = (os.getenv("XMAKE_TMPDIR") or os._ramdir() or os.getenv("TMPDIR") or os._tmpdir()):trim()
+            if os.islink(tmpdir_root) then
+                tmpdir_root = os.readlink(tmpdir_root) or tmpdir_root
+            end
+            os._ROOT_TMPDIR_RAM = tmpdir_root
+        end
     end
 
     -- make sub-directory name
