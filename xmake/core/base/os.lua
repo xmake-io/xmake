@@ -200,6 +200,21 @@ function os._ramdir()
     return ramdir_root or nil
 end
 
+-- if tmpdir_root is a symbolic link, os.tmpdir() may return a path that differs
+-- from the path style returned by os.curdir() (e.g. on Haiku).
+--
+-- Using a consistent root path can avoid errors in relative path resolution.
+--
+-- e.g.
+-- tmpdir: /tmp/.xmake0/260217/ -> /boot/system/cache/tmp/.xmake0/260217
+-- curdir: /boot/system/cache/tmp/.xmake0/260217
+function os._resolve_tmpdir(tmpdir_root)
+    if os.islink(tmpdir_root) then
+        tmpdir_root = os.readlink(tmpdir_root) or tmpdir_root
+    end
+    return tmpdir_root
+end
+
 -- set on change environments callback for scheduler
 function os._sched_chenvs_set(envs)
     os._SCHED_CHENVS = envs
@@ -768,15 +783,19 @@ function os.tmpdir(opt)
     -- get root tmpdir
     local tmpdir_root = nil
     if opt and opt.ramdisk == false then
-        if os._ROOT_TMPDIR == nil then
-            os._ROOT_TMPDIR = (os.getenv("XMAKE_TMPDIR") or os.getenv("TMPDIR") or os._tmpdir()):trim()
-        end
         tmpdir_root = os._ROOT_TMPDIR
-    else
-        if os._ROOT_TMPDIR_RAM == nil then
-            os._ROOT_TMPDIR_RAM = (os.getenv("XMAKE_TMPDIR") or os._ramdir() or os.getenv("TMPDIR") or os._tmpdir()):trim()
+        if os._ROOT_TMPDIR == nil then
+            tmpdir_root = (os.getenv("XMAKE_TMPDIR") or os.getenv("TMPDIR") or os._tmpdir()):trim()
+            tmpdir_root = os._resolve_tmpdir(tmpdir_root)
+            os._ROOT_TMPDIR = tmpdir_root
         end
+    else
         tmpdir_root = os._ROOT_TMPDIR_RAM
+        if os._ROOT_TMPDIR_RAM == nil then
+            tmpdir_root = (os.getenv("XMAKE_TMPDIR") or os._ramdir() or os.getenv("TMPDIR") or os._tmpdir()):trim()
+            tmpdir_root = os._resolve_tmpdir(tmpdir_root)
+            os._ROOT_TMPDIR_RAM = tmpdir_root
+        end
     end
 
     -- make sub-directory name

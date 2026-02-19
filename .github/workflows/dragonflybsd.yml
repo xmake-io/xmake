@@ -61,8 +61,8 @@ jobs:
 
     concurrency:
         # Prevent concurrent runs of the same workflow
-        group: DragonflyBSD-${{ github.event.repository.owner.login }}-${{ github.event.repository.name }}
-        cancel-in-progress: false
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-DragonflyBSD
+        cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:
@@ -84,4 +84,3 @@ jobs:
             xrepo --version
             xmake l os.meminfo
             xmake lua -v -D tests/run.lua
-
