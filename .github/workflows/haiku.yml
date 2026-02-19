@@ -75,5 +75,4 @@ jobs:
             export XMAKE_ROOT=y
             export PATH=`pwd`/dist/bin:$PATH
             xrepo --version
-            xmake l os.meminfo
             xmake lua -v -D tests/run.lua
