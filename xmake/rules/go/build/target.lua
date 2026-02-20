@@ -56,16 +56,13 @@ function build_sourcefiles(target, sourcebatch, opt)
     -- trace progress info
     progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", path.filename(targetfile))
 
-    -- trace verbose info
-    vprint(compinst:buildcmd(sourcefiles, targetfile, {target = target, compflags = compflags}))
-
     -- flush io buffer to update progress info
     io.flush()
 
     -- build it (compile and link in one step for Go)
     -- Go builds packages, so we need to change to the source directory
-    local srcdir = path.directory(sourcefiles[1])
     local projectdir = os.projectdir()
+    local srcdir = path.absolute(path.directory(sourcefiles[1]), projectdir)
 
     -- convert targetfile to absolute path before changing directory
     -- targetfile is relative to project directory, so use projectdir as base
@@ -82,10 +79,22 @@ function build_sourcefiles(target, sourcebatch, opt)
         table.insert(rel_sourcefiles, rel_sourcefile)
     end
 
-    local oldir = os.cd(srcdir)
+    -- trace verbose info
+    vprint(os.args(table.join("cd", srcdir)))
+    vprint(compinst:buildcmd(rel_sourcefiles, abs_targetfile, {target = target, compflags = compflags}))
+    vprint(os.args(table.join("cd", original_dir)))
+
+    local original_dir = os.cd(srcdir)
+
     dependinfo.files = {}
-    assert(compinst:build(rel_sourcefiles, abs_targetfile, {target = target, dependinfo = dependinfo, compflags = compflags}))
-    os.cd(oldir)
+    local ok, errmsg = compinst:build(rel_sourcefiles, abs_targetfile, {target = target, dependinfo = dependinfo, compflags = compflags})
+
+    -- restore the original working directory before asserting,
+    -- ensuring a consistent state for other tasks in the same process
+    -- even the build fails
+    os.cd(original_dir)
+
+    assert(ok, errmsg)
 
     -- update files and values to the dependent file
     dependinfo.values = depvalues
@@ -105,4 +114,3 @@ function main(target, opt)
         end
     end
 end
-
