@@ -37,6 +37,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
+
 // the file signature info type
 typedef struct __tb_file_signature_info_t {
     // is the file digitally signed?
@@ -46,9 +47,9 @@ typedef struct __tb_file_signature_info_t {
     tb_bool_t           is_trusted;
 
     /* the name of the signer (e.g., "Microsoft Corporation")
-       tbox uses UTF-8 by default for tb_char_t*/
+       tbox uses UTF-8 by default for tb_char_t
+     */
     tb_char_t           signer_name[256];
-
 } tb_file_signature_info_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +57,6 @@ typedef struct __tb_file_signature_info_t {
  */
 
 static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_signature_info_t* info) {
-    // check
     tb_assert_and_check_return_val(filepath && info, tb_false);
 
     // init info
@@ -64,8 +64,10 @@ static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_s
 
     // convert path
     tb_wchar_t wide_path[TB_PATH_MAXN];
-    if (!tb_path_absolute_w(filepath, wide_path, TB_PATH_MAXN)) return tb_false;
-
+    if (!tb_path_absolute_w(filepath, wide_path, TB_PATH_MAXN)) {
+        return tb_false;
+    }
+    
     // init file info
     WINTRUST_FILE_INFO file_data = {0};
     file_data.cbStruct = sizeof(file_data);
@@ -186,8 +188,6 @@ static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_s
  * }
  */
 tb_int_t xm_winos_file_signature(lua_State *lua) {
-    
-    // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments
