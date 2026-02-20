@@ -54,16 +54,6 @@ typedef struct __tb_file_signature_info_t {
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_wchar_t* tb_path_to_wchar(tb_char_t const* path, tb_wchar_t* buffer, tb_size_t size) {
-    // check
-    tb_assert_and_check_return_val(path && buffer && size, tb_null);
-
-    // convert
-    if (MultiByteToWideChar(CP_UTF8, 0, path, -1, buffer, (int)size) > 0)
-        return buffer;
-
-    return tb_null;
-}
 
 static tb_bool_t tb_file_get_signature_info(tb_char_t const* filepath, tb_file_signature_info_t* info) {
     // check

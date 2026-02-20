@@ -44,20 +44,8 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/5629
 function _check_gcc_on_windows(program, opt)
     opt = opt or {}
-    if path.is_absolute(program) then
-        if check_gcc_gigabyte(program) then
-            raise("gcc.exe signed by GIGA-BYTE is not allowed!")
-        end
-    else
-        local paths = path.splitenv(vformat("$(env PATH)"))
-        if paths then
-            for _, p in ipairs(paths) do
-                local prog = path.join(p, program)
-                if os.isfile(prog) and check_gcc_gigabyte(prog) then
-                    raise("gcc.exe signed by GIGA-BYTE is not allowed!")
-                end
-            end
-        end
+    if check_gcc_gigabyte(program) then
+        raise("gcc.exe signed by GIGA-BYTE is not allowed!")
     end
     return os.runv(program, {"--version"}, {envs = opt.envs, shell = opt.shell})
 end
