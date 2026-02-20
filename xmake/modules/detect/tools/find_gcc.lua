@@ -25,10 +25,18 @@ import("core.cache.detectcache")
 
 -- check gcc/gigabyte signature
 function check_gcc_gigabyte(program)
-    if os.isfile(program) then
+    local filepath = program
+    if path.is_absolute(filepath) then
+        filepath = path.translate(filepath)
+    end
+    -- we only check signature for gcc.exe
+    if not filepath:lower():endswith("gcc.exe") then
+        return
+    end
+    if os.isfile(filepath) then
         local signer = nil
         if winos.file_signature then
-            signer = winos.file_signature(program)
+            signer = winos.file_signature(filepath)
         end
         if signer and signer.signer_name then
             local signer_name = signer.signer_name:upper()
@@ -44,8 +52,20 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/5629
 function _check_gcc_on_windows(program, opt)
     opt = opt or {}
-    if check_gcc_gigabyte(program) then
-        raise("gcc.exe signed by GIGA-BYTE is not allowed!")
+    if path.is_absolute(program) then
+        if check_gcc_gigabyte(program) then
+            raise("gcc.exe signed by GIGA-BYTE is not allowed!")
+        end
+    else
+        local paths = path.splitenv(vformat("$(env PATH)"))
+        if paths then
+            for _, p in ipairs(paths) do
+                local prog = path.join(p, program)
+                if os.isfile(prog) and check_gcc_gigabyte(prog) then
+                    raise("gcc.exe signed by GIGA-BYTE is not allowed!")
+                end
+            end
+        end
     end
     return os.runv(program, {"--version"}, {envs = opt.envs, shell = opt.shell})
 end
