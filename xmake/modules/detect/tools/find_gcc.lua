@@ -25,18 +25,10 @@ import("core.cache.detectcache")
 
 -- check gcc/gigabyte signature
 function check_gcc_gigabyte(program)
-    local filepath = program
-    if path.is_absolute(filepath) then
-        filepath = path.translate(filepath)
-    end
-    -- we only check signature for gcc.exe
-    if not filepath:lower():endswith("gcc.exe") then
-        return
-    end
-    if os.isfile(filepath) then
+    if os.isfile(program) then
         local signer = nil
         if winos.file_signature then
-            signer = winos.file_signature(filepath)
+            signer = winos.file_signature(program)
         end
         if signer and signer.signer_name then
             local signer_name = signer.signer_name:upper()
