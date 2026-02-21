@@ -65,7 +65,7 @@ function _find_sdkdir(sdkdir, sdkver)
             table.insert(subdirs, path.join(sdkver or "*", subdir, "bin"))
         end
         table.insert(subdirs, path.join(sdkver or "*", "android", "bin"))
-    elseif is_plat("wasm") then
+    elseif is_plat("wasm", "wasi") then
         table.insert(subdirs, path.join(sdkver or "*", "wasm_*", "bin"))
     else
         table.insert(subdirs, path.join(sdkver or "*", "*", "bin"))
@@ -126,7 +126,7 @@ function _find_sdkdir(sdkdir, sdkver)
 
     -- special case for android on windows, where qmake is a .bat from version 6.3
     -- this case also applys to wasm
-    if is_host("windows") and is_plat("android", "wasm") then
+    if is_host("windows") and is_plat("android", "wasm", "wasi") then
         local qmake = find_file("qmake.bat", paths, {suffixes = subdirs})
         if qmake then
             return path.directory(path.directory(qmake)), qmake

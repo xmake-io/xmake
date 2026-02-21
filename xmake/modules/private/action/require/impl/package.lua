@@ -293,7 +293,7 @@ function _add_package_configurations(package)
     if package:extraconf("configs", "shared", "default") == nil then
         -- we always use static library if it's for wasm platform
         local readonly
-        if package:is_plat("wasm") then
+        if package:is_plat("wasm", "wasi") then
             readonly = true
         end
         local default = _get_default_config_value_of("shared")

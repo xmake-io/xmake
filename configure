@@ -3591,7 +3591,7 @@ _toolchain_detect() {
             else
                 toolchains="x86_64_w64_mingw32"
             fi
-        elif is_plat "wasm"; then
+        elif is_plat "wasm" "wasi"; then
             toolchains="emcc"
         elif is_plat "linux" && ! is_arch "${os_arch}"; then
             toolchains="envs"

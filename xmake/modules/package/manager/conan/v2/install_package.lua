@@ -193,7 +193,7 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         end
         conf = {}
         conf["tools.android:ndk_path"] = ndk:config("ndk")
-    elseif plat == "wasm" then
+    elseif plat == "wasm" or plat == "wasi" then
         local emsdk = find_emsdk()
         assert(emsdk and emsdk.emscripten, "emscripten not found!")
         local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))

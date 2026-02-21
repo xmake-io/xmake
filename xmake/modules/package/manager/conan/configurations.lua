@@ -33,7 +33,8 @@ function arch(arch)
                  ["arm64-v8a"]   = "armv8",  -- for android
                  mips            = "mips",
                  mips64          = "mips64",
-                 wasm32          = "wasm"}
+                 wasm32          = "wasm",
+                 wasi            = "wasm"}
     return assert(map[arch], "unknown arch(%s)!", arch)
 end
 

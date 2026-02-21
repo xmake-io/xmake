@@ -100,7 +100,7 @@ function _find_arch(plat, arch)
                 arch = appledev == "simulator" and os.arch() or "arm64"
             elseif plat == "watchos" then
                 arch = appledev == "simulator" and os.arch() or "armv7k"
-            elseif plat == "wasm" then
+            elseif plat == "wasm" or plat == "wasi" then
                 arch = "wasm32"
             elseif plat == "mingw" then
                 local mingw_chost = nil
