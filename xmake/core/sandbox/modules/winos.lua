@@ -36,6 +36,7 @@ sandbox_winos.cmdargv                 = winos.cmdargv
 sandbox_winos.processes               = winos.processes
 sandbox_winos.inherit_handles_safely  = winos.inherit_handles_safely
 sandbox_winos.set_error_mode          = winos.set_error_mode
+sandbox_winos.file_signature          = winos.file_signature
 
 -- get windows system version
 function sandbox_winos.version()

@@ -19,7 +19,7 @@ target "cli"
     if is_plat "macosx" && is_config "runtime" "luajit"; then
         add_ldflags "-all_load" "-pagezero_size 10000" "-image_base 100000000"
     elif is_plat "mingw"; then
-        add_ldflags "-static-libgcc"
+        add_ldflags "-static-libgcc" "-lwintrust" "-lcrypt32"
     fi
 
     # add install files
