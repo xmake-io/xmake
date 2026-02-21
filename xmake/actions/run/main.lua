@@ -33,6 +33,24 @@ import("private.detect.check_targetname")
 import("lib.detect.find_tool")
 import("private.action.utils", {alias = "action_utils"})
 
+function _run_wasi_target(targetfile, args, opt)
+    opt = opt or {}
+    local rundir = opt.rundir
+    local addenvs = opt.addenvs
+    local setenvs = opt.setenvs
+    local wasmtime = find_tool("wasmtime")
+    if wasmtime then
+        local runargs = {targetfile}
+        if args and #args > 0 then
+            table.join2(runargs, args)
+        end
+        os.execv(wasmtime.program, runargs, {
+            curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
+    else
+        raise("wasmtime not found, which is required for running wasi target!")
+    end
+end
+
 function _run_wasm_target_in_browser(targetfile, opt)
     opt = opt or {}
     local rundir = opt.rundir
@@ -78,6 +96,12 @@ function _do_run_target(target)
     -- run wasm target in browser
     if target:is_plat("wasm") then
         _run_wasm_target_in_browser(targetfile, {rundir = rundir, addenvs = addenvs, setenvs = setenvs})
+        return
+    end
+
+    -- run wasi target via wasmtime
+    if target:is_plat("wasi") then
+        _run_wasi_target(targetfile, args, {rundir = rundir, addenvs = addenvs, setenvs = setenvs})
         return
     end
 
