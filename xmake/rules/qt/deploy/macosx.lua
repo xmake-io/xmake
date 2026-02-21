@@ -166,7 +166,10 @@ function main(target, opt)
     end
 
     -- do deploy
-    local argv = {target_app, "-always-overwrite"}
+    local argv = {target_app}
+    if target:is_rebuilt() then
+        table.insert(argv, "-always-overwrite")
+    end
     if option.get("diagnosis") then
         table.insert(argv, "-verbose=3")
     elseif option.get("verbose") then
