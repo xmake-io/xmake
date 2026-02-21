@@ -754,7 +754,7 @@ function _get_configs_for_generator(package, configs, opt)
     elseif package:is_plat("windows") then
         table.insert(configs, "-G")
         table.insert(configs, _get_cmake_generator_for_msvc(package))
-    elseif package:is_plat("wasm") and is_subhost("windows") then
+    elseif package:is_plat("wasm", "wasi") and is_subhost("windows") then
         table.insert(configs, "-G")
         table.insert(configs, "MinGW Makefiles")
     else
@@ -894,7 +894,7 @@ function _get_envs_for_flags(package, configs, opt)
         if package:has_tool("cxx", "clang", "clang_cl") then
             platform_envs.CMAKE_CXX_FLAGS = _get_cxxflags(package, table.join({cross = true}, opt))
         end
-    elseif package:is_plat("wasm") then
+    elseif package:is_plat("wasm", "wasi") then
         -- pass toolchain flags cross-compilation
         -- @see https://github.com/xmake-io/xmake/issues/6690
         opt.cross = true
@@ -929,7 +929,7 @@ function _get_configs(package, configs, opt)
         _get_configs_for_appleos(package, configs, opt)
     elseif package:is_plat("mingw") then
         _get_configs_for_mingw(package, configs, opt)
-    elseif package:is_plat("wasm") then
+    elseif package:is_plat("wasm", "wasi") then
         _get_configs_for_wasm(package, configs, opt)
     elseif package:is_cross() then
         _get_configs_for_cross(package, configs, opt)
@@ -1146,7 +1146,7 @@ function _install_for_make(package, configs, opt)
     if is_host("bsd") then
         os.vrunv("gmake", argv)
         os.vrunv("gmake", {"install"})
-    elseif is_subhost("windows") and package:is_plat("mingw", "wasm") then
+    elseif is_subhost("windows") and package:is_plat("mingw", "wasm", "wasi") then
         local mingw_make = assert(_get_mingw32_make(package), "mingw32-make.exe not found!")
         os.vrunv(mingw_make, argv)
         os.vrunv(mingw_make, {"install"})
@@ -1207,7 +1207,7 @@ function _get_cmake_generator(package, opt)
         if not cmake_generator then
             if package:has_tool("cc", "clang_cl") or package:has_tool("cxx", "clang_cl") then
                 cmake_generator = "Ninja"
-            elseif (is_subhost("windows") and package:is_plat("mingw", "wasm"))
+            elseif (is_subhost("windows") and package:is_plat("mingw", "wasm", "wasi"))
                 or (package:is_plat("windows") and is_host("linux")) then
                 local ninja = _get_ninja(package)
                 if ninja then

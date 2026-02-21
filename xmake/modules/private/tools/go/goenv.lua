@@ -38,7 +38,8 @@ function GOOS(plat)
         dragonfly = "dragonfly",
         solaris = "solaris",
         aix = "aix",
-        plan9 = "plan9"
+        plan9 = "plan9",
+        wasi = "wasip1"
     }
     return goos_map[plat]
 end
@@ -65,7 +66,8 @@ function GOARCH(arch)
         ppc64le = "ppc64le",
         riscv64 = "riscv64",
         s390x = "s390x",
-        wasm = "wasm"
+        wasm = "wasm",
+        wasm32 = "wasm"
     }
     
     -- try direct match first

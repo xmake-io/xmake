@@ -174,7 +174,7 @@ function _insert_cross_configs(package, file, opt)
         file:print("cpu_family = '%s'", cpu_family)
         file:print("cpu = '%s'", cpu)
         file:print("endian = 'little'")
-    elseif package:is_plat("wasm") then
+    elseif package:is_plat("wasm", "wasi") then
         file:print("system = 'emscripten'")
         file:print("cpu_family = '%s'", package:arch())
         file:print("cpu = '%s'", package:arch())
@@ -375,7 +375,7 @@ function _get_configs(package, configs, opt)
     end
 
     -- add cross file
-    if package:is_cross() or package:is_plat("mingw") then
+    if package:is_cross() or package:is_plat("mingw", "wasm", "wasi") then
         table.insert(configs, "--cross-file=" .. _get_configs_file(package, opt))
     elseif package:config("toolchains") then
         if _is_toolchain_compatible_with_host(package) then

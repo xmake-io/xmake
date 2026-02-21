@@ -58,7 +58,7 @@ function main(target)
         if QtPlatformSupport then
             table.insert(frameworks, QtPlatformSupport)
         end
-    elseif target:is_plat("wasm") then
+    elseif target:is_plat("wasm", "wasi") then
         plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
         if qt_sdkver:ge("6.0") then
             table.join2(frameworks, "QtOpenGL")

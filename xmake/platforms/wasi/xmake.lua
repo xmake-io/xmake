@@ -18,17 +18,15 @@
 -- @file        xmake.lua
 --
 
--- @see https://github.com/xmake-io/xmake/issues/3613
-rule("platform.wasm.preloadfiles")
-    on_load("wasm", "wasi", function (target)
-        if not target:is_binary() then
-            return
-        end
-        local preloadfiles = target:values("wasm.preloadfiles")
-        if preloadfiles then
-            for _, preloadfile in ipairs(preloadfiles) do
-                target:add("ldflags", {"--preload-file", preloadfile}, {force = true, expand = false})
-            end
-        end
-    end)
+platform("wasi")
+    set_os("wasi")
+    set_hosts("macosx", "linux", "windows", "bsd")
+    set_archs("wasm32", "wasm64")
 
+    set_formats("static", "lib$(name).a")
+    set_formats("object", "$(name).o")
+    set_formats("shared", "lib$(name).so")
+    set_formats("binary", "$(name).wasm")
+    set_formats("symbol", "$(name).sym")
+
+    set_toolchains("wasi")
