@@ -31,12 +31,8 @@ rule("qt._wasm_app")
                 os.vcp(path.join(pluginsdir, "platforms/wasm_shell.html"), htmlfile)
                 io.gsub(htmlfile, "@APPNAME@", target:name())
                 import("core.base.semver")
-                cprint("qt.sdkver: %s", qt.sdkver)
                 if qt.sdkver and semver.new(qt.sdkver):ge("6.0") then
-                    local data1, count1 = io.gsub(htmlfile, "@APPEXPORTNAME@", "createQtAppInstance")
-                    cprint("replaced APPEXPORTNAME: %s", count1)
-                    local data2, count2 = io.gsub(htmlfile, "@PRELOAD@", "")
-                    cprint("replaced PRELOAD: %s", count2)
+                    io.gsub(htmlfile, "@APPEXPORTNAME@", "createQtAppInstance")
                     local preload = ""
                     -- @see https://github.com/xmake-io/xmake/issues/6182
                     local preloadfiles = target:values("wasm.preloadfiles")
@@ -236,7 +232,6 @@ rule("qt.quickapp_static")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
-        print("qt.quickapp_static on_load")
         target:set("kind", target:is_plat("android") and "shared" or "binary")
     end)
 
