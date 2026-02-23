@@ -225,16 +225,24 @@ rule("csharp.build")
         elseif os.execv then
             os.execv("dotnet", argv, runopt)
         elseif os.vrun then
-            os.vrun(
-                "dotnet publish " .. _q(csprojfile) ..
+            local cmd = "dotnet publish " .. _q(csprojfile) ..
                 " --nologo --configuration " .. _q(configuration) ..
                 " --verbosity minimal --output " .. _q(install_abs)
+            if rid and target:is_binary() then
+                cmd = cmd .. " --runtime " .. _q(rid)
+            end
+            os.vrun(
+                cmd,
+                runopt
             )
         elseif os.run then
-            os.run("dotnet publish " .. _q(csprojfile) ..
-            " --nologo --configuration " .. _q(configuration) ..
-            " --verbosity minimal --output " .. _q(install_abs)
-            )
+            local cmd = "dotnet publish " .. _q(csprojfile) ..
+                " --nologo --configuration " .. _q(configuration) ..
+                " --verbosity minimal --output " .. _q(install_abs)
+            if rid and target:is_binary() then
+                cmd = cmd .. " --runtime " .. _q(rid)
+            end
+            os.run(cmd, runopt)
         else
             local targetdir = target:targetdir()
             if targetdir and os.isdir(targetdir) then
