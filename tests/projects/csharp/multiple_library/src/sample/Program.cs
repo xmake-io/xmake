@@ -1,3 +1,3 @@
-﻿using LibBeta;
+using LibBeta;
 
 Console.WriteLine(Beta.Message());
