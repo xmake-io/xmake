@@ -134,6 +134,12 @@ function _buildparams(info, target, default)
         elseif args.fileobj then
             local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".obj", ".o"}))
+        elseif args.filecs then
+            local files = info._targets[target].sourcefiles
+            table.insert(r, _filter_files(files, {".cs"}))
+        elseif args.filecsproj then
+            local files = info._targets[target].sourcefiles
+            table.insert(r, _filter_files(files, {".csproj"}))
         elseif args.filerc then
             local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".rc"}))

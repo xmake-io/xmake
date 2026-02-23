@@ -104,6 +104,23 @@ function _get_flags_from_target(target, name)
     return target_utils.translate_flags_in_tool(target, name, flags)
 end
 
+function _has_native_c_family_sources(target)
+    local exts = hashset.from({
+        ".c", ".cc", ".cpp", ".cxx", ".c++", ".m", ".mm", ".mpp", ".mxx", ".ixx", ".cppm", ".ccm", ".cxxm", ".c++m", ".cu"
+    })
+    for _, sourcefile in ipairs(target:sourcefiles()) do
+        local ext = path.extension(sourcefile)
+        if ext and exts:has(ext:lower()) then
+            return true
+        end
+    end
+    return false
+end
+
+function _is_csharp_target(target)
+    return target:rule("csharp")
+end
+
 -- make target info
 function _make_targetinfo(mode, arch, target)
 
@@ -146,9 +163,16 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
 
     -- save flags
-    targetinfo.cflags        = _make_arrs(_get_flags_from_target(target, "cflags"), " ")
-    targetinfo.cxflags       = _make_arrs(_get_flags_from_target(target, "cxflags"), " ")
-    targetinfo.cxxflags      = _make_arrs(_get_flags_from_target(target, "cxxflags"), " ")
+    if _has_native_c_family_sources(target) then
+        targetinfo.cflags    = _make_arrs(_get_flags_from_target(target, "cflags"), " ")
+        targetinfo.cxflags   = _make_arrs(_get_flags_from_target(target, "cxflags"), " ")
+        targetinfo.cxxflags  = _make_arrs(_get_flags_from_target(target, "cxxflags"), " ")
+    else
+        targetinfo.cflags    = ""
+        targetinfo.cxflags   = ""
+        targetinfo.cxxflags  = ""
+    end
+    targetinfo.sln_project_platform = _is_csharp_target(target) and "Any CPU" or targetinfo.vsarch
 
     -- save languages
     targetinfo.languages     = _make_arrs(_get_values_from_target(target, "languages"))
@@ -161,10 +185,12 @@ function _make_targetinfo(mode, arch, target)
     end
 
     -- save subsystem
-    local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
-    for _, linkflag in ipairs(linkflags) do
-        if linkflag:lower():find("[%-/]subsystem:windows") then
-            targetinfo.subsystem = "windows"
+    if not _is_csharp_target(target) then
+        local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
+        for _, linkflag in ipairs(linkflags) do
+            if linkflag:lower():find("[%-/]subsystem:windows") then
+                targetinfo.subsystem = "windows"
+            end
         end
     end
     if not targetinfo.subsystem then
@@ -493,6 +519,9 @@ function main(outputdir, vsinfo)
                 _target.vcxprojdir = path.join(vsinfo.vcxproj_rootdir, targetname)
                 _target.vcxprojdir_relative_sln = vsutils.translate_path(path.relative(_target.vcxprojdir, vsinfo.solution_dir))
                 _target.target_id = hash.uuid4(targetname)
+                -- GUID for Windows (Visual C++)
+                _target.sln_project_type_guid = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
+                _target.sln_project_file = vsutils.translate_path(path.join(_target.vcxprojdir_relative_sln, _target.targetname_inpath .. ".vcxproj"))
                 _target.kind = target:kind()
                 _target.absscriptdir = target:scriptdir()
                 _target.scriptdir = path.relative(target:scriptdir(), _target.vcxprojdir)
@@ -505,6 +534,24 @@ function main(outputdir, vsinfo)
                 _target._targets[mode][arch] = targetinfo
                 _target.sdkver = targetinfo.sdkver
                 _target.default = targetinfo.default
+
+                if _is_csharp_target(target) then
+                    local csprojfiles = {}
+                    for _, sourcefile in ipairs(target:sourcefiles()) do
+                        if path.extension(sourcefile):lower() == ".csproj" then
+                            table.insert(csprojfiles, sourcefile)
+                        end
+                    end
+                    assert(#csprojfiles > 0, "target(%s): csharp requires one .csproj in add_files()!", target:name())
+                    assert(#csprojfiles == 1, "target(%s): csharp only supports one .csproj file!", target:name())
+                    local csprojfile = csprojfiles[1]
+                    local csprojabs = path.is_absolute(csprojfile) and csprojfile or path.absolute(csprojfile, project.directory())
+                    assert(os.isfile(csprojabs), "target(%s): csharp .csproj not found: %s", target:name(), csprojfile)
+                    -- https://vsixcommunity.github.io/Community.VisualStudio.Toolkit/v1/api/EnvDTE.ProjectTypes.html
+                    -- GUID for C# (Visual C#)
+                    _target.sln_project_type_guid = "9A19103F-16F7-4668-BE54-9A1E7A4F7556"
+                    _target.sln_project_file = vsutils.translate_path(path.relative(csprojabs, vsinfo.solution_dir))
+                end
 
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
