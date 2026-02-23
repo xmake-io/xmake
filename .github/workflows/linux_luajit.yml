@@ -60,8 +60,8 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
         # Prevent concurrent runs of the same workflow
-        group: Linux-Luajit-${{ github.event.repository.owner.login }}-${{ github.event.repository.name }}
-        cancel-in-progress: false
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Linux-Luajit
+        cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:
@@ -90,4 +90,3 @@ jobs:
         run: |
           xmake lua -v -D tests/run.lua
           xrepo --version
-

@@ -281,6 +281,10 @@ end
 
 -- get configs for wasm
 function _get_configs_for_wasm(configs)
+    if config.get("toolchain") == "wasi" then
+        _get_configs_for_cross(configs)
+        return
+    end
     local emsdk = find_emsdk()
     assert(emsdk and emsdk.emscripten, "emscripten not found!")
     local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))

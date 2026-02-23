@@ -23,6 +23,33 @@ import("lib.detect.find_program")
 import("lib.detect.find_programver")
 import("core.cache.detectcache")
 
+-- check gcc/gigabyte signature
+function check_gcc_gigabyte(program)
+    if os.isfile(program) then
+        local signer = nil
+        if winos.file_signature then
+            signer = winos.file_signature(program)
+        end
+        if signer and signer.signer_name then
+            local signer_name = signer.signer_name:upper()
+            if signer_name:find("GIGA-BYTE", 1, true) then
+                return true
+            end
+        end
+    end
+end
+
+-- check gigabyte gcc
+-- avoid gcc.exe signed by GIGA-BYTE
+-- @see https://github.com/xmake-io/xmake/issues/5629
+function _check_gcc_on_windows(program, opt)
+    opt = opt or {}
+    if check_gcc_gigabyte(program) then
+        raise("gcc.exe signed by GIGA-BYTE is not allowed!")
+    end
+    return os.runv(program, {"--version"}, {envs = opt.envs, shell = opt.shell})
+end
+
 -- detect whether the current gcc compiler is clang
 function check_clang(program, opt)
     local is_clang = false
@@ -53,7 +80,11 @@ end
 --
 function main(opt)
     opt = opt or {}
-    opt.norunfile = true
+    if is_host("windows") then
+        opt.check = _check_gcc_on_windows
+    else
+        opt.norunfile = true
+    end
     local program = find_program(opt.program or "gcc", opt)
     local version = nil
     if program and opt.version then
