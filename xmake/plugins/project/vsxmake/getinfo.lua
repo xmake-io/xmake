@@ -121,6 +121,30 @@ function _is_csharp_target(target)
     return target:rule("csharp")
 end
 
+function _has_explicit_archs_configured()
+    if option.get("arch") or option.get("archs") then
+        return true
+    end
+    local project_archs = project.get("target.arch")
+    if project_archs then
+        if type(project_archs) == "table" then
+            return #project_archs > 0
+        end
+        return #tostring(project_archs) > 0
+    end
+    return false
+end
+
+function _get_sln_project_platform(target, default_platform)
+    if _is_csharp_target(target) then
+        if _has_explicit_archs_configured() then
+            return default_platform
+        end
+        return "Any CPU"
+    end
+    return default_platform
+end
+
 -- make target info
 function _make_targetinfo(mode, arch, target)
 
@@ -172,7 +196,7 @@ function _make_targetinfo(mode, arch, target)
         targetinfo.cxflags   = ""
         targetinfo.cxxflags  = ""
     end
-    targetinfo.sln_project_platform = _is_csharp_target(target) and "Any CPU" or targetinfo.vsarch
+    targetinfo.sln_project_platform = _get_sln_project_platform(target, targetinfo.vsarch)
 
     -- save languages
     targetinfo.languages     = _make_arrs(_get_values_from_target(target, "languages"))
