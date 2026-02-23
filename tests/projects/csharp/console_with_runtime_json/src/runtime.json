@@ -1,0 +1,7 @@
+{
+  "runtime": "xmake",
+  "featureFlags": {
+    "sample": true
+  }
+}
+
