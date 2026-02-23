@@ -193,14 +193,7 @@ rule("qt.widgetapp")
         if qt_sdkver and qt_sdkver:lt("5.0") then
             frameworks = {"QtGui", "QtCore"} -- qt4.x has not QtWidgets, it is in QtGui
         end
-
-        local plugins = {}
-        if target:is_plat("wasm") then
-            local static_frameworks, static_plugins = import("config_static")(target)
-            table.join2(frameworks, static_frameworks)
-            plugins = static_plugins
-        end
-        import("load")(target, {gui = true, frameworks = frameworks, plugins = plugins})
+        import("load")(target, {gui = true, frameworks = frameworks})
     end)
 
     -- deploy application
@@ -258,14 +251,7 @@ rule("qt.quickapp")
     end)
 
     on_config(function (target)
-        local frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore", "QtNetwork"}
-        local plugins = {}
-        if target:is_plat("wasm") then
-            local static_frameworks, static_plugins = import("config_static")(target)
-            table.join2(frameworks, static_frameworks)
-            plugins = static_plugins
-        end
-        import("load")(target, {gui = true, frameworks = frameworks, plugins = plugins})
+        import("load")(target, {gui = true, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore", "QtNetwork"}})
     end)
 
     -- deploy application
