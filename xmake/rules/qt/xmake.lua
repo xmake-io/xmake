@@ -31,7 +31,8 @@ rule("qt._wasm_app")
                 os.vcp(path.join(pluginsdir, "platforms/wasm_shell.html"), htmlfile)
                 io.gsub(htmlfile, "@APPNAME@", target:name())
                 import("core.base.semver")
-                if qt.sdkver and semver.new(qt.sdkver):ge("6.0") then
+                local qt_sdkver = qt.sdkver or target:data("qt_sdkver")
+                if qt_sdkver and semver.new(qt_sdkver):ge("6.0") then
                     io.gsub(htmlfile, "@APPEXPORTNAME@", "createQtAppInstance")
                     local preload = ""
                     -- @see https://github.com/xmake-io/xmake/issues/6182

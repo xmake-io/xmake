@@ -278,15 +278,24 @@ function main(target, opt)
     local plugins = target:values("qt.plugins")
     if plugins then
         local importfile = path.join(config.builddir(), ".qt", "plugin", target:name(), "static_import.cpp")
-        local file = io.open(importfile, "w")
-        if file then
-            file:print("#include <QtPlugin>")
-            for _, plugin in ipairs(plugins) do
-                file:print("Q_IMPORT_PLUGIN(%s)", plugin)
-            end
-            file:close()
-            target:add("files", importfile)
+        local content = "#include <QtPlugin>\n"
+        for _, plugin in ipairs(plugins) do
+            content = content .. string.format("Q_IMPORT_PLUGIN(%s)\n", plugin)
         end
+        
+        local old_content = ""
+        if os.isfile(importfile) then
+            old_content = io.readfile(importfile)
+        end
+        
+        if old_content ~= content then
+            local file = io.open(importfile, "w")
+            if file then
+                file:write(content)
+                file:close()
+            end
+        end
+        target:add("files", importfile)
     end
 
     -- backup the user syslinks, we need to add them behind the qt syslinks
@@ -505,12 +514,12 @@ function main(target, opt)
             -- FS is required for qtloader.js even if we don't use preload files
             target:add("ldflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets,FS,callMain,cwrap,ccall,setValue,getValue,UTF8ToString,stringToUTF8")
             -- @see https://github.com/emscripten-core/emscripten/issues/21844 Export main and emscripten_thread_crashed for qtloader.js
-            target:add("ldflags", "-s EXPORTED_FUNCTIONS=_main", {force = true})
+            target:add("ldflags", "-s EXPORTED_FUNCTIONS=_main,_malloc,_free")
             target:add("ldflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
             target:add("shflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s ASSERTIONS=0")
             target:add("shflags", "-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
             target:add("shflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets,FS,callMain,cwrap,ccall,setValue,getValue,UTF8ToString,stringToUTF8")
-            target:add("shflags", "-s EXPORTED_FUNCTIONS=_main", {force = true})
+            target:add("shflags", "-s EXPORTED_FUNCTIONS=_main,_malloc,_free")
             target:add("shflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
             target:set("extension", ".js")
         else
