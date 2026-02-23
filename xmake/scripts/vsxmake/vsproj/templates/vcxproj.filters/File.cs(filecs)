@@ -1,0 +1,3 @@
+    <None Include="#path#">
+      <Filter>#dir#</Filter>
+    </None>

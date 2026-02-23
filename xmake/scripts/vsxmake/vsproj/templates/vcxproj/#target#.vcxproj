@@ -42,11 +42,13 @@
 #Import(File.cxx)#
 #Import(File.mpp)#
 #Import(File.cu)#
+#Import(File.cs)#
   </ItemGroup>
   <ItemGroup>
 #Import(File.obj)#
   </ItemGroup>
   <ItemGroup>
+#Import(File.csproj)#
 #Import(File.rc)#
 #Import(File.ui)#
 #Import(File.qrc)#
