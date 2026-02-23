@@ -522,17 +522,18 @@ function main(target, opt)
         target:add("shflags", "-s FETCH=1", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s ALLOW_MEMORY_GROWTH=1", "--bind")
         if qt_sdkver:ge("6.0") then
             -- @see https://github.com/xmake-io/xmake/issues/4137
-            target:add("ldflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s ASSERTIONS=0")
+            -- @see QtWasmHelpers.cmake: qt_internal_setup_wasm_target_properties
+            target:add("ldflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s STACK_SIZE=5MB")
             target:add("ldflags", "-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
             -- FS is required for qtloader.js even if we don't use preload files
             target:add("ldflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets,FS,callMain,cwrap,ccall,setValue,getValue,UTF8ToString,stringToUTF8")
             -- @see https://github.com/emscripten-core/emscripten/issues/21844 Export main and emscripten_thread_crashed for qtloader.js
-            target:add("ldflags", "-s EXPORTED_FUNCTIONS=_main,_malloc,_free")
+            target:add("ldflags", "-s EXPORTED_FUNCTIONS=_main,_malloc,_free,__embind_initialize_bindings", {force = true})
             target:add("ldflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
-            target:add("shflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s ASSERTIONS=0")
+            target:add("shflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s STACK_SIZE=5MB")
             target:add("shflags", "-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
             target:add("shflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets,FS,callMain,cwrap,ccall,setValue,getValue,UTF8ToString,stringToUTF8")
-            target:add("shflags", "-s EXPORTED_FUNCTIONS=_main,_malloc,_free")
+            target:add("shflags", "-s EXPORTED_FUNCTIONS=_main,_malloc,_free,__embind_initialize_bindings", {force = true})
             target:add("shflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
             target:set("extension", ".js")
         else
