@@ -98,6 +98,9 @@ function _add_plugins(target, plugins)
         if plugin.linkdirs then
             target:values_add("qt.linkdirs", table.unpack(table.wrap(plugin.linkdirs)))
         end
+        if plugin.resources then
+            target:values_add("qt.plugin_resources", table.unpack(table.wrap(plugin.resources)))
+        end
         -- TODO: add prebuilt object files in qt sdk.
         -- these file is located at plugins/xxx/objects-Release/xxxPlugin_init/xxxPlugin_init.cpp.o
     end
@@ -283,6 +286,16 @@ function main(target, opt)
             content = content .. string.format("Q_IMPORT_PLUGIN(%s)\n", plugin)
         end
         
+        local plugin_resources = target:values("qt.plugin_resources")
+        if plugin_resources then
+            content = content .. "int init_qt_plugin_resources() {\n"
+            for _, res in ipairs(table.unique(plugin_resources)) do
+                content = content .. string.format("    Q_INIT_RESOURCE(%s);\n", res)
+            end
+            content = content .. "    return 0;\n}\n"
+            content = content .. "static int s_init_qt_plugin_resources = init_qt_plugin_resources();\n"
+        end
+
         local old_content = ""
         if os.isfile(importfile) then
             old_content = io.readfile(importfile)
