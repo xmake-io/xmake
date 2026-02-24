@@ -201,6 +201,10 @@ rule("csharp.build")
         local csprojfile = csprojfiles[1]
         local csprojabs = path.is_absolute(csprojfile) and csprojfile or path.absolute(csprojfile, os.projectdir())
         assert(os.isfile(csprojabs), "target(%s): csharp .csproj not found: %s", target:name(), csprojfile)
+
+        if not target:get("filename") and not target:get("basename") then
+            target:set("basename", path.basename(csprojabs))
+        end
         target:data_set("csharp.csproj", csprojabs)
     end)
 
@@ -239,6 +243,8 @@ rule("csharp.build")
 
         local targetfile = target:targetfile()
         if targetfile then
+            local sourcefiles = target:sourcefiles()
+            batchcmds:add_depfiles(sourcefiles)
             batchcmds:set_depmtime(os.mtime(targetfile))
             batchcmds:set_depcache(target:dependfile(targetfile))
         end
