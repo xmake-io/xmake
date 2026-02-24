@@ -18,6 +18,21 @@
 -- @file        xmake.lua
 --
 
+-- define rule: build csharp target with dotnet
+--
+-- @code
+-- target("app")
+--     set_kind("binary") -- or "shared"
+--     add_rules("csharp")
+--     add_files("src/*.cs", "src/app.csproj")
+--
+--     -- optional: override runtime identifier (arch-specific) for self-contained publish (e.g. "win-x64", "linux-x64", "osx-x64", "osx-arm64")
+--     -- add_values("csharp.runtime_identifier", "win-x64")
+--
+--     -- optional: dotnet verbosity (quiet|minimal|normal|detailed|diagnostic)
+--     -- set_policy("build.csharp.dotnet_verbosity", "minimal")
+-- @endcode
+--
 rule("csharp")
     set_extensions(".cs", ".csproj")
     set_sourcekinds("cs", "csproj", {objectfiles = false})
