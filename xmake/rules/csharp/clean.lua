@@ -15,14 +15,26 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      JassJam
--- @file        xmake.lua
+-- @file        clean.lua
 --
 
-rule("csharp")
-    set_extensions(".cs", ".csproj")
-    set_sourcekinds("cs", "csproj", {objectfiles = false})
-    on_load("load")
-    on_buildcmd("buildcmd")
-    on_clean("clean")
-    on_install("install")
-    on_installcmd("installcmd")
+import("target.action.clean", {alias = "_do_clean_target"})
+local csharp_common = import("csharp_common", {anonymous = true})
+
+function main(target, opt)
+    _do_clean_target(target)
+
+    local targetfile = target:targetfile()
+    if targetfile then
+        os.tryrm(target:dependfile(targetfile))
+    end
+    os.tryrm(target:targetdir())
+
+    -- also remove the bin/obj folders next to the .csproj file
+    local csprojfile = csharp_common.find_csproj(target)
+    if csprojfile then
+        local csprojdir = path.directory(csprojfile)
+        os.tryrm(path.join(csprojdir, "bin"))
+        os.tryrm(path.join(csprojdir, "obj"))
+    end
+end
