@@ -123,6 +123,8 @@ function policy.policies()
             ["build.distcc.remote_only"]          = {description = "Enable build on only remote machines.", default = false, type = "boolean"},
             -- Set the build progress output style, e.g. scroll (default), singlerow, multirow
             ["build.progress_style"]              = {description = "Set the build progress output style.", type = "string", values = {"scroll", "singlerow", "multirow"}},
+            -- Set dotnet verbosity for csharp rule, e.g. quiet|minimal|normal|detailed|diagnostic
+            ["build.csharp.dotnet_verbosity"]     = {description = "Set dotnet verbosity for csharp rule.", type = "string", values = {"quiet", "minimal", "normal", "detailed", "diagnostic"}},
             -- Enable windows UAC and set level, e.g. invoker, admin, highest
             ["windows.manifest.uac"]              = {description = "Enable windows manifest UAC.", type = "string"},
             -- Enable ui access for windows UAC
