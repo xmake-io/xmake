@@ -112,6 +112,37 @@ rule("csharp.build")
         end
     end
 
+    local function _get_dotnet_runopt(csprojfile)
+        return {
+            curdir = path.directory(csprojfile),
+            envs = {
+                DOTNET_NOLOGO = "1",
+                DOTNET_CLI_TELEMETRY_OPTOUT = "1",
+                DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1",
+                DOTNET_GENERATE_ASPNET_CERTIFICATE = "0",
+                DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = "0"
+            }
+        }
+    end
+
+    local function _get_dotnet_verbosity(target)
+        local verbosity = target:values("csharp.dotnet_verbosity")
+        if type(verbosity) == "table" then
+            verbosity = verbosity[1]
+        end
+        if not (verbosity and #verbosity > 0) then
+            verbosity = target:policy("build.csharp.dotnet_verbosity")
+        end
+        if verbosity and #verbosity > 0 then
+            verbosity = verbosity:lower()
+            if table.contains({"quiet", "minimal", "normal", "detailed", "diagnostic"}, verbosity) then
+                return verbosity
+            end
+            raise("target(%s): invalid csharp.dotnet_verbosity(%s), expected one of: quiet|minimal|normal|detailed|diagnostic", target:name(), verbosity)
+        end
+        return "quiet"
+    end
+
     local function _get_dotnet_program(target)
         local function _get_configured_program(toolkind)
             if target:get("toolset." .. toolkind) then
@@ -177,12 +208,13 @@ rule("csharp.build")
         local csprojfile = assert(_find_csproj(target), "target(%s): missing csharp .csproj file!", target:name())
         local dotnet = _get_dotnet_program(target)
         local configuration = _build_mode_to_configuration()
+        local verbosity = _get_dotnet_verbosity(target)
         local command = target:is_binary() and "publish" or "build"
         local argv = {
             command, csprojfile,
             "--nologo",
             "--configuration", configuration,
-            "--verbosity", "minimal"
+            "--verbosity", verbosity
         }
 
         local targetdir = target:targetdir()
@@ -203,7 +235,7 @@ rule("csharp.build")
             batchcmds:mkdir(targetdirabs)
         end
 
-        batchcmds:vrunv(dotnet, argv, {curdir = path.directory(csprojfile)})
+        batchcmds:vrunv(dotnet, argv, _get_dotnet_runopt(csprojfile))
 
         local targetfile = target:targetfile()
         if targetfile then
@@ -233,6 +265,7 @@ rule("csharp.build")
         local csprojfile = assert(_find_csproj(target), "target(%s): missing csharp .csproj file!", target:name())
         local dotnet = _get_dotnet_program(target)
         local configuration = _build_mode_to_configuration()
+        local verbosity = _get_dotnet_verbosity(target)
 
         local install_path = target:installdir()
         if target:is_binary() then
@@ -253,7 +286,7 @@ rule("csharp.build")
             "publish", csprojfile,
             "--nologo",
             "--configuration", configuration,
-            "--verbosity", "minimal",
+            "--verbosity", verbosity,
             "--output", install_abs
         }
 
@@ -262,7 +295,7 @@ rule("csharp.build")
         end
         _append_target_flags(target, argv)
 
-        local runopt = {curdir = path.directory(csprojfile)}
+        local runopt = _get_dotnet_runopt(csprojfile)
         if os.vrunv then
             os.vrunv(dotnet, argv, runopt)
         elseif os.runv then
@@ -303,6 +336,7 @@ rule("csharp.build")
         local csprojfile = assert(_find_csproj(target), "target(%s): missing csharp .csproj file!", target:name())
         local dotnet = _get_dotnet_program(target)
         local configuration = _build_mode_to_configuration()
+        local verbosity = _get_dotnet_verbosity(target)
 
         local install_path = target:installdir()
         if target:is_binary() then
@@ -316,7 +350,7 @@ rule("csharp.build")
             "publish", csprojfile,
             "--nologo",
             "--configuration", configuration,
-            "--verbosity", "minimal"
+            "--verbosity", verbosity
         }
         if install_path and #install_path > 0 then
             install_abs = path.is_absolute(install_path) and install_path or path.absolute(install_path, os.projectdir())
@@ -334,7 +368,7 @@ rule("csharp.build")
             batchcmds:mkdir(install_abs)
         end
 
-        batchcmds:vrunv(dotnet, argv, {curdir = path.directory(csprojfile)})
+        batchcmds:vrunv(dotnet, argv, _get_dotnet_runopt(csprojfile))
     end)
 
 rule("csharp")
