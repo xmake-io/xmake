@@ -296,18 +296,10 @@ function main(target, opt)
             content = content .. "static int s_init_qt_plugin_resources = init_qt_plugin_resources();\n"
         end
 
-        local old_content = ""
-        if os.isfile(importfile) then
-            old_content = io.readfile(importfile)
-        end
-        
-        if old_content ~= content then
-            local file = io.open(importfile, "w")
-            if file then
-                file:write(content)
-                file:close()
-            end
-        end
+        local importfile_tmp = os.tmpfile()
+        io.writefile(importfile_tmp, content)
+        os.cp(importfile_tmp, importfile, {copy_if_different = true})
+        os.tryrm(importfile_tmp)
         target:add("files", importfile)
     end
 
