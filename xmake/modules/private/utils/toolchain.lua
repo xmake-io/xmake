@@ -343,34 +343,47 @@ function map_linkflags_for_package(package, targetkind, sourcekinds, name, value
     return flags
 end
 
--- get llvm sdk resource directory
-function get_llvm_resourcedir(toolchain)
-    local memcache = toolchain:memcache()
-    local cachekey = "get_llvm_resourcedir"
-    local llvm_resourcedir = memcache:get(cachekey)
-    if llvm_resourcedir == nil then
-        local cc = toolchain:tool("cc")
-        if cc then
-            local outdata = try { function() return os.iorunv(cc, {"-print-resource-dir"}) end }
-            if outdata then
-                llvm_resourcedir = path.normalize(outdata:trim())
-                if not os.isdir(llvm_resourcedir) then
-                    llvm_resourcedir = nil
-                end
-            end
-        end
-        memcache:set(cachekey, llvm_resourcedir or false)
+-- Check and cache llvm/clang driver info (e.g. -print-resource-dir/-print-target-triple) in toolchain:config().
+-- It must be collected during toolchain on_check so that toolchain on_load can use it without running clang again.
+-- @see https://github.com/xmake-io/xmake/issues/7337#issuecomment-3942499208
+function check_llvm_info(toolchain, clang, opt)
+    opt = opt or {}
+    if not clang then
+        return
     end
-    return llvm_resourcedir or nil
+
+    local envs = opt.envs
+    local resourcedir = try {function () return os.iorunv(clang, {"-print-resource-dir"}, {envs = envs}) end}
+    if resourcedir then
+        resourcedir = path.normalize(resourcedir:trim())
+        dprint("checking for llvm resource dir ... %s", resourcedir)
+        if #resourcedir > 0 and os.isdir(resourcedir) then
+            toolchain:config_set("llvm_resourcedir", resourcedir)
+        end
+    end
+
+    local target_triple = try {function () return os.iorunv(clang, {"-print-target-triple"}, {envs = envs}) end}
+    if target_triple then
+        target_triple = target_triple:trim()
+        dprint("checking for llvm target triple ... %s", target_triple)
+        if #target_triple > 0 then
+            toolchain:config_set("llvm_target_triple", target_triple)
+        end
+    end
+end
+
+-- get llvm sdk resource directory
+function _get_llvm_resourcedir(toolchain)
+    return toolchain:config("llvm_resourcedir") or nil
 end
 
 -- get llvm sdk root directory
-function get_llvm_rootdir(toolchain)
+function _get_llvm_rootdir(toolchain)
     local memcache = toolchain:memcache()
     local cachekey = "get_llvm_rootdir"
     local llvm_rootdir = memcache:get(cachekey)
     if llvm_rootdir == nil then
-        local resourcedir = get_llvm_resourcedir(toolchain)
+        local resourcedir = _get_llvm_resourcedir(toolchain)
         if resourcedir then
             llvm_rootdir = path.normalize(path.join(resourcedir, "..", "..", ".."))
             if not os.isdir(llvm_rootdir) then
@@ -383,17 +396,17 @@ function get_llvm_rootdir(toolchain)
 end
 
 -- get compiler-rt info
-function get_llvm_compiler_rtinfo(toolchain)
+function _get_llvm_compiler_rtinfo(toolchain)
     local memcache = toolchain:memcache()
     local cachekey = "get_llvm_compiler_rtinfo"
     local rtinfo = memcache:get(cachekey)
     if rtinfo == nil then
-        local resourcedir = get_llvm_resourcedir(toolchain)
+        local resourcedir = _get_llvm_resourcedir(toolchain)
         if resourcedir  then
             local res_libdir = path.join(resourcedir, "lib")
             -- when -DLLVM_ENABLE_TARGET_RUNTIME_DIR=OFF rtdir is windows/ and rtlink is clang_rt.builtins_<arch>.lib
             -- when ON rtdir is windows/<target-triple> and rtlink is clang_rt.builtins.lib
-            local target_triple = get_llvm_target_triple(toolchain)
+            local target_triple = _get_llvm_target_triple(toolchain)
             local arch = target_triple and target_triple:split("-")[1]
 
             local plat
@@ -428,21 +441,8 @@ function get_llvm_compiler_rtinfo(toolchain)
 end
 
 -- get llvm target triple
-function get_llvm_target_triple(toolchain)
-    local memcache = toolchain:memcache()
-    local cachekey = "get_llvm_target_triple"
-    local llvm_targettriple = memcache:get(cachekey)
-    if llvm_targettriple == nil then
-        local cc = toolchain:tool("cc")
-        if cc then
-            local outdata = try { function() return os.iorunv(cc, {"-print-target-triple"}) end }
-            if outdata then
-                llvm_targettriple = outdata:trim()
-            end
-        end
-        memcache:set(cachekey, llvm_targettriple or false)
-    end
-    return llvm_targettriple or nil
+function _get_llvm_target_triple(toolchain)
+    return toolchain:config("llvm_target_triple") or nil
 end
 
 -- get llvm toolchain dirs
@@ -453,7 +453,7 @@ function get_llvm_dirs(toolchain)
     if llvm_dirs == nil then
         local rootdir = toolchain:sdkdir()
         if not rootdir and (toolchain:is_plat("windows") or is_host("windows")) then
-            rootdir = get_llvm_rootdir(toolchain)
+            rootdir = _get_llvm_rootdir(toolchain)
         end
 
         local bindir, libdir, cxxlibdir, includedir, cxxincludedir, resourcedir, rtdir, rtlink, rtlibdir
@@ -468,8 +468,11 @@ function get_llvm_dirs(toolchain)
                 cxxlibdir = path.join(libdir, "c++")
                 cxxlibdir = os.isdir(cxxlibdir) and cxxlibdir or nil
                 if not cxxlibdir then
-                    cxxlibdir = path.join(libdir, get_llvm_target_triple(toolchain))
-                    cxxlibdir = os.isdir(cxxlibdir) and cxxlibdir or nil
+                    local target_triple = _get_llvm_target_triple(toolchain)
+                    if target_triple then
+                        cxxlibdir = path.join(libdir, target_triple)
+                        cxxlibdir = os.isdir(cxxlibdir) and cxxlibdir or nil
+                    end
                 end
             end
 
@@ -481,8 +484,8 @@ function get_llvm_dirs(toolchain)
                 cxxincludedir = os.isdir(cxxincludedir) and cxxincludedir or nil
             end
 
-            resourcedir = get_llvm_resourcedir(toolchain)
-            local rtinfo = get_llvm_compiler_rtinfo(toolchain)
+            resourcedir = _get_llvm_resourcedir(toolchain)
+            local rtinfo = _get_llvm_compiler_rtinfo(toolchain)
             if rtinfo then
                 rtdir = rtinfo.rtdir
                 rtlink = rtinfo.rtlink
