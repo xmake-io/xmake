@@ -142,6 +142,30 @@ function _get_frameworks_from_target(target)
     return table.unique(values)
 end
 
+-- generate static plugin import file
+function _generate_plugin_import(target)
+    local plugins = target:values("qt.plugins")
+    if not plugins then
+        return
+    end
+    local importfile = path.join(config.builddir(), ".qt", "plugin", target:name(), "static_import.cpp")
+    local content = "#include <QtPlugin>\n"
+    for _, plugin in ipairs(plugins) do
+        content = content .. string.format("Q_IMPORT_PLUGIN(%s)\n", plugin)
+    end
+    local plugin_resources = target:values("qt.plugin_resources")
+    if plugin_resources then
+        content = content .. "int init_qt_plugin_resources() {\n"
+        for _, res in ipairs(table.unique(plugin_resources)) do
+            content = content .. string.format("    Q_INIT_RESOURCE(%s);\n", res)
+        end
+        content = content .. "    return 0;\n}\n"
+        content = content .. "static int s_init_qt_plugin_resources = init_qt_plugin_resources();\n"
+    end
+    io.writefile(importfile, content)
+    target:add("files", importfile)
+end
+
 function _add_qmakeprllibs(target, prlfile, qt)
     if os.isfile(prlfile) then
         local contents = io.readfile(prlfile)
@@ -278,30 +302,7 @@ function main(target, opt)
     if opt.plugins then
         _add_plugins(target, opt.plugins)
     end
-    local plugins = target:values("qt.plugins")
-    if plugins then
-        local importfile = path.join(config.builddir(), ".qt", "plugin", target:name(), "static_import.cpp")
-        local content = "#include <QtPlugin>\n"
-        for _, plugin in ipairs(plugins) do
-            content = content .. string.format("Q_IMPORT_PLUGIN(%s)\n", plugin)
-        end
-        
-        local plugin_resources = target:values("qt.plugin_resources")
-        if plugin_resources then
-            content = content .. "int init_qt_plugin_resources() {\n"
-            for _, res in ipairs(table.unique(plugin_resources)) do
-                content = content .. string.format("    Q_INIT_RESOURCE(%s);\n", res)
-            end
-            content = content .. "    return 0;\n}\n"
-            content = content .. "static int s_init_qt_plugin_resources = init_qt_plugin_resources();\n"
-        end
-
-        local importfile_tmp = os.tmpfile()
-        io.writefile(importfile_tmp, content)
-        os.cp(importfile_tmp, importfile, {copy_if_different = true})
-        os.tryrm(importfile_tmp)
-        target:add("files", importfile)
-    end
+    _generate_plugin_import(target)
 
     -- backup the user syslinks, we need to add them behind the qt syslinks
     local syslinks_user = target:get("syslinks")
