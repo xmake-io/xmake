@@ -141,7 +141,7 @@ function main(toolchain)
         toolchain:config_set("bindir", cross_toolchain.bindir)
         toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
         local clang = path.join(cross_toolchain.bindir, is_host("windows") and "clang.exe" or "clang")
-        toolchain_utils.check_llvm_info(toolchain, clang)
+        toolchain_utils.check_llvm_info(toolchain, os.isfile(clang) and clang or nil)
     else
         wprint("llvm toolchain not found!")
         return false
