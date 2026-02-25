@@ -24,7 +24,7 @@ function main(target, batchcmds, opt)
     local csprojfile = assert(csharp_common.find_csproj(target), "target(%s): missing csharp .csproj file!", target:name())
     local dotnet = csharp_common.get_dotnet_program(target)
     local configuration = csharp_common.build_mode_to_configuration()
-    local verbosity = csharp_common.get_dotnet_verbosity(target)
+    local verbosity = csharp_common.get_dotnet_verbosity()
 
     local install_path = target:installdir()
     if target:is_binary() then
