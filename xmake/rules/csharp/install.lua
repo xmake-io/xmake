@@ -18,7 +18,7 @@
 -- @file        install.lua
 --
 
-local csharp_common = import("csharp_common", {anonymous = true})
+import("csharp_common")
 
 function main(target, opt)
     local function _q(arg)

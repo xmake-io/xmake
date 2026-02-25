@@ -19,7 +19,7 @@
 --
 
 import("target.action.clean", {alias = "_do_clean_target"})
-local csharp_common = import("csharp_common", {anonymous = true})
+import("csharp_common")
 
 function main(target, opt)
     _do_clean_target(target)
