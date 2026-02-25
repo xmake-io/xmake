@@ -18,6 +18,8 @@
 -- @file        csharp_common.lua
 --
 
+import("core.base.option")
+
 function _map_rid_arch(arch)
     arch = (arch or ""):lower()
     if arch == "x64" or arch == "x86_64" or arch == "amd64" then
@@ -121,20 +123,9 @@ function get_dotnet_runopt(csprojfile)
     }
 end
 
-function get_dotnet_verbosity(target)
-    local verbosity = target:values("csharp.dotnet_verbosity")
-    if type(verbosity) == "table" then
-        verbosity = verbosity[1]
-    end
-    if not (verbosity and #verbosity > 0) then
-        verbosity = target:policy("build.csharp.dotnet_verbosity")
-    end
-    if verbosity and #verbosity > 0 then
-        verbosity = verbosity:lower()
-        if table.contains({"quiet", "minimal", "normal", "detailed", "diagnostic"}, verbosity) then
-            return verbosity
-        end
-        raise("target(%s): invalid csharp.dotnet_verbosity(%s), expected one of: quiet|minimal|normal|detailed|diagnostic", target:name(), verbosity)
+function get_dotnet_verbosity()
+    if option.get("diagnosis") then
+        return "diagnostic"
     end
     return "quiet"
 end

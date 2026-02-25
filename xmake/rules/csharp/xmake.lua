@@ -28,9 +28,6 @@
 --
 --     -- optional: override runtime identifier (arch-specific) for self-contained publish (e.g. "win-x64", "linux-x64", "osx-x64", "osx-arm64")
 --     -- add_values("csharp.runtime_identifier", "win-x64")
---
---     -- optional: dotnet verbosity (quiet|minimal|normal|detailed|diagnostic)
---     -- set_policy("build.csharp.dotnet_verbosity", "minimal")
 -- @endcode
 --
 rule("csharp")
