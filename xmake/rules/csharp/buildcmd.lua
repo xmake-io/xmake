@@ -18,7 +18,7 @@
 -- @file        buildcmd.lua
 --
 
-local csharp_common = import("csharp_common", {anonymous = true})
+import("csharp_common")
 
 function main(target, batchcmds, opt)
     local csprojfile = assert(csharp_common.find_csproj(target), "target(%s): missing csharp .csproj file!", target:name())

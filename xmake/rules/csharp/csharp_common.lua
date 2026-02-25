@@ -18,7 +18,7 @@
 -- @file        csharp_common.lua
 --
 
-local function _map_rid_arch(arch)
+function _map_rid_arch(arch)
     arch = (arch or ""):lower()
     if arch == "x64" or arch == "x86_64" or arch == "amd64" then
         return "x64"
