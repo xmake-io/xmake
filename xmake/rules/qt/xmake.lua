@@ -21,20 +21,7 @@
 -- define rule: qt/wasm application
 rule("qt._wasm_app")
     add_deps("qt.env")
-    after_build(function (target)
-        local qt = target:data("qt")
-        local pluginsdir = qt and qt.pluginsdir
-        if pluginsdir then
-            local targetdir = target:targetdir()
-            local htmlfile = path.join(targetdir, target:basename() .. ".html")
-            if os.isfile(path.join(pluginsdir, "platforms/wasm_shell.html")) then
-                os.vcp(path.join(pluginsdir, "platforms/wasm_shell.html"), htmlfile)
-                io.gsub(htmlfile, "@APPNAME@", target:name())
-                os.vcp(path.join(pluginsdir, "platforms/qtloader.js"), targetdir)
-                os.vcp(path.join(pluginsdir, "platforms/qtlogo.svg"), targetdir)
-            end
-        end
-    end)
+    after_build("build_qt_wasm_app")
 
 -- define rule: qt static library
 rule("qt.static")

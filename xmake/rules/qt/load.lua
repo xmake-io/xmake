@@ -98,6 +98,9 @@ function _add_plugins(target, plugins)
         if plugin.linkdirs then
             target:values_add("qt.linkdirs", table.unpack(table.wrap(plugin.linkdirs)))
         end
+        if plugin.resources then
+            target:values_add("qt.plugin_resources", table.unpack(table.wrap(plugin.resources)))
+        end
         -- TODO: add prebuilt object files in qt sdk.
         -- these file is located at plugins/xxx/objects-Release/xxxPlugin_init/xxxPlugin_init.cpp.o
     end
@@ -137,6 +140,30 @@ function _get_frameworks_from_target(target)
         table.join2(values, value)
     end
     return table.unique(values)
+end
+
+-- generate static plugin import file
+function _generate_plugin_import(target)
+    local plugins = target:values("qt.plugins")
+    if not plugins then
+        return
+    end
+    local importfile = path.join(config.builddir(), ".qt", "plugin", target:name(), "static_import.cpp")
+    local content = "#include <QtPlugin>\n"
+    for _, plugin in ipairs(plugins) do
+        content = content .. string.format("Q_IMPORT_PLUGIN(%s)\n", plugin)
+    end
+    local plugin_resources = target:values("qt.plugin_resources")
+    if plugin_resources then
+        content = content .. "int init_qt_plugin_resources() {\n"
+        for _, res in ipairs(table.unique(plugin_resources)) do
+            content = content .. string.format("    Q_INIT_RESOURCE(%s);\n", res)
+        end
+        content = content .. "    return 0;\n}\n"
+        content = content .. "static int s_init_qt_plugin_resources = init_qt_plugin_resources();\n"
+    end
+    io.writefile(importfile, content)
+    target:add("files", importfile)
 end
 
 function _add_qmakeprllibs(target, prlfile, qt)
@@ -275,19 +302,7 @@ function main(target, opt)
     if opt.plugins then
         _add_plugins(target, opt.plugins)
     end
-    local plugins = target:values("qt.plugins")
-    if plugins then
-        local importfile = path.join(config.builddir(), ".qt", "plugin", target:name(), "static_import.cpp")
-        local file = io.open(importfile, "w")
-        if file then
-            file:print("#include <QtPlugin>")
-            for _, plugin in ipairs(plugins) do
-                file:print("Q_IMPORT_PLUGIN(%s)", plugin)
-            end
-            file:close()
-            target:add("files", importfile)
-        end
-    end
+    _generate_plugin_import(target)
 
     -- backup the user syslinks, we need to add them behind the qt syslinks
     local syslinks_user = target:get("syslinks")
@@ -500,13 +515,18 @@ function main(target, opt)
         target:add("shflags", "-s FETCH=1", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s ALLOW_MEMORY_GROWTH=1", "--bind")
         if qt_sdkver:ge("6.0") then
             -- @see https://github.com/xmake-io/xmake/issues/4137
-            target:add("ldflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s DISABLE_EXCEPTION_CATCHING=1")
+            -- @see QtWasmHelpers.cmake: qt_internal_setup_wasm_target_properties
+            target:add("ldflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s STACK_SIZE=5MB")
             target:add("ldflags", "-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
-            target:add("ldflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets")
+            -- @see Qt6WasmMacros.cmake: _qt_internal_add_wasm_extra_exported_methods
+            target:add("ldflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets,FS,callMain")
+            -- @see https://github.com/emscripten-core/emscripten/issues/21844
+            target:add("ldflags", "-s EXPORTED_FUNCTIONS=_main,__embind_initialize_bindings", {force = true})
             target:add("ldflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
-            target:add("shflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s DISABLE_EXCEPTION_CATCHING=1")
+            target:add("shflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s STACK_SIZE=5MB")
             target:add("shflags", "-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
-            target:add("shflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets")
+            target:add("shflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets,FS,callMain")
+            target:add("shflags", "-s EXPORTED_FUNCTIONS=_main,__embind_initialize_bindings", {force = true})
             target:add("shflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
             target:set("extension", ".js")
         else

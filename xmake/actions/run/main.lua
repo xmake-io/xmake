@@ -56,9 +56,15 @@ function _run_wasm_target_in_browser(targetfile, opt)
     local rundir = opt.rundir
     local addenvs = opt.addenvs
     local setenvs = opt.setenvs
+    -- prefer the .html file over .js for browser targets
+    -- @see https://github.com/xmake-io/xmake/issues/7340
+    local htmlfile = targetfile:gsub("%.js$", ".html")
+    if htmlfile ~= targetfile and os.isfile(htmlfile) then
+        targetfile = htmlfile
+    end
     local emrun = find_tool("emrun")
     if emrun then
-        os.execv(emrun.program, {targetfile}, {
+        os.execv(emrun.program, {"--serve_root", path.directory(targetfile), targetfile}, {
             curdir = rundir, detach = option.get("detach"), addenvs = addenvs, setenvs = setenvs})
     else
         local python = find_tool("python3")
