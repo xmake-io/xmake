@@ -120,6 +120,7 @@ function strip_flags(target, flags, opt)
     for _, flag in ipairs(splitted_strippeable_flags) do
         table.insert(strippeable_flags, flag)
         splitted_strippeable_flags_set:insert("/" .. flag)
+        splitted_strippeable_flags_set:insert("--" .. flag)
         splitted_strippeable_flags_set:insert("-" .. flag)
     end
 
@@ -133,11 +134,11 @@ function strip_flags(target, flags, opt)
             strip_next_flag = false
         else
             for _, _flag in ipairs(strippeable_flags) do
-                if (flag == "/" .. _flag) or (flag == "-" .. _flag) then
+                if (flag == "/" .. _flag) or (flag == "--" .. _flag) or (flag == "-" .. _flag) then
                     strip = true
                     strip_next_flag = splitted_strippeable_flags_set:has(flag)
                     break
-                elseif flag:startswith("/" .. _flag) or flag:startswith("-" .. _flag) then
+                elseif flag:startswith("/" .. _flag) or flag:startswith("--" .. _flag) or flag:startswith("-" .. _flag) then
                     strip = true
                     break
                 end

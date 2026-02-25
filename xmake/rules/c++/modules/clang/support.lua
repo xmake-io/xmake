@@ -131,7 +131,8 @@ function strippeable_flags()
         "Q",
         "fmodule-file",
         "fPIC",
-        "fsanitize"
+        "fsanitize",
+        "embed-dir"
     }
     local splitted_strippeable_flags = {
         "I",
