@@ -269,10 +269,7 @@ function _instance:_build_deps()
             -- {public = false} only blocks transitive inheritance (not direct)
             -- @see https://github.com/xmake-io/xmake/issues/7079
             if t ~= self then
-                local deppublic = t:extraconf("deps", dep:name(), "public")
-                if deppublic == nil then
-                    deppublic = t:extraconf("deps", dep:fullname(), "public")
-                end
+                local deppublic = t:extraconf("deps", dep:name(), "public") or t:extraconf("deps", dep:fullname(), "public")
                 if deppublic ~= nil and not deppublic then
                     return false
                 end
