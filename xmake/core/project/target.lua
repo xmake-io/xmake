@@ -263,7 +263,21 @@ function _instance:_build_deps()
             if depinherit == nil then
                 depinherit = t:extraconf("deps", dep:fullname(), "inherit")
             end
-            return depinherit == nil or depinherit
+            if depinherit ~= nil and not depinherit then
+                return false
+            end
+            -- {public = false} only blocks transitive inheritance (not direct)
+            -- @see https://github.com/xmake-io/xmake/issues/7341
+            if t ~= self then
+                local deppublic = t:extraconf("deps", dep:name(), "public")
+                if deppublic == nil then
+                    deppublic = t:extraconf("deps", dep:fullname(), "public")
+                end
+                if deppublic ~= nil and not deppublic then
+                    return false
+                end
+            end
+            return true
         end)
     end
 end
