@@ -40,8 +40,9 @@ function find_user_outdir(fileconfig)
 end
 
 function jar_build(target, fileconfig, opt)
-    local javac = assert(find_tool("javac"), "javac not found!")
-    local jar = assert(find_tool("jar"), "jar not found!")
+    -- compatible with JDK 1.8
+    local javac = assert(find_tool("javac", {check = "-version"}), "javac not found!")
+    local jar = assert(find_tool("jar", {check = function (tool) end}), "jar not found!")
 
     local java_src_dir = path.join(target:autogendir(), "rules", "swig")
     local java_class_dir = java_src_dir
@@ -66,7 +67,7 @@ function jar_build(target, fileconfig, opt)
 
     -- compile to class file
     progress.show(opt.progress, "${color.build.object}compiling.javac %s class file", target:name())
-    os.vrunv(javac.program, {"--release", "17", "-d", java_class_dir, "@" .. filelistname})
+    os.vrunv(javac.program, {"-d", java_class_dir, "@" .. filelistname})
 
     -- generate jar file
     progress.show(opt.progress, "${color.build.object}compiling.jar %s", target:name() .. ".jar")
