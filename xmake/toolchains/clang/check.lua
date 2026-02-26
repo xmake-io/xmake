@@ -32,6 +32,7 @@ function _check_clang(toolchain, vcvars, suffix)
     local result = find_tool("clang" .. suffix, {force = true, paths = paths, envs = vcvars})
     if result then
         cprint("checking for LLVM Clang C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
+        toolchain_utils.check_llvm_info(toolchain, result.program, {envs = vcvars})
     end
     return result
 end
@@ -72,6 +73,9 @@ function main(toolchain, suffix)
     if toolchain:is_plat("windows") then
         return _check_for_windows(toolchain, suffix)
     end
-    return find_tool("clang", {program = "clang" .. suffix})
+    local result = find_tool("clang", {program = "clang" .. suffix})
+    if result then
+        toolchain_utils.check_llvm_info(toolchain, result.program)
+    end
+    return result
 end
-

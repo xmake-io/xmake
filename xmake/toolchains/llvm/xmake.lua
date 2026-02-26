@@ -113,7 +113,7 @@ toolchain("llvm")
                 toolchain:config_set("xcode_sysroot", sdkdir)
             end
             -- load configurations
-            import(".xcode.load_" .. toolchain:plat())(toolchain)
+            import(".xcode.load")(toolchain)
         elseif toolchain:is_plat("cross") then
             local sysroot
             local sdkdir = toolchain:sdkdir()
