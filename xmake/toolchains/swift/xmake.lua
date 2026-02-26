@@ -43,6 +43,6 @@ toolchain("swift")
                 end
             end
             -- load configurations
-            import(".xcode.load_" .. toolchain:plat())(toolchain)
+            import(".xcode.load")(toolchain)
         end
     end)
