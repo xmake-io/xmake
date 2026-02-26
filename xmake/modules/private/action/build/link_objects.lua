@@ -36,6 +36,7 @@ function _do_link_target(target, opt)
     local depfiles = target_buildutils.get_linkdepfiles(target)
     local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
+    table.sort(depfiles)
     depend.on_changed(function ()
         local filename = target:filename()
         if target:namespace() then
