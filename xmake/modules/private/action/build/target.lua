@@ -733,10 +733,8 @@ function get_linkdepfiles(target)
         table.join2(extrafiles, linkdepfiles)
     end
     local objectfiles = target:objectfiles()
-    local depfiles = objectfiles
-    if #extrafiles > 0 then
-        depfiles = table.join(objectfiles, extrafiles)
-    end
+    local depfiles = table.join(objectfiles, extrafiles)
+    table.sort(depfiles)
     return depfiles
 end
 
