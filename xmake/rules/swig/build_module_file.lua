@@ -66,7 +66,7 @@ function jar_build(target, fileconfig, opt)
 
     -- compile to class file
     progress.show(opt.progress, "${color.build.object}compiling.javac %s class file", target:name())
-    os.vrunv(javac.program, {"--release", "17", "-d", java_class_dir, "@" .. filelistname})
+    os.vrunv(javac.program, {"-d", java_class_dir, "@" .. filelistname})
 
     -- generate jar file
     progress.show(opt.progress, "${color.build.object}compiling.jar %s", target:name() .. ".jar")
