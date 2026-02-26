@@ -722,18 +722,16 @@ end
 
 -- get link depfiles
 function get_linkdepfiles(target)
-    local extrafiles = {}
+    local depfiles = table.clone(target:objectfiles())
     for _, dep in ipairs(target:orderdeps()) do
         if dep:kind() == "static" then
-            table.insert(extrafiles, dep:targetfile())
+            table.insert(depfiles, dep:targetfile())
         end
     end
     local linkdepfiles = target:data("linkdepfiles")
     if linkdepfiles then
-        table.join2(extrafiles, linkdepfiles)
+        table.join2(depfiles, linkdepfiles)
     end
-    local objectfiles = target:objectfiles()
-    local depfiles = table.join(objectfiles, extrafiles)
     table.sort(depfiles)
     return depfiles
 end
