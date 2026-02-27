@@ -66,7 +66,13 @@ function jar_build(target, fileconfig, opt)
 
     -- compile to class file
     progress.show(opt.progress, "${color.build.object}compiling.javac %s class file", target:name())
-    os.vrunv(javac.program, {"-d", java_class_dir, "@" .. filelistname})
+    local argv = {"-d", java_class_dir, "@" .. filelistname}
+    local java_release = target:extraconf("rules", "swig.c", "java_release") or target:extraconf("rules", "swig.cpp", "java_release")
+    if java_release then
+        table.insert(argv, 1, tostring(java_release))
+        table.insert(argv, 1, "--release")
+    end
+    os.vrunv(javac.program, argv)
 
     -- generate jar file
     progress.show(opt.progress, "${color.build.object}compiling.jar %s", target:name() .. ".jar")
