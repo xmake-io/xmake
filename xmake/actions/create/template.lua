@@ -18,9 +18,11 @@
 -- @file        template.lua
 --
 
+-- imports
 import("core.base.global")
 import("core.base.hashset")
 
+-- some builtin template variables in xmake.lua
 function builtinvars(targetname)
     return {TARGETNAME = targetname,
             FAQ = function() return io.readfile(path.join(os.programdir(), "scripts", "faq.lua")) end}
@@ -34,7 +36,7 @@ function rootdirs()
         table.insert(results, dir)
     end
     dir = path.join(os.programdir(), "templates")
-    if os.isdir(dir) and not table.contains(results, dir) then
+    if os.isdir(dir) then
         table.insert(results, dir)
     end
     return results
