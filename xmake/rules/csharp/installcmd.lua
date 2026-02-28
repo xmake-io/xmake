@@ -18,10 +18,10 @@
 -- @file        installcmd.lua
 --
 
-import("csharp_common")
+import("modules.csharp_common", {rootdir = os.scriptdir(), alias = "csharp_common"})
 
 function main(target, batchcmds, opt)
-    local csprojfile = assert(csharp_common.find_csproj(target), "target(%s): missing csharp .csproj file!", target:name())
+    local csprojfile = assert(csharp_common.find_or_generate_csproj(target), "target(%s): missing csharp .csproj file!", target:name())
     local dotnet = csharp_common.get_dotnet_program(target)
     local configuration = csharp_common.build_mode_to_configuration()
     local verbosity = csharp_common.get_dotnet_verbosity()

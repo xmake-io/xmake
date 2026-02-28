@@ -18,6 +18,8 @@
 -- @file        load.lua
 --
 
+import("modules.csharp_common", {rootdir = os.scriptdir(), alias = "csharp_common"})
+
 function main(target)
     local targetdir = target:targetdir()
     if targetdir and path.filename(targetdir) ~= target:name() then
@@ -40,12 +42,21 @@ function main(target)
             table.insert(csprojfiles, sourcefile)
         end
     end
-    assert(#csprojfiles > 0, "target(%s): csharp requires one .csproj in add_files()!", target:name())
-    assert(#csprojfiles == 1, "target(%s): csharp only supports one .csproj file!", target:name())
+    assert(#csprojfiles <= 1, "target(%s): csharp only supports one .csproj file!", target:name())
 
-    local csprojfile = csprojfiles[1]
-    local csprojabs = path.is_absolute(csprojfile) and csprojfile or path.absolute(csprojfile, os.projectdir())
-    assert(os.isfile(csprojabs), "target(%s): csharp .csproj not found: %s", target:name(), csprojfile)
+    local csprojabs = nil
+    if #csprojfiles == 1 then
+        local csprojfile = csprojfiles[1]
+        local csprojpath = path.is_absolute(csprojfile) and csprojfile or path.absolute(csprojfile, os.projectdir())
+        if os.isfile(csprojpath) then
+            csprojabs = csprojpath
+        end
+    end
+
+    if not csprojabs then
+        csprojabs = csharp_common.find_or_generate_csproj(target, {skip_deps = true})
+    end
+    assert(csprojabs, "target(%s): csharp failed to resolve or generate .csproj file!", target:name())
 
     if not target:get("filename") and not target:get("basename") then
         target:set("basename", path.basename(csprojabs))

@@ -19,6 +19,28 @@
 --
 
 import("core.base.option")
+import("core.project.config")
+import("csproj_generator", {rootdir = os.scriptdir(), alias = "generate_csproj"})
+
+function _is_csharp_target(target)
+    if target:rule("csharp") then
+        return true
+    end
+    for _, sourcefile in ipairs(target:sourcefiles()) do
+        local ext = path.extension(sourcefile):lower()
+        if ext == ".cs" or ext == ".csproj" then
+            return true
+        end
+    end
+    return false
+end
+
+function _generated_csproj_path(target)
+    local targetkey = target:fullname():replace("::", path.sep())
+    local csprojdir = path.join(config.directory(), "rules", "csharp", targetkey, target:plat(), target:arch())
+    local csprojname = target:name() .. ".csproj"
+    return path.join(csprojdir, csprojname)
+end
 
 function _map_rid_arch(arch)
     arch = (arch or ""):lower()
@@ -50,6 +72,56 @@ function find_csproj(target)
         end
     end
     return nil
+end
+
+function find_or_generate_csproj(target, opt)
+    opt = opt or {}
+    local csproj = find_csproj(target)
+    local generated = target:data("csharp.csproj.generated")
+    local generated_with_deps = target:data("csharp.csproj.generated.with_deps")
+
+    -- prefer existing source .csproj directly
+    if csproj and not generated then
+        return csproj
+    end
+
+    -- generated .csproj in memory cache
+    if csproj and generated then
+        if opt.skip_deps or generated_with_deps then
+            return csproj
+        end
+    end
+
+    if not _is_csharp_target(target) then
+        return nil
+    end
+
+    local csprojfile = csproj or _generated_csproj_path(target)
+    local generated_now = false
+
+    -- in load phase (skip_deps), reuse existing generated file to avoid
+    -- touching mtime and causing unnecessary rebuilds.
+    if not (opt.skip_deps and os.isfile(csprojfile)) then
+        generate_csproj(target, csprojfile, table.join(opt, {
+            is_csharp_target = _is_csharp_target,
+            find_or_generate_csproj = find_or_generate_csproj
+        }))
+        generated_now = true
+    end
+
+    target:data_set("csharp.csproj", csprojfile)
+    target:data_set("csharp.csproj.generated", true)
+    if opt.skip_deps then
+        -- keep this conservative in load phase: build/install phase will
+        -- generate a deps-enabled project if needed, and content checks avoid
+        -- unnecessary rewrites.
+        if generated_now or generated_with_deps == nil then
+            target:data_set("csharp.csproj.generated.with_deps", false)
+        end
+    else
+        target:data_set("csharp.csproj.generated.with_deps", true)
+    end
+    return csprojfile
 end
 
 function build_mode_to_configuration()
