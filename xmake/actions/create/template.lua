@@ -21,6 +21,7 @@
 -- imports
 import("core.base.global")
 import("core.base.hashset")
+import("core.language.language")
 
 -- some builtin template variables in xmake.lua
 function builtinvars(targetname)
@@ -67,11 +68,25 @@ function copy_files(sourcedir, projectdir)
     return createdfiles
 end
 
+-- only replace variables in template source files and xmake.lua
+function _need_replace_variables(filepath)
+    if not os.isfile(filepath) then
+        return false
+    end
+    if path.filename(filepath) == "xmake.lua" then
+        return true
+    end
+    local extension = path.extension(filepath)
+    if extension then
+        return language.extensions()[extension:lower()] ~= nil
+    end
+end
+
 -- replace variables in files
 function replace_variables_in_files(files, vars)
     local pattern = "%${(.-)}"
     for _, file in ipairs(files) do
-        if os.isfile(file) and path.filename(file) == "xmake.lua" then
+        if _need_replace_variables(file) then
             io.gsub(file, "(" .. pattern .. ")", function(_, variable)
                 variable = variable:trim()
                 local value = vars[variable]
