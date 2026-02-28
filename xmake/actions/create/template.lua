@@ -73,7 +73,7 @@ function _need_replace_variables(filepath)
     if not os.isfile(filepath) then
         return false
     end
-    if path.filename(filepath) == "xmake.lua" then
+    if path.filename(filepath):lower() == "xmake.lua" then
         return true
     end
     local extension = path.extension(filepath)
