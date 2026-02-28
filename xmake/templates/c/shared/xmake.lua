@@ -4,7 +4,7 @@ target("foo")
     set_kind("shared")
     add_files("src/foo.c")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     set_kind("binary")
     add_deps("foo")
     add_files("src/main.c")

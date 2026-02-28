@@ -4,7 +4,7 @@ target("module")
     set_kind("static")
     add_files("src/module/*.go")
 
-target("${TARGETNAME}_demo")
+target("${TARGET_NAME}_demo")
     set_kind("binary")
     add_deps("module")
     add_files("src/*.go")

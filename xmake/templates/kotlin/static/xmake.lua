@@ -5,7 +5,7 @@ target("foo")
     add_files("src/foo.kt")
     set_toolchains("@kotlin-native")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     set_kind("binary")
     add_files("src/main.c")
     add_deps("foo")

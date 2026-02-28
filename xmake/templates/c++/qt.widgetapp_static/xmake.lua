@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 includes("@builtin/qt")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     add_rules("qt.widgetapp_static")
     add_headerfiles("src/*.h")
     add_files("src/*.cpp")

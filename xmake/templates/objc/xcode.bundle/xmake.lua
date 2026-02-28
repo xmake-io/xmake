@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     add_rules("xcode.bundle")
     add_files("src/*.m")
     add_files("src/Info.plist")

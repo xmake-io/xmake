@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     set_kind("shared")
     add_files("src/interfaces.d")
     add_includedirs("src", {public = true})
@@ -8,9 +8,9 @@ target("${TARGETNAME}")
       "add",
       "sub"}})
 
-target("${TARGETNAME}_demo")
+target("${TARGET_NAME}_demo")
     set_kind("binary")
-    add_deps("${TARGETNAME}")
+    add_deps("${TARGET_NAME}")
     add_files("src/main.d")
 
 ${FAQ}

@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     set_kind("shared")
     add_files("src/**.cu")
     add_includedirs("inc")

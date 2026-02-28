@@ -10,7 +10,7 @@ target("mymath")
     add_values("vala.vapi", "mymath-1.0.vapi")
     add_packages("glib")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     set_kind("binary")
     add_deps("mymath")
     add_rules("vala")

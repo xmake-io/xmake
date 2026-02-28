@@ -25,7 +25,7 @@ import("core.language.language")
 
 -- some builtin template variables in xmake.lua
 function builtinvars(targetname)
-    return {TARGETNAME = targetname,
+    return {TARGET_NAME = targetname,
             FAQ = function() return io.readfile(path.join(os.programdir(), "scripts", "faq.lua")) end}
 end
 

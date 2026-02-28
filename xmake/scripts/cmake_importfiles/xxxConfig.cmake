@@ -24,5 +24,5 @@ endmacro()
 
 ####################################################################################
 
-include("${CMAKE_CURRENT_LIST_DIR}/@TARGETNAME@Targets.cmake")
-check_required_components("@TARGETNAME@")
+include("${CMAKE_CURRENT_LIST_DIR}/@TARGET_NAME@Targets.cmake")
+check_required_components("@TARGET_NAME@")

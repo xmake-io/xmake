@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     set_kind("static")
     add_files("src/**.cu")
     add_includedirs("inc")

@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 add_moduledirs("modules")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     set_kind("binary")
     add_files("src/*.cpp")
     on_config(function (target)

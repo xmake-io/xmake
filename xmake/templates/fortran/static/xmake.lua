@@ -1,11 +1,11 @@
 add_rules("mode.debug", "mode.release")
 
-target("${TARGETNAME}_lib")
+target("${TARGET_NAME}_lib")
     set_kind("static")
     add_files("src/test.f90")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     set_kind("binary")
-    add_deps("${TARGETNAME}_lib")
+    add_deps("${TARGET_NAME}_lib")
     add_files("src/main.f90")
 

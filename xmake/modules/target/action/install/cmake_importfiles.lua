@@ -57,7 +57,7 @@ function _get_builtinvars(target, installdir, libdir)
         raise("target(%s): libdir(%s) is not in installdir(%s)", target:name(), libdir, installdir)
     end
     return {LIBDIR          = libsubdir,
-            TARGETNAME      = target:name(),
+            TARGET_NAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
             TARGETFILENAME  = target:targetfile() and _get_libfilename(target, libdir),
             TARGETKIND      = target:is_headeronly() and "INTERFACE" or (target:is_shared() and "SHARED" or "STATIC"),

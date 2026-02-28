@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 add_requires("lua", "glib")
 
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
     set_kind("binary")
     add_rules("vala")
     add_files("src/*.vala")

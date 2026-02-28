@@ -2,7 +2,7 @@
 add_rules("mode.debug", "mode.release")
 
 -- add target
-target("${TARGETNAME}")
+target("${TARGET_NAME}")
 
     -- set kind
     set_kind("binary")
