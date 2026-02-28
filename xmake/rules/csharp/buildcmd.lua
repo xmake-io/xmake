@@ -18,10 +18,35 @@
 -- @file        buildcmd.lua
 --
 
-import("csharp_common")
+import("modules.csharp_common", {rootdir = os.scriptdir(), alias = "csharp_common"})
+
+local function _get_output_mtime(target, targetfile, targetdirabs)
+    local mtime = targetfile and os.mtime(targetfile) or nil
+    if mtime then
+        return mtime
+    end
+
+    if targetdirabs and os.isdir(targetdirabs) then
+        -- dotnet can place outputs under tfm/rid subdirectories depending on
+        -- project properties, so scan recursively for a matching assembly name.
+        local basename = target:basename() or target:name()
+        for _, ext in ipairs({".exe", ".dll", ".so", ".dylib"}) do
+            for _, file in ipairs(os.files(path.join(targetdirabs, "**", basename .. ext))) do
+                local filemtime = os.mtime(file)
+                if filemtime and (not mtime or filemtime > mtime) then
+                    mtime = filemtime
+                end
+            end
+        end
+        if not mtime then
+            mtime = os.mtime(targetdirabs)
+        end
+    end
+    return mtime
+end
 
 function main(target, batchcmds, opt)
-    local csprojfile = assert(csharp_common.find_csproj(target), "target(%s): missing csharp .csproj file!", target:name())
+    local csprojfile = assert(csharp_common.find_or_generate_csproj(target), "target(%s): missing csharp .csproj file!", target:name())
     local dotnet = csharp_common.get_dotnet_program(target)
     local configuration = csharp_common.build_mode_to_configuration()
     local verbosity = csharp_common.get_dotnet_verbosity()
@@ -54,9 +79,10 @@ function main(target, batchcmds, opt)
 
     local targetfile = target:targetfile()
     if targetfile then
-        local sourcefiles = target:sourcefiles()
-        batchcmds:add_depfiles(sourcefiles)
-        batchcmds:set_depmtime(os.mtime(targetfile))
+        local depfiles = table.wrap(target:sourcefiles())
+        table.insert(depfiles, csprojfile)
+        batchcmds:add_depfiles(table.unique(depfiles))
+        batchcmds:set_depmtime(_get_output_mtime(target, targetfile, targetdirabs))
         batchcmds:set_depcache(target:dependfile(targetfile))
     end
 end

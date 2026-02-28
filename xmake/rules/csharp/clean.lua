@@ -19,7 +19,7 @@
 --
 
 import("target.action.clean", {alias = "_do_clean_target"})
-import("csharp_common")
+import("modules.csharp_common", {rootdir = os.scriptdir(), alias = "csharp_common"})
 
 function main(target, opt)
     _do_clean_target(target)
