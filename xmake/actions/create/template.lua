@@ -18,16 +18,38 @@
 -- @file        template.lua
 --
 
+import("core.base.global")
+import("core.base.hashset")
+
 function builtinvars(targetname)
     return {TARGETNAME = targetname,
             FAQ = function() return io.readfile(path.join(os.programdir(), "scripts", "faq.lua")) end}
+end
+
+-- get template root directories
+function rootdirs()
+    local results = {}
+    local dir = path.join(global.directory(), "templates")
+    if os.isdir(dir) then
+        table.insert(results, dir)
+    end
+    dir = path.join(os.programdir(), "templates")
+    if os.isdir(dir) and not table.contains(results, dir) then
+        table.insert(results, dir)
+    end
+    return results
 end
 
 -- get template root directory
 function templatedir(lang, templateid)
     assert(lang)
     assert(templateid)
-    return path.join(os.programdir(), "templates", lang, templateid)
+    for _, rootdir in ipairs(rootdirs()) do
+        local dir = path.join(rootdir, lang, templateid)
+        if os.isdir(dir) then
+            return dir
+        end
+    end
 end
 
 -- copy template files to project directory
@@ -62,30 +84,38 @@ end
 
 -- get all languages from templates
 function languages()
-    local languages = {}
-    local languages_dirs = os.dirs(path.join(os.programdir(), "templates", "*"))
-    if languages_dirs then
-        for _, d in ipairs(languages_dirs) do
-            table.insert(languages, path.basename(d))
+    local found = hashset.new()
+    for _, rootdir in ipairs(rootdirs()) do
+        local languages_dirs = os.dirs(path.join(rootdir, "*"))
+        if languages_dirs then
+            for _, d in ipairs(languages_dirs) do
+                local name = path.filename(d)
+                found:insert(name)
+            end
         end
     end
-    table.sort(languages)
-    return languages
+    local results = found:to_array()
+    table.sort(results)
+    return results
 end
 
 -- get all templates for the given language
 function templates(lang)
     assert(lang)
-    local results = {}
-    local templateroot = path.join(os.programdir(), "templates", lang)
-    local templatedirs = os.dirs(path.join(templateroot, "*"))
-    if templatedirs then
-        for _, templatedir in ipairs(templatedirs) do
-            if os.isfile(path.join(templatedir, "xmake.lua")) then
-                table.insert(results, path.filename(templatedir))
+    local found = hashset.new()
+    for _, rootdir in ipairs(rootdirs()) do
+        local templateroot = path.join(rootdir, lang)
+        local templatedirs = os.dirs(path.join(templateroot, "*"))
+        if templatedirs then
+            for _, templatedir in ipairs(templatedirs) do
+                if os.isfile(path.join(templatedir, "xmake.lua")) then
+                    local name = path.filename(templatedir)
+                    found:insert(name)
+                end
             end
         end
     end
+    local results = found:to_array()
     table.sort(results)
     return results
 end
@@ -93,9 +123,12 @@ end
 -- get languages for the given template
 function languages_for_template(templateid)
     local accepted = {}
-    for _, l in ipairs(languages()) do
-        if os.isdir(path.join(os.programdir(), "templates", l, templateid)) then
-            table.insert(accepted, l)
+    for _, lang in ipairs(languages()) do
+        for _, rootdir in ipairs(rootdirs()) do
+            if os.isdir(path.join(rootdir, lang, templateid)) then
+                table.insert(accepted, lang)
+                break
+            end
         end
     end
     return accepted
