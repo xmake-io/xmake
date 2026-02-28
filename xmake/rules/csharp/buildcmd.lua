@@ -20,7 +20,7 @@
 
 import("modules.csharp_common", {rootdir = os.scriptdir(), alias = "csharp_common"})
 
-local function _get_output_mtime(target, targetfile, targetdirabs)
+function _get_output_mtime(target, targetfile, targetdirabs)
     local mtime = targetfile and os.mtime(targetfile) or nil
     if mtime then
         return mtime

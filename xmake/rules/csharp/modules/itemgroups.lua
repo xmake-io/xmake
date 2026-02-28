@@ -18,7 +18,7 @@
 -- @file        itemsgroups.lua
 --
 
-local function _normalize_relative(fromdir, targetpath)
+function _normalize_relative(fromdir, targetpath)
     local relpath = path.relative(targetpath, fromdir) or targetpath
     if os.host() == "windows" then
         relpath = relpath:gsub("\\", "/")
@@ -26,7 +26,7 @@ local function _normalize_relative(fromdir, targetpath)
     return relpath
 end
 
-local function _collect_cs_sourcefiles(context)
+function _collect_cs_sourcefiles(context)
     local csfiles = {}
     for _, sourcefile in ipairs(context.target:sourcefiles()) do
         if path.extension(sourcefile):lower() == ".cs" then
@@ -38,7 +38,7 @@ local function _collect_cs_sourcefiles(context)
     return table.unique(csfiles)
 end
 
-local function _collect_project_references(context)
+function _collect_project_references(context)
     if context.opt.skip_deps then
         return {}
     end
@@ -56,7 +56,7 @@ local function _collect_project_references(context)
     return table.unique(references)
 end
 
-local function _get_nuget_info(pkg)
+function _get_nuget_info(pkg)
     local requirestr = pkg:requirestr() or ""
     local splitinfo = requirestr:trim():split("%s+")
     if #splitinfo == 0 then
@@ -90,7 +90,7 @@ local function _get_nuget_info(pkg)
     return pkgname, version
 end
 
-local function _collect_nuget_references(context)
+function _collect_nuget_references(context)
     local versions = {}
     for _, pkg in ipairs(context.target:orderpkgs()) do
         local namespace = pkg:namespace()
