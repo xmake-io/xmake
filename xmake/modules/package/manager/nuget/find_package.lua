@@ -28,6 +28,82 @@ import("core.project.config")
 import("core.project.target")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
+function _find_target_root(targets, name)
+    local namelower = name:lower()
+    for targetname in pairs(targets or {}) do
+        local targetpkg = targetname:match("^([^/]+)") or targetname
+        local targetpkglower = targetpkg:lower()
+        local targetnamelower = targetname:lower()
+        local normalized_targetpkg = targetpkglower:gsub("[._%-]", "")
+        local normalized_name = namelower:gsub("[._%-]", "")
+        if targetnamelower == namelower
+           or targetnamelower:startswith(namelower .. "/")
+           or targetpkglower == namelower
+           or normalized_targetpkg == normalized_name then
+            return targetname
+        end
+    end
+end
+
+function _find_library_root(libraries, name)
+    local namelower = name:lower()
+    for libraryname in pairs(libraries or {}) do
+        local librarypkg = libraryname:match("^([^/]+)") or libraryname
+        local librarypkglower = librarypkg:lower()
+        local librarynamelower = libraryname:lower()
+        local normalized_librarypkg = librarypkglower:gsub("[._%-]", "")
+        local normalized_name = namelower:gsub("[._%-]", "")
+        if librarynamelower == namelower
+           or librarynamelower:startswith(namelower .. "/")
+           or librarypkglower == namelower
+           or normalized_librarypkg == normalized_name then
+            return libraryname
+        end
+    end
+end
+
+function _find_version_in_project_dependencies(manifest, name)
+    local namelower = name:lower()
+    local normalized_name = namelower:gsub("[._%-]", "")
+    if manifest.project and manifest.project.frameworks then
+        for _, framework in pairs(manifest.project.frameworks) do
+            local dependencies = framework.dependencies or {}
+            for depname, depver in pairs(dependencies) do
+                local deplower = depname:lower()
+                local normalized_depname = deplower:gsub("[._%-]", "")
+                if deplower == namelower or normalized_depname == normalized_name then
+                    return tostring(depver)
+                end
+            end
+        end
+    end
+end
+
+function _get_packagesdir_from_manifest(manifest)
+    if manifest.project and manifest.project.restore and manifest.project.restore.packagesPath then
+        return manifest.project.restore.packagesPath
+    end
+    if manifest.packageFolders then
+        for folder in pairs(manifest.packageFolders) do
+            return folder
+        end
+    end
+    local packagesdir = os.getenv("NUGET_PACKAGES")
+    if packagesdir and #packagesdir > 0 then
+        return packagesdir
+    end
+    local homedir = os.homedir and os.homedir()
+    if homedir and #homedir > 0 then
+        return path.join(homedir, ".nuget", "packages")
+    end
+end
+
+local function _extract_version_from_root(rootname)
+    if rootname then
+        return rootname:match("/(.+)$")
+    end
+end
+
 -- check if pattern matches as a complete path component
 -- e.g. "x86" should match "/x86/" but not "/x86_64/"
 function _match_path_component(file_lower, pattern)
@@ -86,7 +162,7 @@ function _match_libfile(file, libarch, toolset, libmode, runtime)
     if file_lower:find(libmode:lower(), 1, true) then
         score = score + 2
     end
-    if file_lower:find(runtime:lower(), 1, true) then
+    if runtime and file_lower:find(runtime:lower(), 1, true) then
         score = score + 1
     end
     return score
@@ -105,9 +181,10 @@ function _find_package(name, result, opt)
             MTd = "MultiThreadedDebug",
             MD = "MultiThreadedDLL",
             MDd = "MultiThreadedDebugDLL"}
+        local runtime = runtimes[configs.runtimes]
         local installdir = path.join(opt.packagesdir, name)
-        local runtime = assert(runtimes[configs.runtimes], "unknown runtimes %s", configs.runtimes)
-        local toolset = toolchain_utils.get_vs_toolset_ver(toolchain.load("msvc", {plat = plat, arch = arch}):config("vs_toolset") or config.get("vs_toolset"))
+        local msvc = toolchain.load("msvc", {plat = plat, arch = arch})
+        local toolset = msvc and toolchain_utils.get_vs_toolset_ver(msvc:config("vs_toolset") or config.get("vs_toolset")) or nil
         local libarch = libarchs[arch] or "x64"
         local libmode = configs.debug and "Debug" or "Release"
         for _, file in ipairs(libinfo.files) do
@@ -169,6 +246,22 @@ function _find_package(name, result, opt)
     end
 end
 
+function _cleanup_result(result, version)
+    result._libscores = nil
+    if version and not result.version then
+        result.version = version
+    end
+    if result.links or result.includedirs then
+        if result.includedirs then
+            result.includedirs = table.unique(result.includedirs)
+        end
+        if result.linkdirs then
+            result.linkdirs = table.unique(result.linkdirs)
+        end
+    end
+    return result
+end
+
 -- find package from the nuget package manager
 --
 -- @param name  the package name, e.g. zlib, pcre
@@ -185,46 +278,57 @@ function main(name, opt)
         return
     end
     local manifest = json.loadfile(manifestfile)
-    local targets
-    for k, v in pairs(manifest.targets) do
-        targets = v
-        break
+    local packagesdir = _get_packagesdir_from_manifest(manifest)
+    if not manifest.libraries then
+        return
     end
-    local target_root
-    if targets then
-        for k, v in pairs(targets) do
-            if k:startswith(name) then
-                target_root = k
-                break
+
+    if manifest.targets and packagesdir then
+        for _, targets in pairs(manifest.targets) do
+            local target_root = _find_target_root(targets, name)
+            if target_root then
+                local metainfo = {}
+                metainfo.plat = opt.plat
+                metainfo.arch = opt.arch
+                metainfo.mode = opt.mode
+                metainfo.configs = opt.configs
+                metainfo.targets = targets
+                metainfo.libraries = manifest.libraries
+                metainfo.packagesdir = packagesdir
+                local result = {}
+                _find_package(target_root, result, metainfo)
+                return _cleanup_result(result, _extract_version_from_root(target_root))
             end
         end
     end
-    local metainfo = {}
-    metainfo.plat = opt.plat
-    metainfo.arch = opt.arch
-    metainfo.mode = opt.mode
-    metainfo.configs = opt.configs
-    metainfo.targets = targets
-    metainfo.libraries = manifest.libraries
-    if manifest.project and manifest.project.restore then
-        metainfo.packagesdir = manifest.project.restore.packagesPath
-    end
-    if target_root and metainfo.targets and metainfo.libraries and metainfo.packagesdir then
-        local result = {}
-        _find_package(target_root, result, metainfo)
-        -- clean up internal scoring data
-        result._libscores = nil
-        if result.links or result.includedirs then
-            -- deduplicate paths
-            if result.includedirs then
-                result.includedirs = table.unique(result.includedirs)
-            end
-            if result.linkdirs then
-                result.linkdirs = table.unique(result.linkdirs)
-            end
-            return result
+
+    local library_root = _find_library_root(manifest.libraries, name)
+    if library_root then
+        if packagesdir then
+            local metainfo = {}
+            metainfo.plat = opt.plat
+            metainfo.arch = opt.arch
+            metainfo.mode = opt.mode
+            metainfo.configs = opt.configs
+            metainfo.targets = {}
+            metainfo.libraries = manifest.libraries
+            metainfo.packagesdir = packagesdir
+            local result = {}
+            _find_package(library_root, result, metainfo)
+            return _cleanup_result(result, _extract_version_from_root(library_root))
         end
+        -- package exists in manifest but package root cannot be determined,
+        -- treat managed-only package as found.
+        return {version = _extract_version_from_root(library_root)}
+    end
+
+    -- fallback for managed package references if target/library keys are not aligned
+    -- with the requested package name format.
+    local depver = _find_version_in_project_dependencies(manifest, name)
+    if depver then
+        return {version = depver}
+    end
+    if opt.require_version then
+        return {version = tostring(opt.require_version)}
     end
 end
-
-
