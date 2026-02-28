@@ -24,15 +24,9 @@ import("core.project.project")
 import("actions.create.template", {rootdir = os.programdir()})
 
 -- create project from template
-function _create_project(language, templateid, targetname)
-
-    -- check the targetname
+function _create_project(lang, templateid, targetname)
     assert(targetname ~= ".", "you should specify ${red}-P${reset} instead of directly using ${red}.${reset}")
-
-    -- check the language
-    assert(language, "no language!")
-
-    -- check the template id
+    assert(lang, "no language!")
     assert(templateid, "no template id!")
 
     -- get project directory
@@ -58,42 +52,38 @@ function _create_project(language, templateid, targetname)
     os.cd(projectdir)
 
     -- create project
-    local sourcedir = template.templatedir(language, templateid)
-    assert(os.isdir(sourcedir), "invalid template id: %s!", templateid)
+    local sourcedir = template.templatedir(lang, templateid)
+    assert(os.isdir(sourcedir), "template(%s/%s): not found!", lang, templateid)
 
     -- get the builtin variables
     local builtinvars = template.builtinvars(targetname)
 
-    local createdfiles = template.copy_files(sourcedir, projectdir, builtinvars)
+    -- copy template project files
+    local createdfiles = template.copy_files(sourcedir, projectdir)
 
+    -- copy the default .gitignore
     if not os.isfile(path.join(projectdir, ".gitignore")) then
         os.cp(path.join(os.programdir(), "scripts", "gitignore"), path.join(projectdir, ".gitignore"))
         table.insert(createdfiles, path.join(projectdir, ".gitignore"))
     end
 
+    -- replace template variables
     template.replace_variables_in_files(createdfiles, builtinvars)
 
+    -- done
     table.sort(createdfiles)
     for _, file in ipairs(createdfiles) do
         cprint("  ${green}[+]: ${clear}%s", path.relative(file, projectdir))
     end
 end
 
--- main
 function main()
-
     -- enter the original working directory, because the default directory is in the project directory
     os.cd(os.workingdir())
 
-    -- the target name
-    local targetname = option.get("target") or path.basename(project.directory()) or "demo"
-
-    -- trace
-    cprint("${bright}create %s ...", targetname)
-
     -- create project from template
+    local targetname = option.get("target") or path.basename(project.directory()) or "demo"
+    cprint("${bright}create %s ...", targetname)
     _create_project(option.get("language"), option.get("template"), targetname)
-
-    -- trace
     cprint("${color.success}create ok!")
 end

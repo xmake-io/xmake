@@ -23,53 +23,31 @@ function builtinvars(targetname)
             FAQ = function() return io.readfile(path.join(os.programdir(), "scripts", "faq.lua")) end}
 end
 
-function replace_variables_in_string(s, vars)
-    local pattern = "%${(.-)}"
-    return (s:gsub(pattern, function (variable)
-        variable = variable:trim()
-        local value = vars[variable]
-        if value == nil then
-            return "${" .. variable .. "}"
-        end
-        return type(value) == "function" and value() or tostring(value)
-    end))
-end
-
-function is_binary_file(filepath)
-    local file = io.open(filepath, "rb")
-    if not file then
-        return false
-    end
-    local data = file:read(4096) or ""
-    file:close()
-    return data:find("\0", 1, true) ~= nil
-end
-
+-- get template root directory
 function templatedir(lang, templateid)
     assert(lang)
     assert(templateid)
     return path.join(os.programdir(), "templates", lang, templateid)
 end
 
-function copy_files(sourcedir, projectdir, vars)
+-- copy template files to project directory
+function copy_files(sourcedir, projectdir)
     local createdfiles = {}
     for _, srcfile in ipairs(os.files(path.join(sourcedir, "**"))) do
         local relpath = path.relative(srcfile, sourcedir)
-        if relpath ~= "template.lua" then
-            local dstrelpath = replace_variables_in_string(relpath, vars)
-            local dstfile = path.absolute(path.join(projectdir, dstrelpath))
-            os.mkdir(path.directory(dstfile))
-            os.cp(srcfile, dstfile, {writeable = true})
-            table.insert(createdfiles, dstfile)
-        end
+        local dstfile = path.absolute(path.join(projectdir, relpath))
+        os.mkdir(path.directory(dstfile))
+        os.cp(srcfile, dstfile, {writeable = true})
+        table.insert(createdfiles, dstfile)
     end
     return createdfiles
 end
 
+-- replace variables in files
 function replace_variables_in_files(files, vars)
     local pattern = "%${(.-)}"
     for _, file in ipairs(files) do
-        if os.isfile(file) and not is_binary_file(file) then
+        if os.isfile(file) and path.filename(file) == "xmake.lua" then
             io.gsub(file, "(" .. pattern .. ")", function(_, variable)
                 variable = variable:trim()
                 local value = vars[variable]
@@ -82,6 +60,7 @@ function replace_variables_in_files(files, vars)
     end
 end
 
+-- get all languages from templates
 function languages()
     local languages = {}
     local languages_dirs = os.dirs(path.join(os.programdir(), "templates", "*"))
@@ -94,6 +73,7 @@ function languages()
     return languages
 end
 
+-- get all templates for the given language
 function templates(lang)
     assert(lang)
     local results = {}
@@ -110,6 +90,7 @@ function templates(lang)
     return results
 end
 
+-- get languages for the given template
 function languages_for_template(templateid)
     local accepted = {}
     for _, l in ipairs(languages()) do
@@ -120,6 +101,7 @@ function languages_for_template(templateid)
     return accepted
 end
 
+-- get templates with all supported languages
 function templates_with_languages()
     local templates_map = {}
     for _, lang in ipairs(languages()) do
