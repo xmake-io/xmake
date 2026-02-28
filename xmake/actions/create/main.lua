@@ -23,6 +23,31 @@ import("core.base.option")
 import("core.project.project")
 import("actions.create.template", {rootdir = os.programdir()})
 
+-- get template language from template id
+function _get_language_from_template(templateid)
+    local lang = option.get("language")
+    if not templateid or not lang or template.templatedir(lang, templateid) then
+        return lang
+    end
+    local langs = template.languages_for_template(templateid)
+    if #langs == 1 then
+        return langs[1]
+    elseif #langs > 1 then
+        raise("template(%s): please pass -l/--language, supported languages: %s", templateid, table.concat(langs, ", "))
+    end
+    return lang
+end
+
+-- get template id from command line options
+function _get_templateid()
+    return option.get("template")
+end
+
+-- get target name from command line options
+function _get_targetname()
+    return option.get("target") or path.basename(project.directory()) or "demo"
+end
+
 -- create project from template
 function _create_project(lang, templateid, targetname)
     assert(targetname ~= ".", "you should specify ${red}-P${reset} instead of directly using ${red}.${reset}")
@@ -78,12 +103,14 @@ function _create_project(lang, templateid, targetname)
 end
 
 function main()
-    -- enter the original working directory, because the default directory is in the project directory
     os.cd(os.workingdir())
 
+    local targetname = _get_targetname()
+    local templateid = _get_templateid()
+    local lang = _get_language_from_template(templateid)
+
     -- create project from template
-    local targetname = option.get("target") or path.basename(project.directory()) or "demo"
     cprint("${bright}create %s ...", targetname)
-    _create_project(option.get("language"), option.get("template"), targetname)
+    _create_project(lang, templateid, targetname)
     cprint("${color.success}create ok!")
 end
