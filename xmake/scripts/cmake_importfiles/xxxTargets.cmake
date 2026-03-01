@@ -16,7 +16,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget @PROJECTNAME@::@TARGET_NAME@)
+foreach(_expectedTarget @PROJECTNAME@::@TARGETNAME@)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -49,16 +49,16 @@ if (_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 
-# Create imported target @PROJECTNAME@::@TARGET_NAME@
-add_library(@PROJECTNAME@::@TARGET_NAME@ @TARGETKIND@ IMPORTED)
+# Create imported target @PROJECTNAME@::@TARGETNAME@
+add_library(@PROJECTNAME@::@TARGETNAME@ @TARGETKIND@ IMPORTED)
 
-set_target_properties(@PROJECTNAME@::@TARGET_NAME@ PROPERTIES
+set_target_properties(@PROJECTNAME@::@TARGETNAME@ PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
 )
 
 # Load information for each installed configuration.
 get_filename_component(_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-file(GLOB CONFIG_FILES "${_DIR}/@TARGET_NAME@Targets-*.cmake")
+file(GLOB CONFIG_FILES "${_DIR}/@TARGETNAME@Targets-*.cmake")
 foreach(f ${CONFIG_FILES})
   include(${f})
 endforeach()
