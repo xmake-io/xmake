@@ -23,9 +23,21 @@ import("core.base.option")
 import("core.project.project")
 import("actions.create.template", {rootdir = os.programdir()})
 
+-- validate template component against path traversal
+function _validate_template_component(name, value)
+    if #value == 0 or value == "." or value == ".."
+        or value:find("/", 1, true) or value:find("\\", 1, true)
+        or value:find(":", 1, true) or value:find("\0", 1, true) then
+        raise("invalid %s: %s!", name, value)
+    end
+end
+
 -- get template language from template id
 function _get_language_from_template(templateid)
     local lang = option.get("language")
+    if lang then
+        _validate_template_component("language", lang)
+    end
     if not templateid or not lang or template.templatedir(lang, templateid) then
         return lang
     end
@@ -40,7 +52,9 @@ end
 
 -- get template id from command line options
 function _get_templateid()
-    return option.get("template")
+    local templateid = option.get("template")
+    _validate_template_component("template id", templateid)
+    return templateid
 end
 
 -- get target name from command line options
@@ -78,7 +92,7 @@ function _create_project(lang, templateid, targetname)
 
     -- create project
     local sourcedir = template.templatedir(lang, templateid)
-    assert(os.isdir(sourcedir), "template(%s/%s): not found!", lang, templateid)
+    assert(sourcedir, "template(%s/%s): not found!", lang, templateid)
 
     -- get the builtin variables
     local builtinvars = template.builtinvars(targetname)
