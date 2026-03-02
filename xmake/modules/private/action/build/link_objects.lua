@@ -37,14 +37,11 @@ function _do_link_target(target, opt)
     local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
-        local filename = target:filename()
-        if target:namespace() then
-            filename = target:namespace() .. "::" .. filename
-        end
+        opt.progress = progress.apply_target(target, opt.progress)
         if target:is_static() then
-            progress.show(opt.progress, "${color.build.target}archiving.$(mode) %s", filename)
+            progress.show(opt.progress, "${color.build.target}archiving.$(mode) %s", target:filename())
         else
-            progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", filename)
+            progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", target:filename())
         end
 
         local targetfile = target:targetfile()

@@ -116,11 +116,18 @@ function restore_style()
 end
 
 -- get progress prefix
-function _get_progress_prefix()
+function _get_progress_prefix(target_name)
+    if not _g.progress_has_target_prefix then
+        _g.progress_has_target_prefix = project.policy("build.show_target") or theme.get("text.build.show_target")
+    end
     if not _g.progress_prefix then
         _g.progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     end
-    return _g.progress_prefix
+    local prefix = _g.progress_prefix
+    if _g.progress_has_target_prefix and target_name then
+        prefix = prefix .. "${color.build.target}<" .. target_name .. ">${clear} "
+    end
+    return prefix
 end
 
 -- strip progress line
@@ -137,13 +144,13 @@ function _strip_progress_line(msg, maxwidth)
 end
 
 -- show progress with verbose information
-function _show_progress_with_verbose(progress, format, ...)
-    cprint(_get_progress_prefix() .. "${dim}" .. format, progress, ...)
+function _show_progress_with_verbose(progress, target_name, format, ...)
+    cprint(_get_progress_prefix(target_name) .. "${dim}" .. format, progress, ...)
 end
 
 -- show progress with scroll
-function _show_progress_with_scroll(progress, format, ...)
-    cprint(_get_progress_prefix() .. format, progress, ...)
+function _show_progress_with_scroll(progress, target_name, format, ...)
+    cprint(_get_progress_prefix(target_name) .. format, progress, ...)
 end
 
 -- build ordered subprocess line infos from progress_lineinfos (internal helper)
@@ -239,10 +246,10 @@ end
 
 -- show progress with multi-row refresh
 -- @see https://github.com/xmake-io/xmake/issues/6805
-function _show_progress_with_multirow_refresh(progress, format, ...)
+function _show_progress_with_multirow_refresh(progress, target_name, format, ...)
     local running = scheduler.co_running()
     if not running then
-        _show_progress_with_scroll(progress, format, ...)
+        _show_progress_with_scroll(progress, target_name, format, ...)
         return
     end
 
@@ -254,7 +261,7 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
     local is_first = false
     local is_finished = math.floor(progress) == 100
     local progress_msg = vformat(format, ...)
-    local progress_line = _strip_progress_line(string.format(_get_progress_prefix(), progress) .. progress_msg, maxwidth)
+    local progress_line = _strip_progress_line(string.format(_get_progress_prefix(target_name), progress) .. progress_msg, maxwidth)
 
     local progress_lineinfos = _g.progress_lineinfos
     if progress_lineinfos == nil then
@@ -317,11 +324,11 @@ function _show_progress_with_multirow_refresh(progress, format, ...)
 end
 
 -- show progress with single-row refresh (ninja style)
-function _show_progress_with_singlerow_refresh(progress, format, ...)
+function _show_progress_with_singlerow_refresh(progress, target_name, format, ...)
     local maxwidth = os.getwinsize().width
     local is_finished = math.floor(progress) == 100
     local progress_msg = vformat(format, ...)
-    local progress_line = _strip_progress_line(string.format(_get_progress_prefix(), progress) .. progress_msg, maxwidth)
+    local progress_line = _strip_progress_line(string.format(_get_progress_prefix(target_name), progress) .. progress_msg, maxwidth)
     tty.erase_line().cr()
     cprintf(progress_line)
     if is_finished then
@@ -352,17 +359,18 @@ end
 
 -- show the message with progress
 function show(progress, format, ...)
+    local target_name = type(progress) == "table" and progress.target_name
     progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     if option.get("verbose") then
-        _show_progress_with_verbose(progress, format, ...)
+        _show_progress_with_verbose(progress, target_name, format, ...)
     elseif _is_scroll() then
-        _show_progress_with_scroll(progress, format, ...)
+        _show_progress_with_scroll(progress, target_name, format, ...)
     elseif _is_multirow_refresh() then
-        _show_progress_with_multirow_refresh(progress, format, ...)
+        _show_progress_with_multirow_refresh(progress, target_name, format, ...)
     elseif _is_singlerow_refresh() then
-        _show_progress_with_singlerow_refresh(progress, format, ...)
+        _show_progress_with_singlerow_refresh(progress, target_name, format, ...)
     else
-        _show_progress_with_scroll(progress, format, ...)
+        _show_progress_with_scroll(progress, target_name, format, ...)
     end
 end
 
@@ -467,12 +475,27 @@ end
 
 -- get the message text with progress
 function text(progress, format, ...)
+    local target_name = type(progress) == "table" and progress.target_name or nil
     progress = type(progress) == "table" and progress:percent() or math.floor(progress)
-    local progress_prefix = _get_progress_prefix()
+    local progress_prefix = _get_progress_prefix(target_name)
     if option.get("verbose") then
         return string.format(progress_prefix .. "${dim}" .. format, progress, ...)
     else
         return string.format(progress_prefix .. format, progress, ...)
     end
+end
+
+-- fill progress data with target fullname
+function apply_target(target, progress)
+    if progress == nil then
+        progress = { percent = function() return "" end }
+    end
+    if type(progress) ~= "table" then
+        progress = {
+            percent = function() return math.floor(progress) end
+        }
+    end
+    progress.target_name = target:fullname()
+    return progress
 end
 
