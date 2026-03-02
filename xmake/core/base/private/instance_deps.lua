@@ -38,8 +38,9 @@ local table = require("base/table")
 --
 -- if they're targets, their links order is reverse(orderdeps), e.g. foo: a -> b -> c -> d
 --
-function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath, walkdep)
-    local plaindeps = table.wrap(instance:get("deps"))
+function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath, walkdep, opt)
+    local getdeps = opt and opt.getdeps
+    local plaindeps = getdeps and getdeps(instance) or table.wrap(instance:get("deps"))
     local total = #plaindeps
     for idx, _ in ipairs(plaindeps) do
         -- we reverse to get the flat dependencies in order to ensure the correct linking order
@@ -71,7 +72,7 @@ function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath,
                         end
                         depspath_sub = table.join(depspath, depname)
                     end
-                    instance_deps.load_deps(depinst, instances, deps, orderdeps, depspath_sub, walkdep)
+                    instance_deps.load_deps(depinst, instances, deps, orderdeps, depspath_sub, walkdep, opt)
                     table.insert(orderdeps, depinst)
                 end
             end
