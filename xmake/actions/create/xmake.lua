@@ -56,11 +56,16 @@ task("create")
                                                     values = function (complete, opt)
                                                         if complete then
                                                             import("actions.create.template", {rootdir = os.programdir()})
-                                                            local templates = {}
+                                                            import("core.base.hashset")
+                                                            local templates_set = hashset.new()
                                                             local languages = opt.language and {opt.language} or template.languages()
                                                             for _, l in ipairs(languages) do
-                                                                table.join2(templates, template.templates(l))
+                                                                for _, t in ipairs(template.templates(l)) do
+                                                                    templates_set:insert(t)
+                                                                end
                                                             end
+                                                            local templates = templates_set:to_array()
+                                                            table.sort(templates)
                                                             return templates
                                                         end
                                                     end},
