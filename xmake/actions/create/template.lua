@@ -44,13 +44,29 @@ function rootdirs()
 end
 
 -- get template root directory
+function _templateid_subdir(templateid)
+    local items = templateid:split(".", {plain = true})
+    if not items or #items == 0 then
+        return
+    end
+    for _, item in ipairs(items) do
+        if #item == 0 then
+            return
+        end
+    end
+    return path.join(table.unpack(items))
+end
+
 function templatedir(lang, templateid)
     assert(lang)
     assert(templateid)
     for _, rootdir in ipairs(rootdirs()) do
-        local dir = path.join(rootdir, lang, templateid)
-        if os.isdir(dir) then
-            return dir
+        local subdir = _templateid_subdir(templateid)
+        if subdir then
+            local dir = path.join(rootdir, lang, subdir)
+            if os.isfile(path.join(dir, "xmake.lua")) then
+                return dir
+            end
         end
     end
 end
@@ -122,12 +138,29 @@ function templates(lang)
     local found = hashset.new()
     for _, rootdir in ipairs(rootdirs()) do
         local templateroot = path.join(rootdir, lang)
-        local templatedirs = os.dirs(path.join(templateroot, "*"))
-        if templatedirs then
-            for _, templatedir in ipairs(templatedirs) do
-                if os.isfile(path.join(templatedir, "xmake.lua")) then
-                    local name = path.filename(templatedir)
-                    found:insert(name)
+        local configfiles = os.files(path.join(templateroot, "**", "xmake.lua"))
+        if configfiles then
+            local templatedirs = {}
+            for _, configfile in ipairs(configfiles) do
+                local templatedir = path.directory(configfile)
+                local relpath = path.relative(templatedir, templateroot)
+                if relpath and relpath ~= "." then
+                    table.insert(templatedirs, {dir = templatedir, relpath = relpath})
+                end
+            end
+            table.sort(templatedirs, function(a, b) return #a.relpath < #b.relpath end)
+            local accepted = {}
+            for _, item in ipairs(templatedirs) do
+                local ok = true
+                for _, root in ipairs(accepted) do
+                    if item.dir:startswith(root .. path.sep()) then
+                        ok = false
+                        break
+                    end
+                end
+                if ok then
+                    table.insert(accepted, item.dir)
+                    found:insert((item.relpath:gsub("[/\\]", ".")))
                 end
             end
         end
@@ -141,11 +174,8 @@ end
 function languages_for_template(templateid)
     local accepted = {}
     for _, lang in ipairs(languages()) do
-        for _, rootdir in ipairs(rootdirs()) do
-            if os.isdir(path.join(rootdir, lang, templateid)) then
-                table.insert(accepted, lang)
-                break
-            end
+        if templatedir(lang, templateid) then
+            table.insert(accepted, lang)
         end
     end
     return accepted
