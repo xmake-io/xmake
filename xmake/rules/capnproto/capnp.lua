@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("utils.progress")
 import("lib.detect.find_tool")
 
 -- get capnp
@@ -93,6 +94,7 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
 
     -- add commands
     batchcmds:mkdir(sourcefile_dir)
+    progress.apply_target(target, opt.progress)
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.capnp %s", sourcefile_capnp)
     local capnproto = target:pkg("capnproto")
     local includes = capnproto:get("sysincludedirs")

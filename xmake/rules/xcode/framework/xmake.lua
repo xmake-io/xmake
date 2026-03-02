@@ -97,6 +97,7 @@ rule("xcode.framework")
         depend.on_changed(function ()
 
             -- trace progress info
+            opt.progress = progress.apply_target(target, opt.progress)
             progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
 
             -- copy target file

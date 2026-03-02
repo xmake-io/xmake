@@ -39,6 +39,7 @@ rule("qt.qrc")
     end)
 
     on_buildcmd_file(function (target, batchcmds, sourcefile_qrc, opt)
+        import("utils.progress")
 
         -- get rcc
         local rcc = target:data("qt.rcc")
@@ -52,6 +53,7 @@ rule("qt.qrc")
         table.insert(target:objectfiles(), objectfile)
 
         -- add commands
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
         batchcmds:mkdir(sourcefile_dir)
         batchcmds:vrunv(rcc, {"-name", path.basename(sourcefile_qrc), path(sourcefile_qrc), "-o", path(sourcefile_cpp)})

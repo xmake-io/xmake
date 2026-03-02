@@ -27,6 +27,7 @@ rule("xcode.metal")
 
     -- build *.metal to *.air
     on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+        import("utils.progress")
 
         -- get metal
         import("lib.detect.find_tool")
@@ -74,6 +75,7 @@ rule("xcode.metal")
         table.insert(argv, path(sourcefile))
 
         -- add commands
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.metal %s", sourcefile)
         batchcmds:mkdir(path.directory(objectfile))
         batchcmds:vrunv(metal.program, argv)
@@ -86,6 +88,7 @@ rule("xcode.metal")
 
     -- link *.air to *.metallib
     before_linkcmd(function (target, batchcmds, opt)
+        import("utils.progress")
 
         -- get objectfiles
         local objectfiles = {}
@@ -114,6 +117,7 @@ rule("xcode.metal")
         -- add commands
         local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
         local libraryfile = resourcesdir and path.join(resourcesdir, "default.metallib") or (target:targetfile() .. ".metallib")
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.target}linking.metal %s", path.filename(libraryfile))
         batchcmds:mkdir(path.directory(libraryfile))
         batchcmds:vrunv(metallib.program, table.join({"-o", path(libraryfile)}, objectfiles_wrap), {envs = {SDKROOT = xcode_sysroot}})

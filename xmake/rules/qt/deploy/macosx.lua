@@ -120,6 +120,7 @@ function main(target, opt)
     end
 
     -- trace progress info
+    opt.progress = progress.apply_target(target, opt.progress)
     progress.show(opt.progress, "${color.build.target}generating.qt.app %s.app", target:basename())
 
     -- get qt sdk

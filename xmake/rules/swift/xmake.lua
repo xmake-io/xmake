@@ -130,7 +130,8 @@ rule("swift.interop")
                     end
 
                     if opt.progress then
-                        progress.show(opt.progress, "${clear}${color.build.target}<%s> generating.swift.header %s", target:fullname(), headername)
+                        opt.progress = progress.apply_target(target, opt.progress)
+                        progress.show(opt.progress, "${clear}${color.build.target}generating.swift.header %s", headername)
                     end
 
                     local _scflags = sc:compflags({target = target, sourcekind = "sc"})

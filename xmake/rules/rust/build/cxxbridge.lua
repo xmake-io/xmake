@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("utils.progress")
 import("lib.detect.find_tool")
 
 function main(target, batchcmds, sourcefile, opt)
@@ -37,6 +38,7 @@ function main(target, batchcmds, sourcefile, opt)
     table.insert(target:objectfiles(), objectfile)
 
     -- add commands
+    progress.apply_target(target, opt.progress)
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cxxbridge %s", sourcefile)
     batchcmds:mkdir(path.directory(sourcefile_cx))
     batchcmds:vexecv(cxxbridge.program, {sourcefile}, {stdout = sourcefile_cx})

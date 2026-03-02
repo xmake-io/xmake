@@ -33,7 +33,7 @@ rule("python.cython")
 
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
         import("lib.detect.find_tool")
-
+        import("utils.progress")
         local cython = assert(find_tool("cython"), "cython not found! please `pip install cython`.")
         local language = target:extraconf("rules", "python.cython", "language")
         local ext = "c"
@@ -50,6 +50,7 @@ rule("python.cython")
         table.insert(target:objectfiles(), objectfile)
 
         -- add commands
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.python %s", sourcefile)
         batchcmds:mkdir(path.directory(sourcefile_c))
         batchcmds:vrunv(cython.program, {arg, "-o", path(sourcefile_c), path(sourcefile)})

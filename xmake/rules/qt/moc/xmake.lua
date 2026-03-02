@@ -65,6 +65,7 @@ rule("qt.moc")
         table.insert(target:objectfiles(), objectfile)
 
         -- add commands
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.qt.moc %s", sourcefile)
 
         -- get values from target

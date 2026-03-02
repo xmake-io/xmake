@@ -31,6 +31,7 @@ rule("yacc")
         end
     end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_yacc, opt)
+        import("utils.progress")
 
         -- get yacc
         import("lib.detect.find_tool")
@@ -48,6 +49,7 @@ rule("yacc")
         local sourcefile_dir = path.directory(sourcefile_cx)
 
         -- add commands
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.yacc %s", sourcefile_yacc)
         batchcmds:mkdir(sourcefile_dir)
         batchcmds:vrunv(yacc.program, {"-d", "-o", path(sourcefile_cx), path(sourcefile_yacc)})

@@ -75,6 +75,8 @@ rule("qt.qmltyperegistrar")
      end)
 
      on_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+        import("utils.progress")
+
         -- setup qmltyperegistrar arguments
         local moc = target:data("qt.moc")
         local qmltyperegistrar = target:data("qt.qmltyperegistrar")
@@ -96,6 +98,8 @@ rule("qt.qmltyperegistrar")
             local sourcefile_moc = target:autogenfile(path.join(path.directory(mocedfile), filename_moc))
             table.insert(metatype_files, path(sourcefile_moc .. ".json"))
         end
+
+        progress.apply_target(target, opt.progress)
 
         -- generate a common metatypes.json file
         -- @see https://github.com/xmake-io/xmake/issues/6647

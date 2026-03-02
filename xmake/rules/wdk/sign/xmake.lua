@@ -109,6 +109,7 @@ rule("wdk.sign")
         end
 
         -- trace progress info
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress, "${color.build.target}signing.%s %s", signmode, path.filename(target:targetfile()))
 
         -- get arch

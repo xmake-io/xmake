@@ -32,6 +32,7 @@
 --                       - objectfile: the output object file path (optional, auto-generated if not provided)
 --
 function generate_objectfile(target, batchcmds, binaryfile, opt)
+    import("utils.progress", {alias = "progress_utils"})
     opt = opt or {}
     local rulename = opt.rulename or "utils.bin2obj"
     local progress = opt.progress
@@ -65,6 +66,7 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
 
     -- add commands
     if progress then
+        progress_utils.apply_target(target, progress)
         batchcmds:show_progress(progress, "${color.build.object}generating.bin2obj %s", binaryfile)
     end
     batchcmds:mkdir(path.directory(objectfile))

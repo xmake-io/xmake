@@ -94,6 +94,7 @@ function main(target, opt)
         local verbose = option.get("verbose")
 
         -- trace progress info
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress, "${color.build.target}devlinking.$(mode) %s", path.filename(targetfile))
 
         -- trace verbose info

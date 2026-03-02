@@ -23,6 +23,7 @@ rule("cppfront.build.h2")
 
     on_buildcmd_file(function (target, batchcmds, sourcefile_h2, opt)
         import("lib.detect.find_tool")
+        import("utils.progress")
         local cppfront = assert(find_tool("cppfront", {check = "-h"}), "cppfront not found!")
 
         -- get h header file for h2
@@ -31,6 +32,7 @@ rule("cppfront.build.h2")
 
         -- add commands
         local argv = {"-o", path(sourcefile_h), path(sourcefile_h2)}
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.h2 %s", sourcefile_h2)
         batchcmds:mkdir(basedir)
         batchcmds:vrunv(cppfront.program, argv)
@@ -63,6 +65,7 @@ rule("cppfront.build.cpp2")
     end)
     on_buildcmd_file(function (target, batchcmds, sourcefile_cpp2, opt)
         import("lib.detect.find_tool")
+        import("utils.progress")
         local cppfront = assert(find_tool("cppfront", {check = "-h"}), "cppfront not found!")
 
         -- get c++ source file for cpp2
@@ -84,6 +87,7 @@ rule("cppfront.build.cpp2")
 
         -- add commands
         local argv = {"-o", path(sourcefile_cpp), path(sourcefile_cpp2)}
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cpp2 %s", sourcefile_cpp2)
         batchcmds:mkdir(basedir)
         batchcmds:vrunv(cppfront.program, argv)

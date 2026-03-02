@@ -118,7 +118,7 @@ end
 -- get progress prefix
 function _get_progress_prefix(target_name)
     if not _g.progress_has_target_prefix then
-        _g.progress_has_target_prefix = project.policy("build.show_target") or theme.get("text.build.show_target")
+        _g.progress_has_target_prefix = project.policy("build.show_target")
     end
     if not _g.progress_prefix then
         _g.progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
@@ -488,11 +488,12 @@ end
 -- fill progress data with target fullname
 function apply_target(target, progress)
     if progress == nil then
-        progress = { percent = function() return "" end }
+        progress = { percent = function() return nil end }
     end
     if type(progress) ~= "table" then
+        local percent_val = progress
         progress = {
-            percent = function() return math.floor(progress) end
+            percent = function() return math.floor(percent_val) end
         }
     end
     progress.target_name = target:fullname()

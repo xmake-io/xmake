@@ -93,6 +93,7 @@ function build_sourcefiles(target, sourcebatch, opt)
     end
 
     -- trace progress into
+    opt.progress = progress.apply_target(target, opt.progress)
     progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", path.filename(targetfile))
 
     -- trace verbose info

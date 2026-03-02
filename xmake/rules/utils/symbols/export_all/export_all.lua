@@ -201,6 +201,7 @@ function main(target, opt)
     depend.on_changed(function ()
 
         -- trace progress info
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress, "${color.build.target}exporting.$(mode) %s", path.filename(target:targetfile()))
 
         -- export c++ class?

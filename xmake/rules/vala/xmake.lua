@@ -57,6 +57,7 @@ rule("vala.build")
         end
     end)
     before_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
+        import("utils.progress")
         -- Here we compile vala files into C code
 
         -- We have to compile entire project each time
@@ -118,6 +119,7 @@ rule("vala.build")
             -- if it's only a vala file
             if path.extension(sourcefile) == ".vala" then
                 local sourcefile_c = target:autogenfile((sourcefile:gsub(".vala$", ".c")))
+                progress.apply_target(target, opt.progress)
                 batchcmds:show_progress(opt.progress, "${color.build.object}compiling.vala %s", sourcefile)
                 table.insert(argv, path(sourcefile))
                 table.insert(sourcefiles, sourcefile)
@@ -136,6 +138,7 @@ rule("vala.build")
     end)
 
     on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+        import("utils.progress")
         -- Again, only vala files need special treatment
         if path.extension(sourcefile) == ".vala" then
             local sourcefile_c = target:autogenfile((sourcefile:gsub(".vala$", ".c")))
@@ -146,6 +149,7 @@ rule("vala.build")
             local objectfile = target:objectfile(sourcefile_c)
             table.insert(target:objectfiles(), objectfile)
 
+            progress.apply_target(target, opt.progress)
             batchcmds:show_progress(opt.progress, "${color.build.object}compiling.c %s", sourcefile_c)
             batchcmds:compile(sourcefile_c, objectfile, { configs = { force = { cflags = "-w" } } })
 

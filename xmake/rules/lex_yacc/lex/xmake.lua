@@ -24,6 +24,7 @@ rule("lex")
     add_orders("yacc", "lex")
     set_extensions(".l", ".ll")
     before_buildcmd_file(function (target, batchcmds, sourcefile_lex, opt)
+        import("utils.progress")
 
         -- get lex
         import("lib.detect.find_tool")
@@ -38,6 +39,7 @@ rule("lex")
         table.insert(target:objectfiles(), objectfile)
 
         -- add commands
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.lex %s", sourcefile_lex)
         batchcmds:mkdir(path.directory(sourcefile_cx))
         batchcmds:vrunv(lex.program, {"-o", path(sourcefile_cx), path(sourcefile_lex)})

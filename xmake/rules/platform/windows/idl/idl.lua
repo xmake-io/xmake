@@ -101,6 +101,7 @@ function generate_single(target, sourcefile, opt)
     })
 
     depend.on_changed(function()
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress or 0, "${color.build.object}generating.idl %s", sourcefile)
         os.vrunv(midl.program, flags, { envs = msvc:runenvs() })
     end, {

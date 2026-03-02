@@ -61,6 +61,7 @@ rule("qt.ts")
     end)
 
     before_buildcmd_file(function (target, batchcmds, sourcefile_ts, opt)
+        import("utils.progress")
         -- get lrelease
         local lrelease = target:data("qt.ts.lrelease")
         local outputdir = target:targetdir()
@@ -74,6 +75,7 @@ rule("qt.ts")
         end
         local outfile = path.join(outputdir, path.basename(sourcefile_ts) .. ".qm")
         batchcmds:mkdir(outputdir)
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.qt.ts %s", sourcefile_ts)
         batchcmds:vrunv(lrelease, {path(sourcefile_ts), "-qm", path(outfile)})
         batchcmds:add_depfiles(sourcefile_ts)

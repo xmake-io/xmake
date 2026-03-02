@@ -252,6 +252,7 @@ function link(target, opt)
     depend.on_changed(function ()
 
         -- trace
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress, "${color.build.object}linking.$(mode) %s", targetfile)
 
         -- get module scripts

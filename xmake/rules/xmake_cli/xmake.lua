@@ -34,9 +34,11 @@ rule("xmake.cli")
 
     before_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
         import("private.core.base.match_copyfiles")
+        import("utils.progress")
         local sourcefiles = sourcebatch.sourcefiles
         local archivefile = path.join(target:autogendir(), "rules", "xmake.cli", "luafiles.xmz")
         local dependfile = archivefile .. ".d"
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.target}archiving.luafiles %s", target:name())
 
         local luadir = path.join(target:autogendir(), "rules", "xmake.cli", "luafiles")

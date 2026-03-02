@@ -54,6 +54,7 @@ rule("xcode.xcassets")
         end
 
         -- trace progress info
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress, "${color.build.object}compiling.xcode.$(mode) %s", sourcefile)
 
         -- get assetcatalog_generated_info.plist

@@ -44,6 +44,7 @@ rule("xcode.info_plist")
         end
 
         -- trace progress info
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress, "${color.build.object}processing.xcode.$(mode) %s", sourcefile)
 
         -- process and generate Info.plist

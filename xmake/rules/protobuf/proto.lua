@@ -152,6 +152,7 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
 
     -- add commands
     batchcmds:mkdir(sourcefile_dir)
+    progress.apply_target(target, opt.progress)
     batchcmds:show_progress(
         opt.progress,
         "${color.build.object}compiling.proto.%s %s",
@@ -211,6 +212,7 @@ function buildcmd_cxfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
         objectfile_grpc = target:objectfile(sourcefile_cx_grpc)
     end
 
+    progress.apply_target(target, opt.progress)
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto.$(mode) %s", sourcefile_cx)
     batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir}})
     if grpc_cpp_plugin then

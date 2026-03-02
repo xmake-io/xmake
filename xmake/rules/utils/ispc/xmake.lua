@@ -9,6 +9,7 @@ rule("utils.ispc")
 
     before_buildcmd_file(function (target, batchcmds, sourcefile_ispc, opt)
         import("lib.detect.find_tool")
+        import("utils.progress")
         local ispc = assert(find_tool("ispc"), "ispc not found!")
 
         local flags = {}
@@ -57,6 +58,7 @@ rule("utils.ispc")
         table.insert(flags, path(headersfile))
         table.insert(flags, path(sourcefile_ispc))
 
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.ispc %s", sourcefile_ispc)
         batchcmds:mkdir(objectdir)
         batchcmds:vrunv(ispc.program, flags)

@@ -21,6 +21,7 @@
 rule("asn1c")
     set_extensions(".asn1")
     before_buildcmd_file(function (target, batchcmds, sourcefile_asn1, opt)
+        import("utils.progress")
 
         -- get asn1c
         import("lib.detect.find_tool")
@@ -28,6 +29,7 @@ rule("asn1c")
 
         -- asn1 to *.c sourcefiles
         local sourcefile_dir = path.join(target:autogendir(), "rules", "asn1c")
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.asn1c %s", sourcefile_asn1)
         batchcmds:mkdir(sourcefile_dir)
         batchcmds:vrunv(asn1c.program, {path(sourcefile_asn1):absolute()}, {curdir = sourcefile_dir})

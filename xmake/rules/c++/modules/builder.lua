@@ -608,7 +608,8 @@ function generate_metadata(target, modules)
     runjobs(target:fullname() .. "_install_modules", function(index, _, jobopt)
         local module = public_modules[index]
         local metafilepath = support.get_metafile(target, module)
-        progress.show(jobopt.progress, "${color.build.target}<%s> generating.module.metadata %s", target:fullname(), module.name)
+        jobopt.progress = progress.apply_target(target, jobopt.progress)
+        progress.show(jobopt.progress, "${color.build.target}generating.module.metadata %s", module.name)
         local metadata = _generate_meta_module_info(target, module)
         json.savefile(metafilepath, metadata)
     end, {comax = jobs, total = #public_modules})
@@ -640,6 +641,7 @@ end
 
 function show_progress(target, module, opt)
     local show = function(...)
+        opt.progress = progress.apply_target(target, opt.progress)
         local batchcmds = opt and opt.batchcmds
         if batchcmds then
             batchcmds:show_progress(opt.progress, ...)
@@ -649,19 +651,14 @@ function show_progress(target, module, opt)
     end
     local suffix = opt.suffix or ""
     local cmd = opt.cmd or ""
-    local dim = ""
-    if option.get("verbose") then
-        dim = "${dim}"
-    end
-    local header = "${clear}${color.build.target}<%s>${clear}" .. dim
     if opt.headerunit then
         local name = module.method == "include-angle" and ("<" .. path.filename(module.name) .. ">") or module.name
-        show(header .. " compiling.headerunit.$(mode) %s${clear}%s" .. suffix, target:fullname(), name, cmd)
+        show("compiling.headerunit.$(mode) %s${clear}%s" .. suffix, name, cmd)
     elseif opt.bmi then
         if opt.objectfile then
-            show(header .. " compiling.module.$(mode) %s${clear}%s" .. suffix, target:fullname(), module.name, cmd)
+            show("compiling.module.$(mode) %s${clear}%s" .. suffix, module.name, cmd)
         else
-            show(header .. " compiling.module.bmi.$(mode) %s${clear}%s" .. suffix, target:fullname(), module.name, cmd)
+            show("compiling.module.bmi.$(mode) %s${clear}%s" .. suffix, module.name, cmd)
         end
     else
         show("compiling.$(mode) %s${clear}%s" .. suffix, module.sourcefile, cmd)

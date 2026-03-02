@@ -38,10 +38,11 @@ function _do_link_target(target, opt)
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
         opt.progress = progress.apply_target(target, opt.progress)
+        local targetfile = path.filename(target:targetfile())
         if target:is_static() then
-            progress.show(opt.progress, "${color.build.target}archiving.$(mode) %s", target:filename())
+            progress.show(opt.progress, "${color.build.target}archiving.$(mode) %s", targetfile)
         else
-            progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", target:filename())
+            progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", targetfile)
         end
 
         local targetfile = target:targetfile()

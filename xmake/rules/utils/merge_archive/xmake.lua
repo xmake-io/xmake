@@ -65,6 +65,7 @@ rule("utils.merge.archive")
                 table.insert(libraryfiles, target:targetfile())
             end
             depend.on_changed(function ()
+                opt.progress = progress.apply_target(target, opt.progress)
                 progress.show(opt.progress, "${color.build.target}merging.$(mode) %s", path.filename(target:targetfile()))
                 if #libraryfiles > 0 then
                     local tmpfile = os.tmpfile() .. path.extension(target:targetfile())

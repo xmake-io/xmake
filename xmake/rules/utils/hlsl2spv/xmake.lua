@@ -58,6 +58,7 @@ rule("utils.hlsl2spv")
         import("lib.detect.find_tool")
         import("rules.utils.bin2obj.utils", {alias = "bin2obj_utils", rootdir = os.programdir()})
         import("rules.utils.bin2c.utils", {alias = "bin2c_utils", rootdir = os.programdir()})
+        import("utils.progress")
 
         local dxc = assert(find_tool("dxc"), "dxc not found!")
 
@@ -79,6 +80,7 @@ rule("utils.hlsl2spv")
         local sm = shadermodel:gsub("%.", "_")
         local dxc_profile = shadertype .. "_" .. sm
 
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.hlsl %s", sourcefile_hlsl)
         batchcmds:mkdir(outputdir)
         batchcmds:vrunv(dxc.program, {path(sourcefile_hlsl), "-spirv", "-HV", hlslversion, "-fspv-target-env=" .. targetenv, "-E", "main", "-T", dxc_profile, "-Fo", path(spvfilepath)})

@@ -73,6 +73,7 @@ rule("utils.symbols.extract")
         depend.on_changed(function ()
 
             -- trace progress info
+            opt.progress = progress.apply_target(target, opt.progress)
             progress.show(opt.progress, "${color.build.target}generating.$(mode) %s", path.filename(symbolfile))
 
             -- we remove the previous symbol file to ensure that it will be re-generated and it's mtime will be changed.

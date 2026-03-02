@@ -57,6 +57,7 @@ rule("utils.glsl2spv")
         import("lib.detect.find_tool")
         import("rules.utils.bin2obj.utils", {alias = "bin2obj_utils", rootdir = os.programdir()})
         import("rules.utils.bin2c.utils", {alias = "bin2c_utils", rootdir = os.programdir()})
+        import("utils.progress")
 
         -- get glslangValidator
         local glslc
@@ -72,6 +73,7 @@ rule("utils.glsl2spv")
         local debugsource = target:extraconf("rules", "utils.glsl2spv", "debugsource") or false
         local outputdir = target:extraconf("rules", "utils.glsl2spv", "outputdir") or path.join(target:autogendir(), "rules", "utils", "glsl2spv")
         local spvfilepath = path.join(outputdir, path.filename(sourcefile_glsl) .. ".spv")
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.glsl2spv %s", sourcefile_glsl)
         batchcmds:mkdir(outputdir)
         if glslangValidator then

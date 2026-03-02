@@ -65,6 +65,7 @@ function jar_build(target, fileconfig, opt)
     end
 
     -- compile to class file
+    opt.progress = progress.apply_target(target, opt.progress)
     progress.show(opt.progress, "${color.build.object}compiling.javac %s class file", target:name())
     local argv = {"-d", java_class_dir, "@" .. filelistname}
     local java_release = target:extraconf("rules", "swig.c", "java_release") or target:extraconf("rules", "swig.cpp", "java_release")
@@ -143,6 +144,7 @@ function swig_build_cmd(target, batchcmds, sourcefile, opt, pars)
     local moduletype = par.moduletype
     local fileconfig = par.fileconfig
 
+    progress.apply_target(target, opt.progress)
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.swig.%s %s", moduletype, sourcefile)
     batchcmds:mkdir(path.directory(sourcefile_cx))
     batchcmds:vrunv(swig.program, argv)
@@ -172,6 +174,7 @@ function swig_build_file(target, sourcefile, opt, par)
         return
     end
 
+    opt.progress = progress.apply_target(target, opt.progress)
     progress.show(opt.progress, "${color.build.object}compiling.swig.%s %s", moduletype, sourcefile)
     os.mkdir(path.directory(sourcefile_cx))
 

@@ -116,6 +116,7 @@ rule("wdk.man")
         end
 
         -- trace progress info
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress, "${color.build.object}compiling.wdk.man %s", sourcefile)
 
         -- generate header and resource file

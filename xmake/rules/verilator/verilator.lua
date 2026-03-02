@@ -311,8 +311,9 @@ function build_cppfiles(target, jobgraph, sourcebatch, opt)
             table.join2(argv, language_flags)
         end
         local sourcefiles = sourcebatch.sourcefiles
+        opt.progress = progress.apply_target(target, opt.progress or 0)
         for _, sourcefile in ipairs(sourcefiles) do
-            progress.show(opt.progress or 0, "${color.build.object}compiling.verilog %s", sourcefile)
+            progress.show(opt.progress, "${color.build.object}compiling.verilog %s", sourcefile)
             -- we need to use slashes to fix it on windows
             -- @see https://github.com/verilator/verilator/issues/3873
             if is_host("windows") then
@@ -376,6 +377,7 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
         table.join2(argv, language_flags)
     end
     local sourcefiles = sourcebatch.sourcefiles
+    progress.apply_target(target, opt.progress)
     for _, sourcefile in ipairs(sourcefiles) do
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.verilog %s", sourcefile)
         table.insert(argv, path(sourcefile, function(v)
@@ -416,6 +418,7 @@ function buildcmd_cppfiles(target, batchcmds, sourcebatch, opt)
     -- do build
     for _, sourcefile in ipairs(sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", path.filename(sourcefile))
         batchcmds:compile(sourcefile, objectfile)
         table.insert(target:objectfiles(), objectfile)

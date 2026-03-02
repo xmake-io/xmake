@@ -32,6 +32,7 @@ rule("iverilog.binary")
     end)
 
     on_linkcmd(function (target, batchcmds, opt)
+        import("utils.progress")
         local toolchain = assert(target:toolchain("iverilog"), 'we need set_toolchains("iverilog") in target("%s")', target:name())
         local iverilog = assert(toolchain:config("iverilog"), "iverilog not found!")
 
@@ -100,6 +101,7 @@ rule("iverilog.binary")
 
         -- do build
         table.join2(argv, sourcefiles)
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.target}linking.iverilog %s", path.filename(targetfile))
         batchcmds:mkdir(targetdir)
         batchcmds:vrunv(iverilog, argv)

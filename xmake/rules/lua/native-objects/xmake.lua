@@ -29,6 +29,7 @@ rule("lua.native-objects")
     set_extensions(".nobj.lua")
     add_deps("c")
     before_buildcmd_file(function(target, batchcmds, sourcefile, opt)
+        import("utils.progress")
         import("lib.detect.find_tool")
         -- get c source file for lua.native-objects
         local dirname = path.join(target:autogendir(), "rules", "lua", "native-objects")
@@ -39,6 +40,7 @@ rule("lua.native-objects")
         table.insert(target:objectfiles(), objectfile)
 
         -- add commands
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.nobj.lua %s", sourcefile)
         batchcmds:mkdir(path.directory(sourcefile_c))
         local native_objects = find_tool("native_objects")

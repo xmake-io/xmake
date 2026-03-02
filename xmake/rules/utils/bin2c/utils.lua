@@ -33,6 +33,7 @@
 --                       - headerdir: the header directory (optional, auto-generated if not provided)
 --
 function generate_headerfile(target, batchcmds, binaryfile, opt)
+    import("utils.progress", {alias = "progress_utils"})
     opt = opt or {}
     local rulename = opt.rulename or "utils.bin2c"
     local progress = opt.progress
@@ -54,6 +55,7 @@ function generate_headerfile(target, batchcmds, binaryfile, opt)
 
     -- add commands
     if progress then
+        progress_utils.apply_target(target, progress)
         batchcmds:show_progress(progress, "${color.build.object}generating.bin2c %s", binaryfile)
     end
     batchcmds:mkdir(headerdir)

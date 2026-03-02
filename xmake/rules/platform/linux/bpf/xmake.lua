@@ -31,6 +31,7 @@ rule("platform.linux.bpf")
         target:add("includedirs", headerdir)
     end)
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+        import("utils.progress")
         local headerfile = path.join(target:autogendir(), "rules", "bpf", (path.filename(sourcefile):gsub("%.bpf%.c", ".skel.h")))
         local objectfile = path.join(target:autogendir(), "rules", "bpf", (path.filename(sourcefile):gsub("%.bpf%.c", ".bpf.o")))
         local targetarch
@@ -46,6 +47,7 @@ rule("platform.linux.bpf")
             targetarch = "__TARGET_ARCH_powerpc"
         end
         target:add("includedirs", path.directory(headerfile))
+        progress.apply_target(target, opt.progress)
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.bpf %s", sourcefile)
         batchcmds:mkdir(path.directory(objectfile))
         batchcmds:compile(sourcefile, objectfile, {configs = {force = {cxflags = {"-target bpf", "-g", "-O2"}}, defines = targetarch}})

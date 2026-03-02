@@ -51,6 +51,7 @@ rule("xcode.storyboard")
         end
 
         -- trace progress info
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress, "${color.build.object}compiling.xcode.$(mode) %s", sourcefile)
 
         -- clear Base.lproj first

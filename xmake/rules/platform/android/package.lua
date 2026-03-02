@@ -109,6 +109,7 @@ function main(target, opt)
     end
 
     depend.on_changed(function ()
+        opt.progress = progress.apply_target(target, opt.progress)
         progress.show(opt.progress, "${color.build.target}packing.apk %s", final_apk)
 
         local tmp_path = path.join(target:autogendir(), "packing")
