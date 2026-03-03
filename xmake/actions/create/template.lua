@@ -22,6 +22,7 @@
 import("core.base.global")
 import("core.base.hashset")
 import("core.language.language")
+import("core.package.repository")
 
 -- some builtin template variables in xmake.lua
 function builtinvars(targetname)
@@ -29,16 +30,43 @@ function builtinvars(targetname)
             FAQ = function() return io.readfile(path.join(os.programdir(), "scripts", "faq.lua")) end}
 end
 
--- get template root directories
-function rootdirs()
+-- get all template roots with extra meta information
+--
+-- priority:
+--   1. repo:     <global-repo>/templates
+--   2. global:   <globaldir>/templates
+--   3. builtin:  <programdir>/templates
+function rootinfos()
     local results = {}
+
+    -- get template directories from global repositories
+    local repos = repository.repositories({global = true, network = false})
+    if repos then
+        for _, repo in ipairs(repos) do
+            local templatesdir = path.join(repo:directory(), "templates")
+            if os.isdir(templatesdir) then
+                table.insert(results, {kind = "repo", name = repo:name(), url = repo:url(), branch = repo:branch(), dir = templatesdir})
+            end
+        end
+    end
+
+    -- get template directories from global and builtin
     local dir = path.join(global.directory(), "templates")
     if os.isdir(dir) then
-        table.insert(results, dir)
+        table.insert(results, {kind = "global", dir = dir})
     end
     dir = path.join(os.programdir(), "templates")
     if os.isdir(dir) then
-        table.insert(results, dir)
+        table.insert(results, {kind = "builtin", dir = dir})
+    end
+    return results
+end
+
+-- get template root directories
+function rootdirs()
+    local results = {}
+    for _, info in ipairs(rootinfos()) do
+        table.insert(results, info.dir)
     end
     return results
 end

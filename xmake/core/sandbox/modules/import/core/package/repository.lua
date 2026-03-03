@@ -60,7 +60,13 @@ function sandbox_core_package_repository.clear(is_global)
 end
 
 -- get all repositories from global or local directory
-function sandbox_core_package_repository.repositories(is_global)
+--
+-- opt:
+--   - global  = true: load global repositories
+--   - network = false: do not access network resources (skip fasturl sorting)
+function sandbox_core_package_repository.repositories(opt)
+    opt = opt or {}
+    local is_global = opt.global
 
     -- load repositories from repository cache
     local repositories = {}
@@ -112,6 +118,9 @@ function sandbox_core_package_repository.repositories(is_global)
         local network = project.policy("network.mode")
         if network == nil then
             network = global.get("network")
+        end
+        if opt.network == false then
+            network = "private"
         end
 
         -- add artifacts urls (only on Windows)
@@ -184,4 +193,3 @@ end
 
 -- return module
 return sandbox_core_package_repository
-

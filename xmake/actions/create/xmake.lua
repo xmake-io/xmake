@@ -26,6 +26,10 @@ task("create")
         description = "Create a new project.",
         options = {
             {'f', "force",      "k",   nil,         "Force to create project in a non-empty directory."},
+            {nil, "list",       "k",   nil,         "List all templates for each language."
+                                                  , "    e.g."
+                                                  , "    - xmake create --list"
+                                                  , "    - xmake create --list -l c++"},
             {'l', "language",   "kv", "c++",        "The project language",
                                                     values = function (complete, opt)
                                                         import("actions.create.template", {rootdir = os.programdir()})
@@ -37,22 +41,7 @@ task("create")
                                                         return template.languages_for_template(opt.template)
                                                     end                                                             },
             {'t', "template",   "kv", "console",    "Select the project template id or name of the given language.",
-                                                    function ()
-                                                        import("actions.create.template", {rootdir = os.programdir()})
-
-                                                        local templates = template.templates_with_languages()
-                                                        local templates_sorted = {}
-                                                        for name, languages in pairs(templates) do
-                                                            table.insert(templates_sorted, {name = name, languages = languages})
-                                                        end
-                                                        table.sort(templates_sorted, function(a, b) return a.name < b.name end)
-
-                                                        local description = {}
-                                                        for _, t in ipairs(templates_sorted) do
-                                                            table.insert(description, "    - " .. t.name .. ": " .. table.concat(t.languages, ", "))
-                                                        end
-                                                        return description
-                                                    end,
+                                                    "    Use `xmake create --list` to view all templates.",
                                                     values = function (complete, opt)
                                                         if complete then
                                                             import("actions.create.template", {rootdir = os.programdir()})

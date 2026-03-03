@@ -62,6 +62,108 @@ function _get_targetname()
     return option.get("target") or path.basename(project.directory()) or "demo"
 end
 
+-- list all supported templates for each language
+--
+-- output is in tree format:
+--   <source>
+--     <language>
+--       <template>
+function _list_templates(lang_filter)
+    local rootinfos = template.rootinfos()
+    local languages = template.languages()
+    if lang_filter then
+        _validate_template_component("language", lang_filter)
+        if not table.contains(languages, lang_filter) then
+            raise("unknown language(%s), supported languages: %s", lang_filter, table.concat(languages, ", "))
+        end
+        languages = {lang_filter}
+    end
+
+    -- map a template directory to its root meta (repo/global/builtin)
+    local rootinfo_of = function (dir)
+        if not dir then
+            return
+        end
+        dir = path.absolute(dir)
+        for _, info in ipairs(rootinfos) do
+            local rootdir = path.absolute(info.dir)
+            if dir == rootdir or dir:startswith(rootdir .. path.sep()) then
+                return info
+            end
+        end
+    end
+
+    local sourcekey_of = function (info)
+        if not info then
+            return "unknown"
+        end
+        if info.kind == "repo" then
+            return "repo:" .. info.name
+        end
+        return info.kind or "unknown"
+    end
+
+    local groups = {}
+    for _, lang in ipairs(languages) do
+        local templates = template.templates(lang)
+        if templates and #templates > 0 then
+            for _, name in ipairs(templates) do
+                local sourcedir = template.templatedir(lang, name)
+                local info = rootinfo_of(sourcedir)
+                local key = sourcekey_of(info)
+                local group = groups[key]
+                if not group then
+                    group = {info = info, langs = {}}
+                    groups[key] = group
+                end
+                group.langs[lang] = group.langs[lang] or {}
+                table.insert(group.langs[lang], name)
+            end
+        end
+    end
+
+    local groupkeys = {}
+    local inserted = {}
+    for _, info in ipairs(rootinfos) do
+        local key = sourcekey_of(info)
+        if groups[key] and not inserted[key] then
+            table.insert(groupkeys, key)
+            inserted[key] = true
+        end
+    end
+    if groups["unknown"] and not inserted["unknown"] then
+        table.insert(groupkeys, "unknown")
+        inserted["unknown"] = true
+    end
+
+    for _, key in ipairs(groupkeys) do
+        local group = groups[key]
+        if group then
+            local info = group.info
+            if info and info.kind == "repo" then
+                local branch = info.branch and (" " .. info.branch) or ""
+                cprint("${bright}%s${reset}: %s%s", info.name, info.url or "", branch)
+            else
+                cprint("${bright}%s${reset}", (info and info.kind) or "unknown")
+            end
+            local langs = {}
+            for lang, _ in pairs(group.langs) do
+                table.insert(langs, lang)
+            end
+            table.sort(langs)
+            for _, lang in ipairs(langs) do
+                cprint("  ${bright}%s${reset}", lang)
+                local templates = group.langs[lang]
+                table.sort(templates)
+                for _, name in ipairs(templates) do
+                    print("    - %s", name)
+                end
+            end
+            print("")
+        end
+    end
+end
+
 -- create project from template
 function _create_project(lang, templateid, targetname)
     assert(targetname ~= ".", "you should specify ${red}-P${reset} instead of directly using ${red}.${reset}")
@@ -118,6 +220,13 @@ end
 
 function main()
     os.cd(os.workingdir())
+
+    -- `xmake create --list` only prints available templates and exits.
+    if option.get("list") then
+        local explicit_language = option.options() and option.options().language
+        _list_templates(explicit_language)
+        return
+    end
 
     local targetname = _get_targetname()
     local templateid = _get_templateid()

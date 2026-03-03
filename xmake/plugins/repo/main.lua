@@ -106,7 +106,7 @@ function _update()
     local task = function ()
 
         -- get all repositories (local first)
-        local repos = table.join(repository.repositories(false), repository.repositories(true))
+        local repos = table.join(repository.repositories({global = false}), repository.repositories({global = true}))
         if name then
             for _, repo in ipairs(repos) do
                 if repo:name() == name then
@@ -184,7 +184,7 @@ function _list(is_global)
     local count = 0
     for _, position in ipairs(is_global and "global" or {"local", "global"}) do
         print("%s repositories:", position)
-        for _, repo in pairs(repository.repositories(position == "global")) do
+        for _, repo in pairs(repository.repositories({global = position == "global"})) do
             print("    %s %s%s", repo:name(), repo:url(), repo:branch() and (" " .. repo:branch()) or "")
             count = count + 1
         end
