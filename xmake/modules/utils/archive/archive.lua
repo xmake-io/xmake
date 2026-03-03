@@ -92,7 +92,15 @@ function _archive_using_7z(archivefile, inputfiles, extension, opt)
     end
 
     -- init argv
-    local argv = {"a", archivefile, "-y"}
+    local argv = {"a"}
+    if extension == ".gz" then
+        table.insert(argv, "-tgzip")
+    end
+    if extension == ".tar" then
+        table.insert(argv, "-ttar")
+    end
+    table.insert(argv, archivefile)
+    table.insert(argv, "-y")
     local excludesfile
     if opt.excludes then
         excludesfile = os.tmpfile()
@@ -100,7 +108,7 @@ function _archive_using_7z(archivefile, inputfiles, extension, opt)
         table.insert(argv, "-xr@" .. excludesfile)
     end
     local compress = opt.compress
-    if compress then
+    if compress and extension ~= ".tar" then
         if compress == "fastest" then
             table.insert(argv, "-mx1")
         elseif compress == "faster" then
@@ -336,7 +344,7 @@ end
 function _archive_tarfile(archivefile, tarfile, opt)
     local archivers = {
         [".xz"]         = {_archive_using_xz}
-    ,   [".gz"]         = {_archive_using_gzip}
+    ,   [".gz"]         = {_archive_using_gzip, _archive_using_7z}
     }
     local extension = opt.extension or path.extension(archivefile)
     return _archive(archivefile, tarfile, extension, archivers[extension], opt)
@@ -360,10 +368,10 @@ function main(archivefile, inputfiles, opt)
         [".zip"]        = {_archive_using_zip, _archive_using_7z}
     ,   [".7z"]         = {_archive_using_7z}
     ,   [".xz"]         = {_archive_using_xz}
-    ,   [".gz"]         = {_archive_using_gzip}
-    ,   [".tar"]        = {_archive_using_tar}
-    ,   [".tar.gz"]     = {_archive_using_tar, _archive_using_gzip}
-    ,   [".tar.xz"]     = {_archive_using_tar, _archive_using_xz}
+    ,   [".gz"]         = {_archive_using_gzip, _archive_using_7z}
+    ,   [".tar"]        = {_archive_using_tar, _archive_using_7z}
+    ,   [".tar.gz"]     = {_archive_using_tar}
+    ,   [".tar.xz"]     = {_archive_using_tar}
     ,   [".xmz"]        = {_archive_using_xmz}
     }
 
