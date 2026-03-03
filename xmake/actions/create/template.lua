@@ -33,9 +33,8 @@ end
 -- get all template roots with extra meta information
 --
 -- priority:
---   1. repo:     <global-repo>/templates
+--   1. repo:     <global-repo>/templates (including builtin repo templates)
 --   2. global:   <globaldir>/templates
---   3. builtin:  <programdir>/templates
 function rootinfos()
     local results = {}
 
@@ -54,10 +53,6 @@ function rootinfos()
     local dir = path.join(global.directory(), "templates")
     if os.isdir(dir) then
         table.insert(results, {kind = "global", dir = dir})
-    end
-    dir = path.join(os.programdir(), "templates")
-    if os.isdir(dir) then
-        table.insert(results, {kind = "builtin", dir = dir})
     end
     return results
 end
@@ -144,20 +139,13 @@ function replace_variables_in_files(files, vars)
 end
 
 -- get all languages from templates
+--
+-- scanning template roots to detect languages is too slow, and the language module list does not fully match template language names,
+-- so we hardcode it here for better performance.
 function languages()
-    local found = hashset.new()
-    for _, rootdir in ipairs(rootdirs()) do
-        local languages_dirs = os.dirs(path.join(rootdir, "*"))
-        if languages_dirs then
-            for _, d in ipairs(languages_dirs) do
-                local name = path.filename(d)
-                found:insert(name)
-            end
-        end
-    end
-    local results = found:to_array()
-    table.sort(results)
-    return results
+    return {"c", "c++", "cuda", "dlang", "fortran", "go",
+        "kotlin", "nim", "objc", "objc++", "pascal",
+        "rust", "swift", "vala", "zig"}
 end
 
 -- get all templates for the given language
