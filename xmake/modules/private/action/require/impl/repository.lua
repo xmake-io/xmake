@@ -117,7 +117,7 @@ function repositories()
         return _g._REPOSITORIES
     end
     -- get all repositories (local first)
-    local repos = table.join(repository.repositories(false), repository.repositories(true))
+    local repos = table.join(repository.repositories({global = false}), repository.repositories({global = true}))
     _g._REPOSITORIES = repos
     return repos
 end
@@ -220,4 +220,3 @@ function artifacts_manifest(packagename, version)
         end
     end
 end
-

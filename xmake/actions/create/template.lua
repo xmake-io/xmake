@@ -40,7 +40,7 @@ function rootinfos()
     local results = {}
 
     -- get template directories from global repositories
-    local repos = repository.repositories(true, {network = false})
+    local repos = repository.repositories({global = true, network = false})
     if repos then
         for _, repo in ipairs(repos) do
             local templatesdir = path.join(repo:directory(), "templates")

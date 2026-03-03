@@ -62,9 +62,11 @@ end
 -- get all repositories from global or local directory
 --
 -- opt:
+--   - global  = true: load global repositories
 --   - network = false: do not access network resources (skip fasturl sorting)
-function sandbox_core_package_repository.repositories(is_global, opt)
+function sandbox_core_package_repository.repositories(opt)
     opt = opt or {}
+    local is_global = opt.global
 
     -- load repositories from repository cache
     local repositories = {}
