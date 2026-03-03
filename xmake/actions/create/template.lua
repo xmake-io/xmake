@@ -33,9 +33,8 @@ end
 -- get all template roots with extra meta information
 --
 -- priority:
---   1. repo:     <global-repo>/templates
+--   1. repo:     <global-repo>/templates (including builtin repo templates)
 --   2. global:   <globaldir>/templates
---   3. builtin:  <programdir>/templates
 function rootinfos()
     local results = {}
 
@@ -54,10 +53,6 @@ function rootinfos()
     local dir = path.join(global.directory(), "templates")
     if os.isdir(dir) then
         table.insert(results, {kind = "global", dir = dir})
-    end
-    dir = path.join(os.programdir(), "templates")
-    if os.isdir(dir) then
-        table.insert(results, {kind = "builtin", dir = dir})
     end
     return results
 end
