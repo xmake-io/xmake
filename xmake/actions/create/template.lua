@@ -40,14 +40,12 @@ function rootinfos()
     local results = {}
 
     -- get template directories from global repositories
-    local repos = repository.repositories(true)
+    local repos = repository.repositories(true, {network = false})
     if repos then
-        local repolist = repos
-        table.sort(repolist, function (a, b) return a:name() < b:name() end)
-        for _, repo in ipairs(repolist) do
-            local dir = path.join(repo:directory(), "templates")
-            if os.isdir(dir) then
-                table.insert(results, {kind = "repo", name = repo:name(), url = repo:url(), branch = repo:branch(), dir = dir})
+        for _, repo in ipairs(repos) do
+            local templatesdir = path.join(repo:directory(), "templates")
+            if os.isdir(templatesdir) then
+                table.insert(results, {kind = "repo", name = repo:name(), url = repo:url(), branch = repo:branch(), dir = templatesdir})
             end
         end
     end
