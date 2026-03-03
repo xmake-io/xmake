@@ -62,6 +62,28 @@ function _get_targetname()
     return option.get("target") or path.basename(project.directory()) or "demo"
 end
 
+-- list all supported templates for each language
+function _list_templates(lang_filter)
+    local languages = template.languages()
+    if lang_filter then
+        _validate_template_component("language", lang_filter)
+        if not table.contains(languages, lang_filter) then
+            raise("unknown language(%s), supported languages: %s", lang_filter, table.concat(languages, ", "))
+        end
+        languages = {lang_filter}
+    end
+    for _, lang in ipairs(languages) do
+        cprint("${bright}%s${reset}", lang)
+        local templates = template.templates(lang)
+        if templates and #templates > 0 then
+            for _, name in ipairs(templates) do
+                cprint("  - %s", name)
+            end
+        end
+        print("")
+    end
+end
+
 -- create project from template
 function _create_project(lang, templateid, targetname)
     assert(targetname ~= ".", "you should specify ${red}-P${reset} instead of directly using ${red}.${reset}")
@@ -118,6 +140,13 @@ end
 
 function main()
     os.cd(os.workingdir())
+
+    -- `xmake create --list` only prints available templates and exits.
+    if option.get("list") then
+        local explicit_language = option.options() and option.options().language
+        _list_templates(explicit_language)
+        return
+    end
 
     local targetname = _get_targetname()
     local templateid = _get_templateid()
