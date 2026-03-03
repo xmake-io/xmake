@@ -233,17 +233,29 @@ function _archive_using_tar(archivefile, inputfiles, extension, opt)
     local compress = false
     local archivefile_tar
     if extension ~= ".tar" then
-        if is_host("windows") then
-            return false
-        else
-            compress = true
-            archivefile_tar = path.join(path.directory(archivefile), path.basename(archivefile))
-        end
+        compress = true
+        archivefile_tar = path.join(path.directory(archivefile), path.basename(archivefile))
     end
 
     -- init argv
     local argv = {}
-    if compress then
+    local program = tar.program
+    if is_host("windows") then
+        local force_local = _g.force_local
+        if force_local == nil then
+            force_local = try {function ()
+                local result = os.iorunv(program, {"--help"})
+                if result and result:find("--force-local", 1, true) then
+                    return true
+                end
+            end}
+            _g.force_local = force_local or false
+        end
+        if force_local then
+            table.insert(argv, "--force-local")
+        end
+    end
+    if compress and not is_host("windows") then
         table.insert(argv, "-a")
     end
     if option.get("verbose") then
@@ -275,13 +287,24 @@ function _archive_using_tar(archivefile, inputfiles, extension, opt)
     end
 
     -- archive it
-    os.vrunv(tar.program, argv, {curdir = opt.curdir})
+    os.vrunv(program, argv, {curdir = opt.curdir})
     if inputlistfile then
         os.tryrm(inputlistfile)
     end
     if archivefile_tar and os.isfile(archivefile_tar) then
-        _archive_tarfile(archivefile, archivefile_tar, opt)
-        os.rm(archivefile_tar)
+        try {
+            function ()
+                _archive_tarfile(archivefile, archivefile_tar, opt)
+                os.tryrm(archivefile_tar)
+                return true
+            end,
+            catch {
+                function (errs)
+                    os.tryrm(archivefile_tar)
+                    raise(errs)
+                end
+            }
+        }
     end
     return true
 end
