@@ -199,8 +199,10 @@ function _archive_using_gzip(archivefile, inputfiles, extension, opt)
     local argv = {"-c", archivefile}
     local keep = _g.gzip_keep
     if keep == nil then
+        -- https://github.com/xmake-io/xmake/issues/7361
         keep = try {function ()
-            local result = os.iorunv(gzip.program, {"--help"})
+            local outdata, errdata = os.iorunv(gzip.program, {"--help"})
+            local result = (outdata or "") .. (errdata or "")
             if result and (result:find(" -k", 1, true) or result:find("--keep", 1, true)) then
                 return true
             end
@@ -265,7 +267,8 @@ function _archive_using_tar(archivefile, inputfiles, extension, opt)
         local force_local = _g.force_local
         if force_local == nil then
             force_local = try {function ()
-                local result = os.iorunv(program, {"--help"})
+                local outdata, errdata = os.iorunv(program, {"--help"})
+                local result = (outdata or "") .. (errdata or "")
                 if result and result:find("--force-local", 1, true) then
                     return true
                 end
