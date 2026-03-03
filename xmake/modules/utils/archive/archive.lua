@@ -196,7 +196,20 @@ function _archive_using_gzip(archivefile, inputfiles, extension, opt)
     end
 
     -- init argv
-    local argv = {"-k", "-c", archivefile}
+    local argv = {"-c", archivefile}
+    local keep = _g.gzip_keep
+    if keep == nil then
+        keep = try {function ()
+            local result = os.iorunv(gzip.program, {"--help"})
+            if result and (result:find(" -k", 1, true) or result:find("--keep", 1, true)) then
+                return true
+            end
+        end}
+        _g.gzip_keep = keep or false
+    end
+    if keep then
+        table.insert(argv, 1, "-k")
+    end
     if not option.get("verbose") then
         table.insert(argv, "-q")
     end
