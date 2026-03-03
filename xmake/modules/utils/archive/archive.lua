@@ -99,6 +99,9 @@ function _archive_using_7z(archivefile, inputfiles, extension, opt)
     if extension == ".tar" then
         table.insert(argv, "-ttar")
     end
+    if extension == ".xz" then
+        table.insert(argv, "-txz")
+    end
     table.insert(argv, archivefile)
     table.insert(argv, "-y")
     local excludesfile
@@ -359,7 +362,7 @@ end
 -- only archive tar file
 function _archive_tarfile(archivefile, tarfile, opt)
     local archivers = {
-        [".xz"]         = {_archive_using_xz}
+        [".xz"]         = {_archive_using_xz, _archive_using_7z}
     ,   [".gz"]         = {_archive_using_gzip, _archive_using_7z}
     }
     local extension = opt.extension or path.extension(archivefile)
@@ -383,7 +386,7 @@ function main(archivefile, inputfiles, opt)
     local archivers = {
         [".zip"]        = {_archive_using_zip, _archive_using_7z}
     ,   [".7z"]         = {_archive_using_7z}
-    ,   [".xz"]         = {_archive_using_xz}
+    ,   [".xz"]         = {_archive_using_xz, _archive_using_7z}
     ,   [".gz"]         = {_archive_using_gzip, _archive_using_7z}
     ,   [".tar"]        = {_archive_using_tar, _archive_using_7z}
     ,   [".tar.gz"]     = {_archive_using_tar}
