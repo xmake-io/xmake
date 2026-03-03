@@ -139,20 +139,13 @@ function replace_variables_in_files(files, vars)
 end
 
 -- get all languages from templates
+--
+-- scanning template roots to detect languages is too slow, and the language module list does not fully match template language names,
+-- so we hardcode it here for better performance.
 function languages()
-    local found = hashset.new()
-    for _, rootdir in ipairs(rootdirs()) do
-        local languages_dirs = os.dirs(path.join(rootdir, "*"))
-        if languages_dirs then
-            for _, d in ipairs(languages_dirs) do
-                local name = path.filename(d)
-                found:insert(name)
-            end
-        end
-    end
-    local results = found:to_array()
-    table.sort(results)
-    return results
+    return {"c", "c++", "cuda", "dlang", "fortran", "go",
+        "kotlin", "nim", "objc", "objc++", "pascal",
+        "rust", "swift", "vala", "zig"}
 end
 
 -- get all templates for the given language
