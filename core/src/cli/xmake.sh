@@ -32,7 +32,7 @@ target "cli"
     add_installfiles "${projectdir}/(xmake/scripts/virtualenvs/**)" "share"
     add_installfiles "${projectdir}/(xmake/scripts/conan/**)" "share"
     add_installfiles "${projectdir}/(xmake/scripts/module/**)" "share"
-    add_installfiles "${projectdir}/(xmake/templates/**)" "share"
+    add_installfiles "${projectdir}/(xmake/repository/templates/**)" "share"
     add_installfiles "${projectdir}/scripts/xrepo.sh" "bin" "xrepo"
 
     # fix os.exec() call incorrect program from /mingw64/bin. e.g. python, ..

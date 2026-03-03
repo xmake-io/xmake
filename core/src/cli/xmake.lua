@@ -58,7 +58,7 @@ target("cli")
         add_installfiles("$(projectdir)/../NOTICE.md")
         add_installfiles("$(projectdir)/../xmake/(**.lua)")
         add_installfiles("$(projectdir)/../xmake/(scripts/**)")
-        add_installfiles("$(projectdir)/../xmake/(templates/**)")
+        add_installfiles("$(projectdir)/../xmake/(repository/templates/**)")
         add_installfiles("$(projectdir)/../scripts/xrepo.bat")
         add_installfiles("$(projectdir)/../scripts/xrepo.ps1")
         set_prefixdir("/", {bindir = "/"})
@@ -68,7 +68,7 @@ target("cli")
     else
         add_installfiles("$(projectdir)/../(xmake/**.lua)", {prefixdir = "share"})
         add_installfiles("$(projectdir)/../(xmake/scripts/**)", {prefixdir = "share"})
-        add_installfiles("$(projectdir)/../(xmake/templates/**)", {prefixdir = "share"})
+        add_installfiles("$(projectdir)/../(xmake/repository/templates/**)", {prefixdir = "share"})
         add_installfiles("$(projectdir)/../scripts/xrepo.sh", {prefixdir = "bin", filename = "xrepo"})
     end
 
@@ -91,4 +91,3 @@ target("cli")
             batchcmds:rmdir(package:installdir("toolchains"))
         end
     end)
-

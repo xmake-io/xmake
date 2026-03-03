@@ -194,7 +194,9 @@ function _create_project(lang, templateid, targetname)
 
     -- create project
     local sourcedir = template.templatedir(lang, templateid)
-    assert(sourcedir, "template(%s/%s): not found!", lang, templateid)
+    if not sourcedir then
+        raise("template(%s/%s): not found!\nyou can try:\n  - xrepo update-repo (update repositories)\n  - xmake create --list (show available templates)", lang, templateid)
+    end
 
     -- get the builtin variables
     local builtinvars = template.builtinvars(targetname)
