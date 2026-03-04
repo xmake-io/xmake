@@ -126,6 +126,13 @@ The official xmake package repository exists at: [xmake-repo](https://github.com
 
 The below assumes you are currently in the project's root directory.
 
+### Create a project
+
+```bash
+$ xmake create hello
+$ cd hello
+```
+
 ### Build a project
 
 ```bash
@@ -308,7 +315,10 @@ Xmake supports the below types of projects:
 * LuaRocks modules
 * Protobuf programs
 * Lex/Yacc programs
+* C++20 modules
 * Linux kernel modules
+* Keil MDK/C51 embedded programs
+* Verilog simulation programs
 
 ## Package management
 
@@ -340,7 +350,7 @@ Xmake can automatically fetch and install dependencies!
 
 ### Package management features
 
-* The official repository provides nearly 500+ packages with simple compilation on all supported platforms
+* The official repository provides 800+ packages with simple compilation on all supported platforms
 * Full platform package support, support for cross-compiled dependent packages
 * Support package virtual environment using `xrepo env shell`
 * Precompiled package acceleration for Windows (NT)
@@ -379,7 +389,7 @@ For more details see: [Build Cache Acceleration](https://xmake.io/guide/extras/b
 
 ## Benchmark
 
-Xmake's speed on is par with Ninja! The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/core)
+Xmake's speed is on par with Ninja! The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/core)
 
 ### Multi-task parallel compilation
 
@@ -391,7 +401,7 @@ Xmake's speed on is par with Ninja! The test project: [xmake-core](https://githu
 | cmake(gen+make)  | 5.416s+28.473s      | cmake(gen+make)  | 1.203s+14.030s     |
 | cmake(gen+ninja) | 4.458s+24.842s      | cmake(gen+ninja) | 0.988s+11.644s     |
 
-## Single task compilation
+### Single task compilation
 
 
 | buildsystem      | Termux (-j1)     | buildsystem      | MacOS (-j1)    |
@@ -519,7 +529,7 @@ target("test")
 
 #### fetch a special version of LLVM
 
-Require the Clang version packaged with LLM-10 to compile a project.
+Require the Clang version packaged with LLVM-10 to compile a project.
 
 ```lua
 add_requires("llvm 10.x", {alias = "llvm-10"})
@@ -667,7 +677,7 @@ The list of people and projects who are using Xmake is available [here](https://
 
 If you are using Xmake, you are welcome to submit your information to the above list through a PR, so that other users and the developers can gauge interest.  This also lets users use xmake more confidently and gives us motivation to continue to maintain it.
 
-This will help the Xmake project and it's community grow stronger and expand!
+This will help the Xmake project and its community grow stronger and expand!
 
 ## Contacts
 
