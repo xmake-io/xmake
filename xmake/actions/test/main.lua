@@ -318,8 +318,7 @@ function _show_output(testinfo, kind)
             io.writefile(logfile, output)
             print("%s: %s", kind, logfile)
         elseif option.get("verbose") then
-            local msg = format("%s: %s", kind, output)
-            io.write(msg)
+            io.write(kind, ": ", output, "\n")
             print()
         end
     end
