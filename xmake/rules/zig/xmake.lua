@@ -22,10 +22,6 @@
 rule("zig.build")
     set_sourcekinds("zc")
     on_load(function (target)
-        local toolchains = target:get("toolchains") or get_config("toolchain")
-        if not toolchains or not table.contains(table.wrap(toolchains), "zig") then
-            target:add("toolchains", "zig")
-        end
         local cachedir = target:values("zig.cachedir") or path.join(target:objectdir(), "zig-cache")
         os.mkdir(cachedir)
         target:add("zcflags", "--cache-dir " .. cachedir)
