@@ -604,6 +604,68 @@ function get_sanitizer_flags(target, opt)
     return result
 end
 
+-- get zig target
+function get_zig_target(toolchain)
+    local zig_version = toolchain:config("zig_version")
+
+    -- get target from cross only for cross-compilation
+    -- @see https://github.com/xmake-io/xmake/issues/7180
+    local target
+    if not target and toolchain:is_cross() then
+        target = toolchain:cross()
+    end
+
+    -- get target from arch
+    if not target then
+        local arch
+        if toolchain:is_arch("arm64", "arm64-v8a") then
+            arch = "aarch64"
+        elseif toolchain:is_arch("arm", "armv7") then
+            arch = "arm"
+        elseif toolchain:is_arch("i386", "x86") then
+            if zig_version and semver.compare(zig_version, "0.11") >= 0 then
+                arch = "x86"
+            else
+                arch = "i386"
+            end
+        elseif toolchain:is_arch("riscv64") then
+            arch = "riscv64"
+        elseif toolchain:is_arch("loong64") then
+            arch = "loongarch64"
+        elseif toolchain:is_arch("mips.*") then
+            arch = toolchain:arch()
+        elseif toolchain:is_arch("ppc64") then
+            arch = "powerpc64"
+        elseif toolchain:is_arch("ppc") then
+            arch = "powerpc"
+        elseif toolchain:is_arch("s390x") then
+            arch = "s390x"
+        else
+            arch = "x86_64"
+        end
+
+        if toolchain:is_plat("cross") then
+            -- xmake f -p cross --toolchain=zig --cross=mips64el-linux-gnuabi64
+        elseif toolchain:is_plat("macosx") then
+            --@see https://github.com/ziglang/zig/issues/14226
+            target = arch .. "-macos-none"
+        elseif toolchain:is_plat("linux") then
+            if arch == "arm" then
+                target = "arm-linux-gnueabi"
+            elseif arch == "mips64" or arch == "mips64el" then
+                target = arch .. "-linux-gnuabi64"
+            else
+                target = arch .. "-linux-gnu"
+            end
+        elseif toolchain:is_plat("windows") then
+            target = arch .. "-windows-msvc"
+        elseif toolchain:is_plat("mingw") then
+            target = arch .. "-windows-gnu"
+        end
+    end
+    return target
+end
+
 -- check if the file is a c++ header file extension
 function is_cxx_headerext(extension)
     -- prioritize .h* extensions to filter out most cases quickly

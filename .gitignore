@@ -57,3 +57,6 @@ compile_commands.json
 *.mod.c
 Module.symvers
 modules.order
+
+# ai
+.claude
