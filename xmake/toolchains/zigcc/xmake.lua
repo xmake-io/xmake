@@ -22,13 +22,13 @@
 toolchain("zigcc")
     set_kind("standalone")
     set_homepage("https://ziglang.org/")
-    set_description("Zig CC C/C++ Compiler")
+    set_description("Use zig cc/c++ as C/C++ Compiler")
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
 
         -- @see https://github.com/xmake-io/xmake/issues/5610
-        function _setup_zigcc_wrapper(zig)
+        local function _setup_zigcc_wrapper(zig)
             local script_suffix = is_host("windows") and ".cmd" or ""
             for _, tool in ipairs({"cc", "c++", "ar", "ranlib", "lib", "ld.lld", "lld-link", "wasm-ld", "objcopy", "dlltool", "rc"}) do
                 local wrapper_path = path.join(os.tmpdir(), "zigcc", tool) .. script_suffix
