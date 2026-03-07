@@ -6,5 +6,5 @@ target("demo")
     set_kind("binary")
     add_files("src/*.c")
     add_files("src/*.zig")
-    set_toolchains("@zig", {zigcc = false})
+    set_toolchains("@zig")
 
