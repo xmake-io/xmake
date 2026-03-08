@@ -33,6 +33,7 @@ function _find_hdkdir(sdkdir)
         if not sdkdir then
             if is_host("macosx") then
                 local paths = {
+                    "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony",
                     "~/Library/OpenHarmony/Sdk/*",
                     "~/Library/Huawei/Sdk/*/*" -- for old version, deprecated
                 }
