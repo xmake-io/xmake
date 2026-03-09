@@ -254,6 +254,7 @@ function build_modules_for_jobgraph(target, jobgraph, built_modules)
             local buildfilejob = _get_module_buildfilejob_for(target, sourcefile, moduletype)
             table.insert(buildfilejobs, buildfilejob)
             jobgraph:add(buildfilejob, function(_, _, jobopt)
+                progress.set_target(jobopt.progress, target)
                 -- build bmi if named job
                 jobopt.bmi = module.name
                 -- build objectfile here if two phase compilation is not supported
@@ -308,6 +309,7 @@ function build_objectfiles_for_jobgraph(target, jobgraph, built_modules)
                 local module = mapper.get(target, sourcefile)
                 local buildfilejob = _get_module_buildfilejob_for(target, sourcefile, "objectfile")
                 jobgraph:add(buildfilejob, function(_, _, jobopt)
+                    progress.set_target(jobopt.progress, target)
                     jobopt.bmi = false
                     jobopt.objectfile = true
                     builder.make_module_job(target, module, jobopt)
@@ -498,6 +500,7 @@ function build_headerunits_for_jobgraph(target, jobgraph, built_stlheaderunits, 
             local buildfilejob = _get_headerunit_buildfilejob_for(_target, headerunit.sourcefile .. headerunit.key)
             if not jobgraph:has(buildfilejob) then
                 jobgraph:add(buildfilejob, function(_, _, jobopt)
+                    progress.set_target(jobopt.progress, _target)
                     builder.make_headerunit_job(_target, headerunit, table.join(jobopt, opt))
                 end)
             end
@@ -606,9 +609,10 @@ function generate_metadata(target, modules)
 
     local jobs = option.get("jobs") or os.default_njob()
     runjobs(target:fullname() .. "_install_modules", function(index, _, jobopt)
+        progress.set_target(jobopt.progress, target)
         local module = public_modules[index]
         local metafilepath = support.get_metafile(target, module)
-        progress.show(jobopt.progress, "${color.build.target}<%s> generating.module.metadata %s", target:fullname(), module.name)
+        progress.show(jobopt.progress, "${color.build.target}generating.module.metadata %s", module.name)
         local metadata = _generate_meta_module_info(target, module)
         json.savefile(metafilepath, metadata)
     end, {comax = jobs, total = #public_modules})
@@ -653,15 +657,15 @@ function show_progress(target, module, opt)
     if option.get("verbose") then
         dim = "${dim}"
     end
-    local header = "${clear}${color.build.target}<%s>${clear}" .. dim
+    local header = "${clear}" .. dim
     if opt.headerunit then
         local name = module.method == "include-angle" and ("<" .. path.filename(module.name) .. ">") or module.name
-        show(header .. " compiling.headerunit.$(mode) %s${clear}%s" .. suffix, target:fullname(), name, cmd)
+        show(header .. "compiling.headerunit.$(mode) %s${clear}%s" .. suffix, name, cmd)
     elseif opt.bmi then
         if opt.objectfile then
-            show(header .. " compiling.module.$(mode) %s${clear}%s" .. suffix, target:fullname(), module.name, cmd)
+            show(header .. "compiling.module.$(mode) %s${clear}%s" .. suffix, module.name, cmd)
         else
-            show(header .. " compiling.module.bmi.$(mode) %s${clear}%s" .. suffix, target:fullname(), module.name, cmd)
+            show(header .. "compiling.module.bmi.$(mode) %s${clear}%s" .. suffix, module.name, cmd)
         end
     else
         show("compiling.$(mode) %s${clear}%s" .. suffix, module.sourcefile, cmd)

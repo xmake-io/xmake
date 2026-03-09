@@ -38,9 +38,6 @@ function _do_link_target(target, opt)
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
         local filename = target:filename()
-        if target:namespace() then
-            filename = target:namespace() .. "::" .. filename
-        end
         if target:is_static() then
             progress.show(opt.progress, "${color.build.target}archiving.$(mode) %s", filename)
         else
@@ -69,6 +66,7 @@ function main(jobgraph, target, opt)
     local buildcmds = opt.buildcmds
     local linkjob = target:fullname() .. "/link_objects"
     jobgraph:add(linkjob, function (index, total, opt)
+        progress.set_target(opt.progress, target)
         if not buildcmds then
             _do_link_target(target, opt)
         end

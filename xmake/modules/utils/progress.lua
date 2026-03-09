@@ -350,8 +350,45 @@ function _show_current_coroutine_progress(maxwidth)
     end
 end
 
+-- is show target enabled?
+function _is_show_target_enabled()
+    local show_target = _g.show_target
+    if show_target == nil then
+        local policy_value = project.policy("build.progress_show_target")
+        if policy_value == nil then
+            show_target = true
+        else
+            show_target = policy_value
+        end
+        _g.show_target = show_target
+    end
+    return show_target
+end
+
+-- get target name prefix from progress object
+function _get_target_name_prefix(progress)
+    if type(progress) == "table" and progress.get then
+        local target_name = progress:get("target_name")
+        if target_name and _is_show_target_enabled() then
+            return "${color.build.target}<" .. target_name .. ">${clear} "
+        end
+    end
+end
+
+-- set the associated target name for the progress object (coroutine-local)
+-- it's safe to call with non-table progress (e.g. number), it will be ignored
+function set_target(progress, target)
+    if _is_show_target_enabled() and type(progress) == "table" and progress.set then
+        progress:set("target_name", target:fullname())
+    end
+end
+
 -- show the message with progress
 function show(progress, format, ...)
+    local target_prefix = _get_target_name_prefix(progress)
+    if target_prefix then
+        format = target_prefix .. format
+    end
     progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     if option.get("verbose") then
         _show_progress_with_verbose(progress, format, ...)
@@ -467,6 +504,10 @@ end
 
 -- get the message text with progress
 function text(progress, format, ...)
+    local target_prefix = _get_target_name_prefix(progress)
+    if target_prefix then
+        format = target_prefix .. format
+    end
     progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     local progress_prefix = _get_progress_prefix()
     if option.get("verbose") then

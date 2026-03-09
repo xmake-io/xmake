@@ -81,11 +81,7 @@ function _do_build_file(target, sourcefile, opt)
 
     -- trace progress info
     if not opt.quiet then
-        local filepath = sourcefile
-        if target:namespace() then
-            filepath = target:namespace() .. "::" .. filepath
-        end
-        progress.show(opt.progress, "${color.build.object}%scompiling.$(mode) %s", prefix, filepath)
+        progress.show(opt.progress, "${color.build.object}%scompiling.$(mode) %s", prefix, sourcefile)
     end
 
     -- trace verbose info
@@ -152,6 +148,7 @@ function _add_batchjobs(target, batchjobs, sourcebatch, opt)
         local dependfile = sourcebatch.dependfiles[i]
         local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
         batchjobs:addjob(sourcefile, function (index, total, jobopt)
+            progress.set_target(jobopt.progress, target)
             local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = jobopt.progress}, opt)
             build_object(target, sourcefile, build_opt)
         end, {rootjob = rootjob, distcc = opt.distcc})
@@ -167,6 +164,7 @@ function _add_jobgraph(target, jobgraph, sourcebatch, opt)
         local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
         local jobname = target:fullname() .. "/obj/" .. sourcefile
         jobgraph:add(jobname, function (index, total, jobopt)
+            progress.set_target(jobopt.progress, target)
             local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = jobopt.progress}, opt)
             build_object(target, sourcefile, build_opt)
         end, {distcc = opt.distcc})

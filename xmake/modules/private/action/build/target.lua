@@ -188,6 +188,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
                 --     end)
                 local jobname = string.format("%s/%s", job_prefix, script_name)
                 jobgraph:add(jobname, function (index, total, opt)
+                    progress_utils.set_target(opt.progress, target)
                     script(target, table.join({progress = opt.progress}, job_opt))
                 end)
             end
@@ -207,6 +208,7 @@ function add_targetjobs_for_script(jobgraph, target, instance, opt)
         if scriptcmd then
             local jobname = string.format("%s/%s", job_prefix, scriptcmd_name)
             jobgraph:add(jobname, function (index, total, opt)
+                progress_utils.set_target(opt.progress, target)
                 if buildcmds then
                     -- only generate cmds and do not run them, use cases: e.g. project generator
                     scriptcmd(target, buildcmds, {progress = opt.progress})
@@ -440,6 +442,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 --     end)
                 local jobname = string.format("%s/%s", job_prefix, script_files_name)
                 jobgraph:add(jobname, function (index, total, opt)
+                    progress_utils.set_target(opt.progress, target)
                     script_files(target, sourcebatch, {progress = opt.progress, distcc = distcc})
                 end)
             end
@@ -477,6 +480,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local jobname = string.format("%s/%s/%s", job_prefix, script_file_name, sourcefile)
                     jobgraph:add(jobname, function (index, total, opt)
+                        progress_utils.set_target(opt.progress, target)
                         script_file(target, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
                     end)
                 end
@@ -498,6 +502,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
             local distcc = instance:extraconf(scriptcmd_files_name, "distcc")
             local jobname = string.format("%s/%s", job_prefix, scriptcmd_files_name)
             jobgraph:add(jobname, function (index, total, opt)
+                progress_utils.set_target(opt.progress, target)
                 -- only generate cmds and do not run them, use cases: e.g. project generator
                 if buildcmds then
                     scriptcmd_files(target, buildcmds, sourcebatch, {progress = opt.progress})
@@ -527,6 +532,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 -- only generate cmds and do not run them, use cases: e.g. project generator
                 local jobname = string.format("%s/%s", job_prefix, scriptcmd_file_name)
                 jobgraph:add(jobname, function (index, total, opt)
+                    progress_utils.set_target(opt.progress, target)
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                         scriptcmd_file(target, buildcmds, sourcefile, {progress = opt.progress, sourcekind = sourcekind})
                     end
@@ -536,6 +542,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local jobname = string.format("%s/%s/%s", job_prefix, scriptcmd_file_name, sourcefile)
                     jobgraph:add(jobname, function (index, total, opt)
+                        progress_utils.set_target(opt.progress, target)
                         local batchcmds_ = batchcmds.new({target = target})
                         scriptcmd_file(target, batchcmds_, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
                         batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
