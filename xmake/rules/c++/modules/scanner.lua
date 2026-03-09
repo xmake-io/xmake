@@ -27,6 +27,7 @@ import("core.base.profiler")
 import("core.base.bytes")
 import("async.jobgraph")
 import("async.runjobs")
+import("utils.progress")
 import("support")
 import("mapper")
 import("stlheaders")
@@ -538,6 +539,7 @@ function _schedule_module_dependencies_scan(target, jobgraph, sourcebatch)
                     if not jobgraph:has(scanfilejob) then
                         has_scanjob = true
                         jobgraph:add(scanfilejob, function(_, _, opt)
+                            progress.set_target(opt.progress, target)
                             _do_scan(target, sourcefile, opt)
                         end)
                     end

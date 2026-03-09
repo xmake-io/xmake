@@ -66,6 +66,7 @@ function _init_progress(state, opt)
     state.progress_finished_count = 0
     state.progress_factor = opt.progress_factor or 1.0
     local progress_wrapper = {}
+    local progress_wrapper_data = {}
     progress_wrapper.current = function ()
         return state.progress_finished_count
     end
@@ -78,6 +79,26 @@ function _init_progress(state, opt)
             return math.floor((state.progress_finished_count * state.progress_factor * 100) / total)
         else
             return 0
+        end
+    end
+    progress_wrapper.set = function (_, key, value)
+        local running = scheduler.co_running()
+        if running then
+            local co_data = progress_wrapper_data[running]
+            if not co_data then
+                co_data = {}
+                progress_wrapper_data[running] = co_data
+            end
+            co_data[key] = value
+        end
+    end
+    progress_wrapper.get = function (_, key)
+        local running = scheduler.co_running()
+        if running then
+            local co_data = progress_wrapper_data[running]
+            if co_data then
+                return co_data[key]
+            end
         end
     end
     debug.setmetatable(progress_wrapper, {
