@@ -38,9 +38,6 @@ function _do_link_target(target, opt)
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
         local filename = target:filename()
-        if target:namespace() then
-            filename = target:namespace() .. "::" .. filename
-        end
         if target:is_static() then
             progress.show(opt.progress, "${color.build.target}archiving.$(mode) %s", filename)
         else
