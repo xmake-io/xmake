@@ -480,9 +480,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local jobname = string.format("%s/%s/%s", job_prefix, script_file_name, sourcefile)
                     jobgraph:add(jobname, function (index, total, opt)
-                        if opt.progress and opt.progress.set then
-                            opt.progress:set("target_name", target:fullname())
-                        end
+                        progress_utils.set_target(opt.progress, target)
                         script_file(target, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
                     end)
                 end
@@ -544,9 +542,7 @@ function add_filejobs_for_script(jobgraph, target, instance, sourcebatch, opt)
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local jobname = string.format("%s/%s/%s", job_prefix, scriptcmd_file_name, sourcefile)
                     jobgraph:add(jobname, function (index, total, opt)
-                        if opt.progress and opt.progress.set then
-                            opt.progress:set("target_name", target:fullname())
-                        end
+                        progress_utils.set_target(opt.progress, target)
                         local batchcmds_ = batchcmds.new({target = target})
                         scriptcmd_file(target, batchcmds_, sourcefile, {progress = opt.progress, sourcekind = sourcekind, distcc = distcc})
                         batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})

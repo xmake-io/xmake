@@ -378,7 +378,7 @@ end
 -- set the associated target name for the progress object (coroutine-local)
 -- it's safe to call with non-table progress (e.g. number), it will be ignored
 function set_target(progress, target)
-    if type(progress) == "table" and progress.set then
+    if _is_show_target_enabled() and type(progress) == "table" and progress.set then
         progress:set("target_name", target:fullname())
     end
 end
