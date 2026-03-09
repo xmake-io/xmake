@@ -193,7 +193,7 @@ if test_eq "$branch" "__local__"; then
     fi
     cp -r . $projectdir
 elif test_eq "$branch" "__run__"; then
-    version=$(git ls-remote --tags "$gitrepo" | tail -c 7)
+    version=$(git ls-remote --tags "$gitrepo" | tail -c7)
     pack=gz
     mkdir -p $projectdir
     runfile_url="https://fastly.jsdelivr.net/gh/xmake-mirror/xmake-releases@$version/xmake-$version.$pack.run"
