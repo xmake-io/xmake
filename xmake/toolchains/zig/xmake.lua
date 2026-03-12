@@ -74,6 +74,6 @@ toolchain("zig")
         if toolchain:is_plat("windows") then
             toolchain:add("zcldflags", "--subsystem console")
             toolchain:add("zcldflags", "-lkernel32", "-lntdll")
-            toolchain:add("zcshflags", "-lkernel32", "-lntdll")
+            toolchain:add("zcshflags", "-lc", "-lkernel32", "-lntdll")
         end
     end)
