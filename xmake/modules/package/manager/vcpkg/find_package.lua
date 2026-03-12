@@ -189,8 +189,15 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
     end
 
     -- find dependency package
+    -- pass features to depend-info to get the complete dependency tree
+    -- e.g. curl[mbedtls] needs mbedtls libraries
+    -- @see https://github.com/xmake-io/xmake/issues/7388
+    local depend_name = name
+    if required_features then
+        depend_name = name .. "[" .. table.concat(required_features, ",") .. "]"
+    end
     local result = nil
-    local _, dependinfo = try { function () return os.iorunv(vcpkg, {"depend-info", name, "--sort=reverse", "--triplet=" .. triplet}) end }
+    local _, dependinfo = try { function () return os.iorunv(vcpkg, {"depend-info", depend_name, "--sort=reverse", "--triplet=" .. triplet}) end }
     if dependinfo then
         for _, line in ipairs(dependinfo:split("\n", {plain = true})) do
             if not line:startswith("vcpkg-") then
