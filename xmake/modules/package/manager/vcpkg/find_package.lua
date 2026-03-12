@@ -136,6 +136,13 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
     -- get configs
     local configs = opt.configs or {}
 
+    -- extract required features before stripping, e.g. curl[openssl,mbedtls] -> {"openssl", "mbedtls"}
+    local required_features
+    local features_str = name:match("%[(.-)%]")
+    if features_str then
+        required_features = features_str:split(",", {plain = true})
+    end
+
     -- fix name, e.g. ffmpeg[x264] as ffmpeg
     -- @see https://github.com/xmake-io/xmake/issues/925
     name = name:gsub("%[.-%]", "")
@@ -159,6 +166,17 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
     local infofile = find_file(format("%s_*_%s.list", name, triplet), infodirs)
     if not infofile then
         return
+    end
+
+    -- check that required features are installed
+    -- e.g. curl[mbedtls] should have curl_*_triplet_mbedtls.list in info directory
+    if required_features then
+        for _, feature in ipairs(required_features) do
+            local feature_infofile = find_file(format("%s_*_%s_%s.list", name, triplet, feature), infodirs)
+            if not feature_infofile then
+                return
+            end
+        end
     end
 
     -- find dependency package
