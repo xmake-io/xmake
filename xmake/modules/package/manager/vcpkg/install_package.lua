@@ -56,6 +56,10 @@ function _install_for_classic(vcpkg, name, opt)
         table.insert(argv, "--debug")
     end
 
+    -- allow rebuilding packages when features change
+    -- @see https://github.com/xmake-io/xmake/issues/7388
+    table.insert(argv, "--recurse")
+
     -- install package
     os.vrunv(vcpkg, argv)
 end

@@ -131,10 +131,31 @@ function _get_package_info(name, triplet, infodirs, arch, plat, mode)
     return result
 end
 
+-- check if the required features are installed via `vcpkg list`
+-- @see https://github.com/xmake-io/xmake/issues/7388
+function _has_installed_features(vcpkg, name, triplet, required_features)
+    for _, feature in ipairs(required_features) do
+        local listinfo = try { function ()
+            return os.iorunv(vcpkg, {"list", name .. "[" .. feature .. "]:" .. triplet})
+        end}
+        if not listinfo or listinfo:trim() == "" then
+            return false
+        end
+    end
+    return true
+end
+
 function _find_package(vcpkg, vcpkgdir, name, opt)
 
     -- get configs
     local configs = opt.configs or {}
+
+    -- extract required features before stripping, e.g. curl[openssl,mbedtls] -> {"openssl", "mbedtls"}
+    local required_features
+    local features_str = name:match("%[(.-)%]")
+    if features_str then
+        required_features = features_str:split(",", {plain = true})
+    end
 
     -- fix name, e.g. ffmpeg[x264] as ffmpeg
     -- @see https://github.com/xmake-io/xmake/issues/925
@@ -161,9 +182,22 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
         return
     end
 
+    -- check that required features are installed
+    -- @see https://github.com/xmake-io/xmake/issues/7388
+    if required_features and not _has_installed_features(vcpkg, name, triplet, required_features) then
+        return
+    end
+
     -- find dependency package
+    -- pass features to depend-info to get the complete dependency tree
+    -- e.g. curl[mbedtls] needs mbedtls libraries
+    -- @see https://github.com/xmake-io/xmake/issues/7388
+    local depend_name = name
+    if required_features then
+        depend_name = name .. "[" .. table.concat(required_features, ",") .. "]"
+    end
     local result = nil
-    local _, dependinfo = try { function () return os.iorunv(vcpkg, {"depend-info", name, "--sort=reverse", "--triplet=" .. triplet}) end }
+    local _, dependinfo = try { function () return os.iorunv(vcpkg, {"depend-info", depend_name, "--sort=reverse", "--triplet=" .. triplet}) end }
     if dependinfo then
         for _, line in ipairs(dependinfo:split("\n", {plain = true})) do
             if not line:startswith("vcpkg-") then
