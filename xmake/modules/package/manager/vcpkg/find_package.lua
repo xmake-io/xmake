@@ -131,38 +131,18 @@ function _get_package_info(name, triplet, infodirs, arch, plat, mode)
     return result
 end
 
--- get installed features from vcpkg status file
+-- check if the required features are installed via `vcpkg list`
 -- @see https://github.com/xmake-io/xmake/issues/7388
-function _get_installed_features(name, triplet, statusdirs)
-    local features = {}
-    for _, statusdir in ipairs(statusdirs) do
-        local statusfile = path.join(statusdir, "status")
-        if os.isfile(statusfile) then
-            local statusdata = io.readfile(statusfile)
-            if statusdata then
-                -- parse dpkg-like status entries, separated by blank lines
-                -- e.g.
-                -- Package: curl
-                -- Feature: openssl
-                -- Architecture: x64-windows-static-md
-                -- Status: install ok installed
-                --
-                statusdata = "\n" .. statusdata .. "\n\n"
-                for entry in statusdata:gmatch("\n\n(.-)\n\n") do
-                    local pkg = entry:match("Package:%s*(%S+)")
-                    local arch = entry:match("Architecture:%s*(%S+)")
-                    local feature = entry:match("Feature:%s*(%S+)")
-                    local status = entry:match("Status:%s*(.-)\n?$")
-                    if pkg == name and arch == triplet and status and status:find("installed", 1, true) then
-                        if feature then
-                            table.insert(features, feature)
-                        end
-                    end
-                end
-            end
+function _has_installed_features(vcpkg, name, triplet, required_features)
+    for _, feature in ipairs(required_features) do
+        local listinfo = try { function ()
+            return os.iorunv(vcpkg, {"list", name .. "[" .. feature .. "]:" .. triplet})
+        end}
+        if not listinfo or listinfo:trim() == "" then
+            return false
         end
     end
-    return features
+    return true
 end
 
 function _find_package(vcpkg, vcpkgdir, name, opt)
@@ -202,20 +182,10 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
         return
     end
 
-    -- check that required features are installed via vcpkg status file
+    -- check that required features are installed
     -- @see https://github.com/xmake-io/xmake/issues/7388
-    if required_features then
-        local statusdirs = {}
-        if opt.installdir then
-            table.insert(statusdirs, path.join(opt.installdir, "vcpkg_installed", "vcpkg"))
-        end
-        table.insert(statusdirs, path.join(vcpkgdir, "installed", "vcpkg"))
-        local installed_features = _get_installed_features(name, triplet, statusdirs)
-        for _, feature in ipairs(required_features) do
-            if not table.contains(installed_features, feature) then
-                return
-            end
-        end
+    if required_features and not _has_installed_features(vcpkg, name, triplet, required_features) then
+        return
     end
 
     -- find dependency package
