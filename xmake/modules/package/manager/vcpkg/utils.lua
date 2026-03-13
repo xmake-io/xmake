@@ -18,16 +18,13 @@
 -- @file        utils.lua
 --
 
--- define module
-local utils = utils or {}
-
 -- check if a package (with optional features) is installed for the given triplet
 -- e.g. is_installed(vcpkg, "curl", "x64-windows-static-md")
 --      is_installed(vcpkg, "curl[mbedtls]", "x64-windows-static-md")
 --
 -- @see https://github.com/xmake-io/xmake/issues/7388
 --
-function utils.is_installed(vcpkg, name, triplet)
+function is_installed(vcpkg, name, triplet)
     local listinfo = try { function ()
         return os.iorunv(vcpkg, {"list", name .. ":" .. triplet, "--x-full-desc"})
     end}
@@ -41,6 +38,3 @@ function utils.is_installed(vcpkg, name, triplet)
     end
     return false
 end
-
--- return module
-return utils
