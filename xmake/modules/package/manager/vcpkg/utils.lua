@@ -39,3 +39,17 @@ function is_installed(vcpkg, name, triplet)
     end
     return false
 end
+
+-- check if all required features are installed
+-- e.g. has_installed_features(vcpkg, "curl", "x64-windows-static-md", {"openssl", "mbedtls"})
+--
+-- @see https://github.com/xmake-io/xmake/issues/7388
+--
+function has_installed_features(vcpkg, name, triplet, required_features)
+    for _, feature in ipairs(required_features) do
+        if not is_installed(vcpkg, name .. "[" .. feature .. "]", triplet) then
+            return false
+        end
+    end
+    return true
+end

@@ -132,17 +132,6 @@ function _get_package_info(name, triplet, infodirs, arch, plat, mode)
     return result
 end
 
--- check if all required features are installed
--- @see https://github.com/xmake-io/xmake/issues/7388
-function _has_installed_features(vcpkg, name, triplet, required_features)
-    for _, feature in ipairs(required_features) do
-        if not vcpkg_utils.is_installed(vcpkg, name .. "[" .. feature .. "]", triplet) then
-            return false
-        end
-    end
-    return true
-end
-
 function _find_package(vcpkg, vcpkgdir, name, opt)
 
     -- get configs
@@ -182,7 +171,7 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
 
     -- check that required features are installed
     -- @see https://github.com/xmake-io/xmake/issues/7388
-    if required_features and not _has_installed_features(vcpkg, name, triplet, required_features) then
+    if required_features and not vcpkg_utils.has_installed_features(vcpkg, name, triplet, required_features) then
         return
     end
 
