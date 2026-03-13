@@ -62,13 +62,15 @@ function _install_for_classic(vcpkg, name, opt)
     -- @see https://github.com/xmake-io/xmake/issues/7388
     local basename = name:gsub("%[.-%]", "")
     if basename ~= name then
-        if vcpkg_utils.is_installed(vcpkg, basename, triplet) then
-            local confirm = utils.confirm({default = true,
-                description = format("%s:%s is already installed with other features, installing %s will rebuild it and its dependencies, continue?", basename, triplet, name)})
-            if confirm then
-                table.insert(argv, "--recurse")
-            else
-                raise("install %s:%s cancelled!", name, triplet)
+        if not vcpkg_utils.is_installed(vcpkg, name, triplet) then
+            if vcpkg_utils.is_installed(vcpkg, basename, triplet) then
+                local confirm = utils.confirm({default = true,
+                    description = format("%s:%s is already installed (possibly with different features). Installing %s will require a rebuild of it and its dependencies. Continue?", basename, triplet, name)})
+                if confirm then
+                    table.insert(argv, "--recurse")
+                else
+                    raise("install %s:%s cancelled!", name, triplet)
+                end
             end
         end
     end
