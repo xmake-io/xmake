@@ -198,6 +198,8 @@ function main(opt)
     -- config it first
     local targetname, group_pattern = action_utils.get_target_and_group()
     task.run("config", {}, {disable_dump = true})
+
+    -- check target name
     if targetname then
         assert(check_targetname(targetname))
     end
