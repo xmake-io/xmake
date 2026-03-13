@@ -112,7 +112,7 @@ end
 -- tell if the source batch is a c/c++/objc/objc++/cuda source batch
 function _source_batch_should_format(sourcebatch)
     local rulename = sourcebatch.rulename
-    local matched_rules = {"c.build", "c++.build", "cuda.build", "objc.build", "objc++.build"}
+    local matched_rules = {"c.build", "c++.build", "c++.build.modules", "cuda.build", "objc.build", "objc++.build"}
     return table.contains(matched_rules, rulename)
 end
 
