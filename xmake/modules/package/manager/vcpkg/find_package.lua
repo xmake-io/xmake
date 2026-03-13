@@ -26,6 +26,7 @@ import("core.project.config")
 import("core.project.target")
 import("detect.sdks.find_vcpkgdir")
 import("package.manager.vcpkg.configurations")
+import("package.manager.vcpkg.utils", {alias = "vcpkg_utils"})
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
 -- we iterate over each pkgconfig file to extract the required data
@@ -131,14 +132,11 @@ function _get_package_info(name, triplet, infodirs, arch, plat, mode)
     return result
 end
 
--- check if the required features are installed via `vcpkg list`
+-- check if all required features are installed
 -- @see https://github.com/xmake-io/xmake/issues/7388
 function _has_installed_features(vcpkg, name, triplet, required_features)
     for _, feature in ipairs(required_features) do
-        local listinfo = try { function ()
-            return os.iorunv(vcpkg, {"list", name .. "[" .. feature .. "]:" .. triplet})
-        end}
-        if not listinfo or listinfo:trim() == "" then
+        if not vcpkg_utils.is_installed(vcpkg, name .. "[" .. feature .. "]", triplet) then
             return false
         end
     end
