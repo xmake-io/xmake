@@ -24,6 +24,7 @@ import("core.base.json")
 import("core.base.semver")
 import("lib.detect.find_tool")
 import("package.manager.vcpkg.configurations")
+import("package.manager.vcpkg.utils", {alias = "vcpkg_utils"})
 
 -- need manifest mode?
 function _need_manifest(opt)
@@ -56,9 +57,23 @@ function _install_for_classic(vcpkg, name, opt)
         table.insert(argv, "--debug")
     end
 
-    -- allow rebuilding packages when features change
+    -- check if the base package is already installed with different features,
+    -- if so, prompt user before rebuilding with --recurse
     -- @see https://github.com/xmake-io/xmake/issues/7388
-    table.insert(argv, "--recurse")
+    local basename = name:gsub("%[.-%]", "")
+    if basename ~= name then
+        if not vcpkg_utils.is_installed(vcpkg, name, triplet) then
+            if vcpkg_utils.is_installed(vcpkg, basename, triplet) then
+                local confirm = utils.confirm({default = true,
+                    description = format("%s:%s is already installed (possibly with different features). Installing %s will require a rebuild of it and its dependencies. Continue?", basename, triplet, name)})
+                if confirm then
+                    table.insert(argv, "--recurse")
+                else
+                    raise("install %s:%s cancelled!", name, triplet)
+                end
+            end
+        end
+    end
 
     -- install package
     os.vrunv(vcpkg, argv)
