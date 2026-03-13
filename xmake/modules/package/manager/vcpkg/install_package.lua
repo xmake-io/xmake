@@ -22,7 +22,6 @@
 import("core.base.option")
 import("core.base.json")
 import("core.base.semver")
-import("core.base.utils")
 import("lib.detect.find_tool")
 import("package.manager.vcpkg.configurations")
 import("package.manager.vcpkg.utils", {alias = "vcpkg_utils"})
