@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.json")
 import("core.base.semver")
+import("core.base.utils")
 import("lib.detect.find_tool")
 import("package.manager.vcpkg.configurations")
 
@@ -56,9 +57,24 @@ function _install_for_classic(vcpkg, name, opt)
         table.insert(argv, "--debug")
     end
 
-    -- allow rebuilding packages when features change
+    -- check if the base package is already installed with different features,
+    -- if so, prompt user before rebuilding with --recurse
     -- @see https://github.com/xmake-io/xmake/issues/7388
-    table.insert(argv, "--recurse")
+    local basename = name:gsub("%[.-%]", "")
+    if basename ~= name then
+        local listinfo = try { function ()
+            return os.iorunv(vcpkg, {"list", basename .. ":" .. triplet})
+        end}
+        if listinfo and listinfo:trim() ~= "" then
+            local confirm = utils.confirm({default = true,
+                description = format("%s:%s is already installed with other features, installing %s will rebuild it and its dependencies, continue?", basename, triplet, name)})
+            if confirm then
+                table.insert(argv, "--recurse")
+            else
+                raise("install %s:%s cancelled!", name, triplet)
+            end
+        end
+    end
 
     -- install package
     os.vrunv(vcpkg, argv)
