@@ -38,6 +38,7 @@ import("private.cache.build_cache")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("private.utils.statistics")
 import("private.action.utils", {alias = "action_utils"})
+import("private.detect.check_targetname")
 
 -- try building it
 function _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname)
@@ -197,6 +198,11 @@ function main(opt)
     -- config it first
     local targetname, group_pattern = action_utils.get_target_and_group()
     task.run("config", {}, {disable_dump = true})
+
+    -- check target name
+    if targetname then
+        assert(check_targetname(targetname))
+    end
 
     -- enter project directory
     local oldir = os.cd(project.directory())
