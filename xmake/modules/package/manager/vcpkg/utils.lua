@@ -31,7 +31,8 @@ function is_installed(vcpkg, name, triplet)
     if listinfo then
         local exact_prefix = name .. ":" .. triplet
         for _, line in ipairs(listinfo:split("\n", {plain = true})) do
-            if line:startswith(exact_prefix) then
+            local first = line:split("%s")[1]
+            if first == exact_prefix then
                 return true
             end
         end
