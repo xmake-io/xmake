@@ -14,104 +14,36 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      JassJam
+-- @author      ruki
 -- @file        xmake.lua
 --
 
--- define rule: build csharp target with dotnet
---
--- @code
--- target("app")
---     set_kind("binary") -- or "shared"
---     add_rules("csharp")
---     add_files("src/*.cs")
---
---     -- optional: if a .csproj is provided, xmake uses it directly.
---     -- otherwise xmake auto-generates one in .xmake/... for dotnet build/publish.
---     -- add_files("src/app.csproj")
---
---     -- add_values("csharp.<prop>", <value>) -- use one the properties below
---     -- add_values("csharp.properties", "AnotherProperty=Value") -- declare a custom property
---
---     -- mapped csharp properties (lua key => generated xml):
---     -- https://learn.microsoft.com/en-us/nuget/reference/msbuild-targets#pack-target
---     -- csharp.sdk => <Project Sdk="..."> (project attribute) (defaults to "Microsoft.NET.Sdk")
---     -- csharp.target_frameworks => <TargetFrameworks> (list, ';' separated)
---     -- csharp.target_framework => <TargetFramework> (defaults to latest installed dotnet sdk major, e.g. net8.0)
---     -- csharp.implicit_usings => <ImplicitUsings>
---     -- csharp.nullable => <Nullable>
---     -- csharp.lang_version => <LangVersion>
---     -- csharp.enable_default_compile_items => <EnableDefaultCompileItems>
---     -- csharp.enable_default_embedded_resource_items => <EnableDefaultEmbeddedResourceItems>
---     -- csharp.enable_default_none_items => <EnableDefaultNoneItems>
---     -- csharp.root_namespace => <RootNamespace>
---     -- default/derived: set_basename(...) => <AssemblyName>
---     -- csharp.generate_assembly_info => <GenerateAssemblyInfo>
---     -- csharp.deterministic => <Deterministic>
---     -- default/derived: set_optimize(...) => <Optimize>
---     -- default/derived: get_plat()/get_arch() => <PlatformTarget>
---     -- csharp.prefer_32bit => <Prefer32Bit>
---     -- csharp.allow_unsafe_blocks => <AllowUnsafeBlocks>
---     -- csharp.check_for_overflow_underflow => <CheckForOverflowUnderflow>
---     -- default/derived: set_warnings(...) => <WarningLevel>
---     -- csharp.analysis_level => <AnalysisLevel>
---     -- csharp.enable_net_analyzers => <EnableNETAnalyzers>
---     -- csharp.enforce_code_style_in_build => <EnforceCodeStyleInBuild>
---     -- default/derived: set_warnings("error") => <TreatWarningsAsErrors>true</...>
---     -- csharp.warnings_as_errors => <WarningsAsErrors> (list, ';' separated)
---     -- csharp.warnings_not_as_errors => <WarningsNotAsErrors> (list, ';' separated)
---     -- default/derived: add_defines(...) => <DefineConstants>
---     -- csharp.error_log => <ErrorLog>
---     -- default/derived: set_symbols(...) => <DebugType>/<DebugSymbols>
---     -- csharp.generate_documentation_file => <GenerateDocumentationFile>
---     -- csharp.documentation_file => <DocumentationFile>
---     -- csharp.runtime_identifier => <RuntimeIdentifier>
---     -- csharp.runtime_identifiers => <RuntimeIdentifiers> (list, ';' separated)
---     -- csharp.self_contained => <SelfContained>
---     -- csharp.use_app_host => <UseAppHost>
---     -- csharp.roll_forward => <RollForward>
---     -- csharp.publish_single_file => <PublishSingleFile>
---     -- csharp.publish_trimmed => <PublishTrimmed>
---     -- csharp.trim_mode => <TrimMode>
---     -- csharp.publish_ready_to_run => <PublishReadyToRun>
---     -- csharp.invariant_globalization => <InvariantGlobalization>
---     -- csharp.include_native_libraries_for_self_extract => <IncludeNativeLibrariesForSelfExtract>
---     -- csharp.enable_compression_in_single_file => <EnableCompressionInSingleFile>
---     -- csharp.publish_aot => <PublishAot>
---     -- csharp.strip_symbols => <StripSymbols>
---     -- csharp.enable_trim_analyzer => <EnableTrimAnalyzer>
---     -- csharp.json_serializer_is_reflection_enabled_by_default => <JsonSerializerIsReflectionEnabledByDefault>
---     -- csharp.satellite_resource_languages => <SatelliteResourceLanguages> (list, ';' separated)
---     -- csharp.version => <Version>
---     -- csharp.assembly_version => <AssemblyVersion>
---     -- csharp.file_version => <FileVersion>
---     -- csharp.informational_version => <InformationalVersion>
---     -- csharp.package_id => <PackageId>
---     -- csharp.authors => <Authors>
---     -- csharp.company => <Company>
---     -- csharp.product => <Product>
---     -- csharp.description => <Description>
---     -- csharp.copyright => <Copyright>
---     -- csharp.repository_url => <RepositoryUrl>
---     -- csharp.repository_type => <RepositoryType>
---     -- csharp.package_license_expression => <PackageLicenseExpression>
---     -- csharp.package_project_url => <PackageProjectUrl>
---     -- csharp.neutral_language => <NeutralLanguage>
---     -- csharp.enable_preview_features => <EnablePreviewFeatures>
---     -- csharp.generate_runtime_configuration_files => <GenerateRuntimeConfigurationFiles>
---     -- csharp.copy_local_lock_file_assemblies => <CopyLocalLockFileAssemblies>
---     -- csharp.append_target_framework_to_output_path => <AppendTargetFrameworkToOutputPath> (default: false)
---     -- csharp.append_runtime_identifier_to_output_path => <AppendRuntimeIdentifierToOutputPath> (default: false)
---     -- csharp.produce_reference_assembly => <ProduceReferenceAssembly>
---     -- csharp.disable_implicit_framework_references => <DisableImplicitFrameworkReferences>
---     -- csharp.generate_target_framework_attribute => <GenerateTargetFrameworkAttribute>
--- @endcode
---
+rule("csharp.build")
+    set_sourcekinds("cs")
+    on_load(function (target)
+        import("modules.csharp_common", {rootdir = os.scriptdir(), alias = "csharp_common"})
+
+        -- set target extension and prefix
+        if target:is_shared() then
+            if not target:get("extension") then
+                target:set("extension", ".dll")
+            end
+            if target:get("prefixname") == nil then
+                target:set("prefixname", "")
+            end
+        end
+
+        -- find or generate .csproj file
+        local csprojfile = csharp_common.find_or_generate_csproj(target, {skip_deps = true})
+        if csprojfile then
+            target:data_set("csharp.csproj", csprojfile)
+            if not target:get("filename") and not target:get("basename") then
+                target:set("basename", path.basename(csprojfile))
+            end
+        end
+    end)
+    on_build("build.target")
+
 rule("csharp")
-    set_extensions(".cs", ".csproj")
-    set_sourcekinds("cs", "csproj", {objectfiles = false})
-    on_load("load")
-    on_buildcmd("buildcmd")
-    on_clean("clean")
-    on_install("install")
-    on_installcmd("installcmd")
+    add_deps("csharp.build")
+    add_deps("utils.inherit.links")

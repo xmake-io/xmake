@@ -68,21 +68,66 @@ function nf_warning(self, level)
     return maps[level]
 end
 
+-- get the .csproj file from source files
+function _get_csprojfile(sourcefiles, opt)
+    local target = opt and opt.target
+    if target then
+        local csprojfile = target:data("csharp.csproj")
+        if csprojfile then
+            return csprojfile
+        end
+    end
+    -- find .csproj from source files
+    for _, sourcefile in ipairs(sourcefiles) do
+        if sourcefile:endswith(".csproj") then
+            return sourcefile
+        end
+    end
+end
+
+-- get dotnet verbosity level
+function _get_verbosity()
+    if option.get("diagnosis") then
+        return "diagnostic"
+    end
+    return "quiet"
+end
+
+-- get build configuration from mode
+function _get_configuration()
+    local mode = config.mode() or "release"
+    if mode:lower() == "debug" then
+        return "Debug"
+    end
+    return "Release"
+end
+
 -- make the build arguments list
-function buildargv(self, sourcefiles, targetkind, targetfile, flags)
+function buildargv(self, sourcefiles, targetkind, targetfile, flags, opt)
     local argv = {"build"}
+
+    -- add .csproj file
+    local csprojfile = _get_csprojfile(sourcefiles, opt)
+    if csprojfile then
+        table.insert(argv, csprojfile)
+    end
+
+    -- add common options
+    table.join2(argv, {"--nologo", "--configuration", _get_configuration(), "--verbosity", _get_verbosity()})
+
+    -- add output directory
+    table.join2(argv, {"--output", path.directory(targetfile)})
+
+    -- add flags
     if flags then
         table.join2(argv, flags)
     end
-    table.insert(argv, "--output")
-    table.insert(argv, path.directory(targetfile))
-    table.join2(argv, sourcefiles)
     return self:program(), argv
 end
 
 -- build the target file
-function build(self, sourcefiles, targetkind, targetfile, flags)
+function build(self, sourcefiles, targetkind, targetfile, flags, opt)
     os.mkdir(path.directory(targetfile))
-    local program, argv = buildargv(self, sourcefiles, targetkind, targetfile, flags)
+    local program, argv = buildargv(self, sourcefiles, targetkind, targetfile, flags, opt)
     os.runv(program, argv, {envs = self:runenvs()})
 end

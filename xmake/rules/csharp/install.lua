@@ -14,38 +14,28 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      JassJam
+-- @author      ruki
 -- @file        install.lua
 --
 
+import("core.base.option")
+import("core.project.config")
+import("core.tool.compiler")
 import("modules.csharp_common", {rootdir = os.scriptdir(), alias = "csharp_common"})
 
 function main(target, opt)
-    local function _q(arg)
-        arg = tostring(arg)
-        if arg:find("[%s\"]") then
-            arg = "\"" .. arg:gsub("\"", "\\\"") .. "\""
-        end
-        return arg
-    end
-
     local csprojfile = assert(csharp_common.find_or_generate_csproj(target), "target(%s): missing csharp .csproj file!", target:name())
-    local dotnet = csharp_common.get_dotnet_program(target)
+
+    -- get dotnet program from compiler toolchain
+    local compinst = compiler.load("cs", {target = target})
+    local dotnet = compinst:program()
+
     local configuration = csharp_common.build_mode_to_configuration()
-    local verbosity = csharp_common.get_dotnet_verbosity()
+    local verbosity = option.get("diagnosis") and "diagnostic" or "quiet"
 
-    local install_path = target:installdir()
-    if target:is_binary() then
-        install_path = target:installdir("bin")
-    elseif target:is_static() or target:is_shared() then
-        install_path = target:installdir("lib")
-    end
-    if not install_path or #install_path == 0 then
-        return
-    end
-
-    local install_abs = path.is_absolute(install_path) and install_path or path.absolute(install_path, os.projectdir())
-    os.mkdir(install_abs)
+    -- publish to a directory under target autogendir
+    local tmpdir = path.join(target:autogendir(), "publish")
+    os.mkdir(tmpdir)
 
     local rid = csharp_common.get_runtime_identifier(target)
     local argv = {
@@ -53,43 +43,24 @@ function main(target, opt)
         "--nologo",
         "--configuration", configuration,
         "--verbosity", verbosity,
-        "--output", install_abs
+        "--output", tmpdir
     }
     if rid and target:is_binary() then
         table.join2(argv, {"--runtime", rid})
     end
-    csharp_common.append_target_flags(target, argv)
+    os.vrunv(dotnet, argv, {curdir = path.directory(csprojfile), envs = compinst:runenvs()})
 
-    local runopt = csharp_common.get_dotnet_runopt(csprojfile)
-    if os.vrunv then
-        os.vrunv(dotnet, argv, runopt)
-    elseif os.runv then
-        os.runv(dotnet, argv, runopt)
-    elseif os.execv then
-        os.execv(dotnet, argv, runopt)
-    elseif os.vrun then
-        local cmd = _q(dotnet)
-        for _, arg in ipairs(argv) do
-            cmd = cmd .. " " .. _q(arg)
-        end
-        os.vrun(cmd, runopt)
-    elseif os.run then
-        local cmd = _q(dotnet)
-        for _, arg in ipairs(argv) do
-            cmd = cmd .. " " .. _q(arg)
-        end
-        os.run(cmd, runopt)
-    else
-        local targetdir = target:targetdir()
-        if targetdir and os.isdir(targetdir) then
-            os.cp(path.join(targetdir, "**"), install_abs, {rootdir = targetdir})
-        end
-    end
-
+    -- copy published files to installdir
+    local installdir = target:installdir()
     if target:is_binary() then
-        local targetdir = target:targetdir()
-        if targetdir and os.isdir(targetdir) then
-            os.cp(path.join(targetdir, "**"), install_abs, {rootdir = targetdir})
-        end
+        installdir = target:installdir("bin")
+    elseif target:is_static() or target:is_shared() then
+        installdir = target:installdir("lib")
     end
+    if installdir and #installdir > 0 then
+        local install_abs = path.is_absolute(installdir) and installdir or path.absolute(installdir, os.projectdir())
+        os.mkdir(install_abs)
+        os.cp(path.join(tmpdir, "**"), install_abs, {rootdir = tmpdir})
+    end
+
 end
