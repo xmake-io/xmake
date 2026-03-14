@@ -20,6 +20,7 @@
 
 rule("csharp.build")
     set_sourcekinds("cs")
+    set_extensions(".csproj")
     on_load(function (target)
         import("modules.csharp_common", {rootdir = os.scriptdir(), alias = "csharp_common"})
 

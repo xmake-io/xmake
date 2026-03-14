@@ -20,7 +20,7 @@
 
 language("csharp")
     add_rules("csharp")
-    set_sourcekinds {cs = ".cs", csproj = ".csproj"}
+    set_sourcekinds {cs = ".cs"}
     set_sourceflags {cs = "csflags"}
     set_targetkinds {binary = "cs", shared = "cs"}
     set_targetflags {binary = "ldflags", shared = "shflags"}
