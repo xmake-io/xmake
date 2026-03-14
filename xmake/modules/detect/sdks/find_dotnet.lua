@@ -28,13 +28,21 @@ import("core.project.config")
 import("core.cache.detectcache")
 
 -- find dotnet sdk info from dotnet cli
-function _find_dotnet_cli()
-    local dotnet = find_tool("dotnet", {version = true})
+function _find_dotnet_cli(sdkdir)
+
+    -- find dotnet program
+    local paths = {}
+    if sdkdir then
+        table.insert(paths, path.join(sdkdir, "bin"))
+        table.insert(paths, sdkdir)
+    end
+    local dotnet = find_tool("dotnet", {version = true, paths = #paths > 0 and paths or nil})
     if not dotnet then
         return nil
     end
 
-    local result = {program = dotnet.program, version = dotnet.version}
+    local bindir = path.directory(dotnet.program)
+    local result = {bindir = bindir, version = dotnet.version}
 
     -- get sdk list, e.g. "8.0.100 [/usr/share/dotnet/sdk]"
     local sdklist = try { function () return os.iorunv(dotnet.program, {"--list-sdks"}) end }
@@ -52,6 +60,11 @@ function _find_dotnet_cli()
             result.sdkdir = sdks[#sdks].directory
             result.sdkver = sdks[#sdks].version
         end
+    end
+
+    -- set sdkdir from bindir if not found from sdk list
+    if not result.sdkdir then
+        result.sdkdir = sdkdir or path.directory(bindir)
     end
 
     -- get runtime list, e.g. "Microsoft.NETCore.App 8.0.0 [/usr/share/dotnet/shared/Microsoft.NETCore.App]"
@@ -129,14 +142,14 @@ function main(sdkdir, opt)
     opt = opt or {}
 
     -- attempt to load cache first
-    local key = "detect.sdks.find_dotnet." .. (sdkdir or "")
+    local key = "detect.sdks.find_dotnet"
     local cacheinfo = detectcache:get(key) or {}
-    if not opt.force and cacheinfo.dotnet then
+    if not opt.force and cacheinfo.dotnet and cacheinfo.dotnet.sdkdir and os.isdir(cacheinfo.dotnet.sdkdir) then
         return cacheinfo.dotnet
     end
 
     -- find dotnet cli sdk
-    local dotnet = _find_dotnet_cli()
+    local dotnet = _find_dotnet_cli(sdkdir or config.get("dotnet") or global.get("dotnet"))
 
     -- find .NET Framework SDK on Windows
     if is_host("windows") then
@@ -151,6 +164,7 @@ function main(sdkdir, opt)
     end
 
     if dotnet then
+
         -- save to config
         if dotnet.sdkdir then
             config.set("dotnet", dotnet.sdkdir, {force = true, readonly = true})
@@ -169,6 +183,7 @@ function main(sdkdir, opt)
             end
         end
     else
+
         -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for .NET SDK directory ... ${color.nothing}${text.nothing}")

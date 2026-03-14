@@ -28,30 +28,33 @@ toolchain("dotnet")
     set_toolset("cssh", "dotnet")
 
     on_check(function (toolchain)
-        import("lib.detect.find_tool")
         import("detect.sdks.find_dotnet")
 
-        -- find dotnet program
-        local dotnet = find_tool("dotnet", {version = true})
-        if not dotnet then
+        -- find dotnet sdk from packages first
+        local sdkinfo
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir and os.isdir(installdir) then
+                sdkinfo = find_dotnet(installdir, {force = true})
+                if sdkinfo then
+                    break
+                end
+            end
+        end
+
+        -- find dotnet sdk from system
+        if not sdkinfo then
+            sdkinfo = find_dotnet()
+        end
+        if not sdkinfo or not sdkinfo.bindir then
             return false
         end
-        toolchain:config_set("dotnet", dotnet.program)
-        toolchain:config_set("dotnet_version", dotnet.version)
-
-        -- find dotnet sdk info
-        local sdkinfo = find_dotnet()
-        if sdkinfo then
-            toolchain:config_set("sdkinfo", sdkinfo)
-        end
+        toolchain:config_set("bindir", sdkinfo.bindir)
+        toolchain:config_set("sdkdir", sdkinfo.sdkdir)
         return true
     end)
 
     on_load(function (toolchain)
-        local dotnet = toolchain:config("dotnet") or "dotnet"
-        toolchain:set("toolset", "cs",   dotnet)
-        toolchain:set("toolset", "csld", dotnet)
-        toolchain:set("toolset", "cssh", dotnet)
 
         -- set default environment variables
         toolchain:add("runenvs", "DOTNET_NOLOGO", "1")
