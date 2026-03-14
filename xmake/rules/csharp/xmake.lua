@@ -18,25 +18,8 @@
 -- @file        xmake.lua
 --
 
--- handle .csproj project file
-rule("csharp.csproj")
-    set_extensions(".csproj")
-    on_config(function (target)
-        import("modules.csharp_common", {rootdir = os.scriptdir(), alias = "csharp_common"})
-
-        -- find .csproj from source files or generate one
-        local csprojfile = csharp_common.find_or_generate_csproj(target, {skip_deps = true})
-        if csprojfile then
-            target:data_set("csharp.csproj", csprojfile)
-            if not target:get("filename") and not target:get("basename") then
-                target:set("basename", path.basename(csprojfile))
-            end
-        end
-    end)
-
 rule("csharp.build")
     set_sourcekinds("cs")
-    add_deps("csharp.csproj")
     on_load(function (target)
         -- set target extension and prefix
         if target:is_shared() then

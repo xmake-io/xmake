@@ -23,6 +23,20 @@ import("core.base.option")
 import("core.tool.compiler")
 import("core.project.depend")
 import("utils.progress")
+import("modules.csharp_common", {rootdir = path.directory(os.scriptdir()), alias = "csharp_common"})
+
+-- find or generate .csproj file
+function _get_csprojfile(target)
+    local csprojfile = target:data("csharp.csproj")
+    if csprojfile then
+        return csprojfile
+    end
+    csprojfile = csharp_common.find_or_generate_csproj(target)
+    if csprojfile then
+        target:data_set("csharp.csproj", csprojfile)
+    end
+    return csprojfile
+end
 
 -- build the source files
 function build_sourcefiles(target, sourcebatch, opt)
@@ -35,7 +49,7 @@ function build_sourcefiles(target, sourcebatch, opt)
     local sourcekind  = sourcebatch.sourcekind
 
     -- prepend .csproj file so dotnet tool can find it
-    local csprojfile = target:data("csharp.csproj")
+    local csprojfile = _get_csprojfile(target)
     if csprojfile then
         table.insert(sourcefiles, 1, csprojfile)
     end
