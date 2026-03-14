@@ -31,8 +31,14 @@ function build_sourcefiles(target, sourcebatch, opt)
     local targetfile = target:targetfile()
 
     -- get source files and kind
-    local sourcefiles = sourcebatch.sourcefiles
+    local sourcefiles = table.copy(sourcebatch.sourcefiles)
     local sourcekind  = sourcebatch.sourcekind
+
+    -- prepend .csproj file so dotnet tool can find it
+    local csprojfile = target:data("csharp.csproj")
+    if csprojfile then
+        table.insert(sourcefiles, 1, csprojfile)
+    end
 
     -- get depend file
     local dependfile = target:dependfile(targetfile)

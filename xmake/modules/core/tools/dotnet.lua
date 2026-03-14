@@ -50,7 +50,6 @@ end
 function nf_symbol(self, level)
     local maps = {
         debug = {"-p:DebugType=full", "-p:DebugSymbols=true"}
-    ,   hidden = {"-p:DebugType=pdbonly", "-p:DebugSymbols=true"}
     }
     return maps[level]
 end

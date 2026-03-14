@@ -36,9 +36,7 @@ language("csharp")
         ,   "target.optimize:check"
         }
     ,   binary = {
-            "target.strip"
-        ,   "target.symbols"
-        ,   "config.linkdirs"
+            "config.linkdirs"
         ,   "target.linkdirs"
         ,   "config.links"
         ,   "target.links"
@@ -46,9 +44,7 @@ language("csharp")
         ,   "target.syslinks"
         }
     ,   shared = {
-            "target.strip"
-        ,   "target.symbols"
-        ,   "config.linkdirs"
+            "config.linkdirs"
         ,   "target.linkdirs"
         ,   "config.links"
         ,   "target.links"
