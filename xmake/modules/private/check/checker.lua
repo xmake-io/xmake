@@ -29,7 +29,7 @@ function checkers()
             -- package api checkers
             ["api.package.kind"]         = {description = "Check kind configuration in package.", load = true},
             ["api.package.versionfiles"] = {description = "Check versionfiles configuration in package.", download_failure = true},
-            ["api.package.configs"]      = {description = "Check package configs in add_requires()/add_requireconfs().", load = true},
+            ["api.package.configs"]      = {description = "Check package configs in add_requires()/add_requireconfs().", load = true, private = true},
             -- target api checkers
             ["api.target.version"]       = {description = "Check version configuration in target."},
             ["api.target.kind"]          = {description = "Check kind configuration in target.", build = true},
@@ -76,18 +76,20 @@ function complete(complete, opt)
         function ()
             local list = {}
             local groupstats = {}
-            for name, _ in table.orderpairs(checkers()) do
-                local groupname = name:split(".", {plain = true})[1]
-                groupstats[groupname] = (groupstats[groupname] or 0) + 1
-                if not complete then
-                    local limit = 16
-                    if groupstats[groupname] < limit then
+            for name, info in table.orderpairs(checkers()) do
+                if not info.private then
+                    local groupname = name:split(".", {plain = true})[1]
+                    groupstats[groupname] = (groupstats[groupname] or 0) + 1
+                    if not complete then
+                        local limit = 16
+                        if groupstats[groupname] < limit then
+                            table.insert(list, name)
+                        elseif groupstats[groupname] == limit then
+                            table.insert(list, "...")
+                        end
+                    elseif name:startswith(complete) then
                         table.insert(list, name)
-                    elseif groupstats[groupname] == limit then
-                        table.insert(list, "...")
                     end
-                elseif name:startswith(complete) then
-                    table.insert(list, name)
                 end
             end
             return list
