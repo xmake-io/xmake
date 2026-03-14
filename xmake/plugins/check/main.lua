@@ -30,13 +30,15 @@ function _show_list()
     local checkers = checker.checkers()
     local groups = {}
     for name, info in table.orderpairs(checkers) do
-        local groupname = name:split(".", {plain = true})[1]
-        if not groups[groupname] then
-            table.insert(tbl, {})
-            table.insert(tbl, {groupname:sub(1, 1):upper() .. groupname:sub(2) .. " checkers:"})
-            groups[groupname] = true
+        if not info.private then
+            local groupname = name:split(".", {plain = true})[1]
+            if not groups[groupname] then
+                table.insert(tbl, {})
+                table.insert(tbl, {groupname:sub(1, 1):upper() .. groupname:sub(2) .. " checkers:"})
+                groups[groupname] = true
+            end
+            table.insert(tbl, {{"  " .. name, style = "${color.dump.string_quote}"}, info.description})
         end
-        table.insert(tbl, {{"  " .. name, style = "${color.dump.string_quote}"}, info.description})
     end
     cprint(text.table(tbl))
 end
@@ -45,7 +47,7 @@ end
 function _show_info(name)
     local checkers = checker.checkers()
     local info = checkers[name]
-    if info then
+    if info and not info.private then
         cprint("${color.dump.string}checker${clear}(%s):", name)
         cprint("  -> ${color.dump.string_quote}description${clear}: %s", info.description)
     else
@@ -62,11 +64,11 @@ function _check(group_or_name, arguments)
     -- get checkers
     local checked_checkers = {}
     local checkers = checker.checkers()
-    if checkers[group_or_name] then
+    if checkers[group_or_name] and not checkers[group_or_name].private then
         table.insert(checked_checkers, group_or_name)
     else
-        for name, _ in table.orderpairs(checkers) do
-            if name:startswith(group_or_name .. ".") then
+        for name, info in table.orderpairs(checkers) do
+            if not info.private and name:startswith(group_or_name .. ".") then
                 table.insert(checked_checkers, name)
             end
         end
