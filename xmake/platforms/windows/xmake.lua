@@ -29,7 +29,7 @@ platform("windows")
     set_formats("binary", "$(name).exe")
     set_formats("symbol", "$(name).pdb")
 
-    set_toolchains("msvc", "clang", "yasm", "nasm", "cuda", "rust", "swift", "go", "gfortran", "zig", "fpc", "nim")
+    set_toolchains("msvc", "clang", "yasm", "nasm", "cuda", "rust", "swift", "go", "gfortran", "zig", "fpc", "nim", "dotnet")
 
     set_menu {
                 config =

@@ -19,7 +19,6 @@
 --
 
 toolchain("dotnet")
-    set_kind("standalone")
     set_homepage("https://dotnet.microsoft.com/")
     set_description(".NET SDK Toolchain")
 
