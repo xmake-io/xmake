@@ -264,7 +264,25 @@ function _instance:_build_deps()
                 depinherit = t:extraconf("deps", dep:fullname(), "inherit")
             end
             return depinherit == nil or depinherit
-        end)
+        end, {getdeps = function(inst)
+            -- the root target sees all its deps (including private ones)
+            if inst == self then
+                return table.wrap(inst:get("deps"))
+            end
+            -- for transitive deps, only return public deps (filter out private ones)
+            -- add_deps("xxx", {public = false}) makes it a private dependency
+            -- that will not export any of its configuration to downstream targets
+            -- @see https://github.com/xmake-io/xmake/issues/7079
+            local alldeps = table.wrap(inst:get("deps"))
+            local result = {}
+            for _, depname in ipairs(alldeps) do
+                local deppublic = inst:extraconf("deps", depname, "public")
+                if deppublic == nil or deppublic then
+                    table.insert(result, depname)
+                end
+            end
+            return result
+        end})
     end
 end
 
