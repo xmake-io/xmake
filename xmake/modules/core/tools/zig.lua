@@ -24,6 +24,30 @@ import("core.project.config")
 import("core.project.project")
 import("core.project.target")
 
+-- get link input files
+local function _linkfiles(self, objectfiles, targetkind, opt)
+    opt = opt or {}
+    local target = opt.target
+    if targetkind == "shared" and target and target:is_plat("windows") then
+        local sourcebatch = target:sourcebatches()["zig.build"]
+        if sourcebatch and sourcebatch.sourcefiles and sourcebatch.objectfiles then
+            local zigobjectfiles = {}
+            for _, objectfile in ipairs(sourcebatch.objectfiles) do
+                zigobjectfiles[path.translate(objectfile)] = true
+            end
+            local linkfiles = {}
+            for _, objectfile in ipairs(table.wrap(objectfiles)) do
+                if not zigobjectfiles[path.translate(objectfile)] then
+                    table.insert(linkfiles, objectfile)
+                end
+            end
+            table.join2(linkfiles, sourcebatch.sourcefiles)
+            return linkfiles
+        end
+    end
+    return objectfiles
+end
+
 -- init it
 function init(self)
 
@@ -100,7 +124,7 @@ function nf_rpathdir(self, dir)
 end
 
 -- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
+function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     local argv = {}
     if targetkind == "binary" then
         table.insert(argv, "build-exe")
@@ -109,14 +133,14 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     else
         raise("unknown target kind(%s)!", targetkind)
     end
-    table.join2(argv, flags, "-femit-bin=" .. targetfile, objectfiles)
+    table.join2(argv, flags, "-femit-bin=" .. targetfile, _linkfiles(self, objectfiles, targetkind, opt))
     return self:program(), argv
 end
 
 -- link the target file
-function link(self, objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags, opt)
     os.mkdir(path.directory(targetfile))
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags, opt))
 end
 
 -- make the compile arguments list
@@ -129,4 +153,3 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
     os.runv(compargv(self, sourcefile, objectfile, flags))
 end
-
