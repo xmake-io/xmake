@@ -172,6 +172,7 @@ function _get_configs(package, configs)
                 i386   = "i686-linux-gnu",
                 x86_64 = "x86_64-linux-gnu",
                 armv7 = "arm-linux-gnueabihf",
+                armv7s = "arm-linux-gnueabi",
                 mips = "mips-linux-gnu",
                 mips64 = "mips64-linux-gnu",
                 mipsel = "mipsel-linux-gnu",
