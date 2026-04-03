@@ -22,8 +22,42 @@
 import("core.base.option")
 import("core.theme.theme")
 import("core.project.depend")
+import("lib.detect.find_library")
 import("private.tools.codesign")
+import("private.utils.target", {alias = "target_utils"})
+import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("utils.progress")
+
+local function _is_non_system_dylib(libfile)
+    return libfile and libfile:endswith(".dylib")
+       and not libfile:startswith("/usr/lib/")
+       and not libfile:startswith("/System/Library/")
+end
+
+local function _get_target_linkdirs(target)
+    local linkdirs = {}
+    for _, values in ipairs(table.wrap(target:get_from("linkdirs", "*"))) do
+        for _, linkdir in ipairs(table.wrap(values)) do
+            table.insert(linkdirs, path.absolute(linkdir))
+        end
+    end
+    return table.unique(linkdirs)
+end
+
+local function _get_target_linklibfiles(target)
+    local linkdirs = _get_target_linkdirs(target)
+    local libfiles = {}
+    for _, values in ipairs(table.wrap(target:get_from("links", "*"))) do
+        for _, link in ipairs(table.wrap(values)) do
+            local libinfo = find_library(link, linkdirs, {plat = target:plat(), kind = "shared"})
+            if libinfo then
+                table.insert(libfiles, path.join(libinfo.linkdir, libinfo.filename))
+            end
+        end
+    end
+    return table.unique(libfiles)
+end
+
 function main (target, opt)
 
     -- get app and resources directory
@@ -51,18 +85,46 @@ function main (target, opt)
         try { function () os.vrunv("install_name_tool", {"-delete_rpath", "@loader_path", targetfile}) end }
         os.vrunv("install_name_tool", {"-add_rpath", "@executable_path/../Frameworks", targetfile})
 
-        -- copy dependent dynamic libraries and frameworks
+        -- copy dependent frameworks and dynamic libraries
+        local frameworks_to_copy = {}
+        local framework_targetfiles = {}
         for _, dep in ipairs(target:orderdeps()) do
-            if dep:kind() == "shared" then
-                if not os.isdir(frameworksdir) then
-                    os.mkdir(frameworksdir)
-                end
-                local frameworkdir = dep:data("xcode.bundle.rootdir")
-                if dep:rule("xcode.framework") and frameworkdir then
-                    os.cp(frameworkdir, frameworksdir, {symlink = true})
-                else
-                    os.vcp(dep:targetfile(), frameworksdir)
-                end
+            local frameworkdir = dep:data("xcode.bundle.rootdir")
+            if dep:rule("xcode.framework") and frameworkdir then
+                table.insert(frameworks_to_copy, frameworkdir)
+                framework_targetfiles[path.absolute(dep:targetfile())] = true
+            end
+        end
+        local libfiles = {}
+        target_utils.get_target_libfiles(target, libfiles, target:targetfile(), {})
+        table.join2(libfiles, _get_target_linklibfiles(target))
+        local dependfiles = get_depend_libraries(target:targetfile(), {
+            plat = target:plat(),
+            arch = target:arch(),
+            recursive = true,
+            resolve_path = true,
+            resolve_hint_paths = libfiles
+        })
+        for _, dependfile in ipairs(table.wrap(dependfiles)) do
+            if _is_non_system_dylib(dependfile) then
+                table.insert(libfiles, dependfile)
+            end
+        end
+        local dylibs_to_copy = {}
+        for _, libfile in ipairs(table.unique(libfiles)) do
+            if not framework_targetfiles[path.absolute(libfile)] then
+                table.insert(dylibs_to_copy, libfile)
+            end
+        end
+        if #frameworks_to_copy > 0 or #dylibs_to_copy > 0 then
+            if not os.isdir(frameworksdir) then
+                os.mkdir(frameworksdir)
+            end
+            for _, frameworkdir in ipairs(frameworks_to_copy) do
+                os.cp(frameworkdir, frameworksdir, {symlink = true})
+            end
+            for _, libfile in ipairs(dylibs_to_copy) do
+                os.vcp(libfile, frameworksdir)
             end
         end
 
@@ -109,4 +171,3 @@ function main (target, opt)
 
     end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}, changed = target:is_rebuilt()})
 end
-
