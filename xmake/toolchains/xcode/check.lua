@@ -26,6 +26,10 @@ import("private.utils.toolchain", {alias = "toolchain_utils"})
 import("private.utils.executable_path")
 import("private.tools.codesign")
 
+function get_xcode(toolchain)
+    return toolchain:config("xcode") or config.get("xcode")
+end
+
 -- print Xcode SDK summary (single line) and optional codesign infos
 function _show_checkinfo(toolchain, xcode, xcode_sdkver, target_minver)
     if xcode and xcode.sdkdir then
@@ -80,7 +84,7 @@ function main(toolchain)
 
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
-    local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true,
+    local xcode = find_xcode(get_xcode(toolchain), {force = true, verbose = true,
                                                    sdkver = xcode_sdkver,
                                                    appledev = appledev,
                                                    plat = toolchain:plat(),
