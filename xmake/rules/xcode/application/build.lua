@@ -28,7 +28,7 @@ import("private.utils.target", {alias = "target_utils"})
 import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("utils.progress")
 
-local function _is_non_system_dylib(libfile)
+function _is_non_system_dylib(libfile)
     return libfile and libfile:endswith(".dylib")
        and not libfile:startswith("/usr/lib/")
        and not libfile:startswith("/System/Library/")
