@@ -283,9 +283,12 @@ function _get_targetdeps_modules(target)
                             fileconfig.undefines = _fileconfig.undefines
                             fileconfig.includedirs = _fileconfig.includedirs
                         end
-                        fileconfig.defines = table.join(fileconfig.defines or {}, dep:get("defines") or {})
-                        fileconfig.undefines = table.join(fileconfig.undefines or {}, dep:get("undefines") or {})
-                        fileconfig.includedirs = table.join(fileconfig.includedirs or {}, dep:get("includedirs") or {})
+                        -- only propagate public/interface defines, not private ones
+                        -- e.g. add_defines("LIB") is private and should not leak into the consumer's BMI
+                        -- @see https://github.com/xmake-io/xmake/issues/7436
+                        fileconfig.defines = table.join(fileconfig.defines or {}, dep:get("defines", {interface = true}) or {})
+                        fileconfig.undefines = table.join(fileconfig.undefines or {}, dep:get("undefines", {interface = true}) or {})
+                        fileconfig.includedirs = table.join(fileconfig.includedirs or {}, dep:get("includedirs", {interface = true}) or {})
                         if not dep:is_phony() then
                             if target:namespace() == dep:namespace() then
                                 fileconfig.from_dep = dep:name()
