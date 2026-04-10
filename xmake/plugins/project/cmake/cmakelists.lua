@@ -1093,18 +1093,16 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
 
     if #object_deps ~= 0 then
         if not has_links then
-            cmakelists:print("add_library(target_objectfiles_%s OBJECT IMPORTED GLOBAL)", key)
-            cmakelists:print("set_property(TARGET target_objectfiles_%s PROPERTY IMPORTED_OBJECTS", key)
+            cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
             has_links = true
         end
         for _, dep in ipairs(object_deps) do
-            cmakelists:print("    " .. dep)
+            cmakelists:print("    $<TARGET_OBJECTS:%s>", dep)
         end
     end
 
     if has_links then
         cmakelists:print(")")
-        cmakelists:print("target_link_libraries(%s PRIVATE target_objectfiles_%s)", target:name(), key)
     end
 end
 
