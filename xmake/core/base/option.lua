@@ -375,11 +375,18 @@ end
 -- @return      true, false, or nil
 --
 function option.boolean(value)
-    if type(value) == "string" then
+    local value_type = type(value)
+    if value_type == "string" then
         local v = value:lower()
-        if v == "true" or v == "yes" or v == "y" then value = true
-        elseif v == "false" or v == "no" or v == "n" then value = false
+        if v == "true" or v == "yes" or v == "y" then
+            value = true
+        elseif v == "false" or v == "no" or v == "n" then
+            value = false
+        else
+            value = nil
         end
+    elseif value_type ~= "boolean" then
+        value = nil
     end
     return value
 end
