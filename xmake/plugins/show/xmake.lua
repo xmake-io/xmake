@@ -32,12 +32,12 @@ task("show")
             {'g', "group",  "kv", nil,   "Filter targets by the given group name."},
             {nil, "json",   "k",  false, "Show information with json format."},
             {nil, "pretty", "k",  false, "Enable pretty formatted json output."},
+            {nil, "target_graph", "k", false, "Show the dependency graph of targets."},
             {'t', "target", "kv", nil,   "Show the information of the given target.",
                 values = function (complete, opt)
                     return import("private.utils.complete_helper.targets")(complete, opt)
                 end}
         }
     }
-
 
 

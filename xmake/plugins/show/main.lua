@@ -32,6 +32,8 @@ function main()
     local listname = option.get("list")
     if listname then
         return _show_list(listname)
+    elseif option.get("target_graph") then
+        return assert(import("info.target_graph", {try = true, anonymous = true}))(option.get("target"))
     else
         -- show the information of the given object
         for _, filepath in ipairs(os.files(path.join(os.scriptdir(), "info", "*.lua"))) do
