@@ -27,14 +27,8 @@ import("private.detect.check_targetname")
 
 function _collect_target_entry(target)
     local deps = {}
-    for _, dep in pairs(target:deps() or {}) do
-        table.insert(deps, dep:name())
-    end
-    table.sort(deps)
-
-    local orderdeps = {}
     for _, dep in ipairs(target:orderdeps() or {}) do
-        table.insert(orderdeps, dep:name())
+        table.insert(deps, dep:name())
     end
 
     return {
@@ -42,8 +36,7 @@ function _collect_target_entry(target)
         kind = target:kind(),
         group = target:get("group"),
         default = target:is_default(),
-        deps = deps,
-        orderdeps = orderdeps
+        deps = deps
     }
 end
 
