@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
--- @file        target_graph.lua
+-- @file        depgraph.lua
 --
 
 -- imports
@@ -25,7 +25,7 @@ import("core.project.config")
 import("core.project.project")
 import("private.detect.check_targetname")
 
-local function _collect_target_entry(target)
+function _collect_target_entry(target)
     local deps = {}
     for _, dep in pairs(target:deps() or {}) do
         table.insert(deps, dep:name())
@@ -47,7 +47,7 @@ local function _collect_target_entry(target)
     }
 end
 
-local function _collect_target_graph(root_target)
+function _collect_target_graph(root_target)
     local targets = {}
     local selected = {}
     if root_target then
@@ -91,7 +91,7 @@ local function _collect_target_graph(root_target)
     }
 end
 
-local function _print_target_graph(graph)
+function _print_target_graph(graph)
     print("The dependency graph of targets:")
     for _, target in ipairs(graph.targets) do
         local deps = #target.deps > 0 and table.concat(target.deps, ", ") or "(none)"

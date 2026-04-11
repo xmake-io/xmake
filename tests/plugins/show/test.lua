@@ -1,13 +1,5 @@
 import("core.base.json")
 
-local function _prepare_xmake_env()
-    local xmake = path.absolute(os.programfile())
-    local xmake_program_dir = path.absolute(os.programdir())
-    os.setenv("XMAKE_PROGRAM_FILE", xmake)
-    os.setenv("XMAKE_PROGRAM_DIR", xmake_program_dir)
-    return xmake
-end
-
 local function _create_project(tempdir)
     io.writefile(path.join(tempdir, "xmake.lua"), [[
 add_rules("mode.debug", "mode.release")
@@ -42,8 +34,7 @@ function test_target_graph_json(t)
     os.mkdir(homedir)
     os.mkdir(path.join(homedir, ".xmake"))
 
-    local xmake = _prepare_xmake_env()
-    local outdata = os.iorunv(xmake, {"show", "-P", tempdir, "--target_graph", "--json"})
+    local outdata = os.iorunv("xmake", {"show", "-P", tempdir, "--info=depgraph", "--json"})
     local graph = json.decode(outdata)
 
     t:are_equal(graph.root_targets, {"app"})
@@ -70,8 +61,7 @@ function test_target_graph_json_for_single_target(t)
     os.mkdir(homedir)
     os.mkdir(path.join(homedir, ".xmake"))
 
-    local xmake = _prepare_xmake_env()
-    local outdata = os.iorunv(xmake, {"show", "-P", tempdir, "--target_graph", "--target=app", "--json"})
+    local outdata = os.iorunv("xmake", {"show", "-P", tempdir, "--info=depgraph", "--target=app", "--json"})
     local graph = json.decode(outdata)
 
     t:are_equal(graph.root_targets, {"app"})
