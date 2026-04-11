@@ -700,6 +700,11 @@ end
 
 -- make the syslink flag
 function nf_syslink(self, lib)
+    -- MinGW import libraries on Linux/macOS are always lowercase (e.g. libbcrypt.a),
+    -- so normalize names like "Bcrypt" -> "bcrypt" to avoid linker errors on case-sensitive filesystems.
+    if self:is_plat("mingw") and not is_host("windows") and not lib:find(".", 1, true) then
+        lib = lib:lower()
+    end
     return nf_link(self, lib)
 end
 
