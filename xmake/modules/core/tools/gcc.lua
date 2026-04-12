@@ -975,16 +975,16 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     end
 
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
-    local envs = {envs = self:runenvs(), shell = opt.shell}
+    local run_opts = {envs = self:runenvs(), shell = opt.shell}
     local function _do_link(argv)
         if linker_output then
-            os.execv(program, argv, envs)
+            os.execv(program, argv, run_opts)
         else
-            os.vrunv(program, argv, envs)
+            os.vrunv(program, argv, run_opts)
         end
     end
     local function _do_link_quiet(argv)
-        local quiet = table.join(envs, {stderr = os.nuldev()})
+        local quiet = table.join(run_opts, {stderr = os.nuldev()})
         if linker_output then
             os.execv(program, argv, quiet)
         else
@@ -1006,7 +1006,7 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
             local argv_lower = table.copy(argv)
             local has_upper_links = false
             for i, arg in ipairs(argv_lower) do
-                if type(arg) == "string" and arg:startswith("-l") and arg ~= arg:lower() then
+                if type(arg) == "string" and arg:startswith("-l") and not arg:startswith("-l:") and arg ~= arg:lower() then
                     argv_lower[i] = arg:lower()
                     has_upper_links = true
                 end
