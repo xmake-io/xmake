@@ -12,6 +12,7 @@ function test_depgraph_json(t)
         entries[target.name] = target
     end
     t:are_equal(entries.core.deps, {})
+    t:are_equal(entries.core.kind, "static")
     t:are_equal(entries.ui.deps, {"core"})
     t:are_equal(entries.app.deps, {"core", "ui"})
     t:are_equal(entries.app.kind, "binary")

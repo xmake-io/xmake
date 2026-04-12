@@ -27,8 +27,11 @@ import("private.detect.check_targetname")
 
 function _collect_target_entry(target)
     local deps = {}
-    for _, dep in ipairs(target:orderdeps() or {}) do
-        table.insert(deps, dep:name())
+    local plain_deps = target:get("deps")
+    if plain_deps then
+        for _, dep in ipairs(plain_deps) do
+            table.insert(deps, dep)
+        end
     end
 
     return {
@@ -86,9 +89,18 @@ end
 
 function _print_target_graph(graph)
     print("The dependency graph of targets:")
+    cprint("")
+    cprint("  ${color.dump.string}root targets${clear}: %s", table.concat(graph.root_targets, ", "))
+    cprint("")
     for _, target in ipairs(graph.targets) do
         local deps = #target.deps > 0 and table.concat(target.deps, ", ") or "(none)"
-        cprint("    ${color.dump.string}%s${clear}: %s", target.name, deps)
+        cprint("  ${color.dump.string}%s${clear}:", target.name)
+        cprint("    ${dim}kind${clear}: %s", target.kind)
+        if target.group then
+            cprint("    ${dim}group${clear}: %s", target.group)
+        end
+        cprint("    ${dim}default${clear}: %s", tostring(target.default))
+        cprint("    ${dim}deps${clear}: %s", deps)
     end
 end
 
