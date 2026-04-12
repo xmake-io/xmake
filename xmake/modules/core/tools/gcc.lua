@@ -700,11 +700,6 @@ end
 
 -- make the syslink flag
 function nf_syslink(self, lib)
-    -- MinGW import libraries on Linux/macOS are always lowercase (e.g. libbcrypt.a),
-    -- so normalize names like "Bcrypt" -> "bcrypt" to avoid linker errors on case-sensitive filesystems.
-    if self:is_plat("mingw") and not is_host("windows") and not lib:find(".", 1, true) then
-        lib = lib:lower()
-    end
     return nf_link(self, lib)
 end
 
@@ -980,10 +975,55 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     end
 
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
-    if linker_output then
-        os.execv(program, argv, {envs = self:runenvs(), shell = opt.shell})
+    local envs = {envs = self:runenvs(), shell = opt.shell}
+    local function _do_link(argv)
+        if linker_output then
+            os.execv(program, argv, envs)
+        else
+            os.vrunv(program, argv, envs)
+        end
+    end
+    local function _do_link_quiet(argv)
+        local quiet = table.join(envs, {stderr = os.nuldev()})
+        if linker_output then
+            os.execv(program, argv, quiet)
+        else
+            os.vrunv(program, argv, quiet)
+        end
+    end
+
+    -- for mingw, if linking fails and some -l flags have uppercase letters, retry
+    -- with those flags lowercased. MinGW import libraries on case-sensitive filesystems
+    -- are typically lowercase (e.g. libbcrypt.a, not libBcrypt.a), but some are not
+    -- (e.g. libCINTIME.a), so we always try the original name first. the first attempt
+    -- suppresses stderr to avoid noisy linker errors when a retry will succeed anyway.
+    -- if the lowercase retry also fails, the original error is raised.
+    if self:is_plat("mingw") then
+        local link_err
+        try { function() _do_link_quiet(argv) end,
+              catch { function(e) link_err = e end }}
+        if link_err then
+            local argv_lower = table.copy(argv)
+            local has_upper_links = false
+            for i, arg in ipairs(argv_lower) do
+                if type(arg) == "string" and arg:startswith("-l") and arg ~= arg:lower() then
+                    argv_lower[i] = arg:lower()
+                    has_upper_links = true
+                end
+            end
+            if has_upper_links then
+                local retry_err
+                try { function() _do_link(argv_lower) end,
+                      catch { function(e) retry_err = e end }}
+                if retry_err then
+                    os.raise(link_err)
+                end
+            else
+                os.raise(link_err)
+            end
+        end
     else
-        os.vrunv(program, argv, {envs = self:runenvs(), shell = opt.shell})
+        _do_link(argv)
     end
 end
 
