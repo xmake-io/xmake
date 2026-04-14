@@ -14,12 +14,8 @@ target("lua")
     add_includedirs("lua", {public = true})
 
     -- add the common source files
-    add_files("lua/*.c|lua.c|onelua.c|loslib.c|lparser.c")
+    add_files("lua/*.c|lua.c|onelua.c|loslib.c")
 
-    -- allow reassignment of for-loop control variables (lua 5.4 compatible)
-    add_files("lua/lparser.c", {rules = "utils.replace", replaces = {
-        {"RDKCONST%);", "VDKREG);"},
-    }})
     if not is_plat("iphoneos") then
         add_files("lua/loslib.c")
     end
