@@ -26,7 +26,7 @@ import("core.project.project")
 import("private.detect.check_targetname")
 
 function _collect_target_entry(target)
-    local deps = target:get("deps") or {}
+    local deps = table.wrap(target:get("deps"))
 
     return {
         name = target:name(),
