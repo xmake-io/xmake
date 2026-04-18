@@ -26,13 +26,7 @@ import("core.project.project")
 import("private.detect.check_targetname")
 
 function _collect_target_entry(target)
-    local deps = {}
-    local plain_deps = target:get("deps")
-    if plain_deps then
-        for _, dep in ipairs(plain_deps) do
-            table.insert(deps, dep)
-        end
-    end
+    local deps = target:get("deps") or {}
 
     return {
         name = target:name(),
