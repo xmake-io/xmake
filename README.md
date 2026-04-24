@@ -341,6 +341,7 @@ Xmake can automatically fetch and install dependencies!
 * Nimble for nimlang (nimble::zip >1.3)
 * Cargo for rust (cargo::base64 0.13.0)
 * Zypper on openSUSE (zypper::libsfml2 2.5)
+* NuGet (nuget::Humanizer.Core 2.14.1)
 
 ### Package management features
 
