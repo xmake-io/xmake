@@ -751,6 +751,20 @@ function nf_linkdir(self, dir)
     return {"-L" .. path.translate(dir)}
 end
 
+local function _nf_rpathdir_hasflags_opt(self, opt)
+    local sysflags = table.wrap(self:_sysflags(self:kind(), "ldflags"))
+    local target = opt and opt.target
+    if target then
+        table.join2(sysflags, target:get("ldflags"))
+        if self:kind() == "sh" then
+            table.join2(sysflags, target:get("shflags"))
+        end
+    end
+    if #sysflags > 0 then
+        return {sysflags = sysflags}
+    end
+end
+
 -- make the rpathdir flag
 function nf_rpathdir(self, dir, opt)
     if self:is_plat("windows", "mingw") then
@@ -762,7 +776,8 @@ function nf_rpathdir(self, dir, opt)
         return
     end
     dir = path.translate(dir)
-    if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
+    local hasflags_opt = _nf_rpathdir_hasflags_opt(self, opt)
+    if self:has_flags("-Wl,-rpath=" .. dir, "ldflags", hasflags_opt) then
         local flags = {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
@@ -770,9 +785,9 @@ function nf_rpathdir(self, dir, opt)
         -- add_rpathdirs("...", {runpath = false})
         -- https://github.com/xmake-io/xmake/issues/5109
         if extra then
-            if extra.runpath == false and self:has_flags("-Wl,-rpath=" .. dir .. ",--disable-new-dtags", "ldflags") then
+            if extra.runpath == false and self:has_flags("-Wl,-rpath=" .. dir .. ",--disable-new-dtags", "ldflags", hasflags_opt) then
                 flags[1] = flags[1] .. ",--disable-new-dtags"
-            elseif extra.runpath == true and self:has_flags("-Wl,-rpath=" .. dir .. ",--enable-new-dtags", "ldflags") then
+            elseif extra.runpath == true and self:has_flags("-Wl,-rpath=" .. dir .. ",--enable-new-dtags", "ldflags", hasflags_opt) then
                 flags[1] = flags[1] .. ",--enable-new-dtags"
             end
         end
@@ -781,7 +796,7 @@ function nf_rpathdir(self, dir, opt)
             table.insert(flags, 1, "-Wl,-zorigin")
         end
         return flags
-    elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir, "ldflags") then
+    elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir, "ldflags", hasflags_opt) then
         return {"-Xlinker", "-rpath", "-Xlinker", (dir:gsub("%$ORIGIN", "@loader_path"))}
     end
 end

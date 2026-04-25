@@ -1,0 +1,31 @@
+add_rules("mode.debug", "mode.release")
+
+toolchain("repro-gcc")
+    set_kind("standalone")
+    set_toolset("cc", path.join(os.scriptdir(), "repro-gcc.sh"))
+    set_toolset("ld", path.join(os.scriptdir(), "repro-gcc.sh"))
+    set_toolset("sh", path.join(os.scriptdir(), "repro-gcc.sh"))
+    set_toolset("ar", "ar")
+
+    on_check(function ()
+        return import("lib.detect.find_tool")("gcc")
+    end)
+
+toolchain_end()
+
+target("foo")
+    set_kind("shared")
+    set_toolchains("repro-gcc")
+    set_targetdir(path.join(os.scriptdir(), "lib"))
+    add_files("foo.c")
+
+target("demo")
+    set_kind("binary")
+    set_toolchains("repro-gcc")
+    set_targetdir(path.join(os.scriptdir(), "bin"))
+    add_deps("foo")
+    add_files("main.c")
+    add_linkdirs(path.join(os.scriptdir(), "lib"))
+    add_links("foo")
+    add_rpathdirs(path.join(os.scriptdir(), "lib"))
+    add_ldflags("-Wl,--hash-style=gnu")
