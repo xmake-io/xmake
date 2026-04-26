@@ -752,16 +752,16 @@ function nf_linkdir(self, dir)
 end
 
 local function _nf_rpathdir_hasflags_opt(self, opt)
-    local sysflags = table.wrap(self:_sysflags(self:kind(), "ldflags"))
+    local linkflags = table.join({}, table.wrap(self:_sysflags(self:kind(), self:kind() == "sh" and "shflags" or "ldflags")))
     local target = opt and opt.target
     if target then
-        table.join2(sysflags, target:get("ldflags"))
+        table.join2(linkflags, table.wrap(target:get("ldflags")))
         if self:kind() == "sh" then
-            table.join2(sysflags, target:get("shflags"))
+            table.join2(linkflags, table.wrap(target:get("shflags")))
         end
     end
-    if #sysflags > 0 then
-        return {sysflags = sysflags}
+    if #linkflags > 0 then
+        return {sysflags = linkflags}
     end
 end
 
