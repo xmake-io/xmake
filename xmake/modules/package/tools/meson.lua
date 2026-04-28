@@ -329,9 +329,16 @@ end
 function _get_configs(package, configs, opt)
 
     -- add prefix
+    -- when cross-compiling on Windows to a Unix-like target (e.g. Android), Meson validates
+    -- the prefix as a Unix absolute path and rejects Windows paths like C:/... Use prefix=/
+    -- and redirect installation via DESTDIR in the install step instead.
     configs = configs or {}
     opt._configs_str = string.serialize(configs, {indent = false, strip = true})
-    table.insert(configs, "--prefix=" .. path.unix(opt.prefix or package:installdir()))
+    if is_host("windows") and package:is_cross() and not package:is_plat("windows", "mingw") then
+        table.insert(configs, "--prefix=/")
+    else
+        table.insert(configs, "--prefix=" .. path.unix(opt.prefix or package:installdir()))
+    end
     table.insert(configs, "--libdir=lib")
 
     -- set build type
@@ -613,6 +620,14 @@ function install(package, configs, opt)
     -- configure install
     local builddir = _get_builddir(package, opt)
     local argv = {"install", "-C", builddir}
+
+    -- when prefix=/ was used for cross-builds on Windows, redirect the install to the
+    -- actual package directory via DESTDIR so files land in the right place.
+    -- meson's destdir_join strips the leading / from prefix, giving DESTDIR/lib, DESTDIR/include, etc.
+    if is_host("windows") and package:is_cross() and not package:is_plat("windows", "mingw") then
+        table.insert(argv, "--destdir")
+        table.insert(argv, opt.prefix or package:installdir())
+    end
 
     -- do install
     local meson = assert(find_tool("meson"), "meson not found!")
