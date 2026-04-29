@@ -291,7 +291,7 @@ function _find_qt(sdkdir, sdkver, sdkdir_host)
 
     -- handle qt sysroot
     local qt_sysroot = qtenvs.QT_SYSROOT or ""
-    if #qt_sysroot > 0 and path.isdir(qt_sysroot) then
+    if #qt_sysroot > 0 and os.isdir(qt_sysroot) then
         sdkdir = path.join(qt_sysroot, sdkdir)
         bindir = path.join(qt_sysroot, bindir)
         libexecdir = path.join(qt_sysroot, libexecdir)
