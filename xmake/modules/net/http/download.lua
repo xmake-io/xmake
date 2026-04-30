@@ -52,6 +52,82 @@ function _get_user_agent()
     return _g._USER_AGENT
 end
 
+-- download url using aria2
+function _aria2_download(tool, url, outputfile, opt)
+
+    -- ensure output directory
+    local outputdir = path.directory(outputfile)
+    if not os.isdir(outputdir) then
+        os.mkdir(outputdir)
+    end
+
+    -- set basic arguments
+    local argv = {"--no-conf=true"}
+    if option.get("verbose") then
+        table.insert(argv, "--console-log-level=notice")
+    else
+        table.insert(argv, "--console-log-level=error")
+    end
+
+    -- user-agent
+    local user_agent = _get_user_agent()
+    if user_agent then
+        if tool.version then
+            user_agent = user_agent .. " aria2/" .. tool.version
+        end
+        table.insert(argv, "--user-agent=" .. user_agent)
+    end
+
+    -- use proxy?
+    local proxy_conf = proxy.config(url)
+    if proxy_conf then
+        table.insert(argv, "--all-proxy=" .. proxy_conf)
+    end
+
+    -- ignore to check ssl certificates
+    if opt.insecure then
+        table.insert(argv, "--check-certificate=false")
+    end
+
+    -- add custom headers
+    if opt.headers then
+        for _, header in ipairs(opt.headers) do
+            table.insert(argv, "--header=" .. header)
+        end
+    end
+
+    -- continue to download?
+    if opt.continue then
+        table.insert(argv, "--continue=true")
+    end
+
+    -- set connect timeout
+    if opt.timeout then
+        table.insert(argv, "--connect-timeout=" .. tostring(opt.timeout))
+    end
+
+    -- set read timeout (inactivity timeout in aria2)
+    if opt.read_timeout then
+        table.insert(argv, "--timeout=" .. tostring(opt.read_timeout))
+    end
+
+    -- enable parallel download (multi-threaded)
+    table.insert(argv, "--split=8")
+    table.insert(argv, "--max-connection-per-server=8")
+    table.insert(argv, "--min-split-size=1M")
+    table.insert(argv, "--allow-overwrite=true")
+
+    -- set output directory and filename
+    table.insert(argv, "--dir=" .. outputdir)
+    table.insert(argv, "--out=" .. path.filename(outputfile))
+
+    -- set url
+    table.insert(argv, url)
+
+    -- download it
+    os.vrunv(tool.program, argv)
+end
+
 -- download url using curl
 function _curl_download(tool, url, outputfile, opt)
 
@@ -234,8 +310,14 @@ function main(url, outputfile, opt)
     opt = opt or {}
     outputfile = outputfile or path.filename(url):gsub("%?.+$", "")
 
-    -- attempt to download url using curl first
-    local tool = find_tool("curl", {version = true})
+    -- attempt to download url using aria2 first (multi-threaded, fastest)
+    local tool = find_tool("aria2", {version = true})
+    if tool then
+        return _aria2_download(tool, url, outputfile, opt)
+    end
+
+    -- attempt to download url using curl
+    tool = find_tool("curl", {version = true})
     if tool then
         return _curl_download(tool, url, outputfile, opt)
     end
@@ -254,5 +336,5 @@ function main(url, outputfile, opt)
         end
     end
 
-    assert(tool, "curl or wget not found!")
+    assert(tool, "aria2, curl or wget not found!")
 end
