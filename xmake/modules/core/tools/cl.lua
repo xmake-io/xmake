@@ -379,7 +379,7 @@ end
 function nf_exception(self, exp)
     local maps = {
         cxx = "/EHsc",
-        ["no-cxx"] = "/EHsc-"
+        ["no-cxx"] = "/EHs-c-"
     }
     return maps[exp]
 end
