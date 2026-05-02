@@ -53,7 +53,9 @@ function _load_iclvars(iclvars_bat, arch, opt)
     file:close()
 
     -- run geniclvars.bat
-    os.run(geniclvars_bat)
+    -- @note we use runv here so the bat path is not split on whitespace by os.argv,
+    -- which breaks detection when the temp file lives under a path with spaces.
+    os.runv(geniclvars_bat, {})
 
     -- load all envirnoment variables
     local variables = {}

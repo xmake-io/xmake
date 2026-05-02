@@ -114,14 +114,17 @@ function main(snippets, opt)
                 linker.link("binary", linkerkind, objectfile, binaryfile, opt)
             end
             if opt.tryrun then
+                -- @note we use the *v variants so the binary path is not split on
+                -- whitespace by os.argv. mostly hits on Windows where TEMP lives
+                -- under the user profile and may contain spaces.
                 if opt.output then
-                    local output = os.iorun(binaryfile)
+                    local output = os.iorunv(binaryfile, {})
                     if output then
                         output = output:trim()
                     end
                     return true, output
                 else
-                    os.vrun(binaryfile)
+                    os.vrunv(binaryfile, {})
                 end
             end
             local binary_match = opt.binary_match

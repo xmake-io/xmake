@@ -53,7 +53,9 @@ function _load_ifxvars(ifxvars_bat, arch, opt)
     file:close()
 
     -- run genifxvars.bat
-    os.run(genifxvars_bat)
+    -- @note we use runv here so the bat path is not split on whitespace by os.argv,
+    -- which breaks detection when the temp file lives under a path with spaces.
+    os.runv(genifxvars_bat, {})
 
     -- load all envirnoment variables
     local variables = {}
