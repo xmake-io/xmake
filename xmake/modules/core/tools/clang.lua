@@ -292,3 +292,39 @@ function nf_runtime(self, runtime, opt)
     end
     return maps and maps[runtime]
 end
+
+-- make the c precompiled header flag
+function nf_pcheader(self, pcheaderfile, opt)
+    if self:kind() == "cc" then
+        local target = opt.target
+        local pcoutputfile = target:pcoutputfile("c")
+        return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
+    end
+end
+
+-- make the c++ precompiled header flag
+function nf_pcxxheader(self, pcheaderfile, opt)
+    if self:kind() == "cxx" then
+        local target = opt.target
+        local pcoutputfile = target:pcoutputfile("cxx")
+        return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
+    end
+end
+
+-- make the objc precompiled header flag
+function nf_pmheader(self, pcheaderfile, opt)
+    if self:kind() == "mm" then
+        local target = opt.target
+        local pcoutputfile = target:pcoutputfile("m")
+        return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
+    end
+end
+
+-- make the objc++ precompiled header flag
+function nf_pmxxheader(self, pcheaderfile, opt)
+    if self:kind() == "mxx" then
+        local target = opt.target
+        local pcoutputfile = target:pcoutputfile("mxx")
+        return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
+    end
+end
