@@ -37,7 +37,10 @@ function main(toolchain)
     else
         toolchain:set("toolset", "as",  "ml.exe")
     end
-    if project.policy("build.optimization.lto") then
+
+    -- we can use `clang-cl[lld_link]` to switch to lld-link.
+    local lld_link = toolchain:config("lld_link")
+    if lld_link or project.policy("build.optimization.lto") then
         toolchain:set("toolset", "ld",  "lld-link")
         toolchain:set("toolset", "sh",  "lld-link")
         toolchain:set("toolset", "ar",  "llvm-ar")
