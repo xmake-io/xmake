@@ -30,3 +30,8 @@ function nf_strip(self, level)
     return maps[level]
 end
 
+-- make the runtime flag
+function nf_runtime(self, runtime, opt)
+    -- zig cc does not take -stdlib flag, it links the bundled libc++ statically
+    return
+end
