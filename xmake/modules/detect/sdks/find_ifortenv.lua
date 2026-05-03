@@ -55,7 +55,7 @@ function _load_ifortvars(ifortvars_bat, arch, opt)
     -- run genifortvars.bat
     -- @note we use runv here so the bat path is not split on whitespace by os.argv,
     -- which breaks detection when the temp file lives under a path with spaces.
-    os.runv(genifortvars_bat, {})
+    os.runv(genifortvars_bat)
 
     -- load all envirnoment variables
     local variables = {}
