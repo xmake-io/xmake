@@ -33,20 +33,20 @@ function _add_lto_optimization(target, sourcekind)
         mxx = "mxxflags"
     }
     local cflag = flagnames[sourcekind] or (sourcekind == "cxx" and "cxxflags" or "cflags")
-    if cc == "cl" then
+    if cc == "cl" or cc == "clang_cl" then
         target:add(cflag, "-GL")
-    elseif cc == "clang" or cc == "clangxx" or cc == "clang_cl" then
+    elseif cc == "clang" or cc == "clangxx" or cc:startswith("zig") then
         target:add(cflag, "-flto=thin")
     elseif cc == "gcc" or cc == "gxx" then
         target:add(cflag, "-flto")
     end
 
     -- add ldflags and shflags
-    local program, ld = target:tool("ld")
+    local _, ld = target:tool("ld")
     if ld == "link" then
         target:add("ldflags", "-LTCG")
         target:add("shflags", "-LTCG")
-    elseif ld == "clang" or ld == "clangxx" then
+    elseif ld == "clang" or ld == "clangxx" or ld:startswith("zig") then
         target:add("ldflags", "-flto=thin")
         target:add("shflags", "-flto=thin")
 
@@ -88,7 +88,7 @@ function _add_lto_optimization(target, sourcekind)
         end
     end
 
-    local program, ar = target:tool("ar")
+    local _, ar = target:tool("ar")
     if cc == "clang_cl" then
         if ld == "link" then
             wprint([[Unsupported toolset(%s) for lto, please use `set_toolset("ld", "lld-link")`]], ld)
@@ -109,4 +109,3 @@ function main(target, sourcekind)
         _add_lto_optimization(target, sourcekind)
     end
 end
-

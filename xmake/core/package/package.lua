@@ -2426,9 +2426,9 @@ function _instance:_generate_lto_configs(sourcekind)
     if sourcekind then
         local _, cc = self:tool(sourcekind)
         local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
-        if cc == "cl" then
+        if cc == "cl" or cc == "clang_cl" then
             configs[cflag] = "-GL"
-        elseif cc == "clang" or cc == "clangxx" or cc == "clang_cl" then
+        elseif cc == "clang" or cc == "clangxx" or cc:startswith("zig") then
             configs[cflag] = "-flto=thin"
         elseif cc == "gcc" or cc == "gxx" then
             configs[cflag] = "-flto"
@@ -2440,7 +2440,7 @@ function _instance:_generate_lto_configs(sourcekind)
     if ld == "link" then
         configs.ldflags = "-LTCG"
         configs.shflags = "-LTCG"
-    elseif ld == "clang" or ld == "clangxx" then
+    elseif ld == "clang" or ld == "clangxx" or ld:startswith("zig") then
         configs.ldflags = "-flto=thin"
         configs.shflags = "-flto=thin"
     elseif ld == "gcc" or ld == "gxx" then
