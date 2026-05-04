@@ -28,19 +28,28 @@ import("private.utils.toolchain", {alias = "toolchain_utils"})
 function main(toolchain)
 
     -- set toolset
+    -- we can use `clang-cl[llvm]` to switch to llvm tools.
+    local use_llvm = toolchain:config("llvm")
     toolchain:set("toolset", "cc",      "clang-cl")
     toolchain:set("toolset", "cxx",     "clang-cl")
-    toolchain:set("toolset", "mrc",     "rc.exe")
     toolchain:set("toolset", "dlltool", "llvm-dlltool")
-    if toolchain:is_arch("x64") then
-        toolchain:set("toolset", "as",  "ml64.exe")
+    if use_llvm then
+        toolchain:set("toolset", "mrc", "llvm-rc.exe")
+        if toolchain:is_arch("x64") then
+            toolchain:set("toolset", "as",  "llvm-ml64.exe")
+        else
+            toolchain:set("toolset", "as",  "llvm-ml.exe")
+        end
     else
-        toolchain:set("toolset", "as",  "ml.exe")
+        toolchain:set("toolset", "mrc",     "rc.exe")
+        if toolchain:is_arch("x64") then
+            toolchain:set("toolset", "as",  "ml64.exe")
+        else
+            toolchain:set("toolset", "as",  "ml.exe")
+        end
     end
 
-    -- we can use `clang-cl[lld_link]` to switch to lld-link.
-    local lld_link = toolchain:config("lld_link")
-    if lld_link or project.policy("build.optimization.lto") then
+    if use_llvm or project.policy("build.optimization.lto") then
         toolchain:set("toolset", "ld",  "lld-link")
         toolchain:set("toolset", "sh",  "lld-link")
         toolchain:set("toolset", "ar",  "llvm-ar")
