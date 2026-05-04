@@ -1,0 +1,97 @@
+--!A cross-platform build utility based on Lua
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+--
+-- Copyright (C) 2015-present, Xmake Open Source Community.
+--
+-- @author      wuzhenqing
+-- @file        load.lua
+--
+
+-- get apis
+function _get_apis()
+    local apis = {}
+    apis.values = {
+        -- target.add_xxx
+        "target.add_links"
+    ,   "target.add_syslinks"
+    ,   "target.add_ascnpuarchs"
+    ,   "target.add_ascflags"
+    ,   "target.add_aicpuflags"
+    ,   "target.add_ldflags"
+    ,   "target.add_arflags"
+    ,   "target.add_shflags"
+    ,   "target.add_defines"
+    ,   "target.add_undefines"
+        -- @note do not translate path, it's usually an absolute path or contains
+        -- $ORIGIN/@loader_path
+    ,   "target.add_rpathdirs"
+        -- option.add_xxx
+    ,   "option.add_links"
+    ,   "option.add_syslinks"
+    ,   "option.add_ascnpuarchs"
+    ,   "option.add_ascflags"
+    ,   "option.add_aicpuflags"
+    ,   "option.add_ldflags"
+    ,   "option.add_arflags"
+    ,   "option.add_shflags"
+    ,   "option.add_defines"
+    ,   "option.add_undefines"
+    ,   "option.add_rpathdirs"
+        -- package.add_xxx
+    ,   "package.add_links"
+    ,   "package.add_syslinks"
+    ,   "package.add_ascflags"
+    ,   "package.add_aicpuflags"
+    ,   "package.add_ldflags"
+    ,   "package.add_arflags"
+    ,   "package.add_shflags"
+    ,   "package.add_defines"
+    ,   "package.add_undefines"
+    ,   "package.add_rpathdirs"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_links"
+    ,   "toolchain.add_syslinks"
+    ,   "toolchain.add_ascnpuarchs"
+    ,   "toolchain.add_ascflags"
+    ,   "toolchain.add_aicpuflags"
+    ,   "toolchain.add_ldflags"
+    ,   "toolchain.add_arflags"
+    ,   "toolchain.add_shflags"
+    ,   "toolchain.add_defines"
+    ,   "toolchain.add_undefines"
+    ,   "toolchain.add_rpathdirs"
+    }
+    apis.groups = {
+        -- target.add_xxx
+        "target.add_linkorders"
+    ,   "target.add_linkgroups"
+        -- package.add_xxx
+    ,   "package.add_linkorders"
+    ,   "package.add_linkgroups"
+    }
+    apis.paths = {
+        -- target.add_xxx
+        "target.add_linkdirs"
+    ,   "target.add_includedirs"
+    ,   "target.add_sysincludedirs"
+        -- option.add_xxx
+    ,   "option.add_linkdirs"
+    ,   "option.add_sysincludedirs"
+    }
+    return apis
+end
+
+function main()
+    return {apis = _get_apis()}
+end

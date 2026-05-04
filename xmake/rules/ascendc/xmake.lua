@@ -1,0 +1,53 @@
+--!A cross-platform build utility based on Lua
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+--
+-- Copyright (C) 2015-present, Xmake Open Source Community.
+--
+-- @author      wuzhenqing
+-- @file        xmake.lua
+--
+
+-- define rule: ascendc.env
+rule("ascendc.env")
+    after_load(function (target)
+        -- set default C++ standard (user can override via set_languages)
+        target:add("languages", "c++17")
+    end)
+
+-- define rule: ascendc.npuarchs
+rule("ascendc.npuarchs")
+    on_config(function (target)
+        for _, arch in ipairs(table.unique(table.wrap(target:get("ascnpuarchs")))) do
+            target:add("ascflags", "--npu-arch=" .. arch)
+            target:add("shflags", "--npu-arch=" .. arch)
+            target:add("ldflags", "--npu-arch=" .. arch)
+        end
+    end)
+
+-- define rule: ascendc.build.asc
+rule("ascendc.build.asc")
+    set_sourcekinds("asc")
+    add_deps("ascendc.npuarchs")
+    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
+
+-- define rule: ascendc.build.aicpu
+rule("ascendc.build.aicpu")
+    set_sourcekinds("aicpu")
+    add_deps("ascendc.npuarchs")
+    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
+
+-- define rule: ascendc
+rule("ascendc")
+    add_deps("ascendc.env", "ascendc.build.asc", "ascendc.build.aicpu")
+    add_deps("utils.inherit.links")
