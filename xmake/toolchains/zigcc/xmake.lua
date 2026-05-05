@@ -23,6 +23,7 @@ toolchain("zigcc")
     set_kind("standalone")
     set_homepage("https://ziglang.org/")
     set_description("Use zig cc/c++ as C/C++ Compiler")
+    set_runtimes("c++_static")
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
