@@ -26,6 +26,8 @@ rule("utils.merge.archive")
         --
         -- @see https://github.com/xmake-io/xmake/issues/3404
         if target:policy("build.merge_archive") then
+            target:data_set("inherit.links.export_static", false)
+
             for _, dep in ipairs(target:orderdeps()) do
                 if dep:is_static() then
                     dep:data_set("inherit.links.deplink", false)
@@ -43,14 +45,28 @@ rule("utils.merge.archive")
     end)
 
     after_link(function (target, opt)
+        -- Returns full path of a given link archive, if found.
+        local function _resolve_link(linkdirs, link)
+            -- HELP: assume that 'linkpath' does not exists in multiple directories?
+            for _, linkdir in ipairs(linkdirs) do
+                local file_extension = target:is_plat("windows") and ".lib" or ".a"
+                local link_path = path.join(linkdir, "lib" .. link .. file_extension)
+                if os.exists(link_path) then
+                    return link_path
+                end
+            end
+        end
+
         if not target:is_static() then
             return
         end
         local sourcefiles = target:data("merge_archive.sourcefiles")
         if target:policy("build.merge_archive") or sourcefiles then
+            import("private.utils.target", {alias = "target_utils"})
             import("utils.archive.merge_staticlib")
             import("core.project.depend")
             import("utils.progress")
+
             local libraryfiles = {}
             if sourcefiles then
                 table.join2(libraryfiles, sourcefiles)
@@ -58,6 +74,15 @@ rule("utils.merge.archive")
                 for _, dep in ipairs(target:orderdeps()) do
                     if dep:is_static() then
                         table.insert(libraryfiles, dep:targetfile())
+                    end
+                end
+
+                -- TODO: what about syslinkdirs and syslinks?
+                local linkdirs = target_utils.get_values_from_target(target, "linkdirs")
+                for _, link in ipairs(target_utils.get_values_from_target(target, "links")) do
+                    local link_path = _resolve_link(linkdirs, link)
+                    if link_path then
+                        table.insert(libraryfiles, link_path)
                     end
                 end
             end
