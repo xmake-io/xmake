@@ -20,17 +20,7 @@
 
 -- imports
 import("lib.detect.find_tool")
-
--- map host architecture to CANN host tool directory
-function _host_archdir(arch)
-    local host_archdirs = {
-        x86_64 = "x86_64-linux"
-    ,   x64 = "x86_64-linux"
-    ,   arm64 = "aarch64-linux"
-    ,   aarch64 = "aarch64-linux"
-    }
-    return host_archdirs[arch]
-end
+import("detect.sdks.find_ascend")
 
 -- check the ascendc toolchain
 function main(toolchain)
@@ -38,53 +28,32 @@ function main(toolchain)
         return false
     end
 
-    -- resolve sdkdir: --sdk= > ASCEND_HOME_PATH > ASCEND_TOOLKIT_HOME
-    local sdkroot = toolchain:sdkdir()
-    if not sdkroot then
-        sdkroot = os.getenv("ASCEND_HOME_PATH") or os.getenv("ASCEND_TOOLKIT_HOME")
-    end
-    if not sdkroot or not os.isdir(sdkroot) then
-        return false
-    end
-    sdkroot = path.absolute(sdkroot)
-
-    -- map host arch to CANN host directory
-    local host_arch = os.arch()
-    local host_archdir = _host_archdir(host_arch)
-    if not host_archdir then
+    -- locate the Ascend SDK and derive its host layout
+    local ascend = find_ascend(toolchain:sdkdir())
+    if not ascend then
         return false
     end
 
-    local hostroot = path.join(sdkroot, host_archdir)
-    if not os.isdir(hostroot) then
+    -- llvm-ar must sit next to bisheng (used as the static linker)
+    if not os.isexec(path.join(ascend.bindir, "llvm-ar")) then
         return false
     end
 
-    -- check required executables
-    local bindir = path.join(hostroot, "bin")
-    local bisheng_bin = path.join(bindir, "bisheng")
-    local llvm_ar = path.join(bindir, "llvm-ar")
-    if not os.isexec(bisheng_bin) or not os.isexec(llvm_ar) then
-        return false
-    end
-
-    -- ensure bisheng can load its own shared libraries during version check
-    local host_libdir = path.join(hostroot, "lib64")
-    local ld_library_path = os.getenv("LD_LIBRARY_PATH") or ""
-    local envs = {
-        LD_LIBRARY_PATH = ld_library_path ~= "" and
-            (host_libdir .. path.envsep() .. ld_library_path) or host_libdir
-    }
-
-    -- use find_tool (unified interface) instead of find_bisheng directly
-    local result = find_tool("bisheng", {program = bisheng_bin, version = true, envs = envs})
+    -- probe bisheng to confirm it actually runs (catches broken installs).
+    -- pass bindir via paths and inject LD_LIBRARY_PATH so bisheng can load
+    -- its own shared libraries during the version probe.
+    local ld = os.getenv("LD_LIBRARY_PATH") or ""
+    local result = find_tool("bisheng", {
+        paths = {ascend.bindir},
+        envs = {LD_LIBRARY_PATH = ld ~= "" and (ascend.libdir .. path.envsep() .. ld) or ascend.libdir},
+        version = true})
     if not result or not result.program then
         return false
     end
 
-    toolchain:config_set("sdkdir", sdkroot)
-    toolchain:config_set("bindir", bindir)
-    toolchain:config_set("hostroot", hostroot)
-    cprint("checking for Huawei Ascend C Toolchain (host: %s) ... ${color.success}${text.success}", host_arch)
+    toolchain:config_set("sdkdir", ascend.sdkdir)
+    toolchain:config_set("bindir", ascend.bindir)
+    toolchain:config_set("hostroot", ascend.hostroot)
+    cprint("checking for Huawei Ascend C Toolchain (host: %s) ... ${color.success}${text.success}", ascend.host_archdir)
     return true
 end

@@ -24,14 +24,14 @@ import("lib.detect.find_programver")
 
 -- find bisheng
 --
--- @param opt   the argument options, e.g. {version = true}
+-- @param opt   the argument options, e.g. {paths = {"..."}, version = true}
 --
 -- @return      program, version
 --
 -- @code
 --
 -- local bisheng = find_bisheng()
--- local bisheng, version = find_bisheng({version = true})
+-- local bisheng, version = find_bisheng({paths = {"/path/to/bin"}, version = true})
 --
 -- @endcode
 --
@@ -39,8 +39,8 @@ function main(opt)
     opt = opt or {}
     opt.norunfile = true
     local program = find_program(opt.program or "bisheng", opt)
-    local version = nil
-    if program and opt and opt.version then
+    local version
+    if program and opt.version then
         version = find_programver(program, opt)
     end
     return program, version
