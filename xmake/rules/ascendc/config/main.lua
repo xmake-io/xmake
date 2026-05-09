@@ -15,26 +15,15 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      wuzhenqing
--- @file        xmake.lua
+-- @file        main.lua
 --
 
--- define rule: ascendc.build.asc
-rule("ascendc.build.asc")
-    set_sourcekinds("asc")
-    on_config(function (target)
-        import("config")(target, "asc")
-    end)
-    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
+-- imports
+import("rules.ascendc.config.basic", {rootdir = os.programdir(), alias = "config_basic"})
 
--- define rule: ascendc.build.aicpu
-rule("ascendc.build.aicpu")
-    set_sourcekinds("aicpu")
-    on_config(function (target)
-        import("config")(target, "aicpu")
-    end)
-    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
+-- main entry
+function main(target, sourcekind)
 
--- define rule: ascendc
-rule("ascendc")
-    add_deps("ascendc.build.asc", "ascendc.build.aicpu")
-    add_deps("utils.inherit.links")
+    -- config basic configs
+    config_basic(target, sourcekind)
+end

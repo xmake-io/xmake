@@ -15,26 +15,20 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      wuzhenqing
--- @file        xmake.lua
+-- @file        basic.lua
 --
 
--- define rule: ascendc.build.asc
-rule("ascendc.build.asc")
-    set_sourcekinds("asc")
-    on_config(function (target)
-        import("config")(target, "asc")
-    end)
-    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
-
--- define rule: ascendc.build.aicpu
-rule("ascendc.build.aicpu")
-    set_sourcekinds("aicpu")
-    on_config(function (target)
-        import("config")(target, "aicpu")
-    end)
-    on_build_files("private.action.build.object", {jobgraph = true, batch = true})
-
--- define rule: ascendc
-rule("ascendc")
-    add_deps("ascendc.build.asc", "ascendc.build.aicpu")
-    add_deps("utils.inherit.links")
+-- main entry
+function main(target, sourcekind)
+    -- set default c++ language if user has not set one
+    local has_cxx = false
+    for _, lang in ipairs(target:get("languages")) do
+        if lang:startswith("c++") or lang:startswith("cxx") then
+            has_cxx = true
+            break
+        end
+    end
+    if not has_cxx then
+        target:add("languages", "c++17")
+    end
+end

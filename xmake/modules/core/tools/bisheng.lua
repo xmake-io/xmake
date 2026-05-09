@@ -29,6 +29,11 @@ function init(self)
     self:set("ascshflags", "-shared")
 end
 
+-- make the npu-arch flag
+function nf_ascnpuarch(self, arch)
+    return "--npu-arch=" .. arch
+end
+
 -- make the language flag
 function nf_language(self, stdname)
     if _g.cxxmaps == nil then
