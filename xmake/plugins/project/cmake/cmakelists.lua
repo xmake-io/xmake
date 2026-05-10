@@ -395,49 +395,33 @@ function _add_project(cmakelists, outputdir)
         if project_version then
             project_info = project_info .. " VERSION " .. project_version
         end
-        if languages then
+        if languages and #languages > 0 then
             cmakelists:print("project(%s%s LANGUAGES %s)", project_name, project_info, table.concat(languages, " "))
         else
             cmakelists:print("project(%s%s)", project_name, project_info)
         end
     end
     -- Define language-independant global compiler/linker variables
-    if (languages and #languages > 0) then
-        local language = _get_project_languages()[1]
-        cmakelists:print("set(CURRENT_COMPILER_ID ${CMAKE_%s_COMPILER_ID})", language)
-        cmakelists:print("set(CURRENT_COMPILER_FRONTEND_VARIANT ${CMAKE_%s_COMPILER_FRONTEND_VARIANT})", language)
-        cmakelists:print("if(NOT CURRENT_COMPILER_FRONTEND_VARIANT)")
-        cmakelists:print("    if(MSVC)")
-        cmakelists:print("        set(CURRENT_COMPILER_FRONTEND_VARIANT \"MSVC\")")
-        cmakelists:print("    else()")
-        cmakelists:print("        set(CURRENT_COMPILER_FRONTEND_VARIANT \"GNU\")")
-        cmakelists:print("    endif()")
-        cmakelists:print("endif()")
-        cmakelists:print("set(CURRENT_LINKER_ID ${CMAKE_%s_COMPILER_LINKER_ID})", language)
-        cmakelists:print("if(DEFINED CMAKE_%s_COMPILER_LINKER_FRONTEND_VARIANT)", language)
-        cmakelists:print("    set(CURRENT_LINKER_FRONTEND_VARIANT ${CMAKE_%s_COMPILER_LINKER_FRONTEND_VARIANT})", language)
-        cmakelists:print("endif()")
-        cmakelists:print("if(NOT CURRENT_LINKER_FRONTEND_VARIANT)")
-        cmakelists:print("    set(CURRENT_LINKER_FRONTEND_VARIANT ${CURRENT_COMPILER_FRONTEND_VARIANT})")
-        cmakelists:print("endif()")
-    else
-        cmakelists:print("set(CURRENT_COMPILER_ID ${CMAKE_C_COMPILER_ID})") -- C should be defined by default if not specified
-        cmakelists:print("set(CURRENT_COMPILER_FRONTEND_VARIANT ${CMAKE_C_COMPILER_FRONTEND_VARIANT})")
-        cmakelists:print("if(NOT CURRENT_COMPILER_FRONTEND_VARIANT)")
-        cmakelists:print("    if(MSVC)")
-        cmakelists:print("        set(CURRENT_COMPILER_FRONTEND_VARIANT \"MSVC\")")
-        cmakelists:print("    else()")
-        cmakelists:print("        set(CURRENT_COMPILER_FRONTEND_VARIANT \"GNU\")")
-        cmakelists:print("    endif()")
-        cmakelists:print("endif()")
-        cmakelists:print("set(CURRENT_LINKER_ID ${CMAKE_C_COMPILER_LINKER_ID})")
-        cmakelists:print("if(DEFINED CMAKE_C_COMPILER_LINKER_FRONTEND_VARIANT)")
-        cmakelists:print("    set(CURRENT_LINKER_FRONTEND_VARIANT ${CMAKE_C_COMPILER_LINKER_FRONTEND_VARIANT})")
-        cmakelists:print("endif()")
-        cmakelists:print("if(NOT CURRENT_LINKER_FRONTEND_VARIANT)")
-        cmakelists:print("    set(CURRENT_LINKER_FRONTEND_VARIANT ${CURRENT_COMPILER_FRONTEND_VARIANT})")
-        cmakelists:print("endif()")
+    if not languages or #languages == 0 then
+        languages = {"C"} -- C should be defined by default if nothing specified
     end
+    local language = languages[1]
+    cmakelists:print("set(CURRENT_COMPILER_ID ${CMAKE_%s_COMPILER_ID})", language)
+    cmakelists:print("set(CURRENT_COMPILER_FRONTEND_VARIANT ${CMAKE_%s_COMPILER_FRONTEND_VARIANT})", language)
+    cmakelists:print("if(NOT CURRENT_COMPILER_FRONTEND_VARIANT)")
+    cmakelists:print("    if(MSVC)")
+    cmakelists:print("        set(CURRENT_COMPILER_FRONTEND_VARIANT \"MSVC\")")
+    cmakelists:print("    else()")
+    cmakelists:print("        set(CURRENT_COMPILER_FRONTEND_VARIANT \"GNU\")")
+    cmakelists:print("    endif()")
+    cmakelists:print("endif()")
+    cmakelists:print("set(CURRENT_LINKER_ID ${CMAKE_%s_COMPILER_LINKER_ID})", language)
+    cmakelists:print("if(DEFINED CMAKE_%s_COMPILER_LINKER_FRONTEND_VARIANT)", language)
+    cmakelists:print("    set(CURRENT_LINKER_FRONTEND_VARIANT ${CMAKE_%s_COMPILER_LINKER_FRONTEND_VARIANT})", language)
+    cmakelists:print("endif()")
+    cmakelists:print("if(NOT CURRENT_LINKER_FRONTEND_VARIANT)")
+    cmakelists:print("    set(CURRENT_LINKER_FRONTEND_VARIANT ${CURRENT_COMPILER_FRONTEND_VARIANT})")
+    cmakelists:print("endif()")
     cmakelists:print("")
 end
 
