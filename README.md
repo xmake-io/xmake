@@ -247,6 +247,7 @@ ti-c6000      TI-CGT C6000 compiler
 iararm        IAR ARM C/C++ Compiler
 kotlin-native Kotlin Native Programming Language Compiler
 filc          A memory safe implementation of the C and C++ programming languages (https://fil-c.org/)
+ascendc       Huawei Ascend C (bisheng compiler driver)
 ```
 
 ## Supported languages
@@ -272,6 +273,7 @@ filc          A memory safe implementation of the C and C++ programming language
 * Cppfront
 * Kotlin
 * C#
+* Ascend C
 
 ## Features
 
