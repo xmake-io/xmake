@@ -31,6 +31,9 @@ end
 
 -- make the npu-arch flag
 function nf_ascnpuarch(self, arch)
+    if self:kind() == "aicpu" then
+        return
+    end
     return "--npu-arch=" .. arch
 end
 
