@@ -36,7 +36,7 @@ function main()
     end
     for name, target in pairs(project.targets()) do
         local group = target:get("group")
-        if (target:is_default() and not group_pattern) or (group_pattern and group and group:match(group_pattern)) then
+        if not group_pattern or (group and group:match(group_pattern)) then
             table.insert(targets, name)
         end
     end
