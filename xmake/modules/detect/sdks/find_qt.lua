@@ -365,10 +365,10 @@ function main(sdkdir, opt)
     end
 
     -- find qt
-    local sdkdir = sdkdir or config.get("qt") or global.get("qt") or config.get("sdk")
+    local real_sdkdir = sdkdir or config.get("qt") or global.get("qt") or config.get("sdk")
     local sdkver = opt.version or config.get("qt_sdkver")
     local sdkdir_host = opt.sdkdir_host or config.get("qt_host") or global.get("qt_host")
-    local qt = _find_qt(sdkdir, sdkver, sdkdir_host)
+    local qt = _find_qt(real_sdkdir, sdkver, sdkdir_host)
     if qt then
         config.set("qt", qt.sdkdir, {force = true, readonly = true})
         config.set("qt_sdkver", qt.sdkver, {force = true, readonly = true})
