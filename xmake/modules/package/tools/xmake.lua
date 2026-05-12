@@ -49,7 +49,7 @@ end
 
 -- get configs for qt
 function _get_configs_for_qt(package, configs, opt)
-    local names = {"qt", "qt_sdkver"}
+    local names = {"qt", "qt_sdkver", "qt_host"}
     for _, name in ipairs(names) do
         local value = get_config(name)
         if value ~= nil then
@@ -226,6 +226,8 @@ function _get_configs_for_cross(package, configs, opt)
             table.insert(configs, "--" .. name .. "=" .. tostring(value))
         end
     end
+    _get_configs_for_qt(package, configs, opt)
+    _get_configs_for_vcpkg(package, configs, opt)
 end
 
 -- get configs
