@@ -147,6 +147,37 @@ function _get_project_languages()
     return languages
 end
 
+-- get cmake compiler condition for tool-specific flags
+function _get_cmake_compiler_condition(toolname)
+    local conditions =
+    {
+        clang    = [[CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "GNU" AND CURRENT_COMPILER_ID MATCHES "Clang$|^IntelLLVM$"]]
+    ,   clangxx  = [[CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "GNU" AND CURRENT_COMPILER_ID MATCHES "Clang$|^IntelLLVM$"]]
+    ,   clang_cl = [[CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC" AND CURRENT_COMPILER_ID MATCHES "Clang$|^IntelLLVM$"]]
+    ,   gcc      = [[CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "GNU" AND CURRENT_COMPILER_ID STREQUAL "GNU"]]
+    ,   gxx      = [[CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "GNU" AND CURRENT_COMPILER_ID STREQUAL "GNU"]]
+    ,   cl       = [[CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"]]
+    }
+    return conditions[toolname]
+end
+
+-- get cmake linker condition for tool-specific flags
+function _get_cmake_linker_condition(toolname)
+    local conditions =
+    {
+        clang    = [[CURRENT_LINKER_FRONTEND_VARIANT STREQUAL "GNU" AND CURRENT_COMPILER_ID MATCHES "Clang$|^IntelLLVM$"]]
+    ,   clangxx  = [[CURRENT_LINKER_FRONTEND_VARIANT STREQUAL "GNU" AND CURRENT_COMPILER_ID MATCHES "Clang$|^IntelLLVM$"]]
+    ,   clang_cl = [[CURRENT_LINKER_FRONTEND_VARIANT STREQUAL "MSVC" AND CURRENT_COMPILER_ID MATCHES "Clang$|^IntelLLVM$"]]
+    ,   gcc      = [[CURRENT_LINKER_FRONTEND_VARIANT STREQUAL "GNU" AND CURRENT_COMPILER_ID STREQUAL "GNU"]]
+    ,   gxx      = [[CURRENT_LINKER_FRONTEND_VARIANT STREQUAL "GNU" AND CURRENT_COMPILER_ID STREQUAL "GNU"]]
+    ,   cl       = [[CURRENT_LINKER_FRONTEND_VARIANT STREQUAL "MSVC"]]
+    ,   ld       = [[CURRENT_LINKER_FRONTEND_VARIANT STREQUAL "GNU"]]
+    ,   link     = [[CURRENT_LINKER_FRONTEND_VARIANT STREQUAL "MSVC"]]
+    ,   lld_link = [[CURRENT_LINKER_FRONTEND_VARIANT STREQUAL "MSVC"]]
+    }
+    return conditions[toolname]
+end
+
 -- get configs from target
 function _get_configs_from_target(target, name)
     local values = {}
@@ -364,18 +395,32 @@ function _add_project(cmakelists, outputdir)
         if project_version then
             project_info = project_info .. " VERSION " .. project_version
         end
-        if languages then
+        if languages and #languages > 0 then
             cmakelists:print("project(%s%s LANGUAGES %s)", project_name, project_info, table.concat(languages, " "))
         else
             cmakelists:print("project(%s%s)", project_name, project_info)
         end
     end
-    -- Define a language-independant global compiler_id variable
-    if (languages and #languages > 0) then
-        cmakelists:print("set(CURRENT_COMPILER_ID ${CMAKE_%s_COMPILER_ID})", _get_project_languages()[1])
-    else
-        cmakelists:print("set(CURRENT_COMPILER_ID ${CMAKE_C_COMPILER_ID})") -- C should be defined by default if not specified
+    -- Define language-independant global compiler/linker variables
+    if not languages or #languages == 0 then
+        languages = {"C"} -- C should be defined by default if nothing specified
     end
+    local language = languages[1]
+    cmakelists:print("set(CURRENT_COMPILER_ID ${CMAKE_%s_COMPILER_ID})", language)
+    cmakelists:print("set(CURRENT_COMPILER_FRONTEND_VARIANT ${CMAKE_%s_COMPILER_FRONTEND_VARIANT})", language)
+    cmakelists:print("if(NOT CURRENT_COMPILER_FRONTEND_VARIANT)")
+    cmakelists:print("    if(MSVC)")
+    cmakelists:print("        set(CURRENT_COMPILER_FRONTEND_VARIANT \"MSVC\")")
+    cmakelists:print("    else()")
+    cmakelists:print("        set(CURRENT_COMPILER_FRONTEND_VARIANT \"GNU\")")
+    cmakelists:print("    endif()")
+    cmakelists:print("endif()")
+    cmakelists:print("if(DEFINED CMAKE_%s_COMPILER_LINKER_FRONTEND_VARIANT)", language)
+    cmakelists:print("    set(CURRENT_LINKER_FRONTEND_VARIANT ${CMAKE_%s_COMPILER_LINKER_FRONTEND_VARIANT})", language)
+    cmakelists:print("endif()")
+    cmakelists:print("if(NOT CURRENT_LINKER_FRONTEND_VARIANT)")
+    cmakelists:print("    set(CURRENT_LINKER_FRONTEND_VARIANT ${CURRENT_COMPILER_FRONTEND_VARIANT})")
+    cmakelists:print("endif()")
     cmakelists:print("")
 end
 
@@ -787,18 +832,10 @@ function _add_target_compile_options(cmakelists, target, outputdir)
         end
     end
     _add_target_compile_options_for_compiler()
-    local compilernames = {
-        clang = "Clang",
-        clangxx = "Clang",
-        gcc = "GNU",
-        gxx = "GNU",
-        cl = "MSVC",
-        link = "MSVC"
-    }
     for _, toolname in toolnames:keys() do
-        local name = compilernames[toolname]
-        if name then
-            cmakelists:print("if(CURRENT_COMPILER_ID STREQUAL \"%s\")", name)
+        local condition = _get_cmake_compiler_condition(toolname)
+        if condition then
+            cmakelists:print("if(%s)", condition)
             _add_target_compile_options_for_compiler(toolname)
             cmakelists:print("endif()")
         end
@@ -825,20 +862,13 @@ function _add_target_values(cmakelists, target, name)
         if name:endswith("s") then
             name = name:sub(1, #name - 1)
         end
-        cmakelists:print("if(CURRENT_COMPILER_ID STREQUAL \"MSVC\")")
-        local flags_cl = _map_compflags("cl", "c", name, values)
-        for _, flag in ipairs(flags_cl) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
-        end
-        cmakelists:print("elseif(CURRENT_COMPILER_ID STREQUAL \"Clang\")")
-        local flags_clang = _map_compflags("clang", "c", name, values)
-        for _, flag in ipairs(flags_clang) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
-        end
-        cmakelists:print("elseif(CURRENT_COMPILER_ID STREQUAL \"GNU\")")
-        local flags_gcc = _map_compflags("gcc", "c", name, values)
-        for _, flag in ipairs(flags_gcc) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+        for index, toolname in ipairs({"cl", "clang", "gcc"}) do
+            local condition = _get_cmake_compiler_condition(toolname)
+            cmakelists:print("%s(%s)", index == 1 and "if" or "elseif", condition)
+            local flags = _map_compflags(toolname, "c", name, values)
+            for _, flag in ipairs(flags) do
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+            end
         end
         cmakelists:print("endif()")
     end
@@ -903,7 +933,7 @@ function _add_target_languages(cmakelists, target)
                     if flag:endswith('++') then
                         cmakelists:print('foreach(standard 26 23 20 17 14 11 98)')
                         cmakelists:print('    include(CheckCXXCompilerFlag)')
-                        cmakelists:print('    if(CURRENT_COMPILER_ID STREQUAL \"MSVC\")')
+                        cmakelists:print('    if(CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")')
                         cmakelists:print('        check_cxx_compiler_flag("/std:%s${standard}" %s_support_%s_standard_${standard})', flag, target:name(), flag)
                         cmakelists:print('    else()')
                         cmakelists:print('        check_cxx_compiler_flag("-std=%s${standard}" %s_support_%s_standard_${standard})', flag, target:name(), flag)
@@ -916,7 +946,7 @@ function _add_target_languages(cmakelists, target)
                     else
                         cmakelists:print('foreach(standard 23 17 11 99 90)')
                         cmakelists:print('    include(CheckCCompilerFlag)')
-                        cmakelists:print('    if(CURRENT_COMPILER_ID STREQUAL \"MSVC\")')
+                        cmakelists:print('    if(CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")')
                         cmakelists:print('        check_c_compiler_flag("/std:%s${standard}" %s_support_%s_standard_${standard})', flag, target:name(), flag)
                         cmakelists:print('    else()')
                         cmakelists:print('        check_c_compiler_flag("-std=%s${standard}" %s_support_%s_standard_${standard})', flag, target:name(), flag)
@@ -956,7 +986,7 @@ function _add_target_optimization(cmakelists, target)
     }
     local optimization = target:get("optimize")
     if optimization then
-        cmakelists:print("if(CURRENT_COMPILER_ID STREQUAL \"MSVC\")")
+        cmakelists:print("if(CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL \"MSVC\")")
         cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[optimization])
         cmakelists:print("else()")
         cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[optimization])
@@ -984,7 +1014,7 @@ function _add_target_symbols(cmakelists, target)
         if levels:has("hidden") then
             table.insert(flags_gcc, "-fvisibility=hidden")
         end
-        cmakelists:print("if(CURRENT_COMPILER_ID STREQUAL \"MSVC\")")
+        cmakelists:print("if(CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL \"MSVC\")")
         if #flags_msvc > 0 then
             cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), table.concat(flags_msvc, " "))
         end
@@ -1005,7 +1035,7 @@ function _add_target_runtimes(cmakelists, target)
     local cmake_minver = _get_cmake_minver()
     if cmake_minver:ge("3.15.0") then
         local runtimes = target:get("runtimes")
-        cmakelists:print("if(CURRENT_COMPILER_ID STREQUAL \"MSVC\")")
+        cmakelists:print("if(CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL \"MSVC\")")
         if runtimes then
             if runtimes == "MT" then
                 runtimes = "MultiThreaded"
@@ -1121,7 +1151,7 @@ function _add_target_link_directories(cmakelists, target, outputdir)
             end
             cmakelists:print(")")
         else
-            cmakelists:print("if(CURRENT_COMPILER_ID STREQUAL \"MSVC\")")
+            cmakelists:print("if(CURRENT_LINKER_FRONTEND_VARIANT STREQUAL \"MSVC\")")
             cmakelists:print("    target_link_libraries(%s PRIVATE", target:name())
             for _, linkdir in ipairs(linkdirs) do
                 cmakelists:print("        -libpath:" .. _get_relative_unix_path(linkdir, outputdir))
@@ -1178,18 +1208,10 @@ function _add_target_link_options(cmakelists, target, outputdir)
         end
     end
     _add_target_link_options_for_linker()
-    local linkernames = {
-        clang = "Clang",
-        clangxx = "Clang",
-        gcc = "GNU",
-        gxx = "GNU",
-        cl = "MSVC",
-        link = "MSVC"
-    }
     for _, toolname in toolnames:keys() do
-        local name = linkernames[toolname]
-        if name then
-            cmakelists:print("if(CURRENT_COMPILER_ID STREQUAL \"%s\")", name)
+        local condition = _get_cmake_linker_condition(toolname)
+        if condition then
+            cmakelists:print("if(%s)", condition)
             _add_target_link_options_for_linker(toolname)
             cmakelists:print("endif()")
         end
