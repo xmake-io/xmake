@@ -168,27 +168,28 @@ function project._api_get_config(interp, name)
     return value
 end
 
+-- translate directory path for custom project apis
+function project._translate_directory(interp, dir)
+    dir = interp:filter():handle(dir)
+    if not path.is_absolute(dir) then
+        dir = path.absolute(dir, interp:scriptdir())
+    end
+    return dir
+end
+
 -- add module directories
 function project._api_add_moduledirs(interp, ...)
-    local scriptdir = project.interpreter():scriptdir()
     for _, dir in ipairs({...}) do
-        local dir = dir
-        if not path.is_absolute(dir) then
-            dir = path.absolute(dir, scriptdir)
-        end
+        local dir = project._translate_directory(interp, dir)
         sandbox_module.add_directories(dir)
     end
 end
 
 -- add plugin directories load all plugins from the given directories
 function project._api_add_plugindirs(interp, ...)
-    local scriptdir = project.interpreter():scriptdir()
     local plugindirs = {}
     for _, dir in ipairs({...}) do
-        local dir = dir
-        if not path.is_absolute(dir) then
-            dir = path.absolute(dir, scriptdir)
-        end
+        local dir = project._translate_directory(interp, dir)
         table.insert(plugindirs, dir .. "/*")
     end
     interp:api_builtin_includes(plugindirs)
@@ -196,24 +197,16 @@ end
 
 -- add platform directories
 function project._api_add_platformdirs(interp, ...)
-    local scriptdir = project.interpreter():scriptdir()
     for _, dir in ipairs({...}) do
-        local dir = dir
-        if not path.is_absolute(dir) then
-            dir = path.absolute(dir, scriptdir)
-        end
+        local dir = project._translate_directory(interp, dir)
         platform.add_directories(dir)
     end
 end
 
 -- add toolchain directories
 function project._api_add_toolchaindirs(interp, ...)
-    local scriptdir = project.interpreter():scriptdir()
     for _, dir in ipairs({...}) do
-        local dir = dir
-        if not path.is_absolute(dir) then
-            dir = path.absolute(dir, scriptdir)
-        end
+        local dir = project._translate_directory(interp, dir)
         toolchain.add_directories(dir)
         -- auto-register modules directories under each toolchain
         -- e.g. toolchains/my-c6000/modules/ will be added as module search path
