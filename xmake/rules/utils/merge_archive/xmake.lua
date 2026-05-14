@@ -26,6 +26,8 @@ rule("utils.merge.archive")
         --
         -- @see https://github.com/xmake-io/xmake/issues/3404
         if target:policy("build.merge_archive") then
+            target:data_set("inherit.links.export_static", false)
+
             for _, dep in ipairs(target:orderdeps()) do
                 if dep:is_static() then
                     dep:data_set("inherit.links.deplink", false)
@@ -51,13 +53,29 @@ rule("utils.merge.archive")
             import("utils.archive.merge_staticlib")
             import("core.project.depend")
             import("utils.progress")
+
             local libraryfiles = {}
             if sourcefiles then
                 table.join2(libraryfiles, sourcefiles)
             else
+
+                -- merge libraryfiles from deps
                 for _, dep in ipairs(target:orderdeps()) do
                     if dep:is_static() then
                         table.insert(libraryfiles, dep:targetfile())
+                    end
+                end
+
+                -- merge libraryfiles from packages
+                -- @see https://github.com/xmake-io/xmake/issues/7531
+                for _, pkg in ipairs(target:orderpkgs()) do
+                    if pkg:has_static() then
+                        local libfiles = pkg:libraryfiles()
+                        for _, libfile in ipairs(libfiles) do
+                            if libfile:endswith(".a") or libfile:endswith(".lib") then
+                                table.insert(libraryfiles, libfile)
+                            end
+                        end
                     end
                 end
             end

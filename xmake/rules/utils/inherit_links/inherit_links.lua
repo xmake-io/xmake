@@ -18,17 +18,8 @@
 -- @file        inherit_links.lua
 --
 
--- get values from target
-function _get_values_from_target(target, name)
-    local values = table.clone(table.wrap(target:get(name)))
-    for _, value in ipairs((target:get_from(name, "option::*"))) do
-        table.join2(values, value)
-    end
-    for _, value in ipairs((target:get_from(name, "package::*"))) do
-        table.join2(values, value)
-    end
-    return values
-end
+-- imports
+import("private.utils.target", {alias = "target_utils"})
 
 -- @note we cannot directly set `{interface = true}`, because it will overwrite the previous configuration
 -- https://github.com/xmake-io/xmake/issues/1465
@@ -108,8 +99,17 @@ function main(target)
     --
     if target:data("inherit.links.exportlinks") ~= false then
         if target:is_static() or target:is_object() then
-            for _, name in ipairs({"rpathdirs", "frameworkdirs", "frameworks", "linkdirs", "links", "syslinks", "ldflags", "shflags"}) do
-                local values = _get_values_from_target(target, name)
+            local export_values = {"rpathdirs", "frameworkdirs", "frameworks", "syslinks", "shflags"};
+
+            if target:data("inherit.links.export_static") ~= false then
+                local link_settings = {"linkdirs", "links", "ldflags"}
+                for _, link_setting in ipairs(link_settings) do
+                    table.insert(export_values, link_setting)
+                end
+            end
+
+            for _, name in ipairs(export_values) do
+                local values = target_utils.get_values_from_target(target, name)
                 if values and #values > 0 then
                     _add_export_values(target, name, values)
                 end
