@@ -18,6 +18,7 @@
 -- @file        inherit_links.lua
 --
 
+-- imports
 import("private.utils.target", {alias = "target_utils"})
 
 -- @note we cannot directly set `{interface = true}`, because it will overwrite the previous configuration
