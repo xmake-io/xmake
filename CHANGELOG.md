@@ -2,6 +2,67 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#7430](https://github.com/xmake-io/xmake/pull/7430): Add C interop support for the Zig toolchain
+* [#7443](https://github.com/xmake-io/xmake/pull/7443): Add `utils.replace` built-in rule
+* [#7437](https://github.com/xmake-io/xmake/pull/7437): Upgrade built-in Lua runtime to 5.5
+* [#7446](https://github.com/xmake-io/xmake/pull/7446): Add Fil-C toolchain support
+* [#7489](https://github.com/xmake-io/xmake/pull/7489): vsxmake: generate `.csproj` for C# targets
+* [#7491](https://github.com/xmake-io/xmake/pull/7491): Add `xrepo info --depgraph` to print the package dependency graph
+* [#7490](https://github.com/xmake-io/xmake/pull/7490): Support exporting the target dependency graph as JSON or DOT
+* [#7518](https://github.com/xmake-io/xmake/pull/7518): Add aria2 download backend with multi-threaded support
+* [#7535](https://github.com/xmake-io/xmake/pull/7535): Add Huawei Ascend C toolchain support
+
+### Changes
+
+* [#7420](https://github.com/xmake-io/xmake/pull/7420): Improve zsh completions
+* [#7423](https://github.com/xmake-io/xmake/pull/7423): Improve `has_flags` detection for cl / clang-cl
+* [#7424](https://github.com/xmake-io/xmake/pull/7424): Improve code comments
+* [#7439](https://github.com/xmake-io/xmake/pull/7439): Switch `icx` to `icx-cc` on Windows
+* [#7434](https://github.com/xmake-io/xmake/pull/7434): Improve nix package config and source selection
+* [#7440](https://github.com/xmake-io/xmake/pull/7440): Improve code comments
+* [#7435](https://github.com/xmake-io/xmake/pull/7435): Improve C++ module error messages
+* [#7461](https://github.com/xmake-io/xmake/pull/7461): Expose checker as a public API
+* [#7463](https://github.com/xmake-io/xmake/pull/7463): Bump package versions in C++ modules tests
+* [#7465](https://github.com/xmake-io/xmake/pull/7465): Bump C++ modules test versions again
+* [#7467](https://github.com/xmake-io/xmake/pull/7467): Parse `XMAKE_ROOT` / `XMAKE_STATS` via `option.boolean`
+* [#7478](https://github.com/xmake-io/xmake/pull/7478): Improve custom toolchain definition
+* [#7485](https://github.com/xmake-io/xmake/pull/7485): Improve `pairs` behavior for Lua 5.5
+* [#7505](https://github.com/xmake-io/xmake/pull/7505): Add NuGet package repository entry to README
+* [#7524](https://github.com/xmake-io/xmake/pull/7524): Add `lld-link` configuration support
+* [#7529](https://github.com/xmake-io/xmake/pull/7529): Move clang PCH support into its own module
+* [#7542](https://github.com/xmake-io/xmake/pull/7542): Merge libs contributed by packages
+
+### Bugs fixed
+
+* [#7432](https://github.com/xmake-io/xmake/pull/7432): Fix `set_kind("test")` handling
+* [#7433](https://github.com/xmake-io/xmake/pull/7433): Fix xpack AppImage package naming
+* [#7445](https://github.com/xmake-io/xmake/pull/7445): Fix package local cache directory
+* [#7455](https://github.com/xmake-io/xmake/pull/7455): Avoid duplicate bundle rpath insertion in `xcode.application`
+* [#7451](https://github.com/xmake-io/xmake/pull/7451): Use the correct framework rpath for iOS apps in `xcode.application`
+* [#7449](https://github.com/xmake-io/xmake/pull/7449): Avoid leaking private dep flags into rebuilt BMIs for C++ modules
+* [#7470](https://github.com/xmake-io/xmake/pull/7470): Use `target_link_libraries` to link object libraries in generated CMakeLists
+* [#7477](https://github.com/xmake-io/xmake/pull/7477): Fix clang when using `c++_static`
+* [#7483](https://github.com/xmake-io/xmake/pull/7483): Fix syslink handling on MinGW
+* [#7493](https://github.com/xmake-io/xmake/pull/7493): Fix Qt cross-compilation
+* [#7495](https://github.com/xmake-io/xmake/pull/7495): Fix "cannot find known tool script for `ar.cmd`"
+* [#7500](https://github.com/xmake-io/xmake/pull/7500): Fix Linux kernel module `insmod` failure on kernel 6.12+
+* [#7502](https://github.com/xmake-io/xmake/pull/7502): Fix Rust build
+* [#7501](https://github.com/xmake-io/xmake/pull/7501): Fix Linux kernel module intermediate filenames
+* [#7503](https://github.com/xmake-io/xmake/pull/7503): Fix xpack deb / srpm packaging
+* [#7512](https://github.com/xmake-io/xmake/pull/7512): Handle Windows cross-compile prefix and install path in the Meson backend
+* [#7516](https://github.com/xmake-io/xmake/pull/7516): Restore missing `path.isdir` API
+* [#7520](https://github.com/xmake-io/xmake/pull/7520): Fix cl exception when probing flags
+* [#7523](https://github.com/xmake-io/xmake/pull/7523): Fix MSVC / Intel snippet detection when the temp path contains spaces
+* [#7525](https://github.com/xmake-io/xmake/pull/7525): Fix Zig CC stdlib and LTO flags
+* [#7527](https://github.com/xmake-io/xmake/pull/7527): Handle compiler / linker frontend variants more accurately when generating CMakeLists
+* [#7533](https://github.com/xmake-io/xmake/pull/7533): Support paths like `mingw/current/bin` in `find_mingw`
+* [#7538](https://github.com/xmake-io/xmake/pull/7538): Align ascendc flags with the Bisheng compiler user guide
+* [#7540](https://github.com/xmake-io/xmake/pull/7540): `xmake show -l targets` now lists all targets regardless of `set_default`
+* [#7541](https://github.com/xmake-io/xmake/pull/7541): Fix `find_qt` cache and dep config being overwritten during Qt cross-compilation
+* [#7545](https://github.com/xmake-io/xmake/pull/7545): Expand builtin variables before calling `path.is_absolute` in `add_moduledirs`
+
 ## v3.0.8
 
 ### New features
@@ -2354,6 +2415,67 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#7430](https://github.com/xmake-io/xmake/pull/7430): 为 Zig 工具链添加 C 互操作支持
+* [#7443](https://github.com/xmake-io/xmake/pull/7443): 添加 `utils.replace` 内置规则
+* [#7437](https://github.com/xmake-io/xmake/pull/7437): 内置 Lua 运行时升级到 5.5
+* [#7446](https://github.com/xmake-io/xmake/pull/7446): 添加 Fil-C 工具链支持
+* [#7489](https://github.com/xmake-io/xmake/pull/7489): vsxmake：为 C# 目标生成 `.csproj`
+* [#7491](https://github.com/xmake-io/xmake/pull/7491): 添加 `xrepo info --depgraph`，用于打印包依赖图
+* [#7490](https://github.com/xmake-io/xmake/pull/7490): 支持将目标依赖图导出为 JSON / DOT 格式
+* [#7518](https://github.com/xmake-io/xmake/pull/7518): 添加支持多线程的 aria2 下载后端
+* [#7535](https://github.com/xmake-io/xmake/pull/7535): 添加华为 Ascend C 工具链支持
+
+### 改进
+
+* [#7420](https://github.com/xmake-io/xmake/pull/7420): 改进 zsh 自动补全
+* [#7423](https://github.com/xmake-io/xmake/pull/7423): 改进 cl / clang-cl 的 `has_flags` 检测
+* [#7424](https://github.com/xmake-io/xmake/pull/7424): 改进代码注释
+* [#7439](https://github.com/xmake-io/xmake/pull/7439): 在 Windows 上将 `icx` 切换为 `icx-cc`
+* [#7434](https://github.com/xmake-io/xmake/pull/7434): 改进 nix 包配置和源选择
+* [#7440](https://github.com/xmake-io/xmake/pull/7440): 改进代码注释
+* [#7435](https://github.com/xmake-io/xmake/pull/7435): 改进 C++ 模块的错误提示
+* [#7461](https://github.com/xmake-io/xmake/pull/7461): 将 checker 暴露为公共 API
+* [#7463](https://github.com/xmake-io/xmake/pull/7463): 升级 C++ 模块测试中的包版本
+* [#7465](https://github.com/xmake-io/xmake/pull/7465): 再次升级 C++ 模块测试版本
+* [#7467](https://github.com/xmake-io/xmake/pull/7467): 使用 `option.boolean` 解析 `XMAKE_ROOT` / `XMAKE_STATS`
+* [#7478](https://github.com/xmake-io/xmake/pull/7478): 改进自定义工具链定义
+* [#7485](https://github.com/xmake-io/xmake/pull/7485): 改进 Lua 5.5 下的 `pairs` 行为
+* [#7505](https://github.com/xmake-io/xmake/pull/7505): 在 README 中添加 NuGet 包仓库入口
+* [#7524](https://github.com/xmake-io/xmake/pull/7524): 添加 `lld-link` 配置支持
+* [#7529](https://github.com/xmake-io/xmake/pull/7529): 将 clang PCH 支持拆分到独立模块
+* [#7542](https://github.com/xmake-io/xmake/pull/7542): 合并 packages 提供的 libs
+
+### Bugs 修复
+
+* [#7432](https://github.com/xmake-io/xmake/pull/7432): 修复 `set_kind("test")` 的处理
+* [#7433](https://github.com/xmake-io/xmake/pull/7433): 修复 xpack AppImage 包命名
+* [#7445](https://github.com/xmake-io/xmake/pull/7445): 修复 package 本地缓存目录
+* [#7455](https://github.com/xmake-io/xmake/pull/7455): 修复 `xcode.application` 中重复插入 bundle rpath 的问题
+* [#7451](https://github.com/xmake-io/xmake/pull/7451): 修复 `xcode.application` 中 iOS 应用的 framework rpath
+* [#7449](https://github.com/xmake-io/xmake/pull/7449): 避免 C++ 模块重建 BMI 时泄漏私有依赖 flags
+* [#7470](https://github.com/xmake-io/xmake/pull/7470): 生成的 CMakeLists 改用 `target_link_libraries` 链接 object libraries
+* [#7477](https://github.com/xmake-io/xmake/pull/7477): 修复 clang 配合 `c++_static` 使用的问题
+* [#7483](https://github.com/xmake-io/xmake/pull/7483): 修复 MinGW 下 syslink 的处理
+* [#7493](https://github.com/xmake-io/xmake/pull/7493): 修复 Qt 交叉编译
+* [#7495](https://github.com/xmake-io/xmake/pull/7495): 修复 "cannot find known tool script for `ar.cmd`"
+* [#7500](https://github.com/xmake-io/xmake/pull/7500): 修复内核 6.12+ 下 Linux 内核模块 `insmod` 失败
+* [#7502](https://github.com/xmake-io/xmake/pull/7502): 修复 Rust 构建
+* [#7501](https://github.com/xmake-io/xmake/pull/7501): 修复 Linux 内核模块的中间文件名
+* [#7503](https://github.com/xmake-io/xmake/pull/7503): 修复 xpack deb / srpm 打包
+* [#7512](https://github.com/xmake-io/xmake/pull/7512): 修复 Meson 后端中 Windows 交叉编译的 prefix 和安装路径
+* [#7516](https://github.com/xmake-io/xmake/pull/7516): 修复 `path.isdir` API 缺失
+* [#7520](https://github.com/xmake-io/xmake/pull/7520): 修复探测 flags 时 cl 抛出的异常
+* [#7523](https://github.com/xmake-io/xmake/pull/7523): 修复 MSVC / Intel snippet 检测在 temp 路径含空格时失败
+* [#7525](https://github.com/xmake-io/xmake/pull/7525): 修复 Zig CC 的 stdlib 和 LTO flags
+* [#7527](https://github.com/xmake-io/xmake/pull/7527): 生成 CMakeLists 时更准确地处理编译器 / 链接器的 frontend 变体
+* [#7533](https://github.com/xmake-io/xmake/pull/7533): `find_mingw` 支持类似 `mingw/current/bin` 的路径
+* [#7538](https://github.com/xmake-io/xmake/pull/7538): 修复 ascendc flags，对齐 Bisheng 编译器用户指南
+* [#7540](https://github.com/xmake-io/xmake/pull/7540): `xmake show -l targets` 现在列出所有目标，不再受 `set_default` 影响
+* [#7541](https://github.com/xmake-io/xmake/pull/7541): 修复 Qt 交叉编译时 `find_qt` 缓存和依赖配置被覆盖的问题
+* [#7545](https://github.com/xmake-io/xmake/pull/7545): `add_moduledirs` 中调用 `path.is_absolute` 前先展开内置变量
 
 ## v3.0.8
 
