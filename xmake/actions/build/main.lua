@@ -61,7 +61,10 @@ function _try_build()
     -- rebuild it? do clean first
     local targetname = option.get("target")
     if option.get("rebuild") then
-        task.run("clean", {target = targetname})
+        -- the third-party buildsystem path does not support multiple targets,
+        -- so just clean the first given target (if any)
+        local cleanname = table.wrap(targetname)[1]
+        task.run("clean", {target = cleanname})
     end
 
     -- get the buildsystem tool
@@ -201,7 +204,9 @@ function main(opt)
 
     -- check target name
     if targetname then
-        assert(check_targetname(targetname))
+        for _, name in ipairs(table.wrap(targetname)) do
+            assert(check_targetname(name))
+        end
     end
 
     -- enter project directory
