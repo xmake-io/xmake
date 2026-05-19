@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v3.0.9
+
 ### New features
 
 * [#7430](https://github.com/xmake-io/xmake/pull/7430): Add C interop support for the Zig toolchain
@@ -2415,6 +2417,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v3.0.9
 
 ### 新特性
 
