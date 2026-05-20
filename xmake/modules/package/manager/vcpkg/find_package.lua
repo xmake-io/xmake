@@ -208,16 +208,20 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
     -- pass features to depend-info to get the complete dependency tree
     -- e.g. curl[mbedtls] needs mbedtls libraries
     -- @see https://github.com/xmake-io/xmake/issues/7388
-    local depend_name = name
-    if required_features then
-        depend_name = name .. "[" .. table.concat(required_features, ",") .. "]"
-    end
     local result = nil
-    local argv = {"depend-info", depend_name, "--sort=reverse", "--triplet=" .. triplet}
-
-    -- pass feature flags to depend-info when in manifest mode, otherwise depend-info will not show the complete dependency tree with features
+    local argv = {"depend-info", "--sort=reverse", "--triplet=" .. triplet}
     if manifest_mode then
+        -- in manifest mode, `vcpkg depend-info` does not accept package arguments;
+        -- xmake writes a manifest with only the requested package, so depend-info
+        -- without a package name returns exactly that package and its transitive deps.
+        -- @see https://github.com/xmake-io/xmake/issues/7553
         table.insert(argv, 1, "--feature-flags=versions")
+    else
+        local depend_name = name
+        if required_features then
+            depend_name = name .. "[" .. table.concat(required_features, ",") .. "]"
+        end
+        table.insert(argv, 2, depend_name)
     end
 
     local _, dependinfo = try { function () return os.iorunv(vcpkg, argv, manifest_mode and {curdir = opt.installdir} or nil) end }
