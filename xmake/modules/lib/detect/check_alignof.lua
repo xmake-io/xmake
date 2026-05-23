@@ -24,13 +24,28 @@ import("lib.detect.check_cxxsnippets")
 local binary_match_pattern = 'INFO:align%[(%d+)%]'
 
 local check_alignof_template = [[
-#define ALIGN (alignof(${TYPE}))
+#if defined(__cplusplus)
+    #if __cplusplus >= 201103L
+        #define ALIGNOF(type) alignof(type)
+    #endif
+#elif __STDC_VERSION__ >= 202311L
+     #define ALIGNOF(type) alignof(type)
+#elif __STDC_VERSION__ >= 201112L
+     #define ALIGNOF(type) _Alignof(type)
+#elif defined(_MSC_VER)
+    #define ALIGNOF(type) __alignof(type)
+#elif defined(__GNUC__) || defined(__clang__)
+    #define ALIGNOF(type) __alignof__(type)
+#else
+    #error No known support of alignment detection for your toolchain
+#endif 
+
 static char info_align[] =  {'I', 'N', 'F', 'O', ':', 'a','l','i','g','n','[',
-  ('0' + ((ALIGN / 10000)%10)),
-  ('0' + ((ALIGN / 1000)%10)),
-  ('0' + ((ALIGN / 100)%10)),
-  ('0' + ((ALIGN / 10)%10)),
-  ('0' +  (ALIGN    % 10)),
+  ('0' + ((ALIGNOF(${TYPE}) / 10000)%10)),
+  ('0' + ((ALIGNOF(${TYPE}) / 1000)%10)),
+  ('0' + ((ALIGNOF(${TYPE}) / 100)%10)),
+  ('0' + ((ALIGNOF(${TYPE}) / 10)%10)),
+  ('0' +  (ALIGNOF(${TYPE})    % 10)),
   ']',
   '\0'};
 

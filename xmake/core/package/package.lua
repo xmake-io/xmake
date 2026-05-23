@@ -2679,7 +2679,7 @@ function _instance:check_sizeof(typename, opt)
     return sandbox_module.import("lib.detect.check_sizeof", {anonymous = true})(typename, opt)
 end
 
--- check the aligment of type
+-- check the alignment of type
 --
 -- @param typename  the typename
 -- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
