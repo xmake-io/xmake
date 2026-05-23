@@ -2994,6 +2994,19 @@ function _instance:check_sizeof(typename, opt)
     return sandbox_module.import("lib.detect.check_sizeof", {anonymous = true})(typename, opt)
 end
 
+-- check the alignment of type
+--
+-- @param typename  the typename
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
+--
+-- @return          the type alignment
+--
+function _instance:check_alignof(typename, opt)
+    opt = opt or {}
+    opt.target = self:_checked_target()
+    return sandbox_module.import("lib.detect.check_alignof", {anonymous = true})(typename, opt)
+end
+
 -- check the endianness of compiler
 --
 -- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
