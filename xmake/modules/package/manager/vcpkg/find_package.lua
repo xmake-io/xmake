@@ -225,7 +225,7 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
     end
 
     local _, dependinfo = try { function () return os.iorunv(vcpkg, argv_old, manifest_mode and {curdir = opt.installdir} or nil) end }
-    if not dependinfo then
+    if manifest_mode and not dependinfo then
         _, dependinfo = try { function () return os.iorunv(vcpkg, argv_new, manifest_mode and {curdir = opt.installdir} or nil) end }
     end
     if dependinfo then
