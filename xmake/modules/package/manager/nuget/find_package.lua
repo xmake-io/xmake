@@ -28,6 +28,19 @@ import("core.project.config")
 import("core.project.target")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
+-- convert nuget 4-segment version to semver build metadata
+-- e.g. 1.0.3967.48 -> 1.0.3967+48
+-- @see https://github.com/xmake-io/xmake/issues/7556
+function _to_semver_version(version)
+    if version then
+        local major, minor, patch, build = version:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$")
+        if major then
+            return major .. "." .. minor .. "." .. patch .. "+" .. build
+        end
+    end
+    return version
+end
+
 function _find_target_root(targets, name)
     local namelower = name:lower()
     for targetname in pairs(targets or {}) do
@@ -72,7 +85,7 @@ function _find_version_in_project_dependencies(manifest, name)
                 local deplower = depname:lower()
                 local normalized_depname = deplower:gsub("[._%-]", "")
                 if deplower == namelower or normalized_depname == normalized_name then
-                    return tostring(depver)
+                    return _to_semver_version(tostring(depver))
                 end
             end
         end
@@ -98,9 +111,9 @@ function _get_packagesdir_from_manifest(manifest)
     end
 end
 
-local function _extract_version_from_root(rootname)
+function _extract_version_from_root(rootname)
     if rootname then
-        return rootname:match("/(.+)$")
+        return _to_semver_version(rootname:match("/(.+)$"))
     end
 end
 
