@@ -33,9 +33,9 @@ function _add_lto_optimization(target, sourcekind)
         mxx = "mxxflags"
     }
     local cflag = flagnames[sourcekind] or (sourcekind == "cxx" and "cxxflags" or "cflags")
-    if cc == "cl" or cc == "clang_cl" then
+    if cc == "cl" then
         target:add(cflag, "-GL")
-    elseif cc == "clang" or cc == "clangxx" or cc:startswith("zig") then
+    elseif cc == "clang" or cc == "clangxx" or cc == "clang_cl" or cc:startswith("zig") then
         target:add(cflag, "-flto=thin")
     elseif cc == "gcc" or cc == "gxx" then
         target:add(cflag, "-flto")
