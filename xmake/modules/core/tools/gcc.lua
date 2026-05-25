@@ -974,7 +974,8 @@ function compargv(self, sourcefile, objectfile, flags, opt)
     local extension = path.extension(sourcefile)
     if toolchain_utils.is_cxx_headerext(extension) then
         flags = _translate_flags_for_pch(self, flags)
-    elseif support.has_module_extension(sourcefile, {extension = extension}) then
+    elseif support.has_module_extension(sourcefile, {extension = extension})
+        or support.is_stdmodule_file(opt.target, sourcefile) then
         flags = _translate_flags_for_mpp(self, flags)
     end
 

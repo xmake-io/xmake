@@ -201,6 +201,22 @@ function has_module_extension(sourcefile, opt)
     return modulexts:has(extension:lower())
 end
 
+-- is std module file?
+-- e.g. libstdc++'s bits/std.cc and bits/std.compat.cc, which use the .cc extension
+-- and therefore are not detected by has_module_extension.
+-- @see https://github.com/xmake-io/xmake/issues/4051
+-- @see https://github.com/xmake-io/xmake/issues/7560
+function is_stdmodule_file(target, sourcefile)
+    if not target or not target.policy then
+        return false
+    end
+    if not target:policy("build.c++.modules.std") then
+        return false
+    end
+    local _, stdmodules_set = get_stdmodules(target)
+    return stdmodules_set and stdmodules_set:has(sourcefile) or false
+end
+
 -- this target contains module files?
 function contains_modules(target)
     -- we can not use `"c++.build.modules.builder"`, because it contains sourcekind/cxx.
