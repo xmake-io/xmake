@@ -23,6 +23,15 @@ import("core.base.option")
 import("core.base.semver")
 import("lib.detect.find_tool")
 
+-- convert semver build metadata to nuget 4-segment version
+-- e.g. 1.0.3967+48 -> 1.0.3967.48
+-- @see https://github.com/xmake-io/xmake/issues/7556
+function _to_nuget_version(version)
+    if version then
+        return (version:gsub("%+", "."))
+    end
+end
+
 -- dotnet add package libpapki --version 1.0.147
 function _install(dotnet, name, opt)
 
@@ -34,7 +43,7 @@ function _install(dotnet, name, opt)
     end
     if require_version then
         table.insert(argv, "--version")
-        table.insert(argv, require_version)
+        table.insert(argv, _to_nuget_version(require_version))
     end
 
     local installdir = assert(opt.installdir, "installdir not found!")
