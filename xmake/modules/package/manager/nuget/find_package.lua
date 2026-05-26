@@ -28,14 +28,14 @@ import("core.project.config")
 import("core.project.target")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
--- convert nuget 4-segment version to semver build metadata
+-- convert nuget 4-segment System.Version (major.minor.build.revision) to semver build metadata
 -- e.g. 1.0.3967.48 -> 1.0.3967+48
 -- @see https://github.com/xmake-io/xmake/issues/7556
 function _to_semver_version(version)
     if version then
-        local major, minor, patch, build = version:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$")
+        local major, minor, build, revision = version:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$")
         if major then
-            return major .. "." .. minor .. "." .. patch .. "+" .. build
+            return major .. "." .. minor .. "." .. build .. "+" .. revision
         end
     end
     return version
