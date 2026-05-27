@@ -213,20 +213,19 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
         depend_name = name .. "[" .. table.concat(required_features, ",") .. "]"
     end
     local result = nil
-    -- pre https://github.com/microsoft/vcpkg-tool/pull/1909
-    local argv_old = {"depend-info", depend_name, "--sort=reverse", "--triplet=" .. triplet}
-    -- post https://github.com/microsoft/vcpkg-tool/pull/1909
-    local argv_new = {"depend-info", "--sort=reverse", "--triplet=" .. triplet}
+    local argv = {"depend-info", depend_name, "--sort=reverse", "--triplet=" .. triplet}
 
     -- pass feature flags to depend-info when in manifest mode, otherwise depend-info will not show the complete dependency tree with features
     if manifest_mode then
-        table.insert(argv_old, 1, "--feature-flags=versions")
-        table.insert(argv_new, 1, "--feature-flags=versions")
+        table.insert(argv, 1, "--feature-flags=versions")
     end
 
-    local _, dependinfo = try { function () return os.iorunv(vcpkg, argv_old, manifest_mode and {curdir = opt.installdir} or nil) end }
+    local _, dependinfo = try { function () return os.iorunv(vcpkg, argv, manifest_mode and {curdir = opt.installdir} or nil) end }
     if manifest_mode and not dependinfo then
-        _, dependinfo = try { function () return os.iorunv(vcpkg, argv_new, manifest_mode and {curdir = opt.installdir} or nil) end }
+        -- fallback: newer vcpkg-tool no longer accepts the package name as a positional argument,
+        -- drop it and retry. see https://github.com/microsoft/vcpkg-tool/pull/1909
+        table.remove(argv, 3)
+        _, dependinfo = try { function () return os.iorunv(vcpkg, argv, {curdir = opt.installdir}) end }
     end
     if dependinfo then
         for _, line in ipairs(dependinfo:split("\n", {plain = true})) do
