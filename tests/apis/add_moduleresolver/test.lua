@@ -5,5 +5,6 @@ function main(test)
     -- running executable directly instead.
     local xmake = os.programfile()
 
-    os.execv(xmake, {"f", "-c", "-D", "-y"})
+    local ok = os.execv(xmake, {"f", "-c", "-D", "-y"})
+    assert(ok == 0, "xmake config failed")
 end

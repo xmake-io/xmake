@@ -134,7 +134,7 @@ function core_sandbox_module._normalize_resolver_result(result)
         return core_sandbox_module._resolver_result("module", result)
     end
 
-    return result
+    return nil 
 end
 
 -- make the context object passed to custom module resolvers
@@ -158,7 +158,7 @@ function core_sandbox_module._make_resolver_context(name)
     end
 
     function ctx.file(filepath)
-        assert(filepath, "ctx.file(...) requires a file path")
+        assert(type(filepath) == "string", "ctx.file(...) requires a file path string")
         return core_sandbox_module._resolver_result("file", filepath)
     end
 
@@ -187,13 +187,16 @@ function core_sandbox_module._load_resolver_result(name, result, opt)
         return false
     elseif result.kind == "file" then
         local filepath = result.value
-        if not os.isfile(filepath) then
-            return true, nil, string.format("resolver returned missing module file: %s", filepath)
+        if type(filepath) ~= "string" or not os.isfile(filepath) then
+            return true, nil, string.format("resolver returned missing or invalid module file: %s", tostring(filepath))
         end
 
         local module, errors = core_sandbox_module._loadfile(filepath, opt.instance)
         return true, module, errors
     elseif result.kind == "module" then
+        if type(result.value) ~= "table" then
+            return true, nil, string.format("resolver returned invalid module table: %s", tostring(result.value))
+        end
         return true, result.value, nil
     else
         return true, nil, string.format("unknown module resolver result kind: %s", tostring(result.kind))
