@@ -53,7 +53,7 @@ task("build")
                                                       "    - xmake --files='src/main.c" .. path.envsep() .. "src/test.c'"  }
 
                 ,   {}
-                ,   {nil, "targets",     "vs", nil   , "Targets to be built. It will build all default targets if this parameter is not specified."
+                ,   {nil, "target",     "vs", nil   , "Targets to be built. It will build all default targets if this parameter is not specified."
                                                     , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
             }
