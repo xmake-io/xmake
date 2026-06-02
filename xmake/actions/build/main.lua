@@ -199,9 +199,11 @@ function main(opt)
     local targetname, group_pattern = action_utils.get_target_and_group()
     task.run("config", {}, {disable_dump = true})
 
-    -- check target name
+    -- check target names
     if targetname then
-        assert(check_targetname(targetname))
+        for _, name in ipairs(table.wrap(targetname)) do
+            assert(check_targetname(name))
+        end
     end
 
     -- enter project directory
