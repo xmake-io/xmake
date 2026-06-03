@@ -957,8 +957,8 @@ function _load_package(packagename, requireinfo, opt)
 
     -- load base package
     if package and package:get("base") then
-        _load_package_from_base(package, package:get("base", {
-            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo}))
+        _load_package_from_base(package, package:get("base"), {
+            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo})
     end
 
     -- load package from system
