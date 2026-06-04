@@ -381,6 +381,11 @@ end
 -- show warnings
 function _show_warnings(self, output)
     local lines = output:split('\n', {plain = true})
+    -- filter nvcc output, e.g.  xxx.cu, tmpxft_xxx.cudafe1.cpp
+    table.remove_if(lines, function (_, line)
+        return line:match("^tmpxft_") or line:match("%.cu$")
+    end)
+
     if #lines > 0 then
         if not option.get("diagnosis") then
             lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
