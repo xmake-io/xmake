@@ -185,12 +185,12 @@ function main()
         for _, target in ipairs(targets) do
             for _, source in ipairs(target:sourcefiles()) do
                 if _match_sourcefiles(source, filepatterns) then
-                    table.insert(sourcefiles, path.join(projectdir, source))
+                    table.insert(sourcefiles, path.absolute(source, projectdir))
                 end
             end
             for _, header in ipairs(target:headerfiles()) do
                 if _match_sourcefiles(header, filepatterns) then
-                    table.insert(sourcefiles, path.join(projectdir, header))
+                    table.insert(sourcefiles, path.absolute(header, projectdir))
                 end
             end
         end
@@ -199,12 +199,12 @@ function main()
             for _, sourcebatch in pairs(target:sourcebatches()) do
                 if _source_batch_should_format(sourcebatch) then
                     for _, source in ipairs(sourcebatch.sourcefiles) do
-                        table.insert(sourcefiles, path.join(projectdir, source))
+                        table.insert(sourcefiles, path.absolute(source, projectdir))
                     end
                 end
             end
             for _, header in ipairs(target:headerfiles()) do
-                table.insert(sourcefiles, path.join(projectdir, header))
+                table.insert(sourcefiles, path.absolute(header, projectdir))
             end
         end
     end
