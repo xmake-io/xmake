@@ -227,6 +227,58 @@ function nf_language(self, stdname)
     return result
 end
 
+-- make the encoding flag
+--
+-- e.g.
+-- set_encodings("utf-8")
+-- set_encodings("source:utf-8", "target:utf-8")
+function nf_encoding(self, encoding)
+    local kind
+    local charset
+    local splitinfo = encoding:split(":")
+    if #splitinfo > 1 then
+        kind = splitinfo[1]
+        charset = splitinfo[2]
+    else
+        charset = encoding
+    end
+    local charsets = {
+        ["utf-8"] = "utf-8",
+        utf8 = "utf-8",
+    }
+    local flags = {}
+    charset = charsets[charset:lower()]
+    if charset then
+        if self:is_plat("windows") then
+            if not kind and charset == "utf-8" then
+                table.insert(flags, "-Xcompiler")
+                table.insert(flags, "/utf-8")
+            else
+                if kind == "source" or not kind then
+                    table.insert(flags, "-Xcompiler")
+                    table.insert(flags, "-source-charset:" .. charset)
+                end
+                if kind == "target" or not kind then
+                    table.insert(flags, "-Xcompiler")
+                    table.insert(flags, "-execution-charset:" .. charset)
+                end
+            end
+        else
+            if kind == "source" or not kind then
+                table.insert(flags, "-Xcompiler")
+                table.insert(flags, "-finput-charset=" .. charset:upper())
+            end
+            if kind == "target" or not kind then
+                table.insert(flags, "-Xcompiler")
+                table.insert(flags, "-fexec-charset=" .. charset:upper())
+            end
+        end
+    end
+    if #flags > 0 then
+        return flags
+    end
+end
+
 -- make the define flag
 function nf_define(self, macro)
     return {"-D" .. macro}
@@ -329,6 +381,11 @@ end
 -- show warnings
 function _show_warnings(self, output)
     local lines = output:split('\n', {plain = true})
+    -- filter nvcc output, e.g.  xxx.cu, tmpxft_xxx.cudafe1.cpp
+    table.remove_if(lines, function (_, line)
+        return line:match("^tmpxft_") or line:match("%.cu$")
+    end)
+
     if #lines > 0 then
         if not option.get("diagnosis") then
             lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
