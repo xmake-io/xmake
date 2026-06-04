@@ -40,6 +40,7 @@ language("cuda")
         ,   "target.vectorexts:check"
         ,   "target.includedirs"
         ,   "target.languages"
+        ,   "target.encodings"
         ,   "target.defines"
         ,   "target.undefines"
         ,   "toolchain.includedirs"
