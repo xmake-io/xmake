@@ -2958,6 +2958,10 @@ function package.cachedir(opt)
     local cachedir = package._CACHEDIR
     if not cachedir then
         cachedir = os.getenv("XMAKE_PKG_CACHEDIR") or global.get("pkg_cachedir") or path.join(global.cachedir(), "packages")
+        -- normalize it to ensure all derived paths are consistent, e.g. the user
+        -- may pass a path with `..` or relative segments via XMAKE_PKG_CACHEDIR.
+        -- @see https://github.com/xmake-io/xmake/issues/7576
+        cachedir = path.normalize(path.absolute(cachedir))
         package._CACHEDIR = cachedir
     end
     if opt.rootonly then
@@ -2981,6 +2985,11 @@ function package.installdir(opt)
     local installdir = package._INSTALLDIR
     if not installdir then
         installdir = os.getenv("XMAKE_PKG_INSTALLDIR") or global.get("pkg_installdir") or path.join(global.directory(), "packages")
+        -- normalize it to ensure all derived paths are consistent, e.g. the user
+        -- may pass a path with `..` or relative segments via XMAKE_PKG_INSTALLDIR.
+        -- otherwise the relocated pkgconfig *.pc files would contain a broken
+        -- relative prefix. @see https://github.com/xmake-io/xmake/issues/7576
+        installdir = path.normalize(path.absolute(installdir))
         package._INSTALLDIR = installdir
     end
     return installdir
