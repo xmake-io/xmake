@@ -1,5 +1,26 @@
 import("core.base.json")
 
+function test_list_targets_json_format(t)
+    local outdata = os.iorunv("xmake", {"show", "-l", "targets", "--format=json"})
+    local targets = json.decode(outdata)
+
+    t:require(table.contains(targets, "app"))
+    t:require(table.contains(targets, "core"))
+    t:require(table.contains(targets, "ui"))
+end
+
+function test_list_targets_plain_format(t)
+    local outdata = os.iorunv("xmake", {"show", "-l", "targets", "--format=plain"})
+    t:require(outdata:find("app", 1, true))
+    t:require(outdata:find("core", 1, true))
+    t:require(outdata:find("ui", 1, true))
+end
+
+function test_list_targets_unsupported_format(t)
+    local ok = try { function () os.iorunv("xmake", {"show", "-l", "targets", "--format=dot"}) end }
+    t:require(not ok)
+end
+
 function test_depgraph_json(t)
     local outdata = os.iorunv("xmake", {"show", "--info=depgraph", "--json"})
     local graph = json.decode(outdata)

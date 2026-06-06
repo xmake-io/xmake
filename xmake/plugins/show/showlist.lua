@@ -49,9 +49,11 @@ function _show_json(values)
 end
 
 function main(values)
-    if option.get("json") then
+    local format = option.get("format")
+    -- List providers only support plain text and JSON output.
+    if option.get("json") or format == "json" then
         _show_json(values)
-    else
+    elseif format == nil or format == "plain" then
         if table.is_dictionary(values) then
             for k, v in pairs(values) do
                 cprint("${bright}%s:", k)
@@ -60,5 +62,7 @@ function main(values)
         else
             _show_text(values)
         end
+    else
+        raise("unsupported list output format: %s", format)
     end
 end
