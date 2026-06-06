@@ -50,6 +50,9 @@
 #Import(File.qrc)#
 #Import(File.ts)#
   </ItemGroup>
+  <ItemGroup>
+#Import(File.none)#
+  </ItemGroup>
   <Import Condition="Exists('$(MSBuildThisFileDirectory)\Xmake.Custom.files.filters')"
     Project="$(MSBuildThisFileDirectory)\Xmake.Custom.files.filters" />
 </Project>
