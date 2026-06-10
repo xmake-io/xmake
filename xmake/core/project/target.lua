@@ -2787,6 +2787,10 @@ function _instance:tool(toolkind)
                                                         before_get = function()
         -- get program from set_toolset
         local program = self:get("toolset." .. toolkind)
+        if program and type(program) ~= "string" then
+            os.raise("invalid set_toolset(\"%s\", \"%s\") in target(%s), please set only one tool for each tool kind.",
+                toolkind, table.concat(table.wrap(program), "\", \""), self:fullname())
+        end
 
         -- get program from `xmake f --cc`
         if not program and not self:get("toolchains") then
