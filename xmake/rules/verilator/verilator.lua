@@ -226,18 +226,21 @@ endmodule]])
                 switches.THREADS = values:trim()
             elseif key == "test_TRACE_VCD" then
                 -- VCD Tracing output mode?  0/1 (from --trace-vcd)
-                switches.TRACE = values:trim()
                 switches.TRACE_VCD = values:trim()
             elseif key == "test_TRACE_FST" then
                 -- FST Tracing output mode? 0/1 (from --trace-fst)
-                switches.TRACE = values:trim()
                 switches.TRACE_FST = values:trim()
             elseif key == "test_TRACE_SAIF" then
                 -- SAIF Tracing output mode? 0/1 (from --trace-saif)
-                switches.TRACE = values:trim()
                 switches.TRACE_SAIF = values:trim()
             end
         end)
+
+        switches.TRACE = (
+            switches.TRACE_VCD == "1" or
+            switches.TRACE_FST == "1" or
+            switches.TRACE_SAIF == "1"
+        ) and "1" or "0"
     end
 
     assert(verilator_root, "the verilator root directory not found!")
