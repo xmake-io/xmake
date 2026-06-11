@@ -201,6 +201,7 @@ endmodule]])
         switches.TIMING = options_table["use_timing"] and "1" or "0"
         -- The thread field is a integer in float format, we need to convert it to string.
         switches.THREADS = string.format("%d", options_table["threads"] or 1)
+        switches.TRACE = options_table["trace"] and "1" or "0"
         switches.TRACE_VCD = options_table["trace_vcd"] and "1" or "0"
         switches.TRACE_FST = options_table["trace_fst"] and "1" or "0"
         switches.TRACE_SAIF = options_table["trace_saif"] and "1" or "0"
@@ -224,11 +225,17 @@ endmodule]])
                 -- Threaded output mode?  1/N threads (from --threads)
                 switches.THREADS = values:trim()
             elseif key == "test_TRACE_VCD" then
-                -- VCD Tracing output mode?  0/1 (from --trace)
+                -- VCD Tracing output mode?  0/1 (from --trace-vcd)
+                switches.TRACE = values:trim()
                 switches.TRACE_VCD = values:trim()
             elseif key == "test_TRACE_FST" then
                 -- FST Tracing output mode? 0/1 (from --trace-fst)
+                switches.TRACE = values:trim()
                 switches.TRACE_FST = values:trim()
+            elseif key == "test_TRACE_SAIF" then
+                -- SAIF Tracing output mode? 0/1 (from --trace-saif)
+                switches.TRACE = values:trim()
+                switches.TRACE_SAIF = values:trim()
             end
         end)
     end
