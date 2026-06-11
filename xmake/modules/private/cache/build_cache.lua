@@ -87,7 +87,7 @@ function is_enabled(target)
             result = config.get("ccache")
         end
         result = result or false
-        _memcache():set2("enabled", key)
+        _memcache():set2("enabled", key, result)
     end
     return result
 end
