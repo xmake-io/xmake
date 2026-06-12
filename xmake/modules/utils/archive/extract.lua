@@ -65,6 +65,25 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
             table.insert(argv, "--force-local")
         end
     end
+
+    if is_host("bsd") then
+        -- pass explicit compression flag only to tar without auto-detection,
+        -- as auto-detection can handle more cases.
+        local auto_detect = _g.compression_auto_detect
+        if auto_detect == nil then
+            auto_detect = try { function () os.runv(program, {"--version"}); return true end } or false
+            _g.compression_auto_detect = auto_detect
+        end
+        if not auto_detect then
+            if extension == ".tgz" or extension == ".tar.gz" then
+                table.insert(argv, "-z")
+            elseif extension == ".tar.bz2" then
+                table.insert(argv, "-j")
+            elseif extension == ".tar.Z" then
+                table.insert(argv, "-Z")
+            end
+        end
+    end
     table.insert(argv, "-xf")
     table.insert(argv, path.absolute(archivefile))
 

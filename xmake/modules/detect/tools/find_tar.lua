@@ -40,6 +40,18 @@ function main(opt)
     -- init options
     opt = opt or {}
 
+    opt.check = opt.check or function (program)
+        local ok = try { function () os.runv(program, {"--version"}, {envs = opt.envs, shell = opt.shell}) end }
+        if not ok then
+            -- some tar do not support `--version`, so we fall back to creating a temporary archive to check it
+            local tmpdir = os.tmpfile() .. ".dir"
+            os.mkdir(tmpdir)
+            io.writefile(path.join(tmpdir, "test.txt"), "")
+            os.runv(program, {"-cf", "test.tar", "test.txt"}, {curdir = tmpdir, envs = opt.envs, shell = opt.shell})
+            os.rm(tmpdir)
+        end
+    end
+
     -- find program
     local program = find_program(opt.program or "tar", opt)
 
