@@ -1289,7 +1289,7 @@ function _instance:build_envs(lazy_loading)
         setmetatable(build_envs, { __index = function (tbl, key)
             local result = {}
             local value = config.get(key)
-            if builtin_configs:has(key) and type(value) == "string" then
+            if value and builtin_configs:has(key) and type(value) == "string" then
                 value = os.argv(value)
             end
             if value == nil then
