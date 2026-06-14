@@ -1,6 +1,6 @@
 function main(t)
     -- Solaris ar does not support merging archives with duplicate object file names
-    if is_host("solaris") then
+    if is_host("bsd", "solaris") then
         return
     end
     t:build()
