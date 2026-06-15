@@ -204,17 +204,33 @@ tb_bool_t xm_binutils_elf_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_of
         if (!tb_stream_seek(istream, base_offset)) break;
         if (!tb_stream_bread(istream, ident, sizeof(ident))) break;
 
-        // build ELF context and cleanup rpath entries
+        /* build ELF context to locate the .dynamic section
+         *
+         * @note we only need dynamic_offset/dynamic_size here (strtab is not used
+         * when removing entries by tag), so we do not require get_context to fully succeed.
+         */
         xm_elf_context_t ctx;
+        tb_memset(&ctx, 0, sizeof(ctx));
         if (ident[XM_ELF_EI_CLASS] == XM_ELF_CLASS32) {
-            if (xm_binutils_elf_get_context_32(istream, base_offset, &ctx)) {
-                if (xm_binutils_elf_rpath_clean_impl(istream, base_offset, &ctx)) ok = tb_true;
-            }
+            xm_binutils_elf_get_context_32(istream, base_offset, &ctx);
         } else if (ident[XM_ELF_EI_CLASS] == XM_ELF_CLASS64) {
-            if (xm_binutils_elf_get_context_64(istream, base_offset, &ctx)) {
-                if (xm_binutils_elf_rpath_clean_impl(istream, base_offset, &ctx)) ok = tb_true;
-            }
+            xm_binutils_elf_get_context_64(istream, base_offset, &ctx);
+        } else {
+            break;
         }
+
+        /* no .dynamic section? e.g. a fully static executable (-static),
+         * there is no rpath/runpath to clean, so just treat it as a no-op success.
+         *
+         * @see https://github.com/xmake-io/xmake/issues/7595
+         */
+        if (ctx.dynamic_offset == 0 || ctx.dynamic_size == 0) {
+            ok = tb_true;
+            break;
+        }
+
+        // remove DT_RPATH/DT_RUNPATH entries
+        ok = xm_binutils_elf_rpath_clean_impl(istream, base_offset, &ctx);
     } while (0);
     return ok;
 }
