@@ -3006,13 +3006,8 @@ end
 -- load the package from the system directories
 function package.load_from_system(packagename)
 
-    -- get it directly from cache first
-    local instance = package._memcache():get2("packages", packagename)
-    if instance then
-        return instance
-    end
-
     -- get package info
+    local instance
     local packageinfo = {}
     local is_thirdparty = false
     if packagename:find("::", 1, true) then
@@ -3073,19 +3068,11 @@ function package.load_from_system(packagename)
         instance:set("parallelize", false)
     end
 
-    -- save instance to the cache
-    package._memcache():set2("packages", instance)
     return instance
 end
 
 -- load the package from the project file
 function package.load_from_project(packagename, project)
-
-    -- get it directly from cache first
-    local instance = package._memcache():get2("packages", packagename)
-    if instance then
-        return instance
-    end
 
     -- load packages (with cache)
     local packages, errors = project.packages()
@@ -3109,21 +3096,13 @@ function package.load_from_project(packagename, project)
     end
 
     -- new an instance
-    instance = _instance.new(packagename, packageinfo, {scriptdir = os.projectdir()})
-    package._memcache():set2("packages", instance)
-    return instance
+    return _instance.new(packagename, packageinfo:clone(), {scriptdir = os.projectdir()})
 end
 
 -- load the package from the package directory or package description file
 function package.load_from_repository(packagename, packagedir, opt)
 
-    -- get it directly from cache first
     opt = opt or {}
-    local instance = package._memcache():get2("packages", packagename)
-    if instance then
-        return instance
-    end
-
 
     -- find the package script path
     local scriptpath = opt.packagefile
@@ -3134,55 +3113,59 @@ function package.load_from_repository(packagename, packagedir, opt)
         return nil, string.format("package %s not found!", packagename)
     end
 
-    -- get interpreter
-    local interp = package._interpreter()
-
-    -- we need to modify plat/arch in description scope at same time
-    -- if plat/arch are passed to add_requires.
-    --
-    -- @see https://github.com/orgs/xmake-io/discussions/3439
-    --
-    -- e.g. add_requires("zlib~mingw", {plat = "mingw", arch = "x86_64"})
-    --
-    if opt.plat then
-        package._memcache():set("target_plat", opt.plat)
-    end
-    if opt.arch then
-        package._memcache():set("target_arch", opt.arch)
-    end
-
-    -- load script
-    local ok, errors = interp:load(scriptpath)
-    if not ok then
-        return nil, errors
-    end
-
-    -- load package and disable filter, we will process filter after a while
-    local results, errors = interp:make("package", true, false)
-    if not results then
-        return nil, errors
-    end
-
-    -- get package info
-    local packageinfo = results[packagename]
+    -- we can only cache the description scope info, but not the package instance,
+    -- because the caller will modify the instance for each required package
+    local cachekey = scriptpath .. "/" .. packagename .. "/" .. (opt.plat or "") .. "/" .. (opt.arch or "")
+    local packageinfo = package._memcache():get2("packageinfos.repository", cachekey)
     if not packageinfo then
-        return nil, string.format("%s: package(%s) not found!", scriptpath, packagename)
+
+        -- get interpreter
+        local interp = package._interpreter()
+
+        -- we need to modify plat/arch in description scope at same time
+        -- if plat/arch are passed to add_requires.
+        --
+        -- @see https://github.com/orgs/xmake-io/discussions/3439
+        --
+        -- e.g. add_requires("zlib~mingw", {plat = "mingw", arch = "x86_64"})
+        --
+        if opt.plat then
+            package._memcache():set("target_plat", opt.plat)
+        end
+        if opt.arch then
+            package._memcache():set("target_arch", opt.arch)
+        end
+
+        -- load script
+        local ok, errors = interp:load(scriptpath)
+        if not ok then
+            return nil, errors
+        end
+
+        -- load package and disable filter, we will process filter after a while
+        local results, errors = interp:make("package", true, false)
+        if not results then
+            return nil, errors
+        end
+
+        -- reset plat/arch
+        if opt.plat then
+            package._memcache():set("target_plat", nil)
+        end
+        if opt.arch then
+            package._memcache():set("target_arch", nil)
+        end
+
+        -- get package info
+        packageinfo = results[packagename]
+        if not packageinfo then
+            return nil, string.format("%s: package(%s) not found!", scriptpath, packagename)
+        end
+
+        package._memcache():set2("packageinfos.repository", cachekey, packageinfo)
     end
 
-    -- new an instance
-    instance = _instance.new(packagename, packageinfo, {scriptdir = path.directory(scriptpath), repo = opt.repo})
-
-    -- reset plat/arch
-    if opt.plat then
-        package._memcache():set("target_plat", nil)
-    end
-    if opt.arch then
-        package._memcache():set("target_arch", nil)
-    end
-
-    -- save instance to the cache
-    package._memcache():set2("packages", instance)
-    return instance
+    return _instance.new(packagename, packageinfo:clone(), {scriptdir = path.directory(scriptpath), repo = opt.repo})
 end
 
 -- new a package instance
