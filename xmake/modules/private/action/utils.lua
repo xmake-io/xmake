@@ -20,6 +20,8 @@
 
 -- imports
 import("core.base.option")
+import("core.project.project")
+import("private.detect.check_targetname")
 
 -- get target name and group pattern from option
 function get_target_and_group()
@@ -56,4 +58,37 @@ function get_targets_and_group()
         end
     end
     return targetnames, group_pattern
+end
+
+-- get the selected target objects from the given target names
+--
+-- if explicit target names are given, the matching targets are returned (and checked).
+-- otherwise it selects the default/all/group targets, e.g. the actions like
+-- build/install/uninstall/package/format share the same selection rule.
+--
+-- @param targetnames  a list of target names, a single target name, or the magic "__all"/"__def"
+-- @param opt          the options, e.g. {group_pattern = ..., all = false}
+--
+-- @return             the selected target objects (list)
+--
+function get_targets(targetnames, opt)
+    opt = opt or {}
+    local targets = {}
+    if type(targetnames) == "table" then
+        for _, targetname in ipairs(targetnames) do
+            table.insert(targets, assert(check_targetname(targetname)))
+        end
+    elseif type(targetnames) == "string" and not targetnames:startswith("__") then
+        table.insert(targets, assert(check_targetname(targetnames)))
+    else
+        local all = opt.all or targetnames == "__all" or option.get("all")
+        local group_pattern = opt.group_pattern
+        for _, target in ipairs(project.ordertargets()) do
+            local group = target:get("group")
+            if (target:is_default() and not group_pattern) or all or (group_pattern and group and group:match(group_pattern)) then
+                table.insert(targets, target)
+            end
+        end
+    end
+    return targets
 end

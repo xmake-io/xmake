@@ -24,7 +24,7 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
-import("private.detect.check_targetname")
+import("private.action.utils", {alias = "action_utils"})
 
 -- package library
 function _package_library(target)
@@ -189,20 +189,13 @@ function main()
     -- build it first
     task.run("build", {targets = targetnames, all = option.get("all")})
 
-    -- package the given targets?
-    if targetnames and #targetnames > 0 then
-        for _, targetname in ipairs(targetnames) do
-            local target = assert(check_targetname(targetname))
+    -- package the given targets, also package the deps of the explicitly given targets
+    local explicit = targetnames and #targetnames > 0
+    for _, target in ipairs(action_utils.get_targets(targetnames, {all = option.get("all")})) do
+        if explicit then
             _package_targets(target:orderdeps())
-            _package_target(target)
         end
-    else
-        -- package default or all targets
-        for _, target in ipairs(project.ordertargets()) do
-            if target:is_default() or option.get("all") then
-                _package_target(target)
-            end
-        end
+        _package_target(target)
     end
 
     -- unlock the whole project

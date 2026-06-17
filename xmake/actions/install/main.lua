@@ -33,20 +33,7 @@ import("private.action.utils", {alias = "action_utils"})
 function _check_targets(targetnames, group_pattern)
 
     -- get targets
-    local targets = {}
-    if targetnames and #targetnames > 0 then
-        for _, targetname in ipairs(targetnames) do
-            table.insert(targets, project.target(targetname))
-        end
-    else
-        -- install default or all targets
-        for _, target in pairs(project.targets()) do
-            local group = target:get("group")
-            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                table.insert(targets, target)
-            end
-        end
-    end
+    local targets = action_utils.get_targets(targetnames, {group_pattern = group_pattern})
 
     -- filter and check targets with builtin-install script
     local targetnames = {}

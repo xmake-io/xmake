@@ -93,24 +93,6 @@ function _get_file_patterns(sourcefiles)
     return patterns
 end
 
--- get all the targets that match the group or targetname
-function _get_targets(targetnames, group_pattern)
-    local targets = {}
-    if targetnames and #targetnames > 0 then
-        for _, targetname in ipairs(targetnames) do
-            table.insert(targets, project.target(targetname))
-        end
-    else
-        for _, target in pairs(project.targets()) do
-            local group = target:get("group")
-            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                table.insert(targets, target)
-            end
-        end
-    end
-    return targets
-end
-
 -- tell if the source batch is a c/c++/objc/objc++/cuda source batch
 function _source_batch_should_format(sourcebatch)
     local rulename = sourcebatch.rulename
@@ -181,7 +163,7 @@ function main()
     -- collect sourcefiles
     local sourcefiles = {}
     local targetnames, group_pattern = action_utils.get_targets_and_group()
-    local targets = _get_targets(targetnames, group_pattern)
+    local targets = action_utils.get_targets(targetnames, {group_pattern = group_pattern})
     if option.get("files") then
         local filepatterns = _get_file_patterns(option.get("files"))
         for _, target in ipairs(targets) do
