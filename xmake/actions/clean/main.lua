@@ -29,7 +29,7 @@ import("core.platform.platform")
 import("private.action.clean.remove_files")
 import("target.action.clean", {alias = "_do_clean_target"})
 import("private.service.remote_build.action", {alias = "remote_build_action"})
-import("private.detect.check_targetname")
+import("private.detect.check_targetnames")
 import("private.action.utils", {alias = "action_utils"})
 
 -- on clean target
@@ -107,10 +107,7 @@ end
 -- clean targets
 function _clean(targetnames)
     if targetnames and #targetnames > 0 then
-        for _, targetname in ipairs(targetnames) do
-            local target = assert(check_targetname(targetname))
-            _clean_target(target)
-        end
+        _clean_targets(assert(check_targetnames(targetnames)))
     else
         _clean_targets(project.ordertargets())
     end

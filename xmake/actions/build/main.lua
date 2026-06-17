@@ -38,7 +38,7 @@ import("private.cache.build_cache")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("private.utils.statistics")
 import("private.action.utils", {alias = "action_utils"})
-import("private.detect.check_targetname")
+import("private.detect.check_targetnames")
 
 -- try building it
 function _do_try_build(configfile, tool, trybuild, trybuild_detected, targetnames)
@@ -201,9 +201,7 @@ function main(opt)
 
     -- check target names
     if targetnames then
-        for _, targetname in ipairs(targetnames) do
-            assert(check_targetname(targetname))
-        end
+        assert(check_targetnames(targetnames))
     end
 
     -- enter project directory

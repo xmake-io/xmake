@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.project")
-import("private.detect.check_targetname")
+import("private.detect.check_targetnames")
 
 -- get target name and group pattern from option
 function get_target_and_group()
@@ -73,21 +73,20 @@ end
 --
 function get_targets(targetnames, opt)
     opt = opt or {}
+
+    -- select the explicitly given targets
+    if type(targetnames) == "table" or (type(targetnames) == "string" and not targetnames:startswith("__")) then
+        return assert(check_targetnames(targetnames))
+    end
+
+    -- otherwise select the default/all/group targets
     local targets = {}
-    if type(targetnames) == "table" then
-        for _, targetname in ipairs(targetnames) do
-            table.insert(targets, assert(check_targetname(targetname)))
-        end
-    elseif type(targetnames) == "string" and not targetnames:startswith("__") then
-        table.insert(targets, assert(check_targetname(targetnames)))
-    else
-        local all = opt.all or targetnames == "__all" or option.get("all")
-        local group_pattern = opt.group_pattern
-        for _, target in ipairs(project.ordertargets()) do
-            local group = target:get("group")
-            if (target:is_default() and not group_pattern) or all or (group_pattern and group and group:match(group_pattern)) then
-                table.insert(targets, target)
-            end
+    local all = opt.all or targetnames == "__all" or option.get("all")
+    local group_pattern = opt.group_pattern
+    for _, target in ipairs(project.ordertargets()) do
+        local group = target:get("group")
+        if (target:is_default() and not group_pattern) or all or (group_pattern and group and group:match(group_pattern)) then
+            table.insert(targets, target)
         end
     end
     return targets
