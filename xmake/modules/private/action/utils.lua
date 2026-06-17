@@ -32,3 +32,28 @@ function get_target_and_group()
     end
     return targetname, group_pattern
 end
+
+-- get target names and group pattern from option
+--
+-- it supports building multiple targets, e.g. `xmake build target1 target2 ...`
+-- and is compatible with the legacy single `target` option passed programmatically.
+--
+function get_targets_and_group()
+    local targetnames
+    local group_pattern = option.get("group")
+    if group_pattern then
+        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
+    else
+        targetnames = option.get("targets")
+        if not targetnames then
+            local targetname = option.get("target")
+            if targetname then
+                targetnames = {targetname}
+            end
+        end
+        if targetnames then
+            targetnames = table.wrap(targetnames)
+        end
+    end
+    return targetnames, group_pattern
+end

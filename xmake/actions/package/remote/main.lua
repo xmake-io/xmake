@@ -151,11 +151,13 @@ function main()
     -- load config
     config.load()
 
-    -- package the given target?
-    local targetname = option.get("target")
-    if targetname then
-        local target = assert(check_targetname(targetname))
-        _package_target(target)
+    -- package the given targets?
+    local targetnames = option.get("targets")
+    if targetnames and #targetnames > 0 then
+        for _, targetname in ipairs(targetnames) do
+            local target = assert(check_targetname(targetname))
+            _package_target(target)
+        end
     else
         -- package default or all targets
         for _, target in ipairs(project.ordertargets()) do

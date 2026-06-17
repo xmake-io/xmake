@@ -94,10 +94,12 @@ function _get_file_patterns(sourcefiles)
 end
 
 -- get all the targets that match the group or targetname
-function _get_targets(targetname, group_pattern)
+function _get_targets(targetnames, group_pattern)
     local targets = {}
-    if targetname then
-        table.insert(targets, project.target(targetname))
+    if targetnames and #targetnames > 0 then
+        for _, targetname in ipairs(targetnames) do
+            table.insert(targets, project.target(targetname))
+        end
     else
         for _, target in pairs(project.targets()) do
             local group = target:get("group")
@@ -178,8 +180,8 @@ function main()
 
     -- collect sourcefiles
     local sourcefiles = {}
-    local targetname, group_pattern = action_utils.get_target_and_group()
-    local targets = _get_targets(targetname, group_pattern)
+    local targetnames, group_pattern = action_utils.get_targets_and_group()
+    local targets = _get_targets(targetnames, group_pattern)
     if option.get("files") then
         local filepatterns = _get_file_patterns(option.get("files"))
         for _, target in ipairs(targets) do

@@ -22,7 +22,7 @@ task("install")
     set_category("action")
     on_run("main")
     set_menu {
-        usage = "xmake install|i [options] [target]",
+        usage = "xmake install|i [options] [targets]",
         description = "Package and install the target binary files.",
         shortname = 'i',
         options = {
@@ -47,7 +47,9 @@ task("install")
             {},
             {nil, "admin",      "k",  nil   , "Try to request administrator permission to install"},
             {},
-            {nil, "target",     "v",  nil   , "The target name. It will install all default targets if this parameter is not specified.",
+            {nil, "targets",    "vs", nil   , "The target names. It will install all default targets if this parameter is not specified.",
+                                              "e.g.",
+                                              "    xmake install target1 target2 ...",
                                               values = function (complete, opt)
                                                   return import("private.utils.complete_helper.targets")(complete, opt)
                                               end}

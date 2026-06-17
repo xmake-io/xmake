@@ -22,7 +22,7 @@ task("build")
     set_category("main")
     on_run("main")
     set_menu {
-                usage = "xmake [task] [options] [target]"
+                usage = "xmake [task] [options] [targets]"
             ,   description = "Build targets if no given tasks."
             ,   shortname = 'b'
             ,   options =
@@ -53,7 +53,9 @@ task("build")
                                                       "    - xmake --files='src/main.c" .. path.envsep() .. "src/test.c'"  }
 
                 ,   {}
-                ,   {nil, "target",     "v",  nil   , "The target name. It will build all default targets if this parameter is not specified."
+                ,   {nil, "targets",    "vs", nil   , "The target names. It will build all default targets if this parameter is not specified.",
+                                                      "e.g.",
+                                                      "    xmake build target1 target2 ..."
                                                     , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
             }

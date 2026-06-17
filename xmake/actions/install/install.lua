@@ -111,15 +111,21 @@ function _install_targets(targets)
 end
 
 -- install targets
-function main(targetname, group_pattern)
+--
+-- @param targetnames  the target names (table), a single target name, or the magic "__all"/"__def"
+--
+function main(targetnames, group_pattern)
     local targets = {}
-    if targetname and not targetname:startswith("__") then
-        local target = project.target(targetname)
-        table.insert(targets, target)
+    if type(targetnames) == "table" then
+        for _, targetname in ipairs(targetnames) do
+            table.insert(targets, project.target(targetname))
+        end
+    elseif targetnames and not targetnames:startswith("__") then
+        table.insert(targets, project.target(targetnames))
     else
         for _, target in ipairs(project.ordertargets()) do
             local group = target:get("group")
-            if (target:is_default() and not group_pattern) or targetname == "__all" or (group_pattern and group and group:match(group_pattern)) then
+            if (target:is_default() and not group_pattern) or targetnames == "__all" or (group_pattern and group and group:match(group_pattern)) then
                 table.insert(targets, target)
             end
         end

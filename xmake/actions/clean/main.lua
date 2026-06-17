@@ -30,6 +30,7 @@ import("private.action.clean.remove_files")
 import("target.action.clean", {alias = "_do_clean_target"})
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("private.detect.check_targetname")
+import("private.action.utils", {alias = "action_utils"})
 
 -- on clean target
 function _on_clean_target(target)
@@ -103,11 +104,13 @@ function _clean_targets(targets)
     end
 end
 
--- clean target
-function _clean(targetname)
-    if targetname then
-        local target = assert(check_targetname(targetname))
-        _clean_target(target)
+-- clean targets
+function _clean(targetnames)
+    if targetnames and #targetnames > 0 then
+        for _, targetname in ipairs(targetnames) do
+            local target = assert(check_targetname(targetname))
+            _clean_target(target)
+        end
     else
         _clean_targets(project.ordertargets())
     end
@@ -163,14 +166,14 @@ function main()
     -- lock the whole project
     project.lock()
 
-    -- get the target name
-    local targetname = option.get("target")
+    -- get the target names
+    local targetnames = action_utils.get_targets_and_group()
 
     -- enter project directory
     local oldir = os.cd(project.directory())
 
-    -- clean target
-    _clean(targetname)
+    -- clean targets
+    _clean(targetnames)
 
     -- unlock the whole project
     project.unlock()

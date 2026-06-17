@@ -23,7 +23,7 @@ task("clean")
     on_run("main")
 
     set_menu {
-                usage = "xmake clean|c [options] [target]"
+                usage = "xmake clean|c [options] [targets]"
             ,   description = "Remove all binary and temporary files."
             ,   shortname = 'c'
 
@@ -32,7 +32,9 @@ task("clean")
                     {'a', "all",        "k",  nil   , "Clean all auto-generated files by xmake."                      }
 
                 ,   {}
-                ,   {nil, "target",     "v",  nil   , "The target name. It will clean all default targets if this parameter is not specified."
+                ,   {nil, "targets",    "vs", nil   , "The target names. It will clean all default targets if this parameter is not specified.",
+                                                      "e.g.",
+                                                      "    xmake clean target1 target2 ..."
                                                     , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
             }

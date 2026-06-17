@@ -22,7 +22,7 @@ task("package")
     set_category("action")
     on_run("main")
     set_menu {
-        usage = "xmake package|p [options] [target]",
+        usage = "xmake package|p [options] [targets]",
         description = "Package target.",
         shortname = 'p',
         options = {
@@ -37,7 +37,9 @@ task("package")
             {nil, "version",    "kv",  nil,      "Set the version of remote package."},
             {nil, "shasum",     "kv",  nil,      "Set the sha256 or commit of remote package."},
             {},
-            {nil, "target",     "v",  nil,       "The target name. It will package all default targets if this parameter is not specified.",
+            {nil, "targets",    "vs", nil,       "The target names. It will package all default targets if this parameter is not specified.",
+                                                 "e.g.",
+                                                 "    xmake package target1 target2 ...",
                                                  values = function (complete, opt)
                                                      return import("private.utils.complete_helper.targets")(complete, opt)
                                                  end }

@@ -22,7 +22,7 @@ task("uninstall")
     set_category("action")
     on_run("main")
     set_menu {
-        usage = "xmake uninstall|u [options] [target]",
+        usage = "xmake uninstall|u [options] [targets]",
         description = "Uninstall the project binary files.",
         shortname = 'u',
         options = {
@@ -41,7 +41,9 @@ task("uninstall")
                                               "    xmake uninstall --group=benchmark/*"     },
             {nil, "admin",      "k",  nil   , "Try to request administrator permission to uninstall"},
             {                                                                               },
-            {nil, "target",     "v",  nil   , "The target name. It will uninstall all default targets if this parameter is not specified.",
+            {nil, "targets",    "vs", nil   , "The target names. It will uninstall all default targets if this parameter is not specified.",
+                                              "e.g.",
+                                              "    xmake uninstall target1 target2 ...",
                                               values = function (complete, opt)
                                                 return import("private.utils.complete_helper.targets")(complete, opt)
                                               end}

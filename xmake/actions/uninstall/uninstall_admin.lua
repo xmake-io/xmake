@@ -27,6 +27,11 @@ import("uninstall")
 
 function main(targetname, installdir, bindir, libdir, includedir)
     local verbose = option.get("verbose")
+
+    -- the targetname may be a list of target names joined with the path separator
+    if targetname and targetname:find(path.envsep(), 1, true) then
+        targetname = path.splitenv(targetname)
+    end
     if installdir and #installdir == 0 then
         installdir = nil
     end

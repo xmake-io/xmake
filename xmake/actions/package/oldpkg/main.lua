@@ -183,17 +183,19 @@ function main()
     -- lock the whole project
     project.lock()
 
-    -- get the target name
-    local targetname = option.get("target")
+    -- get the target names
+    local targetnames = option.get("targets")
 
     -- build it first
-    task.run("build", {target = targetname, all = option.get("all")})
+    task.run("build", {targets = targetnames, all = option.get("all")})
 
-    -- package the given target?
-    if targetname then
-        local target = assert(check_targetname(targetname))
-        _package_targets(target:orderdeps())
-        _package_target(target)
+    -- package the given targets?
+    if targetnames and #targetnames > 0 then
+        for _, targetname in ipairs(targetnames) do
+            local target = assert(check_targetname(targetname))
+            _package_targets(target:orderdeps())
+            _package_target(target)
+        end
     else
         -- package default or all targets
         for _, target in ipairs(project.ordertargets()) do
