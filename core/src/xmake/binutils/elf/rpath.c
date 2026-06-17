@@ -208,16 +208,29 @@ tb_bool_t xm_binutils_elf_rpath_clean(tb_stream_ref_t istream, tb_hize_t base_of
          *
          * @note we only need dynamic_offset/dynamic_size here (strtab is not used
          * when removing entries by tag), so we do not require get_context to fully succeed.
+         *
+         * but the ELF header itself must be readable, otherwise we should not silently
+         * treat a truncated/corrupted file as a no-op success below.
          */
         xm_elf_context_t ctx;
         tb_memset(&ctx, 0, sizeof(ctx));
+        tb_bool_t header_ok = tb_false;
         if (ident[XM_ELF_EI_CLASS] == XM_ELF_CLASS32) {
-            xm_binutils_elf_get_context_32(istream, base_offset, &ctx);
+            xm_elf32_header_t header;
+            if (xm_binutils_elf_read_header_32(istream, base_offset, &header)) {
+                header_ok = tb_true;
+                xm_binutils_elf_get_context_32(istream, base_offset, &ctx);
+            }
         } else if (ident[XM_ELF_EI_CLASS] == XM_ELF_CLASS64) {
-            xm_binutils_elf_get_context_64(istream, base_offset, &ctx);
+            xm_elf64_header_t header;
+            if (xm_binutils_elf_read_header_64(istream, base_offset, &header)) {
+                header_ok = tb_true;
+                xm_binutils_elf_get_context_64(istream, base_offset, &ctx);
+            }
         } else {
             break;
         }
+        if (!header_ok) break;
 
         /* no .dynamic section? e.g. a fully static executable (-static),
          * there is no rpath/runpath to clean, so just treat it as a no-op success.
