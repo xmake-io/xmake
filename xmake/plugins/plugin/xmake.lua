@@ -25,12 +25,12 @@ task("plugin")
         usage = "xmake plugin [options]",
         description = "Manage plugins of xmake.",
         options = {
-            {'i', "install", "k",  nil,      "Install plugins."             },
-            {'u', "update",  "k",  nil,      "Update plugins."              },
-            {'c', "clear",   "k",  nil,      "Clear all installed plugins." },
-            {nil, "plugins", "v",  nil,      "The plugins path or url.",
-                                             "e.g.",
-                                             "    $ xmake plugin --install https://github.com/xmake-io/xmake-plugins",
-                                             "    $ xmake plugin --update"}
+            {'i', "install", "k", nil, "Install plugins."},
+            {'u', "update",  "k", nil, "Update plugins."},
+            {'c', "clear",   "k", nil, "Clear all installed plugins."},
+            {nil, "plugins", "v", nil, "The plugins path or url.",
+                                       "e.g.",
+                                       "    $ xmake plugin --install https://github.com/xmake-io/xmake-plugins",
+                                       "    $ xmake plugin --update"}
         }
     }

@@ -18,36 +18,23 @@
 -- @file        repo.lua
 --
 
--- define task
 task("repo")
-
-    -- set category
     set_category("plugin")
-
-    -- on run
     on_run("main")
-
-    -- set menu
     set_menu {
-                -- usage
-                usage = "xmake repo [options] [name] [url] [branch]"
-
-                -- description
-            ,   description = "Manage package repositories."
-
-                -- options
-            ,   options =
-                {
-                    {'a', "add",    "k",  nil,       "Add the given remote repository url."           }
-                ,   {'r', "remove", "k",  nil,       "Remove the given remote repository url."        }
-                ,   {'u', "update", "k",  nil,       "Update all local repositories from the remote." }
-                ,   {'c', "clear",  "k",  nil,       "Clear all added repositories."                  }
-                ,   {                                                                                 }
-                ,   {'l', "list",   "k",  nil,       "List all added repositories."                   }
-                ,   {'g', "global", "k",  nil,       "Save repository to global. (default: local)"    }
-                ,   {                                                                                 }
-                ,   {nil, "name",   "v", nil,        "The repository name."                           }
-                ,   {nil, "url",    "v", nil,        "The repository url"                             }
-                ,   {nil, "branch", "v", nil,        "The repository branch"                          }
-                }
+        usage = "xmake repo [options] [name] [url] [branch]",
+        description = "Manage package repositories.",
+        options = {
+            {'a', "add",    "k", nil, "Add the given remote repository url."},
+            {'r', "remove", "k", nil, "Remove the given remote repository url."},
+            {'u', "update", "k", nil, "Update all local repositories from the remote."},
+            {'c', "clear",  "k", nil, "Clear all added repositories."},
+            {},
+            {'l', "list",   "k", nil, "List all added repositories."},
+            {'g', "global", "k", nil, "Save repository to global. (default: local)"},
+            {},
+            {nil, "name",   "v", nil, "The repository name."},
+            {nil, "url",    "v", nil, "The repository url"},
+            {nil, "branch", "v", nil, "The repository branch"}
+        }
     }

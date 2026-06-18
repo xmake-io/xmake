@@ -18,59 +18,43 @@
 -- @file        xmake.lua
 --
 
--- define task
 task("project")
-
-    -- set category
     set_category("plugin")
-
-    -- on run
     on_run("main")
-
-    -- set menu
     set_menu {
-                -- usage
-                usage = "xmake project [options] [outputdir]"
+        usage = "xmake project [options] [outputdir]",
+        description = "Generate the project file.",
+        options = {
+            {'k', "kind",      "kv", "makefile", "Set the project kind.",
+                                                 "    - make",
+                                                 "    - xmakefile (makefile with xmake)",
+                                                 "    - cmake",
+                                                 "    - ninja",
+                                                 "    - xcode",
+                                                 "    - compile_flags",
+                                                 "    - compile_commands (clang compilation database with json format)",
+                                                 "    - vs (auto detect), vs2002 - vs2026",
+                                                 "    - vsxmake (auto detect), vsxmake2010 ~ vsxmake2026",
+                                                 values = function (complete, opt)
+                                                     if not complete then return end
 
-                -- description
-            ,   description = "Generate the project file."
-
-                -- options
-            ,   options =
-                {
-                    {'k', "kind",      "kv" , "makefile",   "Set the project kind."
-                                                        ,   "    - make"
-                                                        ,   "    - xmakefile (makefile with xmake)"
-                                                        ,   "    - cmake"
-                                                        ,   "    - ninja"
-                                                        ,   "    - xcode"
-                                                        ,   "    - compile_flags"
-                                                        ,   "    - compile_commands (clang compilation database with json format)"
-                                                        ,   "    - vs (auto detect), vs2002 - vs2026"
-                                                        ,   "    - vsxmake (auto detect), vsxmake2010 ~ vsxmake2026"
-                                                        ,   values = function (complete, opt)
-                                                                if not complete then return end
-
-                                                                local values = table.keys(import("main.makers")())
-                                                                table.sort(values, function (a, b) return a > b end)
-                                                                return values
-                                                            end                                                                             }
-                ,   {'m', "modes",     "kv" , nil       ,   "Set the project modes."
-                                                        ,   "    e.g. "
-                                                        ,   "    - xmake project -k vsxmake -m \"release,debug\""                           }
-                ,   {'a', "archs",     "kv" , nil       ,   "Set the project archs."
-                                                        ,   "    e.g. "
-                                                        ,   "    - xmake project -k vsxmake -a \"x86,x64\""                                 }
-                ,   {'t', "target",    "kv" , nil       ,   "Set the project target."
-                                                        ,   "    e.g. "
-                                                        ,   "    - xmake project -k compile_commands -t \"custom\""                            }
-                ,   {nil, "lsp",       "kv" , nil       ,   "Set the LSP backend for compile_commands."
-                                                        ,   "    e.g. "
-                                                        ,   "    - xmake project -k compile_commands --lsp=clangd"
-                                                        ,   values = {"clangd", "cpptools", "ccls"}}
-                ,   {nil, "outputdir", "v"  , "."       ,   "Set the output directory."                                                     }
-                }
-            }
-
-
-
+                                                     local values = table.keys(import("main.makers")())
+                                                     table.sort(values, function (a, b) return a > b end)
+                                                     return values
+                                                 end},
+            {'m', "modes",     "kv", nil,        "Set the project modes.",
+                                                 "    e.g. ",
+                                                 "    - xmake project -k vsxmake -m \"release,debug\""},
+            {'a', "archs",     "kv", nil,        "Set the project archs.",
+                                                 "    e.g. ",
+                                                 "    - xmake project -k vsxmake -a \"x86,x64\""},
+            {'t', "target",    "kv", nil,        "Set the project target.",
+                                                 "    e.g. ",
+                                                 "    - xmake project -k compile_commands -t \"custom\""},
+            {nil, "lsp",       "kv", nil,        "Set the LSP backend for compile_commands.",
+                                                 "    e.g. ",
+                                                 "    - xmake project -k compile_commands --lsp=clangd",
+                                                 values = {"clangd", "cpptools", "ccls"}},
+            {nil, "outputdir", "v",  ".",        "Set the output directory."}
+        }
+    }

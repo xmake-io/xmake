@@ -26,33 +26,32 @@ task("install")
         description = "Package and install the target binary files.",
         shortname = 'i',
         options = {
-            {'o', "installdir", "kv", nil   , "Set the install directory.",
-                                              "e.g.",
-                                              "    $ xmake install -o /usr/local",
-                                              "or  $ DESTDIR=/usr/local xmake install",
-                                              "or  $ INSTALLDIR=/usr/local xmake install" },
-            {nil, "bindir",     "kv", nil   , "Set install binaries directory in INSTALLDIR/DIR. (default: ${installdir}/bin)"},
-            {nil, "libdir",     "kv", nil   , "Set install libraries directory in INSTALLDIR/DIR. (default: ${installdir}/lib)"},
-            {nil, "includedir", "kv", nil   , "Set install includes directory in INSTALLDIR/DIR. (default: ${installdir}/include)"},
-            {'g', "group",      "kv",  nil  , "Install all targets of the given group. It support path pattern matching.",
-                                              "e.g.",
-                                              "    xmake install -g test",
-                                              "    xmake install -g test_*",
-                                              "    xmake install --group=benchmark/*"     },
-            {'a', "all",        "k",  nil   , "Install all targets."                      },
-            {nil, "binaries",   "kv", true  , "Enable or disable install binary files."   },
-            {nil, "headers",    "kv", true  , "Enable or disable install header files."   },
-            {nil, "libraries",  "kv", true  , "Enable or disable install library files."  },
-            {nil, "packages",   "kv", true  , "Enable or disable install package files."  },
+            {'o', "installdir", "kv", nil,  "Set the install directory.",
+                                            "e.g.",
+                                            "    $ xmake install -o /usr/local",
+                                            "or  $ DESTDIR=/usr/local xmake install",
+                                            "or  $ INSTALLDIR=/usr/local xmake install"},
+            {nil, "bindir",     "kv", nil,  "Set install binaries directory in INSTALLDIR/DIR. (default: ${installdir}/bin)"},
+            {nil, "libdir",     "kv", nil,  "Set install libraries directory in INSTALLDIR/DIR. (default: ${installdir}/lib)"},
+            {nil, "includedir", "kv", nil,  "Set install includes directory in INSTALLDIR/DIR. (default: ${installdir}/include)"},
+            {'g', "group",      "kv", nil,  "Install all targets of the given group. It supports path pattern matching.",
+                                            "e.g.",
+                                            "    xmake install -g test",
+                                            "    xmake install -g test_*",
+                                            "    xmake install --group=benchmark/*"},
+            {'a', "all",        "k",  nil,  "Install all targets."},
+            {nil, "binaries",   "kv", true, "Enable or disable install binary files."},
+            {nil, "headers",    "kv", true, "Enable or disable install header files."},
+            {nil, "libraries",  "kv", true, "Enable or disable install library files."},
+            {nil, "packages",   "kv", true, "Enable or disable install package files."},
             {},
-            {nil, "admin",      "k",  nil   , "Try to request administrator permission to install"},
+            {nil, "admin",      "k",  nil,  "Try to request administrator permission to install"},
             {},
-            {nil, "targets",    "vs", nil   , "The target names. It will install all default targets if this parameter is not specified.",
-                                              "e.g.",
-                                              "    xmake install target1 target2 ...",
-                                              values = function (complete, opt)
-                                                  return import("private.utils.complete_helper.targets")(complete, opt)
-                                              end}
+            {nil, "targets",    "vs", nil,  "The target names. It will install all default targets if this parameter is not specified.",
+                                            "e.g.",
+                                            "    xmake install target1 target2 ...",
+                                            values = function (complete, opt)
+                                                return import("private.utils.complete_helper.targets")(complete, opt)
+                                            end}
         }
     }
-
