@@ -30,6 +30,11 @@ task("clean")
             ,   options =
                 {
                     {'a', "all",        "k",  nil   , "Clean all auto-generated files by xmake."                      }
+                ,   {'g', "group",      "kv", nil   , "Clean all targets of the given group. It support path pattern matching.",
+                                                      "e.g.",
+                                                      "    xmake clean -g test",
+                                                      "    xmake clean -g test_*",
+                                                      "    xmake clean --group=benchmark/*"                          }
 
                 ,   {}
                 ,   {nil, "targets",    "vs", nil   , "The target names. It will clean all default targets if this parameter is not specified.",
