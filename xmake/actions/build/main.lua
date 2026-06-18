@@ -38,10 +38,10 @@ import("private.cache.build_cache")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("private.utils.statistics")
 import("private.action.utils", {alias = "action_utils"})
-import("private.detect.check_targetname")
+import("private.detect.check_targetnames")
 
 -- try building it
-function _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname)
+function _do_try_build(configfile, tool, trybuild, trybuild_detected, targetnames)
     if configfile and tool and (trybuild or utils.confirm({default = true,
             description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it or you can run `${bright}xmake f --trybuild=${clear}` to set buildsystem"})) then
         if not trybuild then
@@ -59,9 +59,9 @@ function _try_build()
     config.load()
 
     -- rebuild it? do clean first
-    local targetname = option.get("target")
+    local targetnames = action_utils.get_targets_and_group()
     if option.get("rebuild") then
-        task.run("clean", {target = targetname})
+        task.run("clean", {targets = targetnames})
     end
 
     -- get the buildsystem tool
@@ -76,14 +76,14 @@ function _try_build()
         else
             raise("unknown build tool: %s", trybuild)
         end
-        return _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname)
+        return _do_try_build(configfile, tool, trybuild, trybuild_detected, targetnames)
     else
         for _, name in ipairs({"xrepo", "autoconf", "cmake", "meson", "scons", "bazel", "msbuild", "xcodebuild", "make", "ninja", "ndkbuild"}) do
             tool = import("private.action.trybuild." .. name, {anonymous = true})
             configfile = tool.detect()
             if configfile then
                 trybuild_detected = name
-                if _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname) then
+                if _do_try_build(configfile, tool, trybuild, trybuild_detected, targetnames) then
                     return true
                 end
             end
@@ -196,12 +196,12 @@ function main(opt)
     project.lock()
 
     -- config it first
-    local targetname, group_pattern = action_utils.get_target_and_group()
+    local targetnames, group_pattern = action_utils.get_targets_and_group()
     task.run("config", {}, {disable_dump = true})
 
-    -- check target name
-    if targetname then
-        assert(check_targetname(targetname))
+    -- check target names
+    if targetnames then
+        assert(check_targetnames(targetnames))
     end
 
     -- enter project directory
@@ -212,7 +212,7 @@ function main(opt)
 
     -- build targets
     local build_time = os.mclock()
-    build_targets(targetname, {group_pattern = group_pattern})
+    build_targets(targetnames, {group_pattern = group_pattern})
     build_time = os.mclock() - build_time
 
     -- leave project directory

@@ -14,30 +14,16 @@
 --
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
--- @author      Shiffted
--- @file        check_targetname.lua
+-- @author      ruki
+-- @file        check_targetnames.lua
 --
 
 -- imports
 import("core.project.project")
 import("private.detect.find_similar_targetnames")
 
--- check if a target name is valid
---
--- @param targetname the target name to check for
--- @param opt        the argument options, e.g. {find_similar = false, max_similar = 5}
--- @return           target or nil, errors
---
--- @code
---
--- local target, errors = check_targetname("mytarget")
--- local target, errors = check_targetname("mytarget", {find_similar = false})
---
--- @endcode
---
-function main(targetname, opt)
-    opt = opt or {}
-
+-- check if a single target name is valid
+function _check_targetname(targetname, opt)
     local target = project.target(targetname)
     if target then
         return target
@@ -53,4 +39,38 @@ function main(targetname, opt)
         end
     end
     return nil, errors
+end
+
+-- check if the given target names are valid
+--
+-- it accepts either a single target name or a list of target names. for a single
+-- target name (string), it returns the single matching target; for a list, it
+-- returns the matching targets as a list.
+--
+-- @param targetnames a single target name or a list of target names to check for
+-- @param opt         the argument options, e.g. {find_similar = false, max_similar = 5}
+-- @return            target(s) or nil, errors
+--
+-- @code
+--
+-- local target  = assert(check_targetnames("mytarget"))
+-- local targets = assert(check_targetnames({"target1", "target2"}))
+--
+-- @endcode
+--
+function main(targetnames, opt)
+    opt = opt or {}
+    local targets = {}
+    for _, targetname in ipairs(table.wrap(targetnames)) do
+        local target, errors = _check_targetname(targetname, opt)
+        if not target then
+            return nil, errors
+        end
+        table.insert(targets, target)
+    end
+    -- unwrap to a single target if a single target name is given
+    if type(targetnames) ~= "table" then
+        return targets[1]
+    end
+    return targets
 end

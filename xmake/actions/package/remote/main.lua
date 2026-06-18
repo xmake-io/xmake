@@ -25,7 +25,7 @@ import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("core.base.bit")
-import("private.detect.check_targetname")
+import("private.action.utils", {alias = "action_utils"})
 
 -- get library deps
 function _get_librarydeps(target)
@@ -151,18 +151,10 @@ function main()
     -- load config
     config.load()
 
-    -- package the given target?
-    local targetname = option.get("target")
-    if targetname then
-        local target = assert(check_targetname(targetname))
+    -- package the given targets
+    local targetnames = option.get("targets")
+    for _, target in ipairs(action_utils.get_targets(targetnames, {all = option.get("all")})) do
         _package_target(target)
-    else
-        -- package default or all targets
-        for _, target in ipairs(project.ordertargets()) do
-            if target:is_default() or option.get("all") then
-                _package_target(target)
-            end
-        end
     end
 
     -- unlock the whole project

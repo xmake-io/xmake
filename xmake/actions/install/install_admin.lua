@@ -27,6 +27,11 @@ import("install")
 
 function main(targetname, group_pattern, installdir, bindir, libdir, includedir)
     local verbose = option.get("verbose")
+
+    -- the targetname may be a list of target names joined with the path separator
+    if targetname and targetname:find(path.envsep(), 1, true) then
+        targetname = path.splitenv(targetname)
+    end
     if group_pattern and #group_pattern == 0 then
         group_pattern = nil
     end

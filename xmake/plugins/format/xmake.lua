@@ -45,7 +45,9 @@ task("format")
                                                   "    - xmake format --files='src/**.c|excluded_file.c'",
                                                   "    - xmake format --files='src/main.c" .. path.envsep() .. "src/test.c'" },
                                                   {},
-                    {nil, "target",  "v",  nil,   "The target name. It will format all default targets if this parameter is not specified."
+                    {nil, "targets", "vs", nil,   "The target names. It will format all default targets if this parameter is not specified.",
+                                                  "e.g.",
+                                                  "    xmake format target1 target2 ..."
                                                        , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
             }

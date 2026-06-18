@@ -23,6 +23,7 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.project")
 import("target.action.uninstall", {alias = "_do_uninstall_target"})
+import("private.action.utils", {alias = "action_utils"})
 
 -- on uninstall target
 function _on_uninstall_target(target)
@@ -106,20 +107,12 @@ function _uninstall_targets(targets)
 end
 
 -- uninstall
-function main(targetname)
-    local targets = {}
-    if targetname and not targetname:startswith("__") then
-        local target = project.target(targetname)
-        table.insert(targets, target)
-    else
-        for _, target in ipairs(project.ordertargets()) do
-            local group = target:get("group")
-            if (target:is_default() and not group_pattern) or targetname == "__all" or (group_pattern and group and group:match(group_pattern)) then
-                table.insert(targets, target)
-            end
-        end
-    end
+--
+-- @param targetnames  the target names (table), a single target name, or the magic "__all"/"__def"
+--
+function main(targetnames, group_pattern)
+    local targets = action_utils.get_targets(targetnames, {group_pattern = group_pattern})
     if #targets > 0 then
-        _uninstall_targets(table.unique(targets))
+        _uninstall_targets(targets)
     end
 end

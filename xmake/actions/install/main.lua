@@ -30,21 +30,10 @@ import("install")
 import("private.action.utils", {alias = "action_utils"})
 
 -- check targets
-function _check_targets(targetname, group_pattern)
+function _check_targets(targetnames, group_pattern)
 
     -- get targets
-    local targets = {}
-    if targetname then
-        table.insert(targets, project.target(targetname))
-    else
-        -- install default or all targets
-        for _, target in pairs(project.targets()) do
-            local group = target:get("group")
-            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                table.insert(targets, target)
-            end
-        end
-    end
+    local targets = action_utils.get_targets(targetnames, {group_pattern = group_pattern})
 
     -- filter and check targets with builtin-install script
     local targetnames = {}
@@ -69,14 +58,17 @@ function main()
     task.run("config", {require = false}, {disable_dump = true})
 
     -- check targets first
-    local targetname, group_pattern = action_utils.get_target_and_group()
-    _check_targets(targetname, group_pattern)
+    local targetnames, group_pattern = action_utils.get_targets_and_group()
+    _check_targets(targetnames, group_pattern)
+
+    -- get the install targets argument, it may be a list of target names or the magic "__all"/"__def"
+    local targets_arg = targetnames or (option.get("all") and "__all" or "__def")
 
     -- attempt to install directly
     try
     {
         function ()
-            install(targetname or (option.get("all") and "__all" or "__def"), group_pattern)
+            install(targets_arg, group_pattern)
             cprint("${color.success}install ok!")
         end,
 
@@ -90,7 +82,7 @@ function main()
                     local ok = try
                     {
                         function ()
-                            install(targetname or (option.get("all") and "__all" or "__def"), group_pattern)
+                            install(targets_arg, group_pattern)
                             cprint("${color.success}install ok!")
                             return true
                         end
@@ -109,7 +101,7 @@ function main()
 
                     -- install target with administrator permission
                     sudo.execl(path.join(os.scriptdir(), "install_admin.lua"), {
-                        targetname or (option.get("all") and "__all" or "__def"),
+                        type(targets_arg) == "table" and table.concat(targets_arg, path.envsep()) or targets_arg,
                         group_pattern or "", option.get("installdir") or "",
                         option.get("bindir"),
                         option.get("libdir"),

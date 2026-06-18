@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.base.json")
 import("core.project.config")
 import("core.project.project")
-import("private.detect.check_targetname")
+import("private.detect.check_targetnames")
 
 function _collect_target_entry(target)
     local deps = {}
@@ -135,7 +135,7 @@ function main(name)
 
     local root_target
     if name then
-        root_target = assert(check_targetname(name))
+        root_target = assert(check_targetnames(name))
     end
 
     local graph = _collect_target_graph(root_target)

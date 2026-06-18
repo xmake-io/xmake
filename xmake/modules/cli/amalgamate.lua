@@ -24,7 +24,7 @@ import("core.base.graph")
 import("core.project.config")
 import("core.project.task")
 import("core.project.project")
-import("private.detect.check_targetname")
+import("private.detect.check_targetnames")
 
 -- the options
 local options =
@@ -160,7 +160,7 @@ function main(...)
     -- generate amalgamate code
     args.outputdir = args.outputdir or config.builddir()
     if args.target then
-        local target = assert(check_targetname(args.target))
+        local target = assert(check_targetnames(args.target))
         _generate_amalgamate_code(target, args)
     else
         for _, target in ipairs(project.ordertargets()) do
