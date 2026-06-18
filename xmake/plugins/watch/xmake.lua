@@ -22,35 +22,31 @@ task("watch")
     set_category("plugin")
     on_run("main")
     set_menu {
-                usage = "xmake watch [options] [arguments]"
-            ,   description = "Watch the project directories and run command."
-            ,   options =
-                {
-                    {'c', "commands"    , "kv"  , nil   ,   "Run the multiple commands instead of the default build command.",
-                                                            "e.g.",
-                                                            "    $ xmake watch -c 'xmake -rv'",
-                                                            "    $ xmake watch -c 'xmake -vD; xmake run hello'"},
-                    {'s', "script"      , "kv"  , nil   ,   "Run the given lua script file.",
-                                                            "e.g.",
-                                                            "    $ xmake watch -s /tmp/watch.lua"},
-                    {'d', "watchdirs"   , "kv"  , nil   ,   "Set the given recursive watch directories, the project directories will be watched by default.",
-                                                            "e.g.",
-                                                            "    $ xmake watch -d src",
-                                                            "    $ xmake watch -d 'src/*" .. path.envsep() .. "tests/**/subdir'"},
-                    {'p', "plaindirs"   , "kv"  , nil   ,   "Set the given non-recursive watch directories, the project directories will be watched by default.",
-                                                            "e.g.",
-                                                            "    $ xmake watch -p src",
-                                                            "    $ xmake watch -p 'src/*" .. path.envsep() .. "tests/**/subdir'"},
-                    {'r', "run"         , "k"   , nil   ,   "Build and run target."},
-                    {'t', "target"      , "kv"  , nil   ,   "Build the given target.",
-                                                            values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end },
-                    {'-', "arbitrary"   , "vs"   , nil  ,   "Run an arbitrary command.",
-                                                            "e.g.",
-                                                            "    $ xmake watch -- echo hello xmake!",
-                                                            "    $ xmake watch -- xmake run",
-                                                            "    $ xmake watch -- xmake -rv"}
-                }
-            }
-
-
-
+        usage = "xmake watch [options] [arguments]",
+        description = "Watch the project directories and run command.",
+        options = {
+            {'c', "commands",  "kv", nil, "Run the multiple commands instead of the default build command.",
+                                          "e.g.",
+                                          "    $ xmake watch -c 'xmake -rv'",
+                                          "    $ xmake watch -c 'xmake -vD; xmake run hello'"},
+            {'s', "script",    "kv", nil, "Run the given lua script file.",
+                                          "e.g.",
+                                          "    $ xmake watch -s /tmp/watch.lua"},
+            {'d', "watchdirs", "kv", nil, "Set the given recursive watch directories, the project directories will be watched by default.",
+                                          "e.g.",
+                                          "    $ xmake watch -d src",
+                                          "    $ xmake watch -d 'src/*" .. path.envsep() .. "tests/**/subdir'"},
+            {'p', "plaindirs", "kv", nil, "Set the given non-recursive watch directories, the project directories will be watched by default.",
+                                          "e.g.",
+                                          "    $ xmake watch -p src",
+                                          "    $ xmake watch -p 'src/*" .. path.envsep() .. "tests/**/subdir'"},
+            {'r', "run",       "k",  nil, "Build and run target."},
+            {'t', "target",    "kv", nil, "Build the given target.",
+                                          values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end},
+            {'-', "arbitrary", "vs", nil, "Run an arbitrary command.",
+                                          "e.g.",
+                                          "    $ xmake watch -- echo hello xmake!",
+                                          "    $ xmake watch -- xmake run",
+                                          "    $ xmake watch -- xmake -rv"}
+        }
+    }

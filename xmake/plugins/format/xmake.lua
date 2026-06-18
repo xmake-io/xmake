@@ -22,35 +22,34 @@ task("format")
     set_category("plugin")
     on_run("main")
     set_menu {
-                usage = "xmake format [options] [arguments]",
-                description = "Format the current project.",
-                options = {
-                    {'s', "style",   "kv",  nil,  "Set the path of .clang-format file, a coding style",
-                                                  values = {"LLVM", "Google", "Chromium", "Mozilla", "WebKit"}},
-                    {nil, "create",  "k",  nil,   "Create a .clang-format file from a coding style"},
-                    {'n', "dry-run", "k",  nil,   "Do not make any changes, just show the files that would be formatted."},
-                    {'e', "error",   "k",  nil,   "If set, changes formatting warnings to errors."},
-                    {'j', "jobs",    "kv", tostring(os.default_njob()),
-                                                  "Set the number of parallel format jobs."},
-                    {'a', "all",     "k",  nil,   "Format all targets."},
-                    {'g', "group",   "kv", nil,   "Format all targets of the given group. It support path pattern matching.",
-                                                  "e.g.",
-                                                  "    xmake format -g test",
-                                                  "    xmake format -g test_*",
-                                                  "    xmake format --group=benchmark/*"},
-                    {'f', "files",   "kv", nil,   "Build the given source files.",
-                                                  "e.g.",
-                                                  "    - xmake format --files=src/main.c",
-                                                  "    - xmake format --files='src/*.c' [target]",
-                                                  "    - xmake format --files='src/**.c|excluded_file.c'",
-                                                  "    - xmake format --files='src/main.c" .. path.envsep() .. "src/test.c'" },
-                                                  {},
-                    {nil, "targets", "vs", nil,   "The target names. It will format all default targets if this parameter is not specified.",
-                                                  "e.g.",
-                                                  "    xmake format target1 target2 ..."
-                                                       , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
-                }
-            }
-
-
-
+        usage = "xmake format [options] [arguments]",
+        description = "Format the current project.",
+        options = {
+            {'s', "style",   "kv", nil, "Set the path of .clang-format file, a coding style",
+                                        values = {"LLVM", "Google", "Chromium", "Mozilla", "WebKit"}},
+            {nil, "create",  "k",  nil, "Create a .clang-format file from a coding style"},
+            {'n', "dry-run", "k",  nil, "Do not make any changes, just show the files that would be formatted."},
+            {'e', "error",   "k",  nil, "If set, changes formatting warnings to errors."},
+            {'j', "jobs",    "kv", tostring(os.default_njob()),
+                                        "Set the number of parallel format jobs."},
+            {'a', "all",     "k",  nil, "Format all targets."},
+            {'g', "group",   "kv", nil, "Format all targets of the given group. It support path pattern matching.",
+                                        "e.g.",
+                                        "    xmake format -g test",
+                                        "    xmake format -g test_*",
+                                        "    xmake format --group=benchmark/*"},
+            {'f', "files",   "kv", nil, "Build the given source files.",
+                                        "e.g.",
+                                        "    - xmake format --files=src/main.c",
+                                        "    - xmake format --files='src/*.c' [target]",
+                                        "    - xmake format --files='src/**.c|excluded_file.c'",
+                                        "    - xmake format --files='src/main.c" .. path.envsep() .. "src/test.c'"},
+            {},
+            {nil, "targets", "vs", nil, "The target names. It will format all default targets if this parameter is not specified.",
+                                        "e.g.",
+                                        "    xmake format target1 target2 ...",
+                                        values = function (complete, opt)
+                                            return import("private.utils.complete_helper.targets")(complete, opt)
+                                        end},
+        }
+    }

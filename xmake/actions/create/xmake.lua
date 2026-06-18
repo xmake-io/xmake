@@ -25,41 +25,41 @@ task("create")
         usage = "xmake create [options] [target]",
         description = "Create a new project.",
         options = {
-            {'f', "force",      "k",   nil,         "Force to create project in a non-empty directory."},
-            {nil, "list",       "k",   nil,         "List all templates for each language."
-                                                  , "    e.g."
-                                                  , "    - xmake create --list"
-                                                  , "    - xmake create --list -l c++"},
-            {'l', "language",   "kv", "c++",        "The project language",
-                                                    values = function (complete, opt)
-                                                        import("actions.create.template", {rootdir = os.programdir()})
+            {'f', "force",      "k",  nil,       "Force to create project in a non-empty directory."},
+            {nil, "list",       "k",  nil,       "List all templates for each language.",
+                                                 "    e.g.",
+                                                 "    - xmake create --list",
+                                                 "    - xmake create --list -l c++"},
+            {'l', "language",   "kv", "c++",     "The project language",
+                                                 values = function (complete, opt)
+                                                     import("actions.create.template", {rootdir = os.programdir()})
 
-                                                        local languages = template.languages()
-                                                        if not complete or not opt.template then
-                                                            return languages
-                                                        end
-                                                        return template.languages_for_template(opt.template)
-                                                    end                                                             },
-            {'t', "template",   "kv", "console",    "Select the project template id or name of the given language.",
-                                                    "    Use `xmake create --list` to view all templates.",
-                                                    values = function (complete, opt)
-                                                        if complete then
-                                                            import("actions.create.template", {rootdir = os.programdir()})
-                                                            import("core.base.hashset")
-                                                            local templates_set = hashset.new()
-                                                            local languages = opt.language and {opt.language} or template.languages()
-                                                            for _, l in ipairs(languages) do
-                                                                for _, t in ipairs(template.templates(l)) do
-                                                                    templates_set:insert(t)
-                                                                end
-                                                            end
-                                                            local templates = templates_set:to_array()
-                                                            table.sort(templates)
-                                                            return templates
-                                                        end
-                                                    end},
+                                                     local languages = template.languages()
+                                                     if not complete or not opt.template then
+                                                         return languages
+                                                     end
+                                                     return template.languages_for_template(opt.template)
+                                                 end},
+            {'t', "template",   "kv", "console", "Select the project template id or name of the given language.",
+                                                 "    Use `xmake create --list` to view all templates.",
+                                                 values = function (complete, opt)
+                                                     if complete then
+                                                         import("actions.create.template", {rootdir = os.programdir()})
+                                                         import("core.base.hashset")
+                                                         local templates_set = hashset.new()
+                                                         local languages = opt.language and {opt.language} or template.languages()
+                                                         for _, l in ipairs(languages) do
+                                                             for _, t in ipairs(template.templates(l)) do
+                                                                 templates_set:insert(t)
+                                                             end
+                                                         end
+                                                         local templates = templates_set:to_array()
+                                                         table.sort(templates)
+                                                         return templates
+                                                     end
+                                                 end},
             {},
-            {nil, "target",     "v",  nil,          "Create the given target."
-                                                  , "Uses the project name as target if not exists."}
+            {nil, "target",     "v",  nil,       "Create the given target.",
+                                                 "Uses the project name as target if not exists."},
         }
     }

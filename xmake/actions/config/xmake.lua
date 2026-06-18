@@ -165,90 +165,89 @@ task("config")
     set_category("action")
     on_run("main")
     set_menu {
-                usage = "xmake config|f [options]",
-                description = "Configure the project.",
-                shortname = 'f',
-                options = {
-                    {'c', "clean",      "k",  nil       ,   "Clean the cached user configs and detection cache."},
-                    {nil, "check",      "k",  nil       ,   "Just ignore detection cache and force to check all, it will reserve the cached user configs."},
-                    {nil, "export",     "kv", nil       ,   "Export the current configuration to the given file."
-                                                        ,   "    e.g."
-                                                        ,   "    - xmake f -m debug -xxx=y --export=build/config.txt"},
-                    {nil, "import",     "kv", nil       ,   "Import configs from the given file."
-                                                        ,   "    e.g."
-                                                        ,   "    - xmake f -import=build/config.txt"},
-                    {nil, "menu",       "k",  nil       ,   "Configure project with a menu-driven user interface."},
-                    {category = "."},
-                    {'p', "plat",       "kv", "auto"    ,   "Compile for the given platform.", values = _plat_values},
-                    {'a', "arch",       "kv", "auto"    ,   "Compile for the given architecture.", _arch_description, values = _arch_values},
-                    {'m', "mode",       "kv", "auto" ,      "Compile for the given mode.", values = _mode_values},
-                    {'k', "kind",       "kv", "static"  ,   "Compile for the given target kind.", values = {"static", "shared", "binary"}},
-                    {nil, "host",       "kv", "$(host)" ,   "Set the current host environment."},
-                    {nil, "policies",    "kv", nil       ,  "Set the project policies.",
-                                                            "    e.g.",
-                                                            "    - xmake f --policies=package.fetch_only",
-                                                            "    - xmake f --policies=package.precompiled:n,package.install_only"},
-                    {category = "Package Configuration"},
-                    {nil, "require",    "kv",   nil     ,   "Require all dependent packages?", values = {"yes", "no"}},
-                    {nil, "pkg_searchdirs", "kv", nil       , "The search directories of the remote package."
-                                                            , "    e.g."
-                                                            , "    - xmake f --pkg_searchdirs=/dir1" .. path.envsep() .. "/dir2"},
-                    {category = "Cross Complation Configuration"},
-                    {nil, "cross",      "kv", nil,          "Set cross toolchains prefix"
-                                                          , "e.g."
-                                                          , "    - i386-mingw32-"
-                                                          , "    - arm-linux-androideabi-"},
-                    {nil, "target_os",  "kv", nil,          "Set target os only for cross-compilation"},
-                    {nil, "bin",        "kv", nil,          "Set cross toolchains bin directory"
-                                                          , "e.g."
-                                                          , "    - sdk/bin (/arm-linux-gcc ..)"},
-                    {nil, "sdk",        "kv", nil,          "Set cross SDK directory"
-                                                          , "e.g."
-                                                          , "    - sdk/bin"
-                                                          , "    - sdk/lib"
-                                                          , "    - sdk/include"},
-                    {nil, "toolchain",  "kv", nil,          "Set toolchain name"
-                                                          , "e.g. "
-                                                          , "    - xmake f --toolchain=clang"
-                                                          , "    - xmake f --toolchain=[cross|llvm|sdcc ..] --sdk=/xxx"
-                                                          , "    - run `xmake show -l toolchains` to get all toolchains"
-                                                          , values = _toolchain_values},
-                    {nil, "toolchain_host", "kv", nil,      "Set host toolchain name, it's only for building packages on host machine."
-                                                          , "e.g. "
-                                                          , "    - xmake f --toolchain_host=clang"
-                                                          , "    - xmake f --toolchain_host=[cross|llvm|sdcc ..] --sdk=/xxx"
-                                                          , "    - run `xmake show -l toolchains` to get all toolchains"
-                                                          , values = _toolchain_values},
-                    {nil, "runtimes", "kv", nil,          "Set the compiler runtime library."
-                                                          , "e.g. "
-                                                          , "    - xmake f --runtimes=MTd"
-                                                          , "    - xmake f --runtimes=MT,c++_static"
-                                                          , values = {"MT", "MTd", "MD", "MDd",             -- only for msvc
-                                                                      "c++_static", "c++_shared",           -- gcc/clang/android ndk
-                                                                      "stdc++_static", "stdc++_shared",     -- gcc/clang
-                                                                      "gnustl_static", "gnustl_shared",     -- only for old android ndk
-                                                                      "stlport_static", "stlport_shared"}}, -- only for old android ndk
-                    _language_menu_options,
-                    _platform_menu_options,
-                    {category = "Other Configuration"},
-                    {nil, "debugger",   "kv", "auto"    , "Set debugger"},
-                    {nil, "ccache",     "kv", true      , "Enable or disable the c/c++ compiler cache."},
-                    {nil, "ccachedir",  "kv", nil       , "Set the ccache directory."},
-                    {nil, "trybuild",   "kv", nil       , "Enable try-build mode and set the third-party buildsystem tool.",
-                                                            "e.g.",
-                                                            "    - xmake f --trybuild=auto; xmake",
-                                                            "    - xmake f --trybuild=autoconf -p android --ndk=xxx; xmake",
-                                                            "",
-                                                            "the third-party buildsystems:"
-                                                        ,   values = {"auto", "make", "autoconf", "cmake", "scons", "meson", "bazel", "ninja", "msbuild", "xcodebuild", "ndkbuild", "xrepo"}},
-                    {nil, "tryconfigs", "kv", nil       ,   "Set the extra configurations of the third-party buildsystem for the try-build mode.",
-                                                            "e.g.",
-                                                            "    - xmake f --trybuild=autoconf --tryconfigs='--enable-shared=no'"},
-                    {'o', "builddir",   "kv", "build"   , "Set build directory."},
-                    {nil, "buildir",    "kv", nil       , "Set build directory. (deprecated)"},
-                    {},
-                    {category = "Project Configuration"},
-                    _project_menu_options}}
-
-
-
+        usage = "xmake config|f [options]",
+        description = "Configure the project.",
+        shortname = 'f',
+        options = {
+            {'c', "clean",          "k",  nil,       "Clean the cached user configs and detection cache."},
+            {nil, "check",          "k",  nil,       "Just ignore detection cache and force to check all, it will reserve the cached user configs."},
+            {nil, "export",         "kv", nil,       "Export the current configuration to the given file.",
+                                                     "    e.g.",
+                                                     "    - xmake f -m debug -xxx=y --export=build/config.txt"},
+            {nil, "import",         "kv", nil,       "Import configs from the given file.",
+                                                     "    e.g.",
+                                                     "    - xmake f -import=build/config.txt"},
+            {nil, "menu",           "k",  nil,       "Configure project with a menu-driven user interface."},
+            {category = "."},
+            {'p', "plat",           "kv", "auto",    "Compile for the given platform.", values = _plat_values},
+            {'a', "arch",           "kv", "auto",    "Compile for the given architecture.", _arch_description, values = _arch_values},
+            {'m', "mode",           "kv", "auto",    "Compile for the given mode.", values = _mode_values},
+            {'k', "kind",           "kv", "static",  "Compile for the given target kind.", values = {"static", "shared", "binary"}},
+            {nil, "host",           "kv", "$(host)", "Set the current host environment."},
+            {nil, "policies",       "kv", nil,       "Set the project policies.",
+                                                     "    e.g.",
+                                                     "    - xmake f --policies=package.fetch_only",
+                                                     "    - xmake f --policies=package.precompiled:n,package.install_only"},
+            {category = "Package Configuration"},
+            {nil, "require",        "kv", nil,       "Require all dependent packages?", values = {"yes", "no"}},
+            {nil, "pkg_searchdirs", "kv", nil,       "The search directories of the remote package.",
+                                                     "    e.g.",
+                                                     "    - xmake f --pkg_searchdirs=/dir1" .. path.envsep() .. "/dir2"},
+            {category = "Cross Complation Configuration"},
+            {nil, "cross",          "kv", nil,       "Set cross toolchains prefix",
+                                                     "e.g.",
+                                                     "    - i386-mingw32-",
+                                                     "    - arm-linux-androideabi-"},
+            {nil, "target_os",      "kv", nil,       "Set target os only for cross-compilation"},
+            {nil, "bin",            "kv", nil,       "Set cross toolchains bin directory",
+                                                     "e.g.",
+                                                     "    - sdk/bin (/arm-linux-gcc ..)"},
+            {nil, "sdk",            "kv", nil,       "Set cross SDK directory",
+                                                     "e.g.",
+                                                     "    - sdk/bin",
+                                                     "    - sdk/lib",
+                                                     "    - sdk/include"},
+            {nil, "toolchain",      "kv", nil,       "Set toolchain name",
+                                                     "e.g. ",
+                                                     "    - xmake f --toolchain=clang",
+                                                     "    - xmake f --toolchain=[cross|llvm|sdcc ..] --sdk=/xxx",
+                                                     "    - run `xmake show -l toolchains` to get all toolchains",
+                                                     values = _toolchain_values},
+            {nil, "toolchain_host", "kv", nil,       "Set host toolchain name, it's only for building packages on host machine.",
+                                                     "e.g. ",
+                                                     "    - xmake f --toolchain_host=clang",
+                                                     "    - xmake f --toolchain_host=[cross|llvm|sdcc ..] --sdk=/xxx",
+                                                     "    - run `xmake show -l toolchains` to get all toolchains",
+                                                     values = _toolchain_values},
+            {nil, "runtimes",       "kv", nil,       "Set the compiler runtime library.",
+                                                     "e.g. ",
+                                                     "    - xmake f --runtimes=MTd",
+                                                     "    - xmake f --runtimes=MT,c++_static",
+                                                     values = {"MT", "MTd", "MD", "MDd",             -- only for msvc
+                                                               "c++_static", "c++_shared",           -- gcc/clang/android ndk
+                                                               "stdc++_static", "stdc++_shared",     -- gcc/clang
+                                                               "gnustl_static", "gnustl_shared",     -- only for old android ndk
+                                                               "stlport_static", "stlport_shared"}}, -- only for old android ndk
+            _language_menu_options,
+            _platform_menu_options,
+            {category = "Other Configuration"},
+            {nil, "debugger",       "kv", "auto",    "Set debugger"},
+            {nil, "ccache",         "kv", true,      "Enable or disable the c/c++ compiler cache."},
+            {nil, "ccachedir",      "kv", nil,       "Set the ccache directory."},
+            {nil, "trybuild",       "kv", nil,       "Enable try-build mode and set the third-party buildsystem tool.",
+                                                     "e.g.",
+                                                     "    - xmake f --trybuild=auto; xmake",
+                                                     "    - xmake f --trybuild=autoconf -p android --ndk=xxx; xmake",
+                                                     "",
+                                                     "the third-party buildsystems:",
+                                                     values = {"auto", "make", "autoconf", "cmake", "scons", "meson", "bazel", "ninja", "msbuild", "xcodebuild", "ndkbuild", "xrepo"}},
+            {nil, "tryconfigs",     "kv", nil,       "Set the extra configurations of the third-party buildsystem for the try-build mode.",
+                                                     "e.g.",
+                                                     "    - xmake f --trybuild=autoconf --tryconfigs='--enable-shared=no'"},
+            {'o', "builddir",       "kv", "build",   "Set build directory."},
+            {nil, "buildir",        "kv", nil,       "Set build directory. (deprecated)"},
+            {},
+            {category = "Project Configuration"},
+            _project_menu_options,
+        }
+    }
