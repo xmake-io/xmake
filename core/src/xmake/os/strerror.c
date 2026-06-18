@@ -69,9 +69,11 @@ tb_int_t xm_os_strerror(lua_State *lua) {
         tb_wchar_t wstrerr[128] = { 0 };
         if (FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                            NULL, error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                           wstrerr, tb_arrayn(wstrerr), NULL)) {
-            WideCharToMultiByte(CP_UTF8, 0, wstrerr, (tb_int_t)tb_wcslen(wstrerr), strerr, sizeof(strerr), tb_null, tb_null);
-        } else {
+                           wstrerr, tb_arrayn(wstrerr), NULL) &&
+            tb_wcslen(wstrerr) > 0) {
+            WideCharToMultiByte(CP_UTF8, 0, wstrerr, -1, strerr, sizeof(strerr), tb_null, tb_null);
+        }
+        if (strerr[0] == '\0') {
             tb_snprintf(strerr, sizeof(strerr), "Unknown Error (%lu)", (tb_size_t)error_code);
         }
         lua_pushstring(lua, strerr);
