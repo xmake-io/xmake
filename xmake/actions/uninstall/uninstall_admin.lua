@@ -25,12 +25,15 @@ import("core.project.project")
 import("core.platform.platform")
 import("uninstall")
 
-function main(targetname, installdir, bindir, libdir, includedir)
+function main(targetname, group_pattern, installdir, bindir, libdir, includedir)
     local verbose = option.get("verbose")
 
     -- the targetname may be a list of target names joined with the path separator
     if targetname and targetname:find(path.envsep(), 1, true) then
         targetname = path.splitenv(targetname)
+    end
+    if group_pattern and #group_pattern == 0 then
+        group_pattern = nil
     end
     if installdir and #installdir == 0 then
         installdir = nil
@@ -65,6 +68,6 @@ function main(targetname, installdir, bindir, libdir, includedir)
         option.set("includedir", includedir)
     end
     -- uninstall target
-    uninstall(targetname ~= "__all" and targetname or nil)
+    uninstall(targetname ~= "__all" and targetname or nil, group_pattern)
     option.restore()
 end

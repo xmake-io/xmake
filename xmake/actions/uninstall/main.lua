@@ -32,12 +32,12 @@ function main()
     -- load config first
     task.run("config", {require = false}, {disable_dump = true})
 
-    -- attempt to uninstall directly, TODO group_pattern
+    -- attempt to uninstall directly
     local targetnames, group_pattern = action_utils.get_targets_and_group()
     try
     {
         function ()
-            uninstall(targetnames)
+            uninstall(targetnames, group_pattern)
             cprint("${color.success}uninstall ok!")
         end,
 
@@ -51,7 +51,7 @@ function main()
                     local ok = try
                     {
                         function ()
-                            uninstall(targetnames)
+                            uninstall(targetnames, group_pattern)
                             cprint("${color.success}uninstall ok!")
                             return true
                         end
@@ -71,6 +71,7 @@ function main()
                     -- uninstall target with administrator permission
                     sudo.execl(path.join(os.scriptdir(), "uninstall_admin.lua"), {
                         targetnames and table.concat(targetnames, path.envsep()) or "__all",
+                        group_pattern or "",
                         option.get("installdir") or "",
                         option.get("bindir"),
                         option.get("libdir"),

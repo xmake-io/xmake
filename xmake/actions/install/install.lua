@@ -118,6 +118,6 @@ end
 function main(targetnames, group_pattern)
     local targets = action_utils.get_targets(targetnames, {group_pattern = group_pattern})
     if #targets > 0 then
-        _install_targets(table.unique(targets))
+        _install_targets(targets)
     end
 end
