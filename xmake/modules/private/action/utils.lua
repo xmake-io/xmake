@@ -74,9 +74,9 @@ end
 function get_targets(targetnames, opt)
     opt = opt or {}
 
-    -- select the explicitly given targets
+    -- select the explicitly given targets (table.wrap to always get a list back)
     if type(targetnames) == "table" or (type(targetnames) == "string" and not targetnames:startswith("__")) then
-        return assert(check_targetnames(targetnames))
+        return assert(check_targetnames(table.wrap(targetnames)))
     end
 
     -- otherwise select the default/all/group targets

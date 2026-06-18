@@ -19,29 +19,58 @@
 --
 
 -- imports
-import("private.detect.check_targetname")
+import("core.project.project")
+import("private.detect.find_similar_targetnames")
+
+-- check if a single target name is valid
+function _check_targetname(targetname, opt)
+    local target = project.target(targetname)
+    if target then
+        return target
+    end
+
+    local errors = "'" .. targetname .. "' is not a valid target name for this project."
+    if opt.find_similar ~= false then
+        local matching_targetnames = find_similar_targetnames(targetname)
+        if #matching_targetnames > 0 then
+            local max_index = math.min(#matching_targetnames, opt.max_similar or 14)
+            errors = errors .. "\nValid target names closest to input:\n - "
+                    .. table.concat(matching_targetnames, '\n - ', 1, max_index)
+        end
+    end
+    return nil, errors
+end
 
 -- check if the given target names are valid
 --
+-- it accepts either a single target name or a list of target names. for a single
+-- target name (string), it returns the single matching target; for a list, it
+-- returns the matching targets as a list.
+--
 -- @param targetnames a single target name or a list of target names to check for
 -- @param opt         the argument options, e.g. {find_similar = false, max_similar = 5}
--- @return            targets or nil, errors
+-- @return            target(s) or nil, errors
 --
 -- @code
 --
--- local targets, errors = check_targetnames("mytarget")
--- local targets, errors = check_targetnames({"target1", "target2"})
+-- local target  = assert(check_targetnames("mytarget"))
+-- local targets = assert(check_targetnames({"target1", "target2"}))
 --
 -- @endcode
 --
 function main(targetnames, opt)
+    opt = opt or {}
     local targets = {}
     for _, targetname in ipairs(table.wrap(targetnames)) do
-        local target, errors = check_targetname(targetname, opt)
+        local target, errors = _check_targetname(targetname, opt)
         if not target then
             return nil, errors
         end
         table.insert(targets, target)
+    end
+    -- unwrap to a single target if a single target name is given
+    if type(targetnames) ~= "table" then
+        return targets[1]
     end
     return targets
 end

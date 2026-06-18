@@ -24,7 +24,7 @@ import("core.base.json")
 import("core.base.hashset")
 import("core.project.config")
 import("core.language.language")
-import("private.detect.check_targetname")
+import("private.detect.check_targetnames")
 
 -- get source info data
 function _get_sourceinfo(target, name, item, opt)
@@ -371,7 +371,7 @@ function main(name)
     end
 
     assert(name, "please specify the target name, e.g. xmake show --info=target --target=xxx")
-    local target = assert(check_targetname(name))
+    local target = assert(check_targetnames(name))
 
     local info = _collect_target_info(target)
     if format == "json" then

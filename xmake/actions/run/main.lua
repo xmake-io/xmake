@@ -29,7 +29,7 @@ import("devel.debugger")
 import("async.runjobs")
 import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
-import("private.detect.check_targetname")
+import("private.detect.check_targetnames")
 import("lib.detect.find_tool")
 import("private.action.utils", {alias = "action_utils"})
 
@@ -232,7 +232,7 @@ function _check_targets(targetname, group_pattern)
     -- get targets
     local targets = {}
     if targetname then
-        local target = assert(check_targetname(targetname))
+        local target = assert(check_targetnames(targetname))
         table.insert(targets, target)
     else
         for _, target in ipairs(project.ordertargets()) do
