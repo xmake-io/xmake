@@ -33,7 +33,7 @@ task("format")
             {'j', "jobs",    "kv", tostring(os.default_njob()),
                                         "Set the number of parallel format jobs."},
             {'a', "all",     "k",  nil, "Format all targets."},
-            {'g', "group",   "kv", nil, "Format all targets of the given group. It support path pattern matching.",
+            {'g', "group",   "kv", nil, "Format all targets of the given group. It supports path pattern matching.",
                                         "e.g.",
                                         "    xmake format -g test",
                                         "    xmake format -g test_*",

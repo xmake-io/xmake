@@ -28,7 +28,7 @@ task("run")
         options = {
             {'d', "debug",     "k",  nil, "Run and debug the given target."},
             {'a', "all",       "k",  nil, "Run all targets."},
-            {'g', "group",     "kv", nil, "Run all targets of the given group. It support path pattern matching.",
+            {'g', "group",     "kv", nil, "Run all targets of the given group. It supports path pattern matching.",
                                           "e.g.",
                                           "    xmake run -g test",
                                           "    xmake run -g test_*",

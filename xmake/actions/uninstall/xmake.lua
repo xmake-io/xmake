@@ -34,7 +34,7 @@ task("uninstall")
             {nil, "bindir",     "kv", nil, "Set install binaries directory in INSTALLDIR/DIR. (default: ${installdir}/bin)"},
             {nil, "libdir",     "kv", nil, "Set install libraries directory in INSTALLDIR/DIR. (default: ${installdir}/lib)"},
             {nil, "includedir", "kv", nil, "Set install includes directory in INSTALLDIR/DIR. (default: ${installdir}/include)"},
-            {'g', "group",      "kv", nil, "Uninstall all targets of the given group. It support path pattern matching.",
+            {'g', "group",      "kv", nil, "Uninstall all targets of the given group. It supports path pattern matching.",
                                            "e.g.",
                                            "    xmake uninstall -g test",
                                            "    xmake uninstall -g test_*",

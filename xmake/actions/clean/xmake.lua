@@ -27,7 +27,7 @@ task("clean")
         shortname = 'c',
         options = {
             {'a', "all",        "k",  nil,    "Clean all auto-generated files by xmake."},
-            {'g', "group",      "kv", nil,    "Clean all targets of the given group. It support path pattern matching.",
+            {'g', "group",      "kv", nil,    "Clean all targets of the given group. It supports path pattern matching.",
                                               "e.g.",
                                               "    xmake clean -g test",
                                               "    xmake clean -g test_*",

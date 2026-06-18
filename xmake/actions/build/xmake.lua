@@ -31,7 +31,7 @@ task("build")
             {'r', "rebuild",  "k",  nil,   "Rebuild the target."},
             {'a', "all",      "k",  nil,   "Build all targets."},
             {nil, "shallow",  "k",  nil,   "Only re-build the given targets without dependencies."},
-            {'g', "group",    "kv", nil,   "Build all targets of the given group. It support path pattern matching.",
+            {'g', "group",    "kv", nil,   "Build all targets of the given group. It supports path pattern matching.",
                                            "e.g.",
                                            "    xmake -g test",
                                            "    xmake -g test_*",
