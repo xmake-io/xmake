@@ -64,8 +64,22 @@ tb_int_t xm_os_strerror(lua_State *lua) {
         lua_pushstring(lua, strerr);
     } else {
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-        tb_char_t strerr[128] = { 0 };
-        tb_snprintf(strerr, sizeof(strerr), "Unknown Error (%lu)", (tb_size_t)GetLastError());
+        DWORD error_code = GetLastError();
+        tb_char_t strerr[128 * 2] = { 0 };
+        tb_wchar_t wstrerr[128] = { 0 };
+        tb_size_t len = 0;
+        if (FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                           NULL, error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                           wstrerr, tb_arrayn(wstrerr), NULL) &&
+            (len = tb_wcslen(wstrerr)) > 0) {
+            while (len > 0 && (wstrerr[len - 1] == L'\r' || wstrerr[len - 1] == L'\n')) {
+                wstrerr[--len] = L'\0';
+            }
+            WideCharToMultiByte(CP_UTF8, 0, wstrerr, -1, strerr, sizeof(strerr), tb_null, tb_null);
+        }
+        if (strerr[0] == '\0') {
+            tb_snprintf(strerr, sizeof(strerr), "Unknown Error (%lu)", (tb_size_t)error_code);
+        }
         lua_pushstring(lua, strerr);
 #else
         lua_pushstring(lua, strerror(errno));
