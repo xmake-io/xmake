@@ -534,6 +534,7 @@ function install(package, configs, opt)
     if package:is_local() and not package:is_source_embed() then
         envs = table.clone(envs)
         envs.XMAKE_PKG_INSTALLDIR = package_core.installdir({localdir = true})
+        envs.XMAKE_PKG_CACHEDIR   = package_core.cachedir({localdir = true})
     end
 
     -- pass local repositories
