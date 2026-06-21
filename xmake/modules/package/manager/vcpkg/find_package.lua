@@ -221,6 +221,12 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
     end
 
     local _, dependinfo = try { function () return os.iorunv(vcpkg, argv, manifest_mode and {curdir = opt.installdir} or nil) end }
+    if manifest_mode and not dependinfo then
+        -- fallback: newer vcpkg-tool no longer accepts the package name as a positional argument,
+        -- drop it and retry. see https://github.com/microsoft/vcpkg-tool/pull/1909
+        table.remove(argv, 3)
+        _, dependinfo = try { function () return os.iorunv(vcpkg, argv, {curdir = opt.installdir}) end }
+    end
     if dependinfo then
         for _, line in ipairs(dependinfo:split("\n", {plain = true})) do
             if not line:startswith("vcpkg-") then
