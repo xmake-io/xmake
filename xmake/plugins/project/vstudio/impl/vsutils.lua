@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("core.cache.memcache")
@@ -62,6 +63,46 @@ end
 -- translate file path (with namespace characters '::', it's invalid path characters on windows)
 function translate_path(filepath)
     return (filepath:gsub("::", "#"))
+end
+
+-- get the source files that are not natively built by VS, e.g. files added by add_files but handled
+-- by a custom rule. we list them as <None> in the project for display only (like add_extrafiles).
+-- this must be consistent with vs201x_vcxproj._make_source_files.
+-- @see https://github.com/xmake-io/xmake/issues/7619
+function otherfiles(target)
+
+    -- collect the source files that are natively built by VS
+    local builtfiles = hashset.new()
+    for _, targetinfo in ipairs(target.info or {}) do
+        for _, sourcebatch in pairs(targetinfo.sourcebatches or {}) do
+            local sourcekind = sourcebatch.sourcekind
+            local rulename = sourcebatch.rulename
+            if rulename == "c.build" or rulename == "c++.build" or rulename == "c++.build.modules"
+                or sourcekind == "as" or sourcekind == "mrc" or sourcekind == "cu" then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    builtfiles:insert(sourcefile)
+                end
+            end
+        end
+    end
+
+    -- exclude the header/extra files and the precompiled header to avoid duplicate display
+    local excludefiles = hashset.from(table.join(target.headerfiles or {}, target.extrafiles or {}))
+    if target.pcheader then
+        excludefiles:insert(target.pcheader)
+    end
+    if target.pcxxheader then
+        excludefiles:insert(target.pcxxheader)
+    end
+
+    -- the remaining source files are the custom files
+    local results = {}
+    for _, sourcefile in ipairs(target.sourcefiles or {}) do
+        if not builtfiles:has(sourcefile) and not excludefiles:has(sourcefile) then
+            table.insert(results, sourcefile)
+        end
+    end
+    return results
 end
 
 function reset_config_and_caches(mode, arch)

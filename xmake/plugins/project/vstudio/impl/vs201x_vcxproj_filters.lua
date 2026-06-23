@@ -23,8 +23,10 @@
 --
 
 -- imports
+import("core.base.hashset")
 import("core.tool.compiler")
 import("vsfile")
+import("vsutils")
 
 -- make header
 function _make_header(filtersfile, vsinfo)
@@ -147,14 +149,20 @@ end
 -- make sources
 function _make_sources(filtersfile, vsinfo, target, vcxprojdir)
 
+    -- the source files that are not natively built by VS, list them as <None> for display only
+    local otherfiles = hashset.from(vsutils.otherfiles(target))
+    -- the files displayed as include files (e.g. also added by add_extrafiles), skip them to avoid duplicate
+    local includefiles = hashset.from(table.join(target.headerfiles or {}, target.extrafiles or {}))
+
     -- and sources
     filtersfile:enter("<ItemGroup>")
         for _, sourcefile in ipairs(target.sourcefiles) do
             local filter = _make_filter(sourcefile, target, vcxprojdir)
-            if filter then
+            if filter and not includefiles:has(sourcefile) then
                 local nodename
                 local ext = path.extension(sourcefile)
-                if ext == "asm" then nodename = "CustomBuild"
+                if otherfiles:has(sourcefile) then nodename = "None"
+                elseif ext == "asm" then nodename = "CustomBuild"
                 elseif ext == "cu" then nodename = "CudaCompile"
                 else nodename = "ClCompile"
                 end

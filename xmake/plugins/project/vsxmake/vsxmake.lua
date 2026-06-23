@@ -53,6 +53,22 @@ function _filter_files(files, includeexts, excludeexts)
     return f
 end
 
+-- the source file extensions natively supported by the vsxmake project, keyed by the template import name
+-- the `filenone` group collects everything else (e.g. files added by add_files but handled by a custom rule)
+local _source_exts =
+{
+    filec   = {".c"}
+,   filecxx = {".cpp", ".cc", ".cxx"}
+,   filempp = {".mpp", ".mxx", ".cppm", ".ixx"}
+,   filecu  = {".cu"}
+,   fileobj = {".obj", ".o"}
+,   filerc  = {".rc"}
+,   fileui  = {".ui"}
+,   fileqrc = {".qrc"}
+,   filets  = {".ts"}
+,   filecs  = {".cs"}
+}
+
 function _buildparams(info, target, default)
 
     local function getprop(match, opt)
@@ -122,40 +138,50 @@ function _buildparams(info, target, default)
         end
         if args.filec then
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".c"}))
+            table.insert(r, _filter_files(files, _source_exts.filec))
         elseif args.filecxx then
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".cpp", ".cc", ".cxx"}))
+            table.insert(r, _filter_files(files, _source_exts.filecxx))
         elseif args.filempp then
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".mpp", ".mxx", ".cppm", ".ixx"}))
+            table.insert(r, _filter_files(files, _source_exts.filempp))
         elseif args.filecu then
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".cu"}))
+            table.insert(r, _filter_files(files, _source_exts.filecu))
         elseif args.fileobj then
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".obj", ".o"}))
+            table.insert(r, _filter_files(files, _source_exts.fileobj))
         elseif args.filerc then
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".rc"}))
+            table.insert(r, _filter_files(files, _source_exts.filerc))
         elseif args.fileui then -- for qt/.ui
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".ui"}))
+            table.insert(r, _filter_files(files, _source_exts.fileui))
         elseif args.fileqrc then -- for qt/.qrc
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".qrc"}))
+            table.insert(r, _filter_files(files, _source_exts.fileqrc))
         elseif args.filets then -- for qt/.ts
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".ts"}))
+            table.insert(r, _filter_files(files, _source_exts.filets))
         elseif args.filecs then -- for c#
             local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, {".cs"}))
-        elseif args.filenone then -- for custom build steps
-            local files = info._targets[target].sourcefiles
-            table.insert(r, _filter_files(files, nil, {
-                ".c", ".cpp", ".cc", ".cxx", ".mpp", ".mxx", ".cppm", ".ixx",
-                ".cu", ".obj", ".o", ".rc", ".ui", ".qrc", ".ts", ".cs"
-            }))
+            table.insert(r, _filter_files(files, _source_exts.filecs))
+        elseif args.filenone then -- for custom build steps, e.g. files added by add_files but handled by a custom rule
+            -- collect the source files not natively supported by vsxmake, and exclude the header/extra files
+            -- to avoid duplicate display with the include group (add_extrafiles)
+            local _target = info._targets[target]
+            local excludeexts = {}
+            for _, exts in table.orderpairs(_source_exts) do
+                table.join2(excludeexts, exts)
+            end
+            local excludefiles = hashset.from(table.join(_target.headerfiles or {}, _target.extrafiles or {}))
+            local files = {}
+            for _, file in ipairs(_target.sourcefiles) do
+                if not excludefiles:has(file) then
+                    table.insert(files, file)
+                end
+            end
+            table.insert(r, _filter_files(files, nil, excludeexts))
         elseif args.incc then
             local files = table.join(info._targets[target].headerfiles or {}, info._targets[target].extrafiles)
             table.insert(r, _filter_files(files, nil, {".natvis"}))
