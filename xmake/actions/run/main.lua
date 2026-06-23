@@ -32,6 +32,7 @@ import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("private.detect.check_targetnames")
 import("lib.detect.find_tool")
 import("private.action.utils", {alias = "action_utils"})
+import("utils.binary.deplibs")
 
 function _run_wasi_target(targetfile, args, opt)
     opt = opt or {}
@@ -79,6 +80,55 @@ function _run_wasm_target_in_browser(targetfile, opt)
     end
 end
 
+-- check for DLL loading overrides on windows
+function _check_dll_overrides(program, pathenv)
+    local overrides = {}
+    if not is_host("windows") then
+        return overrides
+    end
+    if not os.isexec(program) then
+        return overrides
+    end
+    if not pathenv or #pathenv == 0 then
+        return overrides
+    end
+
+    -- get dependent dlls
+    local depdlls = deplibs(program, {recursive = false}) or {}
+    for i, dll in ipairs(depdlls) do
+        depdlls[i] = path.filename(dll)
+    end
+
+    -- check for DLL overridden by System32/Windows
+    local sysroot = os.getenv("SystemRoot") or os.getenv("WINDIR") or "C:\\Windows"
+    local sysdirs = {path.join(sysroot, "System32"), sysroot}
+    local pkg_installdir = path.absolute(os.getenv("XMAKE_PKG_INSTALLDIR") or global.get("pkg_installdir") or path.join(global.directory(), "packages")):lower()
+    local pkgdirs = {}
+    for _, dir in ipairs(pathenv) do
+        if path.absolute(dir):lower():find(pkg_installdir, 1, true) == 1 then
+            table.insert(pkgdirs, dir)
+        end
+    end
+    if #pkgdirs > 0 then
+        for _, dllname in ipairs(depdlls) do
+            for _, sysdir in ipairs(sysdirs) do
+                local syspath = path.join(sysdir, dllname)
+                if os.isfile(syspath) then
+                    for _, dir in ipairs(pkgdirs) do
+                        local p = path.join(dir, dllname)
+                        if os.isfile(p) then
+                            table.insert(overrides, { dll = dllname, system_path = syspath, xmake_path = p })
+                            break
+                        end
+                    end
+                    break
+                end
+            end
+        end
+    end
+    return overrides
+end
+
 -- run target
 function _do_run_target(target)
 
@@ -121,6 +171,20 @@ function _do_run_target(target)
     local old_errormode
     if target:policy("run.windows_error_dialog") and winos.set_error_mode then
         old_errormode = winos.set_error_mode(0)
+    end
+
+    -- check for DLL overrides on Windows
+    if is_host("windows") then
+        local overrides = _check_dll_overrides(targetfile, addenvs["PATH"] or setenvs["PATH"])
+        if #overrides > 0 then
+            cprint("${bright yellow}warning: DLL overrides detected for target(%s):", target:name())
+            for _, item in ipairs(overrides) do
+                cprint("${bright yellow}  %s:${clear}", item.dll)
+                cprint("${bright yellow}    system path: %s${clear}", item.system_path)
+                cprint("${bright yellow}    xmake  path: %s${clear}", item.xmake_path)
+            end
+            cprint("${bright yellow}  The DLL from system path will be loaded first, which may cause errors.${clear}")
+        end
     end
 
     -- debugging?
