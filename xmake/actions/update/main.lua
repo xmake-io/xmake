@@ -96,7 +96,7 @@ function _sudo_v(program, params)
     }
 end
 
--- run program witn admin user
+-- run program with admin user
 function _run_win_v(program, commands, admin)
     local sudo_vbs = path.join(os.programdir(), "scripts", "run.vbs")
     local temp_vbs = os.tmpfile() .. ".vbs"
