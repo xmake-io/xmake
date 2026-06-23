@@ -105,15 +105,16 @@ function _check_dll_overrides(program, pathenv)
     local pkg_installdir = path.absolute(os.getenv("XMAKE_PKG_INSTALLDIR") or global.get("pkg_installdir") or path.join(global.directory(), "packages")):lower()
     local pkgdirs = {}
     for _, dir in ipairs(pathenv) do
-        if path.absolute(dir):lower():find(pkg_installdir, 1, true) == 1 then
+        if path.absolute(dir):lower():startswith(pkg_installdir .. path.sep()) then
             table.insert(pkgdirs, dir)
         end
     end
     if #pkgdirs > 0 then
+        local exepath = path.directory(program)
         for _, dllname in ipairs(depdlls) do
             for _, sysdir in ipairs(sysdirs) do
                 local syspath = path.join(sysdir, dllname)
-                if os.isfile(syspath) then
+                if os.isfile(syspath) and not os.isfile(path.join(exepath, dllname)) then
                     for _, dir in ipairs(pkgdirs) do
                         local p = path.join(dir, dllname)
                         if os.isfile(p) then
