@@ -210,12 +210,17 @@ function _make_arguments(jsonfile, arguments, opt)
     end
 
     -- make body
+    local projectdir = os.projectdir()
+    -- workaround for drive letter casing issue, can be removed when clangd resolves https://github.com/clangd/vscode-clangd/pull/747
+    if is_host("windows") and (lsp == nil or lsp == "clangd") then
+        projectdir = projectdir:gsub("^[A-Z]:", string.lower)
+    end
     jsonfile:printf(
 [[%s{
   "directory": "%s",
   "arguments": ["%s"],
   "file": "%s"
-}]], (_g.firstline and "" or ",\n"), _escape_path(os.projectdir()), table.concat(arguments_escape, "\", \""), _escape_path(sourcefile))
+}]], (_g.firstline and "" or ",\n"), _escape_path(projectdir), table.concat(arguments_escape, "\", \""), _escape_path(sourcefile))
 
     -- clear first line marks
     _g.firstline = false
