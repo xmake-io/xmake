@@ -211,8 +211,8 @@ function _make_arguments(jsonfile, arguments, opt)
 
     -- make body
     local projectdir = os.projectdir()
-    if is_host("windows") then -- workaround for drive letter casing issue, can be removed when cland resolves https://github.com/clangd/vscode-clangd/pull/747
-        projectdir = projectdir:gsub("^([A-Z]):", function(d) return d:lower() .. ":" end)
+    if is_host("windows") then -- workaround for drive letter casing issue, can be removed when clangd resolves https://github.com/clangd/vscode-clangd/pull/747
+        projectdir = projectdir:gsub("^[A-Z]:", string.lower)
     end
     jsonfile:printf(
 [[%s{
