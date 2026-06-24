@@ -22,6 +22,7 @@
 import("core.language.language")
 import("core.cache.global_detectcache")
 import("core.tools.cl.check_knownargs")
+import("private.tools.vstool")
 
 -- attempt to check it from the argument list
 function _check_from_arglist(flags, opt)
@@ -30,7 +31,8 @@ function _check_from_arglist(flags, opt)
     local allflags = global_detectcache:get2(key, flagskey)
     if not allflags then
         allflags = {}
-        local arglist = os.iorunv(opt.program, {"-?"}, {envs = opt.envs})
+        -- @see https://github.com/xmake-io/xmake/issues/7610
+        local arglist = vstool.iorunv(opt.program, {"-?"}, {envs = opt.envs})
         if arglist then
             for arg in arglist:gmatch("(/[%-%a%d]+)%s+") do
                 allflags[arg:gsub("/", "-")] = true
@@ -67,7 +69,7 @@ function _check_try_running(flags, opt)
                             tmpfile = os.tmpfile()
                             nuldev = tmpfile
                         end
-                        local _, errs = os.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. nuldev, sourcefile),
+                        local _, errs = vstool.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. nuldev, sourcefile),
                                             {envs = opt.envs, curdir = tmpdir}) -- we need to switch to tmpdir to avoid generating some tmp files, e.g. /Zi -> vc140.pdb
                         if tmpfile then
                             os.tryrm(tmpfile)
