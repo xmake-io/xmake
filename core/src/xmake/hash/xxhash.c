@@ -138,7 +138,7 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
             }
 
             // compuate hash
-            tb_byte_t const *buffer;
+            tb_byte_t const *buffer = tb_null;
             tb_uint32_t value32;
             XXH64_hash_t value64;
             XXH128_hash_t value128;
@@ -154,14 +154,14 @@ tb_int_t xm_hash_xxhash(lua_State *lua) {
                 buffer = (tb_byte_t const *)&value32;
             }
 
-            // make xxhash string
-            tb_char_t s[256];
-            tb_size_t n = mode >> 3;
-            tb_size_t len = xm_hash_make_cstr(s, buffer, n);
+            if (buffer) {
+                tb_char_t s[256];
+                tb_size_t n = mode >> 3;
+                tb_size_t len = xm_hash_make_cstr(s, buffer, n);
 
-            // save result
-            lua_pushlstring(lua, s, len);
-            ok = tb_true;
+                lua_pushlstring(lua, s, len);
+                ok = tb_true;
+            }
         }
 
         // exit stream
