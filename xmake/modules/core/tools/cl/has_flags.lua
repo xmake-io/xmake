@@ -49,6 +49,33 @@ function _get_extension(opt)
     return opt.flagkind == "cxxflags" and ".cpp" or (table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c")
 end
 
+-- get the warning/error output from cl, ignoring the source filename echo
+--
+-- when vstool.iorunv enables VS_UNICODE_OUTPUT, cl will write all its diagnostics
+-- (including the D9002 warning for unknown flags, whose exit code is still 0) to
+-- stdout instead of stderr, so we only need to check outdata here. and the hard
+-- errors (non-zero exit) will be raised by vstool.iorunv and handled by the catch.
+--
+-- but cl also echoes the source filename to stdout on every compile (even on success,
+-- since -nologo only suppresses the banner), so we need to filter it out, the rest is
+-- the real warnings/errors for unsupported flags.
+--
+-- e.g.
+--   cl_has_flags_xxx.c                                              <-- the filename echo, skip it
+--   cl : Command line warning D9002 : ignoring unknown option '-xx' <-- a real diagnostic
+--
+function _get_output(outdata, sourcefile)
+    local filename = path.filename(sourcefile)
+    local output = {}
+    for _, line in ipairs((outdata or ""):split("\n", {plain = true})) do
+        line = line:rtrim()
+        if #line > 0 and not line:endswith(filename) then
+            table.insert(output, line)
+        end
+    end
+    return #output > 0 and table.concat(output, "\n") or nil
+end
+
 -- try running to check flags
 function _check_try_running(flags, opt)
 
@@ -69,12 +96,13 @@ function _check_try_running(flags, opt)
                             tmpfile = os.tmpfile()
                             nuldev = tmpfile
                         end
-                        local _, errs = vstool.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. nuldev, sourcefile),
+                        local outdata = vstool.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. nuldev, sourcefile),
                                             {envs = opt.envs, curdir = tmpdir}) -- we need to switch to tmpdir to avoid generating some tmp files, e.g. /Zi -> vc140.pdb
                         if tmpfile then
                             os.tryrm(tmpfile)
                         end
-                        if errs and #errs:trim() > 0 then
+                        local errs = _get_output(outdata, sourcefile)
+                        if errs then
                             return false, errs
                         end
                         return true
