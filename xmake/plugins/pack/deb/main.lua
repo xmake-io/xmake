@@ -123,6 +123,8 @@ function _get_specvars(package)
     end
     specvars.PACKAGE_DATE = datestr or ""
     local author = package:get("author") or "unknown <unknown@unknown.com>"
+    local maintainer = package:get("maintainer") or author
+    specvars.PACKAGE_MAINTAINER = maintainer
     specvars.PACKAGE_COPYRIGHT = os.date("%Y") .. " " .. author
     specvars.PACKAGE_INSTALLCMDS = function ()
         local prefixdir = package:get("prefixdir")
