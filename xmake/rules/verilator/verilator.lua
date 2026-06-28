@@ -309,38 +309,6 @@ function build_cppfiles(target, jobgraph, sourcebatch, opt)
     local targetname = target:name()
     local makefile = path.join(autogendir, targetname .. "." .. makefile_type)
 
-    -- build verilog files
-    depend.on_changed(function()
-        local argv = { "--cc", "--make", makefile_type, "--prefix", targetname, "--Mdir", autogendir }
-        local flags = _get_verilator_flags(target)
-        if flags then
-            table.join2(argv, flags)
-        end
-        local language_flags = _get_lanuage_flags(target)
-        if language_flags then
-            table.join2(argv, language_flags)
-        end
-        local sourcefiles = sourcebatch.sourcefiles
-        for _, sourcefile in ipairs(sourcefiles) do
-            local sourcefile = sourcefile
-            progress.show(opt.progress or 0, "${color.build.object}compiling.verilog %s", sourcefile)
-            -- we need to use slashes to fix it on windows
-            -- @see https://github.com/verilator/verilator/issues/3873
-            if is_host("windows") then
-                sourcefile = sourcefile:gsub("\\", "/")
-            end
-            table.insert(argv, sourcefile)
-        end
-
-        -- generate c++ sourcefiles
-        os.vrunv(verilator, argv, { envs = toolchain:runenvs() })
-    end, {
-        dependfile = makefile .. ".d",
-        files = sourcebatch.sourcefiles,
-        changed = target:is_rebuilt(),
-        lastmtime = os.mtime(makefile)
-    })
-
     -- get compiled source files
     local sourcefiles
     if support_json then

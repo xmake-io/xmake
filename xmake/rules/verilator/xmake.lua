@@ -30,17 +30,15 @@ rule("verilator.binary")
         import("verilator").config(target)
     end)
 
-    before_build_files(function (target, sourcebatch)
-        -- Just to avoid before_buildcmd_files being executed at build time
+    -- we need to generate cpp files before scanning c++ modules
+    -- https://github.com/xmake-io/xmake/issues/7624
+    before_preparecmd_files(function(target, batchcmds, sourcebatch, opt)
+        import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     end)
 
     on_build_files(function (target, jobgraph, sourcebatch, opt)
         import("verilator").build_cppfiles(target, jobgraph, sourcebatch, opt)
     end, {jobgraph = true, batch = true, distcc = true})
-
-    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
-    end)
 
     on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
         import("verilator").buildcmd_cppfiles(target, batchcmds, sourcebatch, opt)
@@ -57,17 +55,13 @@ rule("verilator.static")
         import("verilator").config(target)
     end)
 
-    before_build_files(function (target, sourcebatch)
-        -- Just to avoid before_buildcmd_files being executed at build time
+    before_preparecmd_files(function(target, batchcmds, sourcebatch, opt)
+        import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     end)
 
     on_build_files(function (target, jobgraph, sourcebatch, opt)
         import("verilator").build_cppfiles(target, jobgraph, sourcebatch, opt)
     end, {jobgraph = true, batch = true, distcc = true})
-
-    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
-    end)
 
     on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
         import("verilator").buildcmd_cppfiles(target, batchcmds, sourcebatch, opt)
@@ -84,17 +78,13 @@ rule("verilator.shared")
         import("verilator").config(target)
     end)
 
-    before_build_files(function (target, sourcebatch)
-        -- Just to avoid before_buildcmd_files being executed at build time
+    before_preparecmd_files(function(target, batchcmds, sourcebatch, opt)
+        import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     end)
 
     on_build_files(function (target, jobgraph, sourcebatch, opt)
         import("verilator").build_cppfiles(target, jobgraph, sourcebatch, opt)
     end, {jobgraph = true, batch = true, distcc = true})
-
-    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
-    end)
 
     on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
         import("verilator").buildcmd_cppfiles(target, batchcmds, sourcebatch, opt)
