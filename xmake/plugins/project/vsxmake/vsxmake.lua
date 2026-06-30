@@ -39,6 +39,21 @@ local template_targets = path.join(template_root, "Xmake.Custom.targets")
 local template_items = path.join(template_root, "Xmake.Custom.items")
 local template_itemfil = path.join(template_root, "Xmake.Custom.items.filters")
 
+-- the source file extensions natively supported by the vsxmake project, keyed by the template import name
+-- the `filenone` group collects everything else (e.g. files added by add_files but handled by a custom rule)
+local _source_exts = {
+    filec   = {".c"},
+    filecxx = {".cpp", ".cc", ".cxx"},
+    filempp = {".mpp", ".mxx", ".cppm", ".ixx"},
+    filecu  = {".cu"},
+    fileobj = {".obj", ".o"},
+    filerc  = {".rc"},
+    fileui  = {".ui"},
+    fileqrc = {".qrc"},
+    filets  = {".ts"},
+    filecs  = {".cs"}
+}
+
 function _filter_files(files, includeexts, excludeexts)
     local positive = not excludeexts
     local extset = hashset.from(positive and includeexts or excludeexts)
@@ -52,22 +67,6 @@ function _filter_files(files, includeexts, excludeexts)
     table.sort(f)
     return f
 end
-
--- the source file extensions natively supported by the vsxmake project, keyed by the template import name
--- the `filenone` group collects everything else (e.g. files added by add_files but handled by a custom rule)
-local _source_exts =
-{
-    filec   = {".c"}
-,   filecxx = {".cpp", ".cc", ".cxx"}
-,   filempp = {".mpp", ".mxx", ".cppm", ".ixx"}
-,   filecu  = {".cu"}
-,   fileobj = {".obj", ".o"}
-,   filerc  = {".rc"}
-,   fileui  = {".ui"}
-,   fileqrc = {".qrc"}
-,   filets  = {".ts"}
-,   filecs  = {".cs"}
-}
 
 function _buildparams(info, target, default)
 
