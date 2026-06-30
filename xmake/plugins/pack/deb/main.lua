@@ -255,7 +255,8 @@ function _pack_deb(debuild, package)
     archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
     -- build package
-    os.vrunv(debuild, {"-us", "-uc"}, {curdir = sourcedir})
+    -- https://github.com/xmake-io/xmake/issues/7626
+    os.vrunv(debuild, {"-e", "PATH=" .. (os.getenv("PATH") or ""), "-us", "-uc"}, {curdir = sourcedir})
 
     -- copy deb file
     os.vcp(path.join(path.directory(sourcedir), "*.deb"), package:outputfile())
