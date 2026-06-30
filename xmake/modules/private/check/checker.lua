@@ -57,6 +57,7 @@ function checkers()
             ["api.target.ldflags"]       = {description = "Check binary linker flags configuration in target."},
             ["api.target.shflags"]       = {description = "Check shared library linker flags configuration in target."},
             ["api.target.license"]       = {description = "Check license in target and packages.", build = true},
+            ["api.target.toolset"]       = {description = "Check toolset configuration in target."},
             -- cuda checkers
             ["cuda.devlink"]             = {description = "Check devlink for targets.", build_failure = true},
             -- clang tidy checker
