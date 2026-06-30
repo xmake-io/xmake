@@ -1438,6 +1438,16 @@ function _make_source_files(vcxprojfile, vsinfo, target)
             end
         end
     vcxprojfile:leave("</ItemGroup>")
+
+    -- add other files (e.g. files added by add_files but handled by a custom rule), for display only
+    local otherfiles = vsutils.otherfiles(target)
+    if #otherfiles > 0 then
+        vcxprojfile:enter("<ItemGroup>")
+            for _, otherfile in ipairs(otherfiles) do
+                vcxprojfile:print("<None Include=\"%s\" />", path.relative(path.absolute(otherfile), target.project_dir))
+            end
+        vcxprojfile:leave("</ItemGroup>")
+    end
 end
 
 -- make vcxproj
