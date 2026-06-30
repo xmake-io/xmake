@@ -150,6 +150,12 @@ function _buildparams(info, target, default)
         elseif args.filecs then -- for c#
             local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".cs"}))
+        elseif args.filenone then -- for custom build steps
+            local files = info._targets[target].sourcefiles
+            table.insert(r, _filter_files(files, nil, {
+                ".c", ".cpp", ".cc", ".cxx", ".mpp", ".mxx", ".cppm", ".ixx",
+                ".cu", ".obj", ".o", ".rc", ".ui", ".qrc", ".ts", ".cs"
+            }))
         elseif args.incc then
             local files = table.join(info._targets[target].headerfiles or {}, info._targets[target].extrafiles)
             table.insert(r, _filter_files(files, nil, {".natvis"}))
