@@ -133,6 +133,29 @@ function _check_instance(instance, apiname, valueset, level, opt)
         end
     end
     local values = instance:get(apiname)
+
+    -- check the keyvalues api, e.g. set_toolset("cxx", "clang")
+    -- the values is a dictionary, e.g. {cxx = "clang"}
+    -- @see https://github.com/xmake-io/xmake/pull/7597
+    if opt.keyvalues then
+        for key, value in pairs(table.wrap(values)) do
+            if opt.check then
+                local ok, errors = opt.check(instance, key, value)
+                if not ok then
+                    -- we report it on the key, because the sourceinfo is saved on the key
+                    local reported = _show(apiname, key, instance, {
+                        show = opt.show,
+                        showstr = errors,
+                        level = level})
+                    if reported then
+                        checker.update_stats(level)
+                    end
+                end
+            end
+        end
+        return
+    end
+
     for _, value in ipairs(values) do
         if opt.check then
             local ok, errors = opt.check(instance, value)
