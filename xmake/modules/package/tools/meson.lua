@@ -528,7 +528,12 @@ function buildenvs(package, opt)
     local CMAKE_INCLUDE_PATH = {}
     local CMAKE_PREFIX_PATH  = {}
     for _, dep in ipairs(package:librarydeps({private = true})) do
-        local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
+        local pkgconfig
+        if package:is_plat("bsd") then
+            pkgconfig = path.join(dep:installdir(), "libdata", "pkgconfig")
+        else
+            pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
+        end
         if os.isdir(pkgconfig) then
             table.insert(PKG_CONFIG_PATH, pkgconfig)
         end
