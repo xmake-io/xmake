@@ -60,6 +60,20 @@ function match_copyfiles(instance, filetype, outputdir, opt)
             removed = true
         end
 
+        -- keep the raw pattern for the extraconf lookup, because the extraconf
+        -- is indexed by the value before filtering the builtin variables
+        local rawfile = copyfile
+
+        -- filter the builtin variables in path, e.g. $(projectdir)/xxx
+        --
+        -- @note we must filter it before parsing the root directory and stripping
+        -- the parentheses, because the builtin variable also uses `$(...)`
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/7632
+        if opt.filter then
+            copyfile = opt.filter(copyfile)
+        end
+
         -- get the root directory
         local rootdir, count = copyfile:gsub("|.*$", ""):gsub("%(.*%)$", "")
         if count == 0 then
@@ -85,7 +99,7 @@ function match_copyfiles(instance, filetype, outputdir, opt)
                     table.join2(srcfiles, srcpaths)
 
                     -- get the file info
-                    local fileinfo = extrainfo[copyfile] or {}
+                    local fileinfo = extrainfo[rawfile] or {}
 
                     -- get the prefix directory
                     local prefixdir = fileinfo.prefixdir

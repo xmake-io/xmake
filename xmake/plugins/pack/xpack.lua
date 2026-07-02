@@ -436,7 +436,9 @@ end
 
 -- get the install files
 function xpack:installfiles()
-    return match_copyfiles(self, "installfiles", self:installdir())
+    return match_copyfiles(self, "installfiles", self:installdir(), {filter = function (value)
+        return filter.handle(value, self)
+    end})
 end
 
 -- get the installed root directory, this is just a temporary sandbox installation path,
@@ -457,7 +459,9 @@ end
 
 -- get the source files
 function xpack:sourcefiles()
-    return match_copyfiles(self, "sourcefiles", self:sourcedir())
+    return match_copyfiles(self, "sourcefiles", self:sourcedir(), {filter = function (value)
+        return filter.handle(value, self)
+    end})
 end
 
 -- get the source root directory
