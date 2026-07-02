@@ -123,6 +123,18 @@ function _show(apiname, value, instance, opt)
         probable_value = probable_value})
 end
 
+-- report the invalid value on the given instance
+function _report(instance, apiname, value, level, opt)
+    local reported = _show(apiname, value, instance, {
+        show = opt.show,
+        showstr = opt.showstr,
+        valueset = opt.valueset,
+        level = level})
+    if reported then
+        checker.update_stats(level)
+    end
+end
+
 -- check instance
 function _check_instance(instance, apiname, valueset, level, opt)
     local instance_valueset = valueset
@@ -133,26 +145,30 @@ function _check_instance(instance, apiname, valueset, level, opt)
         end
     end
     local values = instance:get(apiname)
+
+    -- check the keyvalues api, e.g. set_toolset("cxx", "clang")
+    -- the values is a dictionary, e.g. {cxx = "clang"}, so we report it on the key
+    -- @see https://github.com/xmake-io/xmake/pull/7597
+    if opt.keyvalues then
+        if opt.check then
+            for key, value in pairs(table.wrap(values)) do
+                local ok, errors = opt.check(instance, key, value)
+                if not ok then
+                    _report(instance, apiname, key, level, {show = opt.show, showstr = errors})
+                end
+            end
+        end
+        return
+    end
+
     for _, value in ipairs(values) do
         if opt.check then
             local ok, errors = opt.check(instance, value)
             if not ok then
-                local reported = _show(apiname, value, instance, {
-                    show = opt.show,
-                    showstr = errors,
-                    level = level})
-                if reported then
-                    checker.update_stats(level)
-                end
+                _report(instance, apiname, value, level, {show = opt.show, showstr = errors})
             end
         elseif not instance_valueset:has(value) then
-            local reported = _show(apiname, value, instance, {
-                show = opt.show,
-                valueset = instance_valueset,
-                level = level})
-            if reported then
-                checker.update_stats(level)
-            end
+            _report(instance, apiname, value, level, {show = opt.show, valueset = instance_valueset})
         end
     end
 end
