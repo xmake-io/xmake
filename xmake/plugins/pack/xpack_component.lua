@@ -25,6 +25,7 @@ import("core.project.config")
 import("core.project.project")
 import("private.core.base.select_script")
 import("private.core.base.match_copyfiles")
+import("filter")
 
 -- define module
 local xpack_component = xpack_component or object {_init = {"_name", "_info", "_package"}}
@@ -115,7 +116,9 @@ end
 
 -- get the install files
 function xpack_component:installfiles()
-    return match_copyfiles(self, "installfiles", self:package():installdir())
+    return match_copyfiles(self, "installfiles", self:package():installdir(), {filter = function (value)
+        return filter.handle(value, self:package())
+    end})
 end
 
 -- get the installed root directory, this is just a temporary sandbox installation path,
@@ -131,7 +134,9 @@ end
 
 -- get the source files
 function xpack_component:sourcefiles()
-    return match_copyfiles(self, "sourcefiles", self:package():sourcedir())
+    return match_copyfiles(self, "sourcefiles", self:package():sourcedir(), {filter = function (value)
+        return filter.handle(value, self:package())
+    end})
 end
 
 -- get the source root directory
