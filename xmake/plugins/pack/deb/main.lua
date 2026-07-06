@@ -259,7 +259,7 @@ function _pack_deb(debuild, package)
     local debuild_args = {}
     local pathenv = os.getenv("PATH")
 
-    if pathenv then
+    if pathenv and pathenv ~= "" then
         table.insert(debuild_args, "-e")
         table.insert(debuild_args, "PATH=" .. pathenv)
     end
