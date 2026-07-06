@@ -256,7 +256,18 @@ function _pack_deb(debuild, package)
 
     -- build package
     -- https://github.com/xmake-io/xmake/issues/7626
-    os.vrunv(debuild, {"-e", "PATH=" .. (os.getenv("PATH") or ""), "-us", "-uc"}, {curdir = sourcedir})
+    local debuild_args = {}
+    local pathenv = os.getenv("PATH")
+
+    if pathenv and pathenv ~= "" then
+        table.insert(debuild_args, "-e")
+        table.insert(debuild_args, "PATH=" .. pathenv)
+    end
+
+    table.insert(debuild_args, "-us")
+    table.insert(debuild_args, "-uc")
+
+    os.vrunv(debuild, debuild_args, {curdir = sourcedir})
 
     -- copy deb file
     os.vcp(path.join(path.directory(sourcedir), "*.deb"), package:outputfile())
