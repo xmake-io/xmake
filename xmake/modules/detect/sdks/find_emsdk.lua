@@ -61,6 +61,8 @@ function _find_emsdk(sdkdir)
     table.insert(subdirs, path.join("*", "emscripten"))
     local emcc = find_file("emcc", sdkdir, {suffixes = subdirs})
     emcc = emcc or find_file("emcc.py", sdkdir, {suffixes = subdirs})
+    emcc = emcc or find_file("emcc", sdkdir)
+    emcc = emcc or find_file("emcc.py", sdkdir)
     if emcc then
         emscripten = path.directory(emcc)
     end
