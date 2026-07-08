@@ -52,6 +52,9 @@
 #Import(File.qrc)#
 #Import(File.ts)#
   </ItemGroup>
+  <ItemGroup>
+#Import(File.none)#
+  </ItemGroup>
   <!-- <ItemGroup>
 #Import(ProjectRef)#
   </ItemGroup> -->
