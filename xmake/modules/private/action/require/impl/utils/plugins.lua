@@ -33,11 +33,20 @@ function register(package)
     assert(os.isfile(path.join(installdir, "xmake.lua")),
         "plugin(%s): xmake.lua not found in the installed files, it should be installed with `os.cp(\"*\", package:installdir())`!", package:name())
     local dir = plugindir(package:name())
-    os.tryrm(dir)
-    os.cp(installdir, dir)
+    -- we copy it to the temporary directory first and then swap it,
+    -- so the previous plugin will not be lost if copying fails. e.g. disk full
+    --
+    -- we cannot use the sibling directory, e.g. `plugins/<name>.tmp`,
+    -- because the task loader will load all plugins from `plugins/*/xmake.lua`
+    local tmpdir = path.join(path.directory(dir), ".tmp", package:name())
+    os.tryrm(tmpdir)
+    os.cp(installdir, tmpdir)
     -- remove the install logs, they do not belong to the plugin,
     -- but we keep manifest.txt to show the plugin version and description. e.g. `xmake plugin --list`
-    os.tryrm(path.join(dir, "logs"))
+    os.tryrm(path.join(tmpdir, "logs"))
+    -- replace the previous plugin only after the new one is fully ready
+    os.tryrm(dir)
+    os.mv(tmpdir, dir)
     vprint("register plugin(%s) to %s", package:name(), dir)
 end
 

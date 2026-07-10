@@ -1715,6 +1715,10 @@ function _instance:buildhash()
             if label then
                 str = str .. label
             end
+            -- we need to distinguish the install directories of the plugin and package with the same name
+            if self:is_plugin() then
+                str = str .. "plugin"
+            end
             if configs then
 
                 -- with old vs_runtime configs
