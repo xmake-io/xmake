@@ -37,15 +37,26 @@ import("net.proxy")
 --
 function _find_packagedir(repodir, packagename, opt)
     opt = opt or {}
-    local packagedirs = {path.join("packages", packagename:sub(1, 1), packagename)}
-    local plugindirs  = {path.join("plugins", packagename),
-                         path.join("plugins", packagename:sub(1, 1), packagename)}
-    local dirs
-    if opt.kind == "plugin" then
-        -- find it from the plugin directories first
-        dirs = table.join(plugindirs, packagedirs)
-    else
-        dirs = table.join(packagedirs, plugindirs)
+    local dirs = {path.join("packages", packagename:sub(1, 1), packagename)}
+    -- we only find the plugin directories if this repository has plugins,
+    -- it can avoid unnecessary filesystem access, because most repositories only have packages
+    local has_plugins = _g._HAS_PLUGINS
+    if has_plugins == nil then
+        has_plugins = {}
+        _g._HAS_PLUGINS = has_plugins
+    end
+    if has_plugins[repodir] == nil then
+        has_plugins[repodir] = os.isdir(path.join(repodir, "plugins"))
+    end
+    if has_plugins[repodir] then
+        local plugindirs = {path.join("plugins", packagename),
+                            path.join("plugins", packagename:sub(1, 1), packagename)}
+        if opt.kind == "plugin" then
+            -- find it from the plugin directories first
+            dirs = table.join(plugindirs, dirs)
+        else
+            table.join2(dirs, plugindirs)
+        end
     end
     for _, dir in ipairs(dirs) do
         dir = path.join(repodir, dir)
