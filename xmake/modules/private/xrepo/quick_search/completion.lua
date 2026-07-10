@@ -22,10 +22,15 @@ import("private.xrepo.quick_search.cache")
 
 -- complete xrepo packages
 function _xmake_package_complete(complete, opt)
+    local unique = {}
     local candidates = {}
     local found = cache.find(complete, {prefix = true})
     for _, candidate in ipairs(found) do
-        table.insert(candidates, {value = candidate.name, description = candidate.data.description})
+        -- the plugin and package can share the same name, we need to remove the duplicates
+        if not unique[candidate.name] then
+            table.insert(candidates, {value = candidate.name, description = candidate.data.description})
+            unique[candidate.name] = true
+        end
     end
     return candidates
 end
