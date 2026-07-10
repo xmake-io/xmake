@@ -89,7 +89,10 @@ function filesync:snapshot()
         ignorefiles = "|" .. table.concat(ignorefiles, "|")
     end
     local count = 0
-    for _, filepath in ipairs(os.files(path.join(rootdir, "**" .. ignorefiles))) do
+    -- we should not translate the whole pattern with ignorefiles in path.join,
+    -- because the joined pattern string may be very long (> TB_PATH_MAXN)
+    -- https://github.com/xmake-io/xmake/issues/6962
+    for _, filepath in ipairs(os.files(path.join(rootdir, "**") .. ignorefiles)) do
         local fileitem = path.relative(filepath, rootdir)
         if fileitem then
             -- we should always use '/' in path key for supporting linux & windows
