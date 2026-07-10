@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.package.package")
 import("core.cache.localcache")
+import("private.action.require.impl.utils.plugins")
 
 -- get package configs string
 function _get_package_configs_str(manifest_file)
@@ -94,7 +95,12 @@ function _remove_packagedirs(packagedir, opt)
                 local description = string.format("remove ${color.dump.string}%s-%s${clear}/${yellow}%s${clear}\n  -> ${dim}%s${clear} (${red}%s${clear})", package_name, version, hash, configs_str, status and status or "used")
                 local confirm = utils.confirm({default = true, description = description})
                 if confirm then
+                    local manifest = os.isfile(manifest_file) and io.load(manifest_file)
                     os.rm(hashdir)
+                    -- unregister the plugin package from the global plugins directory
+                    if manifest and manifest.kind == "plugin" then
+                        plugins.unregister(manifest.name or package_name)
+                    end
                 end
             end
         end

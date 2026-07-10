@@ -31,8 +31,8 @@ function menu_options()
     -- menu options
     local options =
     {
-        {'k', "kind",            "kv", nil, "Enable static/shared library.",
-                                       values = {"static", "shared"}                            },
+        {'k', "kind",            "kv", nil, "Enable static/shared library or remove plugin package.",
+                                       values = {"static", "shared", "plugin"}                  },
         {'p', "plat",            "kv", nil, "Set the given platform."                           },
         {'a', "arch",            "kv", nil, "Set the given architecture."                       },
         {'m', "mode",            "kv", nil, "Set the given mode.",
@@ -56,7 +56,8 @@ function menu_options()
                                        "    - xrepo remove -p iphoneos -a arm64 \"zlib >=1.2.0\"",
                                        "    - xrepo remove -p android -m debug \"pcre2 10.x\"",
                                        "    - xrepo remove -p mingw -k shared zlib",
-                                       "    - xrepo remove conan::zlib/1.2.11 vcpkg::zlib"      }
+                                       "    - xrepo remove conan::zlib/1.2.11 vcpkg::zlib",
+                                       "    - xrepo remove -k plugin hello-world"               }
     }
 
     -- show menu options
@@ -137,7 +138,7 @@ function _remove_packages(packages)
         table.insert(config_argv, mode)
     end
     local kind  = option.get("kind")
-    if kind then
+    if kind and kind ~= "plugin" then
         table.insert(config_argv, "-k")
         table.insert(config_argv, kind)
     end
@@ -168,7 +169,9 @@ function _remove_packages(packages)
     if mode == "debug" then
         extra.debug = true
     end
-    if kind then
+    if kind == "plugin" then
+        extra.kind = "plugin"
+    elseif kind then
         extra.configs = extra.configs or {}
         extra.configs.shared = kind == "shared"
     end

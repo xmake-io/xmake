@@ -42,6 +42,19 @@ function _list_package_dirs()
                 end
             end
         end
+        -- find the plugin package directories, e.g. plugins/hello/xmake.lua, plugins/h/hello/xmake.lua
+        for _, file in ipairs(table.join(os.files(path.join(repo:directory(), "plugins", "*", "xmake.lua")),
+                                         os.files(path.join(repo:directory(), "plugins", "*", "*", "xmake.lua")))) do
+            local dir = path.directory(file)
+            local subdirname = path.basename(path.directory(dir))
+            if subdirname == "plugins" or #subdirname == 1 then
+                local packagename = path.filename(dir)
+                if not unique[packagename] then
+                    table.insert(packageinfos, {name = packagename, repo = repo, packagedir = dir})
+                    unique[packagename] = true
+                end
+            end
+        end
     end
     return packageinfos
 end
@@ -61,6 +74,7 @@ function update()
             reponame = package:repo() and package:repo():name(),
             description = package:description(),
             versions = package:versions(),
+            kind = package:kind(),
         })
     end
     cache:save()

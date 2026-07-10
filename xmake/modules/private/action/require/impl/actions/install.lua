@@ -32,6 +32,7 @@ import("private.action.require.impl.actions.test")
 import("private.action.require.impl.actions.patch_sources")
 import("private.action.require.impl.actions.download_resources")
 import("private.action.require.impl.utils.filter")
+import("private.action.require.impl.utils.plugins")
 
 -- patch pkgconfig if not exists
 function _patch_pkgconfig(package)
@@ -513,6 +514,12 @@ function main(package)
             end
             assert(fetchinfo, "fetch %s failed!", package_tipname)
 
+            -- register the plugin package to the global plugins directory,
+            -- we need to register it before testing, because the test script may run this plugin task.
+            if package:is_plugin() then
+                plugins.register(package)
+            end
+
             -- this package is installed now
             if installed_now then
 
@@ -556,6 +563,11 @@ function main(package)
 
                 -- leave the package environments
                 os.setenvs(oldenvs)
+
+                -- unregister the broken plugin package
+                if package:is_plugin() then
+                    plugins.unregister(package:name())
+                end
 
                 -- copy the invalid package directory to cache
                 local installdir = package:installdir()

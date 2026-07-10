@@ -30,10 +30,14 @@ function menu_options()
     -- menu options
     local options =
     {
+        {'k', "kind",       "kv", nil, "Set the package kind to be searched.",
+                                       values = {"plugin"}                    },
         {nil, "packages",   "vs", nil, "The packages list (support lua pattern).",
                                        "e.g.",
                                        "    - xrepo search zlib boost",
-                                       "    - xrepo search \"pcre*\""}
+                                       "    - xrepo search \"pcre*\"",
+                                       "    - xrepo search -k plugin",
+                                       "    - xrepo search -k plugin hello-world"}
     }
 
     -- show menu options
@@ -80,6 +84,11 @@ function _search_packages(packages)
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
     end
+    local kind = option.get("kind")
+    if kind then
+        local extra_str = string.serialize({kind = kind}, {indent = false, strip = true})
+        table.insert(require_argv, "--extra=" .. extra_str)
+    end
     table.join2(require_argv, packages)
     os.vexecv(os.programfile(), require_argv)
 end
@@ -87,6 +96,10 @@ end
 -- main entry
 function main()
     local packages = option.get("packages")
+    if not packages and option.get("kind") then
+        -- list all packages with the given kind, e.g. xrepo search -k plugin
+        packages = {"*"}
+    end
     if packages then
         _search_packages(packages)
     else
