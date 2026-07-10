@@ -760,7 +760,9 @@ function _instance:is_host()
     if requireinfo and requireinfo.host then
         return true
     end
-    return self:is_binary() or self:is_plugin()
+    -- we only get the kind once, because this function will be called frequently. e.g. in plat()/arch()
+    local kind = self:kind()
+    return kind == "binary" or kind == "toolchain" or kind == "plugin"
 end
 
 -- is cross-compilation?
