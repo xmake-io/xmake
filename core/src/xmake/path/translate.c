@@ -53,8 +53,22 @@ tb_int_t xm_path_translate(lua_State *lua) {
     }
 
     // do path:translate()
-    tb_char_t data[TB_PATH_MAXN];
-    tb_size_t size = tb_path_translate_to(path, (tb_size_t)path_size, data, sizeof(data), normalize);
+    tb_char_t buff[TB_PATH_MAXN];
+    tb_char_t* data = buff;
+    tb_size_t  maxn = sizeof(buff);
+    tb_size_t size = tb_path_translate_to(path, (tb_size_t)path_size, data, maxn, normalize);
+    if (!size) {
+        /* use a larger heap buffer for the long path to avoid stack buffer overflow,
+         * because tb_path_translate_to() does not truncate the output.
+         * https://github.com/xmake-io/xmake/issues/6962
+         *
+         * note: we cannot expand maxn for the `~` prefixed path,
+         * because tbox expands the home directory with an internal TB_PATH_MAXN buffer.
+         */
+        maxn = (tb_size_t)path_size + TB_PATH_MAXN;
+        data = (tb_char_t *)lua_newuserdata(lua, maxn);
+        size = tb_path_translate_to(path, (tb_size_t)path_size, data, maxn, normalize);
+    }
     if (size) {
         lua_pushlstring(lua, data, (size_t)size);
     } else {
