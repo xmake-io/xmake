@@ -69,17 +69,13 @@ tb_int_t xm_path_translate(lua_State *lua) {
             return 1;
         }
         maxn = (tb_size_t)path_size + TB_PATH_MAXN;
-        data = (tb_char_t *)tb_malloc(maxn);
-        tb_check_return_val(data, 0);
+        data = (tb_char_t *)lua_newuserdata(lua, maxn);
     }
     tb_size_t size = tb_path_translate_to(path, (tb_size_t)path_size, data, maxn, normalize);
     if (size) {
         lua_pushlstring(lua, data, (size_t)size);
     } else {
         lua_pushnil(lua);
-    }
-    if (data != buff) {
-        tb_free(data);
     }
     return 1;
 }
