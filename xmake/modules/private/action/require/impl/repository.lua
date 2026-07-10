@@ -190,7 +190,12 @@ function packagedir(packagename, opt)
 
     -- get cache key
     local reponame = opt.name
-    local cachekey = packagename .. (opt.kind or "")
+    local cachekey = packagename
+    if opt.kind then
+        -- use a separator that cannot appear in package names to avoid key collision,
+        -- e.g. package("helloplugin") and plugin("hello")
+        cachekey = cachekey .. "\0" .. opt.kind
+    end
     local locked_repo = opt.locked_repo
     if locked_repo then
         cachekey = cachekey .. locked_repo.url .. (locked_repo.commit or "") .. (locked_repo.branch or "")
