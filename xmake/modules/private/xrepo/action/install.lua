@@ -251,7 +251,15 @@ function _install_packages(packages)
     if #rcfiles > 0 then
         envs.XMAKE_RCFILES = path.joinenv(rcfiles)
     end
-    os.vrunv(os.programfile(), config_argv, {envs = envs})
+    -- we can skip the repeated configuration and toolchain detection to speed up the plugin installation,
+    -- because the plugin package is host-only and does not depend on any build configuration.
+    -- we only skip it if no extra configuration arguments are given, e.g. `xrepo install -k plugin hello`
+    if kind == "plugin" and #config_argv == 3
+        and os.isfile(path.join(workdir, ".xmake", os.host(), os.arch(), "xmake.conf")) then
+        vprint("skip the configuration for installing plugins")
+    else
+        os.vrunv(os.programfile(), config_argv, {envs = envs})
+    end
 
     -- do install
     local require_argv = {"require"}

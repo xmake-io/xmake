@@ -152,7 +152,15 @@ function _remove_packages(packages)
     if #rcfiles > 0 then
         envs.XMAKE_RCFILES = path.joinenv(rcfiles)
     end
-    os.vrunv(os.programfile(), config_argv, {envs = envs})
+    -- we can skip the repeated configuration and toolchain detection to speed up the plugin removal,
+    -- because the plugin package is host-only and does not depend on any build configuration.
+    -- we only skip it if no extra configuration arguments are given, e.g. `xrepo remove -k plugin hello`
+    if kind == "plugin" and #config_argv == 3
+        and os.isfile(path.join(workdir, ".xmake", os.host(), os.arch(), "xmake.conf")) then
+        vprint("skip the configuration for removing plugins")
+    else
+        os.vrunv(os.programfile(), config_argv, {envs = envs})
+    end
 
     -- do remove
     local require_argv = {"require", "--uninstall"}
