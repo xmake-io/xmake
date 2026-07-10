@@ -584,6 +584,8 @@ end
 -- - binary
 -- - toolchain (is also binary)
 -- - library(default)
+-- - template
+-- - plugin
 --
 function _instance:kind()
     local kind
@@ -621,6 +623,14 @@ end
 -- is template package?
 function _instance:is_template()
     return self:kind() == "template"
+end
+
+-- is plugin package?
+--
+-- @return      true if the package kind is "plugin"
+--
+function _instance:is_plugin()
+    return self:kind() == "plugin"
 end
 
 -- is header-only library?
@@ -750,7 +760,7 @@ function _instance:is_host()
     if requireinfo and requireinfo.host then
         return true
     end
-    return self:is_binary()
+    return self:is_binary() or self:is_plugin()
 end
 
 -- is cross-compilation?
@@ -2109,6 +2119,16 @@ function _instance:fetch(opt)
             fetchinfo = self:_fetch_tool({system = true, require_version = require_ver, force = opt.force})
             if fetchinfo then
                 is_system = true
+            end
+        end
+    elseif self:is_plugin() then
+
+        -- we can only fetch the plugin package from the xmake repository
+        if system ~= true and not self:is_thirdparty() then
+            local manifest = self:manifest_load()
+            if manifest then
+                fetchinfo = {version = manifest.version or self:version_str()}
+                is_system = false
             end
         end
     else

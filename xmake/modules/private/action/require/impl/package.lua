@@ -949,6 +949,7 @@ function _load_package(packagename, requireinfo, opt)
             plat = requireinfo.plat,
             arch = requireinfo.arch,
             name = requireinfo.reponame,
+            kind = requireinfo.kind,
             locked_repo = locked_requireinfo and locked_requireinfo.repo})
         if package then
             from_repo = true

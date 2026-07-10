@@ -27,10 +27,16 @@ task("plugin")
         options = {
             {'i', "install", "k", nil, "Install plugins."},
             {'u', "update",  "k", nil, "Update plugins."},
+            {'r', "remove",  "k", nil, "Remove the given installed plugin."},
+            {'l', "list",    "k", nil, "List all installed plugins."},
             {'c', "clear",   "k", nil, "Clear all installed plugins."},
-            {nil, "plugins", "v", nil, "The plugins path or url.",
+            {nil, "plugins", "v", nil, "The plugins path, url or package name.",
                                        "e.g.",
                                        "    $ xmake plugin --install https://github.com/xmake-io/xmake-plugins",
-                                       "    $ xmake plugin --update"}
+                                       "    $ xmake plugin --install hello-world",
+                                       "    $ xmake plugin --remove hello-world",
+                                       "    $ xmake plugin --list",
+                                       "    $ xmake plugin --update",
+                                       "    $ xmake plugin --update hello-world"}
         }
     }
