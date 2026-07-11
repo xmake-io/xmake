@@ -63,9 +63,9 @@ end
 -- rollback the registered plugin and restore the previous backup if the installation fails
 function rollback(name)
     local dir = plugindir(name)
-    os.tryrm(dir)
     local bakdir = path.join(path.directory(dir), ".tmp", name .. ".bak")
     if os.isdir(bakdir) then
+        os.tryrm(dir)
         os.mv(bakdir, dir)
         vprint("restore the previous plugin(%s) to %s", name, dir)
     end
