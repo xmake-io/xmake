@@ -47,10 +47,12 @@ function main(names)
     local extra = option.get("extra")
     if extra then
         local extrainfo, errors = string.deserialize(extra)
-        if not extrainfo then
+        if errors then
             raise(errors)
         end
-        opt.kind = extrainfo.kind
+        if type(extrainfo) == "table" then
+            opt.kind = extrainfo.kind
+        end
     end
 
     -- show title

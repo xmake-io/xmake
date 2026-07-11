@@ -44,10 +44,31 @@ function register(package)
     -- remove the install logs, they do not belong to the plugin,
     -- but we keep manifest.txt to show the plugin version and description. e.g. `xmake plugin --list`
     os.tryrm(path.join(tmpdir, "logs"))
-    -- replace the previous plugin only after the new one is fully ready
-    os.tryrm(dir)
+    -- replace the previous plugin only after the new one is fully ready,
+    -- and we backup the previous plugin, it can be restored by `rollback()` if the installation fails later. e.g. test failure
+    local bakdir = tmpdir .. ".bak"
+    os.tryrm(bakdir)
+    if os.isdir(dir) then
+        os.mv(dir, bakdir)
+    end
     os.mv(tmpdir, dir)
     vprint("register plugin(%s) to %s", package:name(), dir)
+end
+
+-- confirm the registered plugin and discard the previous backup
+function confirm(name)
+    os.tryrm(path.join(path.directory(plugindir(name)), ".tmp", name .. ".bak"))
+end
+
+-- rollback the registered plugin and restore the previous backup if the installation fails
+function rollback(name)
+    local dir = plugindir(name)
+    os.tryrm(dir)
+    local bakdir = path.join(path.directory(dir), ".tmp", name .. ".bak")
+    if os.isdir(bakdir) then
+        os.mv(bakdir, dir)
+        vprint("restore the previous plugin(%s) to %s", name, dir)
+    end
 end
 
 -- unregister the given plugin from the global plugins directory
