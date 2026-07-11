@@ -201,8 +201,9 @@ end
 -- remove the given installed plugin
 function _remove()
     local name = assert(option.get("plugins"), "please specify the plugin name to be removed!")
-    -- avoid escaping the plugins directory, e.g. `xmake plugin --remove ../foo`
-    assert(not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid plugin name(%s)!", name)
+    -- avoid escaping the plugins directory, e.g. `xmake plugin --remove ../foo`,
+    -- and `.` or the empty name will be resolved to the plugins directory itself
+    assert(name ~= "" and name ~= "." and not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid plugin name(%s)!", name)
     local plugindir = path.join(global.directory(), "plugins", name)
     assert(os.isdir(plugindir), "plugin(%s) not found!", name)
     os.rmdir(plugindir)

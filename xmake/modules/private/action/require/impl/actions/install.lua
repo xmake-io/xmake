@@ -535,6 +535,11 @@ function main(package)
                 test(package)
             end
 
+            -- the plugin has been registered and tested, we can discard the previous backup now
+            if package:is_plugin() then
+                plugins.confirm(package:name())
+            end
+
             -- leave the package environments
             os.setenvs(oldenvs)
 
@@ -564,9 +569,9 @@ function main(package)
                 -- leave the package environments
                 os.setenvs(oldenvs)
 
-                -- unregister the broken plugin package
+                -- unregister the broken plugin package and restore the previous version
                 if package:is_plugin() then
-                    plugins.unregister(package:name())
+                    plugins.rollback(package:name())
                 end
 
                 -- copy the invalid package directory to cache
