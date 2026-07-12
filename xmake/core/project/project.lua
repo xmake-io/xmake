@@ -1324,6 +1324,11 @@ function project.mtimes()
     return mtimes
 end
 
+-- get the error of loading the project file when building the option menu
+function project.menu_load_error()
+    return project._memcache():get("menu_load_error")
+end
+
 -- get the project menu
 function project.menu()
 
@@ -1341,7 +1346,12 @@ function project.menu()
 
     -- failed?
     if not options then
-        if errors then utils.error(errors) end
+        -- record the error and let main() report it once and exit, instead of continuing into
+        -- config/build and reporting it again. we cannot abort here directly, because we are inside
+        -- the sandboxed menu loader, which would wrap the clean error with extra prefixes.
+        if errors then
+            project._memcache():set("menu_load_error", errors)
+        end
         return {}
     end
 
