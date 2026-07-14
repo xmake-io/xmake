@@ -2459,10 +2459,18 @@ function _instance:_generate_sanitizer_configs(checkmode, sourcekind)
     return toolchain_utils.get_sanitizer_flags(self, {checkmode = checkmode, sourcekind = sourcekind})
 end
 
--- generate building configs for has_xxx/check_xxx
-function _instance:_generate_build_configs(configs, opt)
-    opt = opt or {}
-    configs = table.join(self:fetch_librarydeps() or {}, configs)
+-- generate pic configs, e.g. -fPIC for the shared/relocatable compile in on_test/check_xxx (wasm ..)
+function _instance:_generate_pic_configs(sourcekind)
+    local configs = {}
+    if not self:is_plat("windows", "mingw") and
+        self:has_tool(sourcekind, "gcc", "gxx", "clang", "clangxx", "emcc", "emxx") then
+        configs.cxflags = "-fPIC"
+    end
+    return configs
+end
+
+-- generate runtime configs, e.g. -MD/-MT runtime flags
+function _instance:_generate_runtime_configs(sourcekind)
     -- since we are ignoring the runtimes of the headeronly library,
     -- we can only get the runtimes from the dependency library to detect the link.
     local runtimes = self:runtimes()
@@ -2474,43 +2482,43 @@ function _instance:_generate_build_configs(configs, opt)
             end
         end
     end
+    local configs = {}
     if runtimes then
         -- @note we need to patch package:sourcekinds(), because it wiil be called nf_runtime for gcc/clang
-        local sourcekind = opt.sourcekind or "cxx"
         self.sourcekinds = function (self)
             return sourcekind
         end
-        local compiler = self:compiler(sourcekind)
-        local cxflags = compiler:map_flags("runtime", runtimes, {target = self})
-        configs.cxflags = table.wrap(configs.cxflags)
-        table.insert(configs.cxflags, cxflags)
-
-        local ldflags = self:linker("binary", sourcekind):map_flags("runtime", runtimes, {target = self})
-        configs.ldflags = table.wrap(configs.ldflags)
-        table.insert(configs.ldflags, ldflags)
-
-        local shflags = self:linker("shared", sourcekind):map_flags("runtime", runtimes, {target = self})
-        configs.shflags = table.wrap(configs.shflags)
-        table.insert(configs.shflags, shflags)
+        configs.cxflags = self:compiler(sourcekind):map_flags("runtime", runtimes, {target = self})
+        configs.ldflags = self:linker("binary", sourcekind):map_flags("runtime", runtimes, {target = self})
+        configs.shflags = self:linker("shared", sourcekind):map_flags("runtime", runtimes, {target = self})
         self.sourcekinds = nil
     end
-    if self:config("lto") then
-        local configs_lto = self:_generate_lto_configs(opt.sourcekind or "cxx")
-        if configs_lto then
-            for k, v in pairs(configs_lto) do
-                configs[k] = table.wrap(configs[k] or {})
-                table.join2(configs[k], v)
-            end
+    return configs
+end
+
+-- generate building configs for has_xxx/check_xxx
+function _instance:_generate_build_configs(configs, opt)
+    opt = opt or {}
+    configs = table.join(self:fetch_librarydeps() or {}, configs)
+
+    -- merge the sub configs (e.g. {cxflags = ..., ldflags = ...}) into the result
+    local function _merge(subconfigs)
+        for k, v in pairs(subconfigs) do
+            configs[k] = table.wrap(configs[k] or {})
+            table.join2(configs[k], v)
         end
     end
+
+    local sourcekind = opt.sourcekind or "cxx"
+    _merge(self:_generate_runtime_configs(sourcekind))
+    if self:config("pic") ~= false then
+        _merge(self:_generate_pic_configs(sourcekind))
+    end
+    if self:config("lto") then
+        _merge(self:_generate_lto_configs(sourcekind))
+    end
     if self:config("asan") then
-        local configs_asan = self:_generate_sanitizer_configs("address", opt.sourcekind or "cxx")
-        if configs_asan then
-            for k, v in pairs(configs_asan) do
-                configs[k] = table.wrap(configs[k] or {})
-                table.join2(configs[k], v)
-            end
-        end
+        _merge(self:_generate_sanitizer_configs("address", sourcekind))
     end
     -- enable exceptions for msvc by default
     if opt.sourcekind == "cxx" and configs.exceptions == nil and self:has_tool("cxx", "cl") then
