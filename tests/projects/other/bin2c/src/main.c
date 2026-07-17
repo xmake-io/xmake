@@ -102,9 +102,9 @@ int main(int argc, char** argv)
     printf("\n");
     hexdump("asset.bin (transformed)", g_asset_data, (uint32_t)sizeof(g_asset_data));
 
-    // verify the transform: asset.bin must be the reverse of "hello transform!\n" (+ zeroend '\0')
-    const char* expected = "\n!mrofsnart olleh";
-    if (sizeof(g_asset_data) != 18 || memcmp(g_asset_data, expected, 17) != 0) {
+    // verify the transform: asset.bin must be the reverse of "hello transform!" (+ zeroend '\0')
+    const char* expected = "!mrofsnart olleh";
+    if (sizeof(g_asset_data) != 17 || memcmp(g_asset_data, expected, 16) != 0) {
         printf("asset.bin: transform verification failed!\n");
         return 1;
     }
