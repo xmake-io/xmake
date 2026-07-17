@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <ctype.h>
+#include <string.h>
 
 static unsigned char g_bin_data[] = {
     #include "data.bin.h"
@@ -8,6 +9,10 @@ static unsigned char g_bin_data[] = {
 
 static unsigned char g_ico_data[] = {
     #include "xmake.ico.h"
+};
+
+static unsigned char g_asset_data[] = {
+    #include "asset.bin.h"
 };
 
 static void hexdump(const char* name, const uint8_t* data, uint32_t size) {
@@ -94,5 +99,15 @@ int main(int argc, char** argv)
     hexdump("data.bin", g_bin_data, (uint32_t)sizeof(g_bin_data));
     printf("\n");
     hexdump("xmake.ico", g_ico_data, (uint32_t)sizeof(g_ico_data));
+    printf("\n");
+    hexdump("asset.bin (transformed)", g_asset_data, (uint32_t)sizeof(g_asset_data));
+
+    // verify the transform: asset.bin must be the reverse of "hello transform!\n" (+ zeroend '\0')
+    const char* expected = "\n!mrofsnart olleh";
+    if (sizeof(g_asset_data) != 18 || memcmp(g_asset_data, expected, 17) != 0) {
+        printf("asset.bin: transform verification failed!\n");
+        return 1;
+    }
+    printf("asset.bin: transform verification ok\n");
     return 0;
 }
