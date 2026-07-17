@@ -57,7 +57,7 @@ function generate_headerfile(target, batchcmds, binaryfile, opt)
     -- @see https://github.com/xmake-io/xmake/issues/7513
     local transform = opt.transform or (fileconfig and fileconfig.transform) or target:extraconf("rules", rulename, "transform")
     if transform then
-        batchcmds:show_progress(progress, "${color.build.object}transforming.bin2obj %s", binaryfile)
+        batchcmds:show_progress(progress, "${color.build.object}transforming.bin2c %s", binaryfile)
         local transformed_file = target:autogenfile(binaryfile)
         batchcmds:call(transform, {binaryfile, transformed_file}, {target = target})
         binaryfile = transformed_file
