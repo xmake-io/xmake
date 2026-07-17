@@ -105,43 +105,13 @@ function sandbox._new()
         instance:_api_register_builtin(module_name, module)
     end
 
-    -- bind instance to the public script envirnoment
-    instance:bind(instance._PUBLIC)
+    -- bind the public script envirnoment
+    instance:_bindenv(instance._PUBLIC)
     return instance
 end
 
--- new a sandbox instance with the given script
-function sandbox.new(script, opt)
-    opt = opt or {}
-
-    -- new instance
-    local self = sandbox._new()
-    assert(self and self._PUBLIC and self._PRIVATE)
-
-    self._PRIVATE._FILTER = opt.filter
-    self._PRIVATE._ROOTDIR = opt.rootdir
-    self._PRIVATE._NAMESPACE = opt.namespace
-
-    -- invalid script?
-    if type(script) ~= "function" then
-        return nil, "invalid script!"
-    end
-
-    -- bind public scope
-    setfenv(script, self._PUBLIC)
-
-    -- save script
-    self._PRIVATE._SCRIPT = script
-    return self
-end
-
--- load script in the sandbox
-function sandbox.call(script, ...)
-    return utils.trycall(script, sandbox._traceback, ...)
-end
-
--- bind self instance to the given script or envirnoment
-function sandbox:bind(script_or_env)
+-- bind the given script or envirnoment and the self instance
+function sandbox:_bindenv(script_or_env)
 
     -- get envirnoment
     local env = script_or_env
@@ -150,20 +120,18 @@ function sandbox:bind(script_or_env)
     end
 
     -- bind instance to the script envirnoment
-    setmetatable(env, {     __index = function (tbl, key)
-                                if type(key) == "string" and key == "_SANDBOX" and rawget(tbl, "_SANDBOX_READABLE") then
-                                    return self
-                                end
-                                return rawget(tbl, key)
+    setmetatable(env, { __index = function (tbl, key)
+                            if type(key) == "string" and key == "_SANDBOX" and rawget(tbl, "_SANDBOX_READABLE") then
+                                return self
                             end
-                        ,   __newindex = function (tbl, key, val)
-                                if type(key) == "string" and (key == "_SANDBOX" or key == "_SANDBOX_READABLE") then
-                                    return
-                                end
-                                rawset(tbl, key, val)
-                            end})
-
-    -- ok
+                            return rawget(tbl, key)
+                        end,
+                        __newindex = function (tbl, key, val)
+                            if type(key) == "string" and (key == "_SANDBOX" or key == "_SANDBOX_READABLE") then
+                                return
+                            end
+                            rawset(tbl, key, val)
+                        end})
     return script_or_env
 end
 
@@ -250,6 +218,36 @@ function sandbox:api_register_builtin(name, func)
     sandbox._api_register_builtin(self, name, func)
 end
 
+-- new a sandbox instance with the given script
+function sandbox.new(script, opt)
+    opt = opt or {}
+
+    -- new instance
+    local self = sandbox._new()
+    assert(self and self._PUBLIC and self._PRIVATE)
+
+    self._PRIVATE._FILTER = opt.filter
+    self._PRIVATE._ROOTDIR = opt.rootdir
+    self._PRIVATE._NAMESPACE = opt.namespace
+
+    -- invalid script?
+    if type(script) ~= "function" then
+        return nil, "invalid script!"
+    end
+
+    -- bind public scope
+    setfenv(script, self._PUBLIC)
+
+    -- save script
+    self._PRIVATE._SCRIPT = script
+    return self
+end
+
+-- call script in the sandbox
+function sandbox.call(script, ...)
+    return utils.trycall(script, sandbox._traceback, ...)
+end
+
 -- get current instance in the sandbox modules
 function sandbox.instance(script)
 
@@ -330,7 +328,6 @@ function sandbox.builtin_modules()
     end
     return builtin_modules
 end
-
 
 -- return module
 return sandbox

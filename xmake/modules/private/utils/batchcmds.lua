@@ -28,6 +28,7 @@ import("core.theme.theme")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
+import("core.sandbox.sandbox")
 import("utils.run_script")
 import("utils.progress", {alias = "progress_utils"})
 import("utils.binary.rpath", {alias = "rpath_utils"})
@@ -131,7 +132,11 @@ function _runcmd_call(cmd, opt)
     local func = cmd.func
     if func then
         if not opt.dryrun then
-            func(table.unpack(cmd.argv), cmd.opt)
+            local argv = table.clone(cmd.argv)
+            if cmd.opt then
+                table.insert(argv, cmd.opt)
+            end
+            func(table.unpack(argv))
         end
     end
 end
@@ -323,7 +328,8 @@ end
 
 -- add command: call lua function
 function batchcmds:call(func, argv, opt)
-   table.insert(self:cmds(), {kind = "call", func = func, argv = argv, opt = opt})
+    sandbox.fork(func)
+    table.insert(self:cmds(), {kind = "call", func = func, argv = argv, opt = opt})
 end
 
 -- add command: compile source files
