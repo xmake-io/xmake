@@ -36,6 +36,7 @@ function generate_headerfile(target, batchcmds, binaryfile, opt)
     opt = opt or {}
     local rulename = opt.rulename or "utils.bin2c"
     local progress = opt.progress
+    local fileconfig = target:fileconfig(binaryfile)
 
     -- get header directory and file
     local headerdir = opt.headerdir
@@ -51,6 +52,16 @@ function generate_headerfile(target, batchcmds, binaryfile, opt)
 
     -- add includedirs
     target:add("includedirs", headerdir)
+
+    -- transform binary data first
+    -- @see https://github.com/xmake-io/xmake/issues/7513
+    local transform = opt.transform or (fileconfig and fileconfig.transform) or target:extraconf("rules", rulename, "transform")
+    if transform then
+        batchcmds:show_progress(progress, "${color.build.object}transforming.bin2obj %s", binaryfile)
+        local transformed_file = target:autogenfile(binaryfile .. ".transformed")
+        batchcmds:call(transform, {binaryfile, transformed_file}, {target = target})
+        binaryfile = transformed_file
+    end
 
     -- add commands
     if progress then
@@ -69,7 +80,6 @@ function generate_headerfile(target, batchcmds, binaryfile, opt)
     end
 
     -- get nozeroend/zeroend (check file-level config first, then rule-level config, then opt)
-    local fileconfig = target:fileconfig(binaryfile)
     local nozeroend = nil
     if fileconfig then
         if fileconfig.nozeroend ~= nil then
