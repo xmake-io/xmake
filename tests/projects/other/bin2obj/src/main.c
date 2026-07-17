@@ -12,6 +12,12 @@ extern const uint8_t _binary_xmake_ico_end[];
 extern const uint8_t _binary_asset_bin_start[];
 extern const uint8_t _binary_asset_bin_end[];
 
+extern const uint8_t _binary_asset2_bin_start[];
+extern const uint8_t _binary_asset2_bin_end[];
+
+extern const uint8_t _binary_asset2_bin_start[];
+extern const uint8_t _binary_asset2_bin_end[];
+
 static void hexdump(const char* name, const uint8_t* data, uint32_t size) {
     printf("%s: size: %u bytes\n", name, (unsigned int)size);
     if (size == 0) {
@@ -95,19 +101,30 @@ int main(int argc, char** argv) {
     const uint32_t _binary_data_bin_size = (uint32_t)(_binary_data_bin_end - _binary_data_bin_start);
     const uint32_t _binary_xmake_ico_size = (uint32_t)(_binary_xmake_ico_end - _binary_xmake_ico_start);
     const uint32_t _binary_asset_bin_size = (uint32_t)(_binary_asset_bin_end - _binary_asset_bin_start);
+    const uint32_t _binary_asset2_bin_size = (uint32_t)(_binary_asset2_bin_end - _binary_asset2_bin_start);
 
     hexdump("data.bin", _binary_data_bin_start, _binary_data_bin_size);
     printf("\n");
     hexdump("xmake.ico", _binary_xmake_ico_start, _binary_xmake_ico_size);
     printf("\n");
     hexdump("asset.bin (transformed)", _binary_asset_bin_start, _binary_asset_bin_size);
+    printf("\n");
+    hexdump("asset2.bin (transformed by lua file)", _binary_asset2_bin_start, _binary_asset2_bin_size);
 
-    // verify the transform: asset.bin must be the reverse of "hello transform!" (+ zeroend '\0')
+    // verify the function transform: asset.bin must be the reverse of "hello transform!" (+ zeroend '\0')
     const char* expected = "!mrofsnart olleh";
     if (_binary_asset_bin_size != 17 || memcmp(_binary_asset_bin_start, expected, 16) != 0) {
         printf("asset.bin: transform verification failed!\n");
         return 1;
     }
     printf("asset.bin: transform verification ok\n");
+
+    // verify the lua-file transform: asset2.bin must be the reverse of "hello luafile!" (+ zeroend '\0')
+    const char* expected2 = "!elifaul olleh";
+    if (_binary_asset2_bin_size != 15 || memcmp(_binary_asset2_bin_start, expected2, 14) != 0) {
+        printf("asset2.bin: transform verification failed!\n");
+        return 1;
+    }
+    printf("asset2.bin: transform verification ok\n");
     return 0;
 }

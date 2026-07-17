@@ -15,6 +15,10 @@ static unsigned char g_asset_data[] = {
     #include "asset.bin.h"
 };
 
+static unsigned char g_asset2_data[] = {
+    #include "asset2.bin.h"
+};
+
 static void hexdump(const char* name, const uint8_t* data, uint32_t size) {
     printf("%s: size: %u bytes\n", name, (unsigned int)size);
     if (size == 0) {
@@ -101,13 +105,23 @@ int main(int argc, char** argv)
     hexdump("xmake.ico", g_ico_data, (uint32_t)sizeof(g_ico_data));
     printf("\n");
     hexdump("asset.bin (transformed)", g_asset_data, (uint32_t)sizeof(g_asset_data));
+    printf("\n");
+    hexdump("asset2.bin (transformed by lua file)", g_asset2_data, (uint32_t)sizeof(g_asset2_data));
 
-    // verify the transform: asset.bin must be the reverse of "hello transform!" (+ zeroend '\0')
+    // verify the function transform: asset.bin must be the reverse of "hello transform!" (+ zeroend '\0')
     const char* expected = "!mrofsnart olleh";
     if (sizeof(g_asset_data) != 17 || memcmp(g_asset_data, expected, 16) != 0) {
         printf("asset.bin: transform verification failed!\n");
         return 1;
     }
     printf("asset.bin: transform verification ok\n");
+
+    // verify the lua-file transform: asset2.bin must be the reverse of "hello luafile!" (+ zeroend '\0')
+    const char* expected2 = "!elifaul olleh";
+    if (sizeof(g_asset2_data) != 15 || memcmp(g_asset2_data, expected2, 14) != 0) {
+        printf("asset2.bin: transform verification failed!\n");
+        return 1;
+    }
+    printf("asset2.bin: transform verification ok\n");
     return 0;
 }

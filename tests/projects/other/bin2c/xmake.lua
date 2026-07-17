@@ -12,5 +12,7 @@ target("test")
         local data = io.readfile(inputfile, {encoding = "binary"})
         io.writefile(outputfile, data:reverse(), {encoding = "binary"})
     end})
+    -- transform can also be a lua script file (supported by the project generators)
+    add_files("src/asset2.bin", {transform = path.join(os.projectdir(), "transform.lua")})
 
 

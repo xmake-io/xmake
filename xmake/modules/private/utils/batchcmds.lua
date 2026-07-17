@@ -328,8 +328,14 @@ end
 
 -- add command: call lua function
 function batchcmds:call(func, argv, opt)
-    sandbox.fork(func)
-    table.insert(self:cmds(), {kind = "call", func = func, argv = argv, opt = opt})
+    local functype = type(func)
+    if functype == "string" then
+        self:lua(func, argv, opt)
+    else
+        assert(functype == "function")
+        sandbox.fork(func)
+        table.insert(self:cmds(), {kind = "call", func = func, argv = argv, opt = opt})
+    end
 end
 
 -- add command: compile source files
