@@ -142,7 +142,7 @@ function _instance:_do_check_cxsnippets(snippets)
 
             -- check snippets (run with output)
             if #table.keys(snippets_output) > 0 then
-                local ok, results_or_errors, output = sandbox.load(self._check_cxsnippets, snippets_output, {
+                local ok, results_or_errors, output = sandbox.call(self._check_cxsnippets, snippets_output, {
                                                             target = self,
                                                             sourcekind = sourcekind,
                                                             types = types,
@@ -165,7 +165,7 @@ function _instance:_do_check_cxsnippets(snippets)
 
             -- check snippets (run only)
             if passed == 0 and #table.keys(snippets_tryrun) > 0 then
-                local ok, results_or_errors = sandbox.load(self._check_cxsnippets, snippets_tryrun, {
+                local ok, results_or_errors = sandbox.call(self._check_cxsnippets, snippets_tryrun, {
                                                             target = self,
                                                             sourcekind = sourcekind,
                                                             types = types,
@@ -187,7 +187,7 @@ function _instance:_do_check_cxsnippets(snippets)
 
             -- check snippets (run with binary_match)
             if #table.keys(snippets_binary_match) > 0 then
-                local ok, results_or_errors, output = sandbox.load(self._check_cxsnippets, snippets_binary_match, {
+                local ok, results_or_errors, output = sandbox.call(self._check_cxsnippets, snippets_binary_match, {
                                                             target = self,
                                                             sourcekind = sourcekind,
                                                             types = types,
@@ -209,7 +209,7 @@ function _instance:_do_check_cxsnippets(snippets)
 
             -- check snippets (build only)
             if passed == 0 or #table.keys(snippets_build) > 0 then
-                local ok, results_or_errors = sandbox.load(self._check_cxsnippets, snippets_build, {
+                local ok, results_or_errors = sandbox.call(self._check_cxsnippets, snippets_build, {
                                                             target = self,
                                                             sourcekind = sourcekind,
                                                             types = types,
@@ -296,7 +296,7 @@ function _instance:_on_check()
     -- get check script
     local check = self:script("check")
     if check then
-        return sandbox.load(check, self)
+        return sandbox.call(check, self)
     else
         return self:_do_check()
     end

@@ -109,7 +109,7 @@ function _instance:get(name)
     if not self._LOADED and not self:_is_builtin_conf(name) then
         local on_load = self._INFO:get("load")
         if on_load then
-            local ok, errors = sandbox.load(on_load, self)
+            local ok, errors = sandbox.call(on_load, self)
             if not ok then
                 os.raise(errors)
             end

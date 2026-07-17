@@ -136,7 +136,7 @@ function sandbox.new(script, opt)
 end
 
 -- load script in the sandbox
-function sandbox.load(script, ...)
+function sandbox.call(script, ...)
     return utils.trycall(script, sandbox._traceback, ...)
 end
 
@@ -205,7 +205,7 @@ function sandbox:module()
     table.copy2(scope_backup, scope_public)
 
     -- load module with sandbox
-    local ok, errors = sandbox.load(self:script())
+    local ok, errors = sandbox.call(self:script())
     if not ok then
         return nil, errors
     end

@@ -37,7 +37,7 @@ function sandbox_lib_detect_find_file._expand_paths(paths)
     for _, _path in ipairs(table.wrap(paths)) do
         local _path = _path
         if type(_path) == "function" then
-            local ok, result_or_errors = sandbox.load(_path)
+            local ok, result_or_errors = sandbox.call(_path)
             if ok then
                 _path = result_or_errors or ""
             else

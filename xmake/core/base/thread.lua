@@ -942,7 +942,7 @@ function thread._run_thread(callback_str, callinfo_str)
     end
 
     -- do callback
-    local ok, errors = sandbox.load(sandbox_inst:script(), table.unpack(argv or {}))
+    local ok, errors = sandbox.call(sandbox_inst:script(), table.unpack(argv or {}))
 
     -- thread is finished, we need to notify the waited thread
     if wpipe then

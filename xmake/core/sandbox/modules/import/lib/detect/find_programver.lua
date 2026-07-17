@@ -79,7 +79,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     local outdata = nil
     local command = opt.command
     if type(command) == "function" then
-        ok, outdata = sandbox.load(command)
+        ok, outdata = sandbox.call(command)
         if not ok and outdata and option.get("diagnosis") then
             utils.cprint("${color.warning}checkinfo: ${clear dim}" .. outdata)
         end
@@ -94,7 +94,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     if ok and outdata and #outdata > 0 then
         local parse = opt.parse
         if type(parse) == "function" then
-            ok, result = sandbox.load(parse, outdata)
+            ok, result = sandbox.call(parse, outdata)
             if not ok and result and option.get("diagnosis") then
                 utils.cprint("${color.warning}checkinfo: ${clear dim}" .. result)
                 result = nil
