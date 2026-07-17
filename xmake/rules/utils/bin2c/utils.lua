@@ -59,7 +59,7 @@ function generate_headerfile(target, batchcmds, binaryfile, opt)
     if transform then
         batchcmds:show_progress(progress, "${color.build.object}transforming.bin2c %s", binaryfile)
         local transformed_file = target:autogenfile(binaryfile)
-        batchcmds:call(transform, {binaryfile, transformed_file}, {target = target})
+        batchcmds:call(transform, {binaryfile, transformed_file}, {name = "bin2c/transform", target = target})
         binaryfile = transformed_file
     end
 

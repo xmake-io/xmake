@@ -60,7 +60,7 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
     if transform then
         batchcmds:show_progress(progress, "${color.build.object}transforming.bin2obj %s", binaryfile)
         local transformed_file = target:autogenfile(binaryfile)
-        batchcmds:call(transform, {binaryfile, transformed_file}, {target = target})
+        batchcmds:call(transform, {binaryfile, transformed_file}, {name = "bin2obj/transform", target = target})
         binaryfile = transformed_file
     end
 
