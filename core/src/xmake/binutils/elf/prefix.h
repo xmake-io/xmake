@@ -56,6 +56,19 @@
 #define XM_ELF_MACHINE_WASM      0xe7
 #define XM_ELF_MACHINE_LOONGARCH 0x102
 
+// ELF data encoding (e_ident[EI_DATA])
+#define XM_ELF_DATA2LSB          1
+#define XM_ELF_DATA2MSB          2
+
+// RISC-V e_flags (arch/riscv/include/uapi/asm/elf.h)
+#define XM_EF_RISCV_RVC                  0x0001
+#define XM_EF_RISCV_FLOAT_ABI_SINGLE     0x0002
+#define XM_EF_RISCV_FLOAT_ABI_DOUBLE     0x0004
+
+// LoongArch e_flags (LoongArch ELF psABI)
+#define XM_EF_LOONGARCH_ABI_DOUBLE_FLOAT 0x3
+#define XM_EF_LOONGARCH_OBJABI_V1        0x40
+
 #define XM_ELF_SHT_PROGBITS      0x1
 #define XM_ELF_SHT_SYMTAB        0x2
 #define XM_ELF_SHT_STRTAB        0x3
@@ -295,6 +308,128 @@ static __tb_inline__ tb_uint16_t xm_binutils_elf_get_machine(tb_char_t const *ar
  */
 static __tb_inline__ tb_bool_t xm_binutils_elf_is_64bit(tb_char_t const *arch) {
     return xm_binutils_arch_is_64bit(arch);
+}
+
+/* check if architecture is big-endian
+ *
+ * @param arch    the architecture string
+ * @return        tb_true if big-endian, tb_false otherwise
+ */
+static __tb_inline__ tb_bool_t xm_binutils_elf_is_bigendian(tb_char_t const *arch) {
+    return xm_binutils_arch_is_bigendian(arch);
+}
+
+/* get the default e_flags for the given architecture
+ *
+ * Some architectures (RISC-V, LoongArch) encode the ABI (e.g. float ABI) in e_flags.
+ * The linker refuses to merge objects whose ABI flags are incompatible, so a data-only
+ * object generated with e_flags == 0 (soft-float) would fail to link against a normal
+ * double-float toolchain. We default to the flags used by the common GNU toolchains.
+ *
+ * @param arch    the architecture string
+ * @return        the e_flags value
+ */
+static __tb_inline__ tb_uint32_t xm_binutils_elf_get_flags(tb_char_t const *arch) {
+    if (!arch) {
+        return 0;
+    }
+    // RISC-V: default to RVC + double-float ABI to match the common rv32/rv64 "gc" toolchains
+    if (tb_strncmp(arch, "riscv", 5) == 0) {
+        return XM_EF_RISCV_RVC | XM_EF_RISCV_FLOAT_ABI_DOUBLE;
+    }
+    // LoongArch: default to double-float ABI (lp64d/ilp32d) + object ABI v1
+    else if (tb_strncmp(arch, "loongarch", 9) == 0 || tb_strncmp(arch, "loong64", 7) == 0) {
+        return XM_EF_LOONGARCH_ABI_DOUBLE_FLOAT | XM_EF_LOONGARCH_OBJABI_V1;
+    }
+    return 0;
+}
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * endianness-aware serialization
+ *
+ * The dump code fills the ELF structs in the host's native byte order. Before writing them
+ * out, each multi-byte field must be converted to the *target* endianness (which may differ
+ * from the host, e.g. generating a big-endian s390x object on a little-endian host).
+ */
+
+static __tb_inline__ tb_uint16_t xm_binutils_elf_conv_u16(tb_uint16_t x, tb_bool_t bigendian) {
+    return bigendian? tb_bits_ne_to_be_u16(x) : tb_bits_ne_to_le_u16(x);
+}
+static __tb_inline__ tb_uint32_t xm_binutils_elf_conv_u32(tb_uint32_t x, tb_bool_t bigendian) {
+    return bigendian? tb_bits_ne_to_be_u32(x) : tb_bits_ne_to_le_u32(x);
+}
+static __tb_inline__ tb_uint64_t xm_binutils_elf_conv_u64(tb_uint64_t x, tb_bool_t bigendian) {
+    return bigendian? tb_bits_ne_to_be_u64(x) : tb_bits_ne_to_le_u64(x);
+}
+
+// convert a 32-bit ELF header to the target endianness in place (e_ident is byte data, untouched)
+static __tb_inline__ void xm_binutils_elf32_header_conv(xm_elf32_header_t* h, tb_bool_t be) {
+    h->e_type      = xm_binutils_elf_conv_u16(h->e_type, be);
+    h->e_machine   = xm_binutils_elf_conv_u16(h->e_machine, be);
+    h->e_version   = xm_binutils_elf_conv_u32(h->e_version, be);
+    h->e_entry     = xm_binutils_elf_conv_u32(h->e_entry, be);
+    h->e_phoff     = xm_binutils_elf_conv_u32(h->e_phoff, be);
+    h->e_shoff     = xm_binutils_elf_conv_u32(h->e_shoff, be);
+    h->e_flags     = xm_binutils_elf_conv_u32(h->e_flags, be);
+    h->e_ehsize    = xm_binutils_elf_conv_u16(h->e_ehsize, be);
+    h->e_phentsize = xm_binutils_elf_conv_u16(h->e_phentsize, be);
+    h->e_phnum     = xm_binutils_elf_conv_u16(h->e_phnum, be);
+    h->e_shentsize = xm_binutils_elf_conv_u16(h->e_shentsize, be);
+    h->e_shnum     = xm_binutils_elf_conv_u16(h->e_shnum, be);
+    h->e_shstrndx  = xm_binutils_elf_conv_u16(h->e_shstrndx, be);
+}
+static __tb_inline__ void xm_binutils_elf32_section_conv(xm_elf32_section_t* s, tb_bool_t be) {
+    s->sh_name      = xm_binutils_elf_conv_u32(s->sh_name, be);
+    s->sh_type      = xm_binutils_elf_conv_u32(s->sh_type, be);
+    s->sh_flags     = xm_binutils_elf_conv_u32(s->sh_flags, be);
+    s->sh_addr      = xm_binutils_elf_conv_u32(s->sh_addr, be);
+    s->sh_offset    = xm_binutils_elf_conv_u32(s->sh_offset, be);
+    s->sh_size      = xm_binutils_elf_conv_u32(s->sh_size, be);
+    s->sh_link      = xm_binutils_elf_conv_u32(s->sh_link, be);
+    s->sh_info      = xm_binutils_elf_conv_u32(s->sh_info, be);
+    s->sh_addralign = xm_binutils_elf_conv_u32(s->sh_addralign, be);
+    s->sh_entsize   = xm_binutils_elf_conv_u32(s->sh_entsize, be);
+}
+static __tb_inline__ void xm_binutils_elf32_symbol_conv(xm_elf32_symbol_t* s, tb_bool_t be) {
+    s->st_name  = xm_binutils_elf_conv_u32(s->st_name, be);
+    s->st_value = xm_binutils_elf_conv_u32(s->st_value, be);
+    s->st_size  = xm_binutils_elf_conv_u32(s->st_size, be);
+    s->st_shndx = xm_binutils_elf_conv_u16(s->st_shndx, be);
+    // st_info and st_other are single bytes, untouched
+}
+static __tb_inline__ void xm_binutils_elf64_header_conv(xm_elf64_header_t* h, tb_bool_t be) {
+    h->e_type      = xm_binutils_elf_conv_u16(h->e_type, be);
+    h->e_machine   = xm_binutils_elf_conv_u16(h->e_machine, be);
+    h->e_version   = xm_binutils_elf_conv_u32(h->e_version, be);
+    h->e_entry     = xm_binutils_elf_conv_u64(h->e_entry, be);
+    h->e_phoff     = xm_binutils_elf_conv_u64(h->e_phoff, be);
+    h->e_shoff     = xm_binutils_elf_conv_u64(h->e_shoff, be);
+    h->e_flags     = xm_binutils_elf_conv_u32(h->e_flags, be);
+    h->e_ehsize    = xm_binutils_elf_conv_u16(h->e_ehsize, be);
+    h->e_phentsize = xm_binutils_elf_conv_u16(h->e_phentsize, be);
+    h->e_phnum     = xm_binutils_elf_conv_u16(h->e_phnum, be);
+    h->e_shentsize = xm_binutils_elf_conv_u16(h->e_shentsize, be);
+    h->e_shnum     = xm_binutils_elf_conv_u16(h->e_shnum, be);
+    h->e_shstrndx  = xm_binutils_elf_conv_u16(h->e_shstrndx, be);
+}
+static __tb_inline__ void xm_binutils_elf64_section_conv(xm_elf64_section_t* s, tb_bool_t be) {
+    s->sh_name      = xm_binutils_elf_conv_u32(s->sh_name, be);
+    s->sh_type      = xm_binutils_elf_conv_u32(s->sh_type, be);
+    s->sh_flags     = xm_binutils_elf_conv_u64(s->sh_flags, be);
+    s->sh_addr      = xm_binutils_elf_conv_u64(s->sh_addr, be);
+    s->sh_offset    = xm_binutils_elf_conv_u64(s->sh_offset, be);
+    s->sh_size      = xm_binutils_elf_conv_u64(s->sh_size, be);
+    s->sh_link      = xm_binutils_elf_conv_u32(s->sh_link, be);
+    s->sh_info      = xm_binutils_elf_conv_u32(s->sh_info, be);
+    s->sh_addralign = xm_binutils_elf_conv_u64(s->sh_addralign, be);
+    s->sh_entsize   = xm_binutils_elf_conv_u64(s->sh_entsize, be);
+}
+static __tb_inline__ void xm_binutils_elf64_symbol_conv(xm_elf64_symbol_t* s, tb_bool_t be) {
+    s->st_name  = xm_binutils_elf_conv_u32(s->st_name, be);
+    s->st_shndx = xm_binutils_elf_conv_u16(s->st_shndx, be);
+    s->st_value = xm_binutils_elf_conv_u64(s->st_value, be);
+    s->st_size  = xm_binutils_elf_conv_u64(s->st_size, be);
+    // st_info and st_other are single bytes, untouched
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

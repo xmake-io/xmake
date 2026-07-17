@@ -81,6 +81,99 @@ function test_format(t)
     os.tryrm(tempdir)
 end
 
+function test_bin2elf(t)
+    local tempdir = "temp/binutils_bin2elf"
+    os.tryrm(tempdir)
+    os.mkdir(tempdir)
+
+    -- input binary payload
+    local input = path.join(tempdir, "data.bin")
+    io.writefile(input, "hello world payload", {encoding = "binary"})
+
+    -- parse the ELF header fields we care about (class, data encoding, machine, flags)
+    local function _parse_elf_header(objectfile)
+        local data = io.readfile(objectfile, {encoding = "binary"})
+        t:require(data ~= nil and #data >= 24)
+        -- magic
+        t:are_equal(string.byte(data, 1), 0x7f)
+        t:are_equal(string.byte(data, 2), string.byte("E"))
+        t:are_equal(string.byte(data, 3), string.byte("L"))
+        t:are_equal(string.byte(data, 4), string.byte("F"))
+        local class = string.byte(data, 5) -- e_ident[EI_CLASS]: 1 = 32-bit, 2 = 64-bit
+        local encode = string.byte(data, 6) -- e_ident[EI_DATA]: 1 = LSB, 2 = MSB
+        local bigendian = (encode == 2)
+        -- read a target-endian integer of nbytes at 1-based index
+        local function _readint(index, nbytes)
+            local value = 0
+            for i = 0, nbytes - 1 do
+                local byte = string.byte(data, index + i)
+                if bigendian then
+                    value = value * 256 + byte
+                else
+                    value = value + byte * (256 ^ i)
+                end
+            end
+            return value
+        end
+        local machine = _readint(19, 2) -- e_machine at offset 18
+        -- e_flags: offset 36 for 32-bit, 48 for 64-bit
+        local flags = (class == 2) and _readint(49, 4) or _readint(37, 4)
+        return {class = class, encode = encode, machine = machine, flags = flags}
+    end
+
+    local function _gen(arch)
+        local objectfile = path.join(tempdir, arch .. ".o")
+        binutils.bin2obj(input, objectfile, {format = "elf", arch = arch, basename = "test"})
+        return _parse_elf_header(objectfile)
+    end
+
+    -- loong64: 64-bit class, LoongArch machine (issue: was wrongly detected as 32-bit)
+    local loong64 = _gen("loong64")
+    t:are_equal(loong64.class, 2)
+    t:are_equal(loong64.encode, 1)
+    t:are_equal(loong64.machine, 0x102)
+    t:are_equal(loong64.flags, 0x43) -- double-float ABI + object ABI v1
+
+    -- riscv64: double-float ABI in e_flags (issue: was soft-float, e_flags == 0)
+    local riscv64 = _gen("riscv64")
+    t:are_equal(riscv64.class, 2)
+    t:are_equal(riscv64.machine, 0xf3)
+    t:are_equal(riscv64.flags, 0x5) -- RVC + double-float
+
+    -- riscv (32-bit): same machine/flags, 32-bit class
+    local riscv = _gen("riscv")
+    t:are_equal(riscv.class, 1)
+    t:are_equal(riscv.machine, 0xf3)
+    t:are_equal(riscv.flags, 0x5)
+
+    -- s390x: big-endian (issue: was wrongly little-endian)
+    local s390x = _gen("s390x")
+    t:are_equal(s390x.class, 2)
+    t:are_equal(s390x.encode, 2) -- MSB
+    t:are_equal(s390x.machine, 0x16)
+
+    -- x86_64: unchanged, little-endian 64-bit
+    local x86_64 = _gen("x86_64")
+    t:are_equal(x86_64.class, 2)
+    t:are_equal(x86_64.encode, 1)
+    t:are_equal(x86_64.machine, 0x3e)
+    t:are_equal(x86_64.flags, 0)
+
+    -- mips is big-endian, mipsel is little-endian
+    local mips = _gen("mips")
+    t:are_equal(mips.encode, 2)
+    t:are_equal(mips.machine, 0x08)
+    local mipsel = _gen("mipsel")
+    t:are_equal(mipsel.encode, 1)
+    t:are_equal(mipsel.machine, 0x08)
+
+    -- ppc64 is big-endian
+    local ppc64 = _gen("ppc64")
+    t:are_equal(ppc64.encode, 2)
+
+    os.tryrm(tempdir)
+end
+
 function test_deplibs(t)
     local tempdir = "temp/binutils_deplibs"
     os.tryrm(tempdir)
