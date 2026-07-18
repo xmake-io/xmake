@@ -21,7 +21,7 @@
 rule("utils.bin2obj")
     set_extensions(".bin")
     add_orders("utils.bin2obj", "c++.build.modules.builder")
-    on_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
+    after_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
         import("rules.utils.bin2obj.utils", {alias = "bin2obj_utils", rootdir = os.programdir()})
 
         -- get zeroend (default: false)
