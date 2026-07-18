@@ -182,17 +182,25 @@ function test_bin2elf(t)
     t:are_equal(mips64el.machine, 0x08)
     t:are_equal(mips64el.flags, 0x4)
 
-    -- ppc64 is big-endian and uses the ELFv1 ABI (e_flags low bits == 1)
+    -- xmake has no separate ppc64le arch (find_platform maps powerpc64le -> ppc64) and
+    -- ppc64le is the dominant modern target, so a plain "ppc64" is treated as ppc64le:
+    -- little-endian + OpenPOWER ELFv2 ABI (e_flags low bits == 2)
     local ppc64 = _gen("ppc64")
-    t:are_equal(ppc64.encode, 2)
+    t:are_equal(ppc64.encode, 1)
     t:are_equal(ppc64.machine, 0x15)
-    t:are_equal(ppc64.flags, 0x1)
+    t:are_equal(ppc64.flags, 0x2)
 
-    -- ppc64le is little-endian and uses the OpenPOWER ELFv2 ABI (e_flags low bits == 2)
+    -- explicit ppc64le behaves the same
     local ppc64le = _gen("ppc64le")
     t:are_equal(ppc64le.encode, 1)
     t:are_equal(ppc64le.machine, 0x15)
     t:are_equal(ppc64le.flags, 0x2)
+
+    -- explicit big-endian ppc64be keeps the ELFv1 ABI
+    local ppc64be = _gen("ppc64be")
+    t:are_equal(ppc64be.encode, 2)
+    t:are_equal(ppc64be.machine, 0x15)
+    t:are_equal(ppc64be.flags, 0x1)
 
     os.tryrm(tempdir)
 end

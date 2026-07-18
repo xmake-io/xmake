@@ -241,9 +241,19 @@ static __tb_inline__ tb_bool_t xm_binutils_arch_is_bigendian(tb_char_t const *ar
     else if (tb_strncmp(arch, "mips", 4) == 0) {
         return tb_strstr(arch, "el") == tb_null;
     }
-    // PowerPC big-endian variants (ppc, ppc64), the little-endian ones end with "le" (ppc64le, powerpc64le)
+    // PowerPC endianness:
+    // - an explicit "le"/"be" suffix always wins (ppc64le/powerpc64le, ppc64be)
+    // - otherwise 64-bit ppc64/powerpc64 defaults to little-endian: xmake has no separate
+    //   ppc64le arch (find_platform maps powerpc64le -> ppc64) and ppc64le is the dominant
+    //   modern target, so a plain "ppc64" is treated as ppc64le (LE + OpenPOWER ELFv2)
+    // - 32-bit ppc stays traditional big-endian
     else if (tb_strncmp(arch, "ppc", 3) == 0 || tb_strncmp(arch, "powerpc", 7) == 0) {
-        return tb_strstr(arch, "le") == tb_null;
+        if (tb_strstr(arch, "le")) {
+            return tb_false;
+        } else if (tb_strstr(arch, "be")) {
+            return tb_true;
+        }
+        return !xm_binutils_arch_is_64bit(arch);
     }
     return tb_false;
 }
