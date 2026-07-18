@@ -303,12 +303,12 @@ tb_int_t xm_binutils_bin2coff(lua_State *lua) {
     } while (0);
 
     if (istream) {
-        tb_stream_clos(istream);
+        tb_stream_exit(istream);
     }
     istream = tb_null;
 
     if (ostream) {
-        tb_stream_clos(ostream);
+        tb_stream_exit(ostream);
     }
     ostream = tb_null;
 

@@ -34,11 +34,78 @@
  * private implementation
  */
 
+// write an ELF struct out in the target endianness (the struct is converted in place)
+static tb_bool_t xm_binutils_bin2elf_bwrit_header_32(tb_stream_ref_t ostream, xm_elf32_header_t* h, tb_bool_t be) {
+    xm_binutils_elf32_header_conv(h, be);
+    return tb_stream_bwrit(ostream, (tb_byte_t const *)h, sizeof(*h));
+}
+static tb_bool_t xm_binutils_bin2elf_bwrit_section_32(tb_stream_ref_t ostream, xm_elf32_section_t* s, tb_bool_t be) {
+    xm_binutils_elf32_section_conv(s, be);
+    return tb_stream_bwrit(ostream, (tb_byte_t const *)s, sizeof(*s));
+}
+static tb_bool_t xm_binutils_bin2elf_bwrit_symbol_32(tb_stream_ref_t ostream, xm_elf32_symbol_t* s, tb_bool_t be) {
+    xm_binutils_elf32_symbol_conv(s, be);
+    return tb_stream_bwrit(ostream, (tb_byte_t const *)s, sizeof(*s));
+}
+static tb_bool_t xm_binutils_bin2elf_bwrit_header_64(tb_stream_ref_t ostream, xm_elf64_header_t* h, tb_bool_t be) {
+    xm_binutils_elf64_header_conv(h, be);
+    return tb_stream_bwrit(ostream, (tb_byte_t const *)h, sizeof(*h));
+}
+static tb_bool_t xm_binutils_bin2elf_bwrit_section_64(tb_stream_ref_t ostream, xm_elf64_section_t* s, tb_bool_t be) {
+    xm_binutils_elf64_section_conv(s, be);
+    return tb_stream_bwrit(ostream, (tb_byte_t const *)s, sizeof(*s));
+}
+static tb_bool_t xm_binutils_bin2elf_bwrit_symbol_64(tb_stream_ref_t ostream, xm_elf64_symbol_t* s, tb_bool_t be) {
+    xm_binutils_elf64_symbol_conv(s, be);
+    return tb_stream_bwrit(ostream, (tb_byte_t const *)s, sizeof(*s));
+}
+
+/* read the identity (class/endianness/machine/e_flags) from a reference ELF object.
+ * returns tb_true and updates the out-params on success; leaves them untouched on any failure
+ * (missing file, too small, bad magic), so the caller keeps its arch-derived defaults.
+ */
+static tb_bool_t xm_binutils_bin2elf_read_refobj(tb_char_t const *refobj,
+    tb_bool_t *pis_64bit, tb_bool_t *pis_bigendian, tb_uint16_t *pe_machine, tb_uint32_t *pe_flags) {
+    tb_assert_and_check_return_val(refobj && pis_64bit && pis_bigendian && pe_machine && pe_flags, tb_false);
+
+    tb_bool_t ok = tb_false;
+    tb_stream_ref_t stream = tb_stream_init_from_file(refobj, TB_FILE_MODE_RO);
+    do {
+        // the 32-bit ELF header is 52 bytes; the 64-bit e_flags ends at offset 52 too
+        tb_byte_t hdr[52];
+        if (!stream || !tb_stream_open(stream)) break;
+        if (!tb_stream_bread(stream, hdr, sizeof(hdr))) break;
+
+        // verify the ELF magic (0x7f 'E' 'L' 'F')
+        if (hdr[0] != 0x7f || hdr[1] != 'E' || hdr[2] != 'L' || hdr[3] != 'F') break;
+
+        tb_bool_t is_64bit = (hdr[XM_ELF_EI_CLASS] == XM_ELF_CLASS64);
+        tb_bool_t is_bigendian = (hdr[5] == XM_ELF_DATA2MSB);
+
+        // e_machine at offset 18 (2 bytes); e_flags at offset 36 (32-bit) / 48 (64-bit), in target endianness
+        tb_uint16_t e_machine = is_bigendian? tb_bits_get_u16_be(hdr + 18) : tb_bits_get_u16_le(hdr + 18);
+        tb_byte_t const *pflags = hdr + (is_64bit? 48 : 36);
+        tb_uint32_t e_flags = is_bigendian? tb_bits_get_u32_be(pflags) : tb_bits_get_u32_le(pflags);
+
+        *pis_64bit = is_64bit;
+        *pis_bigendian = is_bigendian;
+        *pe_machine = e_machine;
+        *pe_flags = e_flags;
+        ok = tb_true;
+
+    } while (0);
+    if (stream) tb_stream_exit(stream);
+    return ok;
+}
+
 static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
                                           tb_stream_ref_t ostream,
                                           tb_char_t const *symbol_prefix,
                                           tb_char_t const *arch,
                                           tb_char_t const *basename,
+                                          tb_bool_t bigendian,
+                                          tb_uint16_t e_machine,
+                                          tb_uint32_t e_flags,
                                           tb_bool_t zeroend) {
     tb_assert_and_check_return_val(istream && ostream, tb_false);
 
@@ -117,25 +184,26 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     header.e_ident[2] = 'L';
     header.e_ident[3] = 'F';
     header.e_ident[XM_ELF_EI_CLASS] = XM_ELF_CLASS32;
-    header.e_ident[5] = 1; // ELFDATA2LSB
+    header.e_ident[5] = bigendian? XM_ELF_DATA2MSB : XM_ELF_DATA2LSB;
     header.e_ident[6] = 1; // EV_CURRENT
     header.e_ident[7] = 0; // ELFOSABI_SYSV
     header.e_type = 1; // ET_REL
-    header.e_machine = xm_binutils_elf_get_machine(arch);
+    header.e_machine = e_machine;
     header.e_version = 1;
+    header.e_flags = e_flags;
     header.e_shoff = section_headers_ofs;
     header.e_ehsize = header_size;
     header.e_shentsize = section_header_size;
     header.e_shnum = section_count;
     header.e_shstrndx = 4; // .shstrtab section index
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&header, sizeof(header))) {
+    if (!xm_binutils_bin2elf_bwrit_header_32(ostream, &header, bigendian)) {
         return tb_false;
     }
 
     // write section headers
     xm_elf32_section_t section_null;
     tb_memset(&section_null, 0, sizeof(section_null));
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_null, sizeof(section_null))) {
+    if (!xm_binutils_bin2elf_bwrit_section_32(ostream, &section_null, bigendian)) {
         return tb_false;
     }
 
@@ -148,7 +216,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     section_rodata.sh_offset = rodata_ofs;
     section_rodata.sh_size = rodata_size;
     section_rodata.sh_addralign = 4;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_rodata, sizeof(section_rodata))) {
+    if (!xm_binutils_bin2elf_bwrit_section_32(ostream, &section_rodata, bigendian)) {
         return tb_false;
     }
 
@@ -163,7 +231,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     section_symtab.sh_info = 1; // first global symbol index
     section_symtab.sh_addralign = 4;
     section_symtab.sh_entsize = sizeof(xm_elf32_symbol_t);
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_symtab, sizeof(section_symtab))) {
+    if (!xm_binutils_bin2elf_bwrit_section_32(ostream, &section_symtab, bigendian)) {
         return tb_false;
     }
 
@@ -175,7 +243,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     section_strtab.sh_offset = strtab_ofs;
     section_strtab.sh_size = strtab_size;
     section_strtab.sh_addralign = 1;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_strtab, sizeof(section_strtab))) {
+    if (!xm_binutils_bin2elf_bwrit_section_32(ostream, &section_strtab, bigendian)) {
         return tb_false;
     }
 
@@ -187,7 +255,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     section_shstrtab.sh_offset = shstrtab_ofs;
     section_shstrtab.sh_size = shstrtab_size;
     section_shstrtab.sh_addralign = 1;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_shstrtab, sizeof(section_shstrtab))) {
+    if (!xm_binutils_bin2elf_bwrit_section_32(ostream, &section_shstrtab, bigendian)) {
         return tb_false;
     }
 
@@ -200,7 +268,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     section_note_gnu_stack.sh_offset = shstrtab_ofs + shstrtab_size; // after .shstrtab
     section_note_gnu_stack.sh_size = 0; // empty section
     section_note_gnu_stack.sh_addralign = 1;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_note_gnu_stack, sizeof(section_note_gnu_stack))) {
+    if (!xm_binutils_bin2elf_bwrit_section_32(ostream, &section_note_gnu_stack, bigendian)) {
         return tb_false;
     }
 
@@ -230,7 +298,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     // symbol 0: NULL symbol
     xm_elf32_symbol_t sym_null;
     tb_memset(&sym_null, 0, sizeof(sym_null));
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_null, sizeof(sym_null))) {
+    if (!xm_binutils_bin2elf_bwrit_symbol_32(ostream, &sym_null, bigendian)) {
         return tb_false;
     }
 
@@ -242,7 +310,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     sym_start.st_shndx = 1; // .rodata section index
     sym_start.st_value = 0;
     sym_start.st_size = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start, sizeof(sym_start))) {
+    if (!xm_binutils_bin2elf_bwrit_symbol_32(ostream, &sym_start, bigendian)) {
         return tb_false;
     }
 
@@ -254,7 +322,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     sym_end.st_shndx = 1; // .rodata section index
     sym_end.st_value = rodata_size;
     sym_end.st_size = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end, sizeof(sym_end))) {
+    if (!xm_binutils_bin2elf_bwrit_symbol_32(ostream, &sym_end, bigendian)) {
         return tb_false;
     }
 
@@ -339,6 +407,9 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
                                           tb_char_t const *symbol_prefix,
                                           tb_char_t const *arch,
                                           tb_char_t const *basename,
+                                          tb_bool_t bigendian,
+                                          tb_uint16_t e_machine,
+                                          tb_uint32_t e_flags,
                                           tb_bool_t zeroend) {
     tb_assert_and_check_return_val(istream && ostream, tb_false);
 
@@ -417,25 +488,26 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     header.e_ident[2] = 'L';
     header.e_ident[3] = 'F';
     header.e_ident[XM_ELF_EI_CLASS] = XM_ELF_CLASS64;
-    header.e_ident[5] = 1; // ELFDATA2LSB
+    header.e_ident[5] = bigendian? XM_ELF_DATA2MSB : XM_ELF_DATA2LSB;
     header.e_ident[6] = 1; // EV_CURRENT
     header.e_ident[7] = 0; // ELFOSABI_SYSV
     header.e_type = 1; // ET_REL
-    header.e_machine = xm_binutils_elf_get_machine(arch);
+    header.e_machine = e_machine;
     header.e_version = 1;
+    header.e_flags = e_flags;
     header.e_shoff = section_headers_ofs;
     header.e_ehsize = header_size;
     header.e_shentsize = section_header_size;
     header.e_shnum = section_count;
     header.e_shstrndx = 4; // .shstrtab section index
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&header, sizeof(header))) {
+    if (!xm_binutils_bin2elf_bwrit_header_64(ostream, &header, bigendian)) {
         return tb_false;
     }
 
     // write section headers
     xm_elf64_section_t section_null;
     tb_memset(&section_null, 0, sizeof(section_null));
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_null, sizeof(section_null))) {
+    if (!xm_binutils_bin2elf_bwrit_section_64(ostream, &section_null, bigendian)) {
         return tb_false;
     }
 
@@ -448,7 +520,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     section_rodata.sh_offset = rodata_ofs;
     section_rodata.sh_size = rodata_size;
     section_rodata.sh_addralign = 8;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_rodata, sizeof(section_rodata))) {
+    if (!xm_binutils_bin2elf_bwrit_section_64(ostream, &section_rodata, bigendian)) {
         return tb_false;
     }
 
@@ -463,7 +535,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     section_symtab.sh_info = 1; // first global symbol index
     section_symtab.sh_addralign = 8;
     section_symtab.sh_entsize = sizeof(xm_elf64_symbol_t);
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_symtab, sizeof(section_symtab))) {
+    if (!xm_binutils_bin2elf_bwrit_section_64(ostream, &section_symtab, bigendian)) {
         return tb_false;
     }
 
@@ -475,7 +547,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     section_strtab.sh_offset = strtab_ofs;
     section_strtab.sh_size = strtab_size;
     section_strtab.sh_addralign = 1;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_strtab, sizeof(section_strtab))) {
+    if (!xm_binutils_bin2elf_bwrit_section_64(ostream, &section_strtab, bigendian)) {
         return tb_false;
     }
 
@@ -487,7 +559,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     section_shstrtab.sh_offset = shstrtab_ofs; // points to initial null byte
     section_shstrtab.sh_size = shstrtab_size; // size includes initial null and all strings
     section_shstrtab.sh_addralign = 1;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_shstrtab, sizeof(section_shstrtab))) {
+    if (!xm_binutils_bin2elf_bwrit_section_64(ostream, &section_shstrtab, bigendian)) {
         return tb_false;
     }
 
@@ -500,7 +572,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     section_note_gnu_stack.sh_offset = shstrtab_ofs + shstrtab_size; // after .shstrtab
     section_note_gnu_stack.sh_size = 0; // empty section
     section_note_gnu_stack.sh_addralign = 1;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&section_note_gnu_stack, sizeof(section_note_gnu_stack))) {
+    if (!xm_binutils_bin2elf_bwrit_section_64(ostream, &section_note_gnu_stack, bigendian)) {
         return tb_false;
     }
 
@@ -530,7 +602,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     // symbol 0: NULL symbol
     xm_elf64_symbol_t sym_null;
     tb_memset(&sym_null, 0, sizeof(sym_null));
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_null, sizeof(sym_null))) {
+    if (!xm_binutils_bin2elf_bwrit_symbol_64(ostream, &sym_null, bigendian)) {
         return tb_false;
     }
 
@@ -542,7 +614,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     sym_start.st_shndx = 1; // .rodata section index
     sym_start.st_value = 0;
     sym_start.st_size = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_start, sizeof(sym_start))) {
+    if (!xm_binutils_bin2elf_bwrit_symbol_64(ostream, &sym_start, bigendian)) {
         return tb_false;
     }
 
@@ -554,7 +626,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     sym_end.st_shndx = 1; // .rodata section index
     sym_end.st_value = rodata_size;
     sym_end.st_size = 0;
-    if (!tb_stream_bwrit(ostream, (tb_byte_t const *)&sym_end, sizeof(sym_end))) {
+    if (!xm_binutils_bin2elf_bwrit_symbol_64(ostream, &sym_end, bigendian)) {
         return tb_false;
     }
 
@@ -640,7 +712,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
 
 /* generate ELF object file from binary file
  *
- * local ok, errors = binutils.bin2elf(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend)
+ * local ok, errors = binutils.bin2elf(binaryfile, outputfile, symbol_prefix, arch, basename, zeroend, refobj)
  */
 tb_int_t xm_binutils_bin2elf(lua_State *lua) {
     tb_assert_and_check_return_val(lua, 0);
@@ -665,6 +737,13 @@ tb_int_t xm_binutils_bin2elf(lua_State *lua) {
     // get zeroend (optional, default: false)
     tb_bool_t zeroend = lua_toboolean(lua, 6);
 
+    /* get the reference object (optional): a real object emitted by the target toolchain.
+     * we mirror its class/endianness/machine/e_flags so the output matches exactly, instead of
+     * guessing from the (sometimes ambiguous) arch name. when absent/unreadable we fall back to
+     * deriving everything from the arch name.
+     */
+    tb_char_t const *refobj = lua_isstring(lua, 7) ? lua_tostring(lua, 7) : tb_null;
+
     // do dump
     tb_bool_t ok = tb_false;
     tb_stream_ref_t istream = tb_stream_init_from_file(binaryfile, TB_FILE_MODE_RO);
@@ -683,16 +762,23 @@ tb_int_t xm_binutils_bin2elf(lua_State *lua) {
             break;
         }
 
-        // choose 32-bit or 64-bit ELF based on architecture
+        /* resolve class/endian/machine/flags: derive from the arch name, then mirror the
+         * reference object if one was given and is a readable ELF (it wins over the heuristic) */
         tb_bool_t is_64bit = xm_binutils_elf_is_64bit(arch);
+        tb_bool_t is_bigendian = xm_binutils_elf_is_bigendian(arch);
+        tb_uint16_t e_machine = xm_binutils_elf_get_machine(arch);
+        tb_uint32_t e_flags = xm_binutils_elf_get_flags(arch);
+        if (refobj) {
+            xm_binutils_bin2elf_read_refobj(refobj, &is_64bit, &is_bigendian, &e_machine, &e_flags);
+        }
         if (is_64bit) {
-            if (!xm_binutils_bin2elf_dump_64(istream, ostream, symbol_prefix, arch, basename, zeroend)) {
+            if (!xm_binutils_bin2elf_dump_64(istream, ostream, symbol_prefix, arch, basename, is_bigendian, e_machine, e_flags, zeroend)) {
                 lua_pushboolean(lua, tb_false);
                 lua_pushfstring(lua, "bin2elf: dump data failed");
                 break;
             }
         } else {
-            if (!xm_binutils_bin2elf_dump_32(istream, ostream, symbol_prefix, arch, basename, zeroend)) {
+            if (!xm_binutils_bin2elf_dump_32(istream, ostream, symbol_prefix, arch, basename, is_bigendian, e_machine, e_flags, zeroend)) {
                 lua_pushboolean(lua, tb_false);
                 lua_pushfstring(lua, "bin2elf: dump data failed");
                 break;
@@ -705,11 +791,11 @@ tb_int_t xm_binutils_bin2elf(lua_State *lua) {
     } while (0);
 
     if (istream)
-        tb_stream_clos(istream);
+        tb_stream_exit(istream);
     istream = tb_null;
 
     if (ostream)
-        tb_stream_clos(ostream);
+        tb_stream_exit(ostream);
     ostream = tb_null;
 
     return ok ? 1 : 2;

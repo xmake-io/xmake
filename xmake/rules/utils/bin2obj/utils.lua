@@ -18,6 +18,21 @@
 -- @file        utils.lua
 --
 
+-- pick a reference object already compiled by the target's own toolchain
+--
+-- bin2obj mirrors its class/endianness/machine/e_flags, so the generated object matches the
+-- toolchain exactly instead of guessing from the (sometimes ambiguous) arch name. we reuse one
+-- of the target's own objects rather than compiling a dedicated probe; any object the toolchain
+-- emits carries the same identity. we return the first one that already exists on disk, skipping
+-- the object we are generating right now (which does not exist yet anyway).
+function _get_refobj(target, objectfile)
+    for _, obj in ipairs(target:objectfiles()) do
+        if obj ~= objectfile and os.isfile(obj) then
+            return obj
+        end
+    end
+end
+
 -- generate object file from binary file
 --
 -- @param target        the target
@@ -129,6 +144,15 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
     end
     if is_cosmocc then
         table.insert(argv, "--cosmocc")
+    end
+
+    -- mirror the toolchain's elf identity (endianness/machine/e_flags) from one of the target's
+    -- own compiled objects, so the output matches and links regardless of how the arch name maps
+    if format == "elf" and not is_cosmocc then
+        local refobj = _get_refobj(target, objectfile)
+        if refobj then
+            table.insert(argv, "--refobj=" .. refobj)
+        end
     end
     batchcmds:vlua("cli.binutils.bin2obj", argv)
 
