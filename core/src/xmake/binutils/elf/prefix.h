@@ -349,18 +349,20 @@ static __tb_inline__ tb_uint32_t xm_binutils_elf_get_flags(tb_char_t const *arch
     else if (tb_strncmp(arch, "loongarch", 9) == 0 || tb_strncmp(arch, "loong64", 7) == 0) {
         return XM_EF_LOONGARCH_ABI_DOUBLE_FLOAT | XM_EF_LOONGARCH_OBJABI_V1;
     }
-    // PowerPC64: encode the ELF ABI version in e_flags.
-    // little-endian ppc64le uses the OpenPOWER ELFv2 ABI, big-endian ppc64 uses ELFv1,
-    // matching the gcc/clang defaults (-mabi=elfv2 on LE, -mabi=elfv1 on BE).
-    // 32-bit PowerPC does not carry an ABI version (e_flags == 0).
+    /* PowerPC64: encode the ELF ABI version in e_flags.
+     * little-endian ppc64le uses the OpenPOWER ELFv2 ABI, big-endian ppc64 uses ELFv1,
+     * matching the gcc/clang defaults (-mabi=elfv2 on LE, -mabi=elfv1 on BE).
+     * 32-bit PowerPC does not carry an ABI version (e_flags == 0).
+     */
     else if (tb_strncmp(arch, "ppc64", 5) == 0 || tb_strncmp(arch, "powerpc64", 9) == 0) {
         return xm_binutils_arch_is_bigendian(arch)? XM_EF_PPC64_ABI_V1 : XM_EF_PPC64_ABI_V2;
     }
-    // MIPS: mark the object as CPIC so it links against both PIC and non-PIC objects, and
-    // tag the 32-bit variants with the o32 ABI to match the common GNU toolchains (n64 is
-    // implied by ELFCLASS64, so mips64/mips64el carry no ABI bit). the ISA level (top nibble)
-    // and fp/NaN bits are left at 0 (== "any") on purpose: overclaiming them would make the
-    // linker reject otherwise-compatible objects.
+    /* MIPS: mark the object as CPIC so it links against both PIC and non-PIC objects, and
+     * tag the 32-bit variants with the o32 ABI to match the common GNU toolchains (n64 is
+     * implied by ELFCLASS64, so mips64/mips64el carry no ABI bit). the ISA level (top nibble)
+     * and fp/NaN bits are left at 0 (== "any") on purpose: overclaiming them would make the
+     * linker reject otherwise-compatible objects.
+     */
     else if (tb_strncmp(arch, "mips", 4) == 0) {
         tb_uint32_t flags = XM_EF_MIPS_CPIC;
         if (!xm_binutils_arch_is_64bit(arch)) {

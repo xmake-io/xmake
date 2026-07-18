@@ -60,9 +60,10 @@ static tb_bool_t xm_binutils_bin2elf_bwrit_symbol_64(tb_stream_ref_t ostream, xm
     return tb_stream_bwrit(ostream, (tb_byte_t const *)s, sizeof(*s));
 }
 
-// read the identity (class/endianness/machine/e_flags) from a reference ELF object.
-// returns tb_true and updates the out-params on success; leaves them untouched on any failure
-// (missing file, too small, bad magic), so the caller keeps its arch-derived defaults.
+/* read the identity (class/endianness/machine/e_flags) from a reference ELF object.
+ * returns tb_true and updates the out-params on success; leaves them untouched on any failure
+ * (missing file, too small, bad magic), so the caller keeps its arch-derived defaults.
+ */
 static tb_bool_t xm_binutils_bin2elf_read_refobj(tb_char_t const *refobj,
     tb_bool_t *pis_64bit, tb_bool_t *pis_bigendian, tb_uint16_t *pe_machine, tb_uint32_t *pe_flags) {
     tb_assert_and_check_return_val(refobj && pis_64bit && pis_bigendian && pe_machine && pe_flags, tb_false);
@@ -736,10 +737,11 @@ tb_int_t xm_binutils_bin2elf(lua_State *lua) {
     // get zeroend (optional, default: false)
     tb_bool_t zeroend = lua_toboolean(lua, 6);
 
-    // get the reference object (optional): a real object emitted by the target toolchain.
-    // we mirror its class/endianness/machine/e_flags so the output matches exactly, instead of
-    // guessing from the (sometimes ambiguous) arch name. when absent/unreadable we fall back to
-    // deriving everything from the arch name.
+    /* get the reference object (optional): a real object emitted by the target toolchain.
+     * we mirror its class/endianness/machine/e_flags so the output matches exactly, instead of
+     * guessing from the (sometimes ambiguous) arch name. when absent/unreadable we fall back to
+     * deriving everything from the arch name.
+     */
     tb_char_t const *refobj = lua_isstring(lua, 7) ? lua_tostring(lua, 7) : tb_null;
 
     // do dump
@@ -760,8 +762,8 @@ tb_int_t xm_binutils_bin2elf(lua_State *lua) {
             break;
         }
 
-        // resolve class/endian/machine/flags: derive from the arch name, then mirror the
-        // reference object if one was given and is a readable ELF (it wins over the heuristic)
+        /* resolve class/endian/machine/flags: derive from the arch name, then mirror the
+         * reference object if one was given and is a readable ELF (it wins over the heuristic) */
         tb_bool_t is_64bit = xm_binutils_elf_is_64bit(arch);
         tb_bool_t is_bigendian = xm_binutils_elf_is_bigendian(arch);
         tb_uint16_t e_machine = xm_binutils_elf_get_machine(arch);
