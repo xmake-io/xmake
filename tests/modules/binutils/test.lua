@@ -160,16 +160,39 @@ function test_bin2elf(t)
     t:are_equal(x86_64.flags, 0)
 
     -- mips is big-endian, mipsel is little-endian
+    -- 32-bit variants use the o32 ABI + CPIC (e_flags == 0x1004)
     local mips = _gen("mips")
     t:are_equal(mips.encode, 2)
     t:are_equal(mips.machine, 0x08)
+    t:are_equal(mips.flags, 0x1004)
     local mipsel = _gen("mipsel")
     t:are_equal(mipsel.encode, 1)
     t:are_equal(mipsel.machine, 0x08)
+    t:are_equal(mipsel.flags, 0x1004)
 
-    -- ppc64 is big-endian
+    -- 64-bit variants use the n64 ABI (implied by ELFCLASS64) + CPIC (e_flags == 0x4)
+    local mips64 = _gen("mips64")
+    t:are_equal(mips64.class, 2)
+    t:are_equal(mips64.encode, 2)
+    t:are_equal(mips64.machine, 0x08)
+    t:are_equal(mips64.flags, 0x4)
+    local mips64el = _gen("mips64el")
+    t:are_equal(mips64el.class, 2)
+    t:are_equal(mips64el.encode, 1)
+    t:are_equal(mips64el.machine, 0x08)
+    t:are_equal(mips64el.flags, 0x4)
+
+    -- ppc64 is big-endian and uses the ELFv1 ABI (e_flags low bits == 1)
     local ppc64 = _gen("ppc64")
     t:are_equal(ppc64.encode, 2)
+    t:are_equal(ppc64.machine, 0x15)
+    t:are_equal(ppc64.flags, 0x1)
+
+    -- ppc64le is little-endian and uses the OpenPOWER ELFv2 ABI (e_flags low bits == 2)
+    local ppc64le = _gen("ppc64le")
+    t:are_equal(ppc64le.encode, 1)
+    t:are_equal(ppc64le.machine, 0x15)
+    t:are_equal(ppc64le.flags, 0x2)
 
     os.tryrm(tempdir)
 end
