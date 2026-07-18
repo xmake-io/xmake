@@ -238,7 +238,7 @@ function compiler:build(sourcefiles, targetfile, opt)
     if not targetkind and opt.target and opt.target.targetkind then
         targetkind = opt.target:kind()
     end
-    return sandbox.load(self:_tool().build, self:_tool(), sourcefiles, targetkind or "binary", targetfile, flags, opt)
+    return sandbox.call(self:_tool().build, self:_tool(), sourcefiles, targetkind or "binary", targetfile, flags, opt)
 end
 
 -- get the build arguments list (compile and link)
@@ -297,7 +297,7 @@ function compiler:compile(sourcefiles, objectfile, opt)
     opt = table.copy(opt)
     opt.target = self:target()
     profiler:enter(self:name(), "compile", sourcefiles)
-    local ok, errors = sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.dependinfo, compflags, opt)
+    local ok, errors = sandbox.call(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.dependinfo, compflags, opt)
     profiler:leave(self:name(), "compile", sourcefiles)
     return ok, errors
 end

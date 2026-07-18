@@ -50,7 +50,7 @@ function _instance:get(name)
     end
 
     if self._g == nil and info.load ~= nil then
-        local ok, results = sandbox.load(info.load)
+        local ok, results = sandbox.call(info.load)
         if not ok then
             os.raise(results)
         end

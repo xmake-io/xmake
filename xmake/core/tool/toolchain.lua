@@ -356,7 +356,7 @@ function _instance:check()
     if checked == nil then
         local on_check = self:_on_check()
         if on_check then
-            local ok, results_or_errors = sandbox.load(on_check, self)
+            local ok, results_or_errors = sandbox.call(on_check, self)
             if ok then
                 checked = results_or_errors
             else
@@ -449,7 +449,7 @@ function _instance:_load()
         local on_load = self:_on_load()
         if on_load then
             info:set("__loading", true)
-            local ok, errors = sandbox.load(on_load, self)
+            local ok, errors = sandbox.call(on_load, self)
             info:set("__loading", false)
             if not ok then
                 os.raise(errors)

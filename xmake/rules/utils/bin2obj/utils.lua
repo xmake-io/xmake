@@ -35,6 +35,7 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
     opt = opt or {}
     local rulename = opt.rulename or "utils.bin2obj"
     local progress = opt.progress
+    local fileconfig = target:fileconfig(binaryfile)
 
     -- check for cosmocc toolchain
     local is_cosmocc = target:toolchain("cosmocc") or (target:has_tool("cc", "cosmocc") and target:has_tool("ar", "cosmoar"))
@@ -51,6 +52,16 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
         else
             format = "elf"
         end
+    end
+
+    -- transform binary data first
+    -- @see https://github.com/xmake-io/xmake/issues/7513
+    local transform = opt.transform or (fileconfig and fileconfig.transform) or target:extraconf("rules", rulename, "transform")
+    if transform then
+        batchcmds:show_progress(progress, "${color.build.object}transforming.bin2obj %s", binaryfile)
+        local transformed_file = target:autogenfile(binaryfile)
+        batchcmds:call(transform, {binaryfile, transformed_file}, {name = "bin2obj/transform", target = target})
+        binaryfile = transformed_file
     end
 
     -- get object file
@@ -74,6 +85,9 @@ function generate_objectfile(target, batchcmds, binaryfile, opt)
 
     -- get zeroend (default: false, but can be overridden)
     local zeroend = opt.zeroend
+    if zeroend == nil then
+        zeroend = fileconfig and fileconfig.zeroend
+    end
     if zeroend == nil then
         zeroend = target:extraconf("rules", rulename, "zeroend") or false
     end

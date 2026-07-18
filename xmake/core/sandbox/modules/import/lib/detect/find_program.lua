@@ -64,7 +64,7 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
     elseif type(opt.check) == "table" then
         ok, errors = os.runv(program, opt.check, {envs = opt.envs, shell = opt.shell})
     else
-        ok, errors = sandbox.load(opt.check, program)
+        ok, errors = sandbox.call(opt.check, program)
     end
 
     -- check failed? print verbose error info
@@ -112,7 +112,7 @@ function sandbox_lib_detect_find_program._find_from_paths(name, paths, opt)
 
             -- format path for builtin variables
             if type(_path) == "function" then
-                local ok, results = sandbox.load(_path)
+                local ok, results = sandbox.call(_path)
                 if ok then
                     _path = results or ""
                 else

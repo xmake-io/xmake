@@ -24,15 +24,9 @@ rule("utils.bin2obj")
     on_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
         import("rules.utils.bin2obj.utils", {alias = "bin2obj_utils", rootdir = os.programdir()})
 
-        -- get zeroend (default: false)
-        -- check file-level config first, then rule-level config
-        local fileconfig = target:fileconfig(sourcefile_bin)
-        local zeroend = (fileconfig and fileconfig.zeroend) or target:extraconf("rules", "utils.bin2obj", "zeroend") or false
-
         -- convert binary file to object file
         local objectfile = bin2obj_utils.generate_objectfile(target, batchcmds, sourcefile_bin, {
             progress = opt.progress,
-            zeroend = zeroend
         })
 
         -- add deps
