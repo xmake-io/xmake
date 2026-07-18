@@ -82,7 +82,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
             lua_pushfstring(lua, "cannot detect file format");
             break;
         }
-        
+
         // create result list
         lua_newtable(lua);
 
@@ -160,7 +160,7 @@ tb_int_t xm_binutils_readsyms(lua_State *lua) {
     } while (0);
 
     if (istream) {
-        tb_stream_clos(istream);
+        tb_stream_exit(istream);
     }
     istream = tb_null;
 

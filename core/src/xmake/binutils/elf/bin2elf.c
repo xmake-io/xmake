@@ -94,7 +94,7 @@ static tb_bool_t xm_binutils_bin2elf_read_refobj(tb_char_t const *refobj,
         ok = tb_true;
 
     } while (0);
-    if (stream) tb_stream_clos(stream);
+    if (stream) tb_stream_exit(stream);
     return ok;
 }
 
@@ -791,11 +791,11 @@ tb_int_t xm_binutils_bin2elf(lua_State *lua) {
     } while (0);
 
     if (istream)
-        tb_stream_clos(istream);
+        tb_stream_exit(istream);
     istream = tb_null;
 
     if (ostream)
-        tb_stream_clos(ostream);
+        tb_stream_exit(ostream);
     ostream = tb_null;
 
     return ok ? 1 : 2;
