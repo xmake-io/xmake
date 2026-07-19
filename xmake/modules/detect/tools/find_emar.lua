@@ -83,5 +83,24 @@ function main(opt)
     end
 
     -- find program
-    return find_program(opt.program or (is_host("windows") and "emar.bat" or "emar"), opt)
+    -- emsdk 6.0.0+ ships .exe on windows, older releases ship .bat
+    local program
+    if opt.program then
+        program = find_program(opt.program, opt)
+    else
+        local candidate_names
+        if is_host("windows") then
+            candidate_names = {"emar.exe", "emar.bat"}
+        else
+            candidate_names = {"emar"}
+        end
+        for _, name in ipairs(candidate_names) do
+            program = find_program(name, opt)
+            if program then
+                break
+            end
+        end
+    end
+
+    return program
 end

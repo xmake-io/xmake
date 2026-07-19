@@ -50,7 +50,24 @@ function main(opt)
     end
 
     -- find program
-    local program = find_program(opt.program or (is_host("windows") and "em++.bat" or "em++"), opt)
+    -- emsdk 6.0.0+ ships .exe on windows, older releases ship .bat
+    local program
+    if opt.program then
+        program = find_program(opt.program, opt)
+    else
+        local candidate_names
+        if is_host("windows") then
+            candidate_names = {"em++.exe", "em++.bat"}
+        else
+            candidate_names = {"em++"}
+        end
+        for _, name in ipairs(candidate_names) do
+            program = find_program(name, opt)
+            if program then
+                break
+            end
+        end
+    end
 
     -- find program version
     local version = nil

@@ -25,14 +25,25 @@ toolchain("emcc")
 
     set_kind("standalone")
 
-    local suffix = is_host("windows") and ".bat" or ""
-    set_toolset("cc", "emcc" .. suffix)
-    set_toolset("cxx", "emcc" .. suffix, "em++" .. suffix)
-    set_toolset("ld", "em++" .. suffix, "emcc" .. suffix)
-    set_toolset("sh", "em++" .. suffix, "emcc" .. suffix)
-    set_toolset("ar", "emar" .. suffix)
-    set_toolset("as", "emcc" .. suffix)
-    set_toolset("ranlib", "emranlib" .. suffix)
+    local function toolnames(...)
+        local result = {}
+        for _, basename in ipairs({...}) do
+            if is_host("windows") then
+                table.insert(result, basename .. ".exe")
+                table.insert(result, basename .. ".bat")
+            else
+                table.insert(result, basename)
+            end
+        end
+        return table.unpack(result)
+    end
+    set_toolset("cc", toolnames("emcc"))
+    set_toolset("cxx", toolnames("emcc", "em++"))
+    set_toolset("ld", toolnames("em++", "emcc"))
+    set_toolset("sh", toolnames("em++", "emcc"))
+    set_toolset("ar", toolnames("emar"))
+    set_toolset("as", toolnames("emcc"))
+    set_toolset("ranlib", toolnames("emranlib"))
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
@@ -82,4 +93,3 @@ toolchain("emcc")
             end
         end
     end)
-
