@@ -286,6 +286,16 @@ function nf_runtime(self, runtime, opt)
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
                     maps["stdc++_static"] = table.join(maps["stdc++_static"], "-static-libstdc++")
+                    -- statically link libc++. -static-libstdc++ only pulls in libc++.a, so when libc++abi
+                    -- is a separate archive we link both in a group (they reference each other), otherwise
+                    -- (bundled abi) fall back to -static-libstdc++.
+                    -- @see https://github.com/xmake-io/xmake/issues/7656, https://github.com/xmake-io/xmake/issues/7442
+                    if llvm_dirs.libcxx_static and llvm_dirs.libcxxabi_static then
+                        maps["c++_static"] = table.join(maps["c++_static"], "-nostdlib++",
+                            "-Wl,--start-group", llvm_dirs.libcxx_static, llvm_dirs.libcxxabi_static, "-Wl,--end-group")
+                    else
+                        maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
+                    end
                 end
             end
         end
