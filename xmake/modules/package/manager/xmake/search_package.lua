@@ -27,31 +27,43 @@ function _search_package(packages, name, opt)
         local packagename = packageinfo.name
         local packagedata = packageinfo.data
 
-        local version
-        local versions = packagedata.versions
-        if versions then
-            versions = table.copy(versions)
-            table.sort(versions, function (a, b) return semver.compare(a, b) > 0 end)
-            if opt.require_version then
-                for _, ver in ipairs(versions) do
-                    if semver.satisfies(ver, opt.require_version) then
-                        version = ver
+        -- only search the packages with the given kind, e.g. plugin,
+        -- and we will ignore the plugin packages by default
+        local kind_matched
+        if opt.kind then
+            kind_matched = packagedata.kind == opt.kind
+        else
+            kind_matched = packagedata.kind ~= "plugin"
+        end
+        if kind_matched then
+
+            local version
+            local versions = packagedata.versions
+            if versions then
+                versions = table.copy(versions)
+                table.sort(versions, function (a, b) return semver.compare(a, b) > 0 end)
+                if opt.require_version then
+                    for _, ver in ipairs(versions) do
+                        if semver.satisfies(ver, opt.require_version) then
+                            version = ver
+                        end
                     end
+                else
+                    version = versions[1]
                 end
-            else
-                version = versions[1]
             end
-        end
 
-        local description = packagedata.description
-        if description then
-            description = description:gsub(string.ipattern(name), function (w)
-                return "${bright}" .. w .. "${clear}"
-            end)
-        end
+            local description = packagedata.description
+            -- do not highlight the description if the pattern starts with a quantifier, e.g. `xrepo search -k plugin "*"`
+            if description and not name:startswith("*") and not name:startswith("+") then
+                description = description:gsub(string.ipattern(name), function (w)
+                    return "${bright}" .. w .. "${clear}"
+                end)
+            end
 
-        if not opt.require_version or version then
-            packages[packagename] = {name = packagename, version = version, description = description, reponame = packagedata.reponame}
+            if not opt.require_version or version then
+                packages[packagename] = {name = packagename, version = version, description = description, reponame = packagedata.reponame, kind = packagedata.kind}
+            end
         end
     end
 end

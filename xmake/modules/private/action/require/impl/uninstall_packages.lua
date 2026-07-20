@@ -21,6 +21,7 @@
 -- imports
 import("core.cache.localcache")
 import("private.action.require.impl.package")
+import("private.action.require.impl.utils.plugins")
 
 -- uninstall packages
 -- uninstall required packages
@@ -46,6 +47,10 @@ function main(requires, opt)
             table.insert(packages, instance)
         end
         os.tryrm(instance:installdir())
+        -- unregister the plugin package from the global plugins directory
+        if instance:is_plugin() then
+            plugins.unregister(instance:name())
+        end
     end
     return packages
 end

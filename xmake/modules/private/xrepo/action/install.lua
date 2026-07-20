@@ -30,8 +30,8 @@ function menu_options()
     -- menu options
     local options =
     {
-        {'k', "kind",          "kv", nil, "Enable static/shared library.",
-                                       values = {"static", "shared"}         },
+        {'k', "kind",          "kv", nil, "Enable static/shared library or install plugin package.",
+                                       values = {"static", "shared", "plugin"}},
         {'p', "plat",          "kv", nil, "Set the given platform."          },
         {'a', "arch",          "kv", nil, "Set the given architecture."      },
         {'m', "mode",          "kv", nil, "Set the given mode.",
@@ -47,6 +47,10 @@ function menu_options()
                                        "e.g.",
                                        "    - xrepo install -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
         {nil, "policies",      "kv", nil, "Set the policies."                },
+        {nil, "repo",          "kv", nil, "Set the given repository.",
+                                       "e.g.",
+                                       "    - xrepo install --repo=my-repo zlib",
+                                       "    - xrepo install -k plugin --repo=my-repo hello-world"},
         {category = "Visual Studio SDK Configuration"                        },
         {nil, "vs",            "kv", nil, "The Microsoft Visual Studio"
                                         , "  e.g. --vs=2017"                 },
@@ -93,6 +97,7 @@ function menu_options()
                                        "    - xrepo install -p android [--ndk=/xxx] -m debug \"pcre2 10.x\"",
                                        "    - xrepo install -p mingw [--mingw=/xxx] -k shared zlib",
                                        "    - xrepo install conan::zlib/1.2.11 vcpkg::zlib",
+                                       "    - xrepo install -k plugin hello-world",
                                         values = function (complete, opt) return import("private.xrepo.quick_search.completion")(complete, opt) end}
     }
 
@@ -178,7 +183,7 @@ function _install_packages(packages)
         table.insert(config_argv, mode)
     end
     local kind  = option.get("kind")
-    if kind then
+    if kind and kind ~= "plugin" then
         table.insert(config_argv, "-k")
         table.insert(config_argv, kind)
     end
@@ -246,7 +251,15 @@ function _install_packages(packages)
     if #rcfiles > 0 then
         envs.XMAKE_RCFILES = path.joinenv(rcfiles)
     end
-    os.vrunv(os.programfile(), config_argv, {envs = envs})
+    -- we can skip the repeated configuration and toolchain detection to speed up the plugin installation,
+    -- because the plugin package is host-only and does not depend on any build configuration.
+    -- we only skip it if no extra configuration arguments are given, e.g. `xrepo install -k plugin hello`
+    if kind == "plugin" and #config_argv == 3
+        and os.isfile(path.join(workdir, ".xmake", os.host(), os.arch(), "xmake.conf")) then
+        vprint("skip the configuration for installing plugins")
+    else
+        os.vrunv(os.programfile(), config_argv, {envs = envs})
+    end
 
     -- do install
     local require_argv = {"require"}
@@ -285,7 +298,9 @@ function _install_packages(packages)
     if mode == "debug" then
         extra.debug = true
     end
-    if kind then
+    if kind == "plugin" then
+        extra.kind = "plugin"
+    elseif kind then
         extra.configs = extra.configs or {}
         extra.configs.shared = kind == "shared"
     end
@@ -305,6 +320,18 @@ function _install_packages(packages)
         if extra then
             local extra_str = string.serialize(extra, {indent = false, strip = true})
             table.insert(require_argv, "--extra=" .. extra_str)
+        end
+        -- install the packages from the given repository, e.g. xrepo install --repo=my-repo zlib
+        local repo = option.get("repo")
+        if repo then
+            local result = {}
+            for _, name in ipairs(packages) do
+                if not name:find("@", 1, true) and not name:find("::", 1, true) then
+                    name = repo .. "@" .. name
+                end
+                table.insert(result, name)
+            end
+            packages = result
         end
         table.join2(require_argv, packages)
     end

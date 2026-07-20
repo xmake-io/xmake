@@ -27,8 +27,47 @@ import("core.package.repository")
 import("devel.git")
 import("net.proxy")
 
+-- find the package directory in the given repository directory
+--
+-- the layout of repository:
+--
+-- packages/z/zlib/xmake.lua
+-- plugins/hello/xmake.lua
+-- plugins/h/hello/xmake.lua
+--
+function _find_packagedir(repodir, packagename, opt)
+    opt = opt or {}
+    local dirs = {path.join("packages", packagename:sub(1, 1), packagename)}
+    -- we only find the plugin directories if this repository has plugins,
+    -- it can avoid unnecessary filesystem access, because most repositories only have packages
+    local has_plugins = _g._HAS_PLUGINS
+    if has_plugins == nil then
+        has_plugins = {}
+        _g._HAS_PLUGINS = has_plugins
+    end
+    if has_plugins[repodir] == nil then
+        has_plugins[repodir] = os.isdir(path.join(repodir, "plugins"))
+    end
+    if has_plugins[repodir] then
+        local plugindirs = {path.join("plugins", packagename),
+                            path.join("plugins", packagename:sub(1, 1), packagename)}
+        if opt.kind == "plugin" then
+            -- find it from the plugin directories first
+            dirs = table.join(plugindirs, dirs)
+        else
+            table.join2(dirs, plugindirs)
+        end
+    end
+    for _, dir in ipairs(dirs) do
+        dir = path.join(repodir, dir)
+        if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) then
+            return dir
+        end
+    end
+end
+
 -- get package directory from the locked repository
-function _get_packagedir_from_locked_repo(packagename, locked_repo)
+function _get_packagedir_from_locked_repo(packagename, locked_repo, opt)
 
     -- find global repository directory
     local repo_global
@@ -101,8 +140,8 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
     -- find package directory
     local foundir
     if ok then
-        local dir = path.join(repodir_local, "packages", packagename:sub(1, 1), packagename)
-        if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) then
+        local dir = _find_packagedir(repodir_local, packagename, opt)
+        if dir then
             local repo = repository.load(reponame, locked_repo.url, locked_repo.branch, false)
             foundir = {dir, repo}
             vprint("lock package(%s) in %s from repository(%s)/%s", packagename, dir, locked_repo.url, locked_repo.commit)
@@ -163,6 +202,11 @@ function packagedir(packagename, opt)
     -- get cache key
     local reponame = opt.name
     local cachekey = packagename
+    if opt.kind then
+        -- use a separator that cannot appear in package names to avoid key collision,
+        -- e.g. package("helloplugin") and plugin("hello")
+        cachekey = cachekey .. "\0" .. opt.kind
+    end
     local locked_repo = opt.locked_repo
     if locked_repo then
         cachekey = cachekey .. locked_repo.url .. (locked_repo.commit or "") .. (locked_repo.branch or "")
@@ -179,14 +223,14 @@ function packagedir(packagename, opt)
 
         -- find the package directory from the locked repository
         if locked_repo then
-            foundir = _get_packagedir_from_locked_repo(packagename, locked_repo)
+            foundir = _get_packagedir_from_locked_repo(packagename, locked_repo, opt)
         end
 
         -- find the package directory from repositories
         if not foundir then
             for _, repo in ipairs(repositories()) do
-                local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1), packagename)
-                if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) and (not reponame or reponame == repo:name()) then
+                local dir = _find_packagedir(repo:directory(), packagename, opt)
+                if dir and (not reponame or reponame == repo:name()) then
                     foundir = {dir, repo}
                     break
                 end
