@@ -457,6 +457,7 @@ function get_llvm_dirs(toolchain)
         end
 
         local bindir, libdir, cxxlibdir, includedir, cxxincludedir, resourcedir, rtdir, rtlink, rtlibdir
+        local libcxx_static, libcxxabi_static
         if rootdir then
             bindir = path.join(rootdir, "bin")
             bindir = os.isdir(bindir) and bindir or nil
@@ -472,6 +473,19 @@ function get_llvm_dirs(toolchain)
                     if target_triple then
                         cxxlibdir = path.join(libdir, target_triple)
                         cxxlibdir = os.isdir(cxxlibdir) and cxxlibdir or nil
+                    end
+                end
+            end
+
+            -- detect the static c++ runtime archives (for --runtimes=c++_static with libc++)
+            if libdir then
+                local staticdirs = cxxlibdir and {cxxlibdir, libdir} or {libdir}
+                for _, dir in ipairs(staticdirs) do
+                    if not libcxx_static and os.isfile(path.join(dir, "libc++.a")) then
+                        libcxx_static = path.join(dir, "libc++.a")
+                    end
+                    if not libcxxabi_static and os.isfile(path.join(dir, "libc++abi.a")) then
+                        libcxxabi_static = path.join(dir, "libc++abi.a")
                     end
                 end
             end
@@ -502,7 +516,9 @@ function get_llvm_dirs(toolchain)
                      resourcedir = resourcedir,
                      rtdir = rtdir,
                      rtlibdir = rtlibdir,
-                     rtlink = rtlink }
+                     rtlink = rtlink,
+                     libcxx_static = libcxx_static,
+                     libcxxabi_static = libcxxabi_static }
         memcache:set(cachekey, llvm_dirs)
       end
       return llvm_dirs
