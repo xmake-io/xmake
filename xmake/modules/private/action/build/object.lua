@@ -27,6 +27,68 @@ import("private.cache.build_cache")
 import("async.runjobs")
 import("utils.progress")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
+import("rules.c++.modules.support", {alias = "modules_support", rootdir = os.programdir(), try = true})
+import("rules.c++.modules.mapper", {alias = "modules_mapper", rootdir = os.programdir(), try = true})
+
+-- @see https://github.com/xmake-io/xmake/issues/7530
+-- When build.c++.modules.reuse is enabled, a regular (non-.cppm) source file
+-- that imports C++ modules gets "stolen back" into this plain c++.build
+-- sourcebatch by rules/c++/modules/scanner.lua whenever it doesn't itself
+-- provide a named module (e.g. a module implementation unit written as a
+-- .cpp file). This generic jobgraph path has no notion of module import
+-- dependencies, unlike rules/c++/modules/builder.lua's build_modules_for_jobgraph,
+-- so under parallel jobgraph scheduling a reused module's producer job can
+-- race with this job and fail with "module file '...' not found". This
+-- mirrors builder.lua's _get_jobdeps ordering logic for that case only;
+-- targets without C++ modules are completely unaffected.
+local function _add_module_reuse_jobdeps(target, jobgraph, sourcefile, jobname)
+    if not (modules_support and modules_mapper) then
+        return
+    end
+    try
+    {
+        function()
+            if not modules_support.contains_modules(target) then
+                return
+            end
+            local module = modules_mapper.get(target, sourcefile)
+            if not (module and module.deps) then
+                return
+            end
+            local moduletype = modules_support.has_two_phase_compilation_support(target) and "bmi" or "onephase"
+            for dep_name, dep in pairs(module.deps) do
+                local dep_key = dep.headerunit and (dep_name .. dep.key) or dep_name
+                local dep_module = modules_mapper.get(target, dep_key)
+                if dep_module then
+                    local dep_sourcefile = dep_module.sourcefile
+                    if dep.headerunit then
+                        dep_sourcefile = dep_sourcefile .. dep_module.key
+                    end
+                    local reused, from = modules_support.is_reused(target, dep_sourcefile)
+                    if reused then
+                        local dep_jobname = from:fullname() .. "/modules/build/" .. moduletype .. "/" .. dep_sourcefile
+                        if jobgraph:has(dep_jobname) then
+                            jobgraph:add_orders(dep_jobname, jobname)
+                        else
+                            local memcache = modules_support.memcache()
+                            local dependent_jobs = memcache:get2("dependent_jobs", dep_jobname) or {}
+                            table.insert(dependent_jobs, jobname)
+                            memcache:set2("dependent_jobs", dep_jobname, dependent_jobs)
+                        end
+                    end
+                end
+            end
+        end,
+        catch
+        {
+            function(errors)
+                if option.get("diagnosis") then
+                    print("_add_module_reuse_jobdeps(%s, %s) failed: %s", target:fullname(), sourcefile, errors)
+                end
+            end
+        }
+    }
+end
 
 -- do build file
 function _do_build_file(target, sourcefile, opt)
@@ -168,6 +230,7 @@ function _add_jobgraph(target, jobgraph, sourcebatch, opt)
             local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = jobopt.progress}, opt)
             build_object(target, sourcefile, build_opt)
         end, {distcc = opt.distcc})
+        _add_module_reuse_jobdeps(target, jobgraph, sourcefile, jobname)
     end
 end
 
