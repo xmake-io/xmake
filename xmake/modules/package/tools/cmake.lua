@@ -943,6 +943,10 @@ function _get_configs(package, configs, opt)
         end
     end
 
+    if not opt._configs_str:find("CMAKE_INTERPROCEDURAL_OPTIMIZATION", 1, true) then
+        table.insert(configs, "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF")
+    end
+
     -- fix error for cmake 4.x
     -- e.g. Compatibility with CMake < 3.5 has been removed from CMake.
     if _get_cmake_version() and _get_cmake_version():ge("4.0") then
