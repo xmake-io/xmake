@@ -64,7 +64,10 @@ function _install_for_classic(vcpkg, name, opt)
     end
 
     -- install package
-    os.vrunv(vcpkg, argv)
+    -- run in a neutral directory so that a project-owned vcpkg.json in the current working
+    -- directory does not switch vcpkg into manifest mode (which rejects package arguments).
+    -- @see https://github.com/xmake-io/xmake/issues/7660
+    os.vrunv(vcpkg, argv, {curdir = vcpkg_utils.classic_curdir()})
 end
 
 -- install for manifest mode

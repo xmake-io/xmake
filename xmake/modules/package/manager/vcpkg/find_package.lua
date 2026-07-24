@@ -212,7 +212,6 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
     if required_features then
         depend_name = name .. "[" .. table.concat(required_features, ",") .. "]"
     end
-    local result = nil
     local argv = {"depend-info", depend_name, "--sort=reverse", "--triplet=" .. triplet}
 
     -- pass feature flags to depend-info when in manifest mode, otherwise depend-info will not show the complete dependency tree with features
@@ -220,27 +219,40 @@ function _find_package(vcpkg, vcpkgdir, name, opt)
         table.insert(argv, 1, "--feature-flags=versions")
     end
 
-    local _, dependinfo = try { function () return os.iorunv(vcpkg, argv, manifest_mode and {curdir = opt.installdir} or nil) end }
+    local _, dependinfo = try { function () return os.iorunv(vcpkg, argv, {curdir = manifest_mode and opt.installdir or vcpkg_utils.classic_curdir()}) end }
     if manifest_mode and not dependinfo then
-        -- fallback: newer vcpkg-tool no longer accepts the package name as a positional argument,
-        -- drop it and retry. see https://github.com/microsoft/vcpkg-tool/pull/1909
+        -- fallback: in manifest mode vcpkg rejects the package name as a positional argument, so
+        -- drop it and query the manifest's dependency tree instead.
+        -- see https://github.com/microsoft/vcpkg-tool/pull/1909
         table.remove(argv, 3)
         _, dependinfo = try { function () return os.iorunv(vcpkg, argv, {curdir = opt.installdir}) end }
     end
+
+    -- collect the packages to read info from: always the main package (its .list file was found
+    -- above, so it is known-installed), plus any transitive dependencies reported by depend-info.
+    -- this keeps resolution working even when depend-info fails, e.g. a project-owned vcpkg.json
+    -- puts vcpkg in manifest mode and it rejects arguments; only transitive deps are then missing.
+    -- @see https://github.com/xmake-io/xmake/issues/7660
+    local packagenames = {name}
     if dependinfo then
         for _, line in ipairs(dependinfo:split("\n", {plain = true})) do
             if not line:startswith("vcpkg-") then
                 local packagename = line:match("^([^%[:]+)[^:]*:")
                 if packagename then
-                    local dependencyresult = _get_package_info(packagename, triplet, infodirs, arch, plat, mode)
-                    if dependencyresult then
-                        result = result or {}
-                        for key, dependencylist in pairs(dependencyresult) do
-                            result[key] = result[key] or {}
-                            table.join2(result[key], dependencylist)
-                        end
-                    end
+                    table.insert(packagenames, packagename)
                 end
+            end
+        end
+    end
+
+    local result = nil
+    for _, packagename in ipairs(table.unique(packagenames)) do
+        local dependencyresult = _get_package_info(packagename, triplet, infodirs, arch, plat, mode)
+        if dependencyresult then
+            result = result or {}
+            for key, dependencylist in pairs(dependencyresult) do
+                result[key] = result[key] or {}
+                table.join2(result[key], dependencylist)
             end
         end
     end
