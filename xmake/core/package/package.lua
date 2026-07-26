@@ -585,7 +585,6 @@ end
 -- - toolchain (is also binary)
 -- - library(default)
 -- - template
--- - plugin
 --
 function _instance:kind()
     local kind
@@ -625,13 +624,6 @@ function _instance:is_template()
     return self:kind() == "template"
 end
 
--- is plugin package?
---
--- @return      true if the package kind is "plugin"
---
-function _instance:is_plugin()
-    return self:kind() == "plugin"
-end
 
 -- is header-only library?
 --
@@ -760,9 +752,7 @@ function _instance:is_host()
     if requireinfo and requireinfo.host then
         return true
     end
-    -- we only get the kind once, because this function will be called frequently. e.g. in plat()/arch()
-    local kind = self:kind()
-    return kind == "binary" or kind == "toolchain" or kind == "plugin"
+    return self:is_binary()
 end
 
 -- is cross-compilation?
@@ -1715,10 +1705,6 @@ function _instance:buildhash()
             if label then
                 str = str .. label
             end
-            -- we need to distinguish the install directories of the plugin and package with the same name
-            if self:is_plugin() then
-                str = str .. "plugin"
-            end
             if configs then
 
                 -- with old vs_runtime configs
@@ -2125,16 +2111,6 @@ function _instance:fetch(opt)
             fetchinfo = self:_fetch_tool({system = true, require_version = require_ver, force = opt.force})
             if fetchinfo then
                 is_system = true
-            end
-        end
-    elseif self:is_plugin() then
-
-        -- we can only fetch the plugin package from the xmake repository
-        if system ~= true and not self:is_thirdparty() then
-            local manifest = self:manifest_load()
-            if manifest then
-                fetchinfo = {version = manifest.version or self:version_str()}
-                is_system = false
             end
         end
     else

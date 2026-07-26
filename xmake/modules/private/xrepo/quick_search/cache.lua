@@ -36,23 +36,9 @@ function _list_package_dirs()
             local subdirname = path.basename(path.directory(dir))
             if #subdirname == 1 then -- ignore l/luajit/port/xmake.lua
                 local packagename = path.filename(dir)
-                if not unique["package\0" .. packagename] then
+                if not unique[packagename] then
                     table.insert(packageinfos, {name = packagename, repo = repo, packagedir = dir})
-                    unique["package\0" .. packagename] = true
-                end
-            end
-        end
-        -- find the plugin package directories, e.g. plugins/hello/xmake.lua, plugins/h/hello/xmake.lua
-        -- the plugin and package can share the same name, so we should not dedupe them with each other
-        for _, file in ipairs(table.join(os.files(path.join(repo:directory(), "plugins", "*", "xmake.lua")),
-                                         os.files(path.join(repo:directory(), "plugins", "*", "*", "xmake.lua")))) do
-            local dir = path.directory(file)
-            local subdirname = path.basename(path.directory(dir))
-            if subdirname == "plugins" or #subdirname == 1 then
-                local packagename = path.filename(dir)
-                if not unique["plugin\0" .. packagename] then
-                    table.insert(packageinfos, {name = packagename, repo = repo, packagedir = dir})
-                    unique["plugin\0" .. packagename] = true
+                    unique[packagename] = true
                 end
             end
         end
@@ -71,12 +57,10 @@ end
 function update()
     for _, packageinfo in ipairs(_list_package_dirs()) do
         local package = core_package.load_from_repository(packageinfo.name, packageinfo.packagedir, {repo = packageinfo.repo})
-        -- we add the kind to the cache key to avoid the key collision between the plugin and package with the same name
-        cache:set(packageinfo.name .. "\0" .. (package:kind() or "library"), {
+        cache:set(packageinfo.name, {
             reponame = package:repo() and package:repo():name(),
             description = package:description(),
             versions = package:versions(),
-            kind = package:kind(),
         })
     end
     cache:save()
@@ -99,10 +83,7 @@ function find(name, opt)
     _init()
     opt = opt or {}
     local list_result = {}
-    for key, packagedata in pairs(cache:data()) do
-        -- strip the kind from the cache key, e.g. `zlib\0library`
-        -- and it is also compatible with the old cache data without the kind
-        local packagename = key:split("\0", {plain = true})[1]
+    for packagename, packagedata in pairs(cache:data()) do
         local found = false
         if opt.prefix then
             found = packagename:startswith(name)
