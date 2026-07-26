@@ -128,6 +128,7 @@ end
 
 -- update plugins
 function _update()
+
     -- enter environment
     environment.enter()
 

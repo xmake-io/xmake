@@ -41,12 +41,11 @@ function main(names)
         task.run("repo", {update = true})
     end
 
-
     -- show title
     print("The package names:")
 
     -- search packages
-    for name, packages in pairs(search_packages(names, opt)) do
+    for name, packages in pairs(search_packages(names)) do
         if #packages > 0 then
 
             -- show name

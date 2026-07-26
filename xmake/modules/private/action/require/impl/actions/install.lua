@@ -513,7 +513,6 @@ function main(package)
             end
             assert(fetchinfo, "fetch %s failed!", package_tipname)
 
-
             -- this package is installed now
             if installed_now then
 
@@ -528,7 +527,6 @@ function main(package)
                 -- test it
                 test(package)
             end
-
 
             -- leave the package environments
             os.setenvs(oldenvs)
@@ -558,7 +556,6 @@ function main(package)
 
                 -- leave the package environments
                 os.setenvs(oldenvs)
-
 
                 -- copy the invalid package directory to cache
                 local installdir = package:installdir()

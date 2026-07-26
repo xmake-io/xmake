@@ -584,7 +584,6 @@ end
 -- - binary
 -- - toolchain (is also binary)
 -- - library(default)
--- - template
 --
 function _instance:kind()
     local kind
@@ -623,7 +622,6 @@ end
 function _instance:is_template()
     return self:kind() == "template"
 end
-
 
 -- is header-only library?
 --

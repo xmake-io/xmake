@@ -27,7 +27,6 @@ import("core.package.repository")
 import("devel.git")
 import("net.proxy")
 
-
 -- get package directory from the locked repository
 function _get_packagedir_from_locked_repo(packagename, locked_repo)
 
