@@ -95,7 +95,7 @@ function _find_ndk_sdkver(sdkdir, bindir, sysroot, arch)
     -- try to select the best compatible version
     local sdkver = "16"
     if use_llvm or arch == "arm64-v8a" or arch == "riscv64" then
-        sdkver = (arch == "riscv64") and "35" or "21"
+        sdkver = (arch == "riscv64") and "36" or "21"
     end
     if sysroot then
         if os.isdir(path.join(sysroot, "usr", "lib", triple, sdkver)) then

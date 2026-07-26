@@ -28,6 +28,7 @@ import("core.theme.theme")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
+import("core.sandbox.sandbox")
 import("utils.run_script")
 import("utils.progress", {alias = "progress_utils"})
 import("utils.binary.rpath", {alias = "rpath_utils"})
@@ -122,6 +123,20 @@ function _runcmd_vlua(cmd, opt)
             -- it will run in a separate native thread, which will not block other coroutine jobs
             runopt.thread = true
             run_script(cmd.script, runopt)
+        end
+    end
+end
+
+-- run command: call
+function _runcmd_call(cmd, opt)
+    local func = cmd.func
+    if func then
+        if not opt.dryrun then
+            local argv = table.clone(cmd.argv)
+            if cmd.opt then
+                table.insert(argv, cmd.opt)
+            end
+            func(table.unpack(argv))
         end
     end
 end
@@ -222,6 +237,7 @@ function _runcmd(cmd, opt)
             vexecv        = _runcmd_vexecv,
             lua           = _runcmd_lua,
             vlua          = _runcmd_vlua,
+            call          = _runcmd_call,
             mkdir         = _runcmd_mkdir,
             rmdir         = _runcmd_rmdir,
             cd            = _runcmd_cd,
@@ -305,9 +321,21 @@ function batchcmds:lua(script, argv, opt)
     table.insert(self:cmds(), {kind = "lua", script = script, argv = argv, opt = opt})
 end
 
--- add command: run lua script file, command or module
+-- add command: run lua script, command or module
 function batchcmds:vlua(script, argv, opt)
     table.insert(self:cmds(), {kind = "vlua", script = script, argv = argv, opt = opt})
+end
+
+-- add command: call lua function
+function batchcmds:call(func, argv, opt)
+    local functype = type(func)
+    if functype == "string" then
+        self:lua(func, argv, opt)
+    else
+        assert(functype == "function")
+        sandbox.fork(func)
+        table.insert(self:cmds(), {kind = "call", func = func, argv = argv, opt = opt})
+    end
 end
 
 -- add command: compile source files

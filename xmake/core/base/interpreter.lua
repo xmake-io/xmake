@@ -32,10 +32,27 @@ local scopeinfo  = require("base/scopeinfo")
 local deprecated = require("base/deprecated")
 local sandbox    = require("sandbox/sandbox")
 
+-- the rules to reword the raw lua error messages into friendly ones, {pattern, replacement}
+-- e.g. "attempt to call a nil value (global 'test')" -> "unknown interface: test()"
+local _reword_rules = {{
+    "attempt to call a nil value %(global '([%w_]+)'%)",
+    "unknown interface: %1(), please check the api name or its scope"}
+}
+
 -- raise without interpreter stack
 -- @see https://github.com/xmake-io/xmake/issues/3553
 function interpreter._raise(errors)
     os.raise("[nobacktrace]: " .. (errors or ""))
+end
+
+-- reword the raw error message to make it more friendly
+function interpreter._reword_errors(errors)
+    if type(errors) == "string" then
+        for _, rule in ipairs(_reword_rules) do
+            errors = errors:gsub(rule[1], rule[2], 1)
+        end
+    end
+    return errors
 end
 
 -- traceback
@@ -48,6 +65,9 @@ function interpreter._traceback(errors)
             return errors:sub(pos + 1)
         end
     end
+
+    -- reword the raw error message to make it more friendly
+    errors = interpreter._reword_errors(errors)
 
     -- init results
     local results = ""

@@ -43,6 +43,18 @@
 #define XM_ENGINE_POOL (TB_SINGLETON_TYPE_USER + 4)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * globals
+ */
+
+/* the engine pool lock
+ *
+ * the pool is a singleton shared by all worker threads, which may alloc/free engines
+ * concurrently (e.g. parallel batchcmds:lua/vlua jobs run in native threads), so we must
+ * protect the underlying list against data races, otherwise it will be corrupted and crash.
+ */
+static tb_spinlock_t g_engine_pool_lock = TB_SPINLOCK_INIT;
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
 static tb_handle_t xm_engine_pool_instance_init(tb_cpointer_t *ppriv) {
@@ -83,17 +95,22 @@ tb_void_t xm_engine_pool_exit(xm_engine_pool_ref_t engine_pool) {
 
 xm_engine_ref_t xm_engine_pool_alloc(xm_engine_pool_ref_t engine_pool) {
     xm_engine_ref_t engine = tb_null;
+    tb_spinlock_enter(&g_engine_pool_lock);
     if (tb_single_list_size(engine_pool) > 0) {
         engine = (xm_engine_ref_t)tb_single_list_head(engine_pool);
         tb_single_list_remove_head(engine_pool);
     }
+    tb_spinlock_leave(&g_engine_pool_lock);
     return engine;
 }
 
 tb_bool_t xm_engine_pool_free(xm_engine_pool_ref_t engine_pool, xm_engine_ref_t engine) {
+    tb_bool_t ok = tb_false;
+    tb_spinlock_enter(&g_engine_pool_lock);
     if (tb_single_list_size(engine_pool) < XM_ENGINE_POOL_MAXN) {
         tb_single_list_insert_tail(engine_pool, engine);
-        return tb_true;
+        ok = tb_true;
     }
-    return tb_false;
+    tb_spinlock_leave(&g_engine_pool_lock);
+    return ok;
 }

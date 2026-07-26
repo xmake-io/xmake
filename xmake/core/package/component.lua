@@ -135,7 +135,7 @@ function _instance:_load()
     if not loaded then
         local script = self:_on_component()
         if script then
-            local ok, errors = sandbox.load(script, self:package(), self)
+            local ok, errors = sandbox.call(script, self:package(), self)
             if not ok then
                 os.raise("load component(%s) failed, %s", self:name(), errors or "unknown errors")
             end

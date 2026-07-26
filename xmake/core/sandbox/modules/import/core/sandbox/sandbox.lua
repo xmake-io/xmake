@@ -134,6 +134,19 @@ function sandbox_core_sandbox.filter(script)
     return instance:filter()
 end
 
+-- fork a new sandbox and bind a raw script
+function sandbox_core_sandbox.fork(script)
+    local instance = sandbox.instance()
+    if not instance then
+        raise("cannot get sandbox instance!")
+    end
+    local newinst, errors = instance:fork(script)
+    if not newinst then
+        raise(errors)
+    end
+    return newinst
+end
+
 -- get all builtin modules
 function sandbox_core_sandbox.builtin_modules()
     return sandbox.builtin_modules()

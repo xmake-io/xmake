@@ -62,7 +62,7 @@ function _instance.new(kind, name, program, plat, arch, toolchain_inst)
 
     -- init instance
     if instance.init then
-        local ok, errors = sandbox.load(instance.init, instance)
+        local ok, errors = sandbox.call(instance.init, instance)
         if not ok then
             return nil, errors
         end
@@ -176,7 +176,7 @@ end
 function _instance:_load_once()
     if not self._LOADED then
         if self.load then
-            local ok, errors = sandbox.load(self.load, self)
+            local ok, errors = sandbox.call(self.load, self)
             if not ok then
                 return false, errors
             end
@@ -274,7 +274,7 @@ function tool.load(kind, opt)
     tool._find_toolname = tool._find_toolname or import("lib.detect.find_toolname")
 
     -- get the tool name from the program
-    local ok, name_or_errors = sandbox.load(tool._find_toolname, toolname or program, {program = program})
+    local ok, name_or_errors = sandbox.call(tool._find_toolname, toolname or program, {program = program})
     if not ok then
         return nil, name_or_errors
     end

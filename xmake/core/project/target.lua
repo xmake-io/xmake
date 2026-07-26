@@ -84,7 +84,7 @@ function _instance:_load_rule(ruleinst, suffix)
     if cache[key] == nil then
         local on_load = ruleinst:script("load" .. (suffix and ("_" .. suffix) or ""))
         if on_load then
-            local ok, errors = sandbox.load(on_load, self)
+            local ok, errors = sandbox.call(on_load, self)
             cache[key] = {ok, errors}
         else
             cache[key] = {true}
@@ -129,7 +129,7 @@ function _instance:_load()
     -- do load for target
     local on_load = self:script("load")
     if on_load then
-        ok, errors = sandbox.load(on_load, self)
+        ok, errors = sandbox.call(on_load, self)
         if not ok then
             return false, errors
         end
@@ -159,7 +159,7 @@ function _instance:_load_after()
     -- do load for target
     local after_load = self:script("load_after")
     if after_load then
-        local ok, errors = sandbox.load(after_load, self)
+        local ok, errors = sandbox.call(after_load, self)
         if not ok then
             return false, errors
         end

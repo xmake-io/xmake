@@ -87,6 +87,9 @@ function get_target_buildcmds(target, opt)
             cmd.program = os.programfile()
             cmd.argv = table.join("lua", cmd.script, cmd.argv)
             cmd.script = nil
+        elseif cmd.func and kind == "call" then
+            local name = cmd.opt and cmd.opt.name or "unknown"
+            wprint("%s: batchcmds:call() is not supported by the project generator and will be ignored!", name)
         end
     end
     return buildcmds:cmds()

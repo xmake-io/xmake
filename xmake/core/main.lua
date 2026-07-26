@@ -304,6 +304,13 @@ function main.entry()
         return main._exit(ok, errors)
     end
 
+    -- the project file failed to load when building the option menu? report it and exit now,
+    -- so that we do not continue into config/build and print the same error again later
+    local menu_load_error = project.menu_load_error()
+    if menu_load_error then
+        return main._exit(false, menu_load_error)
+    end
+
     if xmake.in_main_thread() then
 
         -- check run command as root

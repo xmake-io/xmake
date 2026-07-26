@@ -33,7 +33,7 @@ rule("utils.bin2c")
 
         -- generate header file
         local headerfile = bin2c_utils.generate_headerfile(target, batchcmds, sourcefile_bin, {
-            progress = opt.progress
+            progress = opt.progress,
         })
 
         -- add deps

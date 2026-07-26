@@ -64,6 +64,8 @@ end
 --                      - target_minver: the target minimum version (only for macho)
 --                      - xcode_sdkver: the Xcode SDK version (only for macho)
 --                      - zeroend: append null terminator (default: false)
+--                      - refobj: a reference elf object whose class/endianness/machine/e_flags
+--                                are mirrored into the output (default: derived from arch)
 function binutils.bin2obj(binaryfile, outputfile, opt)
     opt = opt or {}
     local format = opt.format
@@ -94,7 +96,7 @@ function binutils.bin2obj(binaryfile, outputfile, opt)
         if not binutils._bin2elf then
             return nil, "binutils._bin2elf not available (C implementation not compiled)"
         end
-        return binutils._bin2elf(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.arch or "x86_64", opt.basename, opt.zeroend or false)
+        return binutils._bin2elf(binaryfile, outputfile, opt.symbol_prefix or "_binary_", opt.arch or "x86_64", opt.basename, opt.zeroend or false, opt.refobj)
     else
         return nil, string.format("unsupported format '%s' (supported: coff, elf, macho)", format)
     end
