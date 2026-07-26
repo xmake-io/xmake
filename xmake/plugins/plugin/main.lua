@@ -62,42 +62,19 @@ end
 function _save_manifest(manifest)
     io.save(_manifest_path(), manifest)
 end
-
--- is the plugin package name? e.g. hello-world, myrepo@hello-world
---
--- the plugin url is the git url or local path, e.g.
--- https://github.com/xmake-io/xmake-plugins, git@github.com:xmake-io/xmake-plugins.git, /tmp/xmake-plugins
-function _is_package_name(str)
-    return not os.isdir(str) and not str:find("[/\\:]")
+-- install the plugin by name from the repository.
+-- Repository plugins are loaded directly from the checkout;
+-- ensure the repository is up to date with `xrepo update-repo`.
+function _install_name(name)
+    print("plugin %s will be loaded from the repository after xrepo update-repo.", name)
 end
-
--- install the plugin package from repositories, e.g. xmake plugin --install hello-world
-function _install_package(name, opt)
-    opt = opt or {}
-    local argv = {"lua", "private.xrepo", "install", "--kind=plugin"}
-    if opt.force then
-        table.insert(argv, "--force")
-    end
-    if option.get("yes") then
-        table.insert(argv, "-y")
-    end
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
-    if option.get("diagnosis") then
-        table.insert(argv, "-D")
-    end
-    table.insert(argv, name)
-    os.execv(os.programfile(), argv)
-end
-
 -- install plugins
 function _install()
 
-    -- install the plugin package from repositories?
+    -- install the plugin by name from the repository?
     local name = option.get("plugins")
-    if name and _is_package_name(name) then
-        return _install_package(name)
+    if name and not os.isdir(name) and not name:find("[/\\:]") then
+        return _install_name(name)
     end
 
     -- enter environment
@@ -151,13 +128,6 @@ end
 
 -- update plugins
 function _update()
-
-    -- update the plugin package from repositories? e.g. xmake plugin --update hello-world
-    local name = option.get("plugins")
-    if name and _is_package_name(name) then
-        return _install_package(name, {force = true})
-    end
-
     -- enter environment
     environment.enter()
 
@@ -198,11 +168,9 @@ function _update()
     environment.leave()
 end
 
--- remove the given installed plugin
+-- remove the given installed plugin (from ~/.xmake/plugins/)
 function _remove()
     local name = assert(option.get("plugins"), "please specify the plugin name to be removed!")
-    -- avoid escaping the plugins directory, e.g. `xmake plugin --remove ../foo`,
-    -- and `.` or the empty name will be resolved to the plugins directory itself
     assert(name ~= "" and name ~= "." and not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid plugin name(%s)!", name)
     local plugindir = path.join(global.directory(), "plugins", name)
     assert(os.isdir(plugindir), "plugin(%s) not found!", name)
@@ -210,24 +178,63 @@ function _remove()
     cprint("${color.success}remove plugin(%s) ok!", name)
 end
 
--- list all installed plugins
+-- list all installed plugins (manual + repository)
 function _list()
+    local seen = {}
+    -- manually installed plugins
     local plugindir = path.join(global.directory(), "plugins")
     cprint("plugins in ${bright}%s${clear}:", plugindir)
-    for _, dir in ipairs(os.dirs(path.join(plugindir, "*"))) do
+    local found = false
+    for _, dir in ipairs(os.dirs(path.join(plugindir, "*")) or {}) do
         if os.isfile(path.join(dir, "xmake.lua")) then
-            local version, description
-            local manifest_file = path.join(dir, "manifest.txt")
-            if os.isfile(manifest_file) then
-                local manifest = io.load(manifest_file)
-                if manifest then
-                    version = manifest.version
-                    description = manifest.description
+            local name = path.filename(dir)
+            seen[name] = true
+            found = true
+            cprint("  ${color.dump.string}%s${clear}", name)
+        end
+    end
+    if not found then
+        print("  (none)")
+    end
+
+    -- repository plugins (from scanned repos)
+    local reposdir = path.join(global.directory(), "repositories")
+    for _, dir in ipairs(os.dirs(path.join(reposdir, "*")) or {}) do
+        local rplugindir = path.join(dir, "plugins")
+        if os.isdir(rplugindir) then
+            local reponame = path.filename(dir)
+            cprint("plugins in repository ${bright}%s${clear}:", reponame)
+            local repofound = false
+            for _, subdir in ipairs(os.dirs(path.join(rplugindir, "*")) or {}) do
+                if os.isfile(path.join(subdir, "xmake.lua")) and not seen[path.filename(subdir)] then
+                    seen[path.filename(subdir)] = true
+                    repofound = true
+                    cprint("  ${color.dump.string}%s${clear}", path.filename(subdir))
                 end
             end
-            cprint("  ${color.dump.string}%s${clear}%s: %s", path.filename(dir),
-                version and ("-" .. version) or "",
-                description or "")
+            if not repofound then
+                print("  (none)")
+            end
+        end
+    end
+
+    -- local checkout plugins
+    local repodir = os.getenv("XMAKE_MAIN_REPO")
+    if repodir and os.isdir(repodir) then
+        local rplugindir = path.join(repodir, "plugins")
+        if os.isdir(rplugindir) then
+            cprint("plugins in ${bright}XMAKE_MAIN_REPO${clear}:")
+            local repofound = false
+            for _, subdir in ipairs(os.dirs(path.join(rplugindir, "*")) or {}) do
+                if os.isfile(path.join(subdir, "xmake.lua")) and not seen[path.filename(subdir)] then
+                    seen[path.filename(subdir)] = true
+                    repofound = true
+                    cprint("  ${color.dump.string}%s${clear}", path.filename(subdir))
+                end
+            end
+            if not repofound then
+                print("  (none)")
+            end
         end
     end
 end
@@ -254,4 +261,3 @@ function main()
         _clear()
     end
 end
-

@@ -31,8 +31,8 @@ function menu_options()
     -- menu options
     local options =
     {
-        {'k', "kind",            "kv", nil, "Enable static/shared library or remove plugin package.",
-                                       values = {"static", "shared", "plugin"}                  },
+        {'k', "kind",            "kv", nil, "Enable static/shared library.",
+                                       values = {"static", "shared"}                            },
         {'p', "plat",            "kv", nil, "Set the given platform."                           },
         {'a', "arch",            "kv", nil, "Set the given architecture."                       },
         {'m', "mode",            "kv", nil, "Set the given mode.",
@@ -56,8 +56,7 @@ function menu_options()
                                        "    - xrepo remove -p iphoneos -a arm64 \"zlib >=1.2.0\"",
                                        "    - xrepo remove -p android -m debug \"pcre2 10.x\"",
                                        "    - xrepo remove -p mingw -k shared zlib",
-                                       "    - xrepo remove conan::zlib/1.2.11 vcpkg::zlib",
-                                       "    - xrepo remove -k plugin hello-world"               }
+                                       "    - xrepo remove conan::zlib/1.2.11 vcpkg::zlib"      }
     }
 
     -- show menu options
@@ -138,7 +137,7 @@ function _remove_packages(packages)
         table.insert(config_argv, mode)
     end
     local kind  = option.get("kind")
-    if kind and kind ~= "plugin" then
+    if kind then
         table.insert(config_argv, "-k")
         table.insert(config_argv, kind)
     end
@@ -152,15 +151,7 @@ function _remove_packages(packages)
     if #rcfiles > 0 then
         envs.XMAKE_RCFILES = path.joinenv(rcfiles)
     end
-    -- we can skip the repeated configuration and toolchain detection to speed up the plugin removal,
-    -- because the plugin package is host-only and does not depend on any build configuration.
-    -- we only skip it if no extra configuration arguments are given, e.g. `xrepo remove -k plugin hello`
-    if kind == "plugin" and #config_argv == 3
-        and os.isfile(path.join(workdir, ".xmake", os.host(), os.arch(), "xmake.conf")) then
-        vprint("skip the configuration for removing plugins")
-    else
-        os.vrunv(os.programfile(), config_argv, {envs = envs})
-    end
+    os.vrunv(os.programfile(), config_argv, {envs = envs})
 
     -- do remove
     local require_argv = {"require", "--uninstall"}
@@ -177,9 +168,7 @@ function _remove_packages(packages)
     if mode == "debug" then
         extra.debug = true
     end
-    if kind == "plugin" then
-        extra.kind = "plugin"
-    elseif kind then
+    if kind then
         extra.configs = extra.configs or {}
         extra.configs.shared = kind == "shared"
     end

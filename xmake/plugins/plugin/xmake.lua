@@ -36,7 +36,6 @@ task("plugin")
                                        "    $ xmake plugin --install hello-world",
                                        "    $ xmake plugin --remove hello-world",
                                        "    $ xmake plugin --list",
-                                       "    $ xmake plugin --update",
-                                       "    $ xmake plugin --update hello-world"}
+                                       "    $ xmake plugin --update"}
         }
     }

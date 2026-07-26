@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.task")
-import("core.base.option")
 import("private.action.require.impl.utils.filter")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.environment")
@@ -42,18 +41,6 @@ function main(names)
         task.run("repo", {update = true})
     end
 
-    -- get the extra search options, e.g. --extra="{kind='plugin'}"
-    local opt = {}
-    local extra = option.get("extra")
-    if extra then
-        local extrainfo, errors = string.deserialize(extra)
-        if errors then
-            raise(errors)
-        end
-        if type(extrainfo) == "table" then
-            opt.kind = extrainfo.kind
-        end
-    end
 
     -- show title
     print("The package names:")
@@ -71,10 +58,8 @@ function main(names)
                 local version = result.version
                 local reponame = result.reponame
                 local description = result.description
-                local kind = result.kind
-                cprint("      -> ${color.dump.string}%s%s${clear}%s: %s %s", name,
+                cprint("      -> ${color.dump.string}%s%s${clear}: %s %s", name,
                     version and ("-" .. version) or "",
-                    kind == "plugin" and " ${magenta}(plugin)${clear}" or "",
                     description or "",
                     reponame and ("(in " .. reponame .. ")") or "")
             end
