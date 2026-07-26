@@ -858,17 +858,32 @@ function _get_envs_for_default_flags(package, configs, opt)
     return table.clone(_get_default_flags(package, configs, buildtype, opt)) or {}
 end
 
+-- quote flags that contain whitespace, so they survive as a single argument when cmake expands
+-- CMAKE_<LANG>_FLAGS (a space-separated string) onto the compiler/linker command line.
+-- e.g. -resource-dir=C:\Program Files\LLVM\lib\clang\22 would otherwise be split at the space.
+-- @see https://github.com/xmake-io/xmake/issues/7663
+function _quote_flags_with_spaces(flags)
+    if flags then
+        for idx, flag in ipairs(flags) do
+            if type(flag) == "string" and flag:find("%s") and not flag:startswith("\"") then
+                flags[idx] = "\"" .. flag .. "\""
+            end
+        end
+    end
+    return flags
+end
+
 function _get_envs_for_runtime_flags(package, opt)
     local buildtype = _get_cmake_buildtype(package)
     local envs = {}
     local runtimes = package:runtimes()
     if runtimes then
-        envs[format("CMAKE_C_FLAGS_%s", buildtype)]             = toolchain_utils.map_compflags_for_package(package, "c", "runtime", runtimes)
-        envs[format("CMAKE_CXX_FLAGS_%s", buildtype)]           = toolchain_utils.map_compflags_for_package(package, "cxx", "runtime", runtimes)
-        envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "runtime", runtimes)
-        envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "static", {"cxx"}, "runtime", runtimes)
-        envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes)
-        envs[format("CMAKE_MODULE_LINKER_FLAGS_%s", buildtype)] = toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes)
+        envs[format("CMAKE_C_FLAGS_%s", buildtype)]             = _quote_flags_with_spaces(toolchain_utils.map_compflags_for_package(package, "c", "runtime", runtimes))
+        envs[format("CMAKE_CXX_FLAGS_%s", buildtype)]           = _quote_flags_with_spaces(toolchain_utils.map_compflags_for_package(package, "cxx", "runtime", runtimes))
+        envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = _quote_flags_with_spaces(toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "runtime", runtimes))
+        envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = _quote_flags_with_spaces(toolchain_utils.map_linkflags_for_package(package, "static", {"cxx"}, "runtime", runtimes))
+        envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = _quote_flags_with_spaces(toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes))
+        envs[format("CMAKE_MODULE_LINKER_FLAGS_%s", buildtype)] = _quote_flags_with_spaces(toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes))
     end
     return envs
 end
@@ -1285,8 +1300,11 @@ function _shrink_cmake_arguments(argv, oldir, opt)
                 shrink = true
                 return true
             end]]
-            -- shrink long arguments
-            if #v > 128 then
+            -- shrink long arguments, or arguments that carry quoted flags (e.g. a path with spaces).
+            -- routing them through set() in CMakeLists.txt keeps the embedded quotes intact, instead
+            -- of relying on the fragile multi-layer quoting of passing -D...="..." on the cmake cli.
+            -- @see https://github.com/xmake-io/xmake/issues/7663
+            if #v > 128 or v:find("\"", 1, true) then
                 local flags = v:replace("\"", "\\\"")
                 table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, flags))
                 shrink = true
