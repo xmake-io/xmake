@@ -36,6 +36,22 @@ function need_manifest(opt)
     end
 end
 
+-- get a neutral empty directory to run classic-mode vcpkg commands in.
+--
+-- vcpkg switches to manifest mode when a vcpkg.json exists in the current working directory, and
+-- in manifest mode it rejects individual package arguments ("In manifest mode, `vcpkg install`
+-- does not support individual package arguments"). so classic-mode commands (install/list/
+-- depend-info, which pass `<pkg>:<triplet>`) must not run from a project directory that ships its
+-- own vcpkg.json.
+-- @see https://github.com/xmake-io/xmake/issues/7660
+function classic_curdir()
+    local dir = path.join(os.tmpdir(), "vcpkg", "classic")
+    if not os.isdir(dir) then
+        os.mkdir(dir)
+    end
+    return dir
+end
+
 function is_installed(vcpkg, name, triplet, opt)
     local argv = {"list", name .. ":" .. triplet, "--x-full-desc"}
     local manifest_mode = need_manifest(opt)
@@ -46,7 +62,7 @@ function is_installed(vcpkg, name, triplet, opt)
     end
 
     local listinfo = try { function ()
-        return os.iorunv(vcpkg, argv, manifest_mode and {curdir = opt.installdir} or nil)
+        return os.iorunv(vcpkg, argv, {curdir = manifest_mode and opt.installdir or classic_curdir()})
     end}
     if listinfo then
         local exact_prefix = name .. ":" .. triplet
