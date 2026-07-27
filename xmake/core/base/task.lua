@@ -81,24 +81,9 @@ end
 
 -- the directories of tasks
 function task._directories()
-    local dirs = {path.join(global.directory(), "plugins")}
-    -- plugins from repositories cloned by `xrepo update-repo`
-    local reposdir = path.join(global.directory(), "repositories")
-    for _, dir in ipairs(os.dirs(path.join(reposdir, "*")) or {}) do
-        local plugindir = path.join(dir, "plugins")
-        if os.isdir(plugindir) then
-            table.insert(dirs, plugindir)
-        end
-    end
-    -- local checkout override (XMAKE_MAIN_REPO=/path/to/xmake-repo).
-    -- placed after the scanned repos so it takes precedence (table.join2 overwrites).
-    local repodir = os.getenv("XMAKE_MAIN_REPO")
-    if repodir and os.isdir(repodir) then
-        table.insert(dirs, path.join(repodir, "plugins"))
-    end
-    table.insert(dirs, path.join(os.programdir(), "plugins"))
-    table.insert(dirs, path.join(os.programdir(), "actions"))
-    return dirs
+    return {path.join(global.directory(), "plugins"),
+            path.join(os.programdir(), "plugins"),
+            path.join(os.programdir(), "actions")}
 end
 
 -- translate menu
