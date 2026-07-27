@@ -181,12 +181,14 @@ function _install()
                 end
 
                 -- git url or local path
-                if os.isdir(name) or name:find("[/\\:]") then
-                    if os.isdir(name) then
-                        _install_from_local(name)
-                    else
-                        _install_from_git(name)
-                    end
+                if name:startswith("file://") or git.asgiturl(name) then
+                    _install_from_git(name)
+                    return
+                elseif os.isdir(name) then
+                    _install_from_local(name)
+                    return
+                elseif name:find("[/\\:]") then
+                    _install_from_git(name)
                     return
                 end
 
