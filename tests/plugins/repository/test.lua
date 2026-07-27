@@ -1,70 +1,90 @@
+function _write_plugin(dir, name, text)
+    io.writefile(path.join(dir, "xmake.lua"), string.format([[
+task("%s")
+    set_category("plugin")
+    on_run("main")
+    set_menu {usage = "xmake %s"}
+]], name, name))
+    io.writefile(path.join(dir, "main.lua"), string.format([[function main() print("%s") end]], text))
+end
+
 function main()
-    -- backup existing env vars
-    local prev_globaldir = os.getenv("XMAKE_GLOBALDIR")
-    local prev_main_repo = os.getenv("XMAKE_MAIN_REPO")
+    local global = import("core.base.global")
+    local suffix = path.filename(os.tmpfile()):gsub("[^%w]", "")
+    local reponame = "plugin-test-repository-" .. suffix
+    local hello_name = "plugin-test-hello-" .. suffix
+    local formatter_name = "plugin-test-formatter-" .. suffix
+    local available_name = "plugin-test-available-" .. suffix
+    local local_name = "plugin-test-local-" .. suffix
+    local repodir = os.tmpfile() .. ".plugins-repository"
+    local localdir = path.join(os.tmpfile() .. ".local-plugin", local_name)
+    local plugindir = path.join(global.directory(), "plugins")
+    local cachefile = path.join(global.directory(), "cache", "repository")
+    local cachebackup = os.tmpfile() .. ".repository"
 
-    local gd = os.tmpfile() .. ".gd"
-    io.writefile(gd .. "/.xmake/repositories/xmake-repo/plugins/hello-world/xmake.lua", [[
-task("hello-world")
-    set_category("plugin")
-    on_run("main")
-    set_menu {usage = "xmake hello-world"}
-]])
-    io.writefile(gd .. "/.xmake/repositories/xmake-repo/plugins/hello-world/main.lua", [[
-function main() print("repo-ok") end
-]])
-
-    os.setenv("XMAKE_GLOBALDIR", gd)
-    os.exec("xmake hello-world")
-
-    os.exec("xmake plugin --install hello-world")
-
-    local md = os.tmpfile() .. ".md"
-    io.writefile(md .. "/.xmake/plugins/manual-plugin/xmake.lua", [[
-task("manual-plugin")
-    set_category("plugin")
-    on_run("main")
-    set_menu {usage = "xmake manual-plugin"}
-]])
-    io.writefile(md .. "/.xmake/plugins/manual-plugin/main.lua", [[
-function main() print("manual") end
-]])
-
-    os.setenv("XMAKE_GLOBALDIR", md)
-    os.exec("xmake plugin --list")
-    os.exec("xmake plugin --remove manual-plugin")
-
-    local ld = os.tmpfile() .. ".ld"
-    io.writefile(ld .. "/plugins/hello-world/xmake.lua", [[
-task("hello-world")
-    set_category("plugin")
-    on_run("main")
-    set_menu {usage = "xmake hello-world"}
-]])
-    io.writefile(ld .. "/plugins/hello-world/main.lua", [[
-function main() print("local-ok") end
-]])
-
-    os.setenv("XMAKE_GLOBALDIR", gd)
-    os.setenv("XMAKE_MAIN_REPO", ld)
-    os.exec("xmake hello-world")
-
-    os.setenv("XMAKE_MAIN_REPO", "")
-    os.exec("xmake hello-world")
-
-    -- restore env vars
-    if prev_globaldir then
-        os.setenv("XMAKE_GLOBALDIR", prev_globaldir)
-    else
-        os.setenv("XMAKE_GLOBALDIR", "")
-    end
-    if prev_main_repo then
-        os.setenv("XMAKE_MAIN_REPO", prev_main_repo)
-    else
-        os.setenv("XMAKE_MAIN_REPO", "")
+    if os.isfile(cachefile) then
+        os.cp(cachefile, cachebackup)
     end
 
-    os.tryrm(gd)
-    os.tryrm(md)
-    os.tryrm(ld)
+    try
+    {
+        function ()
+            -- mock repository with installed and available plugins
+            _write_plugin(path.join(repodir, "plugins", hello_name), hello_name, "repo-ok")
+            _write_plugin(path.join(repodir, "plugins", formatter_name), formatter_name, "format-ok")
+            _write_plugin(path.join(repodir, "plugins", available_name), available_name, "available-ok")
+            local cache = io.load(cachefile) or {}
+            cache.repositories = cache.repositories or {}
+            cache.repositories[reponame] = {repodir}
+            io.save(cachefile, cache)
+
+            -- Feature: install by plain name from repository
+            os.exec("xmake plugin --install " .. hello_name)
+            os.exec("xmake " .. hello_name)
+
+            -- Feature: install by repo@name format
+            os.exec("xmake plugin --install " .. reponame .. "@" .. formatter_name)
+            os.exec("xmake " .. formatter_name)
+
+            -- Feature: --list shows installed and available repository plugins
+            local out = os.iorun("xmake plugin --list")
+            assert(out:find(hello_name, 1, true))
+            assert(out:find(formatter_name, 1, true))
+            assert(out:find(available_name, 1, true))
+            assert(out:find("xmake plugin --install " .. available_name, 1, true))
+
+            -- Feature: install from local directory
+            _write_plugin(localdir, local_name, "local-ok")
+            os.exec("xmake plugin --install " .. os.args(localdir))
+            os.exec("xmake " .. local_name)
+
+            out = os.iorun("xmake plugin --list")
+            assert(out:find(local_name, 1, true))
+
+            -- Feature: remove plugin
+            os.exec("xmake plugin --remove " .. local_name)
+            out = os.iorun("xmake plugin --list")
+            assert(not out:find(local_name, 1, true))
+
+            -- Feature: install non-existent plugin fails gracefully
+            local ok = try { function () os.exec("xmake plugin --install plugin-test-missing-" .. suffix) end }
+            assert(not ok)
+        end,
+        finally
+        {
+            function ()
+                for _, name in ipairs({hello_name, formatter_name, available_name, local_name}) do
+                    os.tryrm(path.join(plugindir, name))
+                end
+                if os.isfile(cachebackup) then
+                    os.cp(cachebackup, cachefile)
+                else
+                    os.tryrm(cachefile)
+                end
+                os.tryrm(cachebackup)
+                os.tryrm(repodir)
+                os.tryrm(path.directory(localdir))
+            end
+        }
+    }
 end

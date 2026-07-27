@@ -21,11 +21,23 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("core.package.repository")
 import("devel.git")
 import("net.fasturl")
 import("private.action.require.impl.environment")
 
--- get plugin urls
+-- get plugin directory in ~/.xmake/plugins
+function _get_plugindir(name)
+    local plugindir = path.join(global.directory(), "plugins")
+    return name and path.join(plugindir, name) or plugindir
+end
+
+-- get local and global repositories, with local taking precedence
+function _repositories()
+    return table.join(repository.repositories({global = false}), repository.repositories({global = true}))
+end
+
+-- get plugin urls for batch install
 function _plugin_urls()
     local urls = option.get("plugins")
     if urls then
@@ -45,9 +57,8 @@ function _plugin_urls()
     return urls
 end
 
--- get manifest path
 function _manifest_path()
-    return path.join(global.directory(), "plugins", "manifest.txt")
+    return path.join(_get_plugindir(), "manifest.txt")
 end
 
 -- load manifest
@@ -62,20 +73,87 @@ end
 function _save_manifest(manifest)
     io.save(_manifest_path(), manifest)
 end
--- install the plugin by name from the repository.
--- Repository plugins are loaded directly from the checkout;
--- ensure the repository is up to date with `xrepo update-repo`.
-function _install_name(name)
-    print("plugin %s will be loaded from the repository after xrepo update-repo.", name)
+
+-- find a plugin directory in the given repository directory
+function _find_plugin_in_repo(repodir, name)
+    local dir = path.join(repodir, "plugins", name)
+    if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) then
+        return dir
+    end
 end
+
+-- install a plugin from the given repository or the first repository containing it
+function _install_plugins_from_repo(name, reponame)
+    for _, repo in ipairs(_repositories()) do
+        if not reponame or repo:name() == reponame then
+            local srcdir = _find_plugin_in_repo(repo:directory(), name)
+            if srcdir then
+                local dstdir = _get_plugindir(name)
+                assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
+                os.vcp(srcdir, dstdir)
+                cprint("${color.success}install ${bright}%s${clear} from repository ${bright}%s${clear} ok!", name, repo:name())
+                return
+            end
+        end
+    end
+    if reponame then
+        raise("plugin(%s): not found in repository %s!", name, reponame)
+    end
+    raise("plugin(%s): not found in any repository! try ${bright}xrepo update-repo${clear} first.", name)
+end
+
+-- install a plugin from a local directory
+function _install_from_local(dir)
+    assert(os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")), "plugin path(%s): ${bright}xmake.lua${clear} not found!", dir)
+    local name = path.filename(path.absolute(dir))
+    local dstdir = _get_plugindir(name)
+    assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
+    os.vcp(dir, dstdir)
+    cprint("${color.success}install ${bright}%s${clear} from ${bright}%s${clear} ok!", name, dir)
+end
+
+-- install a plugin from a git url or github shortcut
+function _install_from_git(url)
+    local branch
+    if url:startswith("github:") then
+        url = url:sub(8)
+        local i = url:find("#", 1, true)
+        if i then
+            branch = url:sub(i + 1)
+            url = url:sub(1, i - 1)
+        end
+        url = "https://github.com/" .. url .. ".git"
+    end
+    local tmpdir = os.tmpfile() .. ".dir"
+    local clone_opt = {verbose = option.get("verbose"), outputdir = tmpdir}
+    if branch then
+        clone_opt.branch = branch
+    end
+    git.clone(git.asgiturl(url) or url, clone_opt)
+    local found = false
+    local function install(srcdir, name)
+        local dstdir = _get_plugindir(name)
+        assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
+        os.vcp(srcdir, dstdir)
+        cprint("  ${color.success}-> ${bright}%s${clear}", name)
+        found = true
+    end
+    if os.isfile(path.join(tmpdir, "xmake.lua")) then
+        install(tmpdir, path.basename(path.filename(url)))
+    else
+        for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
+            local srcdir = path.directory(filepath)
+            install(srcdir, path.filename(srcdir))
+        end
+    end
+    os.tryrm(tmpdir)
+    if not found then
+        raise("no plugin found in %s", url)
+    end
+end
+
 -- install plugins
 function _install()
-
-    -- install the plugin by name from the repository?
-    local name = option.get("plugins")
-    if name and not os.isdir(name) and not name:find("[/\\:]") then
-        return _install_name(name)
-    end
 
     -- enter environment
     environment.enter()
@@ -85,12 +163,45 @@ function _install()
         function ()
 
             -- do install
+            local name = option.get("plugins")
+            if name and #name > 0 then
+                -- parse repo@plugin format
+                local i = name:find("@", 1, true)
+                if i and not name:find("[/\\:]") then
+                    local reponame = name:sub(1, i - 1)
+                    local pluginname = name:sub(i + 1)
+                    _install_plugins_from_repo(pluginname, reponame)
+                    return
+                end
+
+                -- github shortcut: github:user/repo or github:user/repo#branch
+                if name:startswith("github:") then
+                    _install_from_git(name)
+                    return
+                end
+
+                -- git url or local path
+                if os.isdir(name) or name:find("[/\\:]") then
+                    if os.isdir(name) then
+                        _install_from_local(name)
+                    else
+                        _install_from_git(name)
+                    end
+                    return
+                end
+
+                -- plain name: try to find it in repositories
+                _install_plugins_from_repo(name)
+                return
+            end
+
+            -- do batch install from plugin collection urls
             local urls = _plugin_urls()
             local tmpdir = os.tmpfile() .. ".dir"
-            local plugindir = path.join(global.directory(), "plugins")
+            local plugindir = _get_plugindir()
             local installed_url
             for _, url in ipairs(urls) do
-                cprint("installing plugins from %s ..", url)
+                cprint("installing plugins from ${bright}%s${clear} ..", url)
                 git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
                 installed_url = url
                 break
@@ -98,21 +209,20 @@ function _install()
             for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
                 local srcdir = path.directory(filepath)
                 local name = path.filename(srcdir)
-                local dstdir = path.join(plugindir, name)
+                local dstdir = _get_plugindir(name)
                 assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
                 os.vcp(srcdir, dstdir)
-                cprint("  ${yellow}->${clear} %s", name)
+                cprint("  ${color.success}-> ${bright}%s${clear}", name)
             end
             os.tryrm(tmpdir)
 
-            -- save manifest
             if installed_url then
                 local manifest = _load_manifest() or {}
                 manifest.urls = manifest.urls or {}
                 table.join2(manifest.urls, installed_url)
                 _save_manifest(manifest)
             end
-            cprint("${bright}all plugins have been installed in %s!", plugindir)
+            cprint("${color.success}all plugins have been installed in ${bright}%s${clear}!", plugindir)
         end,
         catch
         {
@@ -140,22 +250,22 @@ function _update()
             local manifest = _load_manifest()
             assert(manifest and manifest.urls, "3rd plugins not found!")
             local urls = manifest.urls
-            local plugindir = path.join(global.directory(), "plugins")
+            local plugindir = _get_plugindir()
             for _, url in ipairs(urls) do
-                cprint("updating plugins from %s ..", url)
+                cprint("updating plugins from ${bright}%s${clear} ..", url)
                 local tmpdir = os.tmpfile() .. ".dir"
                 git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
                 for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
                     local srcdir = path.directory(filepath)
                     local name = path.filename(srcdir)
-                    local dstdir = path.join(plugindir, name)
+                    local dstdir = _get_plugindir(name)
                     os.tryrm(dstdir)
                     os.vcp(srcdir, dstdir)
-                    cprint("  ${yellow}->${clear} %s", name)
+                    cprint("  ${color.success}-> ${bright}%s${clear}", name)
                 end
                 os.tryrm(tmpdir)
             end
-            cprint("${bright}all plugins have been updated in %s!", plugindir)
+            cprint("${color.success}all plugins have been updated in ${bright}%s${clear}!", plugindir)
         end,
         catch
         {
@@ -169,80 +279,61 @@ function _update()
     environment.leave()
 end
 
--- remove the given installed plugin (from ~/.xmake/plugins/)
+-- remove the given installed plugin
 function _remove()
     local name = assert(option.get("plugins"), "please specify the plugin name to be removed!")
     assert(name ~= "" and name ~= "." and not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid plugin name(%s)!", name)
-    local plugindir = path.join(global.directory(), "plugins", name)
-    assert(os.isdir(plugindir), "plugin(%s) not found!", name)
-    os.rmdir(plugindir)
-    cprint("${color.success}remove plugin(%s) ok!", name)
+    local dir = _get_plugindir(name)
+    assert(os.isdir(dir), "plugin(%s) not found!", name)
+    os.rmdir(dir)
+    cprint("${color.success}remove ${bright}%s${clear} ok!", name)
 end
 
--- list all installed plugins (manual + repository)
+-- list all plugins
 function _list()
     local seen = {}
-    -- manually installed plugins
-    local plugindir = path.join(global.directory(), "plugins")
-    cprint("plugins in ${bright}%s${clear}:", plugindir)
+
+    -- installed plugins
+    local plugindir = _get_plugindir()
+    cprint("${bright}the installed plugins:${clear}")
     local found = false
     for _, dir in ipairs(os.dirs(path.join(plugindir, "*")) or {}) do
         if os.isfile(path.join(dir, "xmake.lua")) then
             local name = path.filename(dir)
             seen[name] = true
             found = true
-            cprint("  ${color.dump.string}%s${clear}", name)
+            cprint("  ${bright}%s${clear}", name)
         end
     end
     if not found then
         print("  (none)")
     end
 
-    -- repository plugins (from scanned repos)
-    local reposdir = path.join(global.directory(), "repositories")
-    for _, dir in ipairs(os.dirs(path.join(reposdir, "*")) or {}) do
-        local rplugindir = path.join(dir, "plugins")
+    -- plugins available in repositories (not yet installed)
+    cprint("${bright}in xmake-repo:${clear}")
+    local avail = false
+    local repos = _repositories()
+    for _, repo in ipairs(repos) do
+        local rplugindir = path.join(repo:directory(), "plugins")
         if os.isdir(rplugindir) then
-            local reponame = path.filename(dir)
-            cprint("plugins in repository ${bright}%s${clear}:", reponame)
-            local repofound = false
             for _, subdir in ipairs(os.dirs(path.join(rplugindir, "*")) or {}) do
-                if os.isfile(path.join(subdir, "xmake.lua")) and not seen[path.filename(subdir)] then
-                    seen[path.filename(subdir)] = true
-                    repofound = true
-                    cprint("  ${color.dump.string}%s${clear}", path.filename(subdir))
+                local name = path.filename(subdir)
+                if os.isfile(path.join(subdir, "xmake.lua")) and not seen[name] then
+                    seen[name] = true
+                    avail = true
+                    cprint("    - ${bright}%s${clear} ${dim}(run ${bright}xmake plugin --install %s${clear}${dim} to install)${clear}", name, name)
                 end
-            end
-            if not repofound then
-                print("  (none)")
             end
         end
     end
-
-    -- local checkout plugins
-    local repodir = os.getenv("XMAKE_MAIN_REPO")
-    if repodir and os.isdir(repodir) then
-        local rplugindir = path.join(repodir, "plugins")
-        if os.isdir(rplugindir) then
-            cprint("plugins in ${bright}XMAKE_MAIN_REPO${clear}:")
-            local repofound = false
-            for _, subdir in ipairs(os.dirs(path.join(rplugindir, "*")) or {}) do
-                if os.isfile(path.join(subdir, "xmake.lua")) and not seen[path.filename(subdir)] then
-                    seen[path.filename(subdir)] = true
-                    repofound = true
-                    cprint("  ${color.dump.string}%s${clear}", path.filename(subdir))
-                end
-            end
-            if not repofound then
-                print("  (none)")
-            end
-        end
+    if not avail then
+        print("    (none)")
     end
 end
 
 -- clear all installed plugins
 function _clear()
-    local plugindir = path.join(global.directory(), "plugins")
+    local plugindir = _get_plugindir()
     if os.isdir(plugindir) then
         os.rmdir(plugindir)
     end
