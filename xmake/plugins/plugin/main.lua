@@ -26,10 +26,16 @@ import("devel.git")
 import("net.fasturl")
 import("private.action.require.impl.environment")
 
+-- validate a plugin directory name
+function _check_plugin_name(name)
+    assert(type(name) == "string" and name ~= "" and name ~= "." and not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid plugin name(%s)!", name)
+    return name
+end
+
 -- get plugin directory in ~/.xmake/plugins
 function _get_plugindir(name)
     local plugindir = path.join(global.directory(), "plugins")
-    return name and path.join(plugindir, name) or plugindir
+    return name and path.join(plugindir, _check_plugin_name(name)) or plugindir
 end
 
 -- get local and global repositories, with local taking precedence
@@ -39,22 +45,36 @@ end
 
 -- get plugin urls for batch install
 function _plugin_urls()
-    local urls = option.get("plugins")
-    if urls then
-        local result = {}
-        for _, url in ipairs(urls) do
-            table.insert(result, git.asgiturl(url) or url)
-        end
-        urls = result
-    else
-        urls = {
-        "https://github.com/xmake-io/xmake-plugins.git",
-        "https://gitlab.com/tboox/xmake-plugins.git",
-        "https://gitee.com/tboox/xmake-plugins.git"}
-        urls = fasturl.add(urls)
-        urls = fasturl.sort(urls)
-    end
-    return urls
+    local urls = {
+    "https://github.com/xmake-io/xmake-plugins.git",
+    "https://gitlab.com/tboox/xmake-plugins.git",
+    "https://gitee.com/tboox/xmake-plugins.git"}
+    fasturl.add(urls)
+    return fasturl.sort(urls)
+end
+
+-- run a function with a temporary directory that is removed on success or failure
+function _with_tmpdir(fn)
+    local tmpdir = os.tmpfile() .. ".dir"
+    return try
+    {
+        function ()
+            return fn(tmpdir)
+        end,
+        catch
+        {
+            function (errors)
+                os.tryrm(tmpdir)
+                raise(errors)
+            end
+        },
+        finally
+        {
+            function ()
+                os.tryrm(tmpdir)
+            end
+        }
+    }
 end
 
 function _manifest_path()
@@ -84,6 +104,7 @@ end
 
 -- install a plugin from the given repository or the first repository containing it
 function _install_plugins_from_repo(name, reponame)
+    _check_plugin_name(name)
     for _, repo in ipairs(_repositories()) do
         if not reponame or repo:name() == reponame then
             local srcdir = _find_plugin_in_repo(repo:directory(), name)
@@ -124,32 +145,65 @@ function _install_from_git(url)
         end
         url = "https://github.com/" .. url .. ".git"
     end
-    local tmpdir = os.tmpfile() .. ".dir"
-    local clone_opt = {verbose = option.get("verbose"), outputdir = tmpdir}
-    if branch then
-        clone_opt.branch = branch
-    end
-    git.clone(git.asgiturl(url) or url, clone_opt)
-    local found = false
-    local function install(srcdir, name)
-        local dstdir = _get_plugindir(name)
-        assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
-        os.vcp(srcdir, dstdir)
-        cprint("  ${color.success}-> ${bright}%s${clear}", name)
-        found = true
-    end
-    if os.isfile(path.join(tmpdir, "xmake.lua")) then
-        install(tmpdir, path.basename(path.filename(url)))
-    else
-        for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
-            local srcdir = path.directory(filepath)
-            install(srcdir, path.filename(srcdir))
+    _with_tmpdir(function (tmpdir)
+        local clone_opt = {verbose = option.get("verbose"), outputdir = tmpdir}
+        if branch then
+            clone_opt.branch = branch
         end
+        git.clone(git.asgiturl(url) or url, clone_opt)
+        local found = false
+        local function install(srcdir, name)
+            local dstdir = _get_plugindir(name)
+            assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
+            os.vcp(srcdir, dstdir)
+            cprint("  ${color.success}-> ${bright}%s${clear}", name)
+            found = true
+        end
+        if os.isfile(path.join(tmpdir, "xmake.lua")) then
+            install(tmpdir, path.basename(path.filename(url)))
+        else
+            for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
+                local srcdir = path.directory(filepath)
+                install(srcdir, path.filename(srcdir))
+            end
+        end
+        if not found then
+            raise("no plugin found in %s", url)
+        end
+    end)
+end
+
+-- install a single plugin
+function _install_one(name)
+    -- parse repo@plugin format
+    local i = name:find("@", 1, true)
+    if i and not name:find("[/\\:]") then
+        local reponame = name:sub(1, i - 1)
+        local pluginname = name:sub(i + 1)
+        _install_plugins_from_repo(pluginname, reponame)
+        return
     end
-    os.tryrm(tmpdir)
-    if not found then
-        raise("no plugin found in %s", url)
+
+    -- github shortcut: github:user/repo or github:user/repo#branch
+    if name:startswith("github:") then
+        _install_from_git(name)
+        return
     end
+
+    -- git url or local path
+    if name:startswith("file://") or git.asgiturl(name) then
+        _install_from_git(name)
+        return
+    elseif os.isdir(name) then
+        _install_from_local(name)
+        return
+    elseif name:find("[/\\:]") then
+        _install_from_git(name)
+        return
+    end
+
+    -- plain name: try to find it in repositories
+    _install_plugins_from_repo(name)
 end
 
 -- install plugins
@@ -158,84 +212,69 @@ function _install()
     -- enter environment
     environment.enter()
 
+    local errors
     try
     {
         function ()
 
-            -- do install
-            local name = option.get("plugins")
-            if name and #name > 0 then
-                -- parse repo@plugin format
-                local i = name:find("@", 1, true)
-                if i and not name:find("[/\\:]") then
-                    local reponame = name:sub(1, i - 1)
-                    local pluginname = name:sub(i + 1)
-                    _install_plugins_from_repo(pluginname, reponame)
-                    return
+            -- install requested plugins
+            local names = option.get("plugins")
+            if names then
+                for _, name in ipairs(names) do
+                    _install_one(name)
                 end
-
-                -- github shortcut: github:user/repo or github:user/repo#branch
-                if name:startswith("github:") then
-                    _install_from_git(name)
-                    return
-                end
-
-                -- git url or local path
-                if name:startswith("file://") or git.asgiturl(name) then
-                    _install_from_git(name)
-                    return
-                elseif os.isdir(name) then
-                    _install_from_local(name)
-                    return
-                elseif name:find("[/\\:]") then
-                    _install_from_git(name)
-                    return
-                end
-
-                -- plain name: try to find it in repositories
-                _install_plugins_from_repo(name)
                 return
             end
 
             -- do batch install from plugin collection urls
             local urls = _plugin_urls()
-            local tmpdir = os.tmpfile() .. ".dir"
             local plugindir = _get_plugindir()
             local installed_url
-            for _, url in ipairs(urls) do
-                cprint("installing plugins from ${bright}%s${clear} ..", url)
-                git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
-                installed_url = url
-                break
-            end
-            for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
-                local srcdir = path.directory(filepath)
-                local name = path.filename(srcdir)
-                local dstdir = _get_plugindir(name)
-                assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
-                os.vcp(srcdir, dstdir)
-                cprint("  ${color.success}-> ${bright}%s${clear}", name)
-            end
-            os.tryrm(tmpdir)
-
-            if installed_url then
-                local manifest = _load_manifest() or {}
-                manifest.urls = manifest.urls or {}
-                table.join2(manifest.urls, installed_url)
-                _save_manifest(manifest)
-            end
+            _with_tmpdir(function (tmpdir)
+                for _, url in ipairs(urls) do
+                    cprint("installing plugins from ${bright}%s${clear} ..", url)
+                    local ok = try
+                    {
+                        function ()
+                            git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
+                            return true
+                        end
+                    }
+                    if ok then
+                        installed_url = url
+                        break
+                    end
+                    os.tryrm(tmpdir)
+                end
+                assert(installed_url, "failed to install plugins from all urls!")
+                for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
+                    local srcdir = path.directory(filepath)
+                    local name = path.filename(srcdir)
+                    local dstdir = _get_plugindir(name)
+                    assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
+                    os.vcp(srcdir, dstdir)
+                    cprint("  ${color.success}-> ${bright}%s${clear}", name)
+                end
+            end)
+            local manifest = _load_manifest() or {}
+            manifest.urls = manifest.urls or {}
+            table.join2(manifest.urls, installed_url)
+            _save_manifest(manifest)
             cprint("${color.success}all plugins have been installed in ${bright}%s${clear}!", plugindir)
         end,
         catch
         {
-            function (errors)
-                raise(errors)
+            function (_errors)
+                errors = _errors
             end
         }
     }
 
     -- leave environment
     environment.leave()
+    if errors then
+        raise(errors)
+    end
 end
 
 -- update plugins
@@ -244,6 +283,7 @@ function _update()
     -- enter environment
     environment.enter()
 
+    local errors
     try
     {
         function ()
@@ -255,36 +295,40 @@ function _update()
             local plugindir = _get_plugindir()
             for _, url in ipairs(urls) do
                 cprint("updating plugins from ${bright}%s${clear} ..", url)
-                local tmpdir = os.tmpfile() .. ".dir"
-                git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
-                for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
-                    local srcdir = path.directory(filepath)
-                    local name = path.filename(srcdir)
-                    local dstdir = _get_plugindir(name)
-                    os.tryrm(dstdir)
-                    os.vcp(srcdir, dstdir)
-                    cprint("  ${color.success}-> ${bright}%s${clear}", name)
-                end
-                os.tryrm(tmpdir)
+                _with_tmpdir(function (tmpdir)
+                    git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
+                    for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
+                        local srcdir = path.directory(filepath)
+                        local name = path.filename(srcdir)
+                        local dstdir = _get_plugindir(name)
+                        os.tryrm(dstdir)
+                        os.vcp(srcdir, dstdir)
+                        cprint("  ${color.success}-> ${bright}%s${clear}", name)
+                    end
+                end)
             end
             cprint("${color.success}all plugins have been updated in ${bright}%s${clear}!", plugindir)
         end,
         catch
         {
-            function (errors)
-                raise(errors)
+            function (_errors)
+                errors = _errors
             end
         }
     }
 
     -- leave environment
     environment.leave()
+    if errors then
+        raise(errors)
+    end
 end
 
 -- remove the given installed plugin
 function _remove()
-    local name = assert(option.get("plugins"), "please specify the plugin name to be removed!")
-    assert(name ~= "" and name ~= "." and not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid plugin name(%s)!", name)
+    local names = assert(option.get("plugins"), "please specify the plugin name to be removed!")
+    assert(#names == 1, "please specify only one plugin name to be removed!")
+    local name = _check_plugin_name(names[1])
     local dir = _get_plugindir(name)
     assert(os.isdir(dir), "plugin(%s) not found!", name)
     os.rmdir(dir)

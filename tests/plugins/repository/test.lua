@@ -19,12 +19,27 @@ function main()
     local repodir = os.tmpfile() .. ".plugins-repository"
     local localdir = path.join(os.tmpfile() .. ".local-plugin", local_name)
     local plugindir = path.join(global.directory(), "plugins")
-    local cachefile = path.join(global.directory(), "cache", "repository")
+    local cachefile = path.join(global.cachedir(), "repository")
     local cachebackup = os.tmpfile() .. ".repository"
 
     if os.isfile(cachefile) then
         os.cp(cachefile, cachebackup)
     end
+
+    local function cleanup()
+        for _, name in ipairs({hello_name, formatter_name, available_name, local_name}) do
+            os.tryrm(path.join(plugindir, name))
+        end
+        if os.isfile(cachebackup) then
+            os.cp(cachebackup, cachefile)
+        else
+            os.tryrm(cachefile)
+        end
+        os.tryrm(cachebackup)
+        os.tryrm(repodir)
+        os.tryrm(path.directory(localdir))
+    end
+
 
     try
     {
@@ -33,17 +48,15 @@ function main()
             _write_plugin(path.join(repodir, "plugins", hello_name), hello_name, "repo-ok")
             _write_plugin(path.join(repodir, "plugins", formatter_name), formatter_name, "format-ok")
             _write_plugin(path.join(repodir, "plugins", available_name), available_name, "available-ok")
-            local cache = io.load(cachefile) or {}
+            os.mkdir(path.directory(cachefile))
+            local cache = os.isfile(cachefile) and io.load(cachefile) or {}
             cache.repositories = cache.repositories or {}
             cache.repositories[reponame] = {repodir}
             io.save(cachefile, cache)
 
-            -- Feature: install by plain name from repository
-            os.exec("xmake plugin --install " .. hello_name)
+            -- Feature: install by plain name and repo@name in one invocation
+            os.exec("xmake plugin --install " .. hello_name .. " " .. reponame .. "@" .. formatter_name)
             os.exec("xmake " .. hello_name)
-
-            -- Feature: install by repo@name format
-            os.exec("xmake plugin --install " .. reponame .. "@" .. formatter_name)
             os.exec("xmake " .. formatter_name)
 
             -- Feature: --list shows installed and available repository plugins
@@ -69,21 +82,22 @@ function main()
             -- Feature: install non-existent plugin fails gracefully
             local ok = try { function () os.exec("xmake plugin --install plugin-test-missing-" .. suffix) end }
             assert(not ok)
+            -- Feature: reject plugin name traversal
+            ok = try { function () os.exec("xmake plugin --install " .. reponame .. "@..") end }
+            assert(not ok)
+
         end,
+        catch
+        {
+            function (errors)
+                cleanup()
+                raise(errors)
+            end
+        },
         finally
         {
             function ()
-                for _, name in ipairs({hello_name, formatter_name, available_name, local_name}) do
-                    os.tryrm(path.join(plugindir, name))
-                end
-                if os.isfile(cachebackup) then
-                    os.cp(cachebackup, cachefile)
-                else
-                    os.tryrm(cachefile)
-                end
-                os.tryrm(cachebackup)
-                os.tryrm(repodir)
-                os.tryrm(path.directory(localdir))
+                cleanup()
             end
         }
     }
