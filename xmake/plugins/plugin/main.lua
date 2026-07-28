@@ -48,7 +48,7 @@ function _plugin_urls()
     local urls = option.get("plugins")
     if urls then
         local result = {}
-        for _, url in ipairs(table.wrap(urls)) do
+        for _, url in ipairs(urls) do
             table.insert(result, git.asgiturl(url) or url)
         end
         urls = result
@@ -123,40 +123,24 @@ end
 function _install_from_git(url)
     local branch
     if url:startswith("github:") then
-        url = url:sub(8)
         local i = url:find("#", 1, true)
         if i then
             branch = url:sub(i + 1)
             url = url:sub(1, i - 1)
         end
-        url = git.asgiturl("github:" .. url)
+        url = git.asgiturl(url)
     end
     local tmpdir = os.tmpfile() .. ".dir"
-    local clone_opt = {verbose = option.get("verbose"), outputdir = tmpdir}
-    if branch then
-        clone_opt.branch = branch
-    end
-    git.clone(git.asgiturl(url) or url, clone_opt)
-    local found = false
-    local function install(srcdir, name)
+    git.clone(url, {verbose = option.get("verbose"), branch = branch, outputdir = tmpdir})
+    for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
+        local srcdir = path.directory(filepath)
+        local name = path.filename(srcdir)
         local dstdir = _get_plugindir(name)
         assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
         os.vcp(srcdir, dstdir)
         cprint("  ${color.success}-> ${bright}%s${clear}", name)
-        found = true
-    end
-    if os.isfile(path.join(tmpdir, "xmake.lua")) then
-        install(tmpdir, path.basename(path.filename(url)))
-    else
-        for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
-            local srcdir = path.directory(filepath)
-            install(srcdir, path.filename(srcdir))
-        end
     end
     os.tryrm(tmpdir)
-    if not found then
-        raise("no plugin found in %s", url)
-    end
 end
 
 -- install plugins
@@ -188,14 +172,11 @@ function _install()
                 end
 
                 -- git url or local path
-                if name:startswith("file://") or git.asgiturl(name) then
+                if git.asgiturl(name) then
                     _install_from_git(name)
                     return
                 elseif os.isdir(name) then
                     _install_from_local(name)
-                    return
-                elseif name:find("[/\\:]") then
-                    _install_from_git(name)
                     return
                 end
 
