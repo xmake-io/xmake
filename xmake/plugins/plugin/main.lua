@@ -143,6 +143,36 @@ function _install_from_git(url)
     os.tryrm(tmpdir)
 end
 
+-- install a single plugin
+function _install_one(name)
+    -- parse repo@plugin format
+    local i = name:find("@", 1, true)
+    if i and not name:find("[/\\:]") then
+        local reponame = name:sub(1, i - 1)
+        local pluginname = name:sub(i + 1)
+        _install_plugins_from_repo(pluginname, reponame)
+        return
+    end
+
+    -- github shortcut: github:user/repo or github:user/repo#branch
+    if name:startswith("github:") then
+        _install_from_git(name)
+        return
+    end
+
+    -- git url or local path
+    if git.asgiturl(name) then
+        _install_from_git(name)
+        return
+    elseif os.isdir(name) then
+        _install_from_local(name)
+        return
+    end
+
+    -- plain name: try to find it in repositories
+    _install_plugins_from_repo(name)
+end
+
 -- install plugins
 function _install()
 
@@ -153,37 +183,15 @@ function _install()
     {
         function ()
 
-            -- do install
-            local name = option.get("plugins")
-            if name and #name > 0 then
-                -- parse repo@plugin format
-                local i = name:find("@", 1, true)
-                if i and not name:find("[/\\:]") then
-                    local reponame = name:sub(1, i - 1)
-                    local pluginname = name:sub(i + 1)
-                    _install_plugins_from_repo(pluginname, reponame)
-                    return
+            -- install requested plugins
+            local names = option.get("plugins")
+            if names then
+                for _, name in ipairs(names) do
+                    _install_one(name)
                 end
-
-                -- github shortcut: github:user/repo or github:user/repo#branch
-                if name:startswith("github:") then
-                    _install_from_git(name)
-                    return
-                end
-
-                -- git url or local path
-                if git.asgiturl(name) then
-                    _install_from_git(name)
-                    return
-                elseif os.isdir(name) then
-                    _install_from_local(name)
-                    return
-                end
-
-                -- plain name: try to find it in repositories
-                _install_plugins_from_repo(name)
                 return
             end
+
 
             -- do batch install from plugin collection urls
             local urls = _plugin_urls()
@@ -271,8 +279,9 @@ end
 
 -- remove the given installed plugin
 function _remove()
-    local name = assert(option.get("plugins"), "please specify the plugin name to be removed!")
-    assert(name ~= "" and name ~= "." and not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid plugin name(%s)!", name)
+    local names = assert(option.get("plugins"), "please specify the plugin name to be removed!")
+    assert(#names == 1, "please specify only one plugin name to be removed!")
+    local name = names[1]
     local dir = _get_plugindir(name)
     assert(os.isdir(dir), "plugin(%s) not found!", name)
     os.rmdir(dir)
@@ -300,7 +309,7 @@ function _list()
     end
 
     -- plugins available in repositories (not yet installed)
-    cprint("${bright}in xmake-repo:${clear}")
+    cprint("${bright}available in configured repositories:${clear}")
     local avail = false
     local repos = _repositories()
     for _, repo in ipairs(repos) do

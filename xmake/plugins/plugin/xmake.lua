@@ -30,7 +30,7 @@ task("plugin")
             {'r', "remove",  "k", nil, "Remove the given installed plugin."},
             {'l', "list",    "k", nil, "List all installed plugins."},
             {'c', "clear",   "k", nil, "Clear all installed plugins."},
-            {nil, "plugins", "v", nil, "The plugins path, url or package name.",
+            {nil, "plugins", "vs", nil, "The plugin paths, urls or names.",
                                        "e.g.",
                                        "    $ xmake plugin --install https://github.com/xmake-io/xmake-plugins",
                                        "    $ xmake plugin --install github:xmake-io/xmake-plugins",
