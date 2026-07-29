@@ -38,12 +38,24 @@ function config(target, langkind, opt)
             -- https://github.com/xmake-io/xmake/issues/2667
             -- https://github.com/xmake-io/xmake/issues/5858
             if not os.isfile(headerfile) then
-                io.writefile(headerfile, ([[
+                local langcxx = (langkind == "cxx" or langkind == "mxx")
+                local content
+                if langcxx then
+                    content = [[
 #pragma system_header
 #ifdef __cplusplus
 #include "%s"
 #endif // __cplusplus
-                ]]):format(path.absolute(pcheaderfile):gsub("\\", "/")))
+                    ]]
+                else
+                    content = [[
+#pragma system_header
+#ifndef __cplusplus
+#include "%s"
+#endif
+                    ]]
+                end
+                io.writefile(headerfile, content:format(path.absolute(pcheaderfile):gsub("\\", "/")))
             end
             -- we need only to add a header wrapper in .gch directory
             -- @see https://github.com/xmake-io/xmake/issues/5858#issuecomment-2506918167
