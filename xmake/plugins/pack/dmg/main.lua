@@ -45,6 +45,17 @@ function _pack_dmg(package)
     local rootdir = package:install_rootdir()
     assert(os.isdir(rootdir), "install root directory not found: %s", rootdir)
 
+    -- install launcher wrapper if runenvs/runargs are set
+    local launcher_exe = import("plugins.pack.launcher").main_executable(package)
+    local launcher_script = import("plugins.pack.launcher").generate(package, launcher_exe and "/usr/local/" .. launcher_exe or nil)
+    if launcher_script and launcher_exe then
+        local binname = path.filename(launcher_exe)
+        local launcher_path = path.join(rootdir, package:bindir() or "bin", binname) .. ".app/Contents/MacOS/" .. binname
+        os.mkdir(path.directory(launcher_path))
+        io.writefile(launcher_path, launcher_script)
+        os.vrunv("chmod", {"+x", launcher_path})
+    end
+
     -- get output file
     local outputfile = package:outputfile()
     os.tryrm(outputfile)

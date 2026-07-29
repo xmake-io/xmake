@@ -74,13 +74,27 @@ Exec=usr/bin/%s
 end
 
 -- create AppRun script
-function _create_apprun_script(appdir, main_executable)
+function _create_apprun_script(package, appdir, main_executable)
     local apprun = path.join(appdir, "AppRun")
+    local env_lines = ""
+    local runenvs = package:get("runenvs") or {}
+    for idx, val in ipairs(runenvs) do
+        if idx % 2 == 1 then
+            local key = val
+            local value = runenvs[idx + 1] or ""
+            env_lines = env_lines .. string.format('export %s="%s"\n', key, value)
+        end
+    end
+    local extra_args = ""
+    local runargs = package:get("runargs") or {}
+    for _, a in ipairs(runargs) do
+        extra_args = extra_args .. ' ' .. a
+    end
     local apprun_content = string.format([[
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "${0}")")"
-exec "${HERE}/usr/bin/%s" "$@"
-]], main_executable)
+%sexec "${HERE}/usr/bin/%s"%s "$@"
+]], env_lines, main_executable, extra_args)
     io.writefile(apprun, apprun_content)
     os.vrunv("chmod", {"+x", apprun})
 end
@@ -199,7 +213,7 @@ function _pack_appimage(package, appimagetool)
     _create_desktop_file(package, appdir, appname, apptitle, appdescription, main_executable, iconname)
 
     -- create AppRun script
-    _create_apprun_script(appdir, main_executable)
+    _create_apprun_script(package, appdir, main_executable)
 
     -- create AppImage using appimagetool
     os.vrunv(appimagetool, {appdir, outputfile}, {envs = {APPIMAGE_EXTRACT_AND_RUN = "1"}})

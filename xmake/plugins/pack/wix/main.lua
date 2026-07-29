@@ -257,6 +257,28 @@ function _get_specvars(package)
     local features = {}
     table.join2(features, _build_feature(package, {default = true, force = true, config_dir = true}))
     table.join2(features, _add_to_path(package))
+
+    -- add start menu shortcut with runargs
+    local bindir = package:bindir() or "bin"
+    local target_file
+    for _, t in ipairs(package:targets()) do
+        if t:is_binary() then target_file = path.join(bindir, t:basename()); break end
+    end
+    local runargs = package:get("runargs") or {}
+    if target_file then
+        local args = ""
+        for _, a in ipairs(runargs) do
+            args = args .. string.format(' Arguments="%s"', a)
+        end
+        table.insert(features, string.format([[
+<Component Id="ApplicationShortcut" Guid="%s" Directory="ApplicationProgramsFolder">
+  <Shortcut Id="StartMenuShortcut" Name="${PACKAGE_TITLE}" Description="${PACKAGE_DESCRIPTION}"
+            Target="[INSTALLFOLDER]%s"%s WorkingDirectory="INSTALLFOLDER" />
+  <RemoveFolder Id="RemoveStartMenuFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
+  <RegistryValue Root="HKCU" Key="Software\\${PACKAGE_TITLE}" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+</Component>]], hash.uuid(package:name() .. "_shortcut"), target_file, args))
+    end
+
     for name, component in table.orderpairs(package:components()) do
         table.join2(features, _build_feature(component, {name = "Install " .. name}))
     end

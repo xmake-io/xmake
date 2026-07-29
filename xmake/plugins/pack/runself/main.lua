@@ -169,6 +169,24 @@ function _pack_runself(makeself, package)
                 _write_installcmds(package, scriptfile, batchcmds.get_installcmds(component):cmds())
             end
         end
+        -- append launcher exec if runenvs/runargs are set
+        local launcher_exe = import("plugins.pack.launcher").main_executable(package)
+        if launcher_exe then
+            local exe_path = path.join("$PREFIX", package:bindir() or "bin", path.filename(launcher_exe))
+            local runargs = package:get("runargs") or {}
+            local args = ""
+            for _, a in ipairs(runargs) do
+                args = args .. " " .. a
+            end
+            local runenvs = package:get("runenvs") or {}
+            for idx, val in ipairs(runenvs) do
+                if idx % 2 == 1 then
+                    scriptfile:write(string.format('export %s="%s"\n', val, runenvs[idx + 1] or ""))
+                end
+            end
+            scriptfile:write(string.format('echo "Launching %s..."\n', path.filename(launcher_exe)))
+            scriptfile:write(string.format('exec "%s"%s "$@"\n', exe_path, args))
+        end
         scriptfile:close()
     end
 

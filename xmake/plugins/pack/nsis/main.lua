@@ -261,6 +261,22 @@ function _get_specvars(package)
     specvars.PACKAGE_NSIS_INSTALL_SECTIONS = table.concat(install_sections, "\n  ")
     specvars.PACKAGE_NSIS_INSTALL_DESCS = table.concat(install_descs, "\n  ")
     specvars.PACKAGE_NSIS_INSTALL_DESCRIPTION_TEXTS = table.concat(install_description_texts, "\n  ")
+
+    -- createStartMenu shortcut with runargs
+    specvars.PACKAGE_NSIS_STARTMENU_SHORTCUT = function ()
+        local target = _get_target_filepath(package)
+        if not target then return "" end
+        local runargs = package:get("runargs") or {}
+        local args = ""
+        for _, a in ipairs(runargs) do
+            args = args .. " " .. a
+        end
+        if #runargs == 0 then
+            return string.format('CreateShortCut "$SMPROGRAMS\\${PACKAGE_NAME}.lnk" "$InstDir\\%s"', target)
+        else
+            return string.format('CreateShortCut "$SMPROGRAMS\\${PACKAGE_NAME}.lnk" "$InstDir\\%s" "%s"', target, args)
+        end
+    end
     return specvars
 end
 

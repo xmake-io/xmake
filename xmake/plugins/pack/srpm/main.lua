@@ -253,8 +253,17 @@ function _pack_srpm(rpmbuild, package)
         end
     end
 
-    -- archive install files
+    -- install launcher wrapper script if runenvs/runargs are set
     local rootdir = package:source_rootdir()
+    local launcher_exe = import("plugins.pack.launcher").main_executable(package)
+    local launcher_script = import("plugins.pack.launcher").generate(package, launcher_exe and "/usr/" .. launcher_exe or nil)
+    if launcher_script and launcher_exe then
+        local launcher_path = path.join(rootdir, "usr/bin", path.filename(launcher_exe))
+        io.writefile(launcher_path, launcher_script)
+        os.vrunv("chmod", {"+x", launcher_path})
+    end
+
+    -- archive install files
     local oldir = os.cd(rootdir)
     local archivefiles = os.files("**")
     os.cd(oldir)
