@@ -35,7 +35,7 @@ function init(self)
     self:set("mapflags",
     {
         -- symbols
-        ["-g"]                      = "-Z7"
+        ["-g"]                      = "-Zi"
     ,   ["-fvisibility=.*"]         = ""
 
         -- warnings
@@ -55,20 +55,14 @@ function init(self)
 end
 
 -- make the symbol flags
+--
+-- masm only supports -Zi/-Zd, the -Z7 and -ZI flags of cl.exe are rejected (A4018).
+-- -Zi already embeds debug info in the object file (masm has no compile-time pdb),
+-- so the "embed" and "edit" levels degrade to it.
 function nf_symbols(self, levels)
-    local flags = nil
-    local values = hashset.from(levels)
-    if values:has("debug") then
-        flags = {}
-        if values:has("edit") then
-            table.insert(flags, "-ZI")
-        elseif values:has("embed") then
-            table.insert(flags, "-Z7")
-        else
-            table.insert(flags, "-Zi")
-        end
+    if hashset.from(levels):has("debug") then
+        return {"-Zi"}
     end
-    return flags
 end
 
 -- make the warning flag
