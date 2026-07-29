@@ -118,6 +118,7 @@ function _download(package, resource_name, resource_url, resource_hash)
         elseif resource_url:find(string.ipattern("https-://")) or resource_url:find(string.ipattern("ftps-://")) then
             http.download(resource_url, resource_file, {
                 insecure = global.get("insecure-ssl"),
+                insecure_fallback = true, -- retry without ssl verification on cert error, the file is verified by sha256 below
                 headers = package:policy("package.download.http_headers")})
         else
             raise("invalid resource url(%s)", resource_url)

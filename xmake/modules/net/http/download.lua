@@ -297,18 +297,8 @@ function _powershell_download(tool, url, outputfile, opt)
     os.vrunv(tool.program, argv)
 end
 
--- download url
---
--- @param url           the input url
--- @param outputfile    the output file
--- @param opt           the option, {continue = true}
---
---
-function main(url, outputfile, opt)
-
-    -- init output file
-    opt = opt or {}
-    outputfile = outputfile or path.filename(url):gsub("%?.+$", "")
+-- download url with the first available tool (aria2/curl/wget/powershell)
+function _download(url, outputfile, opt)
 
     -- attempt to download url using aria2 first (multi-threaded, fastest)
     local tool = find_tool("aria2", {version = true})
@@ -337,4 +327,63 @@ function main(url, outputfile, opt)
     end
 
     assert(tool, "aria2, curl or wget not found!")
+end
+
+-- is it a ssl/tls certificate verification error?
+function _is_ssl_cert_error(errors)
+    errors = (errors or ""):lower()
+    return errors:find("ssl", 1, true)
+        or errors:find("tls", 1, true)
+        or errors:find("certificate", 1, true)
+        or errors:find("handshake", 1, true)
+end
+
+-- download url, and retry once with ssl verification disabled on a certificate error
+function _download_fallback(url, outputfile, opt)
+    local errors
+    local ok = try
+    {
+        function ()
+            _download(url, outputfile, opt)
+            return true
+        end,
+        catch
+        {
+            function (errs)
+                errors = tostring(errs)
+            end
+        }
+    }
+    if not ok then
+        if _is_ssl_cert_error(errors) then
+            wprint("download failed due to ssl certificate verification, retrying with ssl verification disabled ..")
+            return _download(url, outputfile, table.join(opt, {insecure = true}))
+        end
+        raise(errors)
+    end
+end
+
+-- download url
+--
+-- @param url           the input url
+-- @param outputfile    the output file
+-- @param opt           the option, e.g. {continue = true, insecure = false, insecure_fallback = false}
+--
+-- @note if opt.insecure_fallback is enabled and the download fails due to a ssl certificate
+--       error, it will retry once with ssl verification disabled. this is only safe when the
+--       caller verifies the downloaded file afterwards (e.g. by its sha256 checksum).
+--
+function main(url, outputfile, opt)
+
+    -- init output file
+    opt = opt or {}
+    outputfile = outputfile or path.filename(url):gsub("%?.+$", "")
+
+    -- download it directly if we do not need the insecure fallback
+    if opt.insecure or not opt.insecure_fallback then
+        return _download(url, outputfile, opt)
+    end
+
+    -- download it with the insecure fallback
+    return _download_fallback(url, outputfile, opt)
 end

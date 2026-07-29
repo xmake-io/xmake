@@ -80,6 +80,7 @@ function _patch(package, patchinfo)
         if patch_url:find(string.ipattern("https-://")) or patch_url:find(string.ipattern("ftps-://")) then
             http.download(patch_url, patch_file, {
                 insecure = global.get("insecure-ssl"),
+                insecure_fallback = true, -- retry without ssl verification on cert error, the file is verified by sha256 below
                 headers = package:policy("package.download.http_headers")})
         else
             -- copy the patch file

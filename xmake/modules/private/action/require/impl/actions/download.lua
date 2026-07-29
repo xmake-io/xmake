@@ -216,6 +216,7 @@ function _download(package, url, sourcedir, opt)
             else
                 http.download(url, packagefile, {
                     insecure = global.get("insecure-ssl"),
+                    insecure_fallback = true, -- retry without ssl verification on cert error, the file is verified by sha256 below
                     headers = opt.url_http_headers or package:policy("package.download.http_headers")})
             end
         end
