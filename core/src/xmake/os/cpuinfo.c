@@ -70,8 +70,9 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
     processor_info_array_t cpuinfo;
     mach_msg_type_number_t cpuinfo_count;
     static tb_hong_t s_time = 0;
+    host_t host = mach_host_self();
     if (tb_mclock() - s_time > 1000 &&
-        host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &cpu_count, &cpuinfo, &cpuinfo_count) ==
+        host_processor_info(host, PROCESSOR_CPU_LOAD_INFO, &cpu_count, &cpuinfo, &cpuinfo_count) ==
             KERN_SUCCESS) {
         static processor_info_array_t s_cpuinfo_prev = tb_null;
         static mach_msg_type_number_t s_cpuinfo_count_prev = 0;
@@ -100,6 +101,7 @@ static tb_float_t xm_os_cpuinfo_usagerate() {
         s_cpuinfo_prev = cpuinfo;
         s_cpuinfo_count_prev = cpuinfo_count;
     }
+    mach_port_deallocate(mach_task_self(), host);
     return cpu_count > 0 ? usagerate / cpu_count : 0;
 #elif defined(TB_CONFIG_OS_WINDOWS)
     // kernel include idle_time

@@ -61,7 +61,10 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t *ptotalsize, tb_int_t *pavailsize)
 #if defined(TB_CONFIG_OS_MACOSX)
     vm_statistics64_data_t vmstat;
     mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
-    if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info_t)&vmstat, &count) == KERN_SUCCESS) {
+    host_t host = mach_host_self();
+    kern_return_t result = host_statistics64(host, HOST_VM_INFO64, (host_info_t)&vmstat, &count);
+    mach_port_deallocate(mach_task_self(), host);
+    if (result == KERN_SUCCESS) {
         tb_int_t pagesize = (tb_int_t)tb_page_size();
         tb_int64_t totalsize = (tb_int64_t)(vmstat.inactive_count + vmstat.free_count + vmstat.active_count +
                                             vmstat.wire_count
