@@ -81,8 +81,11 @@ function _save_manifest(manifest)
 end
 
 -- find a plugin directory in the given repository directory
+--
+-- plugins in a repository follow the same layout as packages:
+-- <repodir>/plugins/<first-letter>/<name>/xmake.lua
 function _find_plugin_in_repo(repodir, name)
-    local dir = path.join(repodir, "plugins", name)
+    local dir = path.join(repodir, "plugins", name:sub(1, 1):lower(), name)
     if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) then
         return dir
     end
@@ -300,9 +303,13 @@ function _plugin_description(dir)
 end
 
 -- collect plugins (each subdirectory containing xmake.lua) under the given root
-function _collect_plugins(root, seen)
+--
+-- built-in/installed plugins are flat (<root>/<name>), while plugins in a
+-- repository follow the packages layout (<root>/<first-letter>/<name>)
+function _collect_plugins(root, seen, nested)
     local entries = {}
-    for _, dir in ipairs(os.dirs(path.join(root, "*")) or {}) do
+    local pattern = nested and path.join(root, "*", "*") or path.join(root, "*")
+    for _, dir in ipairs(os.dirs(pattern) or {}) do
         local name = path.filename(dir)
         if os.isfile(path.join(dir, "xmake.lua")) and (not seen or not seen[name]) then
             if seen then
@@ -338,7 +345,7 @@ function _list()
     local installed = _collect_plugins(plugindir, seen)
     local avail = {}
     for _, repo in ipairs(_repositories()) do
-        table.join2(avail, _collect_plugins(path.join(repo:directory(), "plugins"), seen))
+        table.join2(avail, _collect_plugins(path.join(repo:directory(), "plugins"), seen, true))
     end
 
     -- compute the alignment width from all plugin names

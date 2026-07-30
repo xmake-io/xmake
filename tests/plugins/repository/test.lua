@@ -36,10 +36,10 @@ function main(t)
     end
     cleanup()
 
-    -- mock repository with installed and available plugins
-    _write_plugin(path.join(repodir, "plugins", hello_name), hello_name, "repo-ok")
-    _write_plugin(path.join(repodir, "plugins", formatter_name), formatter_name, "format-ok")
-    _write_plugin(path.join(repodir, "plugins", available_name), available_name, "available-ok")
+    -- mock repository with installed and available plugins (packages-like layout: plugins/<first-letter>/<name>)
+    _write_plugin(path.join(repodir, "plugins", hello_name:sub(1, 1), hello_name), hello_name, "repo-ok")
+    _write_plugin(path.join(repodir, "plugins", formatter_name:sub(1, 1), formatter_name), formatter_name, "format-ok")
+    _write_plugin(path.join(repodir, "plugins", available_name:sub(1, 1), available_name), available_name, "available-ok")
     os.mkdir(path.directory(cachefile))
     local cache = os.isfile(cachefile) and io.load(cachefile) or {}
     cache.repositories = cache.repositories or {}
