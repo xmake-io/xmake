@@ -1,4 +1,4 @@
-local global = import("core.base.global")
+import("core.base.global")
 
 function _write_plugin(dir, name, text)
     io.writefile(path.join(dir, "xmake.lua"), string.format([[
@@ -56,6 +56,8 @@ function main(t)
 
     -- Feature: --list shows installed and available repository plugins
     local out = os.iorun("xmake plugin --list")
+    t:require(out:find("the built-in plugins:", 1, true))
+    t:require(out:find("project", 1, true))
     t:require(out:find(hello_name, 1, true))
     t:require(out:find(formatter_name, 1, true))
     t:require(out:find(available_name, 1, true))

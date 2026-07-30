@@ -288,45 +288,96 @@ function _remove()
     cprint("${color.success}remove ${bright}%s${clear} ok!", name)
 end
 
+-- get the description of a plugin from its xmake.lua menu
+function _plugin_description(dir)
+    local filepath = path.join(dir, "xmake.lua")
+    if os.isfile(filepath) then
+        local content = io.readfile(filepath)
+        if content then
+            return content:match("description%s*=%s*\"(.-)\"")
+        end
+    end
+end
+
+-- collect plugins (each subdirectory containing xmake.lua) under the given root
+function _collect_plugins(root, seen)
+    local entries = {}
+    for _, dir in ipairs(os.dirs(path.join(root, "*")) or {}) do
+        local name = path.filename(dir)
+        if os.isfile(path.join(dir, "xmake.lua")) and (not seen or not seen[name]) then
+            if seen then
+                seen[name] = true
+            end
+            table.insert(entries, {name = name, description = _plugin_description(dir)})
+        end
+    end
+    return entries
+end
+
+-- print a plugin entry with its description aligned on the right
+function _print_plugin(name, description, width, note)
+    local suffix = description or ""
+    if note then
+        suffix = suffix ~= "" and (suffix .. " " .. note) or note
+    end
+    if suffix ~= "" then
+        local padding = math.max(width - #name, 1)
+        cprint("  ${color.dump.string}%s${clear}%s%s", name, (" "):rep(padding), suffix)
+    else
+        cprint("  ${color.dump.string}%s${clear}", name)
+    end
+end
+
 -- list all plugins
 function _list()
     local seen = {}
 
-    -- installed plugins
+    -- collect plugins from every source
+    local builtin = _collect_plugins(path.join(os.programdir(), "plugins"), seen)
     local plugindir = _get_plugindir()
-    cprint("${bright}the installed plugins:${clear}")
-    local found = false
-    for _, dir in ipairs(os.dirs(path.join(plugindir, "*")) or {}) do
-        if os.isfile(path.join(dir, "xmake.lua")) then
-            local name = path.filename(dir)
-            seen[name] = true
-            found = true
-            cprint("  ${bright}%s${clear}", name)
+    local installed = _collect_plugins(plugindir, seen)
+    local avail = {}
+    for _, repo in ipairs(_repositories()) do
+        table.join2(avail, _collect_plugins(path.join(repo:directory(), "plugins"), seen))
+    end
+
+    -- compute the alignment width from all plugin names
+    local width = 0
+    for _, entries in ipairs({builtin, installed, avail}) do
+        for _, entry in ipairs(entries) do
+            width = math.max(width, #entry.name + 4)
         end
     end
-    if not found then
+
+    -- built-in plugins
+    cprint("${bright}the built-in plugins:${clear}")
+    if #builtin > 0 then
+        for _, entry in ipairs(builtin) do
+            _print_plugin(entry.name, entry.description, width)
+        end
+    else
+        print("  (none)")
+    end
+
+    -- installed plugins
+    cprint("${bright}the installed plugins:${clear}")
+    if #installed > 0 then
+        for _, entry in ipairs(installed) do
+            _print_plugin(entry.name, entry.description, width)
+        end
+    else
         print("  (none)")
     end
 
     -- plugins available in repositories (not yet installed)
     cprint("${bright}available in configured repositories:${clear}")
-    local avail = false
-    local repos = _repositories()
-    for _, repo in ipairs(repos) do
-        local rplugindir = path.join(repo:directory(), "plugins")
-        if os.isdir(rplugindir) then
-            for _, subdir in ipairs(os.dirs(path.join(rplugindir, "*")) or {}) do
-                local name = path.filename(subdir)
-                if os.isfile(path.join(subdir, "xmake.lua")) and not seen[name] then
-                    seen[name] = true
-                    avail = true
-                    cprint("    - ${bright}%s${clear} ${dim}(run ${bright}xmake plugin --install %s${clear}${dim} to install)${clear}", name, name)
-                end
-            end
+    if #avail > 0 then
+        for _, entry in ipairs(avail) do
+            local note = string.format("(run xmake plugin --install %s to install)", entry.name)
+            _print_plugin(entry.name, entry.description, width, note)
         end
-    end
-    if not avail then
-        print("    (none)")
+    else
+        print("  (none)")
     end
 end
 
