@@ -814,6 +814,10 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t *engine, tb_int_t argc, tb
         lua_rawseti(engine->lua, -2, (int)lua_objlen(engine->lua, -2) + 1);
     }
 
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
+    LocalFree(argvw);
+#endif
+
     // _ARGV = table_new
     lua_setglobal(engine->lua, "_ARGV");
     return tb_true;
@@ -1445,8 +1449,8 @@ static tb_bool_t xm_engine_extract_programfiles_impl(xm_engine_t *engine,
 
             if (tb_stream_open(stream)) {
                 tb_stream_bwrit(stream, p, n);
-                tb_stream_exit(stream);
             }
+            tb_stream_exit(stream);
 
             p += n;
         }
