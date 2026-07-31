@@ -202,6 +202,56 @@ function _load_package_from_base(package, basename, opt)
     end
 end
 
+-- load the package definition (project, repo, base, system)
+-- @param opt extra options, e.g. {displayname = ..., system = ..., locked_repo = ...}
+-- @return package, packagename, displayname, from_repo
+function _load_package_definition(packagename, requireinfo, opt)
+    opt = opt or {}
+    local displayname = opt.displayname
+
+    -- load package from project first
+    local package
+    if os.isfile(os.projectfile()) then
+        package = _load_package_from_project(packagename)
+        if package and package:namespace() then
+            packagename = package:namespace() .. "::" .. packagename
+            if displayname then
+                displayname = package:namespace() .. "::" .. displayname
+            end
+        end
+    end
+
+    -- load package from repositories
+    local from_repo = false
+    if not package then
+        package = _load_package_from_repository(packagename, {
+            plat = requireinfo.plat,
+            arch = requireinfo.arch,
+            name = requireinfo.reponame,
+            locked_repo = opt.locked_repo})
+        if package then
+            from_repo = true
+        end
+    end
+
+    -- load base package
+    if package and package:get("base") then
+        _load_package_from_base(package, package:get("base"), {
+            name = requireinfo.reponame, locked_repo = opt.locked_repo})
+    end
+
+    -- load package from system
+    local system = requireinfo.system
+    if system == nil then
+        system = opt.system
+    end
+    if not package and (system ~= false or packagename:find("::", 1, true)) then
+        package = _load_package_from_system(packagename)
+    end
+
+    return package, packagename, displayname, from_repo
+end
+
 -- has locked requires?
 function _has_locked_requires(opt)
     opt = opt or {}
@@ -930,45 +980,13 @@ function _load_package(packagename, requireinfo, opt)
     -- get locked requireinfo
     local locked_requireinfo = get_locked_requireinfo(requireinfo)
 
-    -- load package from project first
-    local package
-    if os.isfile(os.projectfile()) then
-        package = _load_package_from_project(packagename)
-        if package and package:namespace() then
-            packagename = package:namespace() .. "::" .. packagename
-            if displayname then
-                displayname = package:namespace() .. "::" .. displayname
-            end
-        end
-    end
-
-    -- load package from repositories
-    local from_repo = false
-    if not package then
-        package = _load_package_from_repository(packagename, {
-            plat = requireinfo.plat,
-            arch = requireinfo.arch,
-            name = requireinfo.reponame,
-            locked_repo = locked_requireinfo and locked_requireinfo.repo})
-        if package then
-            from_repo = true
-        end
-    end
-
-    -- load base package
-    if package and package:get("base") then
-        _load_package_from_base(package, package:get("base"), {
-            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo})
-    end
-
-    -- load package from system
-    local system = requireinfo.system
-    if system == nil then
-        system = opt.system
-    end
-    if not package and (system ~= false or packagename:find("::", 1, true)) then
-        package = _load_package_from_system(packagename)
-    end
+    -- load package definition
+    local package, from_repo
+    package, packagename, displayname, from_repo = _load_package_definition(packagename, requireinfo, {
+        displayname = displayname,
+        system = opt.system,
+        locked_repo = locked_requireinfo and locked_requireinfo.repo
+    })
 
     -- check unknown package
     if not package then
@@ -1653,6 +1671,27 @@ function load_requires(requires, requires_extra, opt)
         table.insert(requireitems, {name = packagename, info = requireinfo})
     end
     return requireitems
+end
+
+-- load the package definition only, without resolving or installing it
+function load_package_definition(packagename, requireinfo, opt)
+    opt = opt or {}
+    requireinfo = requireinfo or {}
+
+    -- strip trailing ~tag
+    if packagename:find('~', 1, true) then
+        packagename = packagename:split('~', {plain = true, limit = 2})[1]
+    end
+
+    local package
+    package, packagename = _load_package_definition(packagename, requireinfo, {system = opt.system})
+
+    -- add some builtin configurations to package
+    if package then
+        _add_package_configurations(package)
+    end
+
+    return package, packagename
 end
 
 -- load all required packages

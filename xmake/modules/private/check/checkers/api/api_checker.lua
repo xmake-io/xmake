@@ -25,6 +25,7 @@ import("core.package.package")
 import("core.project.project")
 import("private.check.checker")
 import("private.utils.target", {alias = "target_utils"})
+import("private.action.require.impl.package", {alias = "require_impl"})
 
 function _get_project_packages()
     local project_packages = _g.project_packages
@@ -142,6 +143,9 @@ function _check_instance(instance, apiname, valueset, level, opt)
         local instance_values = opt.values(instance)
         if instance_values then
             instance_valueset = hashset.from(instance_values)
+        else
+            -- values function opted out of checking this instance
+            return
         end
     end
     local values = instance:get(apiname)
@@ -191,6 +195,33 @@ function _check_instances(apiname, instance, instances_func, opt)
     end
 end
 
+-- load all `add_requires()` descriptors
+function _get_requires(opt)
+    local requires = _g.get_requires
+    if requires == nil then
+        requires = {}
+        local requires_str, requires_extra = project.requires_str()
+        if requires_str then
+            local sourceinfos = {}
+            table.join2(sourceinfos, project.get("__sourceinfo_requires"))
+            for _, namespace in ipairs(table.wrap(project.namespaces())) do
+                table.join2(sourceinfos, project.get(namespace .. "::__sourceinfo_requires"))
+            end
+
+            for _, item in ipairs(require_impl.load_requires(table.wrap(requires_str), requires_extra)) do
+                table.insert(requires, {
+                    name = item.name,
+                    info = item.info,
+                    package = require_impl.load_package_definition(item.name, item.info, opt),
+                    sourcename = "requires",
+                    sourceinfo = sourceinfos[item.info.originstr]})
+            end
+        end
+        _g.get_requires = requires
+    end
+    return requires
+end
+
 -- check flag
 -- @see https://github.com/xmake-io/xmake/issues/3594
 function check_flag(target, toolinst, flagkind, flag)
@@ -215,4 +246,40 @@ end
 function check_packages(apiname, opt)
     opt = opt or {}
     _check_instances(apiname, opt.package, _get_project_packages, opt)
+end
+
+-- get a `add_requires()` descriptor as an instance-like object
+function _require_instance(require)
+    return {
+        package = require.package,
+        get = function (self, apiname)
+            if apiname == "package" then
+                return {require.name}
+            end
+            return table.orderkeys(require.info[apiname] or {})
+        end,
+        sourceinfo = function (self, apiname, value)
+            return require.sourceinfo
+        end,
+        type = function (self)
+            return require.sourcename
+        end,
+        name = function (self)
+            return require.name
+        end}
+end
+
+-- check api configuration in `add_requires()`
+function check_requires(apiname, opt)
+    opt = opt or {}
+    opt.system = false
+    _check_instances(apiname, nil, function ()
+        local instances = {}
+        for _, require in ipairs(_get_requires(opt)) do
+            if not opt.package or (require.package and require.package:name() == opt.package:name()) then
+                table.insert(instances, _require_instance(require))
+            end
+        end
+        return instances
+    end, opt)
 end
