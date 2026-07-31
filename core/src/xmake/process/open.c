@@ -75,7 +75,7 @@ tb_int_t xm_process_open(lua_State *lua) {
 
         // get curdir
         lua_pushstring(lua, "curdir");
-        lua_gettable(lua, 3);
+        lua_gettable(lua, 2);
         attr.curdir = lua_tostring(lua, -1);
         lua_pop(lua, 1);
 
@@ -100,7 +100,7 @@ tb_int_t xm_process_open(lua_State *lua) {
         // get infile
         if (!inpath) {
             lua_pushstring(lua, "infile");
-            lua_gettable(lua, 3);
+            lua_gettable(lua, 2);
             infile = (xm_io_file_t *)lua_touserdata(lua, -1);
             lua_pop(lua, 1);
         }
@@ -108,7 +108,7 @@ tb_int_t xm_process_open(lua_State *lua) {
         // get outfile
         if (!outpath) {
             lua_pushstring(lua, "outfile");
-            lua_gettable(lua, 3);
+            lua_gettable(lua, 2);
             outfile = (xm_io_file_t *)lua_touserdata(lua, -1);
             lua_pop(lua, 1);
         }
@@ -116,7 +116,7 @@ tb_int_t xm_process_open(lua_State *lua) {
         // get errfile
         if (!errpath) {
             lua_pushstring(lua, "errfile");
-            lua_gettable(lua, 3);
+            lua_gettable(lua, 2);
             errfile = (xm_io_file_t *)lua_touserdata(lua, -1);
             lua_pop(lua, 1);
         }
@@ -124,7 +124,7 @@ tb_int_t xm_process_open(lua_State *lua) {
         // get inpipe
         if (!inpath && !infile) {
             lua_pushstring(lua, "inpipe");
-            lua_gettable(lua, 3);
+            lua_gettable(lua, 2);
             inpipe = (tb_pipe_file_ref_t)lua_touserdata(lua, -1);
             lua_pop(lua, 1);
         }
@@ -132,7 +132,7 @@ tb_int_t xm_process_open(lua_State *lua) {
         // get outpipe
         if (!outpath && !outfile) {
             lua_pushstring(lua, "outpipe");
-            lua_gettable(lua, 3);
+            lua_gettable(lua, 2);
             outpipe = (tb_pipe_file_ref_t)lua_touserdata(lua, -1);
             lua_pop(lua, 1);
         }
@@ -140,7 +140,7 @@ tb_int_t xm_process_open(lua_State *lua) {
         // get errpipe
         if (!errpath && !errfile) {
             lua_pushstring(lua, "errpipe");
-            lua_gettable(lua, 3);
+            lua_gettable(lua, 2);
             errpipe = (tb_pipe_file_ref_t)lua_touserdata(lua, -1);
             lua_pop(lua, 1);
         }
