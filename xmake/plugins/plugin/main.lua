@@ -74,17 +74,17 @@ function _install_plugins_from_repo(name, reponame)
     raise("plugin(%s): not found in any repository! try ${bright}xrepo update-repo${clear} first.", name)
 end
 
--- install a plugin from a local directory
-function _install_from_local(dir)
+-- install a single plugin from a source directory (as the given name, default to the directory name)
+function _install_from_local(dir, name)
     assert(os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")), "plugin path(%s): ${bright}xmake.lua${clear} not found!", dir)
-    local name = path.filename(path.absolute(dir))
+    name = name or path.filename(path.absolute(dir))
     local dstdir = _get_plugindir(name)
     assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
     os.vcp(dir, dstdir)
-    cprint("${color.success}install ${bright}%s${clear} from ${bright}%s${clear} ok!", name, dir)
+    cprint("${color.success}install ${bright}%s${clear} ok!", name)
 end
 
--- install a plugin from a git url or github shortcut
+-- install a single plugin from a git url or github shortcut, e.g. https://github.com/xmake-io/hello-world
 function _install_from_git(url)
     local branch
     if url:startswith("github:") then
@@ -95,9 +95,11 @@ function _install_from_git(url)
         end
         url = git.asgiturl(url)
     end
+    local name = (path.filename(url):gsub("%.git$", ""))
     local tmpdir = os.tmpfile() .. ".dir"
     git.clone(url, {verbose = option.get("verbose"), branch = branch, outputdir = tmpdir})
-    _copy_plugins_from_dir(tmpdir)
+    os.tryrm(path.join(tmpdir, ".git"))
+    _install_from_local(tmpdir, name)
     os.tryrm(tmpdir)
 end
 
@@ -129,18 +131,6 @@ function _install_one(name)
 
     -- plain name: try to find it in repositories
     _install_plugins_from_repo(name)
-end
-
--- copy every plugin found under the cloned directory into the plugins directory
-function _copy_plugins_from_dir(tmpdir)
-    for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
-        local srcdir = path.directory(filepath)
-        local name = path.filename(srcdir)
-        local dstdir = _get_plugindir(name)
-        assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
-        os.vcp(srcdir, dstdir)
-        cprint("  ${color.success}-> ${bright}%s${clear}", name)
-    end
 end
 
 -- install plugins
