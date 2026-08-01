@@ -26,7 +26,6 @@ task("plugin")
         description = "Manage plugins of xmake.",
         options = {
             {'i', "install", "k", nil, "Install plugins."},
-            {'u', "update",  "k", nil, "Update plugins."},
             {'r', "remove",  "k", nil, "Remove the given installed plugin."},
             {'l', "list",    "k", nil, "List all installed plugins."},
             {'c', "clear",   "k", nil, "Clear all installed plugins."},
@@ -39,7 +38,6 @@ task("plugin")
                                        "    $ xmake plugin --install xmake-repo@hello-world",
                                        "    $ xmake plugin --install hello-world",
                                        "    $ xmake plugin --remove hello-world",
-                                       "    $ xmake plugin --list",
-                                       "    $ xmake plugin --update"}
+                                       "    $ xmake plugin --list"}
         }
     }

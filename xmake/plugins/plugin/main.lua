@@ -23,7 +23,6 @@ import("core.base.option")
 import("core.base.global")
 import("core.package.repository")
 import("devel.git")
-import("net.fasturl")
 import("private.action.require.impl.environment")
 
 -- validate a plugin directory name
@@ -41,43 +40,6 @@ end
 -- get local and global repositories, with local taking precedence
 function _repositories()
     return table.join(repository.repositories({global = false}), repository.repositories({global = true}))
-end
-
--- get plugin urls for batch install
-function _plugin_urls()
-    local urls = option.get("plugins")
-    if urls then
-        local result = {}
-        for _, url in ipairs(urls) do
-            table.insert(result, git.asgiturl(url) or url)
-        end
-        urls = result
-    else
-        urls = {
-        "https://github.com/xmake-io/xmake-plugins.git",
-        "https://gitlab.com/tboox/xmake-plugins.git",
-        "https://gitee.com/tboox/xmake-plugins.git"}
-        fasturl.add(urls)
-        urls = fasturl.sort(urls)
-    end
-    return urls
-end
-
-function _manifest_path()
-    return path.join(_get_plugindir(), "manifest.txt")
-end
-
--- load manifest
-function _load_manifest()
-    local manifest_path = _manifest_path()
-    if os.isfile(manifest_path) then
-        return io.load(manifest_path)
-    end
-end
-
--- save manifest
-function _save_manifest(manifest)
-    io.save(_manifest_path(), manifest)
 end
 
 -- find a plugin directory in the given repository directory
@@ -135,14 +97,7 @@ function _install_from_git(url)
     end
     local tmpdir = os.tmpfile() .. ".dir"
     git.clone(url, {verbose = option.get("verbose"), branch = branch, outputdir = tmpdir})
-    for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
-        local srcdir = path.directory(filepath)
-        local name = path.filename(srcdir)
-        local dstdir = _get_plugindir(name)
-        assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
-        os.vcp(srcdir, dstdir)
-        cprint("  ${color.success}-> ${bright}%s${clear}", name)
-    end
+    _copy_plugins_from_dir(tmpdir)
     os.tryrm(tmpdir)
 end
 
@@ -176,97 +131,28 @@ function _install_one(name)
     _install_plugins_from_repo(name)
 end
 
--- install plugins
-function _install()
-
-    -- enter environment
-    environment.enter()
-
-    try
-    {
-        function ()
-
-            -- install requested plugins
-            local names = option.get("plugins")
-            if names then
-                for _, name in ipairs(names) do
-                    _install_one(name)
-                end
-                return
-            end
-
-
-            -- do batch install from plugin collection urls
-            local urls = _plugin_urls()
-            local tmpdir = os.tmpfile() .. ".dir"
-            local plugindir = _get_plugindir()
-            local installed_url
-            for _, url in ipairs(urls) do
-                cprint("installing plugins from ${bright}%s${clear} ..", url)
-                git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
-                installed_url = url
-                break
-            end
-            for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
-                local srcdir = path.directory(filepath)
-                local name = path.filename(srcdir)
-                local dstdir = _get_plugindir(name)
-                assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
-                os.vcp(srcdir, dstdir)
-                cprint("  ${color.success}-> ${bright}%s${clear}", name)
-            end
-            os.tryrm(tmpdir)
-
-            if installed_url then
-                local manifest = _load_manifest() or {}
-                manifest.urls = manifest.urls or {}
-                table.join2(manifest.urls, installed_url)
-                _save_manifest(manifest)
-            end
-            cprint("${color.success}all plugins have been installed in ${bright}%s${clear}!", plugindir)
-        end,
-        catch
-        {
-            function (errors)
-                raise(errors)
-            end
-        }
-    }
-
-    -- leave environment
-    environment.leave()
+-- copy every plugin found under the cloned directory into the plugins directory
+function _copy_plugins_from_dir(tmpdir)
+    for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
+        local srcdir = path.directory(filepath)
+        local name = path.filename(srcdir)
+        local dstdir = _get_plugindir(name)
+        assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
+        os.vcp(srcdir, dstdir)
+        cprint("  ${color.success}-> ${bright}%s${clear}", name)
+    end
 end
 
--- update plugins
-function _update()
-
-    -- enter environment
+-- install plugins
+function _install()
+    local names = assert(option.get("plugins"), "please specify the plugins to be installed!")
     environment.enter()
-
     try
     {
         function ()
-
-            -- do update
-            local manifest = _load_manifest()
-            assert(manifest and manifest.urls, "3rd plugins not found!")
-            local urls = manifest.urls
-            local plugindir = _get_plugindir()
-            for _, url in ipairs(urls) do
-                cprint("updating plugins from ${bright}%s${clear} ..", url)
-                local tmpdir = os.tmpfile() .. ".dir"
-                git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
-                for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
-                    local srcdir = path.directory(filepath)
-                    local name = path.filename(srcdir)
-                    local dstdir = _get_plugindir(name)
-                    os.tryrm(dstdir)
-                    os.vcp(srcdir, dstdir)
-                    cprint("  ${color.success}-> ${bright}%s${clear}", name)
-                end
-                os.tryrm(tmpdir)
+            for _, name in ipairs(names) do
+                _install_one(name)
             end
-            cprint("${color.success}all plugins have been updated in ${bright}%s${clear}!", plugindir)
         end,
         catch
         {
@@ -275,8 +161,6 @@ function _update()
             end
         }
     }
-
-    -- leave environment
     environment.leave()
 end
 
@@ -400,8 +284,6 @@ end
 function main()
     if option.get("install") then
         _install()
-    elseif option.get("update") then
-        _update()
     elseif option.get("remove") then
         _remove()
     elseif option.get("list") then
