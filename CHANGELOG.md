@@ -2,6 +2,71 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#7558](https://github.com/xmake-io/xmake/pull/7558): Add `check_alignof` / `alignof` detection support
+* [#7587](https://github.com/xmake-io/xmake/pull/7587): Support `xmake show --format=json`
+* [#7607](https://github.com/xmake-io/xmake/pull/7607): Support passing multiple target names to `build` / `clean` and other commands
+* [#7634](https://github.com/xmake-io/xmake/pull/7634): Add filter support for xpack
+* [#7654](https://github.com/xmake-io/xmake/pull/7654): Add `batchcmds:call` and lua-file transform support for `bin2obj` / `bin2c`
+* [#7680](https://github.com/xmake-io/xmake/pull/7680): Rework `xmake plugin` to install plugins from repositories (`repo@name` or name), git urls (`github:user/repo[#branch]`) and local directories using the packages-style `plugins/<first-letter>/<name>` layout, and list built-in / installed / available plugins with their descriptions
+* Add gcc-16 toolchain support
+
+### Changes
+
+* [#7562](https://github.com/xmake-io/xmake/pull/7562): Improve nuget version handling
+* [#7564](https://github.com/xmake-io/xmake/pull/7564): Improve vcpkg dependency info in `find_package`
+* [#7582](https://github.com/xmake-io/xmake/pull/7582): Support `set_encodings` and filter output for nvcc
+* [#7609](https://github.com/xmake-io/xmake/pull/7609): Use `FormatMessageW` for Windows system error messages
+* [#7614](https://github.com/xmake-io/xmake/pull/7614): Improve `cargo` package installation
+* [#7619](https://github.com/xmake-io/xmake/pull/7619): Work around clangd drive-letter casing issue
+* [#7620](https://github.com/xmake-io/xmake/pull/7620): Improve cl flag detection and output handling on vs2015
+* [#7625](https://github.com/xmake-io/xmake/pull/7625): Improve verilator rules
+* [#7629](https://github.com/xmake-io/xmake/pull/7629): vsxmake: support custom source types in the solution explorer and nonetype targets
+* [#7630](https://github.com/xmake-io/xmake/pull/7630): Add `add_toolset` api checker
+* [#7637](https://github.com/xmake-io/xmake/pull/7637): Improve readline / curses options for mingw
+* [#7648](https://github.com/xmake-io/xmake/pull/7648): Improve error tips
+* [#7655](https://github.com/xmake-io/xmake/pull/7655): Improve bin2obj object-flag detection and add ppc / mips support
+* [#7657](https://github.com/xmake-io/xmake/pull/7657): Update NDK sdkver for riscv64
+* [#7666](https://github.com/xmake-io/xmake/pull/7666): Improve vcpkg package discovery
+* [#7672](https://github.com/xmake-io/xmake/pull/7672): Add fallback download support
+* Improve elf rpath cleaning and package path handling
+* Add xcodebuild detection
+* Update the bundled tbox
+
+### Bugs fixed
+
+* [#7561](https://github.com/xmake-io/xmake/pull/7561): Fix `-flto=thin` regression for clang-cl
+* [#7563](https://github.com/xmake-io/xmake/pull/7563): Fix crash in `contains` and improve PCH for C++ std modules
+* [#7580](https://github.com/xmake-io/xmake/pull/7580): Fix the format plugin when the header path is already absolute
+* [#7581](https://github.com/xmake-io/xmake/pull/7581): Fix missing paren in package loading
+* [#7583](https://github.com/xmake-io/xmake/pull/7583): Fix splitting global flags for cmake packages
+* [#7599](https://github.com/xmake-io/xmake/pull/7599): Fix gzip / tar detection on OpenBSD
+* [#7600](https://github.com/xmake-io/xmake/pull/7600): Fix enabling the build cache memcache
+* [#7601](https://github.com/xmake-io/xmake/pull/7601): Fix verilator to always define `TRACE`
+* [#7602](https://github.com/xmake-io/xmake/pull/7602): Fix package load memcache
+* [#7603](https://github.com/xmake-io/xmake/pull/7603): Fix `rmdir` via tbox update
+* [#7604](https://github.com/xmake-io/xmake/pull/7604): Fix rpath cleaning for elf
+* [#7608](https://github.com/xmake-io/xmake/pull/7608): Fix typos and format command menus
+* [#7611](https://github.com/xmake-io/xmake/pull/7611): Fix cache environment variable handling ([#7576](https://github.com/xmake-io/xmake/issues/7576))
+* [#7622](https://github.com/xmake-io/xmake/pull/7622): Fix default maintainer for deb packaging
+* [#7627](https://github.com/xmake-io/xmake/pull/7627): Fix PATH handling in debuild
+* [#7631](https://github.com/xmake-io/xmake/pull/7631): Fix PATH handling when installing deb packages
+* [#7633](https://github.com/xmake-io/xmake/pull/7633): Fix pkg-config path for BSD in the Meson backend
+* [#7640](https://github.com/xmake-io/xmake/pull/7640): Improve emcc detection with a fallback search
+* [#7644](https://github.com/xmake-io/xmake/pull/7644): Fix stack buffer overflow for long paths in path translation
+* [#7645](https://github.com/xmake-io/xmake/pull/7645): Fix removing read-only directories
+* [#7659](https://github.com/xmake-io/xmake/pull/7659): Fix emcc detection for `.exe` / `.bat` on Windows
+* [#7661](https://github.com/xmake-io/xmake/pull/7661): Revert static libc++ link for clang
+* [#7668](https://github.com/xmake-io/xmake/pull/7668): Fix passing paths to cmake
+* [#7671](https://github.com/xmake-io/xmake/pull/7671): Fix tbox bugs
+* [#7674](https://github.com/xmake-io/xmake/pull/7674): Fix Mach host send-right leaks on macOS
+* [#7676](https://github.com/xmake-io/xmake/pull/7676): Fix masm symbol flags for embed / edit levels
+* [#7679](https://github.com/xmake-io/xmake/pull/7679): Fix `set_pcheader` for msvc in C mode
+* [#7684](https://github.com/xmake-io/xmake/pull/7684): Fix wrong Lua stack index in `process.open`
+* [#7685](https://github.com/xmake-io/xmake/pull/7685): Fix engine resource leaks
+* Fix trybuild for scons
+
 ## v3.0.9
 
 ### New features
@@ -2417,6 +2482,71 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#7558](https://github.com/xmake-io/xmake/pull/7558): 添加 `check_alignof` / `alignof` 检测支持
+* [#7587](https://github.com/xmake-io/xmake/pull/7587): 支持 `xmake show --format=json`
+* [#7607](https://github.com/xmake-io/xmake/pull/7607): 支持给 `build` / `clean` 等命令传递多个目标名
+* [#7634](https://github.com/xmake-io/xmake/pull/7634): 为 xpack 添加过滤器支持
+* [#7654](https://github.com/xmake-io/xmake/pull/7654): 为 `bin2obj` / `bin2c` 添加 `batchcmds:call` 和 lua 文件 transform 支持
+* [#7680](https://github.com/xmake-io/xmake/pull/7680): 重构 `xmake plugin`，支持从仓库（`repo@name` 或名称）、git 地址（`github:user/repo[#branch]`）以及本地目录安装插件，仓库中的插件采用与 packages 相同的 `plugins/<首字母>/<名称>` 布局，并列出内置、已安装和仓库中可安装的插件及其描述
+* 添加 gcc-16 工具链支持
+
+### 改进
+
+* [#7562](https://github.com/xmake-io/xmake/pull/7562): 改进 nuget 版本处理
+* [#7564](https://github.com/xmake-io/xmake/pull/7564): 改进 `find_package` 中的 vcpkg 依赖信息
+* [#7582](https://github.com/xmake-io/xmake/pull/7582): 支持 nvcc 的 `set_encodings` 并过滤其输出
+* [#7609](https://github.com/xmake-io/xmake/pull/7609): 使用 `FormatMessageW` 获取 Windows 系统错误信息
+* [#7614](https://github.com/xmake-io/xmake/pull/7614): 改进 `cargo` 包安装
+* [#7619](https://github.com/xmake-io/xmake/pull/7619): 规避 clangd 盘符大小写问题
+* [#7620](https://github.com/xmake-io/xmake/pull/7620): 改进 vs2015 下 cl 的编译选项检测和输出处理
+* [#7625](https://github.com/xmake-io/xmake/pull/7625): 改进 verilator 规则
+* [#7629](https://github.com/xmake-io/xmake/pull/7629): vsxmake: 支持解决方案资源管理器中的自定义源类型和 nonetype 目标
+* [#7630](https://github.com/xmake-io/xmake/pull/7630): 添加 `add_toolset` api 检查器
+* [#7637](https://github.com/xmake-io/xmake/pull/7637): 改进 mingw 下的 readline / curses 选项
+* [#7648](https://github.com/xmake-io/xmake/pull/7648): 改进错误提示
+* [#7655](https://github.com/xmake-io/xmake/pull/7655): 改进 bin2obj 的目标文件 flag 检测并添加 ppc / mips 支持
+* [#7657](https://github.com/xmake-io/xmake/pull/7657): 更新 riscv64 的 NDK sdkver
+* [#7666](https://github.com/xmake-io/xmake/pull/7666): 改进 vcpkg 包查找
+* [#7672](https://github.com/xmake-io/xmake/pull/7672): 添加下载失败回退支持
+* 改进 elf rpath 清理和包路径处理
+* 添加 xcodebuild 检测
+* 更新内置的 tbox
+
+### Bugs 修复
+
+* [#7561](https://github.com/xmake-io/xmake/pull/7561): 修复 clang-cl 的 `-flto=thin` 回归问题
+* [#7563](https://github.com/xmake-io/xmake/pull/7563): 修复 `contains` 崩溃并改进 C++ std 模块的 PCH
+* [#7580](https://github.com/xmake-io/xmake/pull/7580): 修复 format 插件在头文件路径已是绝对路径时的处理
+* [#7581](https://github.com/xmake-io/xmake/pull/7581): 修复包加载函数中缺失的括号
+* [#7583](https://github.com/xmake-io/xmake/pull/7583): 修复 cmake 包的全局 flags 拆分
+* [#7599](https://github.com/xmake-io/xmake/pull/7599): 修复 OpenBSD 上的 gzip / tar 检测
+* [#7600](https://github.com/xmake-io/xmake/pull/7600): 修复构建缓存 memcache 的启用
+* [#7601](https://github.com/xmake-io/xmake/pull/7601): 修复 verilator 确保定义 `TRACE`
+* [#7602](https://github.com/xmake-io/xmake/pull/7602): 修复包加载 memcache
+* [#7603](https://github.com/xmake-io/xmake/pull/7603): 通过更新 tbox 修复 `rmdir`
+* [#7604](https://github.com/xmake-io/xmake/pull/7604): 修复 elf 的 rpath 清理
+* [#7608](https://github.com/xmake-io/xmake/pull/7608): 修复拼写错误并格式化命令菜单
+* [#7611](https://github.com/xmake-io/xmake/pull/7611): 修复缓存环境变量处理（[#7576](https://github.com/xmake-io/xmake/issues/7576)）
+* [#7622](https://github.com/xmake-io/xmake/pull/7622): 修复 deb 打包的默认 maintainer
+* [#7627](https://github.com/xmake-io/xmake/pull/7627): 修复 debuild 中的 PATH 处理
+* [#7631](https://github.com/xmake-io/xmake/pull/7631): 修复安装 deb 包时的 PATH 处理
+* [#7633](https://github.com/xmake-io/xmake/pull/7633): 修复 Meson 后端在 BSD 上的 pkg-config 路径
+* [#7640](https://github.com/xmake-io/xmake/pull/7640): 改进 emcc 检测，添加回退查找
+* [#7644](https://github.com/xmake-io/xmake/pull/7644): 修复路径转换中长路径的栈缓冲区溢出
+* [#7645](https://github.com/xmake-io/xmake/pull/7645): 修复删除只读目录
+* [#7659](https://github.com/xmake-io/xmake/pull/7659): 修复 Windows 上 emcc 的 `.exe` / `.bat` 检测
+* [#7661](https://github.com/xmake-io/xmake/pull/7661): 回退 clang 的静态 libc++ 链接
+* [#7668](https://github.com/xmake-io/xmake/pull/7668): 修复向 cmake 传递路径
+* [#7671](https://github.com/xmake-io/xmake/pull/7671): 修复 tbox 的一些 bug
+* [#7674](https://github.com/xmake-io/xmake/pull/7674): 修复 macOS 上的 Mach host send-right 泄漏
+* [#7676](https://github.com/xmake-io/xmake/pull/7676): 修复 masm 的 embed / edit 级别符号 flag
+* [#7679](https://github.com/xmake-io/xmake/pull/7679): 修复 msvc 在 C 模式下的 `set_pcheader`
+* [#7684](https://github.com/xmake-io/xmake/pull/7684): 修复 `process.open` 中错误的 Lua 栈索引
+* [#7685](https://github.com/xmake-io/xmake/pull/7685): 修复引擎资源泄漏
+* 修复 scons 的 trybuild
 
 ## v3.0.9
 
