@@ -31,13 +31,13 @@ task("plugin")
             {'c', "clear",   "k", nil, "Clear all installed plugins."},
             {nil, "plugins", "vs", nil, "The plugin paths, urls or names.",
                                        "e.g.",
-                                       "    $ xmake plugin --install https://github.com/myrepo/hello",
-                                       "    $ xmake plugin --install github:myrepo/hello",
-                                       "    $ xmake plugin --install github:myrepo/hello#dev",
+                                       "    $ xmake plugin --install https://github.com/myrepo/hello-world",
+                                       "    $ xmake plugin --install github:myrepo/hello-world",
+                                       "    $ xmake plugin --install github:myrepo/hello-world#dev",
                                        "    $ xmake plugin --install /tmp/my-plugin",
-                                       "    $ xmake plugin --install xmake-repo@hello",
-                                       "    $ xmake plugin --install hello",
-                                       "    $ xmake plugin --remove hello",
+                                       "    $ xmake plugin --install xmake-repo@hello-world",
+                                       "    $ xmake plugin --install hello-world",
+                                       "    $ xmake plugin --remove hello-world",
                                        "    $ xmake plugin --list"}
         }
     }
