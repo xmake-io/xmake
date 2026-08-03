@@ -23,7 +23,7 @@ setup_rootfs() {
 }
 
 echo "== appimage =="
-xmake f -y -m release -P .
+xmake f -y -m release -p linux -a x86_64 -P .
 xmake pack -y --formats=appimage --autobuild=y -P .
 APP="$(find build -name '*.AppImage' | head -1)"
 chmod +x "$APP"

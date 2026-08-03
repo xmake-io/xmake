@@ -53,7 +53,7 @@ function _pack_dmg(package)
         local launcher_path = path.join(rootdir, package:get("bindir") or "bin", binname) .. ".app/Contents/MacOS/" .. binname
         -- the wrapper lives in bin/<name>.app/Contents/MacOS, the real binary
         -- is at bin/<name>, so reference it relative to the wrapper location
-        local exec_path = string.format('"$(dirname "$0")/../../../%s"', launcher_exe)
+        local exec_path = string.format('"$(dirname "$0")/../../../%s"', path.filename(launcher_exe))
         local launcher_script = launcher.generate(package, exec_path)
         if launcher_script then
             os.mkdir(path.directory(launcher_path))

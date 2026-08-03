@@ -23,6 +23,14 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y devscripts rpm nsis
+          # appimagetool + makeself come from xmake-repo; installing them also
+          # initializes the repository so the pack plugins can find the tools
+          xrepo install -y appimage makeself
+          # Debian's nsis package does not ship UAC.nsh, which the makensis
+          # check in the nsis pack plugin requires
+          curl -sL -o /tmp/UAC.zip https://github.com/xmake-mirror/nsis/releases/download/v309/UAC.zip
+          sudo unzip -o /tmp/UAC.zip -d /usr/share/nsis/ 'UAC.nsh' 'Plugins/*'
+          sudo mv /usr/share/nsis/UAC.nsh /usr/share/nsis/Include/UAC.nsh
       - name: Run linux pack validation
         run: bash tests/plugins/pack/launcher_app/ci/linux.sh
 
@@ -43,8 +51,8 @@ jobs:
       - name: Run macos pack validation
         run: bash tests/plugins/pack/launcher_app/ci/macos.sh
 
-  # best-effort: local xmake setup is reported as unsupported on windows
-  # runners (see windows.yml), so this job may need adjustment there.
+  # best-effort: local xmake setup is not supported on windows runners, so use
+  # a released xmake binary with this repo's lua via XMAKE_PROGRAM_DIR.
   windows:
     runs-on: windows-latest
     continue-on-error: true
@@ -55,11 +63,11 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Prepare local xmake
-        run: xcopy /E /I /Y . ..\xmake-source
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: local#..\xmake-source
+          xmake-version: branch@dev
+      - name: Use this repo's lua
+        run: echo "XMAKE_PROGRAM_DIR=$env:GITHUB_WORKSPACE\xmake" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Run windows pack validation
         shell: pwsh
         run: tests/plugins/pack/launcher_app/ci/windows.ps1
