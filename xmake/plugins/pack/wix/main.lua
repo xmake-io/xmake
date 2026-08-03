@@ -249,6 +249,11 @@ function _add_to_path(package)
     return result
 end
 
+-- escape a string for use in xml attributes
+function _xml_escape(s)
+    return (s or ""):gsub("&", "&amp;"):gsub('"', "&quot;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+end
+
 -- get specvars
 function _get_specvars(package)
     local installcmds = batchcmds.get_installcmds(package):cmds()
@@ -258,25 +263,28 @@ function _get_specvars(package)
     table.join2(features, _build_feature(package, {default = true, force = true, config_dir = true}))
     table.join2(features, _add_to_path(package))
 
-    -- add start menu shortcut with runargs
-    local bindir = package:bindir() or "bin"
+    -- add start menu shortcut with runargs/runenvs
     local target_file
     for _, t in ipairs(package:targets()) do
-        if t:is_binary() then target_file = path.join(bindir, t:basename()); break end
+        if t:is_binary() then target_file = path.join(package:get("bindir") or "bin", t:basename()); break end
     end
+    local runenvs = package:get("runenvs") or {}
     local runargs = package:get("runargs") or {}
-    if target_file then
+    if target_file and (#runargs > 0 or #runenvs > 0) then
+        if #runenvs > 0 then
+            wprint("xpack(%s): runenvs are not supported by the wix format, only runargs will be applied", package:name())
+        end
         local args = ""
-        for _, a in ipairs(runargs) do
-            args = args .. string.format(' Arguments="%s"', a)
+        if #runargs > 0 then
+            args = string.format(' Arguments="%s"', _xml_escape(table.concat(runargs, " ")))
         end
         table.insert(features, string.format([[
 <Component Id="ApplicationShortcut" Guid="%s" Directory="ApplicationProgramsFolder">
-  <Shortcut Id="StartMenuShortcut" Name="${PACKAGE_TITLE}" Description="${PACKAGE_DESCRIPTION}"
+  <Shortcut Id="StartMenuShortcut" Name="%s" Description="%s"
             Target="[INSTALLFOLDER]%s"%s WorkingDirectory="INSTALLFOLDER" />
   <RemoveFolder Id="RemoveStartMenuFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
-  <RegistryValue Root="HKCU" Key="Software\\${PACKAGE_TITLE}" Name="installed" Type="integer" Value="1" KeyPath="yes" />
-</Component>]], hash.uuid(package:name() .. "_shortcut"), target_file, args))
+  <RegistryValue Root="HKCU" Key="Software\%s" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+</Component>]], hash.uuid(package:name() .. "_shortcut"), _xml_escape(package:title()), _xml_escape(package:description() or ""), target_file, args, package:name()))
     end
 
     for name, component in table.orderpairs(package:components()) do

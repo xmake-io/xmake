@@ -186,6 +186,31 @@ function _get_uninstallcmds(package)
     return _get_commands_string(package, batchcmds.get_uninstallcmds(package):cmds(), {install = false})
 end
 
+-- get the nsis commands to install the launcher .cmd wrapper
+function _get_launcher_installcmds(package)
+    local cmdstrs = {}
+    local target = _get_target_filepath(package)
+    if not target then return "" end
+    local runenvs = package:get("runenvs") or {}
+    local runargs = package:get("runargs") or {}
+    if #runenvs == 0 and #runargs == 0 then return "" end
+    -- a .cmd wrapper is installed when env vars are set, so they are applied at launch
+    if #runenvs > 0 then
+        local exename = path.filename(target)
+        local cmdname = path.basename(target)
+        local cmdcontent = "@echo off\r\n"
+        for i = 1, #runenvs, 2 do
+            cmdcontent = cmdcontent .. string.format("set \"%s=%s\"\r\n", runenvs[i], runenvs[i + 1] or "")
+        end
+        cmdcontent = cmdcontent .. string.format("\"%%~dp0%s\" %%*\r\n", exename)
+        local cmdfile = path.join(package:builddir(), "launcher.cmd")
+        io.writefile(cmdfile, cmdcontent)
+        table.insert(cmdstrs, 'SetOutPath "$InstDir\\bin"')
+        table.insert(cmdstrs, string.format('File "/oname=%s.cmd" "%s"', cmdname, path.absolute(cmdfile)))
+    end
+    return table.concat(cmdstrs, "\n  ")
+end
+
 -- get value and filter it
 function _get_filter_value(package, name)
     local value = package:get(name)
@@ -220,7 +245,12 @@ function _get_specvars(package)
         specvars.PACKAGE_VERSION_BUILD = specvars.PACKAGE_VERSION_BUILD:gsub(" ", "_")
     end
     specvars.PACKAGE_INSTALLCMDS = function ()
-        return _get_installcmds(package)
+        local installcmds = _get_installcmds(package)
+        local launchercmds = _get_launcher_installcmds(package)
+        if #launchercmds > 0 then
+            installcmds = installcmds .. "\n  " .. launchercmds
+        end
+        return installcmds
     end
     specvars.PACKAGE_UNINSTALLCMDS = function ()
         return _get_uninstallcmds(package)
@@ -262,20 +292,21 @@ function _get_specvars(package)
     specvars.PACKAGE_NSIS_INSTALL_DESCS = table.concat(install_descs, "\n  ")
     specvars.PACKAGE_NSIS_INSTALL_DESCRIPTION_TEXTS = table.concat(install_description_texts, "\n  ")
 
-    -- createStartMenu shortcut with runargs
+    -- create start menu shortcut with runargs/runenvs
     specvars.PACKAGE_NSIS_STARTMENU_SHORTCUT = function ()
         local target = _get_target_filepath(package)
         if not target then return "" end
+        local runenvs = package:get("runenvs") or {}
         local runargs = package:get("runargs") or {}
-        local args = ""
-        for _, a in ipairs(runargs) do
-            args = args .. " " .. a
+        if #runenvs == 0 and #runargs == 0 then
+            return ""
         end
-        if #runargs == 0 then
-            return string.format('CreateShortCut "$SMPROGRAMS\\${PACKAGE_NAME}.lnk" "$InstDir\\%s"', target)
-        else
-            return string.format('CreateShortCut "$SMPROGRAMS\\${PACKAGE_NAME}.lnk" "$InstDir\\%s" "%s"', target, args)
+        local args = table.concat(runargs, " ")
+        -- point the shortcut at the .cmd wrapper when env vars are set
+        if #runenvs > 0 then
+            target = string.format("$InstDir\\bin\\%s.cmd", path.basename(target))
         end
+        return string.format('CreateShortCut "$SMPROGRAMS\\%s.lnk" "%s" "%s"', package:name(), target, args)
     end
     return specvars
 end
@@ -328,10 +359,10 @@ end
 
 function main(package)
 
-    -- only for windows platform
+    -- only for windows/mingw platforms
     -- makensis is cross-platform, so a Windows installer can be built from any
     -- host, but only when the packaged target is actually a Windows build.
-    if not package:is_plat("windows") then
+    if not package:is_plat("windows", "mingw") then
         return
     end
 

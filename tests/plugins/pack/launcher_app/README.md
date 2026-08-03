@@ -35,18 +35,43 @@ WINEPREFIX=/tmp/wp wine build/xpack/launcher_app/launcher_app-1.0.0.exe /S /NOAD
 
 ## Findings (validated on real generated artifacts, 2026-08-03)
 
-| Format | Status | Issue |
+The launcher feature (commit e290b3a) was broken for every format except
+appimage. All issues were fixed in this branch:
+
+| Format | Status | Fix / remaining limitation |
 |---|---|---|
-| appimage | works | launcher (AppRun) gets env + args, correct exec path |
-| nsis | dead code | `PACKAGE_NSIS_STARTMENU_SHORTCUT` is never referenced in `makensis.nsi`; zero `CreateShortCut` emitted; runenvs unsupported |
-| wix | broken | shortcut target is an absolute build path, duplicate `Arguments` attrs, unresolved `${PACKAGE_TITLE}`, `ApplicationProgramsFolder` undefined, shortcut added unconditionally, runenvs unsupported |
-| deb/srpm | not wired | wrapper is dropped into the source archive but never installed into the package; exec path would be `/usr/<abs>` |
-| dmg | broken path | exec line `/usr/local/<abs>`; cannot build on Linux (hdiutil/macOS) |
-| runself | broken path + unconditional | `exec "$PREFIX/<abs>"`; appends exec block even with no envs/args |
+| appimage | works, run-tested | AppRun sets env + args; verified `--mode test` prepended and `XMAKE_TEST_ENV` set at runtime |
+| srpm/rpm | works | wrapper installed in place of the real binary, real binary renamed to `<name>-real`; verified in the built rpm |
+| deb | works | same wrapper scheme; verified in the built .deb (full build needs `devscripts` + `-d` to skip the xmake build-dep check) |
+| nsis | works | shortcut wired into `makensis.nsi`; `.cmd` wrapper installed for env vars; verified the .exe builds and installs under wine |
+| wix | `.wxs` correct | relative target, single `Arguments`, inline title, `ApplicationProgramsFolder` defined, gated; `runenvs` unsupported (warned); MSI build needs Windows |
+| runself | wiring correct | `$PREFIX/bin/<name>` + gated on envs/args; runtime limited by a pre-existing runself issue (install writes to a host path, not `$PREFIX`) |
+| dmg | code correct | relative exec path inside the `.app` bundle; cannot build on Linux (hdiutil/macOS) |
 
-Root cause for the path issues: `launcher.lua:main_executable()` uses
-`package:bindir()` which returns an *absolute* path, while every caller expects a
-path relative to the prefixdir (e.g. `bin/foo`).
+Root causes fixed:
 
-Also uncovered: `io.gsub(..., {encoding = "ansi"})` reads 0 bytes on Linux, which
-broke the nsis specfile substitution (only relevant once nsis runs on non-Windows).
+- `launcher.lua:main_executable()` returned an *absolute* path (via
+  `package:bindir()`); it now returns a prefixdir-relative path like `bin/foo`.
+- `launcher.generate()` now single-quotes env values and args (exec path stays
+  in double quotes to allow `$PREFIX`/`${HERE}` expansion).
+- deb/srpm wrappers are now registered as install commands (rename the real
+  binary to `<name>-real`, install the wrapper in its place) instead of being
+  dropped unused into the source archive.
+- nsis `PACKAGE_NSIS_STARTMENU_SHORTCUT` was never referenced in the template;
+  it is wired in now. Env vars are applied via an installed `.cmd` wrapper.
+- wix had an absolute target path, duplicate `Arguments` attrs, unresolved
+  `${PACKAGE_TITLE}` and an undefined `ApplicationProgramsFolder`; all fixed.
+
+Also fixed while testing:
+
+- `io.gsub(..., {encoding = "ansi"})` reads 0 bytes on Linux, silently breaking
+  nsis specfile substitution (only used on Windows hosts now).
+- nsis/wix plugins were gated on `is_host("windows")`; nsis is now gated on the
+  target platform (`package:is_plat("windows", "mingw")`) so Linux can cross-pack
+  it (makensis is cross-platform). wix stays host-gated (WiX can't build MSIs on
+  Linux).
+- `get_zig_target` mapped `-p windows` to `x86_64-windows-msvc`; zig bundles the
+  mingw headers, so it now maps to `-windows-gnu` on any host (use `--cross` for
+  an explicit MSVC target).
+- `debian/compat` (9) conflicted with `debhelper-compat (= 13)` in the deb
+  template; the stale compat file was removed.

@@ -24,6 +24,7 @@ import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 import(".batchcmds")
+import("plugins.pack.launcher", {alias = "launcher", rootdir = os.programdir()})
 
 -- handle icon file
 function _handle_icon(package, appdir, appname)
@@ -76,25 +77,16 @@ end
 -- create AppRun script
 function _create_apprun_script(package, appdir, main_executable)
     local apprun = path.join(appdir, "AppRun")
-    local env_lines = ""
-    local runenvs = package:get("runenvs") or {}
-    for idx, val in ipairs(runenvs) do
-        if idx % 2 == 1 then
-            local key = val
-            local value = runenvs[idx + 1] or ""
-            env_lines = env_lines .. string.format('export %s="%s"\n', key, value)
-        end
-    end
-    local extra_args = ""
-    local runargs = package:get("runargs") or {}
-    for _, a in ipairs(runargs) do
-        extra_args = extra_args .. ' ' .. a
+    local content = launcher.generate(package, string.format("${HERE}/usr/bin/%s", main_executable))
+    if content then
+        content = content:gsub("^#!/bin/sh\n", "")
+    else
+        content = string.format('exec "${HERE}/usr/bin/%s" "$@"\n', main_executable)
     end
     local apprun_content = string.format([[
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "${0}")")"
-%sexec "${HERE}/usr/bin/%s"%s "$@"
-]], env_lines, main_executable, extra_args)
+%s]], content)
     io.writefile(apprun, apprun_content)
     os.vrunv("chmod", {"+x", apprun})
 end
