@@ -22,7 +22,7 @@ jobs:
       - name: Install packaging tools
         run: |
           sudo apt update
-          sudo apt install -y devscripts rpm nsis
+          sudo apt install -y devscripts rpm nsis build-essential debhelper
           # appimagetool + makeself come from xmake-repo; installing them also
           # initializes the repository so the pack plugins can find the tools
           xrepo install -y appimage makeself
