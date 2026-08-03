@@ -177,7 +177,6 @@ function _get_specvars(package)
                 end
             end
             local map = {
-                xmake = "xmake",
                 cmake = "cmake",
                 make = "make"
             }
