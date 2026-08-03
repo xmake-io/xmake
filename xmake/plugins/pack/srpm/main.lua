@@ -179,10 +179,11 @@ function _get_specvars(package)
                 end
             end
             local map = {
-                xmake = "xmake",
                 cmake = "cmake",
                 make = "make"
             }
+            -- note: xmake itself is not packaged as an rpm build dependency,
+            -- so it is not added here (the pack is invoked by xmake already)
             for _, program in programs:keys() do
                 local requirename = map[program]
                 if requirename then

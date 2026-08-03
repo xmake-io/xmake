@@ -66,12 +66,12 @@ end
 
 function test_main_executable_default_bindir(t)
     if _skip_without_launcher(t) then return end
-    t:are_same(launcher.main_executable(_mock_package()), "bin/foo")
+    t:are_same(launcher.main_executable(_mock_package()), path.join("bin", "foo"))
 end
 
 function test_main_executable_custom_bindir(t)
     if _skip_without_launcher(t) then return end
-    t:are_same(launcher.main_executable(_mock_package({bindir = "tools"})), "tools/foo")
+    t:are_same(launcher.main_executable(_mock_package({bindir = "tools"})), path.join("tools", "foo"))
 end
 
 function test_main_executable_no_targets(t)

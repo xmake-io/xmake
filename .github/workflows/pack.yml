@@ -68,6 +68,8 @@ jobs:
           xmake-version: branch@dev
       - name: Use this repo's lua
         run: echo "XMAKE_PROGRAM_DIR=$env:GITHUB_WORKSPACE\xmake" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Install nsis (makensis)
+        run: xrepo install -y nsis
       - name: Run windows pack validation
         shell: pwsh
         run: tests/plugins/pack/launcher_app/ci/windows.ps1
