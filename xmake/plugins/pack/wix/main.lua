@@ -360,7 +360,9 @@ end
 
 function main(package)
 
-    -- only for windows
+    -- only for windows host
+    -- the WiX toolset only runs on Windows (the MSI bind step is not supported
+    -- on other hosts), so the installer can only be built there.
     if not is_host("windows") then
         return
     end

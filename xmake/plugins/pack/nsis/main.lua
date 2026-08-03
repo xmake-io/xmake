@@ -294,11 +294,13 @@ function _pack_nsis(makensis, package)
     -- and we need to avoid `attempt to yield across a C-call boundary` in io.gsub
     local specvars = _get_specvars(package)
     local pattern = package:extraconf("specfile", "pattern") or "%${([^\n]-)}"
+    -- ANSI file encoding is only supported on Windows hosts (reads empty on Linux)
+    local gsubopt = is_host("windows") and {encoding = "ansi"} or {}
     local specvars_names = {}
     local specvars_values = {}
     io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
         table.insert(specvars_names, name)
-    end, {encoding = "ansi"})
+    end, gsubopt)
     for _, name in ipairs(specvars_names) do
         local name = name:trim()
         if specvars_values[name] == nil then
@@ -318,7 +320,7 @@ function _pack_nsis(makensis, package)
     io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
         name = name:trim()
         return specvars_values[name]
-    end, {encoding = "ansi"})
+    end, gsubopt)
 
     -- make package
     os.vrunv(makensis, {specfile})
@@ -326,8 +328,10 @@ end
 
 function main(package)
 
-    -- only for windows
-    if not is_host("windows") then
+    -- only for windows platform
+    -- makensis is cross-platform, so a Windows installer can be built from any
+    -- host, but only when the packaged target is actually a Windows build.
+    if not package:is_plat("windows") then
         return
     end
 
