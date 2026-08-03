@@ -41,9 +41,9 @@ appimage. All issues were fixed in this branch:
 | Format | Status | Fix / remaining limitation |
 |---|---|---|
 | appimage | works, run-tested | AppRun sets env + args; verified `--mode test` prepended and `XMAKE_TEST_ENV` set at runtime |
-| srpm/rpm | works | wrapper installed in place of the real binary, real binary renamed to `<name>-real`; verified in the built rpm |
-| deb | works | same wrapper scheme; verified in the built .deb (full build needs `devscripts` + `-d` to skip the xmake build-dep check) |
-| nsis | works | shortcut wired into `makensis.nsi`; `.cmd` wrapper installed for env vars; verified the .exe builds and installs under wine |
+| srpm/rpm | works, runtime-verified in chroot | wrapper installed in place of the real binary (renamed to `<name>-real`); installed into a fake root and run via `unshare -Ur chroot` — env+args applied |
+| deb | works, runtime-verified in chroot | same wrapper scheme; verified in the built .deb via fake-root chroot run (full build needs `devscripts` + `-d` to skip the xmake build-dep check) |
+| nsis | works, runtime-verified under wine | shortcut wired into `makensis.nsi`; `.cmd` wrapper installed for env vars; installed to a space-free path and the `.cmd` run via `wine cmd` — env+args applied |
 | wix | `.wxs` correct | relative target, single `Arguments`, inline title, `ApplicationProgramsFolder` defined, gated; `runenvs` unsupported (warned); MSI build needs Windows |
 | runself | wiring correct | `$PREFIX/bin/<name>` + gated on envs/args; runtime limited by a pre-existing runself issue (install writes to a host path, not `$PREFIX`) |
 | dmg | code correct | relative exec path inside the `.app` bundle; cannot build on Linux (hdiutil/macOS) |
@@ -73,5 +73,9 @@ Also fixed while testing:
 - `get_zig_target` mapped `-p windows` to `x86_64-windows-msvc`; zig bundles the
   mingw headers, so it now maps to `-windows-gnu` on any host (use `--cross` for
   an explicit MSVC target).
+- nsis `_translate_filepath` produced forward-slash paths on non-Windows hosts;
+  `SetOutPath "$InstDir/bin"` made NSIS install the binary to a path with the
+  separator dropped (e.g. `C:\launcherbin`). Emitted paths are now converted to
+  backslashes (`_nsis_path`), which fixed the binary landing in the wrong dir.
 - `debian/compat` (9) conflicted with `debhelper-compat (= 13)` in the deb
   template; the stale compat file was removed.

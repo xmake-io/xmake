@@ -86,6 +86,11 @@ function _translate_filepath(package, filepath)
     return filepath:replace(package:install_rootdir(), "$InstDir", {plain = true})
 end
 
+-- convert a host path to the backslash form expected by NSIS
+function _nsis_path(p)
+    return p:gsub("/", "\\")
+end
+
 -- get command string
 function _get_command_strings(package, cmd, opt)
     opt = table.join(cmd.opt or {}, opt)
@@ -110,7 +115,7 @@ function _get_command_strings(package, cmd, opt)
                     dstdir = path.join(dstdir, path.filename(srcitem))
                 end
                 dstdir = path.normalize(dstdir)
-                table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
+                table.insert(result, string.format("SetOutPath \"%s\"", _nsis_path(dstdir)))
                 table.insert(result, string.format("File /r \"%s\\*\"", srcitem))
             else
                 -- copy file
@@ -125,31 +130,31 @@ function _get_command_strings(package, cmd, opt)
                 srcitem = path.normalize(srcitem)
                 local dstname = path.filename(dstfile)
                 local dstdir = path.normalize(path.directory(dstfile))
-                table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
+                table.insert(result, string.format("SetOutPath \"%s\"", _nsis_path(dstdir)))
                 table.insert(result, string.format("File \"/oname=%s\" \"%s\"", dstname, srcitem))
             end
         end
     elseif kind == "rm" then
-        local filepath = _translate_filepath(package, cmd.filepath)
+        local filepath = _nsis_path(_translate_filepath(package, cmd.filepath))
         table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMFileIfExists" or "unRMFileIfExists", filepath))
         if opt.emptydirs then
             table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", filepath))
         end
     elseif kind == "rmdir" then
-        local dir = _translate_filepath(package, cmd.dir)
+        local dir = _nsis_path(_translate_filepath(package, cmd.dir))
         table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMDirIfExists" or "unRMDirIfExists", dir))
         if opt.emptydirs then
             table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", dir))
         end
     elseif kind == "mv" then
-        local srcpath = _translate_filepath(package, cmd.srcpath)
-        local dstpath = _translate_filepath(package, cmd.dstpath)
+        local srcpath = _nsis_path(_translate_filepath(package, cmd.srcpath))
+        local dstpath = _nsis_path(_translate_filepath(package, cmd.dstpath))
         table.insert(result, string.format("Rename \"%s\" \"%s\"", srcpath, dstpath))
     elseif kind == "cd" then
-        local dir = _translate_filepath(package, cmd.dir)
+        local dir = _nsis_path(_translate_filepath(package, cmd.dir))
         table.insert(result, string.format("SetOutPath \"%s\"", dir))
     elseif kind == "mkdir" then
-        local dir = _translate_filepath(package, cmd.dir)
+        local dir = _nsis_path(_translate_filepath(package, cmd.dir))
         table.insert(result, string.format("CreateDirectory \"%s\"", dir))
     elseif kind == "nsis" then
         table.insert(result, cmd.rawstr)
@@ -238,7 +243,7 @@ end
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
     specvars.PACKAGE_WORKDIR = path.absolute(os.projectdir())
-    specvars.PACKAGE_BINDIR = _translate_filepath(package, package:bindir())
+    specvars.PACKAGE_BINDIR = _nsis_path(_translate_filepath(package, package:bindir()))
     specvars.PACKAGE_OUTPUTFILE = path.absolute(package:outputfile())
     if specvars.PACKAGE_VERSION_BUILD then
         -- @see https://github.com/xmake-io/xmake/issues/5306
@@ -263,7 +268,7 @@ function _get_specvars(package)
         if not iconpath then
             iconpath = _get_target_filepath(package) or ""
         end
-        return _translate_filepath(package, iconpath)
+        return _nsis_path(_translate_filepath(package, iconpath))
     end
 
     -- install sections
