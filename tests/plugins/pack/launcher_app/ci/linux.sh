@@ -4,10 +4,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# chroot into a fake root, works as root (CI) or via user namespaces (local)
+# chroot into a fake root: as root directly, via passwordless sudo on CI
+# runners, or via user namespaces on local dev boxes
 run_chroot() {
     if [ "$(id -u)" = "0" ]; then
         chroot "$@"
+    elif sudo -n true 2>/dev/null; then
+        sudo chroot "$@"
     else
         unshare -Ur /usr/sbin/chroot "$@"
     fi
