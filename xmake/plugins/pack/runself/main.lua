@@ -59,6 +59,11 @@ function _get_specvars(package)
     return specvars
 end
 
+-- translate the host install path to the runtime $PREFIX used in setup.sh
+function _translate_filepath(package, filepath)
+    return filepath:replace(package:install_rootdir(), "$PREFIX", {plain = true})
+end
+
 -- write install command
 function _write_installcmd(package, scriptfile, cmd)
     local opt = cmd.opt or {}
@@ -67,7 +72,7 @@ function _write_installcmd(package, scriptfile, cmd)
         local srcfiles = os.files(cmd.srcpath)
         for _, srcfile in ipairs(srcfiles) do
             -- the destination is directory? append the filename
-            local dstfile = cmd.dstpath
+            local dstfile = _translate_filepath(package, cmd.dstpath)
             if #srcfiles > 1 or path.islastsep(dstfile) then
                 if opt.rootdir then
                     dstfile = path.join(dstfile, path.relative(srcfile, opt.rootdir))
@@ -78,23 +83,33 @@ function _write_installcmd(package, scriptfile, cmd)
             scriptfile:print("cp -p \"%s\" \"%s\"", srcfile, dstfile)
         end
     elseif kind == "rm" then
-        local filepath = cmd.filepath
+        local filepath = _translate_filepath(package, cmd.filepath)
         scriptfile:print("rm -f \"%s\"", filepath)
     elseif kind == "rmdir" then
-        local dir = cmd.dir
+        local dir = _translate_filepath(package, cmd.dir)
         scriptfile:print("rm -rf \"%s\"", dir)
     elseif kind == "mv" then
-        local srcpath = cmd.srcpath
-        local dstpath = cmd.dstpath
-        scriptfile:print("mv \"%s\" \"%s\"", srcfile, dstfile)
+        local srcpath = _translate_filepath(package, cmd.srcpath)
+        local dstpath = _translate_filepath(package, cmd.dstpath)
+        scriptfile:print("mv \"%s\" \"%s\"", srcpath, dstpath)
     elseif kind == "cd" then
-        local dir = cmd.dir
+        local dir = _translate_filepath(package, cmd.dir)
         scriptfile:print("cd \"%s\"", dir)
     elseif kind == "mkdir" then
-        local dir = cmd.dir
+        local dir = _translate_filepath(package, cmd.dir)
         scriptfile:print("mkdir -p \"%s\"", dir)
     elseif cmd.program then
-        scriptfile:print("%s", os.args(table.join(cmd.program, cmd.argv)))
+        local argv = {}
+        for _, arg in ipairs(cmd.argv) do
+            local arg = arg
+            if path.instance_of(arg) then
+                arg = arg:clone():set(_translate_filepath(package, arg:rawstr())):str()
+            elseif arg:startswith(package:install_rootdir()) or path.is_absolute(arg) then
+                arg = _translate_filepath(package, arg)
+            end
+            table.insert(argv, arg)
+        end
+        scriptfile:print("%s", os.args(table.join(cmd.program, argv)))
     end
 end
 
@@ -164,6 +179,8 @@ function _pack_runself(makeself, package)
     os.cp(path.join(os.programdir(), "scripts", "xpack", "runself", "setup.sh"), setupfile)
     local scriptfile = io.open(setupfile, "a+")
     if scriptfile then
+        -- the archive ships sources, so build first, then install into $PREFIX
+        _write_installcmds(package, scriptfile, batchcmds.get_buildcmds(package):cmds())
         _write_installcmds(package, scriptfile, batchcmds.get_installcmds(package):cmds())
         for _, component in table.orderpairs(package:components()) do
             if component:get("default") ~= false then

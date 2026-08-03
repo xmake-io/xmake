@@ -271,8 +271,23 @@ function _get_specvars(package)
     local runenvs = package:get("runenvs") or {}
     local runargs = package:get("runargs") or {}
     if target_file and (#runargs > 0 or #runenvs > 0) then
+        -- a .cmd wrapper is installed when env vars are set, so they are
+        -- applied at launch (a shortcut cannot set environment variables)
         if #runenvs > 0 then
-            wprint("xpack(%s): runenvs are not supported by the wix format, only runargs will be applied", package:name())
+            local exename = path.filename(target_file)
+            local cmdname = path.basename(target_file) .. ".cmd"
+            local cmdcontent = "@echo off\r\n"
+            for i = 1, #runenvs, 2 do
+                cmdcontent = cmdcontent .. string.format("set \"%s=%s\"\r\n", runenvs[i], runenvs[i + 1] or "")
+            end
+            cmdcontent = cmdcontent .. string.format("\"%%~dp0%s\" %%*\r\n", exename)
+            local cmdfile = path.join(package:builddir(), "launcher.cmd")
+            io.writefile(cmdfile, cmdcontent)
+            table.insert(features, string.format([[
+<Component Id="ApplicationLauncherCmd" Guid="%s" Directory="INSTALLFOLDER" Subdirectory="bin">
+  <File Source="%s" Name="%s" KeyPath="yes"/>
+</Component>]], hash.uuid(package:name() .. "_launcher_cmd"), _xml_escape(path.absolute(cmdfile)), _xml_escape(cmdname)))
+            target_file = path.join(package:get("bindir") or "bin", cmdname)
         end
         local args = ""
         if #runargs > 0 then
