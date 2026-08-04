@@ -192,6 +192,40 @@ function _has_static_libstdcxx(self)
     return has_static_libstdcxx
 end
 
+-- has -nostdlib++? (disable the automatic c++ runtime link, so we can link libc++/libc++abi explicitly)
+function _has_nostdlibxx(self)
+    local has_nostdlibxx = _g._HAS_NOSTDLIBXX
+    if has_nostdlibxx == nil then
+        if self:has_flags("-nostdlib++ -Werror", "ldflags", {flagskey = "clang_nostdlibxx"}) then
+            has_nostdlibxx = true
+        end
+        has_nostdlibxx = has_nostdlibxx or false
+        _g._HAS_NOSTDLIBXX = has_nostdlibxx
+    end
+    return has_nostdlibxx
+end
+
+-- find the static libc++.a / libc++abi.a archives under the llvm library dirs
+function _get_static_cxxlibs(llvm_dirs)
+    local libdirs = {}
+    if llvm_dirs.cxxlibdir then
+        table.insert(libdirs, llvm_dirs.cxxlibdir)
+    end
+    if llvm_dirs.libdir then
+        table.insert(libdirs, llvm_dirs.libdir)
+    end
+    local libcxx, libcxxabi
+    for _, dir in ipairs(libdirs) do
+        if not libcxx and os.isfile(path.join(dir, "libc++.a")) then
+            libcxx = path.join(dir, "libc++.a")
+        end
+        if not libcxxabi and os.isfile(path.join(dir, "libc++abi.a")) then
+            libcxxabi = path.join(dir, "libc++abi.a")
+        end
+    end
+    return libcxx, libcxxabi
+end
+
 -- make the runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
 function nf_runtime(self, runtime, opt)
@@ -284,9 +318,27 @@ function nf_runtime(self, runtime, opt)
                         end
                     end
                 end
-                if runtime:endswith("_static") and _has_static_libstdcxx(self) then
-                    maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
-                    maps["stdc++_static"] = table.join(maps["stdc++_static"], "-static-libstdc++")
+                if runtime:endswith("_static") then
+                    -- -static-libstdc++ only pulls in libc++.a, not libc++abi.a, so libc++abi
+                    -- symbols (typeinfo, __cxa_*) stay undefined and the link fails, especially
+                    -- once c++ modules reference more of libc++.
+                    --
+                    -- if we can locate both static archives, link them explicitly in the correct
+                    -- order (libc++.a before libc++abi.a) and disable the driver's automatic c++
+                    -- runtime with -nostdlib++, otherwise fall back to -static-libstdc++.
+                    --
+                    -- note: target.runtimes is ordered right before the syslinks in the c++ link
+                    -- order, so these archives are placed after the object files / user links.
+                    -- @see https://github.com/xmake-io/xmake/issues/7442
+                    local libcxx, libcxxabi = _get_static_cxxlibs(llvm_dirs)
+                    if libcxx and libcxxabi and _has_nostdlibxx(self) then
+                        maps["c++_static"] = table.join(maps["c++_static"], "-nostdlib++", libcxx, libcxxabi)
+                    elseif _has_static_libstdcxx(self) then
+                        maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
+                    end
+                    if _has_static_libstdcxx(self) then
+                        maps["stdc++_static"] = table.join(maps["stdc++_static"], "-static-libstdc++")
+                    end
                 end
             end
         end
