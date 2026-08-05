@@ -3160,7 +3160,7 @@ end
 --                       - plat: the given platform, we need to set it to the description scope at same time,
 --                               e.g. add_requires("zlib~mingw", {plat = "mingw"})
 --                               @see https://github.com/orgs/xmake-io/discussions/3439
---                       - arch: the given architecture, ditto
+--                       - arch: the given architecture, it's the same as `opt.plat`
 --                       - repo: the repository instance which this package belongs to
 --
 -- @return the package instance and errors

@@ -11,6 +11,19 @@ task("%s")
     io.writefile(path.join(dir, "main.lua"), string.format([[function main() print("%s") end]], name))
 end
 
+-- write a plugin package description, the plugin sources are placed in its `src` directory
+--
+-- plugins in a repository are described as packages, e.g. <repodir>/plugins/<first-letter>/<name>/xmake.lua
+function _write_plugin_package(dir, name)
+    io.writefile(path.join(dir, "xmake.lua"), string.format([[
+package("%s")
+    set_kind("plugin")
+    set_description("say hello from %s")
+    set_sourcedir(path.join(os.scriptdir(), "src"))
+]], name, name))
+    _write_plugin(path.join(dir, "src"), name)
+end
+
 -- create a temporary plugin repository (packages layout: plugins/<first-letter>/<name>) and register it
 --
 -- @return reponame, names, cleanup
@@ -21,7 +34,7 @@ function _mock_repo(basenames)
     local names = {}
     for _, base in ipairs(basenames) do
         local name = base .. "-" .. suffix
-        _write_plugin(path.join(repodir, "plugins", name:sub(1, 1), name), name)
+        _write_plugin_package(path.join(repodir, "plugins", name:sub(1, 1), name), name)
         table.insert(names, name)
     end
 
@@ -52,12 +65,12 @@ function test_install_from_repo(t)
     local name = names[1]
 
     -- install by plain name (searched across all repositories)
-    os.runv("xmake", {"plugin", "--install", name})
+    os.runv("xmake", {"plugin", "--install", "-y", name})
     t:require(os.iorunv("xmake", {name}):find(name, 1, true))
 
     -- reinstall by repo@name
     os.runv("xmake", {"plugin", "--remove", name})
-    os.runv("xmake", {"plugin", "--install", reponame .. "@" .. name})
+    os.runv("xmake", {"plugin", "--install", "-y", reponame .. "@" .. name})
     t:require(os.iorunv("xmake", {name}):find(name, 1, true))
 
     os.runv("xmake", {"plugin", "--remove", name})
@@ -86,7 +99,7 @@ function test_list(t)
     local reponame, names, cleanup = _mock_repo({"hello", "world"})
 
     -- install the first plugin, leave the second only available
-    os.runv("xmake", {"plugin", "--install", names[1]})
+    os.runv("xmake", {"plugin", "--install", "-y", names[1]})
     local out = os.iorunv("xmake", {"plugin", "--list"})
     t:require(out:find("the built-in plugins:", 1, true))
     t:require(out:find("project", 1, true))
@@ -100,6 +113,6 @@ end
 
 -- invalid installs should fail
 function test_install_invalid(t)
-    t:require_not(try { function () os.runv("xmake", {"plugin", "--install", "plugin-test-missing"}); return true end })
-    t:require_not(try { function () os.runv("xmake", {"plugin", "--install", "somerepo@.."}); return true end })
+    t:require_not(try { function () os.runv("xmake", {"plugin", "--install", "-y", "plugin-test-missing"}); return true end })
+    t:require_not(try { function () os.runv("xmake", {"plugin", "--install", "-y", "somerepo@.."}); return true end })
 end

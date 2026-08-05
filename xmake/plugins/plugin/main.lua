@@ -54,7 +54,19 @@ function _install_plugins_from_repo(name, reponame)
     if reponame then
         installname = reponame .. "@" .. name
     end
-    os.execv(os.programfile(), {"lua", "private.xrepo", "install", "--plugin", installname})
+    local argv = {"lua", "private.xrepo", "install", "--plugin"}
+    -- we need to pass the common options to the sub-process, e.g. -y, -v, -D
+    if option.get("yes") then
+        table.insert(argv, "-y")
+    end
+    if option.get("verbose") then
+        table.insert(argv, "-v")
+    end
+    if option.get("diagnosis") then
+        table.insert(argv, "-D")
+    end
+    table.insert(argv, installname)
+    os.execv(os.programfile(), argv)
 end
 
 -- install a single plugin from a source directory (as the given name, default to the directory name)
