@@ -37,6 +37,6 @@ function main(opt)
             end
             return true
         end
-        return value == "binary" or value == "toolchain" or value == "template"
+        return value == "binary" or value == "toolchain" or value == "template" or value == "plugin"
     end}))
 end

@@ -54,6 +54,16 @@ local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
+--
+-- @param name           the package name, the namespace prefix will be stripped and saved separately,
+--                       e.g. "zlib", "myns::zlib", but "vcpkg::zlib" will be kept as a whole,
+--                       because `vcpkg` is a package manager, but not a namespace
+-- @param info           the package description scope info
+-- @param opt            the options
+--                       - scriptdir: the directory of the package description file, the relative paths in
+--                                    this package will be relative to it
+--                       - repo: the repository instance which this package belongs to
+--
 function _instance.new(name, info, opt)
     opt = opt or {}
     local instance = table.inherit(_instance)
@@ -912,20 +922,24 @@ function _instance:installdir(...)
         installdir = self:get("installdir")
         if not installdir then
             local name = self:name():lower():gsub("::", "_")
-            if self:is_local() then
-                installdir = path.join(package.installdir({localdir = true}), name:sub(1, 1):lower(), name)
+            if self:is_plugin() then
+                installdir = path.join(global.directory(), "plugins", name)
             else
-                installdir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
-            end
-            local version_str = self:version_str()
-            if version_str then
-                -- strip invalid characters on windows, e.g. `>= <=`
-                if os.is_host("windows") then
-                    version_str = version_str:gsub("[>=<|%*]", "")
+                if self:is_local() then
+                    installdir = path.join(package.installdir({localdir = true}), name:sub(1, 1):lower(), name)
+                else
+                    installdir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
                 end
-                installdir = path.join(installdir, version_str)
+                local version_str = self:version_str()
+                if version_str then
+                    -- strip invalid characters on windows, e.g. `>= <=`
+                    if os.is_host("windows") then
+                        version_str = version_str:gsub("[>=<|%*]", "")
+                    end
+                    installdir = path.join(installdir, version_str)
+                end
+                installdir = path.join(installdir, self:buildhash())
             end
-            installdir = path.join(installdir, self:buildhash())
         end
         self._INSTALLDIR = installdir
     end
@@ -1141,7 +1155,7 @@ function _instance:_load()
         if on_load then
             on_load(self)
         end
-        
+
         -- load all components
         self:_load_components()
 
@@ -1178,6 +1192,11 @@ function _instance:_rawenvs()
             if os.host() == "macosx" then
                 envs.DYLD_LIBRARY_PATH = {"lib"}
             end
+        end
+
+        -- add plugin env for on_test
+        if self:is_plugin() then
+            envs.XMAKE_PLUGIN_DIRS = path.directory(self:installdir())
         end
         self._RAWENVS = envs
     end
@@ -3020,6 +3039,14 @@ function package.searchdirs()
 end
 
 -- load the package from the system directories
+--
+-- it will be used for `add_requires("zlib", {system = true})` and the 3rd package managers,
+-- e.g. add_requires("vcpkg::zlib"), add_requires("conan::zlib/1.2.11")
+--
+-- @param packagename    the package name, e.g. "zlib", "vcpkg::zlib", "xmake::zlib"
+--
+-- @return the package instance and errors
+--
 function package.load_from_system(packagename)
 
     -- get package info
@@ -3088,6 +3115,15 @@ function package.load_from_system(packagename)
 end
 
 -- load the package from the project file
+--
+-- it will load the package which is defined by `package()` in the project xmake.lua,
+-- and we will also try to find it from the project namespaces if it's not found directly
+--
+-- @param packagename    the package name, e.g. "zlib", it can be without the namespace prefix
+-- @param project        the project module, we need to pass it to avoid the cyclic imports
+--
+-- @return the package instance and errors, it will be nil if this package is not defined in the project
+--
 function package.load_from_project(packagename, project)
 
     -- load packages (with cache)
@@ -3116,8 +3152,20 @@ function package.load_from_project(packagename, project)
 end
 
 -- load the package from the package directory or package description file
+--
+-- @param packagename    the package name, e.g. "zlib"
+-- @param packagedir     the package directory, we will load `packagedir/xmake.lua`, it can be nil if `opt.packagefile` is set
+-- @param opt            the options
+--                       - packagefile: load the package from the given description file directly instead of `packagedir/xmake.lua`
+--                       - plat: the given platform, we need to set it to the description scope at same time,
+--                               e.g. add_requires("zlib~mingw", {plat = "mingw"})
+--                               @see https://github.com/orgs/xmake-io/discussions/3439
+--                       - arch: the given architecture, ditto
+--                       - repo: the repository instance which this package belongs to
+--
+-- @return the package instance and errors
+--
 function package.load_from_repository(packagename, packagedir, opt)
-
     opt = opt or {}
 
     -- find the package script path
@@ -3176,6 +3224,15 @@ function package.load_from_repository(packagename, packagedir, opt)
         packageinfo = results[packagename]
         if not packageinfo then
             return nil, string.format("%s: package(%s) not found!", scriptpath, packagename)
+        end
+
+        -- we need set the default on_install script if it's plugin package
+        if packageinfo:get("kind") == "plugin" and not packageinfo:get("install") then
+            -- only one code line, we can directly omit the sandbox wrapper.
+            local on_install = function (pkg)
+                os.cp("*", pkg:installdir())
+            end
+            packageinfo:set("install", on_install)
         end
 
         package._memcache():set2("packageinfos.repository", cachekey, packageinfo)
