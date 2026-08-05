@@ -610,6 +610,11 @@ function _instance:is_toolchain()
     return self:kind() == "toolchain"
 end
 
+-- is plugin package?
+function _instance:is_plugin()
+    return self:kind() == "plugin"
+end
+
 -- is library package?
 --
 -- @return      true if the package kind is "library" or default

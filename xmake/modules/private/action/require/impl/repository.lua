@@ -151,6 +151,9 @@ function pulled()
 end
 
 -- get package directory from repositories
+--
+-- @param packagename the package name
+-- @param opt         {rootdir = "packages|plugins"}
 function packagedir(packagename, opt)
 
     -- strip trailing ~tag, e.g. zlib~debug
@@ -162,7 +165,8 @@ function packagedir(packagename, opt)
 
     -- get cache key
     local reponame = opt.name
-    local cachekey = packagename
+    local rootdir = opt.rootdir or "packages"
+    local cachekey = rootdir .. "/" .. packagename
     local locked_repo = opt.locked_repo
     if locked_repo then
         cachekey = cachekey .. locked_repo.url .. (locked_repo.commit or "") .. (locked_repo.branch or "")
@@ -185,7 +189,7 @@ function packagedir(packagename, opt)
         -- find the package directory from repositories
         if not foundir then
             for _, repo in ipairs(repositories()) do
-                local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1), packagename)
+                local dir = path.join(repo:directory(), rootdir, packagename:sub(1, 1), packagename)
                 if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) and (not reponame or reponame == repo:name()) then
                     foundir = {dir, repo}
                     break
