@@ -43,6 +43,15 @@ function _memcache()
 end
 
 -- load require info
+--
+-- @param require_str    the require string, e.g. "zlib >=1.2.11", "libplist[shared,debug]"
+-- @param requires_extra the extra require configs from `add_requires()`, indexed by the require string
+-- @param opt            the options
+--                       - requirepath: the parent require path, e.g. "foo.bar", it's used to get the resolved requireinfo
+--                       - resolvedinfo: the resolved requireinfo of dependency conflicts, indexed by require path
+--
+-- @return the package name and requireinfo
+--
 function _load_require(require_str, requires_extra, opt)
     opt = opt or {}
 
@@ -183,6 +192,15 @@ function _load_package_from_project(packagename)
 end
 
 -- load package package from repositories
+--
+-- @param packagename    the package name
+-- @param opt            the options
+--                       - plat: the given platform of this package
+--                       - arch: the given architecture of this package
+--                       - name: the given repository name, we will only find this package in the given repository
+--                       - rootdir: the root directory of repositories, e.g. "packages" (default), "plugins"
+--                       - locked_repo: the locked repository info in `xmake-requires.lock`, e.g. {url = .., commit = .., branch = ..}
+--
 function _load_package_from_repository(packagename, opt)
     opt = opt or {}
     local packagedir, repo = repository.packagedir(packagename, opt)
@@ -192,6 +210,13 @@ function _load_package_from_repository(packagename, opt)
 end
 
 -- load package package from base
+--
+-- e.g. package("foo") set_base("bar")
+--
+-- @param package        the package instance
+-- @param basename       the base package name
+-- @param opt            the options, @see _load_package_from_repository
+--
 function _load_package_from_base(package, basename, opt)
     local package_base = _load_package_from_project(basename)
     if not package_base then
@@ -203,6 +228,10 @@ function _load_package_from_base(package, basename, opt)
 end
 
 -- has locked requires?
+--
+-- @param opt            the options
+--                       - force: force to use the locked requires even if `xmake require --upgrade` is called
+--
 function _has_locked_requires(opt)
     opt = opt or {}
     if not option.get("upgrade") or opt.force then
@@ -211,6 +240,13 @@ function _has_locked_requires(opt)
 end
 
 -- get locked requires
+--
+-- @param requirekey     the require key in `xmake-requires.lock`, @see _get_packagelock_key
+-- @param opt            the options
+--                       - force: force to reload `xmake-requires.lock` and ignore `--upgrade`
+--
+-- @return the locked requireinfo and the version of `xmake-requires.lock`
+--
 function _get_locked_requires(requirekey, opt)
     opt = opt or {}
     local requireslock = _memcache():get("requireslock")
@@ -259,6 +295,10 @@ end
 -- b.deps = c
 --
 -- orderdeps: a -> b -> c
+--
+-- @param package        the package instance
+-- @param opt            the options
+--                       - private: also sort the private library deps, e.g. add_deps("foo", {private = true})
 --
 function _sort_librarydeps(package, opt)
     -- we must use native deps list instead of package:deps() to generate correct link order
@@ -564,6 +604,13 @@ function _match_requirepath(requirepath, requireconf)
 end
 
 -- init requireinfo
+--
+-- @param requireinfo    the requireinfo
+-- @param package        the package instance
+-- @param opt            the options
+--                       - is_toplevel: this package is a toplevel package in `add_requires()`, but not a dependent package,
+--                                      and we will pass some root configs to it, e.g. toolchains, runtimes, lto, asan ..
+--
 function _init_requireinfo(requireinfo, package, opt)
     -- pass root configs to top library package
     requireinfo.configs = requireinfo.configs or {}
@@ -899,7 +946,25 @@ function _select_package_runtimes(package)
     end
 end
 
--- load required packages
+-- load the given required package
+--
+-- we will load it from the project, repositories and system in order,
+-- and the requireinfo will be initialized and attached to the package instance.
+--
+-- @param packagename    the package name, e.g. "zlib", "zlib~debug", "vcpkg::zlib"
+-- @param requireinfo    the requireinfo, @see _load_require
+-- @param opt            the options
+--                       - system: load package from system if `true`, and never load it if `false`,
+--                                 it's only used when `add_requires("zlib", {system = nil})` is not set (only for non-3rd packages)
+--                       - packagekind: the package kind, e.g. "plugin", it will be loaded from the `plugins` root directory of repositories
+--                       - toolchain: only load toolchain packages, the non-toolchain toplevel packages will be ignored
+--                       - requirepath: the current require path, e.g. "foo.bar", it's used to detect circular dependencies
+--                                      and match `add_requireconfs()`
+--                       - parentinfo: the parent requireinfo, this package will inherit some builtin configs from it, e.g. runtimes, pic
+--
+-- @return the package instance, it will be nil if this package is filtered by `opt.toolchain`,
+--         and it will raise an error if this package is not found in any repositories
+--
 function _load_package(packagename, requireinfo, opt)
 
     -- check circular dependency
@@ -949,6 +1014,7 @@ function _load_package(packagename, requireinfo, opt)
             plat = requireinfo.plat,
             arch = requireinfo.arch,
             name = requireinfo.reponame,
+            rootdir = opt.packagekind == "plugin" and "plugins" or "packages",
             locked_repo = locked_requireinfo and locked_requireinfo.repo})
         if package then
             from_repo = true
@@ -958,7 +1024,9 @@ function _load_package(packagename, requireinfo, opt)
     -- load base package
     if package and package:get("base") then
         _load_package_from_base(package, package:get("base"), {
-            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo})
+            name = requireinfo.reponame,
+            rootdir = opt.packagekind == "plugin" and "plugins" or "packages",
+            locked_repo = locked_requireinfo and locked_requireinfo.repo})
     end
 
     -- load package from system
@@ -1105,7 +1173,14 @@ function _load_package(packagename, requireinfo, opt)
     return package
 end
 
--- load all required packages
+-- load all required packages and their dependent packages
+--
+-- @param requires  the package requires, e.g. {"zlib >=1.2.11", "libpng"}
+-- @param opt       the options, @see load_packages
+--
+-- @return the packages with all dependent packages (the deps are always in front of their parents),
+--         and the packages without deps
+--
 function _load_packages(requires, opt)
 
     -- no requires?
@@ -1136,6 +1211,7 @@ function _load_packages(requires, opt)
                                                         parentinfo = requireinfo,
                                                         nodeps = opt.nodeps,
                                                         resolvedinfo = opt.resolvedinfo,
+                                                        packagekind = opt.packagekind,
                                                         system = false})
                     for _, dep in ipairs(plaindeps) do
                         dep:parents_add(package)
@@ -1420,6 +1496,11 @@ end
 
 -- compatible with all previous link dependencies?
 -- @see https://github.com/xmake-io/xmake/issues/2719
+--
+-- @param package        the package instance
+-- @param opt            the options
+--                       - install_finished: the installation has been finished, we do not need to check compatibility again
+--
 function _compatible_with_previous_librarydeps(package, opt)
 
     -- skip to check compatibility if installation has been finished
@@ -1524,6 +1605,13 @@ function cachedir()
 end
 
 -- this package should be install?
+--
+-- @param package        the package instance
+-- @param opt            the options
+--                       - install_finished: the installation has been finished, it's used to check if this package
+--                                           has been installed successfully, and we will ignore `package.install_always`
+--                                           policy and the librarydeps compatibility checking
+--
 function should_install(package, opt)
     opt = opt or {}
     if package:is_template() then
@@ -1631,7 +1719,15 @@ function get_configs_str(package)
     return configs_str
 end
 
--- get locked requireinfo
+-- get locked requireinfo from `xmake-requires.lock`
+--
+-- @param requireinfo    the requireinfo, it must contain the requirekey
+-- @param opt            the options
+--                       - force: force to reload `xmake-requires.lock` and ignore `--upgrade`
+--
+-- @return the locked requireinfo and the version of `xmake-requires.lock`,
+--         it will be nil if the lock file does not exist or its version is incompatible
+--
 function get_locked_requireinfo(requireinfo, opt)
     local requirekey = requireinfo.requirekey
     local locked_requireinfo, requireslock_version
@@ -1645,6 +1741,13 @@ function get_locked_requireinfo(requireinfo, opt)
 end
 
 -- load requires
+--
+-- @param requires       the package requires, e.g. {"zlib >=1.2.11", "libpng"}
+-- @param requires_extra the extra require configs from `add_requires()`, indexed by the require string
+-- @param opt            the options, @see _load_require
+--
+-- @return the require items, e.g. {{name = "zlib", info = {version = ">=1.2.11", ..}}, ..}
+--
 function load_requires(requires, requires_extra, opt)
     opt = opt or {}
     local requireitems = {}
@@ -1656,6 +1759,18 @@ function load_requires(requires, requires_extra, opt)
 end
 
 -- load all required packages
+--
+-- @param requires  the package requires, e.g. {"zlib >=1.2.11", "libpng"}
+-- @param opt       the options
+--                  - requires_extra: the extra require configs from `add_requires()`, e.g. {["zlib >=1.2.11"] = {configs = {shared = true}}}
+--                  - nodeps: only load the given packages, do not load their dependent packages
+--                  - system: load package from system if `true`, and never load it if `false` (only for non-3rd packages)
+--                  - packagekind: the package kind, e.g. "plugin", it will be loaded from the `plugins` root directory of repositories
+--                  - toolchain: only load toolchain packages and their dependent packages
+--                  - requirepath: the parent require path, e.g. "foo.bar", it's used to detect circular dependencies and match `add_requireconfs()`
+--                  - parentinfo: the parent requireinfo, the child package will inherit some builtin configs from it, e.g. runtimes, pic
+--                  - resolvedinfo: the resolved requireinfo of dependency conflicts, it's only used to reload packages internally
+--
 function load_packages(requires, opt)
     opt = opt or {}
     local unique = {}

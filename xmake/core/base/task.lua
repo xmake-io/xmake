@@ -81,9 +81,15 @@ end
 
 -- the directories of tasks
 function task._directories()
-    return {path.join(global.directory(), "plugins"),
-            path.join(os.programdir(), "plugins"),
-            path.join(os.programdir(), "actions")}
+    local dirs = {
+        path.join(global.directory(), "plugins"),
+        path.join(os.programdir(), "plugins"),
+        path.join(os.programdir(), "actions")}
+    local plugindirs = os.getenv("XMAKE_PLUGIN_DIRS")
+    if plugindirs then
+        table.insert(dirs, 1, plugindirs)
+    end
+    return dirs
 end
 
 -- translate menu

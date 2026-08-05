@@ -24,6 +24,7 @@ import("core.base.global")
 import("core.package.repository")
 import("devel.git")
 import("private.action.require.impl.environment")
+import("private.action.require.impl.install_packages")
 
 -- validate a plugin directory name
 function _check_plugin_name(name)
@@ -42,36 +43,30 @@ function _repositories()
     return table.join(repository.repositories({global = false}), repository.repositories({global = true}))
 end
 
--- find a plugin directory in the given repository directory
---
--- plugins in a repository follow the same layout as packages:
--- <repodir>/plugins/<first-letter>/<name>/xmake.lua
-function _find_plugin_in_repo(repodir, name)
-    local dir = path.join(repodir, "plugins", name:sub(1, 1):lower(), name)
-    if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) then
-        return dir
-    end
-end
-
 -- install a plugin from the given repository or the first repository containing it
 function _install_plugins_from_repo(name, reponame)
+
+    -- check plugin name
     _check_plugin_name(name)
-    for _, repo in ipairs(_repositories()) do
-        if not reponame or repo:name() == reponame then
-            local srcdir = _find_plugin_in_repo(repo:directory(), name)
-            if srcdir then
-                local dstdir = _get_plugindir(name)
-                assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
-                os.vcp(srcdir, dstdir)
-                cprint("${color.success}install ${bright}%s${clear} from repository ${bright}%s${clear} ok!", name, repo:name())
-                return
-            end
-        end
-    end
+
+    -- do install
+    local installname = name
     if reponame then
-        raise("plugin(%s): not found in repository %s!", name, reponame)
+        installname = reponame .. "@" .. name
     end
-    raise("plugin(%s): not found in any repository! try ${bright}xrepo update-repo${clear} first.", name)
+    local argv = {"lua", "private.xrepo", "install", "--plugin"}
+    -- we need to pass the common options to the sub-process, e.g. -y, -v, -D
+    if option.get("yes") then
+        table.insert(argv, "-y")
+    end
+    if option.get("verbose") then
+        table.insert(argv, "-v")
+    end
+    if option.get("diagnosis") then
+        table.insert(argv, "-D")
+    end
+    table.insert(argv, installname)
+    os.execv(os.programfile(), argv)
 end
 
 -- install a single plugin from a source directory (as the given name, default to the directory name)
@@ -137,20 +132,9 @@ end
 function _install()
     local names = assert(option.get("plugins"), "please specify the plugins to be installed!")
     environment.enter()
-    try
-    {
-        function ()
-            for _, name in ipairs(names) do
-                _install_one(name)
-            end
-        end,
-        catch
-        {
-            function (errors)
-                raise(errors)
-            end
-        }
-    }
+    for _, name in ipairs(names) do
+        _install_one(name)
+    end
     environment.leave()
 end
 
@@ -171,7 +155,8 @@ function _plugin_description(dir)
     if os.isfile(filepath) then
         local content = io.readfile(filepath)
         if content then
-            return content:match("description%s*=%s*\"(.-)\"")
+            -- parse description from task or package scope
+            return content:match("description%s*=%s*\"(.-)\"") or content:match("set_description%s*%(\"(.-)\"%)")
         end
     end
 end

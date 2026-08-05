@@ -167,6 +167,13 @@ function _get_confirm_from_3rd(packages)
 end
 
 -- get user confirm
+--
+-- @param packages  the packages to be installed
+-- @param opt       the options
+--                  - toolchain: these packages are toolchain packages, we will show a different tip for it
+--
+-- @return the confirm result and the modified packages
+--
 function _get_confirm(packages, opt)
     opt = opt or {}
 
@@ -683,6 +690,11 @@ function _get_package_installdeps(packages)
 end
 
 -- install packages
+--
+-- @param requires  the package requires, e.g. {"zlib >=1.2.11", "libpng"}
+-- @param opt       the options, @see main
+--                  - toolchain: only install the toolchain packages and their dependent packages
+--
 function _install_packages(requires, opt)
     opt = opt or {}
 
@@ -845,8 +857,15 @@ end
 
 -- install all required packages
 --
--- @param requires  the requires table
--- @param opt       the options
+-- @param requires  the package requires, e.g. {"zlib >=1.2.11", "libpng"}
+-- @param opt       the options, it will be passed to `package.load_packages` directly
+--                  - requires_extra: the extra require configs from `add_requires()`, indexed by the require string
+--                  - nodeps: only install the given packages, do not install their dependent packages
+--                  - system: load package from system if `true`, and never load it if `false` (only for non-3rd packages)
+--                  - packagekind: the package kind, e.g. "plugin", it will be loaded from the `plugins` root directory of repositories
+--                  @note `toolchain` is reserved and it will be set internally, @see load_packages
+--
+-- @return the installed packages, including the toolchain packages and all dependent packages
 --
 function main(requires, opt)
     -- we need to install toolchain packages first,

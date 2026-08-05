@@ -39,6 +39,7 @@ task("require")
             {nil, "linkjobs",    "kv", nil,        "Set the number of parallel link jobs."},
             {nil, "shallow",     "k",  nil,        "Does not install or download dependent packages."},
             {nil, "build",       "k",  nil,        "Always build and install packages from source."},
+            {nil, "plugin",      "k",  nil,        "Install plugin packages from <repository>/plugins/."},
             {'l', "list",        "k",  nil,        "List all package dependencies in project.",
                                                    "e.g.",
                                                    "    $ xmake require --list"},
