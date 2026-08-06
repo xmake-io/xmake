@@ -343,6 +343,25 @@ function map_linkflags_for_package(package, targetkind, sourcekinds, name, value
     return flags
 end
 
+-- ask the clang driver for the absolute path of the given library
+--
+-- clang knows its own library search paths, e.g. the per-target runtime directory
+-- (`lib/<target-triple>/libc++.a`), and it also works when the toolchain has no `--sdk=/xxx/llvm`.
+--
+-- it just echoes back the given filename if the library does not exist,
+-- so we only accept an existing absolute path.
+function _get_llvm_libfile(toolchain, clang, libname, opt)
+    local argv = table.wrap(get_clang_target_flags(toolchain))
+    table.insert(argv, "-print-file-name=" .. libname)
+    local libfile = try {function () return os.iorunv(clang, argv, {envs = opt.envs}) end}
+    if libfile then
+        libfile = path.normalize(libfile:trim())
+        if path.is_absolute(libfile) and os.isfile(libfile) then
+            return libfile
+        end
+    end
+end
+
 -- Check and cache llvm/clang driver info (e.g. -print-resource-dir/-print-target-triple) in toolchain:config().
 -- It must be collected during toolchain on_check so that toolchain on_load can use it without running clang again.
 -- @see https://github.com/xmake-io/xmake/issues/7337#issuecomment-3942499208
@@ -368,6 +387,17 @@ function check_llvm_info(toolchain, clang, opt)
         dprint("checking for llvm target triple ... %s", target_triple)
         if #target_triple > 0 then
             toolchain:config_set("llvm_target_triple", target_triple)
+        end
+    end
+
+    -- the static c++ runtime archives, they may be in the per-target runtime directory,
+    -- e.g. `lib/x86_64-unknown-linux-gnu/libc++.a`
+    -- @see https://github.com/xmake-io/xmake/issues/7442
+    for libname, configname in pairs({["libc++.a"] = "llvm_libcxx_static", ["libc++abi.a"] = "llvm_libcxxabi_static"}) do
+        local libfile = _get_llvm_libfile(toolchain, clang, libname, opt)
+        if libfile then
+            dprint("checking for llvm %s ... %s", libname, libfile)
+            toolchain:config_set(configname, libfile)
         end
     end
 end
@@ -457,6 +487,11 @@ function get_llvm_dirs(toolchain)
         end
 
         local bindir, libdir, cxxlibdir, includedir, cxxincludedir, resourcedir, rtdir, rtlink, rtlibdir
+
+        -- the clang driver has already resolved the static c++ runtime archives on check
+        -- @see check_llvm_info
+        local libcxx_static = toolchain:config("llvm_libcxx_static")
+        local libcxxabi_static = toolchain:config("llvm_libcxxabi_static")
         if rootdir then
             bindir = path.join(rootdir, "bin")
             bindir = os.isdir(bindir) and bindir or nil
@@ -472,6 +507,19 @@ function get_llvm_dirs(toolchain)
                     if target_triple then
                         cxxlibdir = path.join(libdir, target_triple)
                         cxxlibdir = os.isdir(cxxlibdir) and cxxlibdir or nil
+                    end
+                end
+            end
+
+            -- fallback to search the static c++ runtime archives in the library directories
+            if libdir and not (libcxx_static and libcxxabi_static) then
+                local staticdirs = cxxlibdir and {cxxlibdir, libdir} or {libdir}
+                for _, dir in ipairs(staticdirs) do
+                    if not libcxx_static and os.isfile(path.join(dir, "libc++.a")) then
+                        libcxx_static = path.join(dir, "libc++.a")
+                    end
+                    if not libcxxabi_static and os.isfile(path.join(dir, "libc++abi.a")) then
+                        libcxxabi_static = path.join(dir, "libc++abi.a")
                     end
                 end
             end
@@ -502,7 +550,9 @@ function get_llvm_dirs(toolchain)
                      resourcedir = resourcedir,
                      rtdir = rtdir,
                      rtlibdir = rtlibdir,
-                     rtlink = rtlink }
+                     rtlink = rtlink,
+                     libcxx_static = libcxx_static,
+                     libcxxabi_static = libcxxabi_static }
         memcache:set(cachekey, llvm_dirs)
       end
       return llvm_dirs

@@ -192,6 +192,19 @@ function _has_static_libstdcxx(self)
     return has_static_libstdcxx
 end
 
+-- has -nostdlib++? (disable the automatic c++ runtime link, so we can link libc++/libc++abi explicitly)
+function _has_nostdlibxx(self)
+    local has_nostdlibxx = _g._HAS_NOSTDLIBXX
+    if has_nostdlibxx == nil then
+        if self:has_flags("-nostdlib++ -Werror", "ldflags", {flagskey = "clang_nostdlibxx"}) then
+            has_nostdlibxx = true
+        end
+        has_nostdlibxx = has_nostdlibxx or false
+        _g._HAS_NOSTDLIBXX = has_nostdlibxx
+    end
+    return has_nostdlibxx
+end
+
 -- make the runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
 function nf_runtime(self, runtime, opt)
@@ -284,9 +297,36 @@ function nf_runtime(self, runtime, opt)
                         end
                     end
                 end
-                if runtime:endswith("_static") and _has_static_libstdcxx(self) then
-                    maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
-                    maps["stdc++_static"] = table.join(maps["stdc++_static"], "-static-libstdc++")
+                if runtime:endswith("_static") then
+                    -- -static-libstdc++ only pulls in libc++.a, not libc++abi.a, so the libc++abi
+                    -- symbols (typeinfo, __cxa_*) stay undefined and the link fails, especially
+                    -- once c++ modules reference more of libc++.
+                    --
+                    -- if we can locate both static archives, link them explicitly in a group
+                    -- (they reference each other) and disable the driver's automatic c++ runtime
+                    -- with -nostdlib++, otherwise (bundled abi) fall back to -static-libstdc++.
+                    --
+                    -- note: target.runtimes is ordered right before the syslinks in the c++ link
+                    -- order, so these archives are placed after the object files / user links.
+                    -- @see https://github.com/xmake-io/xmake/issues/7442, https://github.com/xmake-io/xmake/issues/7656
+                    if llvm_dirs.libcxx_static and llvm_dirs.libcxxabi_static and _has_nostdlibxx(self) then
+                        local cxxlibs = {llvm_dirs.libcxx_static, llvm_dirs.libcxxabi_static}
+                        -- apple ld64 does not support --start-group, it always rescans archives
+                        if not self:is_plat("macosx", "iphoneos", "watchos", "appletvos", "applexros") then
+                            cxxlibs = table.join("-Wl,--start-group", cxxlibs, "-Wl,--end-group")
+                        end
+                        -- -stdlib=libc++ is unused when linking with -nostdlib++, remove it to avoid
+                        -- the `argument unused during compilation` warning
+                        local ldflags = table.remove_if(table.wrap(maps["c++_static"]), function (_, flag)
+                            return flag == "-stdlib=libc++"
+                        end)
+                        maps["c++_static"] = table.join(ldflags, "-nostdlib++", cxxlibs)
+                    elseif _has_static_libstdcxx(self) then
+                        maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
+                    end
+                    if _has_static_libstdcxx(self) then
+                        maps["stdc++_static"] = table.join(maps["stdc++_static"], "-static-libstdc++")
+                    end
                 end
             end
         end

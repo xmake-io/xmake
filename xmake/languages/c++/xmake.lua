@@ -60,8 +60,7 @@ language("c++")
         ,   "toolchain.sysincludedirs"
         }
     ,   binary = {
-            "target.runtimes"
-        ,   "config.linkdirs"
+            "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
         ,   "target.frameworkdirs"
@@ -79,13 +78,16 @@ language("c++")
         ,   "config.frameworks"
         ,   "target.frameworks"
         ,   "toolchain.frameworks"
+        -- runtimes may link libc++.a/libc++abi.a explicitly, so it must come after the
+        -- object files and user links, but before the syslinks it depends on (e.g. pthread)
+        -- @see https://github.com/xmake-io/xmake/issues/7442
+        ,   "target.runtimes"
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
     ,   shared = {
-            "target.runtimes"
-        ,   "config.linkdirs"
+            "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
         ,   "target.frameworkdirs"
@@ -103,6 +105,8 @@ language("c++")
         ,   "config.frameworks"
         ,   "target.frameworks"
         ,   "toolchain.frameworks"
+        -- @see https://github.com/xmake-io/xmake/issues/7442
+        ,   "target.runtimes"
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
