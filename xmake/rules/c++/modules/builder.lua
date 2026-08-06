@@ -85,6 +85,23 @@ function _get_buildfilejob_for(target, sourcefile, opt)
     return _get_module_buildfilejob_for(target, sourcefile, opt.moduletype)
 end
 
+-- merge jobdeps, we cannot use table.join2 directly,
+-- because it will override the previous deps with the same job name
+--
+-- e.g. a consumer job may depend on several reused bmi jobs from the same dep target
+-- @see https://github.com/xmake-io/xmake/issues/7690
+function _merge_jobdeps(jobdeps, deps)
+    for jobname, depnames in pairs(deps) do
+        local orderdeps = jobdeps[jobname]
+        if orderdeps then
+            table.join2(orderdeps, depnames)
+        else
+            jobdeps[jobname] = table.wrap(depnames)
+        end
+    end
+    return jobdeps
+end
+
 function _get_jobdeps(target, module, jobgraph, buildfilejob)
 
     local memcache = support.memcache()
@@ -236,11 +253,11 @@ function build_modules_for_jobgraph(target, jobgraph, built_modules)
         else
             if not support.is_bmionly(target, sourcefile) then
                 local buildfilejob = _get_module_buildfilejob_for(target, sourcefile, "objectfile")
-                table.join2(jobdeps, _get_jobdeps(target, module, jobgraph, buildfilejob))
+                _merge_jobdeps(jobdeps, _get_jobdeps(target, module, jobgraph, buildfilejob))
                 table.insert(buildfilejobs, buildfilejob)
                 local objbuildfilejob = target:fullname() .. "/obj/" .. sourcefile
                 if jobgraph:has(objbuildfilejob) then
-                    jobdeps[objbuildfilejob] = {buildfilejob}
+                    _merge_jobdeps(jobdeps, {[objbuildfilejob] = {buildfilejob}})
                 end
             end
         end
@@ -262,19 +279,19 @@ function build_modules_for_jobgraph(target, jobgraph, built_modules)
                 jobopt.objectfile = not has_two_phase_compilation_support and not bmionly
                 builder.make_module_job(target, module, jobopt)
             end)
-            table.join2(jobdeps, _get_jobdeps(target, module, jobgraph, buildfilejob))
+            _merge_jobdeps(jobdeps, _get_jobdeps(target, module, jobgraph, buildfilejob))
 
             -- if two phase compilation supported set jobdeps for objectfile job
             if has_two_phase_compilation_support and not bmionly then
                 local objbuildfilejob = _get_module_buildfilejob_for(target, sourcefile, "objectfile")
-                jobdeps[objbuildfilejob] = {buildfilejob}
+                _merge_jobdeps(jobdeps, {[objbuildfilejob] = {buildfilejob}})
             end
         end
     end)
 
     -- insert saved jobdeps
     for _, buildfilejob in ipairs(buildfilejobs) do
-        table.join2(jobdeps, _get_saved_jobdeps_for(jobgraph, buildfilejob))
+        _merge_jobdeps(jobdeps, _get_saved_jobdeps_for(jobgraph, buildfilejob))
     end
 
     -- apply jobdeps
