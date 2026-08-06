@@ -212,7 +212,7 @@ tb_bool_t xm_binutils_ar_extract(tb_stream_ref_t istream, tb_char_t const *outpu
             ok = tb_false;
         }
 
-        tb_stream_clos(ostream);
+        tb_stream_close(ostream);
         tb_stream_exit(ostream);
 
         tb_check_break(ok);

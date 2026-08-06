@@ -68,7 +68,7 @@ tb_int_t xm_io_file_close(lua_State *lua) {
         }
 
         // close file
-        tb_stream_clos(file->u.file_ref);
+        tb_stream_close(file->u.file_ref);
         file->u.file_ref = tb_null;
 
         // exit fstream
