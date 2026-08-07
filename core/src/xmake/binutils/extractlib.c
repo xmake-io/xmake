@@ -129,7 +129,7 @@ tb_int_t xm_binutils_extractlib(lua_State *lua) {
     } while (0);
 
     if (istream) {
-        tb_stream_clos(istream);
+        tb_stream_close(istream);
         tb_stream_exit(istream);
     }
 

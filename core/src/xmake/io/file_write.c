@@ -110,7 +110,7 @@ static tb_void_t xm_io_file_write_std(xm_io_file_t *file, tb_byte_t const *data,
     tb_check_return(type != XM_IO_FILE_TYPE_STDIN);
 
     // write data to stdout/stderr
-    tb_stdfile_writ(file->u.std_ref, data, size);
+    tb_stdfile_write(file->u.std_ref, data, size);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
