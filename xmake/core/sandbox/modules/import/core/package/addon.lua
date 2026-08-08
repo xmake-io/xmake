@@ -26,9 +26,11 @@ local addon = require("package/addon")
 
 -- inherit some builtin interfaces
 sandbox_core_package_addon.installdir   = addon.installdir
+sandbox_core_package_addon.dirname      = addon.dirname
 sandbox_core_package_addon.registryfile = addon.registryfile
 sandbox_core_package_addon.payloaddirs  = addon.payloaddirs
 sandbox_core_package_addon.payloads     = addon.payloads
+sandbox_core_package_addon.payloadinfos = addon.payloadinfos
 sandbox_core_package_addon.payloads_of  = addon.payloads_of
 sandbox_core_package_addon.addons       = addon.addons
 sandbox_core_package_addon.addondir     = addon.addondir
