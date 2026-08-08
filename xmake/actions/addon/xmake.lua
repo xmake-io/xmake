@@ -26,7 +26,8 @@ task("addon")
         description = "Manage addons of xmake.",
         options = {
             {'i', "install", "k", nil, "Install addons."},
-            {'r', "remove",  "k", nil, "Remove the given installed addon."},
+            {'r', "remove",  "k", nil, "Remove the given installed addons."},
+            {'s', "search",  "k", nil, "Search the addons from the repositories."},
             {'l', "list",    "k", nil, "List all installed addons."},
             {'c', "clear",   "k", nil, "Clear all installed addons."},
             {nil, "addons",  "vs", nil, "The addon paths, urls or names.",
@@ -38,6 +39,7 @@ task("addon")
                                        "    $ xmake addon --install xmake-repo@serial-monitor",
                                        "    $ xmake addon --install serial-monitor",
                                        "    $ xmake addon --remove serial-monitor",
+                                       "    $ xmake addon --search serial",
                                        "    $ xmake addon --list"}
         }
     }

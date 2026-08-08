@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.task")
+import("core.base.option")
 import("private.action.require.impl.utils.filter")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.environment")
@@ -41,11 +42,14 @@ function main(names)
         task.run("repo", {update = true})
     end
 
+    -- we only search the addon packages if `--addon` is enabled
+    local kind = option.get("addon") and "addon" or nil
+
     -- show title
-    print("The package names:")
+    print(kind == "addon" and "The addon names:" or "The package names:")
 
     -- search packages
-    for name, packages in pairs(search_packages(names)) do
+    for name, packages in pairs(search_packages(names, {kind = kind})) do
         if #packages > 0 then
 
             -- show name

@@ -21,12 +21,15 @@
 -- imports
 import("core.base.option")
 import("core.package.addon")
-import("core.package.repository")
 import("devel.git")
 import("private.action.require.impl.environment")
+import("private.action.require.impl.search_packages")
 
 -- the version directory name for the addons installed from git urls or local directories
 local LOCALVERSION = "latest"
+
+-- the maximum number of the available addons shown by `--list`
+local LISTLIMIT = 10
 
 -- validate an addon directory name
 function _check_addon_name(name)
@@ -46,23 +49,9 @@ function _get_addondir(name, version)
     return addondir
 end
 
--- get local and global repositories, with local taking precedence
-function _repositories()
-    return table.join(repository.repositories({global = false}), repository.repositories({global = true}))
-end
-
--- install an addon from the given repository or the first repository containing it
-function _install_from_repo(name, reponame)
-
-    -- check addon name
-    _check_addon_name(name)
-
-    -- do install
-    local installname = name
-    if reponame then
-        installname = reponame .. "@" .. name
-    end
-    local argv = {"lua", "private.xrepo", "install", "--addon"}
+-- run the given xrepo action for the addons, e.g. install, remove, search
+function _xrepo(action, names)
+    local argv = {"lua", "private.xrepo", action, "--addon"}
     -- we need to pass the common options to the sub-process, e.g. -y, -v, -D
     if option.get("yes") then
         table.insert(argv, "-y")
@@ -73,8 +62,14 @@ function _install_from_repo(name, reponame)
     if option.get("diagnosis") then
         table.insert(argv, "-D")
     end
-    table.insert(argv, installname)
+    table.join2(argv, names)
     os.execv(os.programfile(), argv)
+end
+
+-- install an addon from the given repository or the first repository containing it
+function _install_from_repo(name, reponame)
+    _check_addon_name(name)
+    _xrepo("install", {reponame and (reponame .. "@" .. name) or name})
 end
 
 -- install a single addon from a source directory (as the given name, default to the directory name)
@@ -148,27 +143,16 @@ function _install()
     environment.leave()
 end
 
--- remove the given installed addon
+-- remove the given installed addons
 function _remove()
     local names = assert(option.get("addons"), "please specify the addon name to be removed!")
-    assert(#names == 1, "please specify only one addon name to be removed!")
-    local name = names[1]
-    local dir = _get_addondir(name)
-    assert(os.isdir(dir), "addon(%s) not found!", name)
-    os.rmdir(dir)
-    addon.unregister(name)
-    cprint("${color.success}remove ${bright}%s${clear} ok!", name)
+    _xrepo("remove", names)
 end
 
--- get the description of an addon from its package description file
-function _addon_description(dir)
-    local filepath = path.join(dir, "xmake.lua")
-    if os.isfile(filepath) then
-        local content = io.readfile(filepath)
-        if content then
-            return content:match("set_description%s*%(\"(.-)\"%)")
-        end
-    end
+-- search the addons from the repositories
+function _search()
+    local patterns = assert(option.get("addons"), "please specify the addon name pattern to be searched!")
+    _xrepo("search", patterns)
 end
 
 -- collect the installed addons from the addons registry
@@ -186,70 +170,57 @@ function _collect_installed_addons()
     return entries
 end
 
--- collect the addons in the given repository, they follow the packages layout (addons/<first-letter>/<name>)
-function _collect_repo_addons(root, seen)
-    local entries = {}
-    for _, dir in ipairs(os.dirs(path.join(root, "*", "*"))) do
-        local name = path.filename(dir)
-        if os.isfile(path.join(dir, "xmake.lua")) and not seen[name] then
-            seen[name] = true
-            table.insert(entries, {name = name, description = _addon_description(dir)})
-        end
+-- print an addon entry, e.g. -> serial-monitor v1.0.1: monitor the serial port output (in xmake-repo)
+function _print_addon(entry, suffix)
+    local title = entry.name
+    if entry.version then
+        title = title .. " " .. entry.version
     end
-    return entries
+    local description = entry.description and (": " .. entry.description) or ""
+    cprint("  ${color.dump.reference}->${clear} ${color.dump.string}%s${clear}%s%s", title, description, suffix or "")
 end
 
--- print an addon entry with its description aligned on the right
-function _print_addon(name, description, width, note)
-    local suffix = description or ""
-    if note then
-        suffix = suffix ~= "" and (suffix .. " " .. note) or note
+-- get the addons in the repositories, we reuse the packages search here
+function _collect_repo_addons(exclude)
+    local entries = {}
+    for _, results in pairs(search_packages({"*"}, {kind = "addon", description = false})) do
+        for _, result in ipairs(results) do
+            if not exclude[result.name] then
+                table.insert(entries, result)
+            end
+        end
     end
-    if suffix ~= "" then
-        local padding = math.max(width - #name, 1)
-        cprint("  ${color.dump.string}%s${clear}%s%s", name, (" "):rep(padding), suffix)
-    else
-        cprint("  ${color.dump.string}%s${clear}", name)
-    end
+    table.sort(entries, function (a, b) return a.name < b.name end)
+    return entries
 end
 
 -- list all addons
 function _list()
-    local seen = {}
+
+    -- show the installed addons
     local installed = _collect_installed_addons()
-    for _, entry in ipairs(installed) do
-        seen[entry.name] = true
-    end
-    local avail = {}
-    for _, repo in ipairs(_repositories()) do
-        table.join2(avail, _collect_repo_addons(path.join(repo:directory(), "addons"), seen))
-    end
-
-    -- compute the alignment width from all addon names
-    local width = 0
-    for _, entries in ipairs({installed, avail}) do
-        for _, entry in ipairs(entries) do
-            width = math.max(width, #entry.name + 4)
-        end
-    end
-
-    -- installed addons
+    local exclude = {}
     cprint("${bright}the installed addons:${clear}")
     if #installed > 0 then
         for _, entry in ipairs(installed) do
-            local note = string.format("(%s, %s)", entry.version, table.concat(entry.payloads, ", "))
-            _print_addon(entry.name, entry.description, width, note)
+            exclude[entry.name] = true
+            _print_addon(entry, string.format(" ${dim}(%s)${clear}", table.concat(entry.payloads, ", ")))
         end
     else
         print("  (none)")
     end
 
-    -- addons available in repositories (not yet installed)
-    cprint("${bright}available in configured repositories:${clear}")
+    -- show the addons in the repositories, we only show the first ones if there are too many
+    local avail = _collect_repo_addons(exclude)
+    cprint("${bright}the available addons:${clear} ${dim}(run `xmake addon --install <name>` to install," ..
+           " `--search <pattern>` to search)${clear}")
     if #avail > 0 then
-        for _, entry in ipairs(avail) do
-            local note = string.format("(run xmake addon --install %s to install)", entry.name)
-            _print_addon(entry.name, entry.description, width, note)
+        for idx, entry in ipairs(avail) do
+            if idx > LISTLIMIT then
+                cprint("  ${dim}... and %d more${clear}", #avail - LISTLIMIT)
+                break
+            end
+            _print_addon(entry, entry.reponame and string.format(" ${dim}(in %s)${clear}", entry.reponame) or nil)
         end
     else
         print("  (none)")
@@ -269,6 +240,8 @@ function main()
         _remove()
     elseif option.get("list") then
         _list()
+    elseif option.get("search") then
+        _search()
     elseif option.get("clear") then
         _clear()
     end

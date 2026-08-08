@@ -182,6 +182,25 @@ function addon.register(name, version, opt)
     addon._save(addons)
 end
 
+-- remove the given installed addon
+--
+-- @param name  the addon name
+-- @return      true or false and errors
+--
+function addon.remove(name)
+    local dirname = addon.dirname(name)
+    local installdir = path.join(addon.installdir(), dirname)
+    if not os.isdir(installdir) then
+        return false, string.format("addon(%s) not found!", name)
+    end
+    local ok, errors = os.rm(installdir)
+    if not ok then
+        return false, errors
+    end
+    addon.unregister(name)
+    return true
+end
+
 -- unregister the given addon
 function addon.unregister(name)
     local dirname = addon.dirname(name)
