@@ -37,6 +37,7 @@ local interpreter    = require("base/interpreter")
 local select_script  = require("base/private/select_script")
 local is_cross       = require("base/private/is_cross")
 local memcache       = require("cache/memcache")
+local addon          = require("package/addon")
 local toolchain      = require("tool/toolchain")
 local compiler       = require("tool/compiler")
 local linker         = require("tool/linker")
@@ -940,7 +941,7 @@ function _instance:installdir(...)
                 if os.is_host("windows") then
                     version_str = version_str:gsub("[>=<|%*]", "")
                 end
-                installdir = path.join(package.addon_installdir(), name, version_str)
+                installdir = addon.addondir(self:name(), version_str)
             elseif self:is_plugin() then
                 -- deprecated, @see the `addon` kind
                 installdir = path.join(global.directory(), "plugins", name)
@@ -3053,21 +3054,6 @@ function package.installdir(opt)
     return installdir
 end
 
--- the install directory for addon packages, e.g. ~/.xmake/addons
-function package.addon_installdir()
-    return path.join(global.directory(), "addons")
-end
-
--- the payload directories of addon packages
---
--- an addon can provide any subset of them, e.g. only `plugins`
---
--- @note only `plugins` is activated for now, the others are reserved
---
-function package.addon_payloaddirs()
-    return {"plugins", "rules", "toolchains", "platforms", "modules", "templates", "themes", "includes"}
-end
-
 -- the search directories
 function package.searchdirs()
     local searchdirs = global.get("pkg_searchdirs")
@@ -3264,22 +3250,9 @@ function package.load_from_repository(packagename, packagedir, opt)
             return nil, string.format("%s: package(%s) not found!", scriptpath, packagename)
         end
 
-        -- we need set the default on_install script if it's addon package,
-        -- we only install the payload directories of this addon, e.g. plugins, rules, toolchains, ...
+        -- we need set the default on_install script if it's addon package
         if packageinfo:get("kind") == "addon" and not packageinfo:get("install") then
-            local on_install = function (pkg)
-                local installed = false
-                for _, payloaddir in ipairs(package.addon_payloaddirs()) do
-                    if os.isdir(payloaddir) then
-                        os.cp(payloaddir, pkg:installdir())
-                        installed = true
-                    end
-                end
-                if not installed then
-                    os.raise("addon(%s): no payload directory found, e.g. plugins!", pkg:name())
-                end
-            end
-            packageinfo:set("install", on_install)
+            packageinfo:set("install", addon.installscript())
         end
 
         -- we need set the default on_install script if it's plugin package

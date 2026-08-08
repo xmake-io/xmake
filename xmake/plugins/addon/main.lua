@@ -20,8 +20,8 @@
 
 -- imports
 import("core.base.option")
+import("core.package.addon")
 import("core.package.repository")
-import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.environment")
 
@@ -36,9 +36,9 @@ end
 
 -- get addon directory in ~/.xmake/addons
 function _get_addondir(name, version)
-    local addondir = core_package.addon_installdir()
+    local addondir = addon.installdir()
     if name then
-        addondir = path.join(addondir, _check_addon_name(name))
+        addondir = path.join(addondir, addon.dirname(_check_addon_name(name)))
         if version then
             addondir = path.join(addondir, version)
         end
@@ -49,17 +49,6 @@ end
 -- get local and global repositories, with local taking precedence
 function _repositories()
     return table.join(repository.repositories({global = false}), repository.repositories({global = true}))
-end
-
--- get the payload directories of the given addon directory, e.g. {"plugins", "rules"}
-function _get_payloads(dir)
-    local payloads = {}
-    for _, payloaddir in ipairs(core_package.addon_payloaddirs()) do
-        if os.isdir(path.join(dir, payloaddir)) then
-            table.insert(payloads, payloaddir)
-        end
-    end
-    return payloads
 end
 
 -- install an addon from the given repository or the first repository containing it
@@ -91,11 +80,12 @@ end
 -- install a single addon from a source directory (as the given name, default to the directory name)
 function _install_from_local(dir, name)
     assert(os.isdir(dir), "addon path(%s) not found!", dir)
-    assert(#_get_payloads(dir) > 0, "addon path(%s): no payload directory found, e.g. ${bright}plugins${clear}!", dir)
+    assert(#addon.payloads_of(dir) > 0, "addon path(%s): no payload directory found, e.g. ${bright}plugins${clear}!", dir)
     name = name or path.filename(path.absolute(dir))
     local dstdir = _get_addondir(name, LOCALVERSION)
     assert(not os.isdir(dstdir), "addon(%s) already exists!", name)
     os.vcp(dir, dstdir)
+    addon.register(name, LOCALVERSION)
     cprint("${color.success}install ${bright}%s${clear} ok!", name)
 end
 
@@ -166,6 +156,7 @@ function _remove()
     local dir = _get_addondir(name)
     assert(os.isdir(dir), "addon(%s) not found!", name)
     os.rmdir(dir)
+    addon.unregister(name)
     cprint("${color.success}remove ${bright}%s${clear} ok!", name)
 end
 
@@ -180,18 +171,17 @@ function _addon_description(dir)
     end
 end
 
--- collect the installed addons, e.g. ~/.xmake/addons/<name>/<version>
+-- collect the installed addons from the addons registry
+--
+-- we always rescan the install directory here to repair the registry,
+-- e.g. the user may remove some addon directories manually
+--
 function _collect_installed_addons()
     local entries = {}
-    for _, versiondir in ipairs(os.dirs(path.join(_get_addondir(), "*", "*"))) do
-        local payloads = _get_payloads(versiondir)
-        if #payloads > 0 then
-            table.insert(entries, {
-                name = path.filename(path.directory(versiondir)),
-                version = path.filename(versiondir),
-                payloads = payloads})
-        end
+    for name, addoninfo in pairs(addon.rescan()) do
+        table.insert(entries, {name = name, version = addoninfo.version, payloads = addoninfo.payloads})
     end
+    table.sort(entries, function (a, b) return a.name < b.name end)
     return entries
 end
 
@@ -267,10 +257,7 @@ end
 
 -- clear all installed addons
 function _clear()
-    local addonsdir = _get_addondir()
-    if os.isdir(addonsdir) then
-        os.rmdir(addonsdir)
-    end
+    addon.clear()
     cprint("${color.success}clear all installed addons ok!")
 end
 

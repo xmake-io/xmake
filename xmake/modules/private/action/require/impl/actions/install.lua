@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.tty")
 import("core.package.package", {alias = "core_package"})
+import("core.package.addon")
 import("core.project.target")
 import("core.project.project")
 import("core.platform.platform")
@@ -499,6 +500,11 @@ function main(package)
 
                     -- save the package info to the manifest file
                     package:manifest_save()
+
+                    -- register this addon, so that xmake can find its payloads, e.g. plugins
+                    if package:is_addon() then
+                        addon.register(package:name(), package:version_str() or "latest")
+                    end
                     installed_now = true
                 end
             end
