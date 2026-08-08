@@ -23,7 +23,7 @@ import("core.base.semver")
 import("private.xrepo.quick_search.cache")
 
 function _search_package(packages, name, opt)
-    for _, packageinfo in ipairs(cache.find(name, {description = opt.description ~= false})) do
+    for _, packageinfo in ipairs(cache.find(name, {description = opt.description ~= false, kind = opt.kind})) do
         local packagename = packageinfo.name
         local packagedata = packageinfo.data
 
@@ -59,7 +59,7 @@ end
 -- search package using the xmake package manager
 --
 -- @param name  the package name with pattern
--- @param opt   the options, e.g. {require_version = "1.x"}
+-- @param opt   the options, e.g. {require_version = "1.x", kind = "addon"}
 --
 function main(name, opt)
     opt = opt or {}

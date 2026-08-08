@@ -37,6 +37,7 @@ local interpreter    = require("base/interpreter")
 local select_script  = require("base/private/select_script")
 local is_cross       = require("base/private/is_cross")
 local memcache       = require("cache/memcache")
+local addon          = require("package/addon")
 local toolchain      = require("tool/toolchain")
 local compiler       = require("tool/compiler")
 local linker         = require("tool/linker")
@@ -620,7 +621,19 @@ function _instance:is_toolchain()
     return self:kind() == "toolchain"
 end
 
+-- is addon package?
+--
+-- it will be installed to `~/.xmake/addons/<name>/<version>` and
+-- it can provide plugins, rules, toolchains, templates and modules for xmake
+--
+function _instance:is_addon()
+    return self:kind() == "addon"
+end
+
 -- is plugin package?
+--
+-- @note this kind is deprecated, please use the `addon` kind instead
+--
 function _instance:is_plugin()
     return self:kind() == "plugin"
 end
@@ -922,7 +935,15 @@ function _instance:installdir(...)
         installdir = self:get("installdir")
         if not installdir then
             local name = self:name():lower():gsub("::", "_")
-            if self:is_plugin() then
+            if self:is_addon() then
+                -- e.g. ~/.xmake/addons/<name>/<version>
+                local version_str = self:version_str() or "latest"
+                if os.is_host("windows") then
+                    version_str = version_str:gsub("[>=<|%*]", "")
+                end
+                installdir = addon.addondir(self:name(), version_str)
+            elseif self:is_plugin() then
+                -- deprecated, @see the `addon` kind
                 installdir = path.join(global.directory(), "plugins", name)
             else
                 if self:is_local() then
@@ -1195,6 +1216,10 @@ function _instance:_rawenvs()
         end
 
         -- add plugin env for on_test
+        --
+        -- @note we need not do it for the addon packages, they are registered
+        -- to the addons registry after installing, and xmake can find their payloads directly
+        --
         if self:is_plugin() then
             envs.XMAKE_PLUGIN_DIRS = path.directory(self:installdir())
         end
@@ -3226,7 +3251,13 @@ function package.load_from_repository(packagename, packagedir, opt)
             return nil, string.format("%s: package(%s) not found!", scriptpath, packagename)
         end
 
+        -- we need set the default on_install script if it's addon package
+        if packageinfo:get("kind") == "addon" and not packageinfo:get("install") then
+            packageinfo:set("install", addon.installscript())
+        end
+
         -- we need set the default on_install script if it's plugin package
+        -- @note the plugin kind is deprecated, please use the addon kind instead
         if packageinfo:get("kind") == "plugin" and not packageinfo:get("install") then
             -- only one code line, we can directly omit the sandbox wrapper.
             local on_install = function (pkg)

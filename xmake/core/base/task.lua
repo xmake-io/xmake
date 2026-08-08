@@ -28,6 +28,7 @@ local string        = require("base/string")
 local global        = require("base/global")
 local hashset       = require("base/hashset")
 local interpreter   = require("base/interpreter")
+local addon         = require("package/addon")
 local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
 local sandbox_os    = require("sandbox/modules/os")
@@ -81,13 +82,25 @@ end
 
 -- the directories of tasks
 function task._directories()
-    local dirs = {
-        path.join(global.directory(), "plugins"),
-        path.join(os.programdir(), "plugins"),
-        path.join(os.programdir(), "actions")}
-    local plugindirs = os.getenv("XMAKE_PLUGIN_DIRS")
-    if plugindirs then
-        table.insert(dirs, 1, plugindirs)
+    local dirs = task._DIRECTORIES
+    if dirs == nil then
+        dirs = {
+            path.join(global.directory(), "plugins"),
+            path.join(os.programdir(), "plugins"),
+            path.join(os.programdir(), "actions")}
+
+        -- add the plugins of the installed addons, e.g. ~/.xmake/addons/<name>/<version>/plugins
+        --
+        -- we get them from the addons registry file directly,
+        -- so we do not need to scan the whole addons directory on startup
+        --
+        table.join2(dirs, addon.payloads("plugins"))
+
+        local plugindirs = os.getenv("XMAKE_PLUGIN_DIRS")
+        if plugindirs then
+            table.insert(dirs, 1, plugindirs)
+        end
+        task._DIRECTORIES = dirs
     end
     return dirs
 end

@@ -47,7 +47,9 @@ function menu_options()
                                        "e.g.",
                                        "    - xrepo install -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
         {nil, "policies",      "kv", nil, "Set the policies."                },
-        {nil, "plugin",        "k",  nil, "Install plugin packages from <repository>/plugins/"},
+        {nil, "addon",         "k",  nil, "Install addon packages from <repository>/addons/"},
+        {nil, "plugin",        "k",  nil, "Install plugin packages from <repository>/plugins/",
+                                          "(deprecated, please use --addon instead)"},
         {category = "Visual Studio SDK Configuration"                        },
         {nil, "vs",            "kv", nil, "The Microsoft Visual Studio"
                                         , "  e.g. --vs=2017"                 },
@@ -281,6 +283,9 @@ function _install_packages(packages)
     end
     if option.get("build") or is_debug then
         table.insert(require_argv, "--build")
+    end
+    if option.get("addon") then
+        table.insert(require_argv, "--addon")
     end
     if option.get("plugin") then
         table.insert(require_argv, "--plugin")
