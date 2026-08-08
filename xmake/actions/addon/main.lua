@@ -179,7 +179,8 @@ end
 function _collect_installed_addons()
     local entries = {}
     for name, addoninfo in pairs(addon.rescan()) do
-        table.insert(entries, {name = name, version = addoninfo.version, payloads = addoninfo.payloads})
+        table.insert(entries, {name = name, version = addoninfo.version,
+                               description = addoninfo.description, payloads = addoninfo.payloads})
     end
     table.sort(entries, function (a, b) return a.name < b.name end)
     return entries
@@ -237,7 +238,7 @@ function _list()
     if #installed > 0 then
         for _, entry in ipairs(installed) do
             local note = string.format("(%s, %s)", entry.version, table.concat(entry.payloads, ", "))
-            _print_addon(entry.name, nil, width, note)
+            _print_addon(entry.name, entry.description, width, note)
         end
     else
         print("  (none)")

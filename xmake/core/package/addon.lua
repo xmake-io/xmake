@@ -170,11 +170,15 @@ end
 --
 -- @param name      the addon name
 -- @param version   the addon version, e.g. "1.0.1", "latest"
+-- @param opt       the options, e.g. {description = "..."}
 --
-function addon.register(name, version)
+function addon.register(name, version, opt)
+    opt = opt or {}
     local dirname = addon.dirname(name)
     local addons = addon.addons()
-    addons[dirname] = {version = version, payloads = addon.payloads_of(path.join(addon.installdir(), dirname, version))}
+    addons[dirname] = {version = version,
+                       description = opt.description,
+                       payloads = addon.payloads_of(path.join(addon.installdir(), dirname, version))}
     addon._save(addons)
 end
 
@@ -193,11 +197,20 @@ end
 -- it's only used to repair the registry file, e.g. the user removed some addon directories manually
 --
 function addon.rescan()
+    local oldaddons = addon.addons()
     local addons = {}
     for _, versiondir in ipairs(os.dirs(path.join(addon.installdir(), "*", "*"))) do
         local payloads = addon.payloads_of(versiondir)
         if #payloads > 0 then
-            addons[path.filename(path.directory(versiondir))] = {version = path.filename(versiondir), payloads = payloads}
+            local dirname = path.filename(path.directory(versiondir))
+            local version = path.filename(versiondir)
+            -- we need to keep the description, we cannot get it from the installed payloads
+            local oldaddoninfo = oldaddons[dirname]
+            local description
+            if oldaddoninfo and oldaddoninfo.version == version then
+                description = oldaddoninfo.description
+            end
+            addons[dirname] = {version = version, description = description, payloads = payloads}
         end
     end
     addon._save(addons)
