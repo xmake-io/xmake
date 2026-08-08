@@ -22,6 +22,7 @@
 import("core.base.global")
 import("core.base.hashset")
 import("core.language.language")
+import("core.package.addon")
 import("core.package.repository")
 
 -- some builtin template variables in xmake.lua
@@ -33,19 +34,32 @@ end
 -- get all template roots with extra meta information
 --
 -- priority:
---   1. repo:     <global-repo>/templates
---   2. global:   <globaldir>/templates
---   3. builtin:  <programdir>/templates
+--   1. addon:    <globaldir>/addons/<name>/<version>/templates
+--   2. repo:     <global-repo>/templates (deprecated)
+--   3. global:   <globaldir>/templates
+--   4. builtin:  <programdir>/templates
 function rootinfos()
     local results = {}
 
+    -- get template directories from the installed addons
+    for _, addoninfo in ipairs(addon.payloadinfos("templates")) do
+        if os.isdir(addoninfo.dir) then
+            table.insert(results, {kind = "addon", name = addoninfo.name, version = addoninfo.version, dir = addoninfo.dir})
+        end
+    end
+
     -- get template directories from global repositories
+    --
+    -- @note it's deprecated, please distribute the templates as an addon instead,
+    -- e.g. xmake addon --install basic-templates
+    --
     local repos = repository.repositories({global = true, network = false})
     if repos then
         for _, repo in ipairs(repos) do
             local templatesdir = path.join(repo:directory(), "templates")
             if os.isdir(templatesdir) then
-                table.insert(results, {kind = "repo", name = repo:name(), url = repo:url(), branch = repo:branch(), dir = templatesdir})
+                table.insert(results, {kind = "repo", name = repo:name(), url = repo:url(), branch = repo:branch(),
+                                       dir = templatesdir, deprecated = true})
             end
         end
     end
@@ -60,6 +74,24 @@ function rootinfos()
         table.insert(results, {kind = "builtin", dir = dir})
     end
     return results
+end
+
+-- get the root information of the given template directory
+--
+-- @param templatedir   the template directory, e.g. <programdir>/templates/c/console
+-- @return              the root information, @see rootinfos
+--
+function rootinfo_of(templatedir)
+    if not templatedir then
+        return
+    end
+    templatedir = path.absolute(templatedir)
+    for _, info in ipairs(rootinfos()) do
+        local rootdir = path.absolute(info.dir)
+        if templatedir == rootdir or templatedir:startswith(rootdir .. path.sep()) then
+            return info
+        end
+    end
 end
 
 -- get template root directories

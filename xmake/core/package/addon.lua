@@ -97,12 +97,29 @@ end
 --
 function addon.payloads(kind)
     local payloads = {}
-    for name, addoninfo in pairs(addon.addons()) do
-        if table.contains(addoninfo.payloads or {}, kind) then
-            table.insert(payloads, path.join(addon.installdir(), name, addoninfo.version, kind))
-        end
+    for _, payloadinfo in ipairs(addon.payloadinfos(kind)) do
+        table.insert(payloads, payloadinfo.dir)
     end
     return payloads
+end
+
+-- get the payload information of the given kind from all installed addons
+--
+-- @param kind  the payload kind, e.g. "plugins", "rules"
+-- @return      the payload infos, e.g. {{name = "hello-world", version = "latest", dir = "~/.xmake/addons/hello-world/latest/plugins"}}
+--
+function addon.payloadinfos(kind)
+    local payloadinfos = {}
+    for name, addoninfo in pairs(addon.addons()) do
+        if table.contains(addoninfo.payloads or {}, kind) then
+            table.insert(payloadinfos, {
+                name = name,
+                version = addoninfo.version,
+                dir = path.join(addon.installdir(), name, addoninfo.version, kind)})
+        end
+    end
+    table.sort(payloadinfos, function (a, b) return a.name < b.name end)
+    return payloadinfos
 end
 
 -- get the payload directories of the given addon directory, e.g. {"plugins", "rules"}

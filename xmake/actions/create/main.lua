@@ -79,26 +79,15 @@ function _list_templates(lang_filter)
         languages = {lang_filter}
     end
 
-    -- map a template directory to its root meta (repo/global/builtin)
-    local rootinfo_of = function (dir)
-        if not dir then
-            return
-        end
-        dir = path.absolute(dir)
-        for _, info in ipairs(rootinfos) do
-            local rootdir = path.absolute(info.dir)
-            if dir == rootdir or dir:startswith(rootdir .. path.sep()) then
-                return info
-            end
-        end
-    end
+    -- map a template directory to its root meta (repo/addon/global/builtin)
+    local rootinfo_of = template.rootinfo_of
 
     local sourcekey_of = function (info)
         if not info then
             return "unknown"
         end
-        if info.kind == "repo" then
-            return "repo:" .. info.name
+        if info.kind == "repo" or info.kind == "addon" then
+            return info.kind .. ":" .. info.name
         end
         return info.kind or "unknown"
     end
@@ -142,7 +131,10 @@ function _list_templates(lang_filter)
             local info = group.info
             if info and info.kind == "repo" then
                 local branch = info.branch and (" " .. info.branch) or ""
-                cprint("${bright}%s${reset}: %s%s", info.name, info.url or "", branch)
+                local deprecated = info.deprecated and " ${yellow}(deprecated)${clear}" or ""
+                cprint("${bright}%s${reset}: %s%s%s", info.name, info.url or "", branch, deprecated)
+            elseif info and info.kind == "addon" then
+                cprint("${bright}%s${reset}: addon %s", info.name, info.version or "")
             else
                 cprint("${bright}%s${reset}", (info and info.kind) or "unknown")
             end
@@ -196,6 +188,12 @@ function _create_project(lang, templateid, targetname)
     local sourcedir = template.templatedir(lang, templateid)
     if not sourcedir then
         raise("template(%s/%s): not found!\nyou can try:\n  - xrepo update-repo (update repositories)\n  - xmake create --list (show available templates)", lang, templateid)
+    end
+
+    -- the templates in repositories are deprecated, they should be distributed as addons
+    local rootinfo = template.rootinfo_of(sourcedir)
+    if rootinfo and rootinfo.deprecated then
+        wprint("the templates in <%s>/templates are deprecated, please install them as an addon instead, e.g. xmake addon --install basic-templates", rootinfo.name or "repo")
     end
 
     -- get the builtin variables
