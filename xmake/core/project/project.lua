@@ -185,6 +185,20 @@ function project._api_add_moduledirs(interp, ...)
     end
 end
 
+-- add a custom module resolver
+--
+-- @param interp    the project interpreter instance
+-- @param resolver  the resolver callback, e.g. function (name, ctx) ... end
+--
+-- Module resolvers are fallback providers for import(...). They run after
+-- normal module-directory lookup fails and can provide generated, virtual or
+-- otherwise dynamic modules while preserving normal import semantics for
+-- callers.
+function project._api_add_moduleresolver(interp, resolver)
+    assert(type(resolver) == "function", "module resolver must be a function")
+    sandbox_module.add_resolver(resolver)
+end
+
 -- add plugin directories load all plugins from the given directories
 function project._api_add_plugindirs(interp, ...)
     local plugindirs = {}
@@ -682,6 +696,7 @@ function project.apis()
         ,   {"has_package",             project._api_has_package       }
             -- add_xxx
         ,   {"add_moduledirs",          project._api_add_moduledirs    }
+        ,   {"add_moduleresolver",      project._api_add_moduleresolver}
         ,   {"add_plugindirs",          project._api_add_plugindirs    }
         ,   {"add_platformdirs",        project._api_add_platformdirs  }
         ,   {"add_toolchaindirs",       project._api_add_toolchaindirs }

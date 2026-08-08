@@ -41,6 +41,230 @@ local MODULE_KIND_LUADIR  = 2
 local MODULE_KIND_BINARY  = 3
 local MODULE_KIND_SHARED  = 4
 
+
+-- get registered custom module resolvers
+--
+-- @return          the shared resolver list
+--
+-- Resolver state is stored in memcache instead of a module-local table because
+-- this importer can be loaded through different sandbox/import paths. Using
+-- memcache ensures resolver registration and resolver lookup see the same
+-- shared registry.
+function core_sandbox_module.resolvers()
+    local resolvers = memcache.get("core_sandbox_module", "resolvers")
+    if not resolvers then
+        resolvers = {}
+        memcache.set("core_sandbox_module", "resolvers", resolvers)
+    end
+    return resolvers
+end
+
+-- add a custom module resolver
+--
+-- @param resolver  the resolver callback, e.g. function (name, ctx) ... end
+--
+-- A resolver is called only after normal module-directory lookup fails. It can
+-- provide generated, virtual or otherwise non-file-discovered modules without
+-- requiring callers to use a different import API.
+function core_sandbox_module.add_resolver(resolver)
+    assert(type(resolver) == "function", "module resolver must be a function")
+    table.insert(core_sandbox_module.resolvers(), resolver)
+end
+
+-- clear registered custom module resolvers
+--
+-- This is primarily used by tests and reload paths so resolver state cannot
+-- leak between independent runs.
+function core_sandbox_module.clear_resolvers()
+    memcache.set("core_sandbox_module", "resolvers", {})
+end
+
+-- make an explicit resolver result
+--
+-- @param kind      the resolver result kind, e.g. file, module or miss
+-- @param value     the payload associated with the result kind
+-- @param opt       optional result fields
+-- @return          a tagged resolver result table
+--
+-- Resolver callbacks may return plain strings or tables for convenience, but
+-- context helpers like ctx.file(...) and ctx.module(...) produce explicit
+-- resolver result tables. The private marker prevents ordinary module export
+-- tables from being mistaken for resolver control data.
+function core_sandbox_module._resolver_result(kind, value, opt)
+    opt = opt or {}
+
+    -- Explicit marker so arbitrary module export tables are never confused
+    opt.__module_resolver_result = true
+    opt.kind = kind
+    opt.value = value
+
+    return opt
+end
+
+-- normalize a resolver callback result
+--
+-- @param result    the raw resolver callback result
+-- @return          nil for miss, or an explicit resolver result table
+--
+-- Convenience forms:
+--   nil             => resolver miss
+--   string          => file-backed module path
+--   table           => module export table
+--   marked table    => explicit resolver result from ctx.* helpers
+function core_sandbox_module._normalize_resolver_result(result)
+    if result == nil then
+        return nil
+    end
+
+    -- Convenience: raw string means file path.
+    if type(result) == "string" then
+        return core_sandbox_module._resolver_result("file", result)
+    end
+
+    -- Explicit resolver protocol object.
+    if type(result) == "table" and result.__module_resolver_result then
+        return result
+    end
+
+    -- Convenience: arbitrary table means module export table.
+    --
+    -- Module export tables are allowed to contain a `kind` field, so do not use
+    -- `kind == nil` as the discriminator.
+    if type(result) == "table" then
+        return core_sandbox_module._resolver_result("module", result)
+    end
+
+    return nil 
+end
+
+-- make the context object passed to custom module resolvers
+--
+-- @param name      the requested module name
+-- @return          resolver context helpers
+--
+-- The context gives resolvers an explicit way to describe what they resolved:
+-- ctx.miss() says the resolver did not handle the name, ctx.file(path) resolves
+-- to a Lua module file, and ctx.module(table) resolves to an in-memory module
+-- export table.
+function core_sandbox_module._make_resolver_context(name)
+    local ctx = {}
+
+    function ctx.name()
+        return name
+    end
+
+    function ctx.miss()
+        return core_sandbox_module._resolver_result("miss")
+    end
+
+    function ctx.file(filepath)
+        assert(type(filepath) == "string", "ctx.file(...) requires a file path string")
+        return core_sandbox_module._resolver_result("file", filepath)
+    end
+
+    function ctx.module(module)
+        assert(type(module) == "table", "ctx.module(...) requires a module table")
+        return core_sandbox_module._resolver_result("module", module)
+    end
+    
+    return ctx
+end
+
+-- load a normalized resolver result
+--
+-- @param name      the requested module name
+-- @param result    an explicit resolver result table
+-- @param opt       import options
+-- @return          found, module, errors/script
+--
+-- File-backed resolver results are loaded through the existing _loadfile(...)
+-- path so normal sandbox/module behavior is preserved. In-memory module results
+-- are returned directly and cached by the logical import name.
+function core_sandbox_module._load_resolver_result(name, result, opt)
+    opt = opt or {}
+
+    if result.kind == "miss" then
+        return false
+    elseif result.kind == "file" then
+        local filepath = result.value
+        if type(filepath) ~= "string" or not os.isfile(filepath) then
+            return true, nil, string.format("resolver returned missing or invalid module file: %s", tostring(filepath))
+        end
+
+        local module, errors = core_sandbox_module._loadfile(filepath, opt.instance)
+        return true, module, errors
+    elseif result.kind == "module" then
+        if type(result.value) ~= "table" then
+            return true, nil, string.format("resolver returned invalid module table: %s", tostring(result.value))
+        end
+        return true, result.value, nil
+    else
+        return true, nil, string.format("unknown module resolver result kind: %s", tostring(result.kind))
+    end
+end
+
+-- find and load a module using custom resolvers
+--
+-- @param name      the requested module name
+-- @param opt       import options
+-- @return          found, module, errors/script
+--
+-- Resolvers are fallback providers. They run only after normal module lookup
+-- fails, which preserves existing module-file precedence and avoids accidental
+-- shadowing of built-in or project-local modules.
+function core_sandbox_module._find_and_load_by_resolvers(name, opt)
+    opt = opt or {}
+
+    local resolvers = core_sandbox_module.resolvers()
+    if #resolvers == 0 then
+        return false
+    end
+
+    -- Resolver-backed modules share the same cache table as normal imports.
+    -- The key is logical rather than filesystem based because a resolver may
+    -- provide a generated file, a virtual module table, or another provider
+    -- implementation for the same requested import name.
+    local modules = opt.modules
+    local modulekey = "resolver://" .. name
+
+    if modules and not opt.nocache and not opt.inherit then
+        local moduleinfo = modules[modulekey]
+        if moduleinfo then
+            return true, moduleinfo[1], moduleinfo[2]
+        end
+    end
+
+    local ctx = core_sandbox_module._make_resolver_context(name)
+
+    for _, resolver in ipairs(resolvers) do
+        local ok, result = utils.trycall(function ()
+            return resolver(name, ctx)
+        end)
+        if not ok then
+            local errors = string.format("module resolver failed for '%s': %s", name, tostring(result))
+
+            if modules and not opt.nocache then
+                modules[modulekey] = {nil, errors}
+            end
+
+            return true, nil, errors
+        end
+
+        result = core_sandbox_module._normalize_resolver_result(result)
+
+        if result and result.kind ~= "miss" then
+            local found, module, errors = core_sandbox_module._load_resolver_result(name, result, opt)
+            if found and modules and not opt.nocache then
+                modules[modulekey] = {module, errors}
+            end
+            return found, module, errors
+        end
+    end
+
+    return false
+end
+
+
 -- get module path from name
 function core_sandbox_module._modulepath(name)
 
@@ -403,6 +627,11 @@ function core_sandbox_module._find_and_load(name, opt)
             end
         end
     end
+
+    if not found then
+        found, module, errors = core_sandbox_module._find_and_load_by_resolvers(name, opt)
+    end
+
     return found, module, errors
 end
 
