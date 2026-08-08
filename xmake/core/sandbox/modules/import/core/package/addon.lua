@@ -36,6 +36,7 @@ sandbox_core_package_addon.addons       = addon.addons
 sandbox_core_package_addon.addondir     = addon.addondir
 sandbox_core_package_addon.register     = addon.register
 sandbox_core_package_addon.unregister   = addon.unregister
+sandbox_core_package_addon.remove       = addon.remove
 sandbox_core_package_addon.rescan       = addon.rescan
 sandbox_core_package_addon.clear        = addon.clear
 

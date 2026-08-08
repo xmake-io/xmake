@@ -30,6 +30,9 @@ function menu_options()
     -- menu options
     local options =
     {
+        {nil, "addon",      "k",  nil, "Search the addon packages from <repository>/addons/",
+                                       "e.g.",
+                                       "    - xrepo search --addon serial"},
         {nil, "packages",   "vs", nil, "The packages list (support lua pattern).",
                                        "e.g.",
                                        "    - xrepo search zlib boost",
@@ -79,6 +82,9 @@ function _search_packages(packages)
     end
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
+    end
+    if option.get("addon") then
+        table.insert(require_argv, "--addon")
     end
     table.join2(require_argv, packages)
     os.vexecv(os.programfile(), require_argv)
