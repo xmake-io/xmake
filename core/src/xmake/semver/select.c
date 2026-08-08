@@ -33,6 +33,14 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
+static tb_bool_t xm_semver_is_exact_version(tb_char_t const *version_str, tb_size_t version_len) {
+    semver_t version = { 0 };
+    if (!semvern(&version, version_str, version_len)) {
+        semver_dtor(&version);
+        return tb_true;
+    }
+    return tb_false;
+}
 static tb_bool_t xm_semver_select_from_versions_tags1(
     lua_State *lua, tb_int_t fromidx, semver_t *semver, semver_range_t const *range, semvers_t *matches) {
     // clear matches
@@ -179,6 +187,7 @@ tb_int_t xm_semver_select(lua_State *lua) {
     // select version
     tb_bool_t ok = tb_false;
     tb_bool_t is_range = tb_false;
+    tb_bool_t is_exact = tb_false;
     tb_char_t const *range_str = tb_null;
     semver_t semver = { 0 };
     semvers_t matches = { 0 };
@@ -193,30 +202,28 @@ tb_int_t xm_semver_select(lua_State *lua) {
 
         // parse the version range string
         is_range = semver_rangen(&range, range_str, range_len) == 0;
-        if (is_range) {
-            // attempt to select version from the versions list first
-            if (xm_semver_select_from_versions_tags1(lua, 2, &semver, &range, &matches)) {
-                ok = tb_true;
-                break;
-            }
+        is_exact = xm_semver_is_exact_version(range_str, range_len);
 
-            // attempt to select version from the tags list
-            if (xm_semver_select_from_versions_tags1(lua, 3, &semver, &range, &matches)) {
-                ok = tb_true;
-                break;
-            }
-        } else {
-            // attempt to select version from the versions list first
-            if (xm_semver_select_from_versions_tags2(lua, 2, &semver, range_str, range_len)) {
-                ok = tb_true;
-                break;
-            }
+        // attempt to select version from the versions list first
+        if ((is_exact || !is_range) &&
+            xm_semver_select_from_versions_tags2(lua, 2, &semver, range_str, range_len)) {
+            ok = tb_true;
+            break;
+        }
+        if (is_range && xm_semver_select_from_versions_tags1(lua, 2, &semver, &range, &matches)) {
+            ok = tb_true;
+            break;
+        }
 
-            // attempt to select version from the tags list
-            if (xm_semver_select_from_versions_tags2(lua, 3, &semver, range_str, range_len)) {
-                ok = tb_true;
-                break;
-            }
+        // attempt to select version from the tags list
+        if ((is_exact || !is_range) &&
+            xm_semver_select_from_versions_tags2(lua, 3, &semver, range_str, range_len)) {
+            ok = tb_true;
+            break;
+        }
+        if (is_range && xm_semver_select_from_versions_tags1(lua, 3, &semver, &range, &matches)) {
+            ok = tb_true;
+            break;
         }
 
         // attempt to select version from the branches
