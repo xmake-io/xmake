@@ -20,22 +20,30 @@
 
 -- imports
 import("core.base.option")
-import("core.base.global")
 import("core.package.repository")
+import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.environment")
-import("private.action.require.impl.install_packages")
 
--- validate a plugin directory name
-function _check_plugin_name(name)
-    assert(type(name) == "string" and name ~= "" and name ~= "." and not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid plugin name(%s)!", name)
+-- the version directory name for the addons installed from git urls or local directories
+local LOCALVERSION = "latest"
+
+-- validate an addon directory name
+function _check_addon_name(name)
+    assert(type(name) == "string" and name ~= "" and name ~= "." and not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid addon name(%s)!", name)
     return name
 end
 
--- get plugin directory in ~/.xmake/plugins
-function _get_plugindir(name)
-    local plugindir = path.join(global.directory(), "plugins")
-    return name and path.join(plugindir, _check_plugin_name(name)) or plugindir
+-- get addon directory in ~/.xmake/addons
+function _get_addondir(name, version)
+    local addondir = core_package.addon_installdir()
+    if name then
+        addondir = path.join(addondir, _check_addon_name(name))
+        if version then
+            addondir = path.join(addondir, version)
+        end
+    end
+    return addondir
 end
 
 -- get local and global repositories, with local taking precedence
@@ -43,18 +51,29 @@ function _repositories()
     return table.join(repository.repositories({global = false}), repository.repositories({global = true}))
 end
 
--- install a plugin from the given repository or the first repository containing it
-function _install_plugins_from_repo(name, reponame)
+-- get the payload directories of the given addon directory, e.g. {"plugins", "rules"}
+function _get_payloads(dir)
+    local payloads = {}
+    for _, payloaddir in ipairs(core_package.addon_payloaddirs()) do
+        if os.isdir(path.join(dir, payloaddir)) then
+            table.insert(payloads, payloaddir)
+        end
+    end
+    return payloads
+end
 
-    -- check plugin name
-    _check_plugin_name(name)
+-- install an addon from the given repository or the first repository containing it
+function _install_from_repo(name, reponame)
+
+    -- check addon name
+    _check_addon_name(name)
 
     -- do install
     local installname = name
     if reponame then
         installname = reponame .. "@" .. name
     end
-    local argv = {"lua", "private.xrepo", "install", "--plugin"}
+    local argv = {"lua", "private.xrepo", "install", "--addon"}
     -- we need to pass the common options to the sub-process, e.g. -y, -v, -D
     if option.get("yes") then
         table.insert(argv, "-y")
@@ -69,17 +88,18 @@ function _install_plugins_from_repo(name, reponame)
     os.execv(os.programfile(), argv)
 end
 
--- install a single plugin from a source directory (as the given name, default to the directory name)
+-- install a single addon from a source directory (as the given name, default to the directory name)
 function _install_from_local(dir, name)
-    assert(os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")), "plugin path(%s): ${bright}xmake.lua${clear} not found!", dir)
+    assert(os.isdir(dir), "addon path(%s) not found!", dir)
+    assert(#_get_payloads(dir) > 0, "addon path(%s): no payload directory found, e.g. ${bright}plugins${clear}!", dir)
     name = name or path.filename(path.absolute(dir))
-    local dstdir = _get_plugindir(name)
-    assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
+    local dstdir = _get_addondir(name, LOCALVERSION)
+    assert(not os.isdir(dstdir), "addon(%s) already exists!", name)
     os.vcp(dir, dstdir)
     cprint("${color.success}install ${bright}%s${clear} ok!", name)
 end
 
--- install a single plugin from a git url or github shortcut, e.g. https://github.com/xmake-io/hello-world
+-- install a single addon from a git url or github shortcut, e.g. https://github.com/xmake-addons/serial-monitor
 function _install_from_git(url)
     local branch
     if url:startswith("github:") then
@@ -98,14 +118,14 @@ function _install_from_git(url)
     os.tryrm(tmpdir)
 end
 
--- install a single plugin
+-- install a single addon
 function _install_one(name)
-    -- parse repo@plugin format
+    -- parse repo@addon format
     local i = name:find("@", 1, true)
     if i and not name:find("[/\\:]") then
         local reponame = name:sub(1, i - 1)
-        local pluginname = name:sub(i + 1)
-        _install_plugins_from_repo(pluginname, reponame)
+        local addonname = name:sub(i + 1)
+        _install_from_repo(addonname, reponame)
         return
     end
 
@@ -125,12 +145,12 @@ function _install_one(name)
     end
 
     -- plain name: try to find it in repositories
-    _install_plugins_from_repo(name)
+    _install_from_repo(name)
 end
 
--- install plugins
+-- install addons
 function _install()
-    local names = assert(option.get("plugins"), "please specify the plugins to be installed!")
+    local names = assert(option.get("addons"), "please specify the addons to be installed!")
     environment.enter()
     for _, name in ipairs(names) do
         _install_one(name)
@@ -138,50 +158,58 @@ function _install()
     environment.leave()
 end
 
--- remove the given installed plugin
+-- remove the given installed addon
 function _remove()
-    local names = assert(option.get("plugins"), "please specify the plugin name to be removed!")
-    assert(#names == 1, "please specify only one plugin name to be removed!")
+    local names = assert(option.get("addons"), "please specify the addon name to be removed!")
+    assert(#names == 1, "please specify only one addon name to be removed!")
     local name = names[1]
-    local dir = _get_plugindir(name)
-    assert(os.isdir(dir), "plugin(%s) not found!", name)
+    local dir = _get_addondir(name)
+    assert(os.isdir(dir), "addon(%s) not found!", name)
     os.rmdir(dir)
     cprint("${color.success}remove ${bright}%s${clear} ok!", name)
 end
 
--- get the description of a plugin from its xmake.lua menu
-function _plugin_description(dir)
+-- get the description of an addon from its package description file
+function _addon_description(dir)
     local filepath = path.join(dir, "xmake.lua")
     if os.isfile(filepath) then
         local content = io.readfile(filepath)
         if content then
-            -- parse description from task or package scope
-            return content:match("description%s*=%s*\"(.-)\"") or content:match("set_description%s*%(\"(.-)\"%)")
+            return content:match("set_description%s*%(\"(.-)\"%)")
         end
     end
 end
 
--- collect plugins (each subdirectory containing xmake.lua) under the given root
---
--- built-in/installed plugins are flat (<root>/<name>), while plugins in a
--- repository follow the packages layout (<root>/<first-letter>/<name>)
-function _collect_plugins(root, seen, nested)
+-- collect the installed addons, e.g. ~/.xmake/addons/<name>/<version>
+function _collect_installed_addons()
     local entries = {}
-    local pattern = nested and path.join(root, "*", "*") or path.join(root, "*")
-    for _, dir in ipairs(os.dirs(pattern) or {}) do
-        local name = path.filename(dir)
-        if os.isfile(path.join(dir, "xmake.lua")) and (not seen or not seen[name]) then
-            if seen then
-                seen[name] = true
-            end
-            table.insert(entries, {name = name, description = _plugin_description(dir)})
+    for _, versiondir in ipairs(os.dirs(path.join(_get_addondir(), "*", "*"))) do
+        local payloads = _get_payloads(versiondir)
+        if #payloads > 0 then
+            table.insert(entries, {
+                name = path.filename(path.directory(versiondir)),
+                version = path.filename(versiondir),
+                payloads = payloads})
         end
     end
     return entries
 end
 
--- print a plugin entry with its description aligned on the right
-function _print_plugin(name, description, width, note)
+-- collect the addons in the given repository, they follow the packages layout (addons/<first-letter>/<name>)
+function _collect_repo_addons(root, seen)
+    local entries = {}
+    for _, dir in ipairs(os.dirs(path.join(root, "*", "*"))) do
+        local name = path.filename(dir)
+        if os.isfile(path.join(dir, "xmake.lua")) and not seen[name] then
+            seen[name] = true
+            table.insert(entries, {name = name, description = _addon_description(dir)})
+        end
+    end
+    return entries
+end
+
+-- print an addon entry with its description aligned on the right
+function _print_addon(name, description, width, note)
     local suffix = description or ""
     if note then
         suffix = suffix ~= "" and (suffix .. " " .. note) or note
@@ -194,70 +222,59 @@ function _print_plugin(name, description, width, note)
     end
 end
 
--- list all plugins
+-- list all addons
 function _list()
     local seen = {}
-
-    -- collect plugins from every source
-    local builtin = _collect_plugins(path.join(os.programdir(), "plugins"), seen)
-    local plugindir = _get_plugindir()
-    local installed = _collect_plugins(plugindir, seen)
+    local installed = _collect_installed_addons()
+    for _, entry in ipairs(installed) do
+        seen[entry.name] = true
+    end
     local avail = {}
     for _, repo in ipairs(_repositories()) do
-        table.join2(avail, _collect_plugins(path.join(repo:directory(), "plugins"), seen, true))
+        table.join2(avail, _collect_repo_addons(path.join(repo:directory(), "addons"), seen))
     end
 
-    -- compute the alignment width from all plugin names
+    -- compute the alignment width from all addon names
     local width = 0
-    for _, entries in ipairs({builtin, installed, avail}) do
+    for _, entries in ipairs({installed, avail}) do
         for _, entry in ipairs(entries) do
             width = math.max(width, #entry.name + 4)
         end
     end
 
-    -- built-in plugins
-    cprint("${bright}the built-in plugins:${clear}")
-    if #builtin > 0 then
-        for _, entry in ipairs(builtin) do
-            _print_plugin(entry.name, entry.description, width)
-        end
-    else
-        print("  (none)")
-    end
-
-    -- installed plugins
-    cprint("${bright}the installed plugins:${clear}")
+    -- installed addons
+    cprint("${bright}the installed addons:${clear}")
     if #installed > 0 then
         for _, entry in ipairs(installed) do
-            _print_plugin(entry.name, entry.description, width)
+            local note = string.format("(%s, %s)", entry.version, table.concat(entry.payloads, ", "))
+            _print_addon(entry.name, nil, width, note)
         end
     else
         print("  (none)")
     end
 
-    -- plugins available in repositories (not yet installed)
+    -- addons available in repositories (not yet installed)
     cprint("${bright}available in configured repositories:${clear}")
     if #avail > 0 then
         for _, entry in ipairs(avail) do
-            local note = string.format("(run xmake plugin --install %s to install)", entry.name)
-            _print_plugin(entry.name, entry.description, width, note)
+            local note = string.format("(run xmake addon --install %s to install)", entry.name)
+            _print_addon(entry.name, entry.description, width, note)
         end
     else
         print("  (none)")
     end
 end
 
--- clear all installed plugins
+-- clear all installed addons
 function _clear()
-    local plugindir = _get_plugindir()
-    if os.isdir(plugindir) then
-        os.rmdir(plugindir)
+    local addonsdir = _get_addondir()
+    if os.isdir(addonsdir) then
+        os.rmdir(addonsdir)
     end
-    cprint("${color.success}clear all installed plugins ok!")
+    cprint("${color.success}clear all installed addons ok!")
 end
 
 function main()
-    wprint("`xmake plugin` is deprecated, please use `xmake addon` instead!")
     if option.get("install") then
         _install()
     elseif option.get("remove") then

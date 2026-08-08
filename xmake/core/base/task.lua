@@ -81,13 +81,26 @@ end
 
 -- the directories of tasks
 function task._directories()
-    local dirs = {
-        path.join(global.directory(), "plugins"),
-        path.join(os.programdir(), "plugins"),
-        path.join(os.programdir(), "actions")}
-    local plugindirs = os.getenv("XMAKE_PLUGIN_DIRS")
-    if plugindirs then
-        table.insert(dirs, 1, plugindirs)
+    local dirs = task._DIRECTORIES
+    if dirs == nil then
+        dirs = {
+            path.join(global.directory(), "plugins"),
+            path.join(os.programdir(), "plugins"),
+            path.join(os.programdir(), "actions")}
+
+        -- add the plugins of the installed addons, e.g. ~/.xmake/addons/<name>/<version>/plugins
+        local addonsdir = path.join(global.directory(), "addons")
+        if os.isdir(addonsdir) then
+            for _, plugindir in ipairs(os.dirs(path.join(addonsdir, "*", "*", "plugins"))) do
+                table.insert(dirs, plugindir)
+            end
+        end
+
+        local plugindirs = os.getenv("XMAKE_PLUGIN_DIRS")
+        if plugindirs then
+            table.insert(dirs, 1, plugindirs)
+        end
+        task._DIRECTORIES = dirs
     end
     return dirs
 end

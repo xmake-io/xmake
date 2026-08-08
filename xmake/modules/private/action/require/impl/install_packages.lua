@@ -862,7 +862,7 @@ end
 --                  - requires_extra: the extra require configs from `add_requires()`, indexed by the require string
 --                  - nodeps: only install the given packages, do not install their dependent packages
 --                  - system: load package from system if `true`, and never load it if `false` (only for non-3rd packages)
---                  - packagekind: the package kind, e.g. "plugin", it will be loaded from the `plugins` root directory of repositories
+--                  - packagekind: the package kind, e.g. "addon", it will be loaded from the `addons` root directory of repositories
 --                  @note `toolchain` is reserved and it will be set internally, @see load_packages
 --
 -- @return the installed packages, including the toolchain packages and all dependent packages
