@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v3.1.0
+
 ### New features
 
 * [#7558](https://github.com/xmake-io/xmake/pull/7558): Add `check_alignof` / `alignof` detection support
@@ -30,6 +32,9 @@
 * [#7657](https://github.com/xmake-io/xmake/pull/7657): Update NDK sdkver for riscv64
 * [#7666](https://github.com/xmake-io/xmake/pull/7666): Improve vcpkg package discovery
 * [#7672](https://github.com/xmake-io/xmake/pull/7672): Add fallback download support
+* [#7688](https://github.com/xmake-io/xmake/pull/7688): Improve static libc++ runtime links for clang
+* [#7689](https://github.com/xmake-io/xmake/pull/7689): Rewrite `xmake plugin --install` to install plugins from xmake-repo as `plugin` kind packages, reusing the package installation flow
+* [#7693](https://github.com/xmake-io/xmake/pull/7693): Replace the deprecated tbox interfaces
 * Improve elf rpath cleaning and package path handling
 * Add xcodebuild detection
 * Update the bundled tbox
@@ -65,6 +70,8 @@
 * [#7679](https://github.com/xmake-io/xmake/pull/7679): Fix `set_pcheader` for msvc in C mode
 * [#7684](https://github.com/xmake-io/xmake/pull/7684): Fix wrong Lua stack index in `process.open`
 * [#7685](https://github.com/xmake-io/xmake/pull/7685): Fix engine resource leaks
+* [#7687](https://github.com/xmake-io/xmake/pull/7687): Fix the ninja generator to emit build edges for `win.sdk.resource` source batches ([#7682](https://github.com/xmake-io/xmake/issues/7682))
+* [#7692](https://github.com/xmake-io/xmake/pull/7692): Fix dependency order for `build.c++.modules.tryreuse`
 * Fix trybuild for scons
 
 ## v3.0.9
@@ -2483,6 +2490,8 @@
 
 ## master (开发中)
 
+## v3.1.0
+
 ### 新特性
 
 * [#7558](https://github.com/xmake-io/xmake/pull/7558): 添加 `check_alignof` / `alignof` 检测支持
@@ -2511,6 +2520,9 @@
 * [#7657](https://github.com/xmake-io/xmake/pull/7657): 更新 riscv64 的 NDK sdkver
 * [#7666](https://github.com/xmake-io/xmake/pull/7666): 改进 vcpkg 包查找
 * [#7672](https://github.com/xmake-io/xmake/pull/7672): 添加下载失败回退支持
+* [#7688](https://github.com/xmake-io/xmake/pull/7688): 改进 clang 的静态 libc++ 运行时链接
+* [#7689](https://github.com/xmake-io/xmake/pull/7689): 重写 `xmake plugin --install`，将插件作为 `plugin` 类型的包从 xmake-repo 安装，复用包安装流程
+* [#7693](https://github.com/xmake-io/xmake/pull/7693): 替换 tbox 中已废弃的接口
 * 改进 elf rpath 清理和包路径处理
 * 添加 xcodebuild 检测
 * 更新内置的 tbox
@@ -2546,6 +2558,8 @@
 * [#7679](https://github.com/xmake-io/xmake/pull/7679): 修复 msvc 在 C 模式下的 `set_pcheader`
 * [#7684](https://github.com/xmake-io/xmake/pull/7684): 修复 `process.open` 中错误的 Lua 栈索引
 * [#7685](https://github.com/xmake-io/xmake/pull/7685): 修复引擎资源泄漏
+* [#7687](https://github.com/xmake-io/xmake/pull/7687): 修复 ninja 生成器未给 `win.sdk.resource` 源文件批次生成构建边的问题（[#7682](https://github.com/xmake-io/xmake/issues/7682)）
+* [#7692](https://github.com/xmake-io/xmake/pull/7692): 修复 `build.c++.modules.tryreuse` 的依赖顺序
 * 修复 scons 的 trybuild
 
 ## v3.0.9
