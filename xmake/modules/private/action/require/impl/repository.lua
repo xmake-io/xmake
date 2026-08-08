@@ -153,7 +153,7 @@ end
 -- get package directory from repositories
 --
 -- @param packagename the package name
--- @param opt         {rootdir = "packages|plugins"}
+-- @param opt         {rootdir = "packages|addons|plugins"}
 function packagedir(packagename, opt)
 
     -- strip trailing ~tag, e.g. zlib~debug

@@ -198,7 +198,7 @@ end
 --                       - plat: the given platform of this package
 --                       - arch: the given architecture of this package
 --                       - name: the given repository name, we will only find this package in the given repository
---                       - rootdir: the root directory of repositories, e.g. "packages" (default), "plugins"
+--                       - rootdir: the root directory of repositories, e.g. "packages" (default), "addons"
 --                       - locked_repo: the locked repository info in `xmake-requires.lock`, e.g. {url = .., commit = .., branch = ..}
 --
 function _load_package_from_repository(packagename, opt)
@@ -207,6 +207,19 @@ function _load_package_from_repository(packagename, opt)
     if packagedir then
         return core_package.load_from_repository(packagename, packagedir, {plat = opt.plat, arch = opt.arch, repo = repo})
     end
+end
+
+-- get the root directory of repositories for the given package kind
+--
+-- e.g. "packages" (default), "addons", "plugins" (deprecated)
+--
+function _get_repository_rootdir(packagekind)
+    if packagekind == "addon" then
+        return "addons"
+    elseif packagekind == "plugin" then
+        return "plugins"
+    end
+    return "packages"
 end
 
 -- load package package from base
@@ -956,7 +969,7 @@ end
 -- @param opt            the options
 --                       - system: load package from system if `true`, and never load it if `false`,
 --                                 it's only used when `add_requires("zlib", {system = nil})` is not set (only for non-3rd packages)
---                       - packagekind: the package kind, e.g. "plugin", it will be loaded from the `plugins` root directory of repositories
+--                       - packagekind: the package kind, e.g. "addon", it will be loaded from the `addons` root directory of repositories
 --                       - toolchain: only load toolchain packages, the non-toolchain toplevel packages will be ignored
 --                       - requirepath: the current require path, e.g. "foo.bar", it's used to detect circular dependencies
 --                                      and match `add_requireconfs()`
@@ -1014,7 +1027,7 @@ function _load_package(packagename, requireinfo, opt)
             plat = requireinfo.plat,
             arch = requireinfo.arch,
             name = requireinfo.reponame,
-            rootdir = opt.packagekind == "plugin" and "plugins" or "packages",
+            rootdir = _get_repository_rootdir(opt.packagekind),
             locked_repo = locked_requireinfo and locked_requireinfo.repo})
         if package then
             from_repo = true
@@ -1025,7 +1038,7 @@ function _load_package(packagename, requireinfo, opt)
     if package and package:get("base") then
         _load_package_from_base(package, package:get("base"), {
             name = requireinfo.reponame,
-            rootdir = opt.packagekind == "plugin" and "plugins" or "packages",
+            rootdir = _get_repository_rootdir(opt.packagekind),
             locked_repo = locked_requireinfo and locked_requireinfo.repo})
     end
 
@@ -1765,7 +1778,7 @@ end
 --                  - requires_extra: the extra require configs from `add_requires()`, e.g. {["zlib >=1.2.11"] = {configs = {shared = true}}}
 --                  - nodeps: only load the given packages, do not load their dependent packages
 --                  - system: load package from system if `true`, and never load it if `false` (only for non-3rd packages)
---                  - packagekind: the package kind, e.g. "plugin", it will be loaded from the `plugins` root directory of repositories
+--                  - packagekind: the package kind, e.g. "addon", it will be loaded from the `addons` root directory of repositories
 --                  - toolchain: only load toolchain packages and their dependent packages
 --                  - requirepath: the parent require path, e.g. "foo.bar", it's used to detect circular dependencies and match `add_requireconfs()`
 --                  - parentinfo: the parent requireinfo, the child package will inherit some builtin configs from it, e.g. runtimes, pic

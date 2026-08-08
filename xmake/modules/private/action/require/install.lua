@@ -82,7 +82,13 @@ function main(requires_raw)
 
     -- install packages
     environment.enter()
-    local packagekind = option.get("plugin") and "plugin" or "package"
+    -- @note the `--plugin` option is deprecated, please use `--addon` instead
+    local packagekind = "package"
+    if option.get("addon") then
+        packagekind = "addon"
+    elseif option.get("plugin") then
+        packagekind = "plugin"
+    end
     local packages = install_packages(requires, {packagekind = packagekind, requires_extra = requires_extra})
     if packages then
         _check_missing_packages(packages)

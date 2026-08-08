@@ -23,7 +23,7 @@ task("plugin")
     on_run("main")
     set_menu {
         usage = "xmake plugin [options]",
-        description = "Manage plugins of xmake.",
+        description = "Manage plugins of xmake. (deprecated, please use `xmake addon` instead)",
         options = {
             {'i', "install", "k", nil, "Install plugins."},
             {'r', "remove",  "k", nil, "Remove the given installed plugin."},
