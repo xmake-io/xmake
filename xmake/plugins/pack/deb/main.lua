@@ -26,6 +26,7 @@ import("lib.detect.find_tool")
 import("lib.detect.find_file")
 import("utils.archive")
 import(".batchcmds")
+import("plugins.pack.launcher", {alias = "launcher", rootdir = os.programdir()})
 
 -- get the debuild
 function _get_debuild()
@@ -137,6 +138,12 @@ function _get_specvars(package)
             end
         end
         package:set("prefixdir", prefixdir)
+        -- install the launcher wrapper in place of the real binary
+        local launcher_info = launcher.launcher_info(package)
+        if launcher_info then
+            table.insert(installcmds, string.format("mv \"$(PREFIX)/%s\" \"$(PREFIX)/%s\"", launcher_info.launcher_exe, launcher_info.real_rel))
+            table.insert(installcmds, string.format("install -Dpm0755 \"%s\" \"$(PREFIX)/%s\"", launcher_info.wrapperfile, launcher_info.launcher_exe))
+        end
         return table.concat(installcmds, "\n\t")
     end
     specvars.PACKAGE_UNINSTALLCMDS = function ()
@@ -170,7 +177,6 @@ function _get_specvars(package)
                 end
             end
             local map = {
-                xmake = "xmake",
                 cmake = "cmake",
                 make = "make"
             }
@@ -245,8 +251,11 @@ function _pack_deb(debuild, package)
         end
     end
 
-    -- archive install files
+    -- install launcher wrapper script if runenvs/runargs are set
+    -- (the wrapper is registered as install commands in PACKAGE_INSTALLCMDS)
     local rootdir = package:source_rootdir()
+
+    -- archive install files
     local oldir = os.cd(rootdir)
     local archivefiles = os.files("**")
     os.cd(oldir)

@@ -24,6 +24,7 @@ import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 import(".batchcmds")
+import("plugins.pack.launcher", {alias = "launcher", rootdir = os.programdir()})
 
 -- handle icon file
 function _handle_icon(package, appdir, appname)
@@ -74,13 +75,18 @@ Exec=usr/bin/%s
 end
 
 -- create AppRun script
-function _create_apprun_script(appdir, main_executable)
+function _create_apprun_script(package, appdir, main_executable)
     local apprun = path.join(appdir, "AppRun")
+    local content = launcher.generate(package, string.format("${HERE}/usr/bin/%s", main_executable))
+    if content then
+        content = content:gsub("^#!/bin/sh\n", "")
+    else
+        content = string.format('exec "${HERE}/usr/bin/%s" "$@"\n', main_executable)
+    end
     local apprun_content = string.format([[
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "${0}")")"
-exec "${HERE}/usr/bin/%s" "$@"
-]], main_executable)
+%s]], content)
     io.writefile(apprun, apprun_content)
     os.vrunv("chmod", {"+x", apprun})
 end
@@ -199,7 +205,7 @@ function _pack_appimage(package, appimagetool)
     _create_desktop_file(package, appdir, appname, apptitle, appdescription, main_executable, iconname)
 
     -- create AppRun script
-    _create_apprun_script(appdir, main_executable)
+    _create_apprun_script(package, appdir, main_executable)
 
     -- create AppImage using appimagetool
     os.vrunv(appimagetool, {appdir, outputfile}, {envs = {APPIMAGE_EXTRACT_AND_RUN = "1"}})

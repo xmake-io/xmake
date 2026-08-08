@@ -249,6 +249,11 @@ function _add_to_path(package)
     return result
 end
 
+-- escape a string for use in xml attributes
+function _xml_escape(s)
+    return (s or ""):gsub("&", "&amp;"):gsub('"', "&quot;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+end
+
 -- get specvars
 function _get_specvars(package)
     local installcmds = batchcmds.get_installcmds(package):cmds()
@@ -257,6 +262,46 @@ function _get_specvars(package)
     local features = {}
     table.join2(features, _build_feature(package, {default = true, force = true, config_dir = true}))
     table.join2(features, _add_to_path(package))
+
+    -- add start menu shortcut with runargs/runenvs
+    local target_file
+    for _, t in ipairs(package:targets()) do
+        if t:is_binary() then target_file = path.join(package:get("bindir") or "bin", t:basename()); break end
+    end
+    local runenvs = package:get("runenvs") or {}
+    local runargs = package:get("runargs") or {}
+    if target_file and (#runargs > 0 or #runenvs > 0) then
+        -- a .cmd wrapper is installed when env vars are set, so they are
+        -- applied at launch (a shortcut cannot set environment variables)
+        if #runenvs > 0 then
+            local exename = path.filename(target_file)
+            local cmdname = path.basename(target_file) .. ".cmd"
+            local cmdcontent = "@echo off\r\n"
+            for i = 1, #runenvs, 2 do
+                cmdcontent = cmdcontent .. string.format("set \"%s=%s\"\r\n", runenvs[i], runenvs[i + 1] or "")
+            end
+            cmdcontent = cmdcontent .. string.format("\"%%~dp0%s\" %%*\r\n", exename)
+            local cmdfile = path.join(package:builddir(), "launcher.cmd")
+            io.writefile(cmdfile, cmdcontent)
+            table.insert(features, string.format([[
+<Component Id="ApplicationLauncherCmd" Guid="%s" Directory="INSTALLFOLDER" Subdirectory="bin">
+  <File Source="%s" Name="%s" KeyPath="yes"/>
+</Component>]], hash.uuid(package:name() .. "_launcher_cmd"), _xml_escape(path.absolute(cmdfile)), _xml_escape(cmdname)))
+            target_file = path.join(package:get("bindir") or "bin", cmdname)
+        end
+        local args = ""
+        if #runargs > 0 then
+            args = string.format(' Arguments="%s"', _xml_escape(table.concat(runargs, " ")))
+        end
+        table.insert(features, string.format([[
+<Component Id="ApplicationShortcut" Guid="%s" Directory="ApplicationProgramsFolder">
+  <Shortcut Id="StartMenuShortcut" Name="%s" Description="%s"
+            Target="[INSTALLFOLDER]%s"%s WorkingDirectory="INSTALLFOLDER" />
+  <RemoveFolder Id="RemoveStartMenuFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
+  <RegistryValue Root="HKCU" Key="Software\%s" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+</Component>]], hash.uuid(package:name() .. "_shortcut"), _xml_escape(package:title()), _xml_escape(package:description() or ""), target_file, args, package:name()))
+    end
+
     for name, component in table.orderpairs(package:components()) do
         table.join2(features, _build_feature(component, {name = "Install " .. name}))
     end
@@ -338,7 +383,9 @@ end
 
 function main(package)
 
-    -- only for windows
+    -- only for windows host
+    -- the WiX toolset only runs on Windows (the MSI bind step is not supported
+    -- on other hosts), so the installer can only be built there.
     if not is_host("windows") then
         return
     end
