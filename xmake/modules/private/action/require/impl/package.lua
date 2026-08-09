@@ -209,11 +209,15 @@ function _load_package_from_repository(packagename, opt)
     end
 end
 
--- get the root directory of repositories for the given package kind
+-- get the root directory of repositories for the given package
 --
 -- e.g. "packages" (default), "addons", "plugins" (deprecated)
 --
-function _get_repository_rootdir(packagekind)
+-- @note the addon packages are only searched from the `addons` root directory,
+-- and we need to set it explicitly, e.g. add_deps("foo", {kind = "addon"})
+--
+function _get_repository_rootdir(requireinfo, opt)
+    local packagekind = requireinfo.kind or opt.packagekind
     if packagekind == "addon" then
         return "addons"
     elseif packagekind == "plugin" then
@@ -982,6 +986,12 @@ function _load_package(packagename, requireinfo, opt)
 
     -- check circular dependency
     opt = opt or {}
+
+    -- the `addon` and `self` names are reserved, we use them to reference the addon resources,
+    -- e.g. add_rules("@addon/esp32/flash"), import("@self.sdkconfig")
+    if packagename == "addon" or packagename == "self" then
+        raise("package(%s): the name `%s` is reserved by xmake for the addon references, please rename it!", packagename, packagename)
+    end
     if opt.requirepath then
         local splitinfo = opt.requirepath:split(".", {plain = true})
         if #splitinfo > 3 and
@@ -1027,7 +1037,7 @@ function _load_package(packagename, requireinfo, opt)
             plat = requireinfo.plat,
             arch = requireinfo.arch,
             name = requireinfo.reponame,
-            rootdir = _get_repository_rootdir(opt.packagekind),
+            rootdir = _get_repository_rootdir(requireinfo, opt),
             locked_repo = locked_requireinfo and locked_requireinfo.repo})
         if package then
             from_repo = true
@@ -1038,7 +1048,7 @@ function _load_package(packagename, requireinfo, opt)
     if package and package:get("base") then
         _load_package_from_base(package, package:get("base"), {
             name = requireinfo.reponame,
-            rootdir = _get_repository_rootdir(opt.packagekind),
+            rootdir = _get_repository_rootdir(requireinfo, opt),
             locked_repo = locked_requireinfo and locked_requireinfo.repo})
     end
 
@@ -1224,7 +1234,6 @@ function _load_packages(requires, opt)
                                                         parentinfo = requireinfo,
                                                         nodeps = opt.nodeps,
                                                         resolvedinfo = opt.resolvedinfo,
-                                                        packagekind = opt.packagekind,
                                                         system = false})
                     for _, dep in ipairs(plaindeps) do
                         dep:parents_add(package)

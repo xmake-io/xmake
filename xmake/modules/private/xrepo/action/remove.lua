@@ -48,6 +48,7 @@ function menu_options()
         {nil, "addon",           "k", nil,  "Remove the given installed addon packages.",
                                        "e.g.",
                                        "    - xrepo remove --addon serial-monitor"           },
+        {'f', "force",           "k", nil,  "Force to remove the addon packages, even if they are depended on by the others." },
         {nil, "all",             "k", nil,  "Remove all packages and ignore extra package configs.",
                                        "If `--all` is enabled, the package name parameter will support lua pattern",
                                        "e.g.",
@@ -200,7 +201,7 @@ end
 -- remove the given installed addons
 function _remove_addons(names)
     for _, name in ipairs(names) do
-        local ok, errors = addon.remove(name)
+        local ok, errors = addon.remove(name, {force = option.get("force")})
         assert(ok, errors)
         cprint("${color.success}remove ${bright}%s${clear} ok!", name)
     end

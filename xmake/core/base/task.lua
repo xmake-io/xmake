@@ -415,6 +415,8 @@ function task.tasks()
 
     -- load tasks
     local tasks = {}
+    local taskfiles = {}
+    local addondir = path.absolute(addon.installdir())
     local dirs = task._directories()
     for _, dir in ipairs(dirs) do
         local files = os.files(path.join(dir, "*", "xmake.lua"))
@@ -422,7 +424,19 @@ function task.tasks()
             for _, filepath in ipairs(files) do
                 local results, errors = task._load(filepath)
                 if results then
-                    table.join2(tasks, results)
+                    for taskname, taskinfo in pairs(results) do
+                        -- the plugins are not namespaced, so we need to report the conflicts of the addons,
+                        -- otherwise we do not know which plugin will be run
+                        local taskfile = taskfiles[taskname]
+                        if taskfile and (path.absolute(taskfile):startswith(addondir) or path.absolute(filepath):startswith(addondir)) then
+                            -- @note we cannot raise errors here, otherwise all the commands will be broken,
+                            -- and the user cannot even remove the conflicting addons
+                            utils.warning("plugin(%s) conflicts, we will use the first one!\n  -> %s\n  -> %s", taskname, taskfile, filepath)
+                        else
+                            taskfiles[taskname] = filepath
+                            tasks[taskname] = taskinfo
+                        end
+                    end
                 else
                     os.raise(errors)
                 end

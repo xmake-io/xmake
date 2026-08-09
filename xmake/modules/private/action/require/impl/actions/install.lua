@@ -503,8 +503,16 @@ function main(package)
 
                     -- register this addon, so that xmake can find its payloads, e.g. plugins
                     if package:is_addon() then
-                        addon.register(package:name(), package:version_str() or "latest",
-                            {description = package:description()})
+                        local deps
+                        for _, dep in ipairs(package:plaindeps() or {}) do
+                            if dep:is_addon() then
+                                deps = deps or {}
+                                table.insert(deps, dep:name())
+                            end
+                        end
+                        local ok, errors = addon.register(package:name(), package:version_str() or "latest",
+                            {description = package:description(), deps = deps})
+                        assert(ok, errors)
                     end
                     installed_now = true
                 end

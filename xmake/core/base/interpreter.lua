@@ -30,6 +30,7 @@ local string     = require("base/string")
 local hashset    = require("base/hashset")
 local scopeinfo  = require("base/scopeinfo")
 local deprecated = require("base/deprecated")
+local addon      = require("package/addon")
 local sandbox    = require("sandbox/sandbox")
 
 -- the rules to reword the raw lua error messages into friendly ones, {pattern, replacement}
@@ -1809,6 +1810,27 @@ function interpreter:api_builtin_includes(...)
             if files and #files > 0 then
                 table.join2(subpaths_matched, files)
                 found = true
+            end
+        end
+        -- attempt to find files from the includes of the addons
+        -- e.g. includes("@addon/esp32/check"), includes("@self/check")
+        if not found and addon.is_reference(subpath, "/") then
+            local includesdir, addon_path, _, errors = addon.resolve_reference(subpath, "/", "includes",
+                {scriptdir = self:scriptdir()})
+            if not includesdir then
+                os.raise(errors)
+            end
+            local files
+            if addon_path:endswith(".lua") then
+                files = os.files(path.join(includesdir, addon_path))
+            else
+                files = os.files(path.join(includesdir, addon_path, "xmake.lua"))
+            end
+            if files and #files > 0 then
+                table.join2(subpaths_matched, files)
+                found = true
+            else
+                os.raise("includes(%s) not found!", subpath)
             end
         end
         -- find the given files from the project directory

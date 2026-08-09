@@ -161,6 +161,10 @@ end]]
 function sandbox_core_project._load_package_rules_for_target(target)
     for _, rulename in ipairs(table.wrap(target:get("rules"))) do
         local packagename = rulename:match("@(.-)/")
+        -- @note we need to ignore the addon rules, e.g. add_rules("@addon/foo")
+        if packagename == "addon" then
+            packagename = nil
+        end
         if packagename then
             local ruleinst
             local pkginfo = project.required_package(packagename)

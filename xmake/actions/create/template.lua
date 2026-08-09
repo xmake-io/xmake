@@ -120,6 +120,26 @@ end
 function templatedir(lang, templateid)
     assert(lang)
     assert(templateid)
+
+    -- the qualified template of an addon, e.g. @addon/basic-templates/verilator.console
+    --
+    -- @note the template ids are not namespaced, we only need it to disambiguate the conflicts
+    --
+    if templateid:startswith("@addon/") then
+        local templatesdir, id, _, errors = addon.resolve_reference(templateid, "/", "templates")
+        if not templatesdir then
+            os.raise(errors)
+        end
+        local subdir = _templateid_subdir(id)
+        if subdir then
+            local dir = path.join(templatesdir, lang, subdir)
+            if os.isfile(path.join(dir, "xmake.lua")) then
+                return dir
+            end
+        end
+        return
+    end
+
     for _, rootdir in ipairs(rootdirs()) do
         local subdir = _templateid_subdir(templateid)
         if subdir then
@@ -191,11 +211,21 @@ function languages()
     return results
 end
 
+-- get the reference of the given template, e.g. @addon/basic-templates/verilator.console
+function _template_reference(rootinfo, templateid)
+    if rootinfo.kind == "addon" then
+        return string.format("@addon/%s/%s", rootinfo.name, templateid)
+    end
+    return path.join(rootinfo.dir, templateid)
+end
+
 -- get all templates for the given language
 function templates(lang)
     assert(lang)
     local found = hashset.new()
-    for _, rootdir in ipairs(rootdirs()) do
+    local providers = {}
+    for _, rootinfo in ipairs(rootinfos()) do
+        local rootdir = rootinfo.dir
         local templateroot = path.join(rootdir, lang)
         local configfiles = os.files(path.join(templateroot, "**", "xmake.lua"))
         if configfiles then
@@ -219,7 +249,17 @@ function templates(lang)
                 end
                 if ok then
                     table.insert(accepted, item.dir)
-                    found:insert((item.relpath:gsub("[/\\]", ".")))
+                    local templateid = (item.relpath:gsub("[/\\]", "."))
+                    -- the templates are not namespaced, so we need to report the conflicts of the addons,
+                    -- otherwise we do not know which template will be used
+                    local provider = providers[templateid]
+                    if provider and (provider.kind == "addon" or rootinfo.kind == "addon") then
+                        utils.warning("template(%s/%s) conflicts, we will use the first one!\n  -> %s\n  -> %s\nplease use the qualified template id to disambiguate them.",
+                            lang, templateid, _template_reference(provider, templateid), _template_reference(rootinfo, templateid))
+                    else
+                        providers[templateid] = rootinfo
+                        found:insert(templateid)
+                    end
                 end
             end
         end

@@ -31,6 +31,7 @@ local global         = require("base/global")
 local interpreter    = require("base/interpreter")
 local instance_deps  = require("base/private/instance_deps")
 local select_script  = require("base/private/select_script")
+local addon          = require("package/addon")
 local config         = require("project/config")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_os     = require("sandbox/modules/os")
@@ -221,6 +222,11 @@ function rule._directories()
     return  {   path.join(global.directory(), "rules")
             ,   path.join(os.programdir(), "rules")
             }
+end
+
+-- the rule directories of the installed addons, e.g. ~/.xmake/addons/<name>/<version>/rules
+function rule._addon_directories()
+    return addon.payloadinfos("rules")
 end
 
 -- the interpreter
@@ -454,8 +460,69 @@ function rule.new(name, info, opt)
 end
 
 -- get the given global rule
+--
+-- @param name  the rule name, the rules of the installed addons need the
+--              `@addon/<addon>/` prefix, e.g. "@addon/esp32/flash"
+--
 function rule.rule(name)
-    return rule.rules()[name]
+    local instance = rule.rules()[name]
+    if instance == nil and name:startswith("@addon/") then
+        local _, _, addonname, errors = addon.resolve_reference(name, "/", "rules")
+        if errors then
+            os.raise(errors)
+        end
+        os.raise("rule(%s) not found!\nplease install the addon which provides it first: xmake addon --install %s", name, addonname or "<addon>")
+    end
+    return instance
+end
+
+-- load the rules from the given directory
+function rule._load_rules(ruleinfos, dir, opt)
+    opt = opt or {}
+    local files = os.files(path.join(dir, "**/xmake.lua"))
+    if files then
+        for _, filepath in ipairs(files) do
+            local results, errors = rule._load(filepath)
+            if results then
+                for rulename, ruleinfo in pairs(results) do
+                    -- the addon rules are always referenced with the addon name,
+                    -- e.g. add_rules("@addon/esp32/flash")
+                    local fullname = (opt.prefix or "") .. rulename
+                    if opt.prefix and ruleinfos[fullname] == nil then
+                        -- the addon rules can depend on the other rules of the same addon,
+                        -- e.g. add_deps("@self/base") -> add_deps("@addon/<addon>/base")
+                        rule._replace_selfdeps(ruleinfo, opt.prefix)
+                    end
+                    ruleinfos[fullname] = ruleinfo
+                end
+            else
+                os.raise(errors)
+            end
+        end
+    end
+end
+
+-- replace the `@self/` dependencies of the addon rules with the full names
+function rule._replace_selfdeps(ruleinfo, prefix)
+    local deps = {}
+    local replace = function (depname)
+        if depname:startswith("@self/") then
+            return prefix .. depname:sub(#"@self/" + 1)
+        end
+        return depname
+    end
+    for _, depname in ipairs(table.wrap(ruleinfo:get("deps"))) do
+        table.insert(deps, replace(depname))
+    end
+    if #deps > 0 then
+        ruleinfo:set("deps", table.unwrap(deps))
+    end
+    for depname, extraconf in pairs(table.wrap(ruleinfo:extraconf("deps"))) do
+        local newname = replace(depname)
+        if newname ~= depname then
+            ruleinfo:extraconf_set("deps", newname, extraconf)
+        end
+    end
 end
 
 -- get global rules
@@ -463,19 +530,11 @@ function rule.rules()
     local rules = rule._RULES
     if rules == nil then
         local ruleinfos = {}
-        local dirs = rule._directories()
-        for _, dir in ipairs(dirs) do
-            local files = os.files(path.join(dir, "**/xmake.lua"))
-            if files then
-                for _, filepath in ipairs(files) do
-                    local results, errors = rule._load(filepath)
-                    if results then
-                        table.join2(ruleinfos, results)
-                    else
-                        os.raise(errors)
-                    end
-                end
-            end
+        for _, dir in ipairs(rule._directories()) do
+            rule._load_rules(ruleinfos, dir)
+        end
+        for _, addoninfo in ipairs(rule._addon_directories()) do
+            rule._load_rules(ruleinfos, addoninfo.dir, {prefix = "@addon/" .. addoninfo.name .. "/"})
         end
 
         -- make rule instances

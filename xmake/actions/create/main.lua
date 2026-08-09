@@ -25,6 +25,19 @@ import("actions.create.template", {rootdir = os.programdir()})
 
 -- validate template component against path traversal
 function _validate_template_component(name, value)
+
+    -- the qualified template id of an addon, e.g. @addon/basic-templates/verilator.console
+    if name == "template id" and value:startswith("@addon/") then
+        local rest = value:sub(#"@addon/" + 1)
+        local pos = rest:find("/", 1, true)
+        if not pos then
+            raise("invalid %s: %s, it should be `@addon/<addon>/<template>`!", name, value)
+        end
+        _validate_template_component("addon name", rest:sub(1, pos - 1))
+        _validate_template_component("template id", rest:sub(pos + 1))
+        return
+    end
+
     if #value == 0 or value == "." or value == ".."
         or value:find("/", 1, true) or value:find("\\", 1, true)
         or value:find(":", 1, true) or value:find("\0", 1, true) then

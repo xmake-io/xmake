@@ -62,6 +62,9 @@ function _xrepo(action, names)
     if option.get("diagnosis") then
         table.insert(argv, "-D")
     end
+    if option.get("force") then
+        table.insert(argv, "--force")
+    end
     table.join2(argv, names)
     os.execv(os.programfile(), argv)
 end
@@ -80,7 +83,11 @@ function _install_from_local(dir, name)
     local dstdir = _get_addondir(name, LOCALVERSION)
     assert(not os.isdir(dstdir), "addon(%s) already exists!", name)
     os.vcp(dir, dstdir)
-    addon.register(name, LOCALVERSION)
+    local ok, errors = addon.register(name, LOCALVERSION)
+    if not ok then
+        os.tryrm(dstdir)
+        raise(errors)
+    end
     cprint("${color.success}install ${bright}%s${clear} ok!", name)
 end
 

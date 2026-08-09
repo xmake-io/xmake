@@ -30,6 +30,7 @@ task("addon")
             {'s', "search",  "k", nil, "Search the addons from the repositories."},
             {'l', "list",    "k", nil, "List all installed addons."},
             {'c', "clear",   "k", nil, "Clear all installed addons."},
+            {'f', "force",   "k", nil, "Force to remove the addons, even if they are depended on by the others."},
             {nil, "addons",  "vs", nil, "The addon paths, urls or names.",
                                        "e.g.",
                                        "    $ xmake addon --install https://github.com/myrepo/serial-monitor",

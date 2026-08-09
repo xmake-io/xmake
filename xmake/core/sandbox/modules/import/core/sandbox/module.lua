@@ -30,6 +30,7 @@ local table     = require("base/table")
 local string    = require("base/string")
 local option    = require("base/option")
 local global    = require("base/global")
+local addon     = require("package/addon")
 local config    = require("project/config")
 local memcache  = require("cache/memcache")
 local sandbox   = require("sandbox/sandbox")
@@ -386,7 +387,7 @@ function core_sandbox_module._find_and_load(name, opt)
                 errors = moduleinfo[2]
             else
                 module, errors = core_sandbox_module._load(moduledir, name, {
-                                                           instance = idx < #modules_directories and opt.instance or nil,  -- last modules need not fork sandbox
+                                                           instance = moduledir ~= core_sandbox_module.coredir() and opt.instance or nil,  -- the core modules need not fork sandbox
                                                            module = module,
                                                            always_build = always_build,
                                                            modulekind = modulekind})
@@ -419,14 +420,45 @@ end
 function core_sandbox_module.directories()
     local moduledirs = memcache.get("core_sandbox_module", "moduledirs")
     if not moduledirs then
+        -- @note the core modules directory must be the last one, @see core_sandbox_module._find_and_load
         moduledirs = { path.join(global.directory(), "modules"),
                        path.join(os.programdir(), "modules"),
-                       path.join(os.programdir(), "core/sandbox/modules/import")}
+                       core_sandbox_module.coredir()}
         local modulesdir = os.getenv("XMAKE_MODULES_DIR")
         if modulesdir and os.isdir(modulesdir) then
             table.insert(moduledirs, 1, modulesdir)
         end
         memcache.set("core_sandbox_module", "moduledirs", moduledirs)
+    end
+    return moduledirs
+end
+
+-- get the core modules directory
+--
+-- @note the modules in this directory are loaded without sandbox, because they need `require`
+--
+function core_sandbox_module.coredir()
+    return path.join(os.programdir(), "core/sandbox/modules/import")
+end
+
+-- get the module directories for the given addon reference
+--
+-- they are only used for the addon modules,
+-- e.g. import("@addon.esp32.sdkconfig"), import("@self.sdkconfig")
+--
+function core_sandbox_module.addon_directories(modulesdir)
+    local moduledirs = {modulesdir}
+
+    -- add the modules of the addon toolchains, e.g. <addondir>/toolchains/<name>/modules
+    -- so that a custom toolchain can bundle its tool modules together
+    local toolchainsdir = path.join(path.directory(modulesdir), "toolchains")
+    if os.isdir(toolchainsdir) then
+        for _, toolchaindir in ipairs(os.dirs(path.join(toolchainsdir, "*"))) do
+            local dir = path.join(toolchaindir, "modules")
+            if os.isdir(dir) then
+                table.insert(moduledirs, dir)
+            end
+        end
     end
     return moduledirs
 end
@@ -498,6 +530,24 @@ function core_sandbox_module.import(name, opt)
     local scope_parent = getfenv(2)
     assert(scope_parent)
 
+    -- import the modules of the installed addons? e.g. import("@addon.foo")
+    --
+    -- @note we need the `@addon.` prefix to distinguish them from the builtin modules
+    --
+    -- import the modules of an addon?
+    -- e.g. import("@addon.esp32.sdkconfig"), import("@self.sdkconfig")
+    local addon_modulesdir
+    local addon_reference = name
+    if addon.is_reference(name, ".") then
+        local modulesdir, modulename, addonname, errors = addon.resolve_reference(name, ".", "modules",
+            {scriptdir = opt.scriptdir or sandbox.instance() and sandbox.instance():rootdir()})
+        if not modulesdir then
+            raise(errors)
+        end
+        addon_modulesdir = modulesdir
+        name = modulename
+    end
+
     -- get module name
     local modulename = core_sandbox_module.name(name)
     if not modulename then
@@ -515,7 +565,12 @@ function core_sandbox_module.import(name, opt)
     local rootdir = opt.rootdir or instance:rootdir()
 
     -- init module directories (disable local packages?)
-    local modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
+    local modules_directories
+    if addon_modulesdir then
+        modules_directories = core_sandbox_module.addon_directories(addon_modulesdir)
+    else
+        modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
+    end
 
     -- load module
     local loadopt = table.clone(opt) or {}
@@ -554,6 +609,8 @@ function core_sandbox_module.import(name, opt)
     if not found then
         if opt.try then
             return nil
+        elseif addon_modulesdir then
+            raise("cannot import module: %s, not found!", addon_reference)
         else
             raise("cannot import module: %s, not found!", name)
         end

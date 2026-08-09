@@ -1259,6 +1259,10 @@ end
 function project.toolchain(name, opt)
     opt = opt or {}
     local parseinfo = toolchain.parsename(name) -- we need to ignore `@packagename`
+    -- the addon toolchains are only loaded from the addons, e.g. set_toolchains("@addon/esp32/xtensa")
+    if parseinfo.addon_prefix then
+        return nil
+    end
     local toolchain_name = parseinfo.name
     local info = project._toolchains()[toolchain_name]
     if info == nil and opt.namespace then
