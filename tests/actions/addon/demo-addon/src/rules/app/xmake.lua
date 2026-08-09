@@ -1,0 +1,6 @@
+rule("app")
+    add_deps("@self/base")
+    on_load(function (target)
+        import("@self.greeting")
+        print("demo-addon: rule app is loaded, " .. greeting(target:name()))
+    end)

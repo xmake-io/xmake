@@ -406,6 +406,60 @@ function test_install_conflicts(t)
     end)
 end
 
+-- a complete addon with the optional `src` layout, @see tests/actions/addon/demo-addon
+--
+-- it provides all the payload kinds and has its own files (README, tests) which must not be installed
+function test_demo_addon(t)
+    local name = "demo-addon"
+    local addondir = path.join(os.scriptdir(), name)
+    try
+    {
+        function ()
+            os.runv("xmake", {"addon", "--install", addondir})
+
+            -- only the payloads of the `src` directory should be installed
+            local installdir = path.join(global.directory(), "addons", name, "latest")
+            for _, payloaddir in ipairs({"plugins", "rules", "toolchains", "modules", "includes", "templates"}) do
+                t:require(os.isdir(path.join(installdir, payloaddir)))
+            end
+            for _, ourfile in ipairs({"src", "tests", "README.md"}) do
+                t:require_not(os.exists(path.join(installdir, ourfile)))
+            end
+
+            -- the plugin imports a module of its own addon with `@self`
+            t:require(os.iorunv("xmake", {"demo_hello", "-n", "xmake"}):find("hello from demo-addon: xmake", 1, true))
+
+            -- the module can be imported with the addon name
+            local script = "import(\"@addon.demo-addon.greeting\"); print(greeting(\"module\"))"
+            t:require(os.iorunv("xmake", {"lua", "-c", script}):find("hello from demo-addon: module", 1, true))
+
+            -- the toolchain can be loaded with the addon name
+            local script2 = "import(\"core.tool.toolchain\"); print(toolchain.load(\"@addon/demo-addon/demo\"):get(\"description\"))"
+            t:require(os.iorunv("xmake", {"lua", "-c", script2}):find("the demo toolchain", 1, true))
+
+            -- the template should be listed
+            t:require(os.iorunv("xmake", {"create", "--list", "-l", "c"}):find("demoaddon.hello", 1, true))
+
+            -- the includes and the rules should work in a real project
+            local out = _config_project([[
+includes("@addon/demo-addon/check")
+target("test")
+    set_kind("phony")
+    add_rules("@addon/demo-addon/app")
+]])
+            t:require(out:find("demo-addon: includes check is loaded", 1, true))
+            t:require(out:find("demo-addon: rule base is loaded", 1, true))
+            t:require(out:find("demo-addon: rule app is loaded, hello from demo-addon: test", 1, true))
+        end,
+        finally
+        {
+            function ()
+                try { function () os.runv("xmake", {"addon", "--remove", "--force", name}) end }
+            end
+        }
+    }
+end
+
 -- install an addon from a local directory, then remove it
 function test_install_from_local(t)
     local suffix = path.filename(os.tmpfile()):gsub("[^%w]", "")

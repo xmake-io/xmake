@@ -233,6 +233,28 @@ function addon.payloadinfos(kind)
     return payloadinfos
 end
 
+-- get the payload root directory of the given addon source directory
+--
+-- an addon repository has its own files, e.g. tests, ci scripts and documents,
+-- so its payloads can be placed in the `src` subdirectory, and we only install them
+--
+-- e.g.
+--   esp32-devel/src/{plugins,rules,toolchains,templates}   -- with the `src` layout
+--   hello-world/{plugins}                                  -- without it, for the simple addons
+--
+-- @param sourcedir   the addon source directory
+-- @return            the payload root directory, it will be nil if no payload is found
+--
+function addon.payloadroot(sourcedir)
+    local srcdir = path.join(sourcedir, "src")
+    if #addon.payloads_of(srcdir) > 0 then
+        return srcdir
+    end
+    if #addon.payloads_of(sourcedir) > 0 then
+        return sourcedir
+    end
+end
+
 -- get the payload directories of the given addon directory, e.g. {"plugins", "rules"}
 function addon.payloads_of(addondir)
     local payloads = {}
@@ -250,15 +272,12 @@ end
 --
 function addon.installscript()
     return function (package)
-        local installed = false
-        for _, payloaddir in ipairs(addon.payloaddirs()) do
-            if os.isdir(payloaddir) then
-                os.cp(payloaddir, package:installdir())
-                installed = true
-            end
-        end
-        if not installed then
+        local payloadroot = addon.payloadroot(os.curdir())
+        if not payloadroot then
             os.raise("addon(%s): no payload directory found, e.g. plugins!", package:name())
+        end
+        for _, payloaddir in ipairs(addon.payloads_of(payloadroot)) do
+            os.cp(path.join(payloadroot, payloaddir), package:installdir())
         end
     end
 end
@@ -414,6 +433,19 @@ function addon.remove(name, opt)
                 name, table.concat(parents, ", "))
         end
     end
+    -- we need to remove the symlinks first, we cannot remove them recursively,
+    -- otherwise the linked files would be removed too
+    --
+    -- e.g. the user may link the install directory to the addon source directory when developing it
+    for _, versiondir in ipairs(os.dirs(path.join(installdir, "*"))) do
+        if os.islink(versiondir) then
+            os.rmfile(versiondir)
+        end
+    end
+    if os.islink(installdir) then
+        return os.rmfile(installdir)
+    end
+
     local ok, errors = os.rm(installdir)
     if not ok then
         return false, errors

@@ -78,11 +78,22 @@ end
 -- install a single addon from a source directory (as the given name, default to the directory name)
 function _install_from_local(dir, name)
     assert(os.isdir(dir), "addon path(%s) not found!", dir)
-    assert(#addon.payloads_of(dir) > 0, "addon path(%s): no payload directory found, e.g. ${bright}plugins${clear}!", dir)
-    name = name or path.filename(path.absolute(dir))
+
+    -- we need to normalize it first, e.g. `/path/to/myaddon/` -> `/path/to/myaddon`,
+    -- otherwise we cannot get the addon name from the directory
+    dir = path.normalize(path.absolute(dir))
+
+    -- we only install the payload directories, the addon repository may have its own files,
+    -- e.g. tests, ci scripts and documents, and they can also be placed in the `src` subdirectory
+    local payloadroot = addon.payloadroot(dir)
+    assert(payloadroot, "addon path(%s): no payload directory found, e.g. ${bright}plugins${clear}!", dir)
+
+    name = name or path.filename(dir)
     local dstdir = _get_addondir(name, LOCALVERSION)
     assert(not os.isdir(dstdir), "addon(%s) already exists!", name)
-    os.vcp(dir, dstdir)
+    for _, payloaddir in ipairs(addon.payloads_of(payloadroot)) do
+        os.vcp(path.join(payloadroot, payloaddir), path.join(dstdir, payloaddir))
+    end
     local ok, errors = addon.register(name, LOCALVERSION)
     if not ok then
         os.tryrm(dstdir)
@@ -127,12 +138,18 @@ function _install_one(name)
         return
     end
 
-    -- git url or local path
+    -- local directory
+    --
+    -- @note we need to check it before the git url, `git.asgiturl` also accepts
+    -- the local paths with a trailing separator, e.g. `/path/to/myaddon/`
+    if os.isdir(name) then
+        _install_from_local(name)
+        return
+    end
+
+    -- git url
     if git.asgiturl(name) then
         _install_from_git(name)
-        return
-    elseif os.isdir(name) then
-        _install_from_local(name)
         return
     end
 
