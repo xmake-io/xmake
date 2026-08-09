@@ -33,7 +33,15 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
+static tb_char_t const *xm_semver_skip_version_prefix(tb_char_t const *version_str, tb_size_t *version_len) {
+    if (*version_len && (version_str[0] == 'v' || version_str[0] == '=')) {
+        ++version_str;
+        --*version_len;
+    }
+    return version_str;
+}
 static tb_bool_t xm_semver_is_exact_version(tb_char_t const *version_str, tb_size_t version_len) {
+    version_str = xm_semver_skip_version_prefix(version_str, &version_len);
     semver_t version = { 0 };
     if (!semvern(&version, version_str, version_len)) {
         semver_dtor(&version);
@@ -87,7 +95,8 @@ static tb_bool_t xm_semver_select_from_versions_tags1(
     return tb_true;
 }
 static tb_bool_t xm_semver_select_from_versions_tags2(
-    lua_State *lua, tb_int_t fromidx, semver_t *semver, tb_char_t const *version_str, tb_size_t version_len) {
+    lua_State *lua, tb_int_t fromidx, tb_char_t const *version_str, tb_size_t version_len) {
+    version_str = xm_semver_skip_version_prefix(version_str, &version_len);
     lua_Integer i = 0;
     luaL_checktype(lua, fromidx, LUA_TTABLE);
     for (i = lua_objlen(lua, fromidx); i > 0; --i) {
@@ -96,8 +105,11 @@ static tb_bool_t xm_semver_select_from_versions_tags2(
 
         tb_char_t const *source_str = luaL_checkstring(lua, -1);
         tb_size_t source_len = tb_strlen(source_str);
+        tb_size_t source_version_len = source_len;
+        tb_char_t const *source_version_str = xm_semver_skip_version_prefix(source_str, &source_version_len);
         lua_pop(lua, 1);
-        if (source_len == version_len && tb_strncmp(source_str, version_str, version_len) == 0) {
+        // semver comparison ignores build metadata, so compare the normalized strings
+        if (source_version_len == version_len && tb_strncmp(source_version_str, version_str, version_len) == 0) {
             lua_createtable(lua, 0, 2);
             lua_pushlstring(lua, source_str, source_len);
             lua_setfield(lua, -2, "version");
@@ -206,7 +218,7 @@ tb_int_t xm_semver_select(lua_State *lua) {
 
         // attempt to select version from the versions list first
         if ((is_exact || !is_range) &&
-            xm_semver_select_from_versions_tags2(lua, 2, &semver, range_str, range_len)) {
+            xm_semver_select_from_versions_tags2(lua, 2, range_str, range_len)) {
             ok = tb_true;
             break;
         }
@@ -217,7 +229,7 @@ tb_int_t xm_semver_select(lua_State *lua) {
 
         // attempt to select version from the tags list
         if ((is_exact || !is_range) &&
-            xm_semver_select_from_versions_tags2(lua, 3, &semver, range_str, range_len)) {
+            xm_semver_select_from_versions_tags2(lua, 3, range_str, range_len)) {
             ok = tb_true;
             break;
         }

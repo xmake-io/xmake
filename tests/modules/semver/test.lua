@@ -30,6 +30,10 @@ function test_semver_select(t)
                         , "1.2.3"
                         , {"1.2.3+1", "1.2.3"})
 
+    _check_semver_select(t, {"1.2.3", "version"}
+                        , "=1.2.3"
+                        , {"1.2.3+7", "1.2.3"})
+
     _check_semver_select(t, {"1.2.9", "version"}
                         , "1.2"
                         , {"1.2", "1.2.9"})
@@ -43,6 +47,14 @@ function test_semver_select(t)
                         , {"v1.2.3+7"}
                         , {"1.2.3"})
 
+    _check_semver_select(t, {"v1.2.3+7", "version"}
+                        , "1.2.3+7"
+                        , {"v1.2.3+8", "v1.2.3+7"})
+
+    _check_semver_select(t, {"1.2.3+7", "version"}
+                        , "v1.2.3+7"
+                        , {"1.2.3+8", "1.2.3+7"})
+
     _check_semver_select(t, {"3.53.0+200", "tag"}
                         , "3.53.0+200"
                         , nil
@@ -52,6 +64,11 @@ function test_semver_select(t)
                         , "3.53.0+999"
                         , nil
                         , {"3.53.0+100"})
+
+    _check_semver_select(t, {"v1.2.3+7", "tag"}
+                        , "=1.2.3+7"
+                        , nil
+                        , {"v1.2.3+7", "v1.2.3+8"})
 
     _check_semver_select(t, {"master", "branch"}
                         , "master"
