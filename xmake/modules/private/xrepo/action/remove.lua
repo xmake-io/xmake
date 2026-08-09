@@ -201,8 +201,7 @@ end
 -- remove the given installed addons
 function _remove_addons(names)
     for _, name in ipairs(names) do
-        local ok, errors = addon.remove(name, {force = option.get("force")})
-        assert(ok, errors)
+        addon.remove(name, {force = option.get("force")})
         cprint("${color.success}remove ${bright}%s${clear} ok!", name)
     end
 end

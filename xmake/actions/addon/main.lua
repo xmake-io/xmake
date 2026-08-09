@@ -94,11 +94,20 @@ function _install_from_local(dir, name)
     for _, payloaddir in ipairs(addon.payloads_of(payloadroot)) do
         os.vcp(path.join(payloadroot, payloaddir), path.join(dstdir, payloaddir))
     end
-    local ok, errors = addon.register(name, LOCALVERSION)
-    if not ok then
-        os.tryrm(dstdir)
-        raise(errors)
-    end
+    -- we need to roll back the installed payloads if it cannot be registered, e.g. the name conflicts
+    try
+    {
+        function ()
+            addon.register(name, LOCALVERSION)
+        end,
+        catch
+        {
+            function (errors)
+                os.tryrm(dstdir)
+                raise(errors)
+            end
+        }
+    }
     cprint("${color.success}install ${bright}%s${clear} ok!", name)
 end
 

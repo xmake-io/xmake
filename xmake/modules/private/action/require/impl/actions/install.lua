@@ -510,9 +510,8 @@ function main(package)
                                 table.insert(deps, dep:name())
                             end
                         end
-                        local ok, errors = addon.register(package:name(), package:version_str() or "latest",
+                        addon.register(package:name(), package:version_str() or "latest",
                             {description = package:description(), deps = deps})
-                        assert(ok, errors)
                     end
                     installed_now = true
                 end

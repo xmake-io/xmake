@@ -23,6 +23,7 @@ local sandbox_core_package_addon = sandbox_core_package_addon or {}
 
 -- load modules
 local addon = require("package/addon")
+local raise = require("sandbox/modules/raise")
 
 -- inherit some builtin interfaces
 sandbox_core_package_addon.installdir        = addon.installdir
@@ -39,11 +40,34 @@ sandbox_core_package_addon.payloads_of       = addon.payloads_of
 sandbox_core_package_addon.payloadroot       = addon.payloadroot
 sandbox_core_package_addon.addons            = addon.addons
 sandbox_core_package_addon.addondir          = addon.addondir
-sandbox_core_package_addon.register          = addon.register
 sandbox_core_package_addon.unregister        = addon.unregister
-sandbox_core_package_addon.remove            = addon.remove
 sandbox_core_package_addon.rescan            = addon.rescan
 sandbox_core_package_addon.clear             = addon.clear
+
+-- register the given installed addon
+--
+-- @param name      the addon name
+-- @param version   the addon version, e.g. "1.0.1", "latest"
+-- @param opt       the options, e.g. {description = "...", deps = {"foo"}}
+--
+function sandbox_core_package_addon.register(name, version, opt)
+    local ok, errors = addon.register(name, version, opt)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- remove the given installed addon
+--
+-- @param name      the addon name
+-- @param opt       the options, e.g. {force = true}
+--
+function sandbox_core_package_addon.remove(name, opt)
+    local ok, errors = addon.remove(name, opt)
+    if not ok then
+        raise(errors)
+    end
+end
 
 -- return module
 return sandbox_core_package_addon
