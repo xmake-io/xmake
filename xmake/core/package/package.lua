@@ -2605,6 +2605,79 @@ function _instance:_generate_build_configs(configs, opt)
     return configs
 end
 
+-- has the given payloads? (only for the addon packages)
+--
+-- @param opt   the payloads to be checked, the value can be a string or a list, e.g.
+--              {rules = "app", toolchains = "esp32", plugins = "monitor",
+--               templates = "c/esp32.hello", modules = {"private.board", "private.flasher"}}
+--
+-- @return      true, or false and errors
+--
+-- e.g.
+--
+-- on_test(function (package)
+--     assert(package:has_addon({rules = "app", toolchains = "esp32"}))
+-- end)
+--
+function _instance:has_addon(opt)
+    if not self:is_addon() then
+        return false, string.format("package(%s) is not an addon!", self:name())
+    end
+
+    -- the addon should be registered after installing it
+    local addoninfo = addon.addons()[addon.dirname(self:name())]
+    if not addoninfo then
+        return false, string.format("addon(%s) is not installed!", self:name())
+    end
+    if opt == nil then
+        return true
+    end
+
+    local checkers = {}
+
+    -- the rules are namespaced, e.g. @addon/esp32-devel/app
+    --
+    -- @note we need to reload the global rules, this addon may be installed just now
+    checkers.rules = function (name)
+        local rule = require("project/rule")
+        rule._RULES = nil
+        return rule.rules()["@addon/" .. self:name() .. "/" .. name] ~= nil
+    end
+
+    -- the toolchains are namespaced too, e.g. @addon/esp32-devel/esp32
+    checkers.toolchains = function (name)
+        return toolchain.load("@addon/" .. self:name() .. "/" .. name) ~= nil
+    end
+
+    -- the plugins and the templates are not namespaced, we get them from the addons registry,
+    -- the task list of this process has been loaded before installing this addon
+    checkers.plugins = function (name)
+        return table.contains(addoninfo.plugins or {}, name)
+    end
+    checkers.templates = function (name)
+        return table.contains(addoninfo.templates or {}, name)
+    end
+
+    -- the modules are files, e.g. modules/serial.lua, modules/private/board.lua
+    checkers.modules = function (name)
+        local modulepath = path.join(self:installdir(), "modules", (name:gsub("%.", "/")))
+        return os.isfile(modulepath .. ".lua") or os.isdir(modulepath)
+    end
+
+    for kind, names in pairs(opt) do
+        local checker = checkers[kind]
+        if not checker then
+            return false, string.format("unknown addon payload(%s), it should be one of rules, toolchains, plugins, templates and modules!", kind)
+        end
+        for _, name in ipairs(table.wrap(names)) do
+            if not checker(name) then
+                return false, string.format("%s(%s) not found in the addon(%s)!", kind, name, self:name())
+            end
+        end
+    end
+    return true
+end
+
 -- has the given c funcs?
 --
 -- @param funcs     the funcs
