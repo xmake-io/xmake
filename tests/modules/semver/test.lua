@@ -26,6 +26,22 @@ function test_semver_select(t)
                         , "3.53.0+999"
                         , {"3.53.0+100"})
 
+    _check_semver_select(t, {"3.53.0+200", "version"}
+                        , "3.53.0"
+                        , {"3.53.0+0", "3.53.0+100", "3.53.0+200"})
+
+    _check_semver_select(t, {"3.53.0+200", "version"}
+                        , "3.53.0"
+                        , {"3.53.0+200", "3.53.0+100", "3.53.0+0"})
+
+    _check_semver_select(t, {"3.53.0+beta", "version"}
+                        , "3.53.0"
+                        , {"3.53.0+alpha", "3.53.0+beta"})
+
+    _check_semver_select(t, {"3.53.0+beta", "version"}
+                        , "3.53.0"
+                        , {"3.53.0+beta", "3.53.0+alpha"})
+
     _check_semver_select(t, {"1.2.3", "version"}
                         , "1.2.3"
                         , {"1.2.3+1", "1.2.3"})
@@ -84,6 +100,10 @@ function test_semver_select(t)
     _check_semver_select(t, {"1.5.1", "version"}
                         , "latest"
                         , {"1.4.0", "1.5.0", "1.5.1"})
+
+    _check_semver_select(t, {"3.53.0+200", "version"}
+                        , "latest"
+                        , {"3.53.0+0", "3.53.0+200", "3.53.0+100"})
 end
 
 -- select version

@@ -49,6 +49,24 @@ static tb_bool_t xm_semver_is_exact_version(tb_char_t const *version_str, tb_siz
     }
     return tb_false;
 }
+static tb_long_t xm_semver_compare_with_build(semver_t const *left, semver_t const *right) {
+    tb_long_t result = semver_pcmp(left, right);
+    // xmake-repo orders build metadata as package revisions
+    return result ? result : tb_strcmp(left->build.raw ? left->build.raw : "",
+                                       right->build.raw ? right->build.raw : "");
+}
+static semver_t const *xm_semvers_find_newest(semvers_t const *versions) {
+    tb_assert_and_check_return_val(versions && versions->length, tb_null);
+
+    semver_t const *newest = &versions->data[0];
+    tb_size_t i = 0;
+    for (i = 1; i < versions->length; ++i) {
+        if (xm_semver_compare_with_build(&versions->data[i], newest) > 0) {
+            newest = &versions->data[i];
+        }
+    }
+    return newest;
+}
 static tb_bool_t xm_semver_select_from_versions_tags1(
     lua_State *lua, tb_int_t fromidx, semver_t *semver, semver_range_t const *range, semvers_t *matches) {
     // clear matches
@@ -75,22 +93,16 @@ static tb_bool_t xm_semver_select_from_versions_tags1(
     // no matches?
     tb_check_return_val(matches->length, tb_false);
 
-    // sort matches
-    semvers_psort(matches);
-
     // get the newest version
-    semver_t top = semvers_ppop(matches);
+    semver_t const *top = xm_semvers_find_newest(matches);
     lua_createtable(lua, 0, 2);
 
     // return results
-    lua_pushstring(lua, top.raw);
+    lua_pushstring(lua, top->raw);
     lua_setfield(lua, -2, "version");
 
     lua_pushstring(lua, fromidx == 2 ? "version" : "tag");
     lua_setfield(lua, -2, "source");
-
-    // exit the popped semver
-    semver_dtor(&top);
 
     return tb_true;
 }
@@ -167,21 +179,17 @@ static tb_bool_t xm_semver_select_latest_from_versions_tags(lua_State *lua,
     }
     tb_check_return_val(matches->length, tb_false);
 
-    // sort matches
-    semvers_psort(matches);
-
     // get the newest match
-    semver_t top = semvers_ppop(matches);
+    semver_t const *top = xm_semvers_find_newest(matches);
     lua_createtable(lua, 0, 2);
 
     // return results
-    lua_pushstring(lua, top.raw);
+    lua_pushstring(lua, top->raw);
     lua_setfield(lua, -2, "version");
 
     lua_pushstring(lua, fromidx == 2 ? "version" : "tag");
     lua_setfield(lua, -2, "source");
 
-    semver_dtor(&top);
     return tb_true;
 }
 
