@@ -52,7 +52,7 @@ function _with_repo(func)
     local reponame = "addon-test-repo-" .. suffix
     local repodir = os.tmpfile() .. ".addon-repo"
     local recipes = {
-        -- the addon itself, its manifest sets the payload root directory, e.g. set_srcdir("src")
+        -- the addon itself, its manifest sets the payload root directory, e.g. set_sourcedir("src")
         [ADDON] = ("set_sourcedir(%q)"):format(_addondir(ADDON)),
         -- the addon which depends on the addon above
         [ADDON_DEP] = ("set_sourcedir(%q)\n    add_deps(%q, {kind = \"addon\"})"):format(_addondir(ADDON_DEP), ADDON),

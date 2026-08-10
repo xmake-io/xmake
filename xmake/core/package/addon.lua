@@ -200,7 +200,7 @@ function addon.apis()
             "addon.set_description"
         ,   "addon.set_homepage"
         ,   "addon.set_license"
-        ,   "addon.set_srcdir"
+        ,   "addon.set_sourcedir"
             -- addon.add_xxx
         ,   "addon.add_deps"
         }
@@ -211,7 +211,7 @@ end
 --
 -- @param sourcedir the addon source or install directory, which contains `addon.lua`
 --
--- @return          the manifest, e.g. {name = "esp32-devel", description = "...", srcdir = "src", deps = {"serial-tools"}}
+-- @return          the manifest, e.g. {name = "esp32-devel", description = "...", sourcedir = "src", deps = {"serial-tools"}}
 --                  it will be nil if this addon does not describe itself
 --
 function addon.manifest(sourcedir)
@@ -251,7 +251,7 @@ function addon.manifest(sourcedir)
                     description = addoninfo:get("description"),
                     homepage = addoninfo:get("homepage"),
                     license = addoninfo:get("license"),
-                    srcdir = addoninfo:get("srcdir"),
+                    sourcedir = addoninfo:get("sourcedir"),
                     deps = table.wrap(addoninfo:get("deps"))}
     end
     if not manifest then
@@ -463,12 +463,12 @@ end
 --
 function addon.payloadroot(sourcedir)
 
-    -- the addon can set its payload root directory explicitly, e.g. set_srcdir("src")
+    -- the addon can set its payload root directory explicitly, e.g. set_sourcedir("src")
     local manifest = addon.manifest(sourcedir)
-    if manifest and manifest.srcdir then
-        local srcdir = path.join(sourcedir, manifest.srcdir)
-        if #addon.payloads_of(srcdir) > 0 then
-            return srcdir
+    if manifest and manifest.sourcedir then
+        local payloadroot = path.join(sourcedir, manifest.sourcedir)
+        if #addon.payloads_of(payloadroot) > 0 then
+            return payloadroot
         end
         return
     end
