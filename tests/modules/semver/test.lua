@@ -7,6 +7,12 @@ function _check_semver_select(t, results, required_ver, versions, tags, branches
     t:are_equal(source, results[2])
 end
 
+function _check_semver_select_failed(t, required_ver, versions, tags, branches)
+    t:will_raise(function()
+        semver.select(required_ver, versions or {}, tags or {}, branches or {})
+    end, "unable to select version")
+end
+
 -- test select version
 function test_semver_select(t)
 
@@ -18,15 +24,101 @@ function test_semver_select(t)
                         , "^1.5.0"
                         ,{"1.4.0", "1.5.0", "1.5.1"})
 
+    _check_semver_select(t, {"3.53.0+200", "version"}
+                        , "3.53.0+200"
+                        , {"3.53.0+0", "3.53.0+100", "3.53.0+200"})
+
+    _check_semver_select_failed(t, "3.53.0+999", {"3.53.0+100"})
+
+    _check_semver_select(t, {"3.53.0+200", "version"}
+                        , "3.53.0"
+                        , {"3.53.0+0", "3.53.0+100", "3.53.0+200"})
+
+    _check_semver_select(t, {"3.53.0+200", "version"}
+                        , "3.53.0"
+                        , {"3.53.0+200", "3.53.0+100", "3.53.0+0"})
+
+    _check_semver_select(t, {"3.53.0+beta", "version"}
+                        , "3.53.0"
+                        , {"3.53.0+alpha", "3.53.0+beta"})
+
+    _check_semver_select(t, {"3.53.0+beta", "version"}
+                        , "3.53.0"
+                        , {"3.53.0+beta", "3.53.0+alpha"})
+
+    _check_semver_select(t, {"1.2.3", "version"}
+                        , "1.2.3"
+                        , {"1.2.3+1", "1.2.3"})
+
+    _check_semver_select(t, {"1.2.3", "version"}
+                        , "=1.2.3"
+                        , {"1.2.3+7", "1.2.3"})
+
+    _check_semver_select(t, {"1.2.9", "version"}
+                        , "1.2"
+                        , {"1.2", "1.2.9"})
+
+    _check_semver_select(t, {"1.9.0", "version"}
+                        , "^1.2.3"
+                        , {"^1.2.3", "1.2.3", "1.9.0"})
+
+    _check_semver_select(t, {"1.2.3", "tag"}
+                        , "1.2.3"
+                        , {"v1.2.3+7"}
+                        , {"1.2.3"})
+
+    _check_semver_select(t, {"v1.2.3+7", "version"}
+                        , "1.2.3+7"
+                        , {"v1.2.3+8", "v1.2.3+7"})
+
+    _check_semver_select(t, {"1.2.3+7", "version"}
+                        , "v1.2.3+7"
+                        , {"1.2.3+8", "1.2.3+7"})
+
+    _check_semver_select(t, {"3.53.0+200", "tag"}
+                        , "3.53.0+200"
+                        , nil
+                        , {"3.53.0+0", "3.53.0+200"})
+
+    _check_semver_select_failed(t, "3.53.0+999", nil, {"3.53.0+100"})
+
+    _check_semver_select(t, {"v1.2.3+7", "tag"}
+                        , "=1.2.3+7"
+                        , nil
+                        , {"v1.2.3+7", "v1.2.3+8"})
+
+    _check_semver_select(t, {"v1.2.3+7", "tag"}
+                        , "1.2.3+7"
+                        , {"1.2.3+8"}
+                        , {"v1.2.3+7"})
+
     _check_semver_select(t, {"master", "branch"}
                         , "master"
                         , {"1.4.0", "1.5.0", "1.5.1"}
                         , {"v1.2.0", "v1.6.0"}
                         , {"master", "dev"})
 
+    _check_semver_select(t, {"next", "branch"}
+                        , "next"
+                        , nil
+                        , {"vnext"}
+                        , {"next"})
+
     _check_semver_select(t, {"1.5.1", "version"}
                         , "latest"
                         , {"1.4.0", "1.5.0", "1.5.1"})
+
+    _check_semver_select(t, {"1.0.0+10", "version"}
+                        , "latest"
+                        , {"1.0.0+9", "1.0.0+10"})
+
+    _check_semver_select(t, {"1.0.0+rev.10", "version"}
+                        , "latest"
+                        , {"1.0.0+rev.9", "1.0.0+rev.10"})
+
+    _check_semver_select(t, {"3.53.0+200", "version"}
+                        , "latest"
+                        , {"3.53.0+0", "3.53.0+200", "3.53.0+100"})
 end
 
 -- select version
