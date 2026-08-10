@@ -30,7 +30,6 @@ sandbox_core_package_addon.installdir        = addon.installdir
 sandbox_core_package_addon.dirname           = addon.dirname
 sandbox_core_package_addon.owner             = addon.owner
 sandbox_core_package_addon.is_reference      = addon.is_reference
-sandbox_core_package_addon.resolve_reference = addon.resolve_reference
 sandbox_core_package_addon.registryfile      = addon.registryfile
 sandbox_core_package_addon.payloaddirs       = addon.payloaddirs
 sandbox_core_package_addon.payloads          = addon.payloads
@@ -43,6 +42,23 @@ sandbox_core_package_addon.addondir          = addon.addondir
 sandbox_core_package_addon.unregister        = addon.unregister
 sandbox_core_package_addon.rescan            = addon.rescan
 sandbox_core_package_addon.clear             = addon.clear
+
+-- resolve the given addon reference, e.g. `@addon/<addon>/<name>`, `@self/<name>`
+--
+-- @param reference the addon reference
+-- @param sep       the separator, e.g. "/", "."
+-- @param kind      the payload kind, e.g. "rules", "modules"
+-- @param opt       the options, e.g. {scriptdir = "..."}
+--
+-- @return          the payload directory, the name, the addon name
+--
+function sandbox_core_package_addon.resolve_reference(reference, sep, kind, opt)
+    local payloaddir, name, addonname, errors = addon.resolve_reference(reference, sep, kind, opt)
+    if errors then
+        raise(errors)
+    end
+    return payloaddir, name, addonname
+end
 
 -- register the given installed addon
 --

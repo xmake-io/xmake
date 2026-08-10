@@ -1215,14 +1215,6 @@ function _instance:_rawenvs()
             end
         end
 
-        -- add plugin env for on_test
-        --
-        -- @note we need not do it for the addon packages, they are registered
-        -- to the addons registry after installing, and xmake can find their payloads directly
-        --
-        if self:is_plugin() then
-            envs.XMAKE_PLUGIN_DIRS = path.directory(self:installdir())
-        end
         self._RAWENVS = envs
     end
     return envs

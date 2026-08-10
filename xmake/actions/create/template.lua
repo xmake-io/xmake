@@ -23,7 +23,6 @@ import("core.base.global")
 import("core.base.hashset")
 import("core.language.language")
 import("core.package.addon")
-import("core.package.repository")
 
 -- some builtin template variables in xmake.lua
 function builtinvars(targetname)
@@ -35,9 +34,8 @@ end
 --
 -- priority:
 --   1. addon:    <globaldir>/addons/<name>/<version>/templates
---   2. repo:     <global-repo>/templates (deprecated)
---   3. global:   <globaldir>/templates
---   4. builtin:  <programdir>/templates
+--   2. global:   <globaldir>/templates
+--   3. builtin:  <programdir>/templates
 function rootinfos()
     local results = {}
 
@@ -45,22 +43,6 @@ function rootinfos()
     for _, addoninfo in ipairs(addon.payloadinfos("templates")) do
         if os.isdir(addoninfo.dir) then
             table.insert(results, {kind = "addon", name = addoninfo.name, version = addoninfo.version, dir = addoninfo.dir})
-        end
-    end
-
-    -- get template directories from global repositories
-    --
-    -- @note it's deprecated, please distribute the templates as an addon instead,
-    -- e.g. xmake addon --install basic-templates
-    --
-    local repos = repository.repositories({global = true, network = false})
-    if repos then
-        for _, repo in ipairs(repos) do
-            local templatesdir = path.join(repo:directory(), "templates")
-            if os.isdir(templatesdir) then
-                table.insert(results, {kind = "repo", name = repo:name(), url = repo:url(), branch = repo:branch(),
-                                       dir = templatesdir, deprecated = true})
-            end
         end
     end
 
@@ -126,10 +108,7 @@ function templatedir(lang, templateid)
     -- @note the template ids are not namespaced, we only need it to disambiguate the conflicts
     --
     if templateid:startswith("@addon/") then
-        local templatesdir, id, _, errors = addon.resolve_reference(templateid, "/", "templates")
-        if not templatesdir then
-            os.raise(errors)
-        end
+        local templatesdir, id = addon.resolve_reference(templateid, "/", "templates")
         local subdir = _templateid_subdir(id)
         if subdir then
             local dir = path.join(templatesdir, lang, subdir)
@@ -254,7 +233,7 @@ function templates(lang)
                     -- otherwise we do not know which template will be used
                     local provider = providers[templateid]
                     if provider and (provider.kind == "addon" or rootinfo.kind == "addon") then
-                        utils.warning("template(%s/%s) conflicts, we will use the first one!\n  -> %s\n  -> %s\nplease use the qualified template id to disambiguate them.",
+                        wprint("template(%s/%s) conflicts, we will use the first one!\n  -> %s\n  -> %s\nplease use the qualified template id to disambiguate them.",
                             lang, templateid, _template_reference(provider, templateid), _template_reference(rootinfo, templateid))
                     else
                         providers[templateid] = rootinfo
