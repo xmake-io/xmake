@@ -112,15 +112,13 @@ function _install_from_local(dir, name)
     for _, payloaddir in ipairs(addon.payloads_of(payloadroot)) do
         os.vcp(path.join(payloadroot, payloaddir), path.join(dstdir, payloaddir))
     end
-    local manifestfile = path.join(dir, "addon.lua")
-    if os.isfile(manifestfile) then
-        os.vcp(manifestfile, path.join(dstdir, "addon.lua"))
-    end
+
     -- we need to roll back the installed payloads if it cannot be registered, e.g. the name conflicts
     try
     {
         function ()
-            addon.register(name, LOCALVERSION)
+            addon.register(name, LOCALVERSION, manifest and {
+                description = manifest.description, deps = #manifest.deps > 0 and manifest.deps or nil})
         end,
         catch
         {

@@ -510,8 +510,26 @@ function main(package)
                                 table.insert(deps, dep:name())
                             end
                         end
+
+                        -- the addon describes itself? we prefer its own description
+                        --
+                        -- @note the deps are duplicated in its manifest, but the recipe is
+                        -- authoritative, xmake needs them before downloading the addon sources,
+                        -- so we only report the mismatch, they must be kept in sync
+                        local description = package:description()
+                        local manifest = package:data("addon.manifest")
+                        if manifest then
+                            description = manifest.description or description
+                            for _, dep in ipairs(manifest.deps) do
+                                if not (deps and table.contains(deps, dep)) then
+                                    wprint("addon(%s): dep(%s) is declared in its manifest, but not in the package recipe!",
+                                        package:name(), dep)
+                                end
+                            end
+                        end
                         addon.register(package:name(), package:version_str() or "latest",
-                            {description = package:description(), deps = deps})
+                            {description = description, deps = deps,
+                             manifest_deps = manifest and manifest.deps or nil})
                     end
                     installed_now = true
                 end

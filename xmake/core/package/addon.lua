@@ -306,10 +306,10 @@ function addon.owner(scriptdir)
         local parts = path.split(path.relative(scriptdir, installdir))
         if #parts >= 2 then
             local addondir = path.join(installdir, parts[1], parts[2])
-            -- the addon describes itself? the manifest is always authoritative,
-            -- the directory name is only its normalized form, e.g. "myns::foo" -> "myns_foo"
-            local manifest = addon.manifest(addondir)
-            return manifest and manifest.name or parts[1], addondir
+            -- the registry keeps the raw addon name, the directory name is only
+            -- its normalized form, e.g. "myns::foo" -> "myns_foo"
+            local addoninfo = addon.addons()[parts[1]]
+            return addoninfo and addoninfo.name or parts[1], addondir
         end
         return
     end
@@ -387,10 +387,16 @@ end
 
 -- get all installed addons
 --
+-- @param opt   the options, e.g. {force = true}, we need it to reload the registry
+--              if the addons have been installed by another process
+--
 -- @return      the addons table, e.g. {["hello-world"] = {version = "latest", payloads = {"plugins"}}}
 --
-function addon.addons()
+function addon.addons(opt)
     local addons = addon._ADDONS
+    if opt and opt.force then
+        addons = nil
+    end
     if addons == nil then
         addons = {}
         local registryfile = addon._registryfile()
@@ -520,10 +526,10 @@ function addon.installscript()
             os.cp(path.join(payloadroot, payloaddir), package:installdir())
         end
 
-        -- we also install the manifest, so we can get the addon information after installing it
-        local manifestfile = addon._manifestfile(sourcedir)
-        if os.isfile(manifestfile) then
-            os.cp(manifestfile, package:installdir())
+        -- we need not install the manifest, the package manifest(manifest.txt) and the addons
+        -- registry already have all the information, we just pass it to the registration
+        if manifest then
+            package:data_set("addon.manifest", manifest)
         end
     end
 end
@@ -534,42 +540,25 @@ end
 -- @param version   the addon version, e.g. "1.0.1", "latest"
 -- @param opt       the options, e.g. {description = "...", deps = {"foo"}}
 --
+-- @note the addon manifest(addon.lua) is only read when installing, everything which
+-- is needed later is recorded here, so we never parse it again
+--
 -- @return          true or false and errors
 --
 function addon.register(name, version, opt)
     opt = opt or {}
     local dirname = addon.dirname(name)
     local addondir = path.join(addon.installdir(), dirname, version)
-
-    -- the installed addon describes itself? we prefer its own information
-    --
-    -- @note the deps are duplicated in the package recipe, the recipe is authoritative
-    -- because xmake needs them before downloading the addon sources, but we should
-    -- report the mismatch, they must be kept in sync
-    --
-    local description = opt.description
-    local deps = opt.deps
-    local manifest = addon.manifest(addondir)
-    if manifest then
-        description = manifest.description or description
-        if deps then
-            for _, dep in ipairs(manifest.deps) do
-                if not table.contains(deps, addon.dirname(dep)) then
-                    utils.warning("addon(%s): dep(%s) is declared in its manifest, but not in the package recipe!", name, dep)
-                end
-            end
-        else
-            deps = {}
-            for _, dep in ipairs(manifest.deps) do
-                table.insert(deps, addon.dirname(dep))
-            end
-            deps = #deps > 0 and deps or nil
-        end
-    end
-
     local addoninfo = {version = version,
-                       description = description,
-                       deps = deps,
+                       -- we need to keep the raw name, the directory name is only its
+                       -- normalized form, e.g. "myns::foo" -> "myns_foo"
+                       name = name ~= dirname and name or nil,
+                       description = opt.description,
+                       deps = opt.deps,
+                       -- the deps which the addon itself declares in its manifest, they are
+                       -- recorded whenever this addon has one, so that the repositories can
+                       -- check that the manifest and the package recipe are kept in sync
+                       manifest_deps = opt.manifest_deps,
                        payloads = addon.payloads_of(addondir),
                        plugins = addon._plugins_of(addondir),
                        templates = addon._templates_of(addondir)}
@@ -648,18 +637,18 @@ function addon.rescan()
                 description = oldaddoninfo.description
                 deps = oldaddoninfo.deps
             end
-            -- but we can always get them from the installed manifest
-            local manifest = addon.manifest(versiondir)
-            if manifest then
-                description = manifest.description or description
-                if #manifest.deps > 0 then
-                    deps = {}
-                    for _, dep in ipairs(manifest.deps) do
-                        table.insert(deps, addon.dirname(dep))
-                    end
+            -- but the packages also install their own manifest, we can reuse it
+            local name
+            local manifestfile = path.join(versiondir, "manifest.txt")
+            if os.isfile(manifestfile) then
+                local manifest = io.load(manifestfile)
+                if manifest then
+                    name = manifest.name ~= dirname and manifest.name or nil
+                    description = manifest.description or description
                 end
             end
-            addons[dirname] = {version = version, description = description, deps = deps, payloads = payloads,
+            addons[dirname] = {version = version, name = name or (oldaddoninfo and oldaddoninfo.name),
+                               description = description, deps = deps, payloads = payloads,
                                plugins = addon._plugins_of(versiondir), templates = addon._templates_of(versiondir)}
         end
     end
