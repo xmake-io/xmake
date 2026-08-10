@@ -30,18 +30,27 @@ sandbox_core_package_addon.installdir        = addon.installdir
 sandbox_core_package_addon.dirname           = addon.dirname
 sandbox_core_package_addon.owner             = addon.owner
 sandbox_core_package_addon.is_reference      = addon.is_reference
-sandbox_core_package_addon.registryfile      = addon.registryfile
-sandbox_core_package_addon.payloaddirs       = addon.payloaddirs
 sandbox_core_package_addon.payloads          = addon.payloads
-sandbox_core_package_addon.payloaddir        = addon.payloaddir
 sandbox_core_package_addon.payloadinfos      = addon.payloadinfos
 sandbox_core_package_addon.payloads_of       = addon.payloads_of
 sandbox_core_package_addon.payloadroot       = addon.payloadroot
 sandbox_core_package_addon.addons            = addon.addons
 sandbox_core_package_addon.addondir          = addon.addondir
-sandbox_core_package_addon.unregister        = addon.unregister
 sandbox_core_package_addon.rescan            = addon.rescan
 sandbox_core_package_addon.clear             = addon.clear
+
+-- get the manifest of the given addon directory, e.g. <sourcedir>/addon.lua
+--
+-- @param sourcedir the addon source or install directory
+-- @return          the manifest, it will be nil if this addon does not describe itself
+--
+function sandbox_core_package_addon.manifest(sourcedir)
+    local manifest, errors = addon.manifest(sourcedir)
+    if errors then
+        raise(errors)
+    end
+    return manifest
+end
 
 -- resolve the given addon reference, e.g. `@addon/<addon>/<name>`, `@self/<name>`
 --

@@ -88,11 +88,33 @@ function _install_from_local(dir, name)
     local payloadroot = addon.payloadroot(dir)
     assert(payloadroot, "addon path(%s): no payload directory found, e.g. ${bright}plugins${clear}!", dir)
 
+    -- the addon describes itself? its manifest is always authoritative,
+    -- otherwise we can only guess its name from the directory name
+    local manifest = addon.manifest(dir)
+    if manifest then
+        name = manifest.name
+    end
     name = name or path.filename(dir)
+
     local dstdir = _get_addondir(name, LOCALVERSION)
     assert(not os.isdir(dstdir), "addon(%s) already exists!", name)
+
+    -- the addons which it depends on are not installed by the local installation,
+    -- so we need to install them from the repositories first
+    if manifest then
+        for _, dep in ipairs(manifest.deps) do
+            if not addon.addons()[addon.dirname(dep)] then
+                _install_from_repo(dep)
+            end
+        end
+    end
+
     for _, payloaddir in ipairs(addon.payloads_of(payloadroot)) do
         os.vcp(path.join(payloadroot, payloaddir), path.join(dstdir, payloaddir))
+    end
+    local manifestfile = path.join(dir, "addon.lua")
+    if os.isfile(manifestfile) then
+        os.vcp(manifestfile, path.join(dstdir, "addon.lua"))
     end
     -- we need to roll back the installed payloads if it cannot be registered, e.g. the name conflicts
     try

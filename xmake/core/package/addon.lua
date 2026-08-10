@@ -35,8 +35,230 @@ local global = require("base/global")
 --
 -- @note only `plugins` is activated for now, the others are reserved
 --
-function addon.payloaddirs()
+function addon._payloaddirs()
     return {"plugins", "rules", "toolchains", "platforms", "modules", "templates", "themes", "includes"}
+end
+
+-- the manifest file of an addon, e.g. <sourcedir>/addon.lua
+--
+-- an addon describes itself in this file, so its name and layout never depend on
+-- the package name of the repository which distributes it
+--
+function addon._manifestfile(sourcedir)
+    return path.join(sourcedir, "addon.lua")
+end
+
+-- the interpreter of the addon manifest
+function addon._interpreter()
+    local interp = addon._INTERPRETER
+    if interp == nil then
+        -- we need to load it lazily, the interpreter also depends on this module
+        local interpreter = require("base/interpreter")
+        interp = interpreter.new()
+        interp:api_define(addon.apis())
+        addon._INTERPRETER = interp
+    end
+    return interp
+end
+
+-- the registry file of the installed addons, e.g. ~/.xmake/addons/addons.conf
+--
+-- we save all installed addons to this file when installing/removing them,
+-- so we do not need to scan the whole addons directory on startup
+--
+function addon._registryfile()
+    return path.join(addon.installdir(), "addons.conf")
+end
+
+-- save the given addons to the registry file
+function addon._save(addons)
+    addon._ADDONS = addons
+    local registryfile = addon._registryfile()
+    -- we need not create an empty registry file if no addons are installed
+    if next(addons) == nil and not os.isfile(registryfile) then
+        return
+    end
+    local ok, errors = io.save(registryfile, addons)
+    if not ok then
+        utils.warning(errors)
+    end
+end
+
+-- get the payload directory of the given addon
+--
+-- @param name  the addon name, e.g. "esp32"
+-- @param kind  the payload kind, e.g. "rules", "modules"
+-- @return      the directory, e.g. ~/.xmake/addons/esp32/v1.0.0/rules
+--
+function addon._payloaddir(name, kind)
+    local dirname = addon.dirname(name)
+    local addoninfo = addon.addons()[dirname]
+    if addoninfo and table.contains(addoninfo.payloads or {}, kind) then
+        return path.join(addon.installdir(), dirname, addoninfo.version, kind)
+    end
+end
+
+-- get the plugin task names of the given addon directory
+--
+-- the plugins are not namespaced, we need them to check the conflicts
+--
+function addon._plugins_of(addondir)
+    local plugins = {}
+    for _, filepath in ipairs(os.files(path.join(addondir, "plugins", "*", "xmake.lua"))) do
+        local content = io.readfile(filepath)
+        if content then
+            for taskname in content:gmatch("task%s*%(%s*\"(.-)\"") do
+                table.insert(plugins, taskname)
+            end
+        end
+    end
+    return plugins
+end
+
+-- get the template ids of the given addon directory, e.g. {"c/console"}
+--
+-- the templates are not namespaced, we need them to check the conflicts
+--
+function addon._templates_of(addondir)
+    local templates = {}
+    local templatesdir = path.join(addondir, "templates")
+    for _, langdir in ipairs(os.dirs(path.join(templatesdir, "*"))) do
+        local lang = path.filename(langdir)
+        local accepted = {}
+        for _, filepath in ipairs(os.files(path.join(langdir, "**", "xmake.lua"))) do
+            local dir = path.directory(filepath)
+            local relpath = path.relative(dir, langdir)
+            if relpath and relpath ~= "." then
+                local nested = false
+                for _, root in ipairs(accepted) do
+                    if dir:startswith(root .. path.sep()) then
+                        nested = true
+                        break
+                    end
+                end
+                if not nested then
+                    table.insert(accepted, dir)
+                    table.insert(templates, lang .. "/" .. (relpath:gsub("[/\\]", ".")))
+                end
+            end
+        end
+    end
+    return templates
+end
+
+-- check the conflicts of the plugins and templates, they are not namespaced
+--
+-- @param dirname   the addon directory name
+-- @param addoninfo the addon information, @see addon.register
+--
+-- @return          the errors if there are some conflicts
+--
+function addon._check_conflicts(dirname, addoninfo)
+    for _, kind in ipairs({"plugins", "templates"}) do
+        for _, name in ipairs(addoninfo[kind] or {}) do
+            for otherdirname, otheraddoninfo in pairs(addon.addons()) do
+                if otherdirname ~= dirname and table.contains(otheraddoninfo[kind] or {}, name) then
+                    return string.format("%s(%s) conflicts, it has been provided by the addon(%s)!\nplease remove one of them, e.g. xmake addon --remove %s",
+                        kind == "plugins" and "plugin" or "template", name, otherdirname, otherdirname)
+                end
+            end
+        end
+    end
+end
+
+-- get the addons which depend on the given addon
+function addon._parents(name)
+    local dirname = addon.dirname(name)
+    local parents
+    for otherdirname, addoninfo in pairs(addon.addons()) do
+        if otherdirname ~= dirname and table.contains(addoninfo.deps or {}, dirname) then
+            parents = parents or {}
+            table.insert(parents, otherdirname)
+        end
+    end
+    if parents then
+        table.sort(parents)
+    end
+    return parents
+end
+
+-- unregister the given addon
+function addon._unregister(name)
+    local dirname = addon.dirname(name)
+    local addons = addon.addons()
+    if addons[dirname] then
+        addons[dirname] = nil
+        addon._save(addons)
+    end
+end
+
+-- get the apis of the addon manifest
+function addon.apis()
+    return {
+        values = {
+            -- addon.set_xxx
+            "addon.set_description"
+        ,   "addon.set_homepage"
+        ,   "addon.set_license"
+        ,   "addon.set_srcdir"
+            -- addon.add_xxx
+        ,   "addon.add_deps"
+        }
+    }
+end
+
+-- get the manifest of the given addon directory
+--
+-- @param sourcedir the addon source or install directory, which contains `addon.lua`
+--
+-- @return          the manifest, e.g. {name = "esp32-devel", description = "...", srcdir = "src", deps = {"serial-tools"}}
+--                  it will be nil if this addon does not describe itself
+--
+function addon.manifest(sourcedir)
+
+    -- we may resolve a lot of `@self` references, so we need to cache them
+    local manifests = addon._MANIFESTS
+    if manifests == nil then
+        manifests = {}
+        addon._MANIFESTS = manifests
+    end
+    local cachekey = path.absolute(sourcedir)
+    local cacheinfo = manifests[cachekey]
+    if cacheinfo ~= nil then
+        return cacheinfo or nil
+    end
+
+    local manifestfile = addon._manifestfile(sourcedir)
+    if not os.isfile(manifestfile) then
+        manifests[cachekey] = false
+        return
+    end
+    local interp = addon._interpreter()
+    local ok, errors = interp:load(manifestfile)
+    if not ok then
+        return nil, errors
+    end
+    local results, errors = interp:make("addon", true, true)
+    if not results then
+        return nil, errors
+    end
+    local manifest
+    for name, addoninfo in pairs(results) do
+        if manifest then
+            return nil, string.format("%s: only one addon() scope is allowed!", manifestfile)
+        end
+        manifest = {name = name,
+                    description = addoninfo:get("description"),
+                    homepage = addoninfo:get("homepage"),
+                    license = addoninfo:get("license"),
+                    srcdir = addoninfo:get("srcdir"),
+                    deps = table.wrap(addoninfo:get("deps"))}
+    end
+    if not manifest then
+        return nil, string.format("%s: no addon() scope found!", manifestfile)
+    end
+    manifests[cachekey] = manifest
+    return manifest
 end
 
 -- the install directory of addons, e.g. ~/.xmake/addons
@@ -63,9 +285,16 @@ end
 -- so that the addon code never needs to know its own installed name
 --
 -- @param scriptdir the script directory, e.g. ~/.xmake/addons/esp32/v1.0.0/rules/flash
--- @return          the addon root directory and its name, e.g. ~/.xmake/addons/esp32/v1.0.0, esp32
+--                  it will be the directory of the caller script by default
+-- @return          the addon name and its root directory, e.g. esp32, ~/.xmake/addons/esp32/v1.0.0
 --
 function addon.owner(scriptdir)
+    if not scriptdir then
+        -- we can get it from the sandbox of the caller script, e.g. the rule script of an addon
+        local sandbox = require("sandbox/sandbox")
+        local instance = sandbox.instance()
+        scriptdir = instance and instance:rootdir()
+    end
     if not scriptdir then
         return
     end
@@ -76,7 +305,11 @@ function addon.owner(scriptdir)
     if scriptdir:startswith(installdir .. path.sep()) then
         local parts = path.split(path.relative(scriptdir, installdir))
         if #parts >= 2 then
-            return path.join(installdir, parts[1], parts[2]), parts[1]
+            local addondir = path.join(installdir, parts[1], parts[2])
+            -- the addon describes itself? the manifest is always authoritative,
+            -- the directory name is only its normalized form, e.g. "myns::foo" -> "myns_foo"
+            local manifest = addon.manifest(addondir)
+            return manifest and manifest.name or parts[1], addondir
         end
         return
     end
@@ -84,9 +317,15 @@ function addon.owner(scriptdir)
     -- the addon source directory, we can also run the addon code in place when developing it
     local dir = scriptdir
     while dir and #dir > 0 do
-        for _, payloaddir in ipairs(addon.payloaddirs()) do
+        -- the addon describes itself? we get its name from the manifest
+        local manifest = addon.manifest(dir)
+        if manifest then
+            return manifest.name, dir
+        end
+        -- otherwise we can only guess it from the payload directories
+        for _, payloaddir in ipairs(addon._payloaddirs()) do
             if os.isdir(path.join(dir, payloaddir)) then
-                return dir, path.filename(dir)
+                return path.filename(dir), dir
             end
         end
         local parentdir = path.directory(dir)
@@ -121,7 +360,7 @@ function addon.resolve_reference(reference, sep, kind, opt)
         if name == "" then
             return nil, nil, nil, string.format("invalid addon reference(%s)!", reference)
         end
-        local addondir, addonname = addon.owner(opt.scriptdir)
+        local addonname, addondir = addon.owner(opt.scriptdir)
         if not addondir then
             return nil, nil, nil, string.format("%s: cannot resolve `@self`, it can only be used inside an addon!", reference)
         end
@@ -139,20 +378,11 @@ function addon.resolve_reference(reference, sep, kind, opt)
     if not addonname or addonname == "" or not name or name == "" then
         return nil, nil, nil, string.format("invalid addon reference(%s), it should be `@addon%s<addon>%s<name>`", reference, sep, sep)
     end
-    local payloaddir = addon.payloaddir(addonname, kind)
+    local payloaddir = addon._payloaddir(addonname, kind)
     if not payloaddir then
         return nil, nil, addonname, string.format("%s not found!\nplease install the addon which provides it first: xmake addon --install %s", reference, addonname)
     end
     return payloaddir, name, addonname
-end
-
--- the registry file of the installed addons, e.g. ~/.xmake/addons/addons.conf
---
--- we save all installed addons to this file when installing/removing them,
--- so we do not need to scan the whole addons directory on startup
---
-function addon.registryfile()
-    return path.join(addon.installdir(), "addons.conf")
 end
 
 -- get all installed addons
@@ -163,7 +393,7 @@ function addon.addons()
     local addons = addon._ADDONS
     if addons == nil then
         addons = {}
-        local registryfile = addon.registryfile()
+        local registryfile = addon._registryfile()
         if os.isfile(registryfile) then
             addons = io.load(registryfile) or {}
         end
@@ -200,20 +430,6 @@ function addon.payloads(kind)
     return payloads
 end
 
--- get the payload directory of the given addon
---
--- @param name  the addon name, e.g. "esp32"
--- @param kind  the payload kind, e.g. "rules", "modules"
--- @return      the directory, e.g. ~/.xmake/addons/esp32/v1.0.0/rules
---
-function addon.payloaddir(name, kind)
-    local dirname = addon.dirname(name)
-    local addoninfo = addon.addons()[dirname]
-    if addoninfo and table.contains(addoninfo.payloads or {}, kind) then
-        return path.join(addon.installdir(), dirname, addoninfo.version, kind)
-    end
-end
-
 -- get the payload information of the given kind from all installed addons
 --
 -- @param kind  the payload kind, e.g. "plugins", "rules"
@@ -246,6 +462,17 @@ end
 -- @return            the payload root directory, it will be nil if no payload is found
 --
 function addon.payloadroot(sourcedir)
+
+    -- the addon can set its payload root directory explicitly, e.g. set_srcdir("src")
+    local manifest = addon.manifest(sourcedir)
+    if manifest and manifest.srcdir then
+        local srcdir = path.join(sourcedir, manifest.srcdir)
+        if #addon.payloads_of(srcdir) > 0 then
+            return srcdir
+        end
+        return
+    end
+
     local srcdir = path.join(sourcedir, "src")
     if #addon.payloads_of(srcdir) > 0 then
         return srcdir
@@ -258,7 +485,7 @@ end
 -- get the payload directories of the given addon directory, e.g. {"plugins", "rules"}
 function addon.payloads_of(addondir)
     local payloads = {}
-    for _, payloaddir in ipairs(addon.payloaddirs()) do
+    for _, payloaddir in ipairs(addon._payloaddirs()) do
         if os.isdir(path.join(addondir, payloaddir)) then
             table.insert(payloads, payloaddir)
         end
@@ -272,94 +499,31 @@ end
 --
 function addon.installscript()
     return function (package)
-        local payloadroot = addon.payloadroot(os.curdir())
+        local sourcedir = os.curdir()
+
+        -- the addon name is its identity, e.g. the install directory, the registry key
+        -- and the `@addon/<name>/xxx` references, so the package must be distributed with the same name
+        local manifest, errors = addon.manifest(sourcedir)
+        if errors then
+            os.raise(errors)
+        end
+        if manifest and addon.dirname(manifest.name) ~= addon.dirname(package:name()) then
+            os.raise("addon(%s) does not match the package name(%s) in the repository!\nplease fix the package recipe or the addon manifest.",
+                manifest.name, package:name())
+        end
+
+        local payloadroot = addon.payloadroot(sourcedir)
         if not payloadroot then
             os.raise("addon(%s): no payload directory found, e.g. plugins!", package:name())
         end
         for _, payloaddir in ipairs(addon.payloads_of(payloadroot)) do
             os.cp(path.join(payloadroot, payloaddir), package:installdir())
         end
-    end
-end
 
--- save the given addons to the registry file
-function addon._save(addons)
-    addon._ADDONS = addons
-    local registryfile = addon.registryfile()
-    -- we need not create an empty registry file if no addons are installed
-    if next(addons) == nil and not os.isfile(registryfile) then
-        return
-    end
-    local ok, errors = io.save(registryfile, addons)
-    if not ok then
-        utils.warning(errors)
-    end
-end
-
--- get the plugin task names of the given addon directory
---
--- the plugins are not namespaced, we need them to check the conflicts
---
-function addon.plugins_of(addondir)
-    local plugins = {}
-    for _, filepath in ipairs(os.files(path.join(addondir, "plugins", "*", "xmake.lua"))) do
-        local content = io.readfile(filepath)
-        if content then
-            for taskname in content:gmatch("task%s*%(%s*\"(.-)\"") do
-                table.insert(plugins, taskname)
-            end
-        end
-    end
-    return plugins
-end
-
--- get the template ids of the given addon directory, e.g. {"c/console"}
---
--- the templates are not namespaced, we need them to check the conflicts
---
-function addon.templates_of(addondir)
-    local templates = {}
-    local templatesdir = path.join(addondir, "templates")
-    for _, langdir in ipairs(os.dirs(path.join(templatesdir, "*"))) do
-        local lang = path.filename(langdir)
-        local accepted = {}
-        for _, filepath in ipairs(os.files(path.join(langdir, "**", "xmake.lua"))) do
-            local dir = path.directory(filepath)
-            local relpath = path.relative(dir, langdir)
-            if relpath and relpath ~= "." then
-                local nested = false
-                for _, root in ipairs(accepted) do
-                    if dir:startswith(root .. path.sep()) then
-                        nested = true
-                        break
-                    end
-                end
-                if not nested then
-                    table.insert(accepted, dir)
-                    table.insert(templates, lang .. "/" .. (relpath:gsub("[/\\]", ".")))
-                end
-            end
-        end
-    end
-    return templates
-end
-
--- check the conflicts of the plugins and templates, they are not namespaced
---
--- @param dirname   the addon directory name
--- @param addoninfo the addon information, @see addon.register
---
--- @return          the errors if there are some conflicts
---
-function addon.check_conflicts(dirname, addoninfo)
-    for _, kind in ipairs({"plugins", "templates"}) do
-        for _, name in ipairs(addoninfo[kind] or {}) do
-            for otherdirname, otheraddoninfo in pairs(addon.addons()) do
-                if otherdirname ~= dirname and table.contains(otheraddoninfo[kind] or {}, name) then
-                    return string.format("%s(%s) conflicts, it has been provided by the addon(%s)!\nplease remove one of them, e.g. xmake addon --remove %s",
-                        kind == "plugins" and "plugin" or "template", name, otherdirname, otherdirname)
-                end
-            end
+        -- we also install the manifest, so we can get the addon information after installing it
+        local manifestfile = addon._manifestfile(sourcedir)
+        if os.isfile(manifestfile) then
+            os.cp(manifestfile, package:installdir())
         end
     end
 end
@@ -376,16 +540,43 @@ function addon.register(name, version, opt)
     opt = opt or {}
     local dirname = addon.dirname(name)
     local addondir = path.join(addon.installdir(), dirname, version)
+
+    -- the installed addon describes itself? we prefer its own information
+    --
+    -- @note the deps are duplicated in the package recipe, the recipe is authoritative
+    -- because xmake needs them before downloading the addon sources, but we should
+    -- report the mismatch, they must be kept in sync
+    --
+    local description = opt.description
+    local deps = opt.deps
+    local manifest = addon.manifest(addondir)
+    if manifest then
+        description = manifest.description or description
+        if deps then
+            for _, dep in ipairs(manifest.deps) do
+                if not table.contains(deps, addon.dirname(dep)) then
+                    utils.warning("addon(%s): dep(%s) is declared in its manifest, but not in the package recipe!", name, dep)
+                end
+            end
+        else
+            deps = {}
+            for _, dep in ipairs(manifest.deps) do
+                table.insert(deps, addon.dirname(dep))
+            end
+            deps = #deps > 0 and deps or nil
+        end
+    end
+
     local addoninfo = {version = version,
-                       description = opt.description,
-                       deps = opt.deps,
+                       description = description,
+                       deps = deps,
                        payloads = addon.payloads_of(addondir),
-                       plugins = addon.plugins_of(addondir),
-                       templates = addon.templates_of(addondir)}
+                       plugins = addon._plugins_of(addondir),
+                       templates = addon._templates_of(addondir)}
 
     -- we need to check the conflicts of the plugins and templates first,
     -- they are not namespaced and we do not know which one will be used
-    local errors = addon.check_conflicts(dirname, addoninfo)
+    local errors = addon._check_conflicts(dirname, addoninfo)
     if errors then
         return false, errors
     end
@@ -394,22 +585,6 @@ function addon.register(name, version, opt)
     addons[dirname] = addoninfo
     addon._save(addons)
     return true
-end
-
--- get the addons which depend on the given addon
-function addon.parents(name)
-    local dirname = addon.dirname(name)
-    local parents
-    for otherdirname, addoninfo in pairs(addon.addons()) do
-        if otherdirname ~= dirname and table.contains(addoninfo.deps or {}, dirname) then
-            parents = parents or {}
-            table.insert(parents, otherdirname)
-        end
-    end
-    if parents then
-        table.sort(parents)
-    end
-    return parents
 end
 
 -- remove the given installed addon
@@ -427,7 +602,7 @@ function addon.remove(name, opt)
 
     -- we cannot remove it if the other addons depend on it
     if not opt.force then
-        local parents = addon.parents(name)
+        local parents = addon._parents(name)
         if parents then
             return false, string.format("addon(%s) cannot be removed, it's depended on by the addon(%s)!\nplease remove them first, or pass --force to remove it anyway",
                 name, table.concat(parents, ", "))
@@ -450,18 +625,8 @@ function addon.remove(name, opt)
     if not ok then
         return false, errors
     end
-    addon.unregister(name)
+    addon._unregister(name)
     return true
-end
-
--- unregister the given addon
-function addon.unregister(name)
-    local dirname = addon.dirname(name)
-    local addons = addon.addons()
-    if addons[dirname] then
-        addons[dirname] = nil
-        addon._save(addons)
-    end
 end
 
 -- rescan the install directory and rebuild the registry
@@ -476,7 +641,6 @@ function addon.rescan()
         if #payloads > 0 then
             local dirname = path.filename(path.directory(versiondir))
             local version = path.filename(versiondir)
-            -- we need to keep the description, we cannot get it from the installed payloads
             local oldaddoninfo = oldaddons[dirname]
             local description, deps
             if oldaddoninfo and oldaddoninfo.version == version then
@@ -484,8 +648,19 @@ function addon.rescan()
                 description = oldaddoninfo.description
                 deps = oldaddoninfo.deps
             end
+            -- but we can always get them from the installed manifest
+            local manifest = addon.manifest(versiondir)
+            if manifest then
+                description = manifest.description or description
+                if #manifest.deps > 0 then
+                    deps = {}
+                    for _, dep in ipairs(manifest.deps) do
+                        table.insert(deps, addon.dirname(dep))
+                    end
+                end
+            end
             addons[dirname] = {version = version, description = description, deps = deps, payloads = payloads,
-                               plugins = addon.plugins_of(versiondir), templates = addon.templates_of(versiondir)}
+                               plugins = addon._plugins_of(versiondir), templates = addon._templates_of(versiondir)}
         end
     end
     addon._save(addons)
@@ -499,6 +674,7 @@ function addon.clear()
         os.rmdir(installdir)
     end
     addon._ADDONS = {}
+    addon._MANIFESTS = nil
 end
 
 -- return module

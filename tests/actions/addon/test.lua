@@ -52,12 +52,16 @@ function _with_repo(func)
     local reponame = "addon-test-repo-" .. suffix
     local repodir = os.tmpfile() .. ".addon-repo"
     local recipes = {
-        -- the addon itself
-        [ADDON] = ("set_sourcedir(%q)"):format(path.join(_addondir(ADDON), "src")),
+        -- the addon itself, its manifest sets the payload root directory, e.g. set_srcdir("src")
+        [ADDON] = ("set_sourcedir(%q)"):format(_addondir(ADDON)),
         -- the addon which depends on the addon above
         [ADDON_DEP] = ("set_sourcedir(%q)\n    add_deps(%q, {kind = \"addon\"})"):format(_addondir(ADDON_DEP), ADDON),
         -- the addon which provides the same plugin and template names as demo-addon
-        ["demo-addon-clone"] = ("set_sourcedir(%q)"):format(path.join(_addondir(ADDON), "src"))
+        --
+        -- @note it points at the payloads directly, so it has no manifest and no name conflict
+        ["demo-addon-clone"] = ("set_sourcedir(%q)"):format(path.join(_addondir(ADDON), "src")),
+        -- the addon whose package name does not match the name in its manifest
+        ["demo-addon-badname"] = ("set_sourcedir(%q)"):format(_addondir(ADDON))
     }
     for name, body in pairs(recipes) do
         io.writefile(path.join(repodir, "addons", name:sub(1, 1), name, "xmake.lua"),
@@ -130,7 +134,8 @@ function test_install(t)
         for _, ourfile in ipairs({"src", "tests"}) do
             t:require_not(os.exists(path.join(installdir, ourfile)))
         end
-        t:require(os.iorunv("xmake", {"addon", "--list"}):find(ADDON, 1, true))
+        -- the addon describes itself, we should get its description from the manifest
+        t:require(os.iorunv("xmake", {"addon", "--list"}):find("the demo addon of the tests", 1, true))
     end)
 
     -- it should not be runnable after removing it
@@ -170,7 +175,7 @@ target("test")
 ]])
         t:require(out:find("demo-addon: includes check is loaded", 1, true))
         t:require(out:find("demo-addon: rule base is loaded", 1, true))
-        t:require(out:find("demo-addon: rule app is loaded, hello from demo-addon: test", 1, true))
+        t:require(out:find("demo-addon: rule app is loaded by the addon(demo-addon), hello from demo-addon: test", 1, true))
     end)
 end
 
@@ -229,6 +234,12 @@ end
 -- the invalid installs should fail, and the `addon` name is reserved for the addon references
 function test_invalid(t)
     t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "addon-test-missing"}); return true end })
+
+    -- the addon name in its manifest must match the package name which distributes it
+    _with_repo(function ()
+        t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "demo-addon-badname"}); return true end })
+    end)
+
     t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "somerepo@.."}); return true end })
     t:require_not(try { function () _config_project([[
 add_requires("addon")
