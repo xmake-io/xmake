@@ -95,11 +95,6 @@ function task._directories()
         -- so we do not need to scan the whole addons directory on startup
         --
         table.join2(dirs, addon.payloads("plugins"))
-
-        local plugindirs = os.getenv("XMAKE_PLUGIN_DIRS")
-        if plugindirs then
-            table.insert(dirs, 1, plugindirs)
-        end
         task._DIRECTORIES = dirs
     end
     return dirs
