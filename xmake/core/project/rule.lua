@@ -459,6 +459,19 @@ function rule.new(name, info, opt)
     return instance
 end
 
+-- report the missing addon of the given rule reference, e.g. add_rules("@addon/esp32/flash")
+--
+-- it's either not installed at all, or it's installed but does not provide this rule
+--
+function rule._raise_addon_notfound(name)
+    local referenceinfo, errors = addon.resolve_reference(name, "/", "rules")
+    if errors then
+        os.raise(errors)
+    end
+    os.raise("rule(%s) not found!\nplease install the addon which provides it first: xmake addon --install %s",
+        name, referenceinfo and referenceinfo.addon or "<addon>")
+end
+
 -- get the given global rule
 --
 -- @param name  the rule name, the rules of the installed addons need the
@@ -467,12 +480,7 @@ end
 function rule.rule(name)
     local instance = rule.rules()[name]
     if instance == nil and name:startswith("@addon/") then
-        local referenceinfo, errors = addon.resolve_reference(name, "/", "rules")
-        if errors then
-            os.raise(errors)
-        end
-        os.raise("rule(%s) not found!\nplease install the addon which provides it first: xmake addon --install %s",
-            name, referenceinfo and referenceinfo.addon or "<addon>")
+        rule._raise_addon_notfound(name)
     end
     return instance
 end
