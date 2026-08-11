@@ -108,10 +108,10 @@ function templatedir(lang, templateid)
     -- @note the template ids are not namespaced, we only need it to disambiguate the conflicts
     --
     if templateid:startswith("@addon/") then
-        local templatesdir, id = addon.resolve_reference(templateid, "/", "templates")
-        local subdir = _templateid_subdir(id)
+        local referenceinfo = addon.resolve_reference(templateid, "/", "templates")
+        local subdir = _templateid_subdir(referenceinfo.name)
         if subdir then
-            local dir = path.join(templatesdir, lang, subdir)
+            local dir = path.join(referenceinfo.dir, lang, subdir)
             if os.isfile(path.join(dir, "xmake.lua")) then
                 return dir
             end

@@ -467,11 +467,12 @@ end
 function rule.rule(name)
     local instance = rule.rules()[name]
     if instance == nil and name:startswith("@addon/") then
-        local _, _, addonname, errors = addon.resolve_reference(name, "/", "rules")
+        local referenceinfo, errors = addon.resolve_reference(name, "/", "rules")
         if errors then
             os.raise(errors)
         end
-        os.raise("rule(%s) not found!\nplease install the addon which provides it first: xmake addon --install %s", name, addonname or "<addon>")
+        os.raise("rule(%s) not found!\nplease install the addon which provides it first: xmake addon --install %s",
+            name, referenceinfo and referenceinfo.addon or "<addon>")
     end
     return instance
 end

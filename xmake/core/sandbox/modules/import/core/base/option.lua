@@ -69,10 +69,6 @@ function sandbox_core_base_option.raw_parse(argv, options, opt)
 end
 
 -- parse arguments with the given options
---
--- @note we can also pass the extra options in the last argument,
--- e.g. option.parse(argv, options, "the description", {allow_unknown = true})
---
 function sandbox_core_base_option.parse(argv, options, ...)
     assert(argv and options)
 
@@ -81,14 +77,8 @@ function sandbox_core_base_option.parse(argv, options, ...)
     table.insert(options, 2, {'h', "help",      "k",  nil, "Print this help message and exit." })
     table.insert(options, 3, {})
 
-    -- get the descriptions and the extra options
-    local descriptions = {...}
-    local opt
-    if type(descriptions[#descriptions]) == "table" then
-        opt = table.join({populate_defaults = true}, table.remove(descriptions))
-    end
-
     -- show help
+    local descriptions = {...}
     local function show_help()
         for _, description in ipairs(descriptions) do
             print(description)
@@ -97,7 +87,7 @@ function sandbox_core_base_option.parse(argv, options, ...)
     end
 
     -- parse it
-    local results, errors = option.parse(argv, options, opt)
+    local results, errors = option.parse(argv, options)
     if not results then
         show_help()
         raise(errors)

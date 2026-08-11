@@ -349,7 +349,8 @@ end
 -- @param kind      the payload kind, e.g. "rules", "modules"
 -- @param opt       the options, e.g. {scriptdir = "..."}, it's used to resolve `@self`
 --
--- @return          the payload directory, the resource name, the addon name and errors
+-- @return          the reference information and errors,
+--                  e.g. {dir = "~/.xmake/addons/esp32/v1.0.0/rules", name = "flash", addon = "esp32"}
 --
 function addon.resolve_reference(reference, sep, kind, opt)
     opt = opt or {}
@@ -358,13 +359,13 @@ function addon.resolve_reference(reference, sep, kind, opt)
     if reference:startswith("@self" .. sep) then
         local name = reference:sub(#("@self" .. sep) + 1)
         if name == "" then
-            return nil, nil, nil, string.format("invalid addon reference(%s)!", reference)
+            return nil, string.format("invalid addon reference(%s)!", reference)
         end
         local addonname, addondir = addon.owner(opt.scriptdir)
         if not addondir then
-            return nil, nil, nil, string.format("%s: cannot resolve `@self`, it can only be used inside an addon!", reference)
+            return nil, string.format("%s: cannot resolve `@self`, it can only be used inside an addon!", reference)
         end
-        return path.join(addondir, kind), name, addonname
+        return {dir = path.join(addondir, kind), name = name, addon = addonname}
     end
 
     -- resolve the `@addon` reference, the addon name is always required
@@ -376,13 +377,13 @@ function addon.resolve_reference(reference, sep, kind, opt)
     local addonname = pos and reference:sub(#prefix + 1, pos - 1)
     local name = pos and reference:sub(pos + 1)
     if not addonname or addonname == "" or not name or name == "" then
-        return nil, nil, nil, string.format("invalid addon reference(%s), it should be `@addon%s<addon>%s<name>`", reference, sep, sep)
+        return nil, string.format("invalid addon reference(%s), it should be `@addon%s<addon>%s<name>`", reference, sep, sep)
     end
     local payloaddir = addon._payloaddir(addonname, kind)
     if not payloaddir then
-        return nil, nil, addonname, string.format("%s not found!\nplease install the addon which provides it first: xmake addon --install %s", reference, addonname)
+        return nil, string.format("%s not found!\nplease install the addon which provides it first: xmake addon --install %s", reference, addonname)
     end
-    return payloaddir, name, addonname
+    return {dir = payloaddir, name = name, addon = addonname}
 end
 
 -- get all installed addons

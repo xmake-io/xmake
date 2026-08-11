@@ -1815,16 +1815,17 @@ function interpreter:api_builtin_includes(...)
         -- attempt to find files from the includes of the addons
         -- e.g. includes("@addon/esp32/check"), includes("@self/check")
         if not found and addon.is_reference(subpath, "/") then
-            local includesdir, addon_path, _, errors = addon.resolve_reference(subpath, "/", "includes",
+            local referenceinfo, errors = addon.resolve_reference(subpath, "/", "includes",
                 {scriptdir = self:scriptdir()})
-            if not includesdir then
+            if not referenceinfo then
                 os.raise(errors)
             end
             local files
+            local addon_path = referenceinfo.name
             if addon_path:endswith(".lua") then
-                files = os.files(path.join(includesdir, addon_path))
+                files = os.files(path.join(referenceinfo.dir, addon_path))
             else
-                files = os.files(path.join(includesdir, addon_path, "xmake.lua"))
+                files = os.files(path.join(referenceinfo.dir, addon_path, "xmake.lua"))
             end
             if files and #files > 0 then
                 table.join2(subpaths_matched, files)

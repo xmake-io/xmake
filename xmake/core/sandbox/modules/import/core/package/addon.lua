@@ -59,14 +59,14 @@ end
 -- @param kind      the payload kind, e.g. "rules", "modules"
 -- @param opt       the options, e.g. {scriptdir = "..."}
 --
--- @return          the payload directory, the name, the addon name
+-- @return          the reference information, e.g. {dir = "...", name = "flash", addon = "esp32"}
 --
 function sandbox_core_package_addon.resolve_reference(reference, sep, kind, opt)
-    local payloaddir, name, addonname, errors = addon.resolve_reference(reference, sep, kind, opt)
+    local referenceinfo, errors = addon.resolve_reference(reference, sep, kind, opt)
     if errors then
         raise(errors)
     end
-    return payloaddir, name, addonname
+    return referenceinfo
 end
 
 -- register the given installed addon

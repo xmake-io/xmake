@@ -823,12 +823,12 @@ function toolchain.load(name, opt)
     local scriptpath = nil
     if parseinfo.addon_prefix then
         -- e.g. set_toolchains("@addon/esp32/xtensa"), set_toolchains("@self/xtensa")
-        local toolchainsdir, toolchainname, _, errors = addon.resolve_reference(parseinfo.addon_prefix .. name, "/", "toolchains",
+        local referenceinfo, errors = addon.resolve_reference(parseinfo.addon_prefix .. name, "/", "toolchains",
             {scriptdir = opt.scriptdir})
-        if not toolchainsdir then
+        if not referenceinfo then
             return nil, errors
         end
-        scriptpath = path.join(toolchainsdir, toolchainname, "xmake.lua")
+        scriptpath = path.join(referenceinfo.dir, referenceinfo.name, "xmake.lua")
     else
         for _, dir in ipairs(toolchain.directories()) do
             scriptpath = path.join(dir, name, "xmake.lua")

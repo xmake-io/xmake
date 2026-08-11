@@ -539,13 +539,13 @@ function core_sandbox_module.import(name, opt)
     local addon_modulesdir
     local addon_reference = name
     if addon.is_reference(name, ".") then
-        local modulesdir, modulename, addonname, errors = addon.resolve_reference(name, ".", "modules",
+        local referenceinfo, errors = addon.resolve_reference(name, ".", "modules",
             {scriptdir = opt.scriptdir or sandbox.instance() and sandbox.instance():rootdir()})
-        if not modulesdir then
+        if not referenceinfo then
             raise(errors)
         end
-        addon_modulesdir = modulesdir
-        name = modulename
+        addon_modulesdir = referenceinfo.dir
+        name = referenceinfo.name
     end
 
     -- get module name
