@@ -399,6 +399,33 @@ function task.new(name, info)
     return instance
 end
 
+-- is the given plugin conflicting with the loaded one?
+--
+-- the plugins are not namespaced, so we need to report the conflicts of the addons,
+-- otherwise we do not know which plugin will be run
+--
+-- @param taskname  the task name
+-- @param taskfile  the task file of the loaded plugin, it will be nil if it's the first one
+-- @param filepath  the task file of the plugin which we are loading
+--
+function task._is_conflicting(taskname, taskfile, filepath)
+    if not taskfile then
+        return false
+    end
+
+    -- we only report it if one of them comes from an addon, the builtin plugins
+    -- and the plugins in the global directory are always overridable
+    local addondir = path.absolute(addon.installdir())
+    if not path.absolute(taskfile):startswith(addondir) and not path.absolute(filepath):startswith(addondir) then
+        return false
+    end
+
+    -- @note we cannot raise errors here, otherwise all the commands will be broken,
+    -- and the user cannot even remove the conflicting addons
+    utils.warning("plugin(%s) conflicts, we will use the first one!\n  -> %s\n  -> %s", taskname, taskfile, filepath)
+    return true
+end
+
 -- get all registered tasks
 --
 -- @return      the tasks table {name = task, ...}
@@ -411,7 +438,6 @@ function task.tasks()
     -- load tasks
     local tasks = {}
     local taskfiles = {}
-    local addondir = path.absolute(addon.installdir())
     local dirs = task._directories()
     for _, dir in ipairs(dirs) do
         local files = os.files(path.join(dir, "*", "xmake.lua"))
@@ -420,14 +446,7 @@ function task.tasks()
                 local results, errors = task._load(filepath)
                 if results then
                     for taskname, taskinfo in pairs(results) do
-                        -- the plugins are not namespaced, so we need to report the conflicts of the addons,
-                        -- otherwise we do not know which plugin will be run
-                        local taskfile = taskfiles[taskname]
-                        if taskfile and (path.absolute(taskfile):startswith(addondir) or path.absolute(filepath):startswith(addondir)) then
-                            -- @note we cannot raise errors here, otherwise all the commands will be broken,
-                            -- and the user cannot even remove the conflicting addons
-                            utils.warning("plugin(%s) conflicts, we will use the first one!\n  -> %s\n  -> %s", taskname, taskfile, filepath)
-                        else
+                        if not task._is_conflicting(taskname, taskfiles[taskname], filepath) then
                             taskfiles[taskname] = filepath
                             tasks[taskname] = taskinfo
                         end
