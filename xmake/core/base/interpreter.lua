@@ -1787,6 +1787,35 @@ function interpreter:api_builtin_set_xmakever(minver)
 end
 
 -- the builtin api: includes()
+-- find the include files of the builtin includes, e.g. includes("@builtin/check")
+function interpreter:_find_builtin_includes(subpath)
+    local builtin_path = subpath:sub(#"@builtin/" + 1)
+    if builtin_path:endswith(".lua") then
+        return os.files(path.join(os.programdir(), "includes", builtin_path))
+    end
+    return os.files(path.join(os.programdir(), "includes", builtin_path, "xmake.lua"))
+end
+
+-- find the include files of the addons, e.g. includes("@addon/esp32/check"), includes("@self/check")
+function interpreter:_find_addon_includes(subpath)
+    local referenceinfo, errors = addon.resolve_reference(subpath, "/", "includes", {scriptdir = self:scriptdir()})
+    if not referenceinfo then
+        os.raise(errors)
+    end
+    local addon_path = referenceinfo.name
+    local files
+    if addon_path:endswith(".lua") then
+        files = os.files(path.join(referenceinfo.dir, addon_path))
+    else
+        files = os.files(path.join(referenceinfo.dir, addon_path, "xmake.lua"))
+    end
+    -- the addon is installed, but it does not provide this file, we cannot ignore it
+    if not files or #files == 0 then
+        os.raise("includes(%s) not found!", subpath)
+    end
+    return files
+end
+
 function interpreter:api_builtin_includes(...)
     assert(self and self._PRIVATE and self._PRIVATE._ROOTDIR and self._PRIVATE._MTIMES)
     local curfile = self._PRIVATE._CURFILE
@@ -1800,13 +1829,7 @@ function interpreter:api_builtin_includes(...)
         -- attempt to find files from programdir/includes/*.lua
         -- e.g. includes("@builtin/check")
         if subpath:startswith("@builtin/") then
-            local builtin_path = subpath:sub(10)
-            local files
-            if builtin_path:endswith(".lua") then
-                files = os.files(path.join(os.programdir(), "includes", builtin_path))
-            else
-                files = os.files(path.join(os.programdir(), "includes", builtin_path, "xmake.lua"))
-            end
+            local files = self:_find_builtin_includes(subpath)
             if files and #files > 0 then
                 table.join2(subpaths_matched, files)
                 found = true
@@ -1815,24 +1838,8 @@ function interpreter:api_builtin_includes(...)
         -- attempt to find files from the includes of the addons
         -- e.g. includes("@addon/esp32/check"), includes("@self/check")
         if not found and addon.is_reference(subpath, "/") then
-            local referenceinfo, errors = addon.resolve_reference(subpath, "/", "includes",
-                {scriptdir = self:scriptdir()})
-            if not referenceinfo then
-                os.raise(errors)
-            end
-            local files
-            local addon_path = referenceinfo.name
-            if addon_path:endswith(".lua") then
-                files = os.files(path.join(referenceinfo.dir, addon_path))
-            else
-                files = os.files(path.join(referenceinfo.dir, addon_path, "xmake.lua"))
-            end
-            if files and #files > 0 then
-                table.join2(subpaths_matched, files)
-                found = true
-            else
-                os.raise("includes(%s) not found!", subpath)
-            end
+            table.join2(subpaths_matched, self:_find_addon_includes(subpath))
+            found = true
         end
         -- find the given files from the project directory
         if not found then
