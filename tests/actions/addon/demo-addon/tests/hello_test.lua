@@ -1,1 +1,0 @@
--- our own test file, it should not be installed

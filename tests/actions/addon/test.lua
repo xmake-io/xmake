@@ -1,18 +1,12 @@
 import("core.base.global")
+import("lib.detect.find_program")
 
--- the addon fixtures, @see tests/actions/addon/demo-addon
+-- the addon fixtures, each of them provides one kind of payload only
 --
--- demo-addon:     the `src` layout, it provides all the payload kinds
--- demo-addon-dep: the plain layout (payloads at the root), it depends on demo-addon
-local ADDON     = "demo-addon"
-local ADDON_DEP = "demo-addon-dep"
+-- @note they are independent from each other, @see tests/actions/addon/custom-*
 
 function _addondir(name)
     return path.join(os.scriptdir(), name)
-end
-
-function _installdir(name)
-    return path.join(global.directory(), "addons", name, "latest")
 end
 
 function _remove(name)
@@ -44,25 +38,13 @@ function _with_addons(names, func)
     }
 end
 
--- create a temporary repository which indexes the addon fixtures, and register it
+-- create a temporary repository which indexes the given addon fixtures, and register it
 --
 -- @note the recipes only point at the fixtures with `set_sourcedir`, we need not generate any payload
-function _with_repo(func)
+function _with_repo(recipes, func)
     local suffix = path.filename(os.tmpfile()):gsub("[^%w]", "")
     local reponame = "addon-test-repo-" .. suffix
     local repodir = os.tmpfile() .. ".addon-repo"
-    local recipes = {
-        -- the addon itself, its manifest sets the payload root directory, e.g. set_sourcedir("src")
-        [ADDON] = ("set_sourcedir(%q)"):format(_addondir(ADDON)),
-        -- the addon which depends on the addon above
-        [ADDON_DEP] = ("set_sourcedir(%q)\n    add_deps(%q, {kind = \"addon\"})"):format(_addondir(ADDON_DEP), ADDON),
-        -- the addon which provides the same plugin and template names as demo-addon
-        --
-        -- @note it points at the payloads directly, so it has no manifest and no name conflict
-        ["demo-addon-clone"] = ("set_sourcedir(%q)"):format(path.join(_addondir(ADDON), "src")),
-        -- the addon whose package name does not match the name in its manifest
-        ["demo-addon-badname"] = ("set_sourcedir(%q)"):format(_addondir(ADDON))
-    }
     for name, body in pairs(recipes) do
         io.writefile(path.join(repodir, "addons", name:sub(1, 1), name, "xmake.lua"),
             ("package(%q)\n    set_kind(\"addon\")\n    set_description(\"the addon fixture of the tests\")\n    %s\n"):format(name, body))
@@ -99,16 +81,20 @@ function _with_repo(func)
     }
 end
 
--- run `xmake config` in a temporary project and return its output
-function _config_project(content)
+-- run the given command in a temporary project and return its output
+function _run_project(content, argv, opt)
+    opt = opt or {}
     local projectdir = os.tmpfile() .. ".addon-project"
     os.tryrm(projectdir)
     io.writefile(path.join(projectdir, "xmake.lua"), content)
+    for file, filecontent in pairs(opt.files or {}) do
+        io.writefile(path.join(projectdir, file), filecontent)
+    end
     local oldir = os.cd(projectdir)
     local out, errors
     try
     {
-        function () out = os.iorunv("xmake", {"config", "-y"}) end,
+        function () out = os.iorunv("xmake", argv) end,
         catch { function (e) errors = e end },
         finally
         {
@@ -124,123 +110,183 @@ function _config_project(content)
     return out
 end
 
+function _config_project(content)
+    return _run_project(content, {"config", "-y"})
+end
+
 -- only the payloads should be installed, our own files should not
 function test_install(t)
-    _with_addons({ADDON}, function ()
-        local installdir = _installdir(ADDON)
-        for _, payloaddir in ipairs({"plugins", "rules", "toolchains", "modules", "includes", "templates"}) do
-            t:require(os.isdir(path.join(installdir, payloaddir)))
-        end
-        for _, ourfile in ipairs({"src", "tests"}) do
+    _with_addons({"custom-toolchain"}, function ()
+
+        -- it has the `src` layout, e.g. set_sourcedir("src")
+        local installdir = path.join(global.directory(), "addons", "custom-toolchain", "latest")
+        t:require(os.isdir(path.join(installdir, "toolchains")))
+        t:require(os.isdir(path.join(installdir, "modules")))
+        for _, ourfile in ipairs({"src", "addon.lua"}) do
             t:require_not(os.exists(path.join(installdir, ourfile)))
         end
+
         -- the addon describes itself, we should get its description from the manifest
-        t:require(os.iorunv("xmake", {"addon", "--list"}):find("the demo addon of the tests", 1, true))
+        t:require(os.iorunv("xmake", {"addon", "--list"}):find("the addon which provides a custom toolchain", 1, true))
+    end)
+end
+
+-- an addon can provide a plugin, e.g. xmake hello_addon
+function test_plugin(t)
+    _with_addons({"custom-plugin"}, function ()
+        t:require(os.iorunv("xmake", {"hello_addon", "-n", "xmake"}):find("hello from custom-plugin: xmake", 1, true))
     end)
 
     -- it should not be runnable after removing it
-    t:require_not(try { function () os.runv("xmake", {"demo_hello"}); return true end })
+    t:require_not(try { function () os.runv("xmake", {"hello_addon"}); return true end })
 end
 
--- all the payload kinds should be activated
-function test_payloads(t)
-    _with_addons({ADDON}, function ()
+-- an addon can provide a rule, e.g. add_rules("@addon/custom-rule/hello")
+function test_rule(t)
+    local projectfile = [[
+target("test")
+    set_kind("phony")
+    add_rules("@addon/custom-rule/hello")
+]]
+    _with_addons({"custom-rule"}, function ()
+        -- the rule imports a module of its own addon with `@self`
+        t:require(_config_project(projectfile):find("custom-rule: hello from custom-rule: test", 1, true))
+    end)
 
-        -- the plugin imports a module of its own addon with `@self`
-        t:require(os.iorunv("xmake", {"demo_hello", "-n", "xmake"}):find("hello from demo-addon: xmake", 1, true))
+    -- it should fail if the addon which provides it is not installed
+    t:require_not(try { function () _config_project(projectfile); return true end })
+end
 
-        -- the module can be imported with the addon name
-        local script = "import(\"@addon.demo-addon.greeting\"); print(greeting(\"module\"))"
-        t:require(os.iorunv("xmake", {"lua", "-c", script}):find("hello from demo-addon: module", 1, true))
+-- an addon can provide a module, e.g. import("@addon.custom-module.greeting")
+function test_module(t)
+    _with_addons({"custom-module"}, function ()
+        local script = "import(\"@addon.custom-module.greeting\"); print(greeting(\"xmake\"))"
+        t:require(os.iorunv("xmake", {"lua", "-c", script}):find("hello from custom-module: xmake", 1, true))
 
-        -- the toolchain can be loaded with the addon name
-        local script2 = "import(\"core.tool.toolchain\"); print(toolchain.load(\"@addon/demo-addon/demo\"):get(\"description\"))"
-        t:require(os.iorunv("xmake", {"lua", "-c", script2}):find("the demo toolchain", 1, true))
+        -- the addon modules are namespaced, they cannot be imported with their plain names
+        t:require_not(try { function () os.runv("xmake", {"lua", "-c", "import(\"greeting\")"}); return true end })
+    end)
+end
 
-        -- the template should be listed and can create a project
-        t:require(os.iorunv("xmake", {"create", "--list", "-l", "c"}):find("demoaddon.hello", 1, true))
+-- an addon can provide an includes file, e.g. includes("@addon/custom-include/check")
+function test_include(t)
+    _with_addons({"custom-include"}, function ()
+        local out = _config_project([[
+includes("@addon/custom-include/check")
+target("test")
+    set_kind("phony")
+]])
+        t:require(out:find("custom-include: includes check is loaded", 1, true))
+    end)
+end
+
+-- an addon can provide a project template, e.g. xmake create -t customaddon.hello
+function test_template(t)
+    _with_addons({"custom-template"}, function ()
+        t:require(os.iorunv("xmake", {"create", "--list", "-l", "c"}):find("customaddon.hello", 1, true))
+
         local projectdir = os.tmpfile() .. ".addon-project"
         os.tryrm(projectdir)
-        os.runv("xmake", {"create", "-l", "c", "-t", "demoaddon.hello", "-P", projectdir})
+        os.runv("xmake", {"create", "-l", "c", "-t", "customaddon.hello", "-P", projectdir})
         t:require(os.isfile(path.join(projectdir, "src", "main.c")))
         os.tryrm(projectdir)
-
-        -- the includes and the rules should work in a project, the app rule depends on
-        -- the other rule of the same addon with `add_deps("@self/base")`
-        local out = _config_project([[
-includes("@addon/demo-addon/check")
-target("test")
-    set_kind("phony")
-    add_rules("@addon/demo-addon/app")
-]])
-        t:require(out:find("demo-addon: includes check is loaded", 1, true))
-        t:require(out:find("demo-addon: rule base is loaded", 1, true))
-        t:require(out:find("demo-addon: rule app is loaded by the addon(demo-addon), hello from demo-addon: test", 1, true))
     end)
 end
 
--- install the addons from a repository, by plain name and by repo@name
-function test_install_from_repo(t)
-    _with_repo(function (reponame)
-        os.runv("xmake", {"addon", "--install", "-y", ADDON})
-        t:require(os.iorunv("xmake", {"demo_hello"}):find("hello from demo-addon", 1, true))
+-- an addon can provide a toolchain and its tool modules
+--
+-- @see tests/apis/custom_toolchain for the same toolchain maintained inside a project
+function test_toolchain(t)
+    _with_addons({"custom-toolchain"}, function ()
 
-        os.runv("xmake", {"addon", "--remove", ADDON})
-        os.runv("xmake", {"addon", "--install", "-y", reponame .. "@" .. ADDON})
-        t:require(os.iorunv("xmake", {"demo_hello"}):find("hello from demo-addon", 1, true))
+        -- the toolchain can be loaded with the addon name
+        local script = "import(\"core.tool.toolchain\"); print(toolchain.load(\"@addon/custom-toolchain/my-c6000\"):get(\"description\"))"
+        t:require(os.iorunv("xmake", {"lua", "-c", script}):find("the custom toolchain of the tests", 1, true))
+
+        -- its tool modules are exported by the manifest, so the internal calls can import them
+        -- with their plain names, e.g. add_globalmodules("core.tools.mycl6x")
+        local script2 = "import(\"core.tools.mycl6x\"); print(mycl6x.greeting()); " ..
+                        "import(\"lib.detect.find_tool\"); assert(find_tool(\"mycl6x\"), \"mycl6x not found!\")"
+        t:require(os.iorunv("xmake", {"lua", "-c", script2}):find("hello from the custom toolchain addon", 1, true))
+
+        -- and a project can build with it
+        --
+        -- @note its compiler is just the host one, so we can only build with it if there is one
+        if find_program("gcc") or find_program("clang") or find_program("cc") then
+            _run_project([[
+target("test")
+    set_kind("binary")
+    set_toolchains("@addon/custom-toolchain/my-c6000")
+    add_files("src/main.c")
+]], {"build", "-y"}, {files = {["src/main.c"] = "int main(int argc, char** argv) { return 0; }\n"}})
+        end
+    end)
+end
+
+-- the addons can be installed from a repository, by plain name and by repo@name
+function test_install_from_repo(t)
+    local recipes = {["custom-plugin"] = ("set_sourcedir(%q)"):format(_addondir("custom-plugin"))}
+    _with_repo(recipes, function (reponame)
+        os.runv("xmake", {"addon", "--install", "-y", "custom-plugin"})
+        t:require(os.iorunv("xmake", {"hello_addon"}):find("hello from custom-plugin", 1, true))
+
+        os.runv("xmake", {"addon", "--remove", "custom-plugin"})
+        os.runv("xmake", {"addon", "--install", "-y", reponame .. "@custom-plugin"})
+        t:require(os.iorunv("xmake", {"hello_addon"}):find("hello from custom-plugin", 1, true))
 
         -- it should be searchable, and the addons should not be found by the package search
-        t:require(os.iorunv("xmake", {"addon", "--search", ADDON}):find(ADDON, 1, true))
-        t:require_not(os.iorunv("xrepo", {"search", ADDON}):find(ADDON, 1, true))
+        t:require(os.iorunv("xmake", {"addon", "--search", "custom-plugin"}):find("custom-plugin", 1, true))
+        t:require_not(os.iorunv("xrepo", {"search", "custom-plugin"}):find("custom-plugin", 1, true))
     end)
 end
 
--- an addon can depend on the other addons, and use their rules and modules
+-- an addon can depend on the other addons, they are installed and activated together
 function test_addon_deps(t)
-    _with_repo(function ()
-
-        -- installing it should install and activate its addon dependency
-        os.runv("xmake", {"addon", "--install", "-y", ADDON_DEP})
-        t:require(os.iorunv("xmake", {"addon", "--list"}):find(ADDON, 1, true))
+    local recipes = {
+        ["custom-module"] = ("set_sourcedir(%q)"):format(_addondir("custom-module")),
+        ["custom-plugin"] = ("set_sourcedir(%q)\n    add_deps(\"custom-module\", {kind = \"addon\"})"):format(_addondir("custom-plugin"))
+    }
+    _with_repo(recipes, function ()
+        os.runv("xmake", {"addon", "--install", "-y", "custom-plugin"})
+        local out = os.iorunv("xmake", {"addon", "--list"})
+        t:require(out:find("custom-plugin", 1, true))
+        t:require(out:find("custom-module", 1, true))
 
         -- we cannot remove the dependency, it's depended on by the other addon
-        t:require_not(try { function () os.runv("xmake", {"addon", "--remove", ADDON}); return true end })
-
-        -- its rule depends on the rule of the other addon and imports its module
-        local out = _config_project([[
-target("test")
-    set_kind("phony")
-    add_rules("@addon/demo-addon-dep/dep")
-]])
-        t:require(out:find("demo-addon: rule base is loaded", 1, true))
-        t:require(out:find("demo-addon-dep: hello from demo-addon: dep", 1, true))
+        t:require_not(try { function () os.runv("xmake", {"addon", "--remove", "custom-module"}); return true end })
     end)
 end
 
 -- the plugins and the templates are not namespaced, the conflicts should be rejected when installing
 function test_install_conflicts(t)
-    _with_repo(function ()
-        os.runv("xmake", {"addon", "--install", "-y", ADDON})
+    _with_addons({"custom-plugin"}, function ()
 
-        -- this addon provides the same plugin and template names
-        t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "demo-addon-clone"}); return true end })
+        -- this addon provides the same plugin name
+        local clonedir = os.tmpfile() .. ".addon-clone"
+        os.tryrm(clonedir)
+        io.writefile(path.join(clonedir, "addon.lua"), "addon(\"custom-plugin-clone\")\n")
+        io.writefile(path.join(clonedir, "plugins", "hello_addon", "xmake.lua"),
+            "task(\"hello_addon\")\n    set_category(\"plugin\")\n    set_menu {}\n    on_run(function () end)\n")
+        t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", clonedir}); return true end })
+        os.tryrm(clonedir)
 
         -- and the other commands should still work
-        t:require(os.iorunv("xmake", {"addon", "--list"}):find(ADDON, 1, true))
-        t:require(os.iorunv("xmake", {"demo_hello"}):find("hello from demo-addon", 1, true))
+        t:require(os.iorunv("xmake", {"hello_addon"}):find("hello from custom-plugin", 1, true))
     end)
 end
 
 -- the invalid installs should fail, and the `addon` name is reserved for the addon references
 function test_invalid(t)
     t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "addon-test-missing"}); return true end })
+    t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "somerepo@.."}); return true end })
 
     -- the addon name in its manifest must match the package name which distributes it
-    _with_repo(function ()
-        t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "demo-addon-badname"}); return true end })
+    local recipes = {["custom-plugin-badname"] = ("set_sourcedir(%q)"):format(_addondir("custom-plugin"))}
+    _with_repo(recipes, function ()
+        t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "custom-plugin-badname"}); return true end })
     end)
 
-    t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "somerepo@.."}); return true end })
+    -- the `addon` name is reserved
     t:require_not(try { function () _config_project([[
 add_requires("addon")
 target("test")

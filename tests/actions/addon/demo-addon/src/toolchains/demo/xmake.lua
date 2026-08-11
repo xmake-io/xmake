@@ -1,6 +1,0 @@
-toolchain("demo")
-    set_kind("standalone")
-    set_description("the demo toolchain of the demo addon")
-    on_load(function (toolchain)
-        toolchain:set("toolset", "cc", "gcc")
-    end)

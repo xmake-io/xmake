@@ -154,14 +154,23 @@ end
 -- @return          the errors if there are some conflicts
 --
 function addon._check_conflicts(dirname, addoninfo)
-    for _, kind in ipairs({"plugins", "templates"}) do
+    local kindnames = {plugins = "plugin", templates = "template", globalmodules = "global module"}
+    for _, kind in ipairs({"plugins", "templates", "globalmodules"}) do
         for _, name in ipairs(addoninfo[kind] or {}) do
             for otherdirname, otheraddoninfo in pairs(addon.addons()) do
                 if otherdirname ~= dirname and table.contains(otheraddoninfo[kind] or {}, name) then
                     return string.format("%s(%s) conflicts, it has been provided by the addon(%s)!\nplease remove one of them, e.g. xmake addon --remove %s",
-                        kind == "plugins" and "plugin" or "template", name, otherdirname, otherdirname)
+                        kindnames[kind], name, otherdirname, otherdirname)
                 end
             end
+        end
+    end
+
+    -- the global modules can also conflict with the builtin ones
+    for _, name in ipairs(addoninfo.globalmodules or {}) do
+        local modulefile = path.join(os.programdir(), "modules", (name:gsub("%.", "/")) .. ".lua")
+        if os.isfile(modulefile) then
+            return string.format("global module(%s) conflicts, it has been provided by xmake!\nplease rename it in the addon manifest.", name)
         end
     end
 end
@@ -203,6 +212,7 @@ function addon.apis()
         ,   "addon.set_sourcedir"
             -- addon.add_xxx
         ,   "addon.add_deps"
+        ,   "addon.add_globalmodules"
         }
     }
 end
@@ -252,7 +262,8 @@ function addon.manifest(sourcedir)
                     homepage = addoninfo:get("homepage"),
                     license = addoninfo:get("license"),
                     sourcedir = addoninfo:get("sourcedir"),
-                    deps = table.wrap(addoninfo:get("deps"))}
+                    deps = table.wrap(addoninfo:get("deps")),
+                    globalmodules = table.wrap(addoninfo:get("globalmodules"))}
     end
     if not manifest then
         return nil, string.format("%s: no addon() scope found!", manifestfile)
@@ -422,6 +433,28 @@ function addon.addondir(name, version)
     return path.join(addon.installdir(), dirname, version)
 end
 
+-- get the modules which the installed addons export as the global modules
+--
+-- they are declared in the addon manifest, e.g. add_globalmodules("core.tools.esptool"),
+-- so that they can be imported with their plain names by the internal calls,
+-- e.g. import("core.tools.esptool"), find_tool("esptool")
+--
+-- @return      the modules table, e.g. {["core.tools.esptool"] = "~/.xmake/addons/esp32/v1.0.0/modules"}
+--
+function addon.globalmodules()
+    local globalmodules = addon._GLOBALMODULES
+    if globalmodules == nil then
+        globalmodules = {}
+        for dirname, addoninfo in pairs(addon.addons()) do
+            for _, name in ipairs(addoninfo.globalmodules or {}) do
+                globalmodules[name] = path.join(addon.installdir(), dirname, addoninfo.version, "modules")
+            end
+        end
+        addon._GLOBALMODULES = globalmodules
+    end
+    return globalmodules
+end
+
 -- get the payload directories of the given kind from all installed addons
 --
 -- @param kind  the payload kind, e.g. "plugins", "rules"
@@ -560,6 +593,7 @@ function addon.register(name, version, opt)
                        -- recorded whenever this addon has one, so that the repositories can
                        -- check that the manifest and the package recipe are kept in sync
                        manifest_deps = opt.manifest_deps,
+                       globalmodules = opt.globalmodules,
                        payloads = addon.payloads_of(addondir),
                        plugins = addon._plugins_of(addondir),
                        templates = addon._templates_of(addondir)}
@@ -665,6 +699,7 @@ function addon.clear()
     end
     addon._ADDONS = {}
     addon._MANIFESTS = nil
+    addon._GLOBALMODULES = nil
 end
 
 -- return module

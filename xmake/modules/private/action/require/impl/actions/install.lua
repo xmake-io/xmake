@@ -529,7 +529,8 @@ function main(package)
                         end
                         addon.register(package:name(), package:version_str() or "latest",
                             {description = description, deps = deps,
-                             manifest_deps = manifest and manifest.deps or nil})
+                             manifest_deps = manifest and manifest.deps or nil,
+                             globalmodules = manifest and #manifest.globalmodules > 0 and manifest.globalmodules or nil})
                     end
                     installed_now = true
                 end

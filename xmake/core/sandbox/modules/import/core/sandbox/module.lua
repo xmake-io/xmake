@@ -441,28 +441,6 @@ function core_sandbox_module.coredir()
     return path.join(os.programdir(), "core/sandbox/modules/import")
 end
 
--- get the module directories for the given addon reference
---
--- they are only used for the addon modules,
--- e.g. import("@addon.esp32.sdkconfig"), import("@self.sdkconfig")
---
-function core_sandbox_module.addon_directories(modulesdir)
-    local moduledirs = {modulesdir}
-
-    -- add the modules of the addon toolchains, e.g. <addondir>/toolchains/<name>/modules
-    -- so that a custom toolchain can bundle its tool modules together
-    local toolchainsdir = path.join(path.directory(modulesdir), "toolchains")
-    if os.isdir(toolchainsdir) then
-        for _, toolchaindir in ipairs(os.dirs(path.join(toolchainsdir, "*"))) do
-            local dir = path.join(toolchaindir, "modules")
-            if os.isdir(dir) then
-                table.insert(moduledirs, dir)
-            end
-        end
-    end
-    return moduledirs
-end
-
 -- add module directories
 function core_sandbox_module.add_directories(...)
     local moduledirs = core_sandbox_module.directories()
@@ -567,9 +545,22 @@ function core_sandbox_module.import(name, opt)
     -- init module directories (disable local packages?)
     local modules_directories
     if addon_modulesdir then
-        modules_directories = core_sandbox_module.addon_directories(addon_modulesdir)
+        -- the addon modules are always resolved from the addon `modules` directory only,
+        -- e.g. import("@addon.esp32.sdkconfig"), import("@self.sdkconfig")
+        modules_directories = {addon_modulesdir}
     else
         modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
+
+        -- an addon can export some modules as the global modules, e.g. add_globalmodules("core.tools.esptool"),
+        -- so that the internal calls can import them with their plain names, e.g. import("core.tools.esptool")
+        --
+        -- @note we only accept the declared names, the other modules of this addon are
+        -- still private and can only be imported with `@addon.`/`@self.`
+        --
+        local globalmodulesdir = addon.globalmodules()[name]
+        if globalmodulesdir then
+            table.insert(modules_directories, rootdir and 2 or 1, globalmodulesdir)
+        end
     end
 
     -- load module

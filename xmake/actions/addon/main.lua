@@ -118,12 +118,19 @@ function _install_from_local(dir, name)
     {
         function ()
             addon.register(name, LOCALVERSION, manifest and {
-                description = manifest.description, deps = #manifest.deps > 0 and manifest.deps or nil})
+                description = manifest.description,
+                deps = #manifest.deps > 0 and manifest.deps or nil,
+                globalmodules = #manifest.globalmodules > 0 and manifest.globalmodules or nil})
         end,
         catch
         {
             function (errors)
                 os.tryrm(dstdir)
+                -- we need to remove the addon directory too if no other version is installed
+                local addondir = path.directory(dstdir)
+                if #os.filedirs(path.join(addondir, "*")) == 0 then
+                    os.tryrm(addondir)
+                end
                 raise(errors)
             end
         }
