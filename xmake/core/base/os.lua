@@ -423,8 +423,14 @@ function os.match(pattern, mode, opt)
         return os._async_task().match(pattern, mode)
     end
 
-    -- extract callback
-    local callback = type(opt) == "function" and opt or (type(opt) == "table" and opt.callback or nil)
+    -- extract callback and the maximum recursion level
+    local callback, maxrecursion
+    if type(opt) == "function" then
+        callback = opt
+    elseif type(opt) == "table" then
+        callback = opt.callback
+        maxrecursion = opt.recursion
+    end
 
     -- support path instance
     pattern = tostring(pattern)
@@ -493,7 +499,9 @@ function os.match(pattern, mode, opt)
     -- limit recursion level: src/*/*.c
     local recursion = 0
     if pattern:find("**", 1, true) then
-        recursion = -1
+        -- we can also limit the recursion level of `**`, it may be very slow
+        -- in a deep directory tree, e.g. os.files("src/**.c", {recursion = 2})
+        recursion = maxrecursion or -1
     else
         -- "src/*/*.c" -> "*/" -> recursion level: 1
         -- "src/*/main.c" -> "*/" -> recursion level: 1
@@ -503,6 +511,9 @@ function os.match(pattern, mode, opt)
             if seps > 0 then
                 recursion = seps
             end
+        end
+        if maxrecursion and recursion > maxrecursion then
+            recursion = maxrecursion
         end
     end
 

@@ -2632,7 +2632,7 @@ function _instance:has_addon(opt)
     -- @note we need to reload the global rules, this addon may be installed just now
     checkers.rules = function (name)
         local rule = require("project/rule")
-        rule._RULES = nil
+        rule.clear()
         return rule.rules()["@addon/" .. self:name() .. "/" .. name] ~= nil
     end
 
