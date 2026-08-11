@@ -674,10 +674,13 @@ function rule.rules()
         end
 
         -- make rule instances
+        --
+        -- @note we reuse the rules which have been loaded on demand,
+        -- otherwise we would have two instances of the same rule
+        local loaded = rule._LOADED or {}
         rules = {}
         for rulename, ruleinfo in pairs(ruleinfos) do
-            local instance = rule.new(rulename, ruleinfo)
-            rules[rulename] = instance
+            rules[rulename] = loaded[rulename] or rule.new(rulename, ruleinfo)
         end
         rule._RULES = rules
     end

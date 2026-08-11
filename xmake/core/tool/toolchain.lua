@@ -672,11 +672,10 @@ end
 --
 function toolchain.parsename(name)
 
-    -- the toolchain of an addon? e.g. set_toolchains("@addon.esp32.xtensa"), set_toolchains("@self.xtensa")
+    -- the toolchain of an addon?
+    -- e.g. set_toolchains("@addon/esp32/xtensa"), set_toolchains("@addon/esp32/clang@llvm"), set_toolchains("@self/xtensa")
     --
     -- @note we need to parse it first, because `@` is also used for the toolchain packages, e.g. "@zig"
-    --
-    -- e.g. set_toolchains("@addon/esp32/xtensa"), set_toolchains("@addon/esp32/clang@llvm"), set_toolchains("@self/xtensa")
     --
     -- @note we only strip the `@addon/<addon>/` prefix here, the rest is parsed as usual,
     -- so the addon toolchains can also be bound to packages, e.g. "@addon/esp32/clang@llvm"
@@ -776,8 +775,6 @@ function toolchain.directories()
     toolchain._DIRS = dirs
     return dirs
 end
-
-
 
 -- add toolchain directories
 function toolchain.add_directories(...)

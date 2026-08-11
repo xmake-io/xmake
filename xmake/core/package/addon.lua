@@ -166,11 +166,14 @@ function addon._check_conflicts(dirname, addoninfo)
         end
     end
 
-    -- the global modules can also conflict with the builtin ones
+    -- the global modules can also conflict with the builtin and the user modules
     for _, name in ipairs(addoninfo.globalmodules or {}) do
-        local modulefile = path.join(os.programdir(), "modules", (name:gsub("%.", "/")) .. ".lua")
-        if os.isfile(modulefile) then
-            return string.format("global module(%s) conflicts, it has been provided by xmake!\nplease rename it in the addon manifest.", name)
+        local modulepath = (name:gsub("%.", "/")) .. ".lua"
+        for _, moduledir in ipairs({os.programdir(), global.directory()}) do
+            if os.isfile(path.join(moduledir, "modules", modulepath)) then
+                return string.format("global module(%s) conflicts, it has been provided by %s!\nplease rename it in the addon manifest.",
+                    name, moduledir == os.programdir() and "xmake" or path.join(moduledir, "modules"))
+            end
         end
     end
 end
