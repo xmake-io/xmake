@@ -151,10 +151,33 @@ function _install_from_git(url)
     end
     local name = (path.filename(url):gsub("%.git$", ""))
     local tmpdir = os.tmpfile() .. ".dir"
-    git.clone(url, {verbose = option.get("verbose"), branch = branch, outputdir = tmpdir})
-    os.tryrm(path.join(tmpdir, ".git"))
-    _install_from_local(tmpdir, name)
-    os.tryrm(tmpdir)
+
+    -- we need git to clone it, it will be installed first if it's not found
+    --
+    -- @note we cannot enter it for the other install paths, it may install packages
+    -- and that needs a project, but `xmake addon` can be run anywhere
+    --
+    environment.enter()
+    try
+    {
+        function ()
+            git.clone(url, {verbose = option.get("verbose"), branch = branch, outputdir = tmpdir})
+            os.tryrm(path.join(tmpdir, ".git"))
+            _install_from_local(tmpdir, name)
+        end,
+        finally
+        {
+            -- we always need to remove the temporary clone directory,
+            -- @note try() swallows the errors if we do not re-raise them here
+            function (ok, errors)
+                os.tryrm(tmpdir)
+                if not ok then
+                    raise(errors)
+                end
+            end
+        }
+    }
+    environment.leave()
 end
 
 -- install a single addon
@@ -196,11 +219,9 @@ end
 -- install addons
 function _install()
     local names = assert(option.get("addons"), "please specify the addons to be installed!")
-    environment.enter()
     for _, name in ipairs(names) do
         _install_one(name)
     end
-    environment.leave()
 end
 
 -- remove the given installed addons
