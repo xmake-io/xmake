@@ -167,6 +167,9 @@ function is_changed(dependinfo, opt)
             end
             return true
         elseif deptype == "table" then
+            if #depvalue ~= #optvalue then
+                return true
+            end
             for subidx, subvalue in ipairs(depvalue) do
                 if subvalue ~= optvalue[subidx] then
                     if _is_show_diagnosis_info() then
