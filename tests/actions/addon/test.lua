@@ -258,8 +258,11 @@ function test_autofetch(t)
         _remove("custom-include")
         _with_project("autofetch", function (projectdir)
 
-            -- it should be installed when loading the project, so that its includes file can be found
-            t:require(os.iorunv("xmake", {"config", "-y"}):find("custom-include: includes check is loaded", 1, true))
+            -- it should be installed when loading the project, so that its includes file can be found,
+            -- and we should tell the user why we install something, it may need to confirm and download
+            local output = os.iorunv("xmake", {"config", "-y"})
+            t:require(output:find("custom-include: includes check is loaded", 1, true))
+            t:require(output:find("this project needs the addons", 1, true))
 
             -- and it should be locked
             local lockfile = path.join(projectdir, "xmake-addons.lock")
@@ -268,6 +271,20 @@ function test_autofetch(t)
 
             -- we should not install it again
             t:require_not(os.iorunv("xmake", {"config", "-y"}):find("install custom-include", 1, true))
+        end)
+    end)
+end
+
+-- every command builds the option menu, which merges the project tasks in a best-effort way,
+-- so the commands which need not the project should never install its addons
+function test_autofetch_skipped_for_option_menu(t)
+    local recipes = {["custom-include"] = ("set_sourcedir(%q)"):format(_addondir("custom-include"))}
+    _with_repo(recipes, function ()
+        _remove("custom-include")
+        _with_project("autofetch", function (projectdir)
+            os.runv("xmake", {"addon", "--list"})
+            os.runv("xmake", {"lua", "-c", "print(\"hello\")"})
+            t:require_not(os.isfile(path.join(projectdir, "xmake-addons.lock")))
         end)
     end)
 end

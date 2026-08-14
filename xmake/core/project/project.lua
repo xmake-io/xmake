@@ -275,6 +275,16 @@ function project._do_install_addons()
         return true
     end
 
+    -- tell the user why we are installing something, it may need to confirm and download,
+    -- e.g. `xmake --help` in a project directory which declares some addons
+    utils.cprint("${color.warning}note: ${clear}%s: this project needs the addons(${bright}%s${clear}), installing them ..",
+        addons.filename(), table.concat(addonsinfo.addons, ", "))
+    if baseoption.get("help") then
+        -- the help menu also shows the options which the addons provide, but the user
+        -- did not ask for an installation, so we tell them how to skip it
+        utils.cprint("${dim}we can run it outside of the project directory to skip the installation${clear}")
+    end
+
     -- @note we run it in a working directory which has no project, @see addon.workdir(),
     -- otherwise it would load this project again
     --
@@ -309,19 +319,32 @@ function project._do_install_addons()
 end
 
 -- load the project file
-function project._load(force, disable_filter)
-
-    -- has already been loaded?
-    if project._memcache():get("rootinfo") and not force then
-        return true
-    end
+--
+-- @param opt   the options
+--              - force: load the project file again even if it has been loaded
+--              - disable_filter: disable the interpreter filter, e.g. `$(plat)`
+--              - skip_addons: do not install the addons which this project declares
+--
+function project._load(opt)
+    opt = opt or {}
 
     -- install the addons which this project declares in `xmake-addons.lua` first,
     -- it may use their rules, toolchains and includes files,
     -- e.g. includes("@addon/esp32-devel/board")
-    local ok, errors = project._install_addons()
-    if not ok then
-        return false, errors
+    --
+    -- @note we need to check it before the cache, the project file may have been loaded
+    -- already without them, e.g. by the option menu
+    --
+    if not opt.skip_addons then
+        local ok, errors = project._install_addons()
+        if not ok then
+            return false, errors
+        end
+    end
+
+    -- has already been loaded?
+    if project._memcache():get("rootinfo") and not opt.force then
+        return true
     end
 
     -- enter the project directory
@@ -350,13 +373,13 @@ function project._load(force, disable_filter)
     end
 
     -- load the root info of the project
-    local rootinfo, errors = project._load_scope("root", true, not disable_filter)
+    local rootinfo, errors = project._load_scope("root", true, not opt.disable_filter)
     if not rootinfo then
         return false, errors
     end
 
     -- load the root info of the target
-    local rootinfo_target, errors = project._load_scope("root.target", true, not disable_filter)
+    local rootinfo_target, errors = project._load_scope("root.target", true, not opt.disable_filter)
     if not rootinfo_target then
         return false, errors
     end
@@ -400,6 +423,11 @@ function project._load_scope(scope_kind, deduplicate, enable_filter)
 end
 
 -- load tasks
+--
+-- @note we should not install the addons which this project declares here, the option menu
+-- merges the project tasks in a best-effort way and every command builds it,
+-- e.g. `xmake lua`, `xmake addon --remove --all`, @see xmake/core/main.lua
+--
 function project._load_tasks()
 
     -- the project file is not found?
@@ -408,7 +436,7 @@ function project._load_tasks()
     end
 
     -- load the project file first and disable filter
-    local ok, errors = project._load(true, true)
+    local ok, errors = project._load({force = true, disable_filter = true, skip_addons = true})
     if not ok then
         return nil, errors
     end
@@ -489,7 +517,7 @@ function project._load_targets()
 
     -- load all requires first and reload the project file to ensure has_package() works for targets
     local requires = project.required_packages()
-    local ok, errors = project._load(true)
+    local ok, errors = project._load({force = true})
     if not ok then
         return nil, errors
     end
@@ -570,7 +598,7 @@ function project._load_options(disable_filter)
     end
 
     -- reload the project file to ensure `if is_plat() then add_packagedirs() end` works
-    local ok, errors = project._load(true, disable_filter)
+    local ok, errors = project._load({force = true, disable_filter = disable_filter})
     if not ok then
         return nil, errors
     end
@@ -1218,7 +1246,7 @@ function project.requires_str()
     if not requires_str then
 
         -- reload the project file to handle `has_config()`
-        local ok, errors = project._load(true)
+        local ok, errors = project._load({force = true})
         if not ok then
             os.raise(errors)
         end
