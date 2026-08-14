@@ -232,7 +232,7 @@ end
 -- install the addons which this project declares
 --
 -- @note we cannot install them here, we are loading the project, so we do it in a
--- sub-process, @see xmake/modules/private/addons/main.lua
+-- sub-process, @see xmake/modules/private/action/addon/impl/install_addons.lua
 --
 function project._install_addons()
     -- @note we need to cache the result, the project may be loaded many times,
@@ -295,7 +295,7 @@ function project._do_install_addons()
             flags_added[flag] = true
         end
     end
-    table.insert(argv, "private.addons")
+    table.insert(argv, "private.action.addon.impl.install_addons")
     table.insert(argv, os.projectdir())
     local envs = os.getenvs()
     envs.XMAKE_SKIP_ADDONS = "y"

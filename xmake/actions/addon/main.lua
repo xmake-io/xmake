@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.package.addon")
 import("devel.git")
+import("private.action.addon.impl.install_addons")
 import("private.action.require.impl.environment")
 import("private.action.require.impl.search_packages")
 
@@ -253,7 +254,6 @@ end
 
 -- upgrade the addons which the current project declares in its `xmake-addons.lua`
 function _upgrade()
-    import("private.addons", {alias = "install_addons"})
     install_addons(os.projectdir(), {upgrade = true})
 end
 

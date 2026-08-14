@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
--- @file        main.lua
+-- @file        install_addons.lua
 --
 
 -- imports
@@ -73,8 +73,8 @@ end
 
 -- install the addons which the given project declares in its `xmake-addons.lua`
 --
--- @note we are called from a sub-process, the project cannot be loaded until its
--- addons are installed, @see core/project/project.lua
+-- @note we are also called from a sub-process, the project cannot be loaded until
+-- its addons are installed, @see core/project/project.lua
 --
 function main(projectdir, opt)
     opt = opt or {}

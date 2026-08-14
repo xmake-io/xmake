@@ -319,7 +319,7 @@ function _register_addon(package)
     end
 
     -- we also record where it comes from, so that the projects can lock it,
-    -- @see xmake/modules/private/addons/main.lua
+    -- @see xmake/modules/private/action/addon/impl/install_addons.lua
     local repo = package:repo()
     addon.register(package:name(), package:version_str() or "latest",
         {description = description, deps = deps,
