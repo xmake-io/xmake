@@ -9,7 +9,7 @@ function main(opt)
     for _, name in ipairs({"gcc", "clang", "cc"}) do
         local program = find_program(name, opt)
         if program then
-            return {program = program}
+            return program
         end
     end
 end

@@ -29,9 +29,13 @@ function _with_addons(names, func)
         func,
         finally
         {
-            function ()
+            -- @note try() swallows the errors if we do not re-raise them here
+            function (ok, errors)
                 for _, name in ipairs(names) do
                     _remove(name)
+                end
+                if not ok then
+                    raise(errors)
                 end
             end
         }
@@ -65,7 +69,8 @@ function _with_repo(recipes, func)
         end,
         finally
         {
-            function ()
+            -- @note try() swallows the errors if we do not re-raise them here
+            function (ok, errors)
                 for name, _ in pairs(recipes) do
                     _remove(name)
                 end
@@ -76,6 +81,9 @@ function _with_repo(recipes, func)
                 io.save(cachefile, cache)
                 os.tryrm(path.join(global.cachedir(), "quick_search"))
                 os.tryrm(repodir)
+                if not ok then
+                    raise(errors)
+                end
             end
         }
     }
@@ -132,9 +140,13 @@ function _with_project(name, func)
         end,
         finally
         {
-            function ()
+            -- @note try() swallows the errors if we do not re-raise them here
+            function (ok, errors)
                 os.cd(oldir)
                 os.tryrm(projectdir)
+                if not ok then
+                    raise(errors)
+                end
             end
         }
     }
@@ -285,6 +297,43 @@ function test_autofetch_skipped_for_option_menu(t)
             os.runv("xmake", {"addon", "--list"})
             os.runv("xmake", {"lua", "-c", "print(\"hello\")"})
             t:require_not(os.isfile(path.join(projectdir, "xmake-addons.lock")))
+        end)
+    end)
+end
+
+-- a complete project which declares its addons in `xmake-addons.lua` and builds with them,
+-- @see tests/actions/addon/projects/autofetch-build
+function test_autofetch_build(t)
+
+    -- @note the compiler of the custom toolchain is just the host one,
+    -- so we can only build it if there is one
+    if not (find_program("gcc") or find_program("clang") or find_program("cc")) then
+        return
+    end
+
+    local names = {"custom-include", "custom-rule", "custom-toolchain"}
+    local recipes = {}
+    for _, name in ipairs(names) do
+        recipes[name] = ("set_sourcedir(%q)"):format(_addondir(name))
+    end
+    _with_repo(recipes, function ()
+        for _, name in ipairs(names) do
+            _remove(name)
+        end
+        _with_project("autofetch-build", function (projectdir)
+
+            -- all of them should be installed when loading the project, and it should build
+            -- with their includes file, rule and toolchain, @see src/main.c
+            local output = os.iorunv("xmake", {"build", "-y"})
+            t:require(output:find("custom-include: includes check is loaded", 1, true))
+            t:require(output:find("custom-rule: hello from custom-rule: hello", 1, true))
+            t:require(output:find("build ok", 1, true))
+
+            -- and all of them should be locked
+            local lockinfo = io.load(path.join(projectdir, "xmake-addons.lock"))
+            for _, name in ipairs(names) do
+                t:require(lockinfo[name] ~= nil)
+            end
         end)
     end)
 end
