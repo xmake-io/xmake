@@ -225,29 +225,30 @@ function _install()
 end
 
 -- remove the given installed addons
+--
+-- @note `xrepo remove --addon` removes them in the same way,
+-- @see xmake/modules/private/xrepo/action/remove.lua
+--
 function _remove()
     local names = option.get("addons")
+    local force = option.get("force")
 
     -- remove all the installed addons? e.g. xmake addon --remove --all
-    --
-    -- @note we remove them one by one, so we can also remove the symlinks safely,
-    -- and the dependencies between them do not matter, they are all removed
-    --
     if option.get("all") then
         names = table.keys(addon.addons())
         if #names == 0 then
-            cprint("${color.warning}no installed addons!")
+            wprint("no installed addons!")
             return
         end
-        for _, name in ipairs(names) do
-            addon.remove(name, {force = true})
-            cprint("${color.success}remove ${bright}%s${clear} ok!", name)
-        end
-        return
+        -- the dependencies between them do not matter, they are all removed
+        force = true
     end
 
     assert(names, "please specify the addon name to be removed!")
-    _xrepo("remove", names)
+    for _, name in ipairs(names) do
+        addon.remove(name, {force = force})
+        cprint("${color.success}remove ${bright}%s${clear} ok!", name)
+    end
 end
 
 -- upgrade the addons which the current project declares in its `xmake-addons.lua`
