@@ -45,6 +45,8 @@ local option                = require("project/option")
 local policy                = require("project/policy")
 local project_package       = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
+local addon                 = require("package/addon")
+local addons                = require("project/addons")
 local package               = require("package/package")
 local platform              = require("platform/platform")
 local toolchain             = require("tool/toolchain")
@@ -227,12 +229,83 @@ function project._api_add_toolchaindirs(interp, ...)
     end
 end
 
+-- install the addons which this project declares
+--
+-- @note we cannot install them here, we are loading the project, so we do it in a
+-- sub-process, @see xmake/modules/private/addons/main.lua
+--
+function project._install_addons()
+    -- @note we need to cache the result, the project may be loaded many times,
+    -- otherwise the failure would be ignored by the next load
+    if not project._ADDONS_CHECKED then
+        project._ADDONS_CHECKED = true
+        project._ADDONS_OK, project._ADDONS_ERRORS = project._do_install_addons()
+    end
+    return project._ADDONS_OK, project._ADDONS_ERRORS
+end
+
+-- do install the addons which this project declares
+function project._do_install_addons()
+    if os.getenv("XMAKE_SKIP_ADDONS") then
+        return true
+    end
+
+    -- this project declares nothing? or they have been installed already
+    local addonsinfo, errors = addons.load()
+    if errors then
+        return false, errors
+    end
+    if not addonsinfo or #addonsinfo.addons == 0 or addons.satisfied(addonsinfo) then
+        return true
+    end
+
+    -- @note we run it in a temporary directory, otherwise it would load this project again
+    --
+    -- @note we may be called when building the option menu, the command line has not
+    -- been parsed yet, so we can only get the common flags from the raw arguments
+    --
+    local argv = {"lua"}
+    local flags = {["-y"] = "--yes", ["--yes"] = "--yes",
+                   ["-v"] = "--verbose", ["--verbose"] = "--verbose",
+                   ["-D"] = "--diagnosis", ["--diagnosis"] = "--diagnosis"}
+    local flags_added = {}
+    for _, arg in ipairs(xmake._COMMAND_ARGV or {}) do
+        local flag = flags[arg]
+        if flag and not flags_added[flag] then
+            table.insert(argv, flag)
+            flags_added[flag] = true
+        end
+    end
+    table.insert(argv, "private.addons")
+    table.insert(argv, os.projectdir())
+    local envs = os.getenvs()
+    envs.XMAKE_SKIP_ADDONS = "y"
+    local ok, errors = os.execv(os.programfile(), argv, {curdir = os.tmpdir(), envs = envs})
+    if ok ~= 0 then
+        return false, errors or "install the addons of this project failed!"
+    end
+
+    -- we have loaded the registry and its caches before installing them, so we need to reload it
+    addon.reload()
+    rule.clear()
+    task.clear()
+    return true
+end
+
 -- load the project file
 function project._load(force, disable_filter)
 
     -- has already been loaded?
     if project._memcache():get("rootinfo") and not force then
         return true
+    end
+
+    -- install the addons which this project declares in `xmake-addons.lua` first,
+    -- it may use their rules, toolchains and includes files,
+    -- e.g. includes("@addon/esp32-devel/board")
+    local ok, errors = project._install_addons()
+    if not ok then
+        return false, errors
     end
 
     -- enter the project directory

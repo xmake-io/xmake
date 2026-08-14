@@ -211,6 +211,8 @@ function _get_confirm(packages, opt)
             -- show tips
             if opt.toolchain then
                 cprint("${bright color.warning}note: ${clear}install or modify (m) these ${bright}toolchain${clear} packages first (pass -y to skip confirm)?")
+            elseif opt.packagekind == "addon" then
+                cprint("${bright color.warning}note: ${clear}install or modify (m) these ${bright}addons${clear} (pass -y to skip confirm)?")
             else
                 cprint("${bright color.warning}note: ${clear}install or modify (m) these packages (pass -y to skip confirm)?")
             end

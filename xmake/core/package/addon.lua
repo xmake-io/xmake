@@ -656,6 +656,17 @@ function addon.remove(name, opt)
     return true
 end
 
+-- reload the addons registry and the caches which are built from it
+--
+-- @note we need it if the addons have been installed by another process,
+-- e.g. the addons which a project declares, @see core/project/project.lua
+--
+function addon.reload()
+    addon._ADDONS = nil
+    addon._MANIFESTS = nil
+    addon._GLOBALMODULES = nil
+end
+
 -- rescan the install directory and rebuild the registry
 --
 -- it's only used to repair the registry file, e.g. the user removed some addon directories manually

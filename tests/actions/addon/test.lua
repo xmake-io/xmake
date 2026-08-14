@@ -114,6 +114,32 @@ function _config_project(content)
     return _run_project(content, {"config", "-y"})
 end
 
+-- copy the given fixture project to a temporary directory and run the given function in it
+--
+-- @note we cannot run them in place, they would generate the lock and the build files,
+-- @see tests/actions/addon/projects
+--
+function _with_project(name, func)
+    local projectdir = os.tmpfile() .. ".addon-project"
+    os.tryrm(projectdir)
+    os.mkdir(projectdir)
+    os.cp(path.join(os.scriptdir(), "projects", name, "*"), projectdir)
+    local oldir = os.cd(projectdir)
+    try
+    {
+        function ()
+            func(projectdir)
+        end,
+        finally
+        {
+            function ()
+                os.cd(oldir)
+                os.tryrm(projectdir)
+            end
+        }
+    }
+end
+
 -- only the payloads should be installed, our own files should not
 function test_install(t)
     _with_addons({"custom-toolchain"}, function ()
@@ -221,6 +247,38 @@ target("test")
 ]], {"build", "-y"}, {files = {["src/main.c"] = "int main(int argc, char** argv) { return 0; }\n"}})
         end
     end)
+end
+
+-- the addons which a project declares in `xmake-addons.lua` are installed automatically
+--
+-- @note they must be installed before loading the project, it may use their includes files
+function test_autofetch(t)
+    local recipes = {["custom-include"] = ("set_sourcedir(%q)"):format(_addondir("custom-include"))}
+    _with_repo(recipes, function ()
+        _remove("custom-include")
+        _with_project("autofetch", function (projectdir)
+
+            -- it should be installed when loading the project, so that its includes file can be found
+            t:require(os.iorunv("xmake", {"config", "-y"}):find("custom-include: includes check is loaded", 1, true))
+
+            -- and it should be locked
+            local lockfile = path.join(projectdir, "xmake-addons.lock")
+            t:require(os.isfile(lockfile))
+            t:require(io.load(lockfile)["custom-include"] ~= nil)
+
+            -- we should not install it again
+            t:require_not(os.iorunv("xmake", {"config", "-y"}):find("install custom-include", 1, true))
+        end)
+    end)
+end
+
+-- the addons file only declares the addons, it cannot reference them
+function test_autofetch_invalid(t)
+    for _, name in ipairs({"autofetch-badinclude", "autofetch-badname"}) do
+        _with_project(name, function ()
+            t:require_not(try { function () os.runv("xmake", {"config", "-y"}); return true end })
+        end)
+    end
 end
 
 -- the addons can be installed from a repository, by plain name and by repo@name

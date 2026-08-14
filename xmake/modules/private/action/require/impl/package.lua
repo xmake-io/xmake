@@ -1702,6 +1702,9 @@ function get_configs_str(package)
         end
         if requireinfo.kind then
             table.insert(configs, requireinfo.kind)
+        elseif package:is_addon() then
+            -- @note the kind is only set for the dependencies, e.g. add_deps("foo", {kind = "addon"})
+            table.insert(configs, "addon")
         end
         local ignored_configs_for_buildhash = hashset.from(requireinfo.ignored_configs_for_buildhash or {})
         local configs_overrided = requireinfo.configs_overrided or {}
