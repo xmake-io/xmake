@@ -259,9 +259,6 @@ end
 
 -- do install the addons which this project declares
 function project._do_install_addons()
-    if os.getenv("XMAKE_SKIP_ADDONS") then
-        return true
-    end
 
     -- this project declares nothing?
     local addonsinfo, errors = addons.load()
@@ -297,9 +294,7 @@ function project._do_install_addons()
     end
     table.insert(argv, "private.action.addon.impl.install_addons")
     table.insert(argv, os.projectdir())
-    local envs = os.getenvs()
-    envs.XMAKE_SKIP_ADDONS = "y"
-    local ok, errors = os.execv(os.programfile(), argv, {curdir = os.tmpdir(), envs = envs})
+    local ok, errors = os.execv(os.programfile(), argv, {curdir = os.tmpdir()})
     if ok ~= 0 then
         return false, errors or "install the addons of this project failed!"
     end

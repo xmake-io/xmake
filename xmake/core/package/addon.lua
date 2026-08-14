@@ -76,7 +76,7 @@ function addon._save(registry)
     addon._ADDONS = nil
     local registryfile = addon._registryfile()
     -- we need not create an empty registry file if no addons are installed
-    if next(registry) == nil and not os.isfile(registryfile) then
+    if table.empty(registry) and not os.isfile(registryfile) then
         return
     end
     local ok, errors = io.save(registryfile, registry)
@@ -211,9 +211,10 @@ function addon._unregister(name, version)
     if version then
         entry.versions[version] = nil
         if entry.active == version then
-            entry.active = next(entry.versions)
+            -- we need to select the other one deterministically
+            entry.active = addon.versions(name)[1]
         end
-        if next(entry.versions) == nil then
+        if table.empty(entry.versions) then
             registry[dirname] = nil
         end
     else

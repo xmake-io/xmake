@@ -19,9 +19,9 @@
 --
 
 -- imports
-import("core.base.option")
 import("core.package.addon")
 import("core.project.addons")
+import("private.action.addon.impl.xrepo", {alias = "xrepo_addon"})
 
 -- the format version of the addons lock file
 local LOCKVERSION = "1.0"
@@ -68,7 +68,17 @@ function _lock_addons(projectdir, addonsinfo)
         end
     end
     lockinfo.__meta__ = {version = LOCKVERSION}
-    io.save(addons.lockfile(projectdir), lockinfo, {orderkeys = true})
+
+    -- @note we need to write it deterministically, the key order of a lua table is random,
+    -- otherwise the lock file would change even if nothing changed,
+    -- @see xmake/modules/private/action/require/impl/lock_packages.lua
+    local content = string.serialize(lockinfo, {orderkeys = true})
+    local tmpfile = os.tmpfile()
+    io.writefile(tmpfile, content, {encoding = "binary"})
+
+    -- and we only write it if the content is different, so we can keep the file time
+    os.cp(tmpfile, addons.lockfile(projectdir), {copy_if_different = true})
+    os.rm(tmpfile)
 end
 
 -- install the addons which the given project declares in its `xmake-addons.lua`
@@ -89,7 +99,6 @@ function main(projectdir, opt)
 
     -- install them with xrepo, it installs the packages in its own working directory,
     -- so we need not a project here
-    local argv = {"lua", "private.xrepo", "install", "--addon"}
 
     -- this project declares its own repositories? we pass them to xrepo,
     -- they are only used by this installation, we do not register them globally
@@ -101,25 +110,22 @@ function main(projectdir, opt)
             file:print("add_repositories(%q)", repo)
         end
         file:close()
-        table.insert(argv, "--includes=" .. rcfile)
     end
 
-    for _, name in ipairs({"yes", "verbose", "diagnosis"}) do
-        if option.get(name) then
-            table.insert(argv, "--" .. name)
-        end
-    end
-    table.join2(argv, _get_requires(addonsinfo, locked))
     try
     {
         function ()
-            os.execv(os.programfile(), argv)
+            xrepo_addon("install", _get_requires(addonsinfo, locked), {includes = rcfile})
         end,
         finally
         {
-            function ()
+            -- @note try() swallows the errors if we do not re-raise them here
+            function (ok, errors)
                 if rcfile then
                     os.tryrm(rcfile)
+                end
+                if not ok then
+                    raise(errors)
                 end
             end
         }

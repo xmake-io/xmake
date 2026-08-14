@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.package.addon")
 import("devel.git")
 import("private.action.addon.impl.install_addons")
+import("private.action.addon.impl.xrepo", {alias = "xrepo_addon"})
 import("private.action.require.impl.environment")
 import("private.action.require.impl.search_packages")
 
@@ -50,30 +51,14 @@ function _get_addondir(name, version)
     return addondir
 end
 
--- run the given xrepo action for the addons, e.g. install, remove, search
-function _xrepo(action, names)
-    local argv = {"lua", "private.xrepo", action, "--addon"}
-    -- we need to pass the common options to the sub-process, e.g. -y, -v, -D
-    if option.get("yes") then
-        table.insert(argv, "-y")
-    end
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
-    if option.get("diagnosis") then
-        table.insert(argv, "-D")
-    end
-    if option.get("force") then
-        table.insert(argv, "--force")
-    end
-    table.join2(argv, names)
-    os.execv(os.programfile(), argv)
-end
-
 -- install an addon from the given repository or the first repository containing it
 function _install_from_repo(name, reponame)
     _check_addon_name(name)
-    _xrepo("install", {reponame and (reponame .. "@" .. name) or name})
+    xrepo_addon("install", {reponame and (reponame .. "@" .. name) or name},
+        {force = option.get("force"),
+         -- @note we run it in a temporary directory, this action manages the global addons,
+         -- so we need not load the project of the current directory again
+         curdir = os.tmpdir()})
 end
 
 -- install a single addon from a source directory (as the given name, default to the directory name)
@@ -260,7 +245,7 @@ end
 -- search the addons from the repositories
 function _search()
     local patterns = assert(option.get("addons"), "please specify the addon name pattern to be searched!")
-    _xrepo("search", patterns)
+    xrepo_addon("search", patterns, {curdir = os.tmpdir()})
 end
 
 -- collect the installed addons from the addons registry
