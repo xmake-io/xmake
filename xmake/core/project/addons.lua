@@ -152,9 +152,9 @@ function addons.load(projectdir)
     return addonsinfo
 end
 
--- split the given declaration into the name and the version
+-- split the given declaration into the name and the version range
 --
--- @note the version can be a range with spaces, so everything after the name belongs to it,
+-- @note the version range can contain spaces, so everything after the name belongs to it,
 -- e.g. "esp32-devel 1.0.x", "esp32-devel >=1.0 <2.0", "esp32-devel master || >1.4",
 -- @see xmake/modules/private/utils/package.lua
 --
@@ -172,10 +172,10 @@ function addons.locked_valid(requirestr, lockinfo)
     if not lockinfo or not lockinfo.version then
         return false
     end
-    local _, version = addons.requirename(requirestr)
-    if version then
+    local _, range = addons.requirename(requirestr)
+    if range then
         -- @note we can only compare the semantic versions, e.g. the local addons are always `latest`
-        return semver.parse(lockinfo.version) ~= nil and semver.satisfies(lockinfo.version, version)
+        return semver.is_valid(lockinfo.version) and semver.satisfies(lockinfo.version, range)
     end
     return true
 end
