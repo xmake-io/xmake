@@ -133,7 +133,7 @@ function addons.load(projectdir)
                 filepath, requirestr)
         end
 
-        local name = requirestr:split("%s")[1]
+        local name = addons.requirename(requirestr)
         if name == "addon" or name == "self" then
             return nil, string.format("%s: the addon name(%s) is reserved by xmake for the addon references, please rename it!",
                 filepath, name)
@@ -152,9 +152,14 @@ function addons.load(projectdir)
     return addonsinfo
 end
 
--- split the given declaration, e.g. "esp32-devel 1.0.x" -> "esp32-devel", "1.0.x"
+-- split the given declaration into the name and the version
+--
+-- @note the version can be a range with spaces, so everything after the name belongs to it,
+-- e.g. "esp32-devel 1.0.x", "esp32-devel >=1.0 <2.0", "esp32-devel master || >1.4",
+-- @see xmake/modules/private/utils/package.lua
+--
 function addons.requirename(requirestr)
-    local splitinfo = requirestr:split("%s")
+    local splitinfo = requirestr:split("%s+", {limit = 2})
     return splitinfo[1], splitinfo[2]
 end
 
