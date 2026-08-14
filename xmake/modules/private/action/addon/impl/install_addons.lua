@@ -23,9 +23,6 @@ import("core.package.addon")
 import("core.project.addons")
 import("private.action.addon.impl.xrepo", {alias = "xrepo_addon"})
 
--- the format version of the addons lock file
-local LOCKVERSION = "1.0"
-
 -- get the requires of the declared addons
 --
 -- @note we install the locked versions, but the declaration is authoritative, so we
@@ -67,7 +64,7 @@ function _lock_addons(projectdir, addonsinfo)
             lockinfo[name] = {version = addoninfo.version, repo = addoninfo.repo}
         end
     end
-    lockinfo.__meta__ = {version = LOCKVERSION}
+    lockinfo.__meta__ = {version = addons.lockfile_version()}
 
     -- @note we need to write it deterministically, the key order of a lua table is random,
     -- otherwise the lock file would change even if nothing changed,

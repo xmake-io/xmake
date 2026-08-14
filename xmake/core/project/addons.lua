@@ -56,6 +56,14 @@ function addons.lockfile(projectdir)
     return path.join(projectdir or os.projectdir(), "xmake-addons.lock")
 end
 
+-- get the format version of the addons lock file
+--
+-- @see xmake/core/project/project.lua, project.requireslock_version()
+--
+function addons.lockfile_version()
+    return "1.0"
+end
+
 -- get the apis of the addons file
 --
 -- @note it only declares which addons this project needs, the addon resources
