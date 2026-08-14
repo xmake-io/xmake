@@ -244,18 +244,37 @@ function project._install_addons()
     return project._ADDONS_OK, project._ADDONS_ERRORS
 end
 
+-- activate the addon versions which this project locks
+--
+-- @note an addon can be installed with several versions at the same time, the other
+-- projects may lock the other versions of it, @see core/package/addon.lua
+--
+function project._pin_addons()
+    for name, lockinfo in pairs(addons.locked() or {}) do
+        if lockinfo.version then
+            addon.pin(name, lockinfo.version)
+        end
+    end
+end
+
 -- do install the addons which this project declares
 function project._do_install_addons()
     if os.getenv("XMAKE_SKIP_ADDONS") then
         return true
     end
 
-    -- this project declares nothing? or they have been installed already
+    -- this project declares nothing?
     local addonsinfo, errors = addons.load()
     if errors then
         return false, errors
     end
-    if not addonsinfo or #addonsinfo.addons == 0 or addons.satisfied(addonsinfo) then
+    if not addonsinfo or #addonsinfo.addons == 0 then
+        return true
+    end
+
+    -- they have been installed already?
+    project._pin_addons()
+    if addons.satisfied(addonsinfo) then
         return true
     end
 
@@ -287,6 +306,7 @@ function project._do_install_addons()
 
     -- we have loaded the registry and its caches before installing them, so we need to reload it
     addon.reload()
+    project._pin_addons()
     rule.clear()
     task.clear()
     return true

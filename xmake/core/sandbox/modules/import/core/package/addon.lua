@@ -35,9 +35,12 @@ sandbox_core_package_addon.payloadinfos      = addon.payloadinfos
 sandbox_core_package_addon.payloads_of       = addon.payloads_of
 sandbox_core_package_addon.payloadroot       = addon.payloadroot
 sandbox_core_package_addon.addons            = addon.addons
+sandbox_core_package_addon.versions          = addon.versions
+sandbox_core_package_addon._registry         = addon._registry
+sandbox_core_package_addon._registryfile     = addon._registryfile
+sandbox_core_package_addon.pin               = addon.pin
 sandbox_core_package_addon.addondir          = addon.addondir
 sandbox_core_package_addon.rescan            = addon.rescan
-sandbox_core_package_addon.clear             = addon.clear
 
 -- get the manifest of the given addon directory, e.g. <sourcedir>/addon.lua
 --

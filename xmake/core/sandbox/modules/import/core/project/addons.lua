@@ -26,10 +26,13 @@ local addons = require("project/addons")
 local raise  = require("sandbox/modules/raise")
 
 -- inherit some builtin interfaces
-sandbox_core_project_addons.file      = addons.file
-sandbox_core_project_addons.lockfile  = addons.lockfile
-sandbox_core_project_addons.locked    = addons.locked
-sandbox_core_project_addons.satisfied = addons.satisfied
+sandbox_core_project_addons.file         = addons.file
+sandbox_core_project_addons.filename     = addons.filename
+sandbox_core_project_addons.lockfile     = addons.lockfile
+sandbox_core_project_addons.locked       = addons.locked
+sandbox_core_project_addons.locked_valid = addons.locked_valid
+sandbox_core_project_addons.requirename  = addons.requirename
+sandbox_core_project_addons.satisfied    = addons.satisfied
 
 -- load the declared addons of the given project directory
 --

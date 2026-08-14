@@ -70,15 +70,16 @@ function addon._registryfile()
     return path.join(addon.installdir(), "addons.conf")
 end
 
--- save the given addons to the registry file
-function addon._save(addons)
-    addon._ADDONS = addons
+-- save the given registry to the registry file
+function addon._save(registry)
+    addon._REGISTRY = registry
+    addon._ADDONS = nil
     local registryfile = addon._registryfile()
     -- we need not create an empty registry file if no addons are installed
-    if next(addons) == nil and not os.isfile(registryfile) then
+    if next(registry) == nil and not os.isfile(registryfile) then
         return
     end
-    local ok, errors = io.save(registryfile, addons)
+    local ok, errors = io.save(registryfile, registry)
     if not ok then
         utils.warning(errors)
     end
@@ -182,10 +183,15 @@ end
 function addon._parents(name)
     local dirname = addon.dirname(name)
     local parents
-    for otherdirname, addoninfo in pairs(addon.addons()) do
-        if otherdirname ~= dirname and table.contains(addoninfo.deps or {}, dirname) then
-            parents = parents or {}
-            table.insert(parents, otherdirname)
+    for otherdirname, entry in pairs(addon._registry()) do
+        if otherdirname ~= dirname then
+            for _, addoninfo in pairs(entry.versions or {}) do
+                if table.contains(addoninfo.deps or {}, dirname) then
+                    parents = parents or {}
+                    table.insert(parents, otherdirname)
+                    break
+                end
+            end
         end
     end
     if parents then
@@ -194,14 +200,26 @@ function addon._parents(name)
     return parents
 end
 
--- unregister the given addon
-function addon._unregister(name)
+-- unregister the given addon or only one of its versions
+function addon._unregister(name, version)
     local dirname = addon.dirname(name)
-    local addons = addon.addons()
-    if addons[dirname] then
-        addons[dirname] = nil
-        addon._save(addons)
+    local registry = addon._registry()
+    local entry = registry[dirname]
+    if entry == nil then
+        return
     end
+    if version then
+        entry.versions[version] = nil
+        if entry.active == version then
+            entry.active = next(entry.versions)
+        end
+        if next(entry.versions) == nil then
+            registry[dirname] = nil
+        end
+    else
+        registry[dirname] = nil
+    end
+    addon._save(registry)
 end
 
 -- get the apis of the addon manifest
@@ -400,7 +418,64 @@ function addon.resolve_reference(reference, sep, kind, opt)
     return {dir = payloaddir, name = name, addon = addonname}
 end
 
--- get all installed addons
+-- get the registry of the installed addons
+--
+-- an addon can be installed with several versions at the same time, e.g. the projects
+-- may lock the different versions of it, so we save all of them
+--
+-- @return  the registry, e.g. {["esp32"] = {active = "1.0.3", versions = {["1.0.3"] = {...}}}}
+--
+function addon._registry(opt)
+    local registry = addon._REGISTRY
+    if opt and opt.force then
+        registry = nil
+    end
+    if registry == nil then
+        registry = {}
+        local registryfile = addon._registryfile()
+        if os.isfile(registryfile) then
+            registry = io.load(registryfile) or {}
+        end
+        -- migrate the old registry, it only saved one version for each addon
+        for dirname, addoninfo in pairs(registry) do
+            if addoninfo.versions == nil then
+                registry[dirname] = {active = addoninfo.version,
+                                     versions = {[addoninfo.version] = addoninfo}}
+            end
+        end
+        addon._REGISTRY = registry
+        addon._ADDONS = nil
+    end
+    return registry
+end
+
+-- pin the active version of the given addon for this process
+--
+-- @note a project locks the versions of its addons, so we need to activate them
+-- when we load it, @see core/project/addons.lua
+--
+function addon.pin(name, version)
+    local pinned = addon._PINNED
+    if pinned == nil then
+        pinned = {}
+        addon._PINNED = pinned
+    end
+    pinned[addon.dirname(name)] = version
+    addon._ADDONS = nil
+end
+
+-- get all the installed versions of the given addon, e.g. {"1.0.2", "1.0.3"}
+function addon.versions(name)
+    local versions = {}
+    local addoninfo = addon._registry()[addon.dirname(name)]
+    for version, _ in pairs(addoninfo and addoninfo.versions or {}) do
+        table.insert(versions, version)
+    end
+    table.sort(versions)
+    return versions
+end
+
+-- get all installed addons, only the active version of each addon
 --
 -- @param opt   the options, e.g. {force = true}, we need it to reload the registry
 --              if the addons have been installed by another process
@@ -408,15 +483,20 @@ end
 -- @return      the addons table, e.g. {["hello-world"] = {version = "latest", payloads = {"plugins"}}}
 --
 function addon.addons(opt)
-    local addons = addon._ADDONS
     if opt and opt.force then
-        addons = nil
+        addon._registry({force = true})
     end
+    local addons = addon._ADDONS
     if addons == nil then
         addons = {}
-        local registryfile = addon._registryfile()
-        if os.isfile(registryfile) then
-            addons = io.load(registryfile) or {}
+        local pinned = addon._PINNED or {}
+        for dirname, addoninfo in pairs(addon._registry()) do
+            -- the project may lock another version of it, @see addon.pin
+            local version = pinned[dirname] or addoninfo.active
+            local versioninfo = addoninfo.versions and addoninfo.versions[version]
+            if versioninfo then
+                addons[dirname] = versioninfo
+            end
         end
         addon._ADDONS = addons
     end
@@ -592,6 +672,8 @@ function addon.register(name, version, opt)
                        name = name ~= dirname and name or nil,
                        description = opt.description,
                        deps = opt.deps,
+                       -- where it comes from, e.g. {url = ..., commit = ..., branch = ...}
+                       repo = opt.repo,
                        -- the deps which the addon itself declares in its manifest, they are
                        -- recorded whenever this addon has one, so that the repositories can
                        -- check that the manifest and the package recipe are kept in sync
@@ -608,9 +690,17 @@ function addon.register(name, version, opt)
         return false, errors
     end
 
-    local addons = addon.addons()
-    addons[dirname] = addoninfo
-    addon._save(addons)
+    -- we can install several versions of an addon at the same time,
+    -- and the version which we install now is always the active one
+    local registry = addon._registry()
+    local entry = registry[dirname]
+    if entry == nil or entry.versions == nil then
+        entry = {versions = {}}
+        registry[dirname] = entry
+    end
+    entry.versions[version] = addoninfo
+    entry.active = version
+    addon._save(registry)
     return true
 end
 
@@ -662,6 +752,7 @@ end
 -- e.g. the addons which a project declares, @see core/project/project.lua
 --
 function addon.reload()
+    addon._REGISTRY = nil
     addon._ADDONS = nil
     addon._MANIFESTS = nil
     addon._GLOBALMODULES = nil
@@ -672,16 +763,17 @@ end
 -- it's only used to repair the registry file, e.g. the user removed some addon directories manually
 --
 function addon.rescan()
-    local oldaddons = addon.addons()
-    local addons = {}
+    local oldregistry = addon._registry()
+    local registry = {}
     for _, versiondir in ipairs(os.dirs(path.join(addon.installdir(), "*", "*"))) do
         local payloads = addon.payloads_of(versiondir)
         if #payloads > 0 then
             local dirname = path.filename(path.directory(versiondir))
             local version = path.filename(versiondir)
-            local oldaddoninfo = oldaddons[dirname]
+            local oldentry = oldregistry[dirname]
+            local oldaddoninfo = oldentry and oldentry.versions and oldentry.versions[version]
             local description, deps
-            if oldaddoninfo and oldaddoninfo.version == version then
+            if oldaddoninfo then
                 -- we need to keep them, we cannot get them from the installed payloads
                 description = oldaddoninfo.description
                 deps = oldaddoninfo.deps
@@ -696,24 +788,22 @@ function addon.rescan()
                     description = manifest.description or description
                 end
             end
-            addons[dirname] = {version = version, name = name or (oldaddoninfo and oldaddoninfo.name),
-                               description = description, deps = deps, payloads = payloads,
-                               plugins = addon._plugins_of(versiondir), templates = addon._templates_of(versiondir)}
+            local entry = registry[dirname]
+            if entry == nil then
+                entry = {versions = {}}
+                registry[dirname] = entry
+            end
+            entry.versions[version] = {version = version, name = name or (oldaddoninfo and oldaddoninfo.name),
+                                       description = description, deps = deps, payloads = payloads,
+                                       plugins = addon._plugins_of(versiondir), templates = addon._templates_of(versiondir)}
+            -- we keep the active version if it's still installed, otherwise we use the last one
+            if entry.active == nil or (oldentry and oldentry.active == version) then
+                entry.active = version
+            end
         end
     end
-    addon._save(addons)
-    return addons
-end
-
--- clear all installed addons
-function addon.clear()
-    local installdir = addon.installdir()
-    if os.isdir(installdir) then
-        os.rmdir(installdir)
-    end
-    addon._ADDONS = {}
-    addon._MANIFESTS = nil
-    addon._GLOBALMODULES = nil
+    addon._save(registry)
+    return addon.addons()
 end
 
 -- return module

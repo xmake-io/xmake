@@ -318,8 +318,12 @@ function _register_addon(package)
         end
     end
 
+    -- we also record where it comes from, so that the projects can lock it,
+    -- @see xmake/modules/private/addons/main.lua
+    local repo = package:repo()
     addon.register(package:name(), package:version_str() or "latest",
         {description = description, deps = deps,
+         repo = repo and {url = repo:url(), commit = repo:commit(), branch = repo:branch()} or nil,
          manifest_deps = manifest and manifest.deps or nil,
          globalmodules = manifest and #manifest.globalmodules > 0 and manifest.globalmodules or nil})
 end

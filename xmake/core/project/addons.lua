@@ -26,7 +26,8 @@ local os    = require("base/os")
 local io    = require("base/io")
 local path  = require("base/path")
 local table = require("base/table")
-local addon = require("package/addon")
+local semver = require("base/semver")
+local addon  = require("package/addon")
 
 -- the file which declares the addons of a project, e.g. <projectdir>/xmake-addons.lua
 --
@@ -36,6 +37,7 @@ local addon = require("package/addon")
 -- e.g.
 --   add_addons("esp32-devel 1.0.x")
 --   add_addons("serial-tools", {optional = true})
+--   add_repositories("myrepo git@github.com:me/myrepo.git")
 --
 function addons.filename()
     return "xmake-addons.lua"
@@ -63,6 +65,8 @@ function addons.apis()
     return {
         values = {
             "add_addons"
+            -- the repositories which provide them, e.g. add_repositories("myrepo git@github.com:me/myrepo.git")
+        ,   "add_repositories"
         }
     }
 end
@@ -116,7 +120,8 @@ function addons.load(projectdir)
     end
 
     local addonsinfo = {addons = table.wrap(rootinfo:get("addons")),
-                        addons_extra = rootinfo:extraconf("addons")}
+                        addons_extra = rootinfo:extraconf("addons"),
+                        repositories = table.wrap(rootinfo:get("repositories"))}
 
     -- check the declared addons
     local declared = {}
@@ -147,6 +152,29 @@ function addons.load(projectdir)
     return addonsinfo
 end
 
+-- split the given declaration, e.g. "esp32-devel 1.0.x" -> "esp32-devel", "1.0.x"
+function addons.requirename(requirestr)
+    local splitinfo = requirestr:split("%s")
+    return splitinfo[1], splitinfo[2]
+end
+
+-- is the locked version still valid for the given declaration?
+--
+-- @note the declaration is authoritative, the lock only pins a version inside it,
+-- so we need to resolve it again if the user has changed the declared version
+--
+function addons.locked_valid(requirestr, lockinfo)
+    if not lockinfo or not lockinfo.version then
+        return false
+    end
+    local _, version = addons.requirename(requirestr)
+    if version then
+        -- @note we can only compare the semantic versions, e.g. the local addons are always `latest`
+        return semver.parse(lockinfo.version) ~= nil and semver.satisfies(lockinfo.version, version)
+    end
+    return true
+end
+
 -- get the locked addons, e.g. {["esp32-devel"] = {version = "1.0.3"}}
 function addons.locked(projectdir)
     local lockfile = addons.lockfile(projectdir)
@@ -171,9 +199,9 @@ function addons.satisfied(addonsinfo, projectdir)
     end
     local installed = addon.addons()
     for _, requirestr in ipairs(addonsinfo.addons) do
-        local name = requirestr:split("%s")[1]
+        local name = addons.requirename(requirestr)
         local lockinfo = locked[name]
-        if not lockinfo then
+        if not addons.locked_valid(requirestr, lockinfo) then
             return false
         end
         local addoninfo = installed[addon.dirname(name)]

@@ -29,7 +29,8 @@ task("addon")
             {'r', "remove",  "k", nil, "Remove the given installed addons."},
             {'s', "search",  "k", nil, "Search the addons from the repositories."},
             {'l', "list",    "k", nil, "List all installed addons."},
-            {'c', "clear",   "k", nil, "Clear all installed addons."},
+            {'u', "upgrade", "k", nil, "Upgrade the addons which the current project declares."},
+            {nil, "all",     "k", nil, "Remove all installed addons, e.g. xmake addon --remove --all"},
             {'f', "force",   "k", nil, "Force to remove the addons, even if they are depended on by the others."},
             {nil, "addons",  "vs", nil, "The addon paths, urls or names.",
                                        "e.g.",
@@ -40,6 +41,8 @@ task("addon")
                                        "    $ xmake addon --install xmake-repo@serial-monitor",
                                        "    $ xmake addon --install serial-monitor",
                                        "    $ xmake addon --remove serial-monitor",
+                                       "    $ xmake addon --remove --all",
+                                       "    $ xmake addon --upgrade",
                                        "    $ xmake addon --search serial",
                                        "    $ xmake addon --list"}
         }
