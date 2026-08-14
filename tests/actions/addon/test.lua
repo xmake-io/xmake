@@ -58,6 +58,14 @@ function _with_repo(recipes, func)
     local cachefile = path.join(global.cachedir(), "repository")
     local cache = os.isfile(cachefile) and io.load(cachefile) or {}
     cache.repositories = cache.repositories or {}
+
+    -- a killed test run may leave its temporary repository registered, and a dangling
+    -- repository breaks every following xrepo command, so we drop them here
+    for name, dirs in pairs(cache.repositories) do
+        if name:startswith("addon-test-repo-") and not os.isdir(dirs[1]) then
+            cache.repositories[name] = nil
+        end
+    end
     cache.repositories[reponame] = {repodir}
     io.save(cachefile, cache)
     os.tryrm(path.join(global.cachedir(), "quick_search"))
@@ -359,8 +367,12 @@ function test_install_from_repo(t)
         t:require(os.iorunv("xmake", {"hello_addon"}):find("hello from custom-plugin", 1, true))
 
         -- it should be searchable, and the addons should not be found by the package search
+        --
+        -- @note we cannot run the `xrepo` program here, it may not be in the PATH, e.g. on the ci,
+        -- and `xrepo search` is just a wrapper of it
+        --
         t:require(os.iorunv("xmake", {"addon", "--search", "custom-plugin"}):find("custom-plugin", 1, true))
-        t:require_not(os.iorunv("xrepo", {"search", "custom-plugin"}):find("custom-plugin", 1, true))
+        t:require_not(os.iorunv("xmake", {"lua", "private.xrepo", "search", "custom-plugin"}):find("custom-plugin", 1, true))
     end)
 end
 
