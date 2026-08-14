@@ -275,7 +275,8 @@ function project._do_install_addons()
         return true
     end
 
-    -- @note we run it in a temporary directory, otherwise it would load this project again
+    -- @note we run it in a working directory which has no project, @see addon.workdir(),
+    -- otherwise it would load this project again
     --
     -- @note we may be called when building the option menu, the command line has not
     -- been parsed yet, so we can only get the common flags from the raw arguments
@@ -294,7 +295,7 @@ function project._do_install_addons()
     end
     table.insert(argv, "private.action.addon.impl.install_addons")
     table.insert(argv, os.projectdir())
-    local ok, errors = os.execv(os.programfile(), argv, {curdir = os.tmpdir()})
+    local ok, errors = os.execv(os.programfile(), argv, {curdir = addon.workdir()})
     if ok ~= 0 then
         return false, errors or "install the addons of this project failed!"
     end

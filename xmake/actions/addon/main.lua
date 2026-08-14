@@ -54,11 +54,7 @@ end
 -- install an addon from the given repository or the first repository containing it
 function _install_from_repo(name, reponame)
     _check_addon_name(name)
-    xrepo_addon("install", {reponame and (reponame .. "@" .. name) or name},
-        {force = option.get("force"),
-         -- @note we run it in a temporary directory, this action manages the global addons,
-         -- so we need not load the project of the current directory again
-         curdir = os.tmpdir()})
+    xrepo_addon("install", {reponame and (reponame .. "@" .. name) or name}, {force = option.get("force")})
 end
 
 -- install a single addon from a source directory (as the given name, default to the directory name)
@@ -245,7 +241,7 @@ end
 -- search the addons from the repositories
 function _search()
     local patterns = assert(option.get("addons"), "please specify the addon name pattern to be searched!")
-    xrepo_addon("search", patterns, {curdir = os.tmpdir()})
+    xrepo_addon("search", patterns)
 end
 
 -- collect the installed addons from the addons registry

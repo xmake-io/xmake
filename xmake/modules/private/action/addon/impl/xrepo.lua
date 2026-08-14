@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.package.addon")
 
 -- run the given xrepo action for the addons
 --
@@ -28,7 +29,9 @@ import("core.base.option")
 --
 -- @param action    the action name, e.g. "install", "search"
 -- @param names     the addon names, urls or require strings, e.g. {"esp32-devel 1.0.x"}
--- @param opt       the options, e.g. {force = true, includes = "/tmp/xxx.lua", curdir = "/tmp"}
+-- @param opt       the options, e.g. {force = true, includes = "/tmp/xxx.lua"}
+--
+-- @note we always run it in a working directory which has no project, @see addon.workdir()
 --
 function main(action, names, opt)
     opt = opt or {}
@@ -50,5 +53,5 @@ function main(action, names, opt)
     end
 
     table.join2(argv, names)
-    os.execv(os.programfile(), argv, {curdir = opt.curdir})
+    os.execv(os.programfile(), argv, {curdir = opt.curdir or addon.workdir()})
 end

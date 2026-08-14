@@ -294,6 +294,26 @@ function addon.manifest(sourcedir)
     return manifest
 end
 
+-- get a working directory which has no project
+--
+-- we need it to run the sub-processes of the addons, e.g. `xrepo install --addon`,
+-- otherwise they would load the project of the current directory again
+--
+-- @note we cannot use `os.tmpdir()` directly, it is shared by all the commands,
+-- e.g. a stray `xmake.lua` in it would break the isolation
+--
+-- @note we can share it between the processes, we only use it as the working directory
+-- and never write anything into it, @see private/action/addon/impl/xrepo.lua
+--
+function addon.workdir()
+    local workdir = path.join(os.tmpdir(), "addons", "working")
+    if not os.isdir(workdir) then
+        -- it may be created by the other processes at the same time, we can ignore it
+        os.mkdir(workdir)
+    end
+    return workdir
+end
+
 -- the install directory of addons, e.g. ~/.xmake/addons
 function addon.installdir()
     return path.join(global.directory(), "addons")
