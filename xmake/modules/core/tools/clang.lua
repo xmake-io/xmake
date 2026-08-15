@@ -263,7 +263,7 @@ function nf_runtime(self, runtime, opt)
               -- on windows force link to compiler_rt builtins
             if llvm_dirs.rtdir and llvm_dirs.rtlink then
                 for name, _ in pairs(maps) do
-                    maps[name] = table.join({"-Xclang", "--dependent-lib=" .. llvm_dirs.rtlink}, maps[name])
+                    maps[name] = table.wrap_lock(table.join({"-Xclang", "--dependent-lib=" .. llvm_dirs.rtlink}, maps[name]))
                 end
             end
         end

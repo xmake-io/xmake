@@ -320,6 +320,28 @@ function get_vs_toolset_ver(vs_toolset)
     return toolset_ver
 end
 
+-- expand grouped flags before passing them to external package build tools
+--
+-- table.wrap_lock() keeps multi-argument flags together while xmake maps and
+-- checks them. this function intentionally ignores that lock because external
+-- build tools expect a flat, ordered argument list.
+function _expand_flaggroups(flags)
+    if not flags then
+        return
+    end
+    local results = {}
+    for _, flag in ipairs(table.wrap(flags)) do
+        if type(flag) == "table" then
+            for _, value in ipairs(flag) do
+                table.insert(results, value)
+            end
+        else
+            table.insert(results, flag)
+        end
+    end
+    return results
+end
+
 -- map compiler flags for package
 function map_compflags_for_package(package, langkind, name, values)
     -- @note we need to patch package:sourcekinds(), because it wiil be called nf_runtime for gcc/clang
@@ -329,7 +351,7 @@ function map_compflags_for_package(package, langkind, name, values)
     end
     local flags = compiler.map_flags(langkind, name, values, {target = package})
     package.sourcekinds = nil
-    return flags
+    return _expand_flaggroups(flags)
 end
 
 -- map linker flags for package
@@ -340,7 +362,7 @@ function map_linkflags_for_package(package, targetkind, sourcekinds, name, value
     end
     local flags = linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
     package.sourcekinds = nil
-    return flags
+    return _expand_flaggroups(flags)
 end
 
 -- ask the clang driver for the absolute path of the given library
