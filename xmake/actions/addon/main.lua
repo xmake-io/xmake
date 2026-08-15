@@ -27,12 +27,6 @@ import("private.action.addon.impl.xrepo", {alias = "xrepo_addon"})
 import("private.action.require.impl.environment")
 import("private.action.require.impl.search_packages")
 
--- the version directory name for the addons installed from git urls or local directories
-local LOCALVERSION = "latest"
-
--- the maximum number of the available addons shown by `--list`
-local LISTLIMIT = 10
-
 -- validate an addon directory name
 function _check_addon_name(name)
     assert(type(name) == "string" and name ~= "" and name ~= "." and not name:find("..", 1, true) and not name:find("[/\\:]"), "invalid addon name(%s)!", name)
@@ -78,7 +72,9 @@ function _install_from_local(dir, name)
     end
     name = name or path.filename(dir)
 
-    local dstdir = _get_addondir(name, LOCALVERSION)
+    -- the addons installed from a local directory or a git url have no semantic version
+    local version = "latest"
+    local dstdir = _get_addondir(name, version)
     assert(not os.isdir(dstdir), "addon(%s) already exists!", name)
 
     -- the addons which it depends on are not installed by the local installation,
@@ -99,7 +95,7 @@ function _install_from_local(dir, name)
     try
     {
         function ()
-            addon.register(name, LOCALVERSION, manifest and {
+            addon.register(name, version, manifest and {
                 description = manifest.description,
                 deps = #manifest.deps > 0 and manifest.deps or nil,
                 globalmodules = #manifest.globalmodules > 0 and manifest.globalmodules or nil})
@@ -308,13 +304,14 @@ function _list()
     end
 
     -- show the addons in the repositories, we only show the first ones if there are too many
+    local listlimit = 10
     local avail = _collect_repo_addons(exclude)
     cprint("${bright}the available addons:${clear} ${dim}(run `xmake addon --install <name>` to install," ..
            " `--search <pattern>` to search)${clear}")
     if #avail > 0 then
         for idx, entry in ipairs(avail) do
-            if idx > LISTLIMIT then
-                cprint("  ${dim}... and %d more${clear}", #avail - LISTLIMIT)
+            if idx > listlimit then
+                cprint("  ${dim}... and %d more${clear}", #avail - listlimit)
                 break
             end
             _print_addon(entry, entry.reponame and string.format(" ${dim}(in %s)${clear}", entry.reponame) or nil)
