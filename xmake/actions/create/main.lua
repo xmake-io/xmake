@@ -25,6 +25,19 @@ import("actions.create.template", {rootdir = os.programdir()})
 
 -- validate template component against path traversal
 function _validate_template_component(name, value)
+
+    -- the qualified template id of an addon, e.g. @addon/basic-templates/verilator.console
+    if name == "template id" and value:startswith("@addon/") then
+        local rest = value:sub(#"@addon/" + 1)
+        local pos = rest:find("/", 1, true)
+        if not pos then
+            raise("invalid %s: %s, it should be `@addon/<addon>/<template>`!", name, value)
+        end
+        _validate_template_component("addon name", rest:sub(1, pos - 1))
+        _validate_template_component("template id", rest:sub(pos + 1))
+        return
+    end
+
     if #value == 0 or value == "." or value == ".."
         or value:find("/", 1, true) or value:find("\\", 1, true)
         or value:find(":", 1, true) or value:find("\0", 1, true) then
@@ -79,26 +92,12 @@ function _list_templates(lang_filter)
         languages = {lang_filter}
     end
 
-    -- map a template directory to its root meta (repo/global/builtin)
-    local rootinfo_of = function (dir)
-        if not dir then
-            return
-        end
-        dir = path.absolute(dir)
-        for _, info in ipairs(rootinfos) do
-            local rootdir = path.absolute(info.dir)
-            if dir == rootdir or dir:startswith(rootdir .. path.sep()) then
-                return info
-            end
-        end
-    end
-
     local sourcekey_of = function (info)
         if not info then
             return "unknown"
         end
-        if info.kind == "repo" then
-            return "repo:" .. info.name
+        if info.kind == "addon" then
+            return info.kind .. ":" .. info.name
         end
         return info.kind or "unknown"
     end
@@ -109,7 +108,7 @@ function _list_templates(lang_filter)
         if templates and #templates > 0 then
             for _, name in ipairs(templates) do
                 local sourcedir = template.templatedir(lang, name)
-                local info = rootinfo_of(sourcedir)
+                local info = template.rootinfo_of(sourcedir)
                 local key = sourcekey_of(info)
                 local group = groups[key]
                 if not group then
@@ -140,9 +139,8 @@ function _list_templates(lang_filter)
         local group = groups[key]
         if group then
             local info = group.info
-            if info and info.kind == "repo" then
-                local branch = info.branch and (" " .. info.branch) or ""
-                cprint("${bright}%s${reset}: %s%s", info.name, info.url or "", branch)
+            if info and info.kind == "addon" then
+                cprint("${bright}%s${reset}: addon %s", info.name, info.version or "")
             else
                 cprint("${bright}%s${reset}", (info and info.kind) or "unknown")
             end
@@ -195,7 +193,7 @@ function _create_project(lang, templateid, targetname)
     -- create project
     local sourcedir = template.templatedir(lang, templateid)
     if not sourcedir then
-        raise("template(%s/%s): not found!\nyou can try:\n  - xrepo update-repo (update repositories)\n  - xmake create --list (show available templates)", lang, templateid)
+        raise("template(%s/%s): not found!\nyou can try:\n  - xmake addon --search templates (search the addons which provide templates)\n  - xmake create --list (show available templates)", lang, templateid)
     end
 
     -- get the builtin variables

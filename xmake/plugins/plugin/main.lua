@@ -257,6 +257,7 @@ function _clear()
 end
 
 function main()
+    cprint("${bright color.warning}${text.warning}: ${color.warning}`xmake plugin` is deprecated, please use `xmake addon` instead!")
     if option.get("install") then
         _install()
     elseif option.get("remove") then

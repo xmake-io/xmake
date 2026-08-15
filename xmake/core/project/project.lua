@@ -45,6 +45,8 @@ local option                = require("project/option")
 local policy                = require("project/policy")
 local project_package       = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
+local addon                 = require("package/addon")
+local addons                = require("project/addons")
 local package               = require("package/package")
 local platform              = require("platform/platform")
 local toolchain             = require("tool/toolchain")
@@ -227,11 +229,124 @@ function project._api_add_toolchaindirs(interp, ...)
     end
 end
 
+-- install the addons which this project declares
+--
+-- @note we cannot install them here, we are loading the project, so we do it in a
+-- sub-process, @see xmake/modules/private/action/addon/impl/install_addons.lua
+--
+function project._install_addons()
+    -- @note we need to cache the result, the project may be loaded many times,
+    -- otherwise the failure would be ignored by the next load
+    if not project._ADDONS_CHECKED then
+        project._ADDONS_CHECKED = true
+        project._ADDONS_OK, project._ADDONS_ERRORS = project._do_install_addons()
+    end
+    return project._ADDONS_OK, project._ADDONS_ERRORS
+end
+
+-- activate the addon versions which this project locks
+--
+-- @note an addon can be installed with several versions at the same time, the other
+-- projects may lock the other versions of it, @see core/package/addon.lua
+--
+function project._pin_addons()
+    for name, lockinfo in pairs(addons.locked() or {}) do
+        if lockinfo.version then
+            addon.pin(name, lockinfo.version)
+        end
+    end
+end
+
+-- do install the addons which this project declares
+function project._do_install_addons()
+
+    -- this project declares nothing?
+    local addonsinfo, errors = addons.load()
+    if errors then
+        return false, errors
+    end
+    if not addonsinfo or #addonsinfo.addons == 0 then
+        return true
+    end
+
+    -- they have been installed already?
+    project._pin_addons()
+    if addons.satisfied(addonsinfo) then
+        return true
+    end
+
+    -- tell the user why we are installing something, it may need to confirm and download,
+    -- e.g. `xmake --help` in a project directory which declares some addons
+    utils.cprint("${color.warning}note: ${clear}%s: this project needs the addons(${bright}%s${clear}), installing them ..",
+        addons.filename(), table.concat(addonsinfo.addons, ", "))
+    if baseoption.get("help") then
+        -- the help menu also shows the options which the addons provide, but the user
+        -- did not ask for an installation, so we tell them how to skip it
+        utils.cprint("${dim}we can run it outside of the project directory to skip the installation${clear}")
+    end
+
+    -- @note we run it in a working directory which has no project, @see addon.workdir(),
+    -- otherwise it would load this project again
+    --
+    -- @note we may be called when building the option menu, the command line has not
+    -- been parsed yet, so we can only get the common flags from the raw arguments
+    --
+    local argv = {"lua"}
+    local flags = {["-y"] = "--yes", ["--yes"] = "--yes",
+                   ["-v"] = "--verbose", ["--verbose"] = "--verbose",
+                   ["-D"] = "--diagnosis", ["--diagnosis"] = "--diagnosis"}
+    local flags_added = {}
+    for _, arg in ipairs(xmake._COMMAND_ARGV or {}) do
+        local flag = flags[arg]
+        if flag and not flags_added[flag] then
+            table.insert(argv, flag)
+            flags_added[flag] = true
+        end
+    end
+    table.insert(argv, "private.action.addon.impl.install_addons")
+    table.insert(argv, os.projectdir())
+    local ok, errors = os.execv(os.programfile(), argv, {curdir = addon.workdir()})
+    if ok ~= 0 then
+        return false, errors or "install the addons of this project failed!"
+    end
+
+    -- we have loaded the registry and its caches before installing them, so we need to reload it
+    addon.reload()
+    project._pin_addons()
+    rule.clear()
+    task.clear()
+    return true
+end
+
 -- load the project file
-function project._load(force, disable_filter)
+--
+-- @param opt   the options
+--              - force: load the project file again even if it has been loaded
+--              - disable_filter: disable the interpreter filter, e.g. `$(plat)`
+--              - skip_addons: do not install the addons which this project declares
+--
+function project._load(opt)
+    opt = opt or {}
+
+    -- install the addons which this project declares in `xmake-addons.lua` first,
+    -- it may use their rules, toolchains and includes files,
+    -- e.g. includes("@addon/esp32-devel/board")
+    --
+    -- @note we need to check it before the cache, the project file may have been loaded
+    -- already without them, e.g. by the option menu
+    --
+    if opt.skip_addons then
+        -- we do not install them here, but we still need to use the locked versions
+        project._pin_addons()
+    else
+        local ok, errors = project._install_addons()
+        if not ok then
+            return false, errors
+        end
+    end
 
     -- has already been loaded?
-    if project._memcache():get("rootinfo") and not force then
+    if project._memcache():get("rootinfo") and not opt.force then
         return true
     end
 
@@ -261,13 +376,13 @@ function project._load(force, disable_filter)
     end
 
     -- load the root info of the project
-    local rootinfo, errors = project._load_scope("root", true, not disable_filter)
+    local rootinfo, errors = project._load_scope("root", true, not opt.disable_filter)
     if not rootinfo then
         return false, errors
     end
 
     -- load the root info of the target
-    local rootinfo_target, errors = project._load_scope("root.target", true, not disable_filter)
+    local rootinfo_target, errors = project._load_scope("root.target", true, not opt.disable_filter)
     if not rootinfo_target then
         return false, errors
     end
@@ -311,6 +426,11 @@ function project._load_scope(scope_kind, deduplicate, enable_filter)
 end
 
 -- load tasks
+--
+-- @note we should not install the addons which this project declares here, the option menu
+-- merges the project tasks in a best-effort way and every command builds it,
+-- e.g. `xmake lua`, `xmake addon --remove --all`, @see xmake/core/main.lua
+--
 function project._load_tasks()
 
     -- the project file is not found?
@@ -319,7 +439,7 @@ function project._load_tasks()
     end
 
     -- load the project file first and disable filter
-    local ok, errors = project._load(true, true)
+    local ok, errors = project._load({force = true, disable_filter = true, skip_addons = true})
     if not ok then
         return nil, errors
     end
@@ -400,7 +520,7 @@ function project._load_targets()
 
     -- load all requires first and reload the project file to ensure has_package() works for targets
     local requires = project.required_packages()
-    local ok, errors = project._load(true)
+    local ok, errors = project._load({force = true})
     if not ok then
         return nil, errors
     end
@@ -481,7 +601,7 @@ function project._load_options(disable_filter)
     end
 
     -- reload the project file to ensure `if is_plat() then add_packagedirs() end` works
-    local ok, errors = project._load(true, disable_filter)
+    local ok, errors = project._load({force = true, disable_filter = disable_filter})
     if not ok then
         return nil, errors
     end
@@ -1129,7 +1249,7 @@ function project.requires_str()
     if not requires_str then
 
         -- reload the project file to handle `has_config()`
-        local ok, errors = project._load(true)
+        local ok, errors = project._load({force = true})
         if not ok then
             os.raise(errors)
         end
@@ -1259,6 +1379,10 @@ end
 function project.toolchain(name, opt)
     opt = opt or {}
     local parseinfo = toolchain.parsename(name) -- we need to ignore `@packagename`
+    -- the addon toolchains are only loaded from the addons, e.g. set_toolchains("@addon/esp32/xtensa")
+    if parseinfo.addon_prefix then
+        return nil
+    end
     local toolchain_name = parseinfo.name
     local info = project._toolchains()[toolchain_name]
     if info == nil and opt.namespace then

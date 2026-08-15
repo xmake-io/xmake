@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.package.addon")
 import("private.action.require.impl.remove_packages", {alias = "remove_all_packages"})
 
 -- get menu options
@@ -44,6 +45,10 @@ function menu_options()
         {nil, "toolchain",       "kv", nil, "Set the toolchain name."                           },
         {nil, "toolchain_host",  "kv", nil, "Set the host toolchain name."                      },
         {                                                                                       },
+        {nil, "addon",           "k", nil,  "Remove the given installed addon packages.",
+                                       "e.g.",
+                                       "    - xrepo remove --addon serial-monitor"           },
+        {'f', "force",           "k", nil,  "Force to remove the addon packages, even if they are depended on by the others." },
         {nil, "all",             "k", nil,  "Remove all packages and ignore extra package configs.",
                                        "If `--all` is enabled, the package name parameter will support lua pattern",
                                        "e.g.",
@@ -193,10 +198,21 @@ function _remove_packages(packages)
     os.vexecv(os.programfile(), require_argv)
 end
 
+-- remove the given installed addons
+function _remove_addons(names)
+    for _, name in ipairs(names) do
+        addon.remove(name, {force = option.get("force")})
+        cprint("${color.success}remove ${bright}%s${clear} ok!", name)
+    end
+end
+
 -- main entry
 function main()
     local packages = option.get("packages")
-    if option.get("all") then
+    if option.get("addon") then
+        assert(packages, "please specify the addons to be removed.")
+        _remove_addons(packages)
+    elseif option.get("all") then
         remove_all_packages(packages)
     elseif packages then
         _remove_packages(packages)

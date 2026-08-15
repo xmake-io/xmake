@@ -232,5 +232,15 @@ function semver.match(str, pos, pattern)
     end
 end
 
+-- is a valid semantic version? e.g. "1.2.3", "v1.2.3-beta"
+function semver.is_valid(version)
+    return semver.parse(version) ~= nil
+end
+
+-- is a valid semantic version range? e.g. ">=1.0 <2.0", "^1.2", "master || >1.4"
+function semver.is_valid_range(range)
+    return semver.satisfies("1.0", range) ~= nil
+end
+
 -- return module: semver
 return semver

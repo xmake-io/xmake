@@ -30,6 +30,7 @@ local table     = require("base/table")
 local string    = require("base/string")
 local option    = require("base/option")
 local global    = require("base/global")
+local addon     = require("package/addon")
 local config    = require("project/config")
 local memcache  = require("cache/memcache")
 local sandbox   = require("sandbox/sandbox")
@@ -386,7 +387,7 @@ function core_sandbox_module._find_and_load(name, opt)
                 errors = moduleinfo[2]
             else
                 module, errors = core_sandbox_module._load(moduledir, name, {
-                                                           instance = idx < #modules_directories and opt.instance or nil,  -- last modules need not fork sandbox
+                                                           instance = moduledir ~= core_sandbox_module.coredir() and opt.instance or nil,  -- the core modules need not fork sandbox
                                                            module = module,
                                                            always_build = always_build,
                                                            modulekind = modulekind})
@@ -419,9 +420,10 @@ end
 function core_sandbox_module.directories()
     local moduledirs = memcache.get("core_sandbox_module", "moduledirs")
     if not moduledirs then
+        -- @note the core modules directory must be the last one, @see core_sandbox_module._find_and_load
         moduledirs = { path.join(global.directory(), "modules"),
                        path.join(os.programdir(), "modules"),
-                       path.join(os.programdir(), "core/sandbox/modules/import")}
+                       core_sandbox_module.coredir()}
         local modulesdir = os.getenv("XMAKE_MODULES_DIR")
         if modulesdir and os.isdir(modulesdir) then
             table.insert(moduledirs, 1, modulesdir)
@@ -429,6 +431,14 @@ function core_sandbox_module.directories()
         memcache.set("core_sandbox_module", "moduledirs", moduledirs)
     end
     return moduledirs
+end
+
+-- get the core modules directory
+--
+-- @note the modules in this directory are loaded without sandbox, because they need `require`
+--
+function core_sandbox_module.coredir()
+    return path.join(os.programdir(), "core/sandbox/modules/import")
 end
 
 -- add module directories
@@ -442,6 +452,14 @@ end
 
 -- find module
 function core_sandbox_module.find(name)
+
+    -- an addon can export some modules as the global modules, they are also visible here,
+    -- e.g. find_toolname() looks for `detect.tools.find_xxx` with it, @see addon.globalmodules()
+    local globalmodulesdir = addon.globalmodules()[name]
+    if globalmodulesdir and core_sandbox_module._find(globalmodulesdir, name) then
+        return true
+    end
+
     for _, moduledir in ipairs(core_sandbox_module.directories()) do
         if (core_sandbox_module._find(moduledir, name)) then
             return true
@@ -498,6 +516,24 @@ function core_sandbox_module.import(name, opt)
     local scope_parent = getfenv(2)
     assert(scope_parent)
 
+    -- import the modules of the installed addons? e.g. import("@addon.foo")
+    --
+    -- @note we need the `@addon.` prefix to distinguish them from the builtin modules
+    --
+    -- import the modules of an addon?
+    -- e.g. import("@addon.esp32.sdkconfig"), import("@self.sdkconfig")
+    local addon_modulesdir
+    local addon_reference = name
+    if addon.is_reference(name, ".") then
+        local referenceinfo, errors = addon.resolve_reference(name, ".", "modules",
+            {scriptdir = opt.scriptdir or sandbox.instance() and sandbox.instance():rootdir()})
+        if not referenceinfo then
+            raise(errors)
+        end
+        addon_modulesdir = referenceinfo.dir
+        name = referenceinfo.name
+    end
+
     -- get module name
     local modulename = core_sandbox_module.name(name)
     if not modulename then
@@ -515,7 +551,25 @@ function core_sandbox_module.import(name, opt)
     local rootdir = opt.rootdir or instance:rootdir()
 
     -- init module directories (disable local packages?)
-    local modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
+    local modules_directories
+    if addon_modulesdir then
+        -- the addon modules are always resolved from the addon `modules` directory only,
+        -- e.g. import("@addon.esp32.sdkconfig"), import("@self.sdkconfig")
+        modules_directories = {addon_modulesdir}
+    else
+        modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
+
+        -- an addon can export some modules as the global modules, e.g. add_globalmodules("core.tools.esptool"),
+        -- so that the internal calls can import them with their plain names, e.g. import("core.tools.esptool")
+        --
+        -- @note we only accept the declared names, the other modules of this addon are
+        -- still private and can only be imported with `@addon.`/`@self.`
+        --
+        local globalmodulesdir = addon.globalmodules()[name]
+        if globalmodulesdir then
+            table.insert(modules_directories, rootdir and 2 or 1, globalmodulesdir)
+        end
+    end
 
     -- load module
     local loadopt = table.clone(opt) or {}
@@ -554,6 +608,8 @@ function core_sandbox_module.import(name, opt)
     if not found then
         if opt.try then
             return nil
+        elseif addon_modulesdir then
+            raise("cannot import module: %s, not found!", addon_reference)
         else
             raise("cannot import module: %s, not found!", name)
         end

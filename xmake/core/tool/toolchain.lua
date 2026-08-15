@@ -33,6 +33,7 @@ local hashset        = require("base/hashset")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local is_cross       = require("base/private/is_cross")
+local addon          = require("package/addon")
 local config         = require("project/config")
 local memcache       = require("cache/memcache")
 local localcache     = require("cache/localcache")
@@ -670,6 +671,28 @@ end
 -- e.g. "mingw[clang]@llvm-mingw", "msvc[vs=2025,..]"
 --
 function toolchain.parsename(name)
+
+    -- the toolchain of an addon?
+    -- e.g. set_toolchains("@addon/esp32/xtensa"), set_toolchains("@addon/esp32/clang@llvm"), set_toolchains("@self/xtensa")
+    --
+    -- @note we need to parse it first, because `@` is also used for the toolchain packages, e.g. "@zig"
+    --
+    -- @note we only strip the `@addon/<addon>/` prefix here, the rest is parsed as usual,
+    -- so the addon toolchains can also be bound to packages, e.g. "@addon/esp32/clang@llvm"
+    --
+    local addon_prefix
+    if name:startswith("@addon/") then
+        local rest = name:sub(#"@addon/" + 1)
+        local pos = rest:find("/", 1, true)
+        if pos then
+            addon_prefix = "@addon/" .. rest:sub(1, pos - 1) .. "/"
+            name = rest:sub(pos + 1)
+        end
+    elseif name:startswith("@self/") then
+        addon_prefix = "@self/"
+        name = name:sub(#"@self/" + 1)
+    end
+
     local splitinfo = name:split('@', {plain = true, strict = true})
     local toolchain_name = splitinfo[1]
     if toolchain_name == "" then
@@ -707,7 +730,8 @@ function toolchain.parsename(name)
             end
         end
     end
-    return {name = toolchain_name or packages, packages = packages, requireconfs = requireconfs, requirestr = requirestr}
+    return {name = toolchain_name or packages, packages = packages, addon_prefix = addon_prefix,
+            requireconfs = requireconfs, requirestr = requirestr}
 end
 
 -- get toolchain apis
@@ -781,9 +805,27 @@ function toolchain.load(name, opt)
     configs.plat = opt.plat or config.get("plat") or os.host()
     configs.arch = opt.arch or config.get("arch") or os.arch()
 
+    -- find the toolchain script path
+    --
+    -- @note we need to resolve the addon reference before the cache, `@self/` depends on
+    -- the addon which owns the caller script, and the different addons may provide
+    -- the same toolchain name
+    --
+    local scriptpath, addon_prefix
+    if parseinfo.addon_prefix then
+        -- e.g. set_toolchains("@addon/esp32/xtensa"), set_toolchains("@self/xtensa")
+        local referenceinfo, errors = addon.resolve_reference(parseinfo.addon_prefix .. name, "/", "toolchains",
+            {scriptdir = opt.scriptdir})
+        if not referenceinfo then
+            return nil, errors
+        end
+        addon_prefix = "@addon/" .. referenceinfo.addon .. "/"
+        scriptpath = path.join(referenceinfo.dir, referenceinfo.name, "xmake.lua")
+    end
+
     -- get cache
     local cache = toolchain._memcache()
-    local cachekey = toolchain._cachekey(name, configs)
+    local cachekey = toolchain._cachekey((addon_prefix or "") .. name, configs)
 
     -- get it directly from cache dirst
     local instance = cache:get(cachekey)
@@ -791,16 +833,16 @@ function toolchain.load(name, opt)
         return instance
     end
 
-    -- find the toolchain script path
-    local scriptpath = nil
-    for _, dir in ipairs(toolchain.directories()) do
-        scriptpath = path.join(dir, name, "xmake.lua")
-        if os.isfile(scriptpath) then
-            break
+    if not addon_prefix then
+        for _, dir in ipairs(toolchain.directories()) do
+            scriptpath = path.join(dir, name, "xmake.lua")
+            if os.isfile(scriptpath) then
+                break
+            end
         end
     end
     if not scriptpath or not os.isfile(scriptpath) then
-        return nil, string.format("the toolchain %s not found!", name)
+        return nil, string.format("the toolchain %s%s not found!", addon_prefix or "", name)
     end
 
     -- get interpreter
