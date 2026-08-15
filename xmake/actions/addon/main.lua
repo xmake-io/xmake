@@ -45,10 +45,16 @@ function _get_addondir(name, version)
     return addondir
 end
 
--- install an addon from the given repository or the first repository containing it
-function _install_from_repo(name, reponame)
-    _check_addon_name(name)
-    xrepo_addon("install", {reponame and (reponame .. "@" .. name) or name}, {force = option.get("force")})
+-- install the given addons from the repositories which provide them
+--
+-- @note we install them in one shot, xrepo resolves and installs them in parallel
+--
+function _install_from_repo(names)
+    for _, name in ipairs(names) do
+        -- e.g. myrepo@myaddon
+        _check_addon_name(name:split("@", {plain = true, limit = 2})[2] or name)
+    end
+    xrepo_addon("install", names, {force = option.get("force")})
 end
 
 -- install a single addon from a source directory (as the given name, default to the directory name)
@@ -82,7 +88,7 @@ function _install_from_local(dir, name)
     if manifest then
         for _, dep in ipairs(manifest.deps) do
             if not addon.addons()[addon.dirname(dep)] then
-                _install_from_repo(dep)
+                _install_from_repo({dep})
             end
         end
     end
@@ -158,21 +164,11 @@ function _install_from_git(url)
     environment.leave()
 end
 
--- install a single addon
-function _install_one(name)
-    -- parse repo@addon format
-    local i = name:find("@", 1, true)
-    if i and not name:find("[/\\:]") then
-        local reponame = name:sub(1, i - 1)
-        local addonname = name:sub(i + 1)
-        _install_from_repo(addonname, reponame)
-        return
-    end
-
+-- does the given name come from a repository? e.g. `myaddon`, `myrepo@myaddon`
+function _is_from_repo(name)
     -- github shortcut: github:user/repo or github:user/repo#branch
     if name:startswith("github:") then
-        _install_from_git(name)
-        return
+        return false
     end
 
     -- local directory
@@ -180,25 +176,28 @@ function _install_one(name)
     -- @note we need to check it before the git url, `git.asgiturl` also accepts
     -- the local paths with a trailing separator, e.g. `/path/to/myaddon/`
     if os.isdir(name) then
-        _install_from_local(name)
-        return
+        return false
     end
-
-    -- git url
-    if git.asgiturl(name) then
-        _install_from_git(name)
-        return
-    end
-
-    -- plain name: try to find it in repositories
-    _install_from_repo(name)
+    return not git.asgiturl(name)
 end
 
 -- install addons
 function _install()
     local names = assert(option.get("addons"), "please specify the addons to be installed!")
+
+    -- the addons from the repositories are installed in one shot, the others one by one
+    local requires = {}
     for _, name in ipairs(names) do
-        _install_one(name)
+        if _is_from_repo(name) then
+            table.insert(requires, name)
+        elseif os.isdir(name) then
+            _install_from_local(name)
+        else
+            _install_from_git(name)
+        end
+    end
+    if #requires > 0 then
+        _install_from_repo(requires)
     end
 end
 

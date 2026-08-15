@@ -368,7 +368,8 @@ end
 
 -- the addons can be installed from a repository, by plain name and by repo@name
 function test_install_from_repo(t)
-    local recipes = {["custom-plugin"] = ("set_sourcedir(%q)"):format(_addondir("custom-plugin"))}
+    local recipes = {["custom-plugin"] = ("set_sourcedir(%q)"):format(_addondir("custom-plugin")),
+                     ["custom-module"] = ("set_sourcedir(%q)"):format(_addondir("custom-module"))}
     _with_repo(recipes, function (reponame)
         os.runv("xmake", {"addon", "--install", "-y", "custom-plugin"})
         t:require(os.iorunv("xmake", {"hello_addon"}):find("hello from custom-plugin", 1, true))
@@ -384,6 +385,13 @@ function test_install_from_repo(t)
         --
         t:require(os.iorunv("xmake", {"addon", "--search", "custom-plugin"}):find("custom-plugin", 1, true))
         t:require_not(os.iorunv("xmake", {"lua", "private.xrepo", "search", "custom-plugin"}):find("custom-plugin", 1, true))
+
+        -- and several of them can be installed in one shot, they are resolved and installed together
+        os.runv("xmake", {"addon", "--remove", "--force", "custom-plugin"})
+        os.runv("xmake", {"addon", "--install", "-y", "custom-plugin", reponame .. "@custom-module"})
+        t:require(os.iorunv("xmake", {"hello_addon"}):find("hello from custom-plugin", 1, true))
+        t:require(os.iorunv("xmake", {"lua", "-c", "import(\"@addon.custom-module.greeting\"); print(greeting(\"xmake\"))"})
+            :find("hello from custom-module: xmake", 1, true))
     end)
 end
 
