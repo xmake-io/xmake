@@ -50,15 +50,10 @@ function sandbox_core_base_semver.match(str, pos, pattern)
 end
 
 -- is valid version?
-function sandbox_core_base_semver.is_valid(version)
-    return semver.parse(version) ~= nil
-end
+sandbox_core_base_semver.is_valid = semver.is_valid
 
 -- is valid version range?
-function sandbox_core_base_semver.is_valid_range(range)
-    local ok = semver.satisfies("1.0", range)
-    return ok ~= nil
-end
+sandbox_core_base_semver.is_valid_range = semver.is_valid_range
 
 -- compare two version strings
 --

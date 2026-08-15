@@ -29,9 +29,13 @@ function _with_addons(names, func)
         func,
         finally
         {
-            function ()
+            -- @note try() swallows the errors if we do not re-raise them here
+            function (ok, errors)
                 for _, name in ipairs(names) do
                     _remove(name)
+                end
+                if not ok then
+                    raise(errors)
                 end
             end
         }
@@ -54,6 +58,14 @@ function _with_repo(recipes, func)
     local cachefile = path.join(global.cachedir(), "repository")
     local cache = os.isfile(cachefile) and io.load(cachefile) or {}
     cache.repositories = cache.repositories or {}
+
+    -- a killed test run may leave its temporary repository registered, and a dangling
+    -- repository breaks every following xrepo command, so we drop them here
+    for name, dirs in pairs(cache.repositories) do
+        if name:startswith("addon-test-repo-") and not os.isdir(dirs[1]) then
+            cache.repositories[name] = nil
+        end
+    end
     cache.repositories[reponame] = {repodir}
     io.save(cachefile, cache)
     os.tryrm(path.join(global.cachedir(), "quick_search"))
@@ -65,7 +77,8 @@ function _with_repo(recipes, func)
         end,
         finally
         {
-            function ()
+            -- @note try() swallows the errors if we do not re-raise them here
+            function (ok, errors)
                 for name, _ in pairs(recipes) do
                     _remove(name)
                 end
@@ -76,6 +89,9 @@ function _with_repo(recipes, func)
                 io.save(cachefile, cache)
                 os.tryrm(path.join(global.cachedir(), "quick_search"))
                 os.tryrm(repodir)
+                if not ok then
+                    raise(errors)
+                end
             end
         }
     }
@@ -112,6 +128,36 @@ end
 
 function _config_project(content)
     return _run_project(content, {"config", "-y"})
+end
+
+-- copy the given fixture project to a temporary directory and run the given function in it
+--
+-- @note we cannot run them in place, they would generate the lock and the build files,
+-- @see tests/actions/addon/projects
+--
+function _with_project(name, func)
+    local projectdir = os.tmpfile() .. ".addon-project"
+    os.tryrm(projectdir)
+    os.mkdir(projectdir)
+    os.cp(path.join(os.scriptdir(), "projects", name, "*"), projectdir)
+    local oldir = os.cd(projectdir)
+    try
+    {
+        function ()
+            func(projectdir)
+        end,
+        finally
+        {
+            -- @note try() swallows the errors if we do not re-raise them here
+            function (ok, errors)
+                os.cd(oldir)
+                os.tryrm(projectdir)
+                if not ok then
+                    raise(errors)
+                end
+            end
+        }
+    }
 end
 
 -- only the payloads should be installed, our own files should not
@@ -223,6 +269,92 @@ target("test")
     end)
 end
 
+-- the addons which a project declares in `xmake-addons.lua` are installed automatically
+--
+-- @note they must be installed before loading the project, it may use their includes files
+function test_autofetch(t)
+    local recipes = {["custom-include"] = ("set_sourcedir(%q)"):format(_addondir("custom-include"))}
+    _with_repo(recipes, function ()
+        _remove("custom-include")
+        _with_project("autofetch", function (projectdir)
+
+            -- it should be installed when loading the project, so that its includes file can be found,
+            -- and we should tell the user why we install something, it may need to confirm and download
+            local output = os.iorunv("xmake", {"config", "-y"})
+            t:require(output:find("custom-include: includes check is loaded", 1, true))
+            t:require(output:find("this project needs the addons", 1, true))
+
+            -- and it should be locked
+            local lockfile = path.join(projectdir, "xmake-addons.lock")
+            t:require(os.isfile(lockfile))
+            t:require(io.load(lockfile)["custom-include"] ~= nil)
+
+            -- we should not install it again
+            t:require_not(os.iorunv("xmake", {"config", "-y"}):find("install custom-include", 1, true))
+        end)
+    end)
+end
+
+-- every command builds the option menu, which merges the project tasks in a best-effort way,
+-- so the commands which need not the project should never install its addons
+function test_autofetch_skipped_for_option_menu(t)
+    local recipes = {["custom-include"] = ("set_sourcedir(%q)"):format(_addondir("custom-include"))}
+    _with_repo(recipes, function ()
+        _remove("custom-include")
+        _with_project("autofetch", function (projectdir)
+            os.runv("xmake", {"addon", "--list"})
+            os.runv("xmake", {"lua", "-c", "print(\"hello\")"})
+            t:require_not(os.isfile(path.join(projectdir, "xmake-addons.lock")))
+        end)
+    end)
+end
+
+-- a complete project which declares its addons in `xmake-addons.lua` and builds with them,
+-- @see tests/actions/addon/projects/autofetch-build
+function test_autofetch_build(t)
+
+    -- @note the compiler of the custom toolchain is just the host one,
+    -- so we can only build it if there is one
+    if not (find_program("gcc") or find_program("clang") or find_program("cc")) then
+        return
+    end
+
+    local names = {"custom-include", "custom-rule", "custom-toolchain"}
+    local recipes = {}
+    for _, name in ipairs(names) do
+        recipes[name] = ("set_sourcedir(%q)"):format(_addondir(name))
+    end
+    _with_repo(recipes, function ()
+        for _, name in ipairs(names) do
+            _remove(name)
+        end
+        _with_project("autofetch-build", function (projectdir)
+
+            -- all of them should be installed when loading the project, and it should build
+            -- with their includes file, rule and toolchain, @see src/main.c
+            local output = os.iorunv("xmake", {"build", "-y"})
+            t:require(output:find("custom-include: includes check is loaded", 1, true))
+            t:require(output:find("custom-rule: hello from custom-rule: hello", 1, true))
+            t:require(output:find("build ok", 1, true))
+
+            -- and all of them should be locked
+            local lockinfo = io.load(path.join(projectdir, "xmake-addons.lock"))
+            for _, name in ipairs(names) do
+                t:require(lockinfo[name] ~= nil)
+            end
+        end)
+    end)
+end
+
+-- the addons file only declares the addons, it cannot reference them
+function test_autofetch_invalid(t)
+    for _, name in ipairs({"autofetch-badinclude", "autofetch-badname"}) do
+        _with_project(name, function ()
+            t:require_not(try { function () os.runv("xmake", {"config", "-y"}); return true end })
+        end)
+    end
+end
+
 -- the addons can be installed from a repository, by plain name and by repo@name
 function test_install_from_repo(t)
     local recipes = {["custom-plugin"] = ("set_sourcedir(%q)"):format(_addondir("custom-plugin"))}
@@ -235,8 +367,12 @@ function test_install_from_repo(t)
         t:require(os.iorunv("xmake", {"hello_addon"}):find("hello from custom-plugin", 1, true))
 
         -- it should be searchable, and the addons should not be found by the package search
+        --
+        -- @note we cannot run the `xrepo` program here, it may not be in the PATH, e.g. on the ci,
+        -- and `xrepo search` is just a wrapper of it
+        --
         t:require(os.iorunv("xmake", {"addon", "--search", "custom-plugin"}):find("custom-plugin", 1, true))
-        t:require_not(os.iorunv("xrepo", {"search", "custom-plugin"}):find("custom-plugin", 1, true))
+        t:require_not(os.iorunv("xmake", {"lua", "private.xrepo", "search", "custom-plugin"}):find("custom-plugin", 1, true))
     end)
 end
 

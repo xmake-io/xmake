@@ -426,6 +426,12 @@ function task._is_conflicting(taskname, taskfile, filepath)
     return true
 end
 
+-- clear the loaded tasks, e.g. some addons may be installed just now
+function task.clear()
+    task._TASKS = nil
+    task._DIRECTORIES = nil
+end
+
 -- get all registered tasks
 --
 -- @return      the tasks table {name = task, ...}

@@ -22,6 +22,8 @@
 import("core.base.option")
 import("core.package.addon")
 import("devel.git")
+import("private.action.addon.impl.install_addons")
+import("private.action.addon.impl.xrepo", {alias = "xrepo_addon"})
 import("private.action.require.impl.environment")
 import("private.action.require.impl.search_packages")
 
@@ -49,30 +51,10 @@ function _get_addondir(name, version)
     return addondir
 end
 
--- run the given xrepo action for the addons, e.g. install, remove, search
-function _xrepo(action, names)
-    local argv = {"lua", "private.xrepo", action, "--addon"}
-    -- we need to pass the common options to the sub-process, e.g. -y, -v, -D
-    if option.get("yes") then
-        table.insert(argv, "-y")
-    end
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
-    if option.get("diagnosis") then
-        table.insert(argv, "-D")
-    end
-    if option.get("force") then
-        table.insert(argv, "--force")
-    end
-    table.join2(argv, names)
-    os.execv(os.programfile(), argv)
-end
-
 -- install an addon from the given repository or the first repository containing it
 function _install_from_repo(name, reponame)
     _check_addon_name(name)
-    _xrepo("install", {reponame and (reponame .. "@" .. name) or name})
+    xrepo_addon("install", {reponame and (reponame .. "@" .. name) or name}, {force = option.get("force")})
 end
 
 -- install a single addon from a source directory (as the given name, default to the directory name)
@@ -225,15 +207,41 @@ function _install()
 end
 
 -- remove the given installed addons
+--
+-- @note `xrepo remove --addon` removes them in the same way,
+-- @see xmake/modules/private/xrepo/action/remove.lua
+--
 function _remove()
-    local names = assert(option.get("addons"), "please specify the addon name to be removed!")
-    _xrepo("remove", names)
+    local names = option.get("addons")
+    local force = option.get("force")
+
+    -- remove all the installed addons? e.g. xmake addon --remove --all
+    if option.get("all") then
+        names = table.keys(addon.addons())
+        if #names == 0 then
+            wprint("no installed addons!")
+            return
+        end
+        -- the dependencies between them do not matter, they are all removed
+        force = true
+    end
+
+    assert(names, "please specify the addon name to be removed!")
+    for _, name in ipairs(names) do
+        addon.remove(name, {force = force})
+        cprint("${color.success}remove ${bright}%s${clear} ok!", name)
+    end
+end
+
+-- upgrade the addons which the current project declares in its `xmake-addons.lua`
+function _upgrade()
+    install_addons(os.projectdir(), {upgrade = true})
 end
 
 -- search the addons from the repositories
 function _search()
     local patterns = assert(option.get("addons"), "please specify the addon name pattern to be searched!")
-    _xrepo("search", patterns)
+    xrepo_addon("search", patterns)
 end
 
 -- collect the installed addons from the addons registry
@@ -243,8 +251,12 @@ end
 --
 function _collect_installed_addons()
     local entries = {}
-    for name, addoninfo in pairs(addon.rescan()) do
+    for name, addoninfo in pairs(addon.addons()) do
+        -- an addon can be installed with several versions, we show the active one,
+        -- the projects can lock the other ones, @see core/project/addons.lua
+        local versions = addon.versions(name)
         table.insert(entries, {name = name, version = addoninfo.version,
+                               versions = #versions > 1 and versions or nil,
                                description = addoninfo.description, payloads = addoninfo.payloads})
     end
     table.sort(entries, function (a, b) return a.name < b.name end)
@@ -285,7 +297,11 @@ function _list()
     if #installed > 0 then
         for _, entry in ipairs(installed) do
             exclude[entry.name] = true
-            _print_addon(entry, string.format(" ${dim}(%s)${clear}", table.concat(entry.payloads, ", ")))
+            local suffix = string.format(" ${dim}(%s)${clear}", table.concat(entry.payloads, ", "))
+            if entry.versions then
+                suffix = suffix .. string.format(" ${dim}[installed: %s]${clear}", table.concat(entry.versions, ", "))
+            end
+            _print_addon(entry, suffix)
         end
     else
         print("  (none)")
@@ -308,22 +324,16 @@ function _list()
     end
 end
 
--- clear all installed addons
-function _clear()
-    addon.clear()
-    cprint("${color.success}clear all installed addons ok!")
-end
-
 function main()
     if option.get("install") then
         _install()
     elseif option.get("remove") then
         _remove()
+    elseif option.get("upgrade") then
+        _upgrade()
     elseif option.get("list") then
         _list()
     elseif option.get("search") then
         _search()
-    elseif option.get("clear") then
-        _clear()
     end
 end

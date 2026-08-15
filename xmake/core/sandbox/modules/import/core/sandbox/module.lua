@@ -452,6 +452,14 @@ end
 
 -- find module
 function core_sandbox_module.find(name)
+
+    -- an addon can export some modules as the global modules, they are also visible here,
+    -- e.g. find_toolname() looks for `detect.tools.find_xxx` with it, @see addon.globalmodules()
+    local globalmodulesdir = addon.globalmodules()[name]
+    if globalmodulesdir and core_sandbox_module._find(globalmodulesdir, name) then
+        return true
+    end
+
     for _, moduledir in ipairs(core_sandbox_module.directories()) do
         if (core_sandbox_module._find(moduledir, name)) then
             return true

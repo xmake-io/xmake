@@ -884,6 +884,36 @@ end
 --
 -- the root api will affect these scopes
 --
+-- get the root file name of the included directories, e.g. includes("subdir") -> subdir/xmake.lua
+function interpreter:includes_rootfilename()
+    return self._PRIVATE._INCLUDES_ROOTFILENAME or "xmake.lua"
+end
+
+-- set the root file name of the included directories
+--
+-- e.g. interp:includes_rootfilename_set("xmake-addons.lua") -> includes("subdir") -> subdir/xmake-addons.lua
+--
+function interpreter:includes_rootfilename_set(filename)
+    self._PRIVATE._INCLUDES_ROOTFILENAME = filename
+end
+
+-- can we include the referenced files? e.g. includes("@builtin/check"), includes("@addon/esp32/board")
+function interpreter:includes_references()
+    return self._PRIVATE._INCLUDES_REFERENCES ~= false
+end
+
+-- enable/disable the referenced files of includes()
+--
+-- @param enabled   enable them or not
+-- @param hint      the extra hint of the error message
+--
+-- @note the addons file is loaded before the addons are installed, so it cannot reference them
+--
+function interpreter:includes_references_set(enabled, hint)
+    self._PRIVATE._INCLUDES_REFERENCES = enabled
+    self._PRIVATE._INCLUDES_REFERENCES_HINT = hint
+end
+
 function interpreter:rootscope_set(scope_kind)
     assert(self and self._PRIVATE)
     self._PRIVATE._ROOTSCOPE = scope_kind
@@ -1826,6 +1856,12 @@ function interpreter:api_builtin_includes(...)
     local subpaths_matched = {}
     for _, subpath in ipairs(subpaths) do
         local found = false
+        -- the referenced files are not always available, e.g. the addons file
+        if subpath:startswith("@") and not self:includes_references() then
+            local hint = self._PRIVATE._INCLUDES_REFERENCES_HINT
+            os.raise("includes(%s): the referenced files are not supported in %s!%s",
+                subpath, path.filename(curfile), hint and ("\n" .. hint) or "")
+        end
         -- attempt to find files from programdir/includes/*.lua
         -- e.g. includes("@builtin/check")
         if subpath:startswith("@builtin/") then
@@ -1848,7 +1884,7 @@ function interpreter:api_builtin_includes(...)
                 files = os.files(subpath)
             else
                 -- @see https://github.com/xmake-io/xmake/issues/6026
-                files = os.files(path.join(subpath, "xmake.lua"))
+                files = os.files(path.join(subpath, self:includes_rootfilename()))
             end
             if files and #files > 0 then
                 table.join2(subpaths_matched, files)
