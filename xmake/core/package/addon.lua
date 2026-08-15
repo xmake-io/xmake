@@ -496,9 +496,24 @@ end
 -- @return      the addons table, e.g. {["hello-world"] = {version = "latest", payloads = {"plugins"}}}
 --
 function addon.addons(opt)
-    if opt and opt.force then
+    opt = opt or {}
+    if opt.force then
         addon._registry({force = true})
     end
+
+    -- get the really installed versions instead of the pinned ones? e.g. locking them
+    -- @note we do not cache it, the cache is the pinned view of this project
+    if opt.unpinned then
+        local addons = {}
+        for dirname, addoninfo in pairs(addon._registry()) do
+            local versioninfo = addoninfo.versions and addoninfo.versions[addoninfo.active]
+            if versioninfo then
+                addons[dirname] = versioninfo
+            end
+        end
+        return addons
+    end
+
     local addons = addon._ADDONS
     if addons == nil then
         addons = {}

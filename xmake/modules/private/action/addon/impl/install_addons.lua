@@ -49,20 +49,21 @@ end
 function _lock_addons(projectdir, addonsinfo)
     local lockinfo = {}
     local locked = addons.locked(projectdir) or {}
-    -- @note we need to reload the registry, they have been installed by another process
-    local installed = addon.addons({force = true})
+
+    -- @note we need to reload the registry, they have been installed by another process,
+    -- and we must not see them through the locked versions, we are locking them right now,
+    -- e.g. `xmake addon --upgrade` pins the old ones before loading this project
+    local installed = addon.addons({force = true, unpinned = true})
     for _, requirestr in ipairs(addonsinfo.addons) do
         local name = addons.requirename(requirestr)
-        local addoninfo = installed[addon.dirname(name)]
-        if addoninfo then
-            local oldversion = locked[name] and locked[name].version
-            if oldversion and oldversion ~= addoninfo.version then
-                cprint("${color.success}upgrade ${bright}%s${clear}: %s -> %s", name, oldversion, addoninfo.version)
-            end
-            -- we lock the repository too, so that the other users get it from the same source,
-            -- @see xmake/modules/private/action/require/impl/lock_packages.lua
-            lockinfo[name] = {version = addoninfo.version, repo = addoninfo.repo}
+        local addoninfo = assert(installed[addon.dirname(name)], "addon(%s) is not installed!", name)
+        local oldversion = locked[name] and locked[name].version
+        if oldversion and oldversion ~= addoninfo.version then
+            cprint("${color.success}upgrade ${bright}%s${clear}: %s -> %s", name, oldversion, addoninfo.version)
         end
+        -- we lock the repository too, so that the other users get it from the same source,
+        -- @see xmake/modules/private/action/require/impl/lock_packages.lua
+        lockinfo[name] = {version = addoninfo.version, repo = addoninfo.repo}
     end
     lockinfo.__meta__ = {version = addons.lockfile_version()}
 
