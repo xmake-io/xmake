@@ -1,0 +1,9 @@
+{
+    __meta__ = {
+        version = "1.0"
+    },
+    -- this version is not installed, we only install `latest` from the local directory
+    ["custom-include"] = {
+        version = "v9.9.9"
+    }
+}

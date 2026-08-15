@@ -357,6 +357,20 @@ function test_autofetch_build(t)
     end)
 end
 
+-- a locked version which is not installed must not hide the addon
+--
+-- @note the auto-fetch installs the locked version, but the commands which do not load
+-- the project content only pin it, e.g. `xmake lua`, @see project._pin_addons()
+--
+function test_autofetch_lock_missing_version(t)
+    _with_addons({"custom-include"}, function ()
+        _with_project("autofetch-lockmiss", function ()
+            local script = "import(\"core.package.addon\"); print(addon.addons()[\"custom-include\"] ~= nil)"
+            t:require(os.iorunv("xmake", {"lua", "-c", script}):find("true", 1, true))
+        end)
+    end)
+end
+
 -- the addons file only declares the addons, it cannot reference them
 function test_autofetch_invalid(t)
     for _, name in ipairs({"autofetch-badinclude", "autofetch-badname"}) do
