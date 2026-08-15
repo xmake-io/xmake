@@ -37,12 +37,6 @@ local sandbox        = require("sandbox/sandbox")
 local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
--- the maximum recursion level when we search the rule files on demand
---
--- @note we only limit the fast paths, a rule file which is nested deeper than this
--- is still found by the full load, @see rule.rules
-local MAXRECURSION = 4
-
 -- get package
 function _instance:_package()
     return self._PACKAGE
@@ -474,9 +468,13 @@ end
 function rule._rulefile(name)
     local rulefiles = rule._RULEFILES
     if rulefiles == nil then
+
+        -- @note we only limit the fast paths, a rule file which is nested deeper than this
+        -- is still found by the full load, @see rule.rules
+        local maxrecursion = 4
         rulefiles = {}
         for _, dir in ipairs(rule._directories()) do
-            for _, filepath in ipairs(os.files(path.join(dir, "**/xmake.lua"), {recursion = MAXRECURSION})) do
+            for _, filepath in ipairs(os.files(path.join(dir, "**/xmake.lua"), {recursion = maxrecursion})) do
                 local content = io.readfile(filepath)
                 if content then
                     for rulename in content:gmatch("rule%s*%(%s*\"(.-)\"%s*%)") do
@@ -517,6 +515,9 @@ function rule._load_ondemand(name)
 
     -- the rules of an addon are always referenced with its name,
     -- e.g. add_rules("@addon/esp32/flash"), so we only load this addon
+    --
+    -- @note we limit the recursion level here too, @see rule._rulefile()
+    local maxrecursion = 4
     local groupkey, files, opt
     if name:startswith("@addon/") then
         local referenceinfo = addon.resolve_reference(name, "/", "rules")
@@ -524,7 +525,7 @@ function rule._load_ondemand(name)
             return
         end
         groupkey = "@addon/" .. referenceinfo.addon
-        files = os.files(path.join(referenceinfo.dir, "**/xmake.lua"), {recursion = MAXRECURSION})
+        files = os.files(path.join(referenceinfo.dir, "**/xmake.lua"), {recursion = maxrecursion})
         opt = {prefix = groupkey .. "/"}
     else
         -- the group is the first part of the rule name, and it's usually the directory
@@ -534,7 +535,7 @@ function rule._load_ondemand(name)
         for _, dir in ipairs(rule._directories()) do
             local groupdir = path.join(dir, groupkey)
             table.join2(files, os.files(path.join(groupdir, "xmake.lua")))
-            table.join2(files, os.files(path.join(groupdir, "**/xmake.lua"), {recursion = MAXRECURSION}))
+            table.join2(files, os.files(path.join(groupdir, "**/xmake.lua"), {recursion = maxrecursion}))
         end
 
         -- the rule name does not match its directory name? we can only get its file
