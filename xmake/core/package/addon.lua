@@ -183,7 +183,7 @@ end
 function addon._parents(name)
     local dirname = addon.dirname(name)
     local parents
-    for otherdirname, entry in pairs(addon._registry()) do
+    for otherdirname, entry in table.orderpairs(addon._registry()) do
         if otherdirname ~= dirname then
             for _, addoninfo in pairs(entry.versions or {}) do
                 if table.contains(addoninfo.deps or {}, dirname) then
@@ -193,9 +193,6 @@ function addon._parents(name)
                 end
             end
         end
-    end
-    if parents then
-        table.sort(parents)
     end
     return parents
 end
@@ -487,13 +484,8 @@ end
 
 -- get all the installed versions of the given addon, e.g. {"1.0.2", "1.0.3"}
 function addon.versions(name)
-    local versions = {}
     local addoninfo = addon._registry()[addon.dirname(name)]
-    for version, _ in pairs(addoninfo and addoninfo.versions or {}) do
-        table.insert(versions, version)
-    end
-    table.sort(versions)
-    return versions
+    return table.orderkeys(addoninfo and addoninfo.versions or {})
 end
 
 -- get all installed addons, only the active version of each addon
@@ -581,7 +573,9 @@ end
 --
 function addon.payloadinfos(kind)
     local payloadinfos = {}
-    for name, addoninfo in pairs(addon.addons()) do
+    -- @note we need to iterate them in a deterministic order, the load order matters,
+    -- e.g. the first plugin wins if two addons provide the same task name
+    for name, addoninfo in table.orderpairs(addon.addons()) do
         if table.contains(addoninfo.payloads or {}, kind) then
             table.insert(payloadinfos, {
                 name = name,
@@ -589,7 +583,6 @@ function addon.payloadinfos(kind)
                 dir = path.join(addon.installdir(), name, addoninfo.version, kind)})
         end
     end
-    table.sort(payloadinfos, function (a, b) return a.name < b.name end)
     return payloadinfos
 end
 

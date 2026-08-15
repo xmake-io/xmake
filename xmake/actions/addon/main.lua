@@ -246,7 +246,7 @@ end
 --
 function _collect_installed_addons()
     local entries = {}
-    for name, addoninfo in pairs(addon.addons()) do
+    for name, addoninfo in table.orderpairs(addon.addons()) do
         -- an addon can be installed with several versions, we show the active one,
         -- the projects can lock the other ones, @see core/project/addons.lua
         local versions = addon.versions(name)
@@ -254,7 +254,6 @@ function _collect_installed_addons()
                                versions = #versions > 1 and versions or nil,
                                description = addoninfo.description, payloads = addoninfo.payloads})
     end
-    table.sort(entries, function (a, b) return a.name < b.name end)
     return entries
 end
 
@@ -271,7 +270,7 @@ end
 -- get the addons in the repositories, we reuse the packages search here
 function _collect_repo_addons(exclude)
     local entries = {}
-    for _, results in pairs(search_packages({"*"}, {kind = "addon", description = false})) do
+    for _, results in table.orderpairs(search_packages({"*"}, {kind = "addon", description = false})) do
         for _, result in ipairs(results) do
             if not exclude[result.name] then
                 table.insert(entries, result)
