@@ -251,11 +251,14 @@ function test_toolchain(t)
 
         -- its tool modules are exported by the manifest, so the internal calls can import them
         -- with their plain names, e.g. add_globalmodules("core.tools.mycl6x")
-        local script2 = "import(\"core.tools.mycl6x\"); print(mycl6x.greeting()); " ..
+        --
+        -- @note there is no builtin `mycl6x`, so they can only come from this addon
+        local script2 = "import(\"core.tools.mycl6x\"); assert(mycl6x.compargv, \"invalid tool module!\"); " ..
                         "import(\"lib.detect.find_tool\"); assert(find_tool(\"mycl6x\"), \"mycl6x not found!\")"
-        t:require(os.iorunv("xmake", {"lua", "-c", script2}):find("hello from the custom toolchain addon", 1, true))
+        os.runv("xmake", {"lua", "-c", script2})
 
-        -- and a project can build with it
+        -- and a project can build with it, the flags of the toolchain and of its tool module
+        -- are both checked by the source file
         --
         -- @note its compiler is just the host one, so we can only build with it if there is one
         if find_program("gcc") or find_program("clang") or find_program("cc") then
@@ -264,7 +267,15 @@ target("test")
     set_kind("binary")
     set_toolchains("@addon/custom-toolchain/my-c6000")
     add_files("src/main.c")
-]], {"build", "-y"}, {files = {["src/main.c"] = "int main(int argc, char** argv) { return 0; }\n"}})
+]], {"build", "-y"}, {files = {["src/main.c"] = [[
+#ifndef MY_C6000
+#   error the flags of the addon toolchain are not used!
+#endif
+#ifndef MY_C6000_TOOL
+#   error the flags of its tool module are not used!
+#endif
+int main(int argc, char** argv) { return 0; }
+]]}})
         end
     end)
 end
