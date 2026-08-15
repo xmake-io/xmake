@@ -198,7 +198,7 @@ function addon._parents(name)
 end
 
 -- unregister the given addon or only one of its versions
-function addon._unregister(name, version)
+function addon.unregister(name, version)
     local dirname = addon.dirname(name)
     local registry = addon._registry()
     local entry = registry[dirname]
@@ -754,7 +754,7 @@ function addon.remove(name, opt)
     if not ok then
         return false, errors
     end
-    addon._unregister(name)
+    addon.unregister(name)
     return true
 end
 

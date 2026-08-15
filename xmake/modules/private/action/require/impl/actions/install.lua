@@ -618,6 +618,13 @@ function main(package)
                 end
                 os.tryrm(installdir)
 
+                -- the addon is registered before testing it, its `on_test` needs to use it,
+                -- e.g. xmake create -t esp32.blink, so we need to unregister it again here,
+                -- otherwise it would be seen as installed while its files are gone
+                if package:is_addon() then
+                    addon.unregister(package:name(), package:version_str() or "latest")
+                end
+
                 -- is not last scheme? we can fallback to next scheme and try reinstall it again
                 local current_scheme = package:current_scheme()
                 local schemes_orderlist = package:schemes_orderlist()
