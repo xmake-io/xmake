@@ -335,7 +335,10 @@ function project._load(opt)
     -- @note we need to check it before the cache, the project file may have been loaded
     -- already without them, e.g. by the option menu
     --
-    if not opt.skip_addons then
+    if opt.skip_addons then
+        -- we do not install them here, but we still need to use the locked versions
+        project._pin_addons()
+    else
         local ok, errors = project._install_addons()
         if not ok then
             return false, errors

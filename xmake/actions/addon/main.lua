@@ -240,10 +240,6 @@ function _search()
 end
 
 -- collect the installed addons from the addons registry
---
--- we always rescan the install directory here to repair the registry,
--- e.g. the user may remove some addon directories manually
---
 function _collect_installed_addons()
     local entries = {}
     for name, addoninfo in table.orderpairs(addon.addons()) do

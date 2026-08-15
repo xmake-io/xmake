@@ -35,8 +35,7 @@ local addon  = require("package/addon")
 -- we load the project, e.g. includes("@addon/esp32-devel/board")
 --
 -- e.g.
---   add_addons("esp32-devel 1.0.x")
---   add_addons("serial-tools", {optional = true})
+--   add_addons("esp32-devel 1.0.x", "serial-tools")
 --   add_repositories("myrepo git@github.com:me/myrepo.git")
 --
 function addons.filename()

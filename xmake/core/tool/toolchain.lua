@@ -805,19 +805,13 @@ function toolchain.load(name, opt)
     configs.plat = opt.plat or config.get("plat") or os.host()
     configs.arch = opt.arch or config.get("arch") or os.arch()
 
-    -- get cache
-    local cache = toolchain._memcache()
-    -- @note we need the addon prefix here, the different addons may provide the same toolchain name
-    local cachekey = toolchain._cachekey((parseinfo.addon_prefix or "") .. name, configs)
-
-    -- get it directly from cache dirst
-    local instance = cache:get(cachekey)
-    if instance then
-        return instance
-    end
-
     -- find the toolchain script path
-    local scriptpath = nil
+    --
+    -- @note we need to resolve the addon reference before the cache, `@self/` depends on
+    -- the addon which owns the caller script, and the different addons may provide
+    -- the same toolchain name
+    --
+    local scriptpath, addon_prefix
     if parseinfo.addon_prefix then
         -- e.g. set_toolchains("@addon/esp32/xtensa"), set_toolchains("@self/xtensa")
         local referenceinfo, errors = addon.resolve_reference(parseinfo.addon_prefix .. name, "/", "toolchains",
@@ -825,8 +819,21 @@ function toolchain.load(name, opt)
         if not referenceinfo then
             return nil, errors
         end
+        addon_prefix = "@addon/" .. referenceinfo.addon .. "/"
         scriptpath = path.join(referenceinfo.dir, referenceinfo.name, "xmake.lua")
-    else
+    end
+
+    -- get cache
+    local cache = toolchain._memcache()
+    local cachekey = toolchain._cachekey((addon_prefix or "") .. name, configs)
+
+    -- get it directly from cache dirst
+    local instance = cache:get(cachekey)
+    if instance then
+        return instance
+    end
+
+    if not addon_prefix then
         for _, dir in ipairs(toolchain.directories()) do
             scriptpath = path.join(dir, name, "xmake.lua")
             if os.isfile(scriptpath) then
@@ -835,10 +842,7 @@ function toolchain.load(name, opt)
         end
     end
     if not scriptpath or not os.isfile(scriptpath) then
-        if parseinfo.addon_prefix then
-            return nil, string.format("the toolchain %s%s not found!", parseinfo.addon_prefix, name)
-        end
-        return nil, string.format("the toolchain %s not found!", name)
+        return nil, string.format("the toolchain %s%s not found!", addon_prefix or "", name)
     end
 
     -- get interpreter
