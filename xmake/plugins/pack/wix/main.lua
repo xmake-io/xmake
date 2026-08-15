@@ -326,7 +326,7 @@ function _pack_wix(wix, package)
     table.join2(argv, {"-ext", "WixToolset.UI.wixext"})
     table.join2(argv, {"-o", package:outputfile()})
 
-    if package:arch() == "x64" then
+    if package:is_arch("x64", "x86_64") then
         table.join2(argv, {"-arch", "x64"})
     elseif package:arch() == "x86" then
         table.join2(argv, {"-arch", "x86"})
