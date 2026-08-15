@@ -105,8 +105,6 @@ function find(name, opt)
     _init()
     opt = opt or {}
     local list_result = {}
-    -- @note we need to iterate them in a deterministic order, the caller may just take
-    -- the results as they come, e.g. the completion candidates
     for cachekey, packagedata in table.orderpairs(cache:data()) do
         -- we only search the packages with the given kind, e.g. nil (package), "addon"
         local packagename = packagedata.name or cachekey

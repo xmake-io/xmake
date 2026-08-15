@@ -573,8 +573,6 @@ end
 --
 function addon.payloadinfos(kind)
     local payloadinfos = {}
-    -- @note we need to iterate them in a deterministic order, the load order matters,
-    -- e.g. the first plugin wins if two addons provide the same task name
     for name, addoninfo in table.orderpairs(addon.addons()) do
         if table.contains(addoninfo.payloads or {}, kind) then
             table.insert(payloadinfos, {

@@ -515,8 +515,6 @@ function rule._load_ondemand(name)
 
     -- the rules of an addon are always referenced with its name,
     -- e.g. add_rules("@addon/esp32/flash"), so we only load this addon
-    --
-    -- @note we limit the recursion level here too, @see rule._rulefile()
     local maxrecursion = 4
     local groupkey, files, opt
     if name:startswith("@addon/") then
