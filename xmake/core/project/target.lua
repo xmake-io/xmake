@@ -3296,6 +3296,14 @@ function target.linkname(filename, opt)
         linkname, count = filename:gsub(target.filename("__pattern__", "static", {plat = "windows"}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     end
     if count > 0 and linkname then
+        -- the library name itself may end with `.lib`, e.g. vcpkg installs `Luau.CLI.lib.lib`,
+        -- we cannot strip it, nf_link() passes the names ending with `.lib` to the linker
+        -- as-is, and it would look for `Luau.CLI.lib`
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/7708
+        if opt.plat == "windows" and linkname:endswith(".lib") then
+            return filename
+        end
         return linkname
     end
     -- fallback to the generic unix library name, libxxx.a, libxxx.so, ..
