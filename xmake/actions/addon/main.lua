@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.package.addon")
+import("core.project.project")
 import("devel.git")
 import("private.action.addon.impl.install_addons")
 import("private.action.addon.impl.xrepo", {alias = "xrepo_addon"})
@@ -230,7 +231,6 @@ end
 
 -- upgrade the addons which the current project declares, e.g. add_addons("esp32-devel 1.0.x")
 function _upgrade()
-    import("core.project.project")
     local declarations = {addons = table.wrap(project.get("addons")),
                           repositories = table.wrap(project.get("repositories"))}
     assert(#declarations.addons > 0, "no addons are declared in this project, e.g. add_addons(\"esp32-devel\")!")

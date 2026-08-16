@@ -237,11 +237,12 @@ end
 function project._install_addons(rootinfo)
     -- @note we need to cache the result, the project may be loaded many times,
     -- otherwise the failure would be ignored by the next load
-    if not project._ADDONS_CHECKED then
-        project._ADDONS_CHECKED = true
-        project._ADDONS_OK, project._ADDONS_ERRORS, project._ADDONS_INSTALLED = project._do_install_addons(rootinfo)
+    local result = project._ADDONS_RESULT
+    if result == nil then
+        result = project._do_install_addons(rootinfo)
+        project._ADDONS_RESULT = result
     end
-    return project._ADDONS_OK, project._ADDONS_ERRORS, project._ADDONS_INSTALLED
+    return result
 end
 
 -- activate the addon versions which this project locks
@@ -265,23 +266,23 @@ end
 -- do install the addons which this project declares
 -- install the addons which this project declares, e.g. add_addons("esp32-devel 1.0.x")
 --
--- @return      true, errors and installed
+-- @return      the result, e.g. {ok = true, installed = true}, {ok = false, errors = ".."}
 --
 function project._do_install_addons(rootinfo)
 
     -- this project declares nothing?
     local requires = table.wrap(rootinfo:get("addons"))
     if #requires == 0 then
-        return true
+        return {ok = true}
     end
     local ok, errors = addons.validate(requires)
     if not ok then
-        return false, errors
+        return {ok = false, errors = errors}
     end
 
     -- they have been installed already?
     if addons.satisfied(requires) then
-        return true
+        return {ok = true}
     end
 
     -- tell the user why we are installing something, it may need to confirm and download,
@@ -299,7 +300,7 @@ function project._do_install_addons(rootinfo)
     local datafile = os.tmpfile()
     local ok, errors = io.save(datafile, {addons = requires, repositories = table.wrap(rootinfo:get("repositories"))})
     if not ok then
-        return false, errors
+        return {ok = false, errors = errors}
     end
 
     -- @note we run it in a working directory which has no project, @see addon.workdir(),
@@ -326,7 +327,7 @@ function project._do_install_addons(rootinfo)
     local exitcode, errors = os.execv(os.programfile(), argv, {curdir = addon.workdir()})
     os.rm(datafile)
     if exitcode ~= 0 then
-        return false, errors or "install the addons of this project failed!"
+        return {ok = false, errors = errors or "install the addons of this project failed!"}
     end
 
     -- we have loaded the registry and its caches before installing them, so we need to reload it
@@ -334,7 +335,7 @@ function project._do_install_addons(rootinfo)
     project._pin_addons()
     rule.clear()
     task.clear()
-    return true, nil, true
+    return {ok = true, installed = true}
 end
 
 -- load the project file
@@ -369,7 +370,7 @@ function project._load(opt)
     -- but we can only know them after loading it, so this pass must survive the references
     -- of the addons which are not installed yet, and we load it again after installing them,
     -- e.g. includes("@addon/esp32-devel/board")
-    interp:addons_deferred_set(not opt.addons_installed)
+    interp:includes_unresolved_set(not opt.addons_installed)
 
     -- load script
     local ok, errors = interp:load(project.rootfile(), {on_load_data = function (data)
@@ -399,12 +400,12 @@ function project._load(opt)
     -- best-effort way and every command builds it, @see project._load_tasks()
     --
     if not opt.skip_addons and not opt.addons_installed then
-        local ok, errors, installed = project._install_addons(rootinfo)
-        if not ok then
+        local result = project._install_addons(rootinfo)
+        if not result.ok then
             os.cd(oldir)
-            return false, errors
+            return false, result.errors
         end
-        if installed then
+        if result.installed then
             os.cd(oldir)
             return project._load({force = true, disable_filter = opt.disable_filter, addons_installed = true})
         end

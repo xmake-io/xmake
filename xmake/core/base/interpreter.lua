@@ -880,31 +880,24 @@ function interpreter:scriptdir()
     return path.directory(self._PRIVATE._CURFILE)
 end
 
+-- do we ignore the unresolvable references of includes()? e.g. includes("@addon/esp32/board")
+function interpreter:includes_unresolved()
+    return self._PRIVATE._INCLUDES_UNRESOLVED
+end
+
+-- ignore the unresolvable references of includes() instead of raising errors
+--
+-- @note the project file may reference the resources which have not been installed yet,
+-- so the caller can load it, install them and load it again, @see project._load()
+--
+function interpreter:includes_unresolved_set(enabled)
+    self._PRIVATE._INCLUDES_UNRESOLVED = enabled
+end
+
 -- set root scope kind
 --
 -- the root api will affect these scopes
 --
--- do we defer the unresolvable addon references? e.g. includes("@addon/esp32/board")
---
--- @note the project file declares the addons which it needs, but we can only know them
--- after loading it, so the first load must survive the references of the addons which
--- are not installed yet, @see project._load()
---
-function interpreter:addons_deferred()
-    return self._PRIVATE._ADDONS_DEFERRED
-end
-
--- defer the unresolvable addon references instead of raising errors
-function interpreter:addons_deferred_set(enabled)
-    self._PRIVATE._ADDONS_DEFERRED = enabled
-    self._PRIVATE._ADDONS_MISSING = nil
-end
-
--- get the addon references which have not been resolved, @see interpreter:addons_deferred_set
-function interpreter:addons_missing()
-    return self._PRIVATE._ADDONS_MISSING
-end
-
 function interpreter:rootscope_set(scope_kind)
     assert(self and self._PRIVATE)
     self._PRIVATE._ROOTSCOPE = scope_kind
@@ -1821,11 +1814,8 @@ end
 function interpreter:_find_addon_includes(subpath)
     local referenceinfo, errors = addon.resolve_reference(subpath, "/", "includes", {scriptdir = self:scriptdir()})
     if not referenceinfo then
-        -- this addon is not installed yet? we will install it and load this file again
-        if self:addons_deferred() then
-            local missing = self._PRIVATE._ADDONS_MISSING or {}
-            table.insert(missing, subpath)
-            self._PRIVATE._ADDONS_MISSING = missing
+        -- it has not been installed yet? the caller may install it and load this file again
+        if self:includes_unresolved() then
             return {}
         end
         os.raise(errors)
