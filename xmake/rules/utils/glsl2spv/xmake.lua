@@ -43,7 +43,7 @@
 --
 rule("utils.glsl2spv")
     set_extensions(".vert", ".tesc", ".tese", ".geom", ".comp", ".frag", ".comp", ".mesh", ".task", ".rgen", ".rint", ".rahit", ".rchit", ".rmiss", ".rcall", ".glsl")
-    add_orders("utils.hlsl2spv", "c++.build.modules.scanner")
+    add_orders("utils.glsl2spv", "c++.build.modules.scanner")
     on_load(function (target)
         local is_bin2c = target:extraconf("rules", "utils.glsl2spv", "bin2c")
         if is_bin2c then
