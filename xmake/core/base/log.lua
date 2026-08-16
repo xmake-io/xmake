@@ -51,8 +51,12 @@ function log:file()
                 os.mkdir(dir)
             end
 
-            -- open the log file
-            self._FILE = io.open(outputfile, 'w+')
+            -- open the log file in binary mode
+            --
+            -- 'w+' (text mode) translates '\n' to '\r\n' on Windows, which breaks
+            -- downstream consumers (e.g. xmake-vscode's regex with a '$' anchor)
+            -- because a trailing '\r' prevents the pattern from matching.
+            self._FILE = io.open(outputfile, 'w+b')
         end
         self._FILE = self._FILE or false
     end
