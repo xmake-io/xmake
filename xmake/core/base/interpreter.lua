@@ -30,7 +30,6 @@ local string     = require("base/string")
 local hashset    = require("base/hashset")
 local scopeinfo  = require("base/scopeinfo")
 local deprecated = require("base/deprecated")
-local addon      = require("package/addon")
 local sandbox    = require("sandbox/sandbox")
 
 -- the rules to reword the raw lua error messages into friendly ones, {pattern, replacement}
@@ -878,6 +877,19 @@ end
 function interpreter:scriptdir()
     assert(self and self._PRIVATE and self._PRIVATE._CURFILE)
     return path.directory(self._PRIVATE._CURFILE)
+end
+
+-- add a resolver for the references of includes(), e.g. includes("@addon/esp32/check")
+--
+-- @param resolver  function (interp, reference), it returns the files, or nil and errors
+--
+-- @note the interpreter knows nothing about the references, the callers register the
+-- resolvers which they support, e.g. @see project._interpreter()
+--
+function interpreter:includes_resolver_add(resolver)
+    local resolvers = self._PRIVATE._INCLUDES_RESOLVERS or {}
+    table.insert(resolvers, resolver)
+    self._PRIVATE._INCLUDES_RESOLVERS = resolvers
 end
 
 -- do we ignore the unresolvable references of includes()? e.g. includes("@addon/esp32/board")
@@ -1810,30 +1822,6 @@ function interpreter:_find_builtin_includes(subpath)
     return os.files(path.join(os.programdir(), "includes", builtin_path, "xmake.lua"))
 end
 
--- find the include files of the addons, e.g. includes("@addon/esp32/check"), includes("@self/check")
-function interpreter:_find_addon_includes(subpath)
-    local referenceinfo, errors = addon.resolve_reference(subpath, "/", "includes", {scriptdir = self:scriptdir()})
-    if not referenceinfo then
-        -- it has not been installed yet? the caller may install it and load this file again
-        if self:includes_unresolved() then
-            return {}
-        end
-        os.raise(errors)
-    end
-    local addon_path = referenceinfo.name
-    local files
-    if addon_path:endswith(".lua") then
-        files = os.files(path.join(referenceinfo.dir, addon_path))
-    else
-        files = os.files(path.join(referenceinfo.dir, addon_path, "xmake.lua"))
-    end
-    -- the addon is installed, but it does not provide this file, we cannot ignore it
-    if not files or #files == 0 then
-        os.raise("includes(%s) not found!", subpath)
-    end
-    return files
-end
-
 function interpreter:api_builtin_includes(...)
     assert(self and self._PRIVATE and self._PRIVATE._ROOTDIR and self._PRIVATE._MTIMES)
     local curfile = self._PRIVATE._CURFILE
@@ -1853,11 +1841,24 @@ function interpreter:api_builtin_includes(...)
                 found = true
             end
         end
-        -- attempt to find files from the includes of the addons
-        -- e.g. includes("@addon/esp32/check"), includes("@self/check")
-        if not found and addon.is_reference(subpath, "/") then
-            table.join2(subpaths_matched, self:_find_addon_includes(subpath))
-            found = true
+        -- attempt to find files from the registered resolvers of the references
+        -- e.g. includes("@addon/esp32/check"), @see interpreter:includes_resolver_add()
+        if not found and subpath:startswith("@") then
+            for _, resolver in ipairs(self._PRIVATE._INCLUDES_RESOLVERS or {}) do
+                local files, errors = resolver(self, subpath)
+                if files then
+                    table.join2(subpaths_matched, files)
+                    found = true
+                    break
+                elseif errors then
+                    -- it has not been resolved yet? the caller may load this file again
+                    if self:includes_unresolved() then
+                        found = true
+                        break
+                    end
+                    os.raise(errors)
+                end
+            end
         end
         -- find the given files from the project directory
         if not found then

@@ -860,6 +860,10 @@ function project.interpreter()
     -- set root scope
     interp:rootscope_set("target")
 
+    -- the project file can reference the includes files of the addons,
+    -- e.g. includes("@addon/esp32-devel/board")
+    interp:includes_resolver_add(addon.find_includes)
+
     -- define apis for rule
     interp:api_define(rule.apis())
 

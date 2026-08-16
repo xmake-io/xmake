@@ -566,6 +566,36 @@ function addon.globalmodules()
     return globalmodules
 end
 
+-- find the include files of the given addon reference, e.g. includes("@addon/esp32/board")
+--
+-- @param interp    the interpreter which is loading the file, @see interpreter:includes_resolver_add
+-- @param reference the reference, e.g. "@addon/esp32/board", "@self/board"
+--
+-- @return          the files, or nil and errors
+--
+function addon.find_includes(interp, reference)
+    if not addon.is_reference(reference, "/") then
+        return
+    end
+    local referenceinfo, errors = addon.resolve_reference(reference, "/", "includes", {scriptdir = interp:scriptdir()})
+    if not referenceinfo then
+        return nil, errors
+    end
+    local name = referenceinfo.name
+    local files
+    if name:endswith(".lua") then
+        files = os.files(path.join(referenceinfo.dir, name))
+    else
+        files = os.files(path.join(referenceinfo.dir, name, "xmake.lua"))
+    end
+
+    -- the addon is installed, but it does not provide this file, we cannot ignore it
+    if not files or #files == 0 then
+        os.raise("includes(%s) not found!", reference)
+    end
+    return files
+end
+
 -- get the payload directories of the given kind from all installed addons
 --
 -- @param kind  the payload kind, e.g. "plugins", "rules"
