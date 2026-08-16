@@ -43,6 +43,7 @@
 --
 rule("utils.glsl2spv")
     set_extensions(".vert", ".tesc", ".tese", ".geom", ".comp", ".frag", ".comp", ".mesh", ".task", ".rgen", ".rint", ".rahit", ".rchit", ".rmiss", ".rcall", ".glsl")
+    add_orders("utils.hlsl2spv", "c++.build.modules.scanner")
     on_load(function (target)
         local is_bin2c = target:extraconf("rules", "utils.glsl2spv", "bin2c")
         if is_bin2c then
@@ -53,7 +54,7 @@ rule("utils.glsl2spv")
             target:add("includedirs", headerdir)
         end
     end)
-    before_buildcmd_file(function (target, batchcmds, sourcefile_glsl, opt)
+    on_preparecmd_file(function (target, batchcmds, sourcefile_glsl, opt)
         import("lib.detect.find_tool")
         import("rules.utils.bin2obj.utils", {alias = "bin2obj_utils", rootdir = os.programdir()})
         import("rules.utils.bin2c.utils", {alias = "bin2c_utils", rootdir = os.programdir()})
