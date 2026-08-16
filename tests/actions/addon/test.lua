@@ -46,6 +46,15 @@ end
 --
 -- @note the recipes only point at the fixtures with `set_sourcedir`, we need not generate any payload
 function _with_repo(recipes, func)
+
+    -- @note installing from a repository goes through the package manager, and it always
+    -- needs git, which cannot be installed on the hosts without a package manager,
+    -- e.g. dragonflybsd
+    if not find_program("git") then
+        print("git not found, we skip the repository tests!")
+        return
+    end
+
     local suffix = path.filename(os.tmpfile()):gsub("[^%w]", "")
     local reponame = "addon-test-repo-" .. suffix
     local repodir = os.tmpfile() .. ".addon-repo"
