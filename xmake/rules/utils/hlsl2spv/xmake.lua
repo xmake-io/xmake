@@ -43,6 +43,7 @@
 --
 rule("utils.hlsl2spv")
     set_extensions(".hlsl")
+    add_orders("utils.hlsl2spv", "c++.build.modules.scanner")
     on_load(function (target)
         local is_bin2c = target:extraconf("rules", "utils.hlsl2spv", "bin2c")
         if is_bin2c then
@@ -54,7 +55,7 @@ rule("utils.hlsl2spv")
         end
     end)
 
-    before_buildcmd_file(function (target, batchcmds, sourcefile_hlsl, opt)
+    on_preparecmd_file(function (target, batchcmds, sourcefile_hlsl, opt)
         import("lib.detect.find_tool")
         import("rules.utils.bin2obj.utils", {alias = "bin2obj_utils", rootdir = os.programdir()})
         import("rules.utils.bin2c.utils", {alias = "bin2c_utils", rootdir = os.programdir()})
