@@ -101,6 +101,31 @@ function log:close()
     end
 end
 
+-- sanitize plain text before writing to the log file
+--
+-- strip carriage returns and ANSI escape sequences (color codes, cursor/erase
+-- control) that xmake emits when rendering progress or re-emitting colored
+-- compiler diagnostics on a TTY. without this, the logfile (e.g. read by
+-- xmake-vscode via XMAKE_LOGFILE) gets corrupted by overwrite control chars.
+--
+-- @param s   the raw string to sanitize
+-- @return    the sanitized plain text
+--
+function log._sanitize(s)
+    if type(s) ~= "string" then
+        return s
+    end
+    -- strip ANSI CSI sequences, e.g. \x1b[01;31m, \x1b[K, \x1b[G, \x1b[2J
+    s = s:gsub("\x1b%[[0-9;?]*[a-zA-Z@]", "")
+    -- strip any remaining escape characters
+    s = s:gsub("\x1b", "")
+    -- normalize CRLF to LF
+    s = s:gsub("\r\n", "\n")
+    -- strip bare carriage returns (progress overwrite)
+    s = s:gsub("\r", "")
+    return s
+end
+
 -- print log with newline to the log file
 --
 -- @param ...   the format string and arguments
@@ -108,7 +133,7 @@ end
 function log:print(...)
     local file = self:file()
     if file then
-        file:write(string.format(...) .. "\n")
+        file:write(log._sanitize(string.format(...)) .. "\n")
     end
 end
 
@@ -123,7 +148,7 @@ function log:printv(...)
         for i, v in ipairs(values) do
             -- dump basic type
             if type(v) == "string" or type(v) == "boolean" or type(v) == "number" then
-                file:write(tostring(v))
+                file:write(log._sanitize(tostring(v)))
             else
                 file:write("<" .. tostring(v) .. ">")
             end
@@ -142,7 +167,7 @@ end
 function log:printf(...)
     local file = self:file()
     if file then
-        file:write(string.format(...))
+        file:write(log._sanitize(string.format(...)))
     end
 end
 
@@ -153,7 +178,13 @@ end
 function log:write(...)
     local file = self:file()
     if file then
-        file:write(...)
+        local args = {...}
+        for i, v in ipairs(args) do
+            if type(v) == "string" then
+                args[i] = log._sanitize(v)
+            end
+        end
+        file:write(table.unpack(args))
     end
 end
 
