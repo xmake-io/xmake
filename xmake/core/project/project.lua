@@ -251,7 +251,12 @@ end
 --
 function project._pin_addons()
     for name, lockinfo in pairs(addons.locked() or {}) do
-        if lockinfo.version then
+        -- @note we can only pin an installed version, otherwise this addon would be
+        -- invisible and every reference to it would just say `not found`
+        --
+        -- the locked version is installed by the auto-fetch, @see addons.satisfied()
+        --
+        if lockinfo.version and table.contains(addon.versions(name), lockinfo.version) then
             addon.pin(name, lockinfo.version)
         end
     end

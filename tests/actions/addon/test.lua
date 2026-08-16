@@ -46,6 +46,15 @@ end
 --
 -- @note the recipes only point at the fixtures with `set_sourcedir`, we need not generate any payload
 function _with_repo(recipes, func)
+
+    -- @note installing from a repository goes through the package manager, and it always
+    -- needs git, which cannot be installed on the hosts without a package manager,
+    -- e.g. dragonflybsd
+    if not find_program("git") then
+        print("git not found, we skip the repository tests!")
+        return
+    end
+
     local suffix = path.filename(os.tmpfile()):gsub("[^%w]", "")
     local reponame = "addon-test-repo-" .. suffix
     local repodir = os.tmpfile() .. ".addon-repo"
@@ -369,6 +378,20 @@ function test_autofetch_build(t)
             for _, name in ipairs(names) do
                 t:require(lockinfo[name] ~= nil)
             end
+        end)
+    end)
+end
+
+-- a locked version which is not installed must not hide the addon
+--
+-- @note the auto-fetch installs the locked version, but the commands which do not load
+-- the project content only pin it, e.g. `xmake lua`, @see project._pin_addons()
+--
+function test_autofetch_lock_missing_version(t)
+    _with_addons({"custom-include"}, function ()
+        _with_project("autofetch-lockmiss", function ()
+            local script = "import(\"core.package.addon\"); print(addon.addons()[\"custom-include\"] ~= nil)"
+            t:require(os.iorunv("xmake", {"lua", "-c", script}):find("true", 1, true))
         end)
     end)
 end
