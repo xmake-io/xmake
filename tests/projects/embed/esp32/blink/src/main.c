@@ -1,7 +1,7 @@
 // blink the led of the board and print a heartbeat
 //
 // the led pin comes from `boards/<board>/board.h`, it's selected by the board option,
-// e.g. xmake f --board=esp32s3
+// e.g. xmake f --board=esp32c3
 //
 // @note the entry is the esp-idf native `void app_main(void)`, and we print with
 // `esp_rom_printf`, it writes to the rom console, which is the usb port on the
