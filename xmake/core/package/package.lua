@@ -2529,9 +2529,20 @@ function _instance:_generate_runtime_configs(sourcekind)
         self.sourcekinds = function (self)
             return sourcekind
         end
-        configs.cxflags = self:compiler(sourcekind):map_flags("runtime", runtimes, {target = self})
-        configs.ldflags = self:linker("binary", sourcekind):map_flags("runtime", runtimes, {target = self})
-        configs.shflags = self:linker("shared", sourcekind):map_flags("runtime", runtimes, {target = self})
+        local cxflags = self:compiler(sourcekind):map_flags("runtime", runtimes, {target = self})
+        local ldflags = self:linker("binary", sourcekind):map_flags("runtime", runtimes, {target = self})
+        local shflags = self:linker("shared", sourcekind):map_flags("runtime", runtimes, {target = self})
+
+        -- @note the multi-argument flags must be checked as a whole, e.g. the clang runtime
+        -- flags on windows, `-Xclang --dependent-lib=xxx` would be broken if
+        -- `--dependent-lib=xxx` is checked and dropped separately
+        -- @see https://github.com/xmake-io/xmake/issues/7704
+        local group = function (flags)
+            return flags and #flags > 1 and {table.wrap_lock(flags)} or flags
+        end
+        configs.cxflags = group(cxflags)
+        configs.ldflags = group(ldflags)
+        configs.shflags = group(shflags)
         self.sourcekinds = nil
     end
     return configs
