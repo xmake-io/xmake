@@ -28,9 +28,9 @@ import("private.action.addon.impl.xrepo", {alias = "xrepo_addon"})
 -- @note we install the locked versions, but the declaration is authoritative, so we
 -- resolve them again if the user has changed it or upgrades them
 --
-function _get_requires(addonsinfo, locked)
+function _get_requires(declared, locked)
     local requires = {}
-    for _, requirestr in ipairs(addonsinfo.addons) do
+    for _, requirestr in ipairs(declared) do
         local name = addons.requirename(requirestr)
         local lockinfo = locked and locked[name]
         if addons.locked_valid(requirestr, lockinfo) then
@@ -46,7 +46,7 @@ end
 -- @note we get the installed versions from the addons registry, they are
 -- registered when installing them, @see core/package/addon.lua
 --
-function _lock_addons(projectdir, addonsinfo)
+function _lock_addons(projectdir, declared)
     local lockinfo = {}
     local locked = addons.locked(projectdir) or {}
 
@@ -54,7 +54,7 @@ function _lock_addons(projectdir, addonsinfo)
     -- and we must not see them through the locked versions, we are locking them right now,
     -- e.g. `xmake addon --upgrade` pins the old ones before loading this project
     local installed = addon.addons({force = true, unpinned = true})
-    for _, requirestr in ipairs(addonsinfo.addons) do
+    for _, requirestr in ipairs(declared) do
         local name = addons.requirename(requirestr)
         local addoninfo = assert(installed[addon.dirname(name)], "addon(%s) is not installed!", name)
         local oldversion = locked[name] and locked[name].version
@@ -79,41 +79,49 @@ function _lock_addons(projectdir, addonsinfo)
     os.rm(tmpfile)
 end
 
--- install the addons which the given project declares in its `xmake-addons.lua`
+-- install the addons which a project declares, e.g. add_addons("esp32-devel 1.0.x")
 --
 -- @note we are also called from a sub-process, the project cannot be loaded until
 -- its addons are installed, @see core/project/project.lua
 --
-function main(projectdir, opt)
+-- install the addons which a project declares, e.g. add_addons("esp32-devel 1.0.x")
+--
+-- @param projectdir    the project directory, we only read/write its lock file here
+-- @param datafile      the declarations of the project, {addons = {...}, repositories = {...}}
+--
+-- @note we are always run in a working directory which has no project, we cannot load
+-- the project again here, @see xmake/core/project/project.lua
+--
+function main(projectdir, datafile, opt)
     opt = opt or {}
     projectdir = projectdir or os.projectdir()
-    local addonsinfo = addons.load(projectdir)
-    if not addonsinfo or #addonsinfo.addons == 0 then
+    local declarations = type(datafile) == "table" and datafile or io.load(datafile)
+    local declared = table.wrap(declarations and declarations.addons)
+    if #declared == 0 then
         return
     end
 
     -- upgrade them? we need to resolve the declared versions again
     local locked = not opt.upgrade and addons.locked(projectdir) or nil
 
-    -- install them with xrepo, it installs the packages in its own working directory,
-    -- so we need not a project here
-
     -- this project declares its own repositories? we pass them to xrepo,
     -- they are only used by this installation, we do not register them globally
     local rcfile
-    if #addonsinfo.repositories > 0 then
+    local repositories = table.wrap(declarations.repositories)
+    if #repositories > 0 then
         rcfile = os.tmpfile() .. ".lua"
         local file = io.open(rcfile, "w")
-        for _, repo in ipairs(addonsinfo.repositories) do
+        for _, repo in ipairs(repositories) do
             file:print("add_repositories(%q)", repo)
         end
         file:close()
     end
 
+    -- install them with xrepo, it installs the packages in its own working directory
     try
     {
         function ()
-            xrepo_addon("install", _get_requires(addonsinfo, locked), {includes = rcfile})
+            xrepo_addon("install", _get_requires(declared, locked), {includes = rcfile})
         end,
         finally
         {
@@ -130,5 +138,5 @@ function main(projectdir, opt)
     }
 
     -- and lock them, so that the other users get the same versions
-    _lock_addons(projectdir, addonsinfo)
+    _lock_addons(projectdir, declared)
 end

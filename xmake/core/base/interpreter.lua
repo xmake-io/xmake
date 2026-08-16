@@ -884,34 +884,25 @@ end
 --
 -- the root api will affect these scopes
 --
--- get the root file name of the included directories, e.g. includes("subdir") -> subdir/xmake.lua
-function interpreter:includes_rootfilename()
-    return self._PRIVATE._INCLUDES_ROOTFILENAME or "xmake.lua"
+-- do we defer the unresolvable addon references? e.g. includes("@addon/esp32/board")
+--
+-- @note the project file declares the addons which it needs, but we can only know them
+-- after loading it, so the first load must survive the references of the addons which
+-- are not installed yet, @see project._load()
+--
+function interpreter:addons_deferred()
+    return self._PRIVATE._ADDONS_DEFERRED
 end
 
--- set the root file name of the included directories
---
--- e.g. interp:includes_rootfilename_set("xmake-addons.lua") -> includes("subdir") -> subdir/xmake-addons.lua
---
-function interpreter:includes_rootfilename_set(filename)
-    self._PRIVATE._INCLUDES_ROOTFILENAME = filename
+-- defer the unresolvable addon references instead of raising errors
+function interpreter:addons_deferred_set(enabled)
+    self._PRIVATE._ADDONS_DEFERRED = enabled
+    self._PRIVATE._ADDONS_MISSING = nil
 end
 
--- can we include the referenced files? e.g. includes("@builtin/check"), includes("@addon/esp32/board")
-function interpreter:includes_references()
-    return self._PRIVATE._INCLUDES_REFERENCES ~= false
-end
-
--- enable/disable the referenced files of includes()
---
--- @param enabled   enable them or not
--- @param hint      the extra hint of the error message
---
--- @note the addons file is loaded before the addons are installed, so it cannot reference them
---
-function interpreter:includes_references_set(enabled, hint)
-    self._PRIVATE._INCLUDES_REFERENCES = enabled
-    self._PRIVATE._INCLUDES_REFERENCES_HINT = hint
+-- get the addon references which have not been resolved, @see interpreter:addons_deferred_set
+function interpreter:addons_missing()
+    return self._PRIVATE._ADDONS_MISSING
 end
 
 function interpreter:rootscope_set(scope_kind)
@@ -1830,6 +1821,13 @@ end
 function interpreter:_find_addon_includes(subpath)
     local referenceinfo, errors = addon.resolve_reference(subpath, "/", "includes", {scriptdir = self:scriptdir()})
     if not referenceinfo then
+        -- this addon is not installed yet? we will install it and load this file again
+        if self:addons_deferred() then
+            local missing = self._PRIVATE._ADDONS_MISSING or {}
+            table.insert(missing, subpath)
+            self._PRIVATE._ADDONS_MISSING = missing
+            return {}
+        end
         os.raise(errors)
     end
     local addon_path = referenceinfo.name
@@ -1856,12 +1854,6 @@ function interpreter:api_builtin_includes(...)
     local subpaths_matched = {}
     for _, subpath in ipairs(subpaths) do
         local found = false
-        -- the referenced files are not always available, e.g. the addons file
-        if subpath:startswith("@") and not self:includes_references() then
-            local hint = self._PRIVATE._INCLUDES_REFERENCES_HINT
-            os.raise("includes(%s): the referenced files are not supported in %s!%s",
-                subpath, path.filename(curfile), hint and ("\n" .. hint) or "")
-        end
         -- attempt to find files from programdir/includes/*.lua
         -- e.g. includes("@builtin/check")
         if subpath:startswith("@builtin/") then
@@ -1884,7 +1876,7 @@ function interpreter:api_builtin_includes(...)
                 files = os.files(subpath)
             else
                 -- @see https://github.com/xmake-io/xmake/issues/6026
-                files = os.files(path.join(subpath, self:includes_rootfilename()))
+                files = os.files(path.join(subpath, "xmake.lua"))
             end
             if files and #files > 0 then
                 table.join2(subpaths_matched, files)

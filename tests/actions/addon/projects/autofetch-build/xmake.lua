@@ -1,3 +1,6 @@
+-- the addons which this project needs, they are installed automatically
+add_addons("custom-include", "custom-rule", "custom-toolchain")
+
 -- the option comes from the includes file of an addon
 includes("@addon/custom-include/check")
 

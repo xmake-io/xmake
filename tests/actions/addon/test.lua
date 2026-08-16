@@ -305,7 +305,7 @@ int main(int argc, char** argv) { return 0; }
     end)
 end
 
--- the addons which a project declares in `xmake-addons.lua` are installed automatically
+-- the addons which a project declares with `add_addons` are installed automatically
 --
 -- @note they must be installed before loading the project, it may use their includes files
 function test_autofetch(t)
@@ -345,7 +345,7 @@ function test_autofetch_skipped_for_option_menu(t)
     end)
 end
 
--- a complete project which declares its addons in `xmake-addons.lua` and builds with them,
+-- a complete project which declares its addons with `add_addons` and builds with them,
 -- @see tests/actions/addon/projects/autofetch-build
 function test_autofetch_build(t)
 
@@ -396,13 +396,11 @@ function test_autofetch_lock_missing_version(t)
     end)
 end
 
--- the addons file only declares the addons, it cannot reference them
+-- the declared addons are checked, e.g. the reserved names
 function test_autofetch_invalid(t)
-    for _, name in ipairs({"autofetch-badinclude", "autofetch-badname"}) do
-        _with_project(name, function ()
-            t:require_not(try { function () os.runv("xmake", {"config", "-y"}); return true end })
-        end)
-    end
+    _with_project("autofetch-badname", function ()
+        t:require_not(try { function () os.runv("xmake", {"config", "-y"}); return true end })
+    end)
 end
 
 -- the addons can be installed from a repository, by plain name and by repo@name
