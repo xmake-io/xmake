@@ -30,15 +30,11 @@ sandbox_core_package_addon.installdir        = addon.installdir
 sandbox_core_package_addon.workdir           = addon.workdir
 sandbox_core_package_addon.dirname           = addon.dirname
 sandbox_core_package_addon.owner             = addon.owner
-sandbox_core_package_addon.is_reference      = addon.is_reference
-sandbox_core_package_addon.payloads          = addon.payloads
 sandbox_core_package_addon.payloadinfos      = addon.payloadinfos
 sandbox_core_package_addon.payloads_of       = addon.payloads_of
 sandbox_core_package_addon.payloadroot       = addon.payloadroot
 sandbox_core_package_addon.addons            = addon.addons
 sandbox_core_package_addon.versions          = addon.versions
-sandbox_core_package_addon.pin               = addon.pin
-sandbox_core_package_addon.addondir          = addon.addondir
 sandbox_core_package_addon.unregister        = addon.unregister
 
 -- get the manifest of the given addon directory, e.g. <sourcedir>/addon.lua

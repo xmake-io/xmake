@@ -23,30 +23,13 @@ local sandbox_core_project_addons = sandbox_core_project_addons or {}
 
 -- load modules
 local addons = require("project/addons")
-local raise  = require("sandbox/modules/raise")
 
 -- inherit some builtin interfaces
-sandbox_core_project_addons.file             = addons.file
-sandbox_core_project_addons.filename         = addons.filename
 sandbox_core_project_addons.lockfile         = addons.lockfile
 sandbox_core_project_addons.lockfile_version = addons.lockfile_version
 sandbox_core_project_addons.locked           = addons.locked
 sandbox_core_project_addons.locked_valid     = addons.locked_valid
 sandbox_core_project_addons.requirename      = addons.requirename
-sandbox_core_project_addons.satisfied        = addons.satisfied
-
--- load the declared addons of the given project directory
---
--- @param projectdir the project directory
--- @return           the addons information, it will be nil if this project declares nothing
---
-function sandbox_core_project_addons.load(projectdir)
-    local addonsinfo, errors = addons.load(projectdir)
-    if errors then
-        raise(errors)
-    end
-    return addonsinfo
-end
 
 -- return module
 return sandbox_core_project_addons
