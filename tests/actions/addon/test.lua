@@ -239,6 +239,22 @@ function test_template(t)
     end)
 end
 
+-- an addon can ship the package definitions in its includes file, so that a project
+-- only needs `add_requires`, @see tests/actions/addon/custom-package
+function test_include_packages(t)
+
+    -- @note we need a compiler here, the project links against the package
+    if not (find_program("gcc") or find_program("clang") or find_program("cc")) then
+        return
+    end
+    _with_addons({"custom-package"}, function ()
+        _with_project("custom-package", function ()
+            t:require(os.iorunv("xmake", {"build", "-y"}):find("build ok", 1, true))
+            t:require(os.iorunv("xmake", {"run"}):find("hello from the custom package", 1, true))
+        end)
+    end)
+end
+
 -- an addon can provide a toolchain and its tool modules
 --
 -- @see tests/apis/custom_toolchain for the same toolchain maintained inside a project
