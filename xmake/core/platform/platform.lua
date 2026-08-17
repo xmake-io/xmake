@@ -162,7 +162,11 @@ end
 
 -- get the toolchains
 function _instance:toolchains(opt)
-    local toolchains = self:_memcache():get("toolchains")
+    local cachekey = "toolchains"
+    if opt and opt.skip_platform_toolchains then
+        cachekey = cachekey .. ".skip_platform_toolchains"
+    end
+    local toolchains = self:_memcache():get(cachekey)
     if not toolchains then
 
         -- get current valid toolchains from configuration cache
@@ -189,7 +193,11 @@ function _instance:toolchains(opt)
             end
 
             -- get the platform toolchains
-            if (not toolchain_given or not toolchain_given:is_standalone()) and self._INFO:get("toolchains") then
+            -- @note we can skip it if all targets have their own standalone toolchains,
+            -- to avoid the unnecessary toolchain detection, e.g. msvc detection for mingw projects
+            if (not toolchain_given or not toolchain_given:is_standalone())
+               and self._INFO:get("toolchains")
+               and not (opt and opt.skip_platform_toolchains) then
                 names = self._INFO:get("toolchains")
             end
         end
@@ -210,7 +218,7 @@ function _instance:toolchains(opt)
                 end
             end
         end
-        self:_memcache():set("toolchains", toolchains)
+        self:_memcache():set(cachekey, toolchains)
     end
     return toolchains
 end
@@ -251,7 +259,11 @@ function _instance:data_add(name, data)
 end
 
 -- do check
-function _instance:check()
+--
+-- @param opt   the options, e.g. {skip_platform_toolchains = true}
+--
+function _instance:check(opt)
+    opt = opt or {}
     -- @see https://github.com/xmake-io/xmake/issues/4645#issuecomment-2201036943
     -- @note avoid check it in the same time leading to deadlock if running in the coroutine
     local lockname = tostring(self)
@@ -265,7 +277,7 @@ function _instance:check()
     end
 
     -- check toolchains
-    local toolchains = self:toolchains({all = true})
+    local toolchains = self:toolchains({all = true, skip_platform_toolchains = opt.skip_platform_toolchains})
     local idx = 1
     local num = #toolchains
     local standalone = false
@@ -285,6 +297,13 @@ function _instance:check()
         end
     end
     if #toolchains == 0 then
+        if opt.skip_platform_toolchains and not config.get(self:is_host() and "toolchain_host" or "toolchain") then
+            -- all targets have their own standalone toolchains, so we can skip
+            -- the platform toolchains check, e.g. set_toolchains("mingw")
+            self:_memcache():set("checked", true)
+            scheduler.co_unlock(lockname)
+            return true
+        end
         self:_memcache():set("checked", false)
         scheduler.co_unlock(lockname)
         return false, "toolchains not found!"

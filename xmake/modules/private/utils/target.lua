@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
+import("core.tool.toolchain")
 import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 
 -- Is this target has these tools?
@@ -149,10 +150,53 @@ function get_project_targets()
     return project.targets()
 end
 
+-- do all enabled targets have their own standalone toolchains?
+--
+-- e.g. set_toolchains("mingw") / set_toolchains("gcc"), if so, we can skip the
+-- platform toolchains check to avoid the unnecessary toolchain detection,
+-- e.g. msvc/vstudio detection for mingw projects.
+--
+function _check_skip_platform_toolchains()
+    for _, target in pairs(project.targets()) do
+        if target:is_enabled() then
+            local has_standalone = false
+            local target_toolchains = target:get("toolchains")
+            if target_toolchains then
+                for _, name in ipairs(table.wrap(target_toolchains)) do
+                    local toolchain_opt = table.copy(target:extraconf("toolchains", name))
+                    toolchain_opt.arch = target:arch()
+                    toolchain_opt.plat = target:plat()
+                    toolchain_opt.namespace = target:namespace()
+                    -- we need to catch the errors, because the sandbox toolchain.load
+                    -- will raise an error if the toolchain is not found, e.g. the
+                    -- custom toolchains defined in the project xmake.lua
+                    local toolchain_inst = try { function () return toolchain.load(name, toolchain_opt) end }
+                    -- attempt to load toolchain from project
+                    if not toolchain_inst and project.toolchain then
+                        toolchain_inst = project.toolchain(name, toolchain_opt)
+                    end
+                    if toolchain_inst and toolchain_inst:is_standalone() then
+                        has_standalone = true
+                        break
+                    end
+                end
+            end
+            if not has_standalone then
+                return false
+            end
+        end
+    end
+    return true
+end
+
 -- check target toolchains
 function check_target_toolchains()
     -- check toolchains configuration for all target in the current project
     -- @note we must check targets after loading options
+    local platform_check_opt = {}
+    if _check_skip_platform_toolchains() then
+        platform_check_opt.skip_platform_toolchains = true
+    end
     for _, target in pairs(project.targets()) do
         if target:is_enabled() and (target:get("toolchains") or
                                     not target:is_plat(config.get("plat")) or
@@ -160,7 +204,7 @@ function check_target_toolchains()
 
             -- check platform toolchains first
             -- `target/set_plat()` and target:toolchains() need it
-            target:platform():check()
+            target:platform():check(platform_check_opt)
 
             -- check target toolchains next
             local target_toolchains = target:get("toolchains")
@@ -174,6 +218,9 @@ function check_target_toolchains()
                 end
             end
         elseif not target:get("toolset") then
+            -- check platform toolchains, targets without toolchains rely on them
+            target:platform():check(platform_check_opt)
+
             -- we only abort it when we know that toolchains of platform and target do not found
             local toolchain_found
             for _, toolchain_inst in pairs(target:toolchains()) do

@@ -25,7 +25,6 @@ import("core.base.hashset")
 import("core.tool.toolchain")
 import("core.project.config")
 import("core.project.project")
-import("core.platform.platform")
 import("private.detect.find_platform")
 import("core.cache.localcache")
 import("core.cache.detectcache")
@@ -308,9 +307,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     assert(plat == config.plat())
     assert(arch == config.arch())
 
-    -- load platform instance
-    local instance_plat = platform.load(plat, arch)
-
     -- merge the checked configuration
     local recheck = _need_check(options_changed or not configcache_loaded or autogen)
     if recheck then
@@ -329,9 +325,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         if not opt.loadonly then
             localcache.save()
         end
-
-        -- check platform
-        instance_plat:check()
 
         -- check project options
         if not trybuild then
