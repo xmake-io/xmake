@@ -85,17 +85,18 @@ end
 function task._directories()
     local dirs = task._DIRECTORIES
     if dirs == nil then
-        dirs = {
-            path.join(global.directory(), "plugins"),
-            path.join(os.programdir(), "plugins"),
-            path.join(os.programdir(), "actions")}
-
-        -- add the plugins of the installed addons, e.g. ~/.xmake/addons/<name>/<version>/plugins
+        -- add the plugins of the installed addons first, e.g. ~/.xmake/addons/<name>/<version>/plugins
         --
         -- we get them from the addons registry file directly,
         -- so we do not need to scan the whole addons directory on startup
         --
-        table.join2(dirs, addon.payloads("plugins"))
+        -- @note the first one wins, so an addon is able to take over a deprecated
+        -- builtin plugin, e.g. `xmake format`
+        --
+        dirs = addon.payloads("plugins")
+        table.insert(dirs, path.join(global.directory(), "plugins"))
+        table.insert(dirs, path.join(os.programdir(), "plugins"))
+        table.insert(dirs, path.join(os.programdir(), "actions"))
         task._DIRECTORIES = dirs
     end
     return dirs
@@ -400,48 +401,31 @@ function task.new(name, info)
     return instance
 end
 
--- is the given task file from an addon?
-function task._is_from_addon(filepath)
-    return path.absolute(filepath):startswith(path.absolute(addon.installdir()))
-end
-
--- is the given task file a builtin plugin? e.g. <programdir>/plugins/format/xmake.lua
+-- is the given plugin conflicting with the loaded one?
 --
--- @note the builtin actions, e.g. build, config, are not plugins, they are never overridable
---
-function task._is_builtin_plugin(filepath)
-    return path.absolute(filepath):startswith(path.absolute(path.join(os.programdir(), "plugins")))
-end
-
--- should we use the given plugin instead of the loaded one?
---
--- the plugins are not namespaced, so the first one wins, but an addon is able to take over
--- a builtin plugin, otherwise the user cannot replace a deprecated builtin plugin,
--- e.g. `xmake format` is provided by the format-plugin addon now
+-- the plugins are not namespaced, so the first one always wins, @see task._directories(),
+-- but we need to report the conflicts of the addons, otherwise we do not know which
+-- plugin will be run
 --
 -- @param taskname  the task name
 -- @param taskfile  the task file of the loaded plugin, it will be nil if it's the first one
 -- @param filepath  the task file of the plugin which we are loading
 --
-function task._is_overriding(taskname, taskfile, filepath)
+function task._is_conflicting(taskname, taskfile, filepath)
     if not taskfile then
-        return true
+        return false
     end
 
-    -- the addon takes over the builtin plugin
-    if task._is_from_addon(filepath) and task._is_builtin_plugin(taskfile) then
-        return true
-    end
-
-    -- we only report the conflicts between the addons, we do not know which one is
-    -- expected, the plugins in the global directory always win, they are the user's own
+    -- we only report it if both of them come from the addons, taking over a builtin
+    -- plugin is expected, e.g. `xmake format` has been moved to an addon
     --
     -- @note we cannot raise errors here, otherwise all the commands will be broken,
     -- and the user cannot even remove the conflicting addons
-    if task._is_from_addon(taskfile) and task._is_from_addon(filepath) then
+    local addondir = path.absolute(addon.installdir())
+    if path.absolute(taskfile):startswith(addondir) and path.absolute(filepath):startswith(addondir) then
         utils.warning("plugin(%s) conflicts, we will use the first one!\n  -> %s\n  -> %s", taskname, taskfile, filepath)
     end
-    return false
+    return true
 end
 
 -- clear the loaded tasks, e.g. some addons may be installed just now
@@ -470,7 +454,7 @@ function task.tasks()
                 local results, errors = task._load(filepath)
                 if results then
                     for taskname, taskinfo in pairs(results) do
-                        if task._is_overriding(taskname, taskfiles[taskname], filepath) then
+                        if not task._is_conflicting(taskname, taskfiles[taskname], filepath) then
                             taskfiles[taskname] = filepath
                             tasks[taskname] = taskinfo
                         end
