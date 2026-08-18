@@ -71,6 +71,10 @@ end
 
 function main()
 
+    -- @note we cannot use utils.warning() here, it's queued and only shown at the end
+    cprint("${bright color.warning}${text.warning}: ${color.warning}the builtin `xmake doxygen` plugin is deprecated, " ..
+           "please use the doxygen-plugin addon: `xmake addon --install doxygen-plugin`")
+
     -- load configuration
     config.load()
 

@@ -24,6 +24,7 @@ local task = task or {}
 -- load modules
 local os            = require("base/os")
 local table         = require("base/table")
+local utils         = require("base/utils")
 local string        = require("base/string")
 local global        = require("base/global")
 local hashset       = require("base/hashset")
@@ -84,17 +85,18 @@ end
 function task._directories()
     local dirs = task._DIRECTORIES
     if dirs == nil then
-        dirs = {
-            path.join(global.directory(), "plugins"),
-            path.join(os.programdir(), "plugins"),
-            path.join(os.programdir(), "actions")}
-
-        -- add the plugins of the installed addons, e.g. ~/.xmake/addons/<name>/<version>/plugins
+        -- add the plugins of the installed addons first, e.g. ~/.xmake/addons/<name>/<version>/plugins
         --
         -- we get them from the addons registry file directly,
         -- so we do not need to scan the whole addons directory on startup
         --
-        table.join2(dirs, addon.payloads("plugins"))
+        -- @note the first one wins, so an addon is able to take over a deprecated
+        -- builtin plugin, e.g. `xmake format`
+        --
+        dirs = addon.payloads("plugins")
+        table.insert(dirs, path.join(global.directory(), "plugins"))
+        table.insert(dirs, path.join(os.programdir(), "plugins"))
+        table.insert(dirs, path.join(os.programdir(), "actions"))
         task._DIRECTORIES = dirs
     end
     return dirs
@@ -401,8 +403,9 @@ end
 
 -- is the given plugin conflicting with the loaded one?
 --
--- the plugins are not namespaced, so we need to report the conflicts of the addons,
--- otherwise we do not know which plugin will be run
+-- the plugins are not namespaced, so the first one always wins, @see task._directories(),
+-- but we need to report the conflicts of the addons, otherwise we do not know which
+-- plugin will be run
 --
 -- @param taskname  the task name
 -- @param taskfile  the task file of the loaded plugin, it will be nil if it's the first one
@@ -413,16 +416,15 @@ function task._is_conflicting(taskname, taskfile, filepath)
         return false
     end
 
-    -- we only report it if one of them comes from an addon, the builtin plugins
-    -- and the plugins in the global directory are always overridable
-    local addondir = path.absolute(addon.installdir())
-    if not path.absolute(taskfile):startswith(addondir) and not path.absolute(filepath):startswith(addondir) then
-        return false
-    end
-
+    -- we only report it if both of them come from the addons, taking over a builtin
+    -- plugin is expected, e.g. `xmake format` has been moved to an addon
+    --
     -- @note we cannot raise errors here, otherwise all the commands will be broken,
     -- and the user cannot even remove the conflicting addons
-    utils.warning("plugin(%s) conflicts, we will use the first one!\n  -> %s\n  -> %s", taskname, taskfile, filepath)
+    local addondir = path.absolute(addon.installdir())
+    if path.absolute(taskfile):startswith(addondir) and path.absolute(filepath):startswith(addondir) then
+        utils.warning("plugin(%s) conflicts, we will use the first one!\n  -> %s\n  -> %s", taskname, taskfile, filepath)
+    end
     return true
 end
 

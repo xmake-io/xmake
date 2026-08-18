@@ -103,6 +103,10 @@ end
 -- main
 function main()
 
+    -- @note we cannot use utils.warning() here, it's queued and only shown at the end
+    cprint("${bright color.warning}${text.warning}: ${color.warning}the builtin `xmake format` plugin is deprecated, " ..
+           "please use the format-plugin addon: `xmake addon --install format-plugin`")
+
     -- load configuration
     config.load()
 
