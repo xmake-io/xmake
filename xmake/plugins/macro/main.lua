@@ -309,6 +309,10 @@ end
 -- main
 function main()
 
+    -- @note we cannot use utils.warning() here, it's queued and only shown at the end
+    cprint("${bright color.warning}${text.warning}: ${color.warning}the builtin `xmake macro` plugin is deprecated, " ..
+           "please use the macro-plugin addon: `xmake addon --install macro-plugin`")
+
     -- list macros
     if option.get("list") then
 

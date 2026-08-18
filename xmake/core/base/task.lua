@@ -24,6 +24,7 @@ local task = task or {}
 -- load modules
 local os            = require("base/os")
 local table         = require("base/table")
+local utils         = require("base/utils")
 local string        = require("base/string")
 local global        = require("base/global")
 local hashset       = require("base/hashset")
@@ -399,31 +400,48 @@ function task.new(name, info)
     return instance
 end
 
--- is the given plugin conflicting with the loaded one?
+-- is the given task file from an addon?
+function task._is_from_addon(filepath)
+    return path.absolute(filepath):startswith(path.absolute(addon.installdir()))
+end
+
+-- is the given task file a builtin plugin? e.g. <programdir>/plugins/format/xmake.lua
 --
--- the plugins are not namespaced, so we need to report the conflicts of the addons,
--- otherwise we do not know which plugin will be run
+-- @note the builtin actions, e.g. build, config, are not plugins, they are never overridable
+--
+function task._is_builtin_plugin(filepath)
+    return path.absolute(filepath):startswith(path.absolute(path.join(os.programdir(), "plugins")))
+end
+
+-- should we use the given plugin instead of the loaded one?
+--
+-- the plugins are not namespaced, so the first one wins, but an addon is able to take over
+-- a builtin plugin, otherwise the user cannot replace a deprecated builtin plugin,
+-- e.g. `xmake format` is provided by the format-plugin addon now
 --
 -- @param taskname  the task name
 -- @param taskfile  the task file of the loaded plugin, it will be nil if it's the first one
 -- @param filepath  the task file of the plugin which we are loading
 --
-function task._is_conflicting(taskname, taskfile, filepath)
+function task._is_overriding(taskname, taskfile, filepath)
     if not taskfile then
-        return false
+        return true
     end
 
-    -- we only report it if one of them comes from an addon, the builtin plugins
-    -- and the plugins in the global directory are always overridable
-    local addondir = path.absolute(addon.installdir())
-    if not path.absolute(taskfile):startswith(addondir) and not path.absolute(filepath):startswith(addondir) then
-        return false
+    -- the addon takes over the builtin plugin
+    if task._is_from_addon(filepath) and task._is_builtin_plugin(taskfile) then
+        return true
     end
 
+    -- we only report the conflicts between the addons, we do not know which one is
+    -- expected, the plugins in the global directory always win, they are the user's own
+    --
     -- @note we cannot raise errors here, otherwise all the commands will be broken,
     -- and the user cannot even remove the conflicting addons
-    utils.warning("plugin(%s) conflicts, we will use the first one!\n  -> %s\n  -> %s", taskname, taskfile, filepath)
-    return true
+    if task._is_from_addon(taskfile) and task._is_from_addon(filepath) then
+        utils.warning("plugin(%s) conflicts, we will use the first one!\n  -> %s\n  -> %s", taskname, taskfile, filepath)
+    end
+    return false
 end
 
 -- clear the loaded tasks, e.g. some addons may be installed just now
@@ -452,7 +470,7 @@ function task.tasks()
                 local results, errors = task._load(filepath)
                 if results then
                     for taskname, taskinfo in pairs(results) do
-                        if not task._is_conflicting(taskname, taskfiles[taskname], filepath) then
+                        if task._is_overriding(taskname, taskfiles[taskname], filepath) then
                             taskfiles[taskname] = filepath
                             tasks[taskname] = taskinfo
                         end

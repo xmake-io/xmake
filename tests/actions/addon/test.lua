@@ -467,6 +467,26 @@ function test_install_conflicts(t)
     end)
 end
 
+-- an addon is able to take over a builtin plugin, so we can move a deprecated builtin
+-- plugin to an addon, e.g. `xmake format`
+function test_install_override(t)
+
+    -- the builtin plugin is used if we do not install the addon
+    t:require_not(os.iorunv("xmake", {"format", "--help"}):find("Say hello instead of formatting", 1, true))
+
+    _with_addons({"custom-override"}, function ()
+        local out = os.iorunv("xmake", {"format"})
+        t:require(out:find("hello from custom-override", 1, true))
+
+        -- and it should not be reported as a conflict
+        t:require_not(out:find("conflicts", 1, true))
+        t:require(os.iorunv("xmake", {"format", "--help"}):find("Say hello instead of formatting", 1, true))
+    end)
+
+    -- the builtin plugin is used again after removing the addon
+    t:require_not(os.iorunv("xmake", {"format", "--help"}):find("Say hello instead of formatting", 1, true))
+end
+
 -- the invalid installs should fail, and the `addon` name is reserved for the addon references
 function test_invalid(t)
     t:require_not(try { function () os.runv("xmake", {"addon", "--install", "-y", "addon-test-missing"}); return true end })
