@@ -2117,11 +2117,17 @@ function _instance:fetch(opt)
 
     -- always install to the local project directory?
     -- @see https://github.com/xmake-io/xmake/pull/4376
+    --
+    -- @note the host packages are the tools which build the other packages, e.g. the toolchains,
+    -- they do not depend on the project configuration and they are shared between the projects,
+    -- so they are only installed locally with their own policy
+    -- @see https://github.com/xmake-io/xmake/issues/7716
+    local policyname = self:is_host() and "package.host.install_locally" or "package.install_locally"
     local install_locally
-    if project and project.policy("package.install_locally") then
+    if project and project.policy(policyname) then
         install_locally = true
     end
-    if install_locally == nil and self:policy("package.install_locally") then
+    if install_locally == nil and self:policy(policyname) then
         install_locally = true
     end
     if not self:is_local() and install_locally and system ~= true then

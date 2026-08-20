@@ -158,6 +158,12 @@ function policy.policies()
             ["package.install_always"]            = {description = "Always install packages every time.", type = "boolean"},
             -- Install packages in the local project folder
             ["package.install_locally"]           = {description = "Install packages in the local project folder.", default = false, type = "boolean"},
+            -- Install the host packages in the local project folder
+            --
+            -- the host packages are the tools which build the other packages, e.g. the toolchains,
+            -- they do not depend on the project configuration and they are shared between the projects,
+            -- so they have their own policy, @see https://github.com/xmake-io/xmake/issues/7716
+            ["package.host.install_locally"]      = {description = "Install the host packages in the local project folder.", default = false, type = "boolean"},
             -- Keep package source code after installing (disable source dir cleanup)
             ["package.keep_source"]               = {description = "Keep package source code after installing.", default = false, type = "boolean"},
             -- Set custom headers when downloading package
