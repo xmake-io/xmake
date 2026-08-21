@@ -61,6 +61,7 @@ function _get_apis()
     ,   "package.add_defines"
     ,   "package.add_undefines"
     ,   "package.add_frameworks"
+    ,   "package.add_vectorexts"
     ,   "package.add_rpathdirs"
     ,   "package.add_linkdirs"
     ,   "package.add_includedirs" --@note we need not uses paths for package, see https://github.com/xmake-io/xmake/issues/717
