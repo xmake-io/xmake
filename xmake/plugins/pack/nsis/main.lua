@@ -86,6 +86,11 @@ function _translate_filepath(package, filepath)
     return filepath:replace(package:install_rootdir(), "$InstDir", {plain = true})
 end
 
+-- convert a host path to the backslash form expected by NSIS
+function _nsis_path(p)
+    return p:gsub("/", "\\")
+end
+
 -- get command string
 function _get_command_strings(package, cmd, opt)
     opt = table.join(cmd.opt or {}, opt)
@@ -110,7 +115,7 @@ function _get_command_strings(package, cmd, opt)
                     dstdir = path.join(dstdir, path.filename(srcitem))
                 end
                 dstdir = path.normalize(dstdir)
-                table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
+                table.insert(result, string.format("SetOutPath \"%s\"", _nsis_path(dstdir)))
                 table.insert(result, string.format("File /r \"%s\\*\"", srcitem))
             else
                 -- copy file
@@ -125,31 +130,31 @@ function _get_command_strings(package, cmd, opt)
                 srcitem = path.normalize(srcitem)
                 local dstname = path.filename(dstfile)
                 local dstdir = path.normalize(path.directory(dstfile))
-                table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
+                table.insert(result, string.format("SetOutPath \"%s\"", _nsis_path(dstdir)))
                 table.insert(result, string.format("File \"/oname=%s\" \"%s\"", dstname, srcitem))
             end
         end
     elseif kind == "rm" then
-        local filepath = _translate_filepath(package, cmd.filepath)
+        local filepath = _nsis_path(_translate_filepath(package, cmd.filepath))
         table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMFileIfExists" or "unRMFileIfExists", filepath))
         if opt.emptydirs then
             table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", filepath))
         end
     elseif kind == "rmdir" then
-        local dir = _translate_filepath(package, cmd.dir)
+        local dir = _nsis_path(_translate_filepath(package, cmd.dir))
         table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMDirIfExists" or "unRMDirIfExists", dir))
         if opt.emptydirs then
             table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", dir))
         end
     elseif kind == "mv" then
-        local srcpath = _translate_filepath(package, cmd.srcpath)
-        local dstpath = _translate_filepath(package, cmd.dstpath)
+        local srcpath = _nsis_path(_translate_filepath(package, cmd.srcpath))
+        local dstpath = _nsis_path(_translate_filepath(package, cmd.dstpath))
         table.insert(result, string.format("Rename \"%s\" \"%s\"", srcpath, dstpath))
     elseif kind == "cd" then
-        local dir = _translate_filepath(package, cmd.dir)
+        local dir = _nsis_path(_translate_filepath(package, cmd.dir))
         table.insert(result, string.format("SetOutPath \"%s\"", dir))
     elseif kind == "mkdir" then
-        local dir = _translate_filepath(package, cmd.dir)
+        local dir = _nsis_path(_translate_filepath(package, cmd.dir))
         table.insert(result, string.format("CreateDirectory \"%s\"", dir))
     elseif kind == "nsis" then
         table.insert(result, cmd.rawstr)
@@ -186,6 +191,31 @@ function _get_uninstallcmds(package)
     return _get_commands_string(package, batchcmds.get_uninstallcmds(package):cmds(), {install = false})
 end
 
+-- get the nsis commands to install the launcher .cmd wrapper
+function _get_launcher_installcmds(package)
+    local cmdstrs = {}
+    local target = _get_target_filepath(package)
+    if not target then return "" end
+    local runenvs = package:get("runenvs") or {}
+    local runargs = package:get("runargs") or {}
+    if #runenvs == 0 and #runargs == 0 then return "" end
+    -- a .cmd wrapper is installed when env vars are set, so they are applied at launch
+    if #runenvs > 0 then
+        local exename = path.filename(target)
+        local cmdname = path.basename(target)
+        local cmdcontent = "@echo off\r\n"
+        for i = 1, #runenvs, 2 do
+            cmdcontent = cmdcontent .. string.format("set \"%s=%s\"\r\n", runenvs[i], runenvs[i + 1] or "")
+        end
+        cmdcontent = cmdcontent .. string.format("\"%%~dp0%s\" %%*\r\n", exename)
+        local cmdfile = path.join(package:builddir(), "launcher.cmd")
+        io.writefile(cmdfile, cmdcontent)
+        table.insert(cmdstrs, 'SetOutPath "$InstDir\\bin"')
+        table.insert(cmdstrs, string.format('File "/oname=%s.cmd" "%s"', cmdname, path.absolute(cmdfile)))
+    end
+    return table.concat(cmdstrs, "\n  ")
+end
+
 -- get value and filter it
 function _get_filter_value(package, name)
     local value = package:get(name)
@@ -213,14 +243,19 @@ end
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
     specvars.PACKAGE_WORKDIR = path.absolute(os.projectdir())
-    specvars.PACKAGE_BINDIR = _translate_filepath(package, package:bindir())
+    specvars.PACKAGE_BINDIR = _nsis_path(_translate_filepath(package, package:bindir()))
     specvars.PACKAGE_OUTPUTFILE = path.absolute(package:outputfile())
     if specvars.PACKAGE_VERSION_BUILD then
         -- @see https://github.com/xmake-io/xmake/issues/5306
         specvars.PACKAGE_VERSION_BUILD = specvars.PACKAGE_VERSION_BUILD:gsub(" ", "_")
     end
     specvars.PACKAGE_INSTALLCMDS = function ()
-        return _get_installcmds(package)
+        local installcmds = _get_installcmds(package)
+        local launchercmds = _get_launcher_installcmds(package)
+        if #launchercmds > 0 then
+            installcmds = installcmds .. "\n  " .. launchercmds
+        end
+        return installcmds
     end
     specvars.PACKAGE_UNINSTALLCMDS = function ()
         return _get_uninstallcmds(package)
@@ -233,7 +268,7 @@ function _get_specvars(package)
         if not iconpath then
             iconpath = _get_target_filepath(package) or ""
         end
-        return _translate_filepath(package, iconpath)
+        return _nsis_path(_translate_filepath(package, iconpath))
     end
 
     -- install sections
@@ -261,6 +296,23 @@ function _get_specvars(package)
     specvars.PACKAGE_NSIS_INSTALL_SECTIONS = table.concat(install_sections, "\n  ")
     specvars.PACKAGE_NSIS_INSTALL_DESCS = table.concat(install_descs, "\n  ")
     specvars.PACKAGE_NSIS_INSTALL_DESCRIPTION_TEXTS = table.concat(install_description_texts, "\n  ")
+
+    -- create start menu shortcut with runargs/runenvs
+    specvars.PACKAGE_NSIS_STARTMENU_SHORTCUT = function ()
+        local target = _get_target_filepath(package)
+        if not target then return "" end
+        local runenvs = package:get("runenvs") or {}
+        local runargs = package:get("runargs") or {}
+        if #runenvs == 0 and #runargs == 0 then
+            return ""
+        end
+        local args = table.concat(runargs, " ")
+        -- point the shortcut at the .cmd wrapper when env vars are set
+        if #runenvs > 0 then
+            target = string.format("$InstDir\\bin\\%s.cmd", path.basename(target))
+        end
+        return string.format('CreateShortCut "$SMPROGRAMS\\%s.lnk" "%s" "%s"', package:name(), target, args)
+    end
     return specvars
 end
 
@@ -278,11 +330,13 @@ function _pack_nsis(makensis, package)
     -- and we need to avoid `attempt to yield across a C-call boundary` in io.gsub
     local specvars = _get_specvars(package)
     local pattern = package:extraconf("specfile", "pattern") or "%${([^\n]-)}"
+    -- ANSI file encoding is only supported on Windows hosts (reads empty on Linux)
+    local gsubopt = is_host("windows") and {encoding = "ansi"} or {}
     local specvars_names = {}
     local specvars_values = {}
     io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
         table.insert(specvars_names, name)
-    end, {encoding = "ansi"})
+    end, gsubopt)
     for _, name in ipairs(specvars_names) do
         local name = name:trim()
         if specvars_values[name] == nil then
@@ -302,7 +356,7 @@ function _pack_nsis(makensis, package)
     io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
         name = name:trim()
         return specvars_values[name]
-    end, {encoding = "ansi"})
+    end, gsubopt)
 
     -- make package
     os.vrunv(makensis, {specfile})
@@ -310,8 +364,10 @@ end
 
 function main(package)
 
-    -- only for windows
-    if not is_host("windows") then
+    -- only for windows/mingw platforms
+    -- makensis is cross-platform, so a Windows installer can be built from any
+    -- host, but only when the packaged target is actually a Windows build.
+    if not package:is_plat("windows", "mingw") then
         return
     end
 
