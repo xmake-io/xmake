@@ -33,7 +33,11 @@
  * utf8.width(codepoint)
  */
 tb_int_t xm_utf8_width(lua_State* lua) {
-    if (lua_isnumber(lua, 1)) {
+    /* we must not use lua_isnumber() here: it also accepts a numeric string,
+     * so utf8.width("9") would return the width of the code point 9 (a tab)
+     * instead of the width of the string "9"
+     */
+    if (lua_type(lua, 1) == LUA_TNUMBER) {
         xm_utf8_int_t val = (xm_utf8_int_t)lua_tointeger(lua, 1);
         lua_pushinteger(lua, xm_utf8_charwidth(val));
     } else {

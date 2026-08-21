@@ -124,7 +124,7 @@ function poller:remove(obj)
     end
 
     -- remove poller object data
-    self:_pollerdata_set(obj, nil)
+    self:_pollerdata_set(obj:cdata(), nil)
     return true
 end
 
@@ -153,13 +153,15 @@ function poller:wait(timeout)
             local otype  = v[1]
             local cdata  = v[2]
             local events = v[3]
-            local pollerdata   = self:_pollerdata(cdata)
-            if not pollerdata then
-                return -1, string.format("no object data for cdata(%s)!", cdata)
+            -- this object may have been removed from the poller while its event
+            -- was already collected, e.g. a pending overlapped io on windows,
+            -- we just drop it, it has no owner any more, @see poller:remove()
+            local pollerdata = self:_pollerdata(cdata)
+            if pollerdata then
+                local obj = pollerdata[1]
+                assert(obj and obj:otype() == otype and obj:cdata() == cdata)
+                table.insert(results, {obj, events, pollerdata[2]})
             end
-            local obj = pollerdata[1]
-            assert(obj and obj:otype() == otype and obj:cdata() == cdata)
-            table.insert(results, {obj, events, pollerdata[2]})
         end
     end
     return count, results
