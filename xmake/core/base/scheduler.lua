@@ -304,9 +304,17 @@ end
 function scheduler:_poller_events_cb(obj, events)
 
     -- get poller object data
+    --
+    -- the object may have been cancelled while its event was already queued,
+    -- e.g. a process which exits right after we stopped waiting for it,
+    -- @see scheduler:poller_cancel()
+    --
+    -- such an event has no owner any more, we just drop it: it is not an
+    -- error of the scheduler and it must not abort the whole loop
     local pollerdata = self:_poller_data(obj)
     if not pollerdata then
-        return false, string.format("%s: cannot get poller data!", obj)
+        utils.dprint("%s: drop the event(%d), it has been cancelled!", obj, events)
+        return true
     end
 
     -- is process/fwatcher object?
@@ -1068,6 +1076,10 @@ function scheduler:poller_waitproc(obj, timeout)
     running:waitobj_set(obj)
 
     -- wait
+    --
+    -- @note we keep this process in the poller if it is timeout, so its exit status
+    -- is still saved as a pending status when it exits later, and the next wait
+    -- returns it immediately, @see scheduler:_poller_events_cb()
     local ok = self:co_suspend()
     return ok, pollerdata.object_event
 end
