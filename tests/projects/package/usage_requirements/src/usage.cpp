@@ -2,7 +2,6 @@
 #    error AVX2 is required by the package
 #endif
 
-int usage()
-{
+int usage() {
     return 0;
 }
