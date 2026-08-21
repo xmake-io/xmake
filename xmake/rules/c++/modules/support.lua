@@ -92,7 +92,15 @@ function get_cpplibrary_name(target)
         end
     elseif target:is_plat("macosx", "iphoneos", "watchos", "appletvos", "applexros", "bsd", "harmony") then
         return "c++"
-    elseif target:is_plat("linux", "mingw", "cygwin", "msys", "haiku") then
+    elseif target:is_plat("linux", "cygwin", "msys", "haiku") then
+        return "stdc++"
+    elseif target:is_plat("mingw") then
+        local toolchain_inst = target:toolchain("mingw")
+        local is_clang = (toolchain_inst and toolchain_inst:config("clang")) or
+            target:has_tool("cxx", "clang", "clangxx", "clang_cl")
+        if is_clang then
+            return "c++"
+        end
         return "stdc++"
     elseif target:is_plat("windows") then
         return "msstl"

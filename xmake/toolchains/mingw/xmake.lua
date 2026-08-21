@@ -22,7 +22,7 @@ toolchain("mingw")
     set_kind("standalone")
     set_homepage("http://www.mingw.org/")
     set_description("Minimalist GNU for Windows")
-    set_runtimes("stdc++_static", "stdc++_shared")
+    set_runtimes("stdc++_static", "stdc++_shared", "c++_static", "c++_shared")
 
     on_check("check")
     on_load(function (toolchain)

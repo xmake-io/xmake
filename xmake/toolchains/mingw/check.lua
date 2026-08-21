@@ -44,6 +44,24 @@ function main(toolchain)
         })
     end
     if mingw then
+        local bindir = mingw.bindir or path.join(mingw.sdkdir, "bin")
+        local cross = mingw.cross or ""
+        local is_win = is_host("windows")
+        local gcc = path.join(bindir, cross .. (is_win and "gcc.exe" or "gcc"))
+        local clang = path.join(bindir, cross .. (is_win and "clang.exe" or "clang"))
+        local use_clang = toolchain:config("clang")
+        if use_clang then
+            if not os.isexec(clang) then
+                return false
+            end
+        elseif use_clang == false then
+            if not os.isexec(gcc) then
+                return false
+            end
+        elseif (not os.isexec(gcc) or (mingw.sdkdir and mingw.sdkdir:find("llvm-mingw", 1, true)))
+            and os.isexec(clang) then
+            toolchain:config_set("clang", true)
+        end
         toolchain:config_set("mingw", mingw.sdkdir)
         toolchain:config_set("cross", mingw.cross)
         toolchain:config_set("bindir", mingw.bindir)
