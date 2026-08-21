@@ -21,7 +21,7 @@
 platform("bsd")
     set_os("bsd")
     set_hosts("bsd")
-    set_archs("i386", "x86_64")
+    set_archs("i386", "x86_64", "arm", "arm64", "ppc", "ppc64", "ppc64el", "riscv64", "sparc64")
 
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
@@ -53,5 +53,3 @@ platform("bsd")
                 ,   {nil, "qt_host",        "kv", "auto",       "The Qt Host SDK Directory"         }
                 }
             }
-
-

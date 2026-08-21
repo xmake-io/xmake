@@ -20,7 +20,7 @@
 
 platform("cross")
     set_hosts("macosx", "linux", "windows", "bsd")
-    set_archs("i386", "x86_64", "arm", "arm64", "mips", "mips64", "riscv", "riscv64", "loong64", "s390x", "ppc", "ppc64", "sh4")
+    set_archs("i386", "x86_64", "arm", "armv7", "arm64", "mips", "mips64", "mips64el", "riscv", "riscv64", "loong64", "s390x", "ppc", "ppc64", "ppc64el", "sh4", "sparc64")
 
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
@@ -28,5 +28,3 @@ platform("cross")
     set_formats("symbol", "$(name).sym")
 
     set_toolchains("envs", "cross")
-
-

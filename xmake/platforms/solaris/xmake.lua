@@ -21,7 +21,7 @@
 platform("solaris")
     set_os("solaris")
     set_hosts("solaris")
-    set_archs("i386", "x86_64")
+    set_archs("i386", "x86_64", "sparc64")
 
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
@@ -53,5 +53,3 @@ platform("solaris")
                 ,   {nil, "qt_host",        "kv", "auto",       "The Qt Host SDK Directory"         }
                 }
             }
-
-
