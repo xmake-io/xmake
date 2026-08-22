@@ -181,7 +181,7 @@ function _instance:set(name, ...)
     if self._PENDING then
         table.insert(self._PENDING, {type = "set", args = {name, ...}})
     end
-    self:info():apival_set(name, ...)
+    self:info():apival_set(name, ...) --ensure get() api can read real infos 
 end
 
 -- add the value to the toolchain configuration
@@ -189,7 +189,7 @@ function _instance:add(name, ...)
     if self._PENDING then
         table.insert(self._PENDING, {type = "add", args = {name, ...}})
     end
-    self:info():apival_add(name, ...)
+    self:info():apival_add(name, ...)--ensure get() api can read real infos 
 end
 
 
@@ -504,18 +504,20 @@ function _instance:_persist_operations()
     for _, item in ipairs(self._PENDING or {}) do
         local args = {}
         for i, arg in ipairs(item.args) do
-            -- 深拷贝，避免引用共享
-            args[i] = table.clone(arg, 2)   -- 浅拷贝已足够（字符串/表/布尔）
+            if type(arg) == "table" then
+                -- 浅拷贝（若内部有嵌套表，可递归，但通常 flags 是字符串数组）
+                args[i] = table.clone(arg, 2)
+            else
+                args[i] = arg
+            end
         end
         table.insert(ops, {type = item.type, args = args})
     end
     self._CONFIGS.__operations = ops
 end
-
-
 -- is loaded?
 function _instance:_is_loaded()
-    return self:info():get("__loaded")
+    return self._CONFIGS.__loaded == true
 end
 
 -- is checked?
