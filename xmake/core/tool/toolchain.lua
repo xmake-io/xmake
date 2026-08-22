@@ -178,13 +178,20 @@ end
 
 -- set the value to the toolchain configuration
 function _instance:set(name, ...)
+    if self._PENDING then
+        table.insert(self._PENDING, {type = "set", args = {name, ...}})
+    end
     self:info():apival_set(name, ...)
 end
 
 -- add the value to the toolchain configuration
 function _instance:add(name, ...)
+    if self._PENDING then
+        table.insert(self._PENDING, {type = "add", args = {name, ...}})
+    end
     self:info():apival_add(name, ...)
 end
+
 
 -- get the toolchain configuration
 function _instance:get(name, opt)
@@ -445,20 +452,66 @@ function _instance:_load()
     if not self:_is_checked() then
         utils.warning("we cannot load toolchain(%s), because it has been not checked yet!", self:name(), self:plat(), self:arch())
     end
-    local info = self:info()
-    if not info:get("__loaded") and not info:get("__loading") then
-        local on_load = self:_on_load()
-        if on_load then
-            info:set("__loading", true)
-            local ok, errors = sandbox.call(on_load, self)
-            info:set("__loading", false)
-            if not ok then
-                os.raise(errors)
+
+    -- 防重入
+    if self._LOADING then
+        return
+    end
+    self._LOADING = true
+
+    -- 如果已经加载过，重放操作恢复动态配置
+    if self._CONFIGS.__loaded then
+        local ops = self._CONFIGS.__operations
+        if ops then
+            local info = self:info()
+            for _, op in ipairs(ops) do
+                if op.type == "set" then
+                    info:apival_set(table.unpack(op.args))
+                elseif op.type == "add" then
+                    info:apival_add(table.unpack(op.args))
+                end
             end
         end
-        info:set("__loaded", true)
+        self._LOADING = false
+        return
     end
+
+    -- 首次加载：执行 on_load
+    local on_load = self:_on_load()
+    if on_load then
+        self._PENDING = {}   -- 开始记录操作
+        local info = self:info()
+        info:set("__loading", true)   -- 保留原标记（兼容性）
+        local ok, errors = sandbox.call(on_load, self)
+        info:set("__loading", false)
+        if not ok then
+            self._PENDING = nil
+            self._LOADING = false
+            os.raise(errors)
+        end
+
+        -- 将记录的操作持久化到缓存
+        self:_persist_operations()
+        self._PENDING = nil
+    end
+
+    self._CONFIGS.__loaded = true
+    self._LOADING = false
 end
+
+function _instance:_persist_operations()
+    local ops = {}
+    for _, item in ipairs(self._PENDING or {}) do
+        local args = {}
+        for i, arg in ipairs(item.args) do
+            -- 深拷贝，避免引用共享
+            args[i] = table.clone(arg, 2)   -- 浅拷贝已足够（字符串/表/布尔）
+        end
+        table.insert(ops, {type = item.type, args = args})
+    end
+    self._CONFIGS.__operations = ops
+end
+
 
 -- is loaded?
 function _instance:_is_loaded()
