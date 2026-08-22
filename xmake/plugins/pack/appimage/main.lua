@@ -23,6 +23,7 @@ import("core.base.option")
 import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
+import("private.action.run.runenvs")
 import(".batchcmds")
 
 -- handle icon file
@@ -73,21 +74,54 @@ Exec=usr/bin/%s
     io.writefile(desktopfile, desktop_content)
 end
 
+
+
+function _env_table_to_export_lines(env_table)
+    local lines = {}
+    for k, v in pairs(env_table) do
+        table.insert(lines, string.format('export %s="%s"', k, v))
+    end
+    return lines
+end
+
+
 -- create AppRun script
-function _create_apprun_script(appdir, main_executable)
+function _create_apprun_script(appdir, main_executable, runarg_table,export_path_env, export_other_env)
     local apprun = path.join(appdir, "AppRun")
-    local apprun_content = string.format([[
+
+    local all_export_lines = {}
+    for _, line in ipairs(export_path_env) do table.insert(all_export_lines, line) end
+    for _, line in ipairs(export_other_env) do table.insert(all_export_lines, line) end
+
+
+
+    local template = [[
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "${0}")")"
-exec "${HERE}/usr/bin/%s" "$@"
-]], main_executable)
-    io.writefile(apprun, apprun_content)
-    os.vrunv("chmod", {"+x", apprun})
+
+
+
+{{export_statements}}
+
+exec "$HERE/usr/bin/{{binary}}" {{runargs}} "$@"
+]]
+
+    local subs = {
+        binary = main_executable,
+        runargs = table.concat(runarg_table, " "),
+        export_statements = table.concat(all_export_lines, "\n"),
+    }
+
+    local final = string.gsub(template, "{{(%w+)}}", function(key)
+        return subs[key] or ""
+    end)
+
+    io.writefile(apprun, final)
+    os.vrunv("chmod", { "+x", apprun })
 end
 
 -- get the appimagetool
 function _get_appimagetool()
-
     -- enter the environments of appimagetool
     local oldenvs = packagenv.enter("appimage")
 
@@ -105,17 +139,35 @@ function _get_appimagetool()
 
     -- we need to force detect and flush detect cache after loading all environments
     if not appimagetool then
-        appimagetool = find_tool("appimagetool", {force = true})
+        appimagetool = find_tool("appimagetool", { force = true })
     end
     assert(appimagetool, "appimagetool not found!")
     return appimagetool, oldenvs
+end
+
+
+function _get_envs(package)
+    local args = nil
+    local addenvs = {}
+    local setenvs = {}
+    for _, target in ipairs(package:targets()) do
+        if target:is_binary() then
+            args = target:get("runargs") or {}          -- 确保是表
+            addenvs, setenvs = runenvs.make(target)     -- 返回两个表
+            break   -- 只取第一个二进制目标
+        end
+    end
+    -- 将 addenvs 和 setenvs 分别转换为 export 行数组
+    local add_lines = _env_table_to_export_lines(addenvs)
+    local set_lines = _env_table_to_export_lines(setenvs)
+    return args, add_lines, set_lines
 end
 
 -- get main executable from package
 function _get_main_executable(package, usrdir)
     local main_executable = nil
     local main_executable_path = nil
-    
+
     -- try to find from targets first
     for _, target in ipairs(package:targets()) do
         if target:is_binary() then
@@ -128,13 +180,13 @@ function _get_main_executable(package, usrdir)
             end
         end
     end
-    
+
     -- fallback: find in bindir
     if not main_executable_path then
         local bindir = package:bindir()
         if bindir and os.isdir(bindir) then
             -- find executable files in bindir using os.files callback
-            os.files(path.join(bindir, "*"), function (file, isdir)
+            os.files(path.join(bindir, "*"), function(file, isdir)
                 if not isdir and os.isfile(file) and not os.islink(file) and os.isexec(file) then
                     main_executable = path.filename(file)
                     main_executable_path = path.join(usrdir, "bin", main_executable)
@@ -146,13 +198,12 @@ function _get_main_executable(package, usrdir)
             end)
         end
     end
-    
+
     return main_executable, main_executable_path
 end
 
 -- pack appimage package
 function _pack_appimage(package, appimagetool)
-
     -- check platform
     assert(package:is_plat("linux"), "appimage format only supports Linux platform!")
 
@@ -184,8 +235,8 @@ function _pack_appimage(package, appimagetool)
 
     -- get main executable
     local main_executable, main_executable_path = _get_main_executable(package, usrdir)
-    assert(main_executable and main_executable_path and os.isfile(main_executable_path), 
-           "main executable not found! Please ensure at least one binary target is added to xpack.")
+    assert(main_executable and main_executable_path and os.isfile(main_executable_path),
+        "main executable not found! Please ensure at least one binary target is added to xpack.")
 
     -- get application name and title
     local appname = package:name()
@@ -198,18 +249,20 @@ function _pack_appimage(package, appimagetool)
     -- create desktop file
     _create_desktop_file(package, appdir, appname, apptitle, appdescription, main_executable, iconname)
 
+    --local targets = package:targets()
+
+    local args, addenvs, setenvs = _get_envs(package)
     -- create AppRun script
-    _create_apprun_script(appdir, main_executable)
+    _create_apprun_script(appdir, main_executable,args,addenvs,setenvs)
 
     -- create AppImage using appimagetool
-    os.vrunv(appimagetool, {appdir, outputfile}, {envs = {APPIMAGE_EXTRACT_AND_RUN = "1"}})
+    os.vrunv(appimagetool, { appdir, outputfile }, { envs = { APPIMAGE_EXTRACT_AND_RUN = "1" } })
 
     -- verify AppImage was created
     assert(os.isfile(outputfile), "generate %s failed!", outputfile)
 end
 
 function main(package)
-
     -- only for linux
     if not is_host("linux") then
         return
@@ -226,4 +279,3 @@ function main(package)
     -- done
     os.setenvs(oldenvs)
 end
-
