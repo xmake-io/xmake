@@ -109,8 +109,36 @@ static tb_void_t xm_io_file_write_std(xm_io_file_t *file, tb_byte_t const *data,
     tb_size_t type = (file->type & ~XM_IO_FILE_FLAG_TTY);
     tb_check_return(type != XM_IO_FILE_TYPE_STDIN);
 
+#if defined(TB_CONFIG_OS_WINDOWS)
+    HANDLE handle = GetStdHandle(type == XM_IO_FILE_TYPE_STDERR ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE);
+    if (handle != INVALID_HANDLE_VALUE && handle != NULL) {
+        DWORD mode;
+        if (GetConsoleMode(handle, &mode)) {
+            tb_size_t wsize = (size + 1) * sizeof(tb_wchar_t);
+            tb_wchar_t *wbuf = (tb_wchar_t *)tb_malloc(wsize);
+            if (wbuf) {
+                int wlen = MultiByteToWideChar(CP_UTF8, 0, (char const *)data, (int)size, (wchar_t *)wbuf, (int)(wsize / sizeof(tb_wchar_t)));
+                if (wlen > 0) {
+                    DWORD written = 0;
+                    WriteConsoleW(handle, (wchar_t *)wbuf, (DWORD)wlen, &written, NULL);
+                }
+                tb_free(wbuf);
+            }
+        } else {
+            DWORD written = 0;
+            WriteFile(handle, data, (DWORD)size, &written, NULL);
+        }
+    }
+#else
     // write data to stdout/stderr
-    tb_stdfile_write(file->u.std_ref, data, size);
+    if (file->u.std_ref) {
+        tb_stdfile_write(file->u.std_ref, data, size);
+    } else {
+        FILE *fp = (type == XM_IO_FILE_TYPE_STDERR ? stderr : stdout);
+        fwrite(data, 1, size, fp);
+        fflush(fp);
+    }
+#endif
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

@@ -35,7 +35,7 @@
  */
 static tb_bool_t xm_io_std_flush_impl(xm_io_file_t *file) {
     tb_assert_and_check_return_val(xm_io_file_is_std(file), tb_false);
-    return (file->u.std_ref != tb_stdfile_input()) ? tb_stdfile_flush(file->u.std_ref) : tb_false;
+    return (!file->u.std_ref || file->u.std_ref == tb_stdfile_input()) ? tb_true : tb_stdfile_flush(file->u.std_ref);
 }
 
 static tb_bool_t xm_io_file_flush_impl(xm_io_file_t *file) {

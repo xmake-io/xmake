@@ -584,7 +584,12 @@ function tty.has_color256()
         -- detect it from system
         if has_color256 == nil then
             if os.host() == "windows" then
-                has_color256 = false
+                local winos = require("base/winos")
+                if winos.version():lt("win10") then
+                    has_color256 = false
+                else
+                    has_color256 = true
+                end
             elseif os.host() == "linux" or os.host("macosx") then
                 -- alway enabled for linux/macOS, $TERM maybe xterm, not xterm-256color, but it is supported
                 has_color256 = true
