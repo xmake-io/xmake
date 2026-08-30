@@ -690,6 +690,10 @@ function get_zig_target(toolchain)
             arch = "powerpc"
         elseif toolchain:is_arch("s390x") then
             arch = "s390x"
+        elseif toolchain:is_arch("wasm32") then
+            arch = "wasm32"
+        elseif toolchain:is_arch("wasm64") then
+            arch = "wasm64"
         else
             arch = "x86_64"
         end
@@ -711,6 +715,8 @@ function get_zig_target(toolchain)
             target = arch .. "-windows-msvc"
         elseif toolchain:is_plat("mingw") then
             target = arch .. "-windows-gnu"
+        elseif toolchain:is_plat("wasm") then
+            target = arch .. "-wasi"
         end
     end
     return target
