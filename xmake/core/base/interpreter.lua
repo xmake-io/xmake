@@ -1797,17 +1797,24 @@ function interpreter:api_builtin_set_xmakever(minver)
         interpreter._raise(string.format("set_xmakever(\"%s\"): invalid version format!", minver))
     end
 
-    -- make minimum numerical version
-    local minvers_num = minvers[1] * 100 + minvers[2] * 10 + minvers[3]
-
     -- parse current version
     local curvers = xmake._VERSION_SHORT:split('.', {plain = true})
 
-    -- make current numerical version
-    local curvers_num = curvers[1] * 100 + curvers[2] * 10 + curvers[3]
-
-    -- check version
-    if curvers_num < minvers_num then
+    -- check version, we cannot compare them as a single weighted number, e.g.
+    -- `major * 100 + minor * 10 + patch`, since it will be wrong once minor/patch >= 10
+    local outdated = false
+    for i = 1, 3 do
+        local minver_num = tonumber(minvers[i])
+        if not minver_num then
+            interpreter._raise(string.format("set_xmakever(\"%s\"): invalid version format!", minver))
+        end
+        local curver_num = tonumber(curvers[i]) or 0
+        if curver_num ~= minver_num then
+            outdated = curver_num < minver_num
+            break
+        end
+    end
+    if outdated then
         interpreter._raise(string.format("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", xmake._VERSION_SHORT, minver))
     end
 end
