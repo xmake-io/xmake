@@ -196,6 +196,16 @@ function xpack:format()
     return self._FORMAT
 end
 
+-- get the extra run arguments passed to the binary in launcher scripts
+function xpack:runargs()
+    return self:get("runargs") or {}
+end
+
+-- get the environment variables exported in launcher scripts
+function xpack:runenvs()
+    return self:get("runenvs") or {}
+end
+
 -- get the input kind
 function xpack:inputkind()
     local inputkind = self:get("inputkind")
