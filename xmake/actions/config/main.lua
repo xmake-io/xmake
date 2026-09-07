@@ -331,7 +331,10 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
 
         -- check platform
-        instance_plat:check()
+        local ok, errors = instance_plat:check()
+        if not ok then
+            raise("platform(%s): %s", instance_plat:name(), errors or "toolchains not found!")
+        end
 
         -- check project options
         if not trybuild then
