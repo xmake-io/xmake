@@ -125,7 +125,10 @@ function _collect_property_entries(target, context, registry_entries)
     return entries
 end
 
--- normalize item entry to {xml, attrs, value} format
+-- normalize item entry to {xml, attrs, value, children} format
+-- `children`, if given, is a list of {xml, value} sub-elements rendered inside the item,
+-- e.g. {xml = "Reference", attrs = {Include = "Foo"}, children = {{xml = "HintPath", value = "Foo.dll"}}}
+-- renders as <Reference Include="Foo"><HintPath>Foo.dll</HintPath></Reference>
 function _normalize_item_entry(item, default_xml)
     if type(item) == "string" then
         return {xml = default_xml, attrs = {Include = item}}
@@ -140,12 +143,12 @@ function _normalize_item_entry(item, default_xml)
     if type(attrs) ~= "table" then
         attrs = {}
         for key, value in table.orderpairs(item) do
-            if type(key) == "string" and key ~= "xml" and key ~= "value" and key ~= "attrs" then
+            if type(key) == "string" and key ~= "xml" and key ~= "value" and key ~= "attrs" and key ~= "children" then
                 attrs[key] = value
             end
         end
     end
-    return {xml = xml, attrs = attrs, value = item.value}
+    return {xml = xml, attrs = attrs, value = item.value, children = item.children}
 end
 
 -- collect <ItemGroup> entries (Compile, ProjectReference, PackageReference, ..)
@@ -208,7 +211,13 @@ function _render_item_groups(file, item_groups)
             file:print("  <ItemGroup>")
             for _, item in ipairs(group.items) do
                 local attrs = _format_attributes(item.attrs)
-                if item.value ~= nil and item.value ~= "" then
+                if item.children and #item.children > 0 then
+                    file:print("    <%s%s>", item.xml, attrs)
+                    for _, child in ipairs(item.children) do
+                        file:print("      <%s>%s</%s>", child.xml, _xml_escape(child.value), child.xml)
+                    end
+                    file:print("    </%s>", item.xml)
+                elseif item.value ~= nil and item.value ~= "" then
                     file:print("    <%s%s>%s</%s>", item.xml, attrs, _xml_escape(item.value), item.xml)
                 else
                     file:print("    <%s%s />", item.xml, attrs)
