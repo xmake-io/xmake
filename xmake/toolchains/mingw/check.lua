@@ -24,6 +24,9 @@ import("detect.sdks.find_mingw")
 
 -- check the mingw toolchain
 function main(toolchain)
+    if not toolchain:is_plat("mingw") then
+        return
+    end
     local mingw
     for _, package in ipairs(toolchain:packages()) do
         local installdir = package:installdir()
