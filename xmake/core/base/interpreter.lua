@@ -28,6 +28,7 @@ local table      = require("base/table")
 local utils      = require("base/utils")
 local string     = require("base/string")
 local hashset    = require("base/hashset")
+local semver     = require("base/semver")
 local scopeinfo  = require("base/scopeinfo")
 local deprecated = require("base/deprecated")
 local sandbox    = require("sandbox/sandbox")
@@ -1784,38 +1785,20 @@ function interpreter:api_define(apis)
 end
 
 -- the builtin api: set_xmakever()
-function interpreter:api_builtin_set_xmakever(minver)
-
-    -- no version
-    if not minver then
+function interpreter:api_builtin_set_xmakever(minver_str)
+    if not minver_str then
         interpreter._raise("set_xmakever(): no version!")
     end
 
-    -- parse minimum version
-    local minvers = minver:split('.', {plain = true})
-    if not minvers or #minvers ~= 3 then
-        interpreter._raise(string.format("set_xmakever(\"%s\"): invalid version format!", minver))
+    local curver = xmake.version()
+    local minver, errors = semver.new(minver_str)
+    if not minver then
+        interpreter._raise(string.format("set_xmakever(\"%s\"): invalid version, %s", minver_str, errors or "unknown"))
     end
 
-    -- parse current version
-    local curvers = xmake._VERSION_SHORT:split('.', {plain = true})
-
-    -- check version, we cannot compare them as a single weighted number, e.g.
-    -- `major * 100 + minor * 10 + patch`, since it will be wrong once minor/patch >= 10
-    local outdated = false
-    for i = 1, 3 do
-        local minver_num = tonumber(minvers[i])
-        if not minver_num then
-            interpreter._raise(string.format("set_xmakever(\"%s\"): invalid version format!", minver))
-        end
-        local curver_num = tonumber(curvers[i]) or 0
-        if curver_num ~= minver_num then
-            outdated = curver_num < minver_num
-            break
-        end
-    end
-    if outdated then
-        interpreter._raise(string.format("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", xmake._VERSION_SHORT, minver))
+    -- check version
+    if curver:lt(minver) then
+        interpreter._raise(string.format("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", curver:shortstr(), minver_str))
     end
 end
 
