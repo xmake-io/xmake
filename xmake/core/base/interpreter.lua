@@ -1786,8 +1786,11 @@ end
 
 -- the builtin api: set_xmakever()
 function interpreter:api_builtin_set_xmakever(minver_str)
-    if not minver_str then
+    if minver_str == nil then
         interpreter._raise("set_xmakever(): no version!")
+    end
+    if type(minver_str) ~= "string" then
+        interpreter._raise(string.format("set_xmakever(): invalid version, expected a string, got %s", type(minver_str)))
     end
 
     local curver = xmake.version()
@@ -1796,9 +1799,8 @@ function interpreter:api_builtin_set_xmakever(minver_str)
         interpreter._raise(string.format("set_xmakever(\"%s\"): invalid version, %s", minver_str, errors or "unknown"))
     end
 
-    -- check version
     if curver:lt(minver) then
-        interpreter._raise(string.format("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", curver:shortstr(), minver_str))
+        interpreter._raise(string.format("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", curver:rawstr(), minver_str))
     end
 end
 
