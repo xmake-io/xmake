@@ -28,6 +28,7 @@ local table      = require("base/table")
 local utils      = require("base/utils")
 local string     = require("base/string")
 local hashset    = require("base/hashset")
+local semver     = require("base/semver")
 local scopeinfo  = require("base/scopeinfo")
 local deprecated = require("base/deprecated")
 local sandbox    = require("sandbox/sandbox")
@@ -1784,31 +1785,22 @@ function interpreter:api_define(apis)
 end
 
 -- the builtin api: set_xmakever()
-function interpreter:api_builtin_set_xmakever(minver)
-
-    -- no version
-    if not minver then
+function interpreter:api_builtin_set_xmakever(minver_str)
+    if minver_str == nil then
         interpreter._raise("set_xmakever(): no version!")
     end
-
-    -- parse minimum version
-    local minvers = minver:split('.', {plain = true})
-    if not minvers or #minvers ~= 3 then
-        interpreter._raise(string.format("set_xmakever(\"%s\"): invalid version format!", minver))
+    if type(minver_str) ~= "string" then
+        interpreter._raise(string.format("set_xmakever(): invalid version, expected a string, got %s", type(minver_str)))
     end
 
-    -- make minimum numerical version
-    local minvers_num = minvers[1] * 100 + minvers[2] * 10 + minvers[3]
+    local curver = xmake.version()
+    local minver, errors = semver.new(minver_str)
+    if not minver then
+        interpreter._raise(string.format("set_xmakever(\"%s\"): invalid version, %s", minver_str, errors or "unknown"))
+    end
 
-    -- parse current version
-    local curvers = xmake._VERSION_SHORT:split('.', {plain = true})
-
-    -- make current numerical version
-    local curvers_num = curvers[1] * 100 + curvers[2] * 10 + curvers[3]
-
-    -- check version
-    if curvers_num < minvers_num then
-        interpreter._raise(string.format("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", xmake._VERSION_SHORT, minver))
+    if curver:lt(minver) then
+        interpreter._raise(string.format("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", curver:rawstr(), minver_str))
     end
 end
 
