@@ -99,6 +99,8 @@ task("require")
             {nil, "packagedir",  "kv", "packages", "Set the packages directory for exporting, importing and downloading."},
             {nil, "debugdir",    "kv", nil,        "Set the source directory of the current package for debugging."},
             {nil, "extra",       "kv", nil,        "Set the extra info of packages."},
+            {nil, "downloader",  "kv", nil,        "Set the download tool.",
+                                                   values = {"aria2", "curl", "wget", "powershell", "pwsh"}},
             {},
             {nil, "requires",    "vs", nil,        "The package requires.",
                                                    "e.g.",
