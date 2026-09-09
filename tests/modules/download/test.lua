@@ -41,18 +41,11 @@ function test_download_wget(t)
     t:require(os.isfile(tmpfile) and os.filesize(tmpfile) > 0)
     os.tryrm(tmpfile)
 end
+
 function test_download_unknown(t)
-    local tmpfile = path.join(os.tmpdir(), "test_download_unknown.html")
-    os.tryrm(tmpfile)
-    local ok = try
-    {
-        function ()
-            http.download("https://xmake.io", tmpfile, {downloader = "nonexistent_tool"})
-            return true
-        end
-    }
-    t:require(not ok)
-    os.tryrm(tmpfile)
+    t:will_raise(function ()
+        http.download("http://dummy", os.tmpfile(), {downloader = "nonexistent_tool"})
+    end, "unknown downloader")
 end
 
 function test_download_env(t)
@@ -82,6 +75,7 @@ function test_download_powershell(t)
     t:require(os.isfile(tmpfile) and os.filesize(tmpfile) > 0)
     os.tryrm(tmpfile)
 end
+
 function test_download_sourceforge(t)
     local tmpfile = path.join(os.tmpdir(), "rapidxml-1.13.zip")
     os.tryrm(tmpfile)
