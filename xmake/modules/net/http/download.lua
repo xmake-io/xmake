@@ -299,103 +299,80 @@ function _powershell_download(tool, url, outputfile, opt)
     os.vrunv(tool.program, argv)
 end
 
--- downloaders mapping
-local _DOWNLOADERS = {
-    aria2 = _aria2_download,
-    curl = _curl_download,
-    wget = _wget_download,
-    powershell = _powershell_download,
-    pwsh = _powershell_download
-}
-
--- find download tool by name
-function _find_download_tool(name)
-    if name == "powershell" then
-        if is_host("windows") then
-            return find_tool("pwsh") or find_tool("powershell")
+-- get user-configured downloader
+function _get_downloader(opt)
+    local downloader = opt and opt.downloader
+    if not downloader or downloader == "" then
+        downloader = option.get("downloader")
+    end
+    if not downloader or downloader == "" then
+        downloader = global.get("downloader")
+    end
+    if not downloader or downloader == "" then
+        downloader = os.getenv("XMAKE_DOWNLOADER")
+    end
+    if downloader and type(downloader) == "string" then
+        downloader = downloader:trim()
+        if #downloader > 0 then
+            return downloader
         end
-    elseif name == "pwsh" then
-        return find_tool("pwsh")
-    else
-        return find_tool(name, {version = true})
     end
 end
 
--- get candidate downloaders
-function _get_downloaders(opt)
-    local downloader = (opt and opt.downloader) or option.get("downloader") or global.get("downloader") or os.getenv("XMAKE_DOWNLOADER")
-    if downloader and downloader ~= "" then
-        if type(downloader) == "table" then
-            if #downloader > 0 then
-                return downloader
-            end
-        else
-            local list = {}
-            for _, name in ipairs(downloader:split(",", {plain = true})) do
-                name = name:trim()
-                if #name > 0 then
-                    table.insert(list, name)
-                end
-            end
-            if #list > 0 then
-                return list
-            end
-        end
-    end
-    local candidates = {"aria2", "curl", "wget"}
-    if is_host("windows") then
-        table.insert(candidates, "powershell")
-    end
-    return candidates
-end
-
--- download url with the first available tool (aria2/curl/wget/powershell) and fallback
+-- download url with the first available tool (aria2/curl/wget/powershell)
 function _download(url, outputfile, opt)
 
-    local downloaders = _get_downloaders(opt)
-    local tools = {}
-    for _, name in ipairs(downloaders) do
-        local tool = _find_download_tool(name)
+    -- download url using the user-configured tool
+    local downloader = _get_downloader(opt)
+    if downloader then
+        if downloader == "aria2" then
+            local tool = find_tool("aria2", {version = true})
+            assert(tool, "aria2 not found!")
+            return _aria2_download(tool, url, outputfile, opt)
+        elseif downloader == "curl" then
+            local tool = find_tool("curl", {version = true})
+            assert(tool, "curl not found!")
+            return _curl_download(tool, url, outputfile, opt)
+        elseif downloader == "wget" then
+            local tool = find_tool("wget", {version = true})
+            assert(tool, "wget not found!")
+            return _wget_download(tool, url, outputfile, opt)
+        elseif downloader == "powershell" or downloader == "pwsh" then
+            local tool = find_tool("pwsh") or (is_host("windows") and find_tool("powershell"))
+            assert(tool, "%s not found!", downloader)
+            return _powershell_download(tool, url, outputfile, opt)
+        else
+            raise("unknown downloader %s!", downloader)
+        end
+    end
+
+    -- attempt to download url using aria2 first (multi-threaded, fastest)
+    local tool = find_tool("aria2", {version = true})
+    if tool then
+        return _aria2_download(tool, url, outputfile, opt)
+    end
+
+    -- attempt to download url using curl
+    tool = find_tool("curl", {version = true})
+    if tool then
+        return _curl_download(tool, url, outputfile, opt)
+    end
+
+    -- download url using wget
+    tool = find_tool("wget", {version = true})
+    if tool then
+        return _wget_download(tool, url, outputfile, opt)
+    end
+
+    -- download url using powershell
+    if is_host("windows") then
+        tool = find_tool("pwsh") or find_tool("powershell")
         if tool then
-            local download_fn = _DOWNLOADERS[name]
-            if download_fn then
-                table.insert(tools, {name = name, tool = tool, download = download_fn})
-            end
-        end
-    end
-    assert(#tools > 0, "no available download tool found (%s)!", table.concat(downloaders, ", "))
-
-    local errors = {}
-    for i, tool_info in ipairs(tools) do
-        local ok = try
-        {
-            function ()
-                tool_info.download(tool_info.tool, url, outputfile, opt)
-                return true
-            end,
-            catch
-            {
-                function (errs)
-                    table.insert(errors, string.format("%s: %s", tool_info.name, tostring(errs)))
-                end
-            }
-        }
-        if ok then
-            return
-        end
-
-        -- clean up partial outputfile and aria2 control files before next attempt
-        os.tryrm(outputfile)
-        os.tryrm(outputfile .. ".aria2")
-
-        -- fallback to next available tool
-        local next_tool = tools[i + 1]
-        if next_tool then
-            wprint("downloading %s with %s failed, falling back to %s ..", url, tool_info.name, next_tool.name)
+            return _powershell_download(tool, url, outputfile, opt)
         end
     end
 
-    raise(table.concat(errors, "\n"))
+    assert(tool, "aria2, curl or wget not found!")
 end
 
 -- is it a ssl/tls certificate verification error?

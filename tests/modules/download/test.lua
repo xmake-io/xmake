@@ -16,12 +16,33 @@ function test_download_curl(t)
     os.tryrm(tmpfile)
 end
 
-function test_download_fallback(t)
-    local tmpfile = path.join(os.tmpdir(), "test_download_fallback.html")
+function test_download_aria2(t)
+    local tmpfile = path.join(os.tmpdir(), "test_download_aria2.html")
     os.tryrm(tmpfile)
-    -- passing a non-existent tool first should fall back to curl and succeed
-    http.download("https://xmake.io", tmpfile, {downloader = {"nonexistent_tool", "curl"}})
+    http.download("https://xmake.io", tmpfile, {downloader = "aria2"})
     t:require(os.isfile(tmpfile) and os.filesize(tmpfile) > 0)
+    os.tryrm(tmpfile)
+end
+
+function test_download_wget(t)
+    local tmpfile = path.join(os.tmpdir(), "test_download_wget.html")
+    os.tryrm(tmpfile)
+    http.download("https://xmake.io", tmpfile, {downloader = "wget"})
+    t:require(os.isfile(tmpfile) and os.filesize(tmpfile) > 0)
+    os.tryrm(tmpfile)
+end
+
+function test_download_unknown(t)
+    local tmpfile = path.join(os.tmpdir(), "test_download_unknown.html")
+    os.tryrm(tmpfile)
+    local ok = try
+    {
+        function ()
+            http.download("https://xmake.io", tmpfile, {downloader = "nonexistent_tool"})
+            return true
+        end
+    }
+    t:require(not ok)
     os.tryrm(tmpfile)
 end
 
