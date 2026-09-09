@@ -337,9 +337,13 @@ function _download(url, outputfile, opt)
             local tool = find_tool("wget", {version = true})
             assert(tool, "wget not found!")
             return _wget_download(tool, url, outputfile, opt)
-        elseif downloader == "powershell" or downloader == "pwsh" then
+        elseif downloader == "powershell" then
+            local tool = is_host("windows") and (find_tool("powershell") or find_tool("pwsh"))
+            assert(tool, "powershell not found!")
+            return _powershell_download(tool, url, outputfile, opt)
+        elseif downloader == "pwsh" then
             local tool = find_tool("pwsh") or (is_host("windows") and find_tool("powershell"))
-            assert(tool, "%s not found!", downloader)
+            assert(tool, "pwsh not found!")
             return _powershell_download(tool, url, outputfile, opt)
         else
             raise("unknown downloader %s!", downloader)

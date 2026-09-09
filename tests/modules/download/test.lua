@@ -83,12 +83,23 @@ function test_download_powershell(t)
     if not is_host("windows") then
         return t:skip("powershell only supported on windows")
     end
-    if not find_tool("pwsh") and not find_tool("powershell") then
+    if not find_tool("powershell") then
         return t:skip("powershell not found")
     end
     local tmpfile = path.join(os.tmpdir(), "test_download_powershell.html")
     os.tryrm(tmpfile)
     http.download("https://xmake.io", tmpfile, {downloader = "powershell"})
+    t:require(os.isfile(tmpfile) and os.filesize(tmpfile) > 0)
+    os.tryrm(tmpfile)
+end
+
+function test_download_pwsh(t)
+    if not find_tool("pwsh") then
+        return t:skip("pwsh not found")
+    end
+    local tmpfile = path.join(os.tmpdir(), "test_download_pwsh.html")
+    os.tryrm(tmpfile)
+    http.download("https://xmake.io", tmpfile, {downloader = "pwsh"})
     t:require(os.isfile(tmpfile) and os.filesize(tmpfile) > 0)
     os.tryrm(tmpfile)
 end
