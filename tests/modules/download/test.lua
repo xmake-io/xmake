@@ -1,4 +1,5 @@
 import("net.http")
+import("lib.detect.find_tool")
 
 function test_download_default(t)
     local tmpfile = path.join(os.tmpdir(), "test_download_default.html")
@@ -9,6 +10,9 @@ function test_download_default(t)
 end
 
 function test_download_curl(t)
+    if not find_tool("curl") then
+        return t:skip("curl not found")
+    end
     local tmpfile = path.join(os.tmpdir(), "test_download_curl.html")
     os.tryrm(tmpfile)
     http.download("https://xmake.io", tmpfile, {downloader = "curl"})
@@ -17,6 +21,9 @@ function test_download_curl(t)
 end
 
 function test_download_aria2(t)
+    if not find_tool("aria2") then
+        return t:skip("aria2 not found")
+    end
     local tmpfile = path.join(os.tmpdir(), "test_download_aria2.html")
     os.tryrm(tmpfile)
     http.download("https://xmake.io", tmpfile, {downloader = "aria2"})
@@ -25,13 +32,15 @@ function test_download_aria2(t)
 end
 
 function test_download_wget(t)
+    if not find_tool("wget") then
+        return t:skip("wget not found")
+    end
     local tmpfile = path.join(os.tmpdir(), "test_download_wget.html")
     os.tryrm(tmpfile)
     http.download("https://xmake.io", tmpfile, {downloader = "wget"})
     t:require(os.isfile(tmpfile) and os.filesize(tmpfile) > 0)
     os.tryrm(tmpfile)
 end
-
 function test_download_unknown(t)
     local tmpfile = path.join(os.tmpdir(), "test_download_unknown.html")
     os.tryrm(tmpfile)
@@ -47,6 +56,9 @@ function test_download_unknown(t)
 end
 
 function test_download_env(t)
+    if not find_tool("curl") then
+        return t:skip("curl not found")
+    end
     local tmpfile = path.join(os.tmpdir(), "test_download_env.html")
     os.tryrm(tmpfile)
     local old_env = os.getenv("XMAKE_DOWNLOADER")
@@ -57,6 +69,19 @@ function test_download_env(t)
     os.tryrm(tmpfile)
 end
 
+function test_download_powershell(t)
+    if not is_host("windows") then
+        return t:skip("powershell only supported on windows")
+    end
+    if not find_tool("pwsh") and not find_tool("powershell") then
+        return t:skip("powershell not found")
+    end
+    local tmpfile = path.join(os.tmpdir(), "test_download_powershell.html")
+    os.tryrm(tmpfile)
+    http.download("https://xmake.io", tmpfile, {downloader = "powershell"})
+    t:require(os.isfile(tmpfile) and os.filesize(tmpfile) > 0)
+    os.tryrm(tmpfile)
+end
 function test_download_sourceforge(t)
     local tmpfile = path.join(os.tmpdir(), "rapidxml-1.13.zip")
     os.tryrm(tmpfile)
