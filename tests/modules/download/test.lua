@@ -60,7 +60,7 @@ function test_download_bad_url(t)
     end
     local tmpfile = os.tmpfile()
     t:will_raise(function ()
-        http.download("http://127.0.0.1:54321/nonexistent", tmpfile, {downloader = "curl"})
+        http.download("http://dummy", tmpfile, {downloader = "curl"})
     end)
     os.tryrm(tmpfile)
 end
