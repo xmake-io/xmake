@@ -48,6 +48,23 @@ function test_download_unknown(t)
     end, "unknown downloader")
 end
 
+function test_download_bad_tool(t)
+    t:will_raise(function ()
+        http.download("https://xmake.io", os.tmpfile(), {downloader = "nonexistent_tool"})
+    end, "unknown downloader")
+end
+
+function test_download_bad_url(t)
+    if not find_tool("curl") then
+        return t:skip("curl not found")
+    end
+    local tmpfile = os.tmpfile()
+    t:will_raise(function ()
+        http.download("http://127.0.0.1:54321/nonexistent", tmpfile, {downloader = "curl"})
+    end)
+    os.tryrm(tmpfile)
+end
+
 function test_download_env(t)
     if not find_tool("curl") then
         return t:skip("curl not found")
