@@ -102,6 +102,7 @@ class XmakeGenerator:
 
 class XmakeDepsFormatter(object):
     def __prepare_process_escape_character(self, raw_string):
+        raw_string = raw_string.replace("\\", "\\\\")
         if raw_string.find('\"') != -1:
             raw_string = raw_string.replace("\"","\\\"")
         return raw_string
@@ -135,8 +136,8 @@ class XmakeDepsFormatter(object):
         self.frameworks      = ", ".join('"%s"' % p for p in frameworks)
         self.system_libs     = ", ".join('"%s"' % p for p in system_libs)
         self.defines         = ", ".join('"%s"' % self.__filter_char(p) for p in defines)
-        self.cppflags        = ", ".join('"%s"' % p for p in cxxflags)
-        self.cflags          = ", ".join('"%s"' % p for p in cflags)
-        self.sharedlinkflags = ", ".join('"%s"' % p for p in sharedlinkflags)
-        self.exelinkflags    = ", ".join('"%s"' % p for p in exelinkflags)
+        self.cppflags        = ", ".join('"%s"' % self.__filter_char(p) for p in cxxflags)
+        self.cflags          = ", ".join('"%s"' % self.__filter_char(p) for p in cflags)
+        self.sharedlinkflags = ", ".join('"%s"' % self.__filter_char(p) for p in sharedlinkflags)
+        self.exelinkflags    = ", ".join('"%s"' % self.__filter_char(p) for p in exelinkflags)
 
