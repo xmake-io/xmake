@@ -432,8 +432,12 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
             end
         end
         if latest_toolset and VCToolsVersion and semver.compare(latest_toolset, VCToolsVersion) > 0 then
-            opt.toolset = _strip_toolset_ver(latest_toolset)
-            result = _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
+            local latest_opt = table.clone(opt)
+            latest_opt.toolset = _strip_toolset_ver(latest_toolset)
+            local latest_result = _load_vcvarsall_impl(vcvarsall, vsver, arch, latest_opt)
+            if latest_result and latest_result.PATH and latest_result.INCLUDE and latest_result.LIB then
+                result = latest_result
+            end
         end
     end
     return result
