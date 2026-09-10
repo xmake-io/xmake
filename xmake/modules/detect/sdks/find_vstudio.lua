@@ -321,7 +321,7 @@ function _load_vcvarsall_impl(vcvarsall, vsver, arch, opt)
 
     -- check if the environment variables are truncated
     _check_vcvarsall_env(variables)
-    if not variables.PATH then
+    if not (variables.PATH and variables.INCLUDE and variables.LIB) then
         return
     end
 
@@ -435,7 +435,7 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
             local latest_opt = table.clone(opt)
             latest_opt.toolset = _strip_toolset_ver(latest_toolset)
             local latest_result = _load_vcvarsall_impl(vcvarsall, vsver, arch, latest_opt)
-            if latest_result and latest_result.PATH and latest_result.INCLUDE and latest_result.LIB then
+            if latest_result then
                 result = latest_result
             end
         end
