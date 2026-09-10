@@ -8,7 +8,7 @@ function _detect(vc, opt)
     local result = find_vstudio(opt)
     os.setenv("VCInstallDir", old_vc)
     os.setenv("VisualStudioVersion", old_vs)
-    return result["2026"].vcvarsall.x64
+    return result["2026"] and result["2026"].vcvarsall.x64
 end
 
 function main()
@@ -33,6 +33,12 @@ set "VCToolsVersion=14.52.36615"
         assert(result and result.VCToolsVersion == expected, mode .. ": incorrect toolset")
         assert(result.INCLUDE and result.LIB, mode .. ": incomplete environment")
         assert(opt.toolset == nil, mode .. ": mutated caller options")
+        local requested = _detect(vc, {sdkver = mode, toolset = "14.52.36615"})
+        if mode == "success" then
+            assert(requested and requested.VCToolsVersion == "14.52.36615", "explicit newer toolset lost")
+        else
+            assert(not requested, mode .. ": accepted incomplete explicit toolset")
+        end
     end
     local explicit = _detect(vc, {toolset="14.51.36231"})
     assert(explicit.VCToolsVersion == "14.51.36231", "explicit toolset overridden")
