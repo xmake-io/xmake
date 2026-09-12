@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.global")
 import("core.base.option")
 import("lib.detect.find_tool")
 import("net.proxy")
@@ -72,9 +73,6 @@ function _aria2_download(tool, url, outputfile, opt)
     -- user-agent
     local user_agent = _get_user_agent()
     if user_agent then
-        if tool.version then
-            user_agent = user_agent .. " aria2/" .. tool.version
-        end
         table.insert(argv, "--user-agent=" .. user_agent)
     end
 
@@ -111,11 +109,15 @@ function _aria2_download(tool, url, outputfile, opt)
         table.insert(argv, "--timeout=" .. tostring(opt.read_timeout))
     end
 
+    -- disable asynchronous DNS to avoid c-ares IPv6/dual-stack name resolution issues
+    table.insert(argv, "--async-dns=false")
+
     -- enable parallel download (multi-threaded)
-    table.insert(argv, "--split=8")
-    table.insert(argv, "--max-connection-per-server=8")
+    table.insert(argv, "--split=5")
+    table.insert(argv, "--max-connection-per-server=4")
     table.insert(argv, "--min-split-size=1M")
     table.insert(argv, "--allow-overwrite=true")
+    table.insert(argv, "--auto-file-renaming=false")
 
     -- set output directory and filename
     table.insert(argv, "--dir=" .. outputdir)
@@ -297,8 +299,56 @@ function _powershell_download(tool, url, outputfile, opt)
     os.vrunv(tool.program, argv)
 end
 
+-- get user-configured downloader
+function _get_downloader(opt)
+    local downloader = opt and opt.downloader
+    if not downloader or downloader == "" then
+        downloader = option.get("downloader")
+    end
+    if not downloader or downloader == "" then
+        downloader = global.get("downloader")
+    end
+    if not downloader or downloader == "" then
+        downloader = os.getenv("XMAKE_DOWNLOADER")
+    end
+    if downloader and type(downloader) == "string" then
+        downloader = downloader:trim()
+        if #downloader > 0 then
+            return downloader
+        end
+    end
+end
+
 -- download url with the first available tool (aria2/curl/wget/powershell)
 function _download(url, outputfile, opt)
+
+    -- download url using the user-configured tool
+    local downloader = _get_downloader(opt)
+    if downloader then
+        if downloader == "aria2" then
+            local tool = find_tool("aria2", {version = true})
+            assert(tool, "aria2 not found!")
+            return _aria2_download(tool, url, outputfile, opt)
+        elseif downloader == "curl" then
+            local tool = find_tool("curl", {version = true})
+            assert(tool, "curl not found!")
+            return _curl_download(tool, url, outputfile, opt)
+        elseif downloader == "wget" then
+            local tool = find_tool("wget", {version = true})
+            assert(tool, "wget not found!")
+            return _wget_download(tool, url, outputfile, opt)
+        elseif downloader == "powershell" then
+            local tool = is_host("windows") and (find_tool("powershell") or find_tool("pwsh"))
+            assert(tool, "powershell not found!")
+            return _powershell_download(tool, url, outputfile, opt)
+        elseif downloader == "pwsh" then
+            local tool = find_tool("pwsh") or (is_host("windows") and find_tool("powershell"))
+            assert(tool, "pwsh not found!")
+            return _powershell_download(tool, url, outputfile, opt)
+        else
+            raise("unknown downloader %s!", downloader)
+        end
+    end
 
     -- attempt to download url using aria2 first (multi-threaded, fastest)
     local tool = find_tool("aria2", {version = true})
