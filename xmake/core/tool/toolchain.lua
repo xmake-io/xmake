@@ -440,6 +440,19 @@ function _instance:_on_load()
     return on_load
 end
 
+
+-- method for forcing ignore caching
+function _instance:reload()
+    -- clean cache-loading flag 
+    self._CONFIGS.__loaded = nil
+    -- clean those cached values in infos
+    self._INFOS = nil
+    self._RUNENVS = nil
+    -- re-calling _load
+    self:_load()
+    return true
+end
+
 -- do load, @note we need to load it repeatly for each architectures
 function _instance:_load()
     if not self:_is_checked() then
