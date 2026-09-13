@@ -2578,8 +2578,8 @@ function _instance:_generate_build_configs(configs, opt)
     if self:config("asan") then
         _merge(self:_generate_sanitizer_configs("address", sourcekind))
     end
-    -- enable exceptions for msvc by default
-    if opt.sourcekind == "cxx" and configs.exceptions == nil and self:has_tool("cxx", "cl") then
+    -- enable exceptions for msvc and clang-cl by default
+    if opt.sourcekind == "cxx" and configs.exceptions == nil and self:has_tool("cxx", "cl", "clang_cl") then
         configs.exceptions = "cxx"
     end
 
