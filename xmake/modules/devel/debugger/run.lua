@@ -365,7 +365,8 @@ function main(program, argv, opt)
         table.insert(debuggers, 1, {"devenv",           _run_devenv})
         table.insert(debuggers, 1, {"raddbg",           _run_raddbg})
     elseif plat == "linux" then
-        table.insert(debuggers, {"nnd", _run_nnd})
+        table.insert(debuggers, {"nnd",    _run_nnd})
+        table.insert(debuggers, {"raddbg", _run_raddbg})
     end
 
     -- get debugger from configuration
