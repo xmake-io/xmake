@@ -32,6 +32,7 @@ import("privilege.sudo")
 import("async.runjobs")
 import("private.action.require.impl.environment")
 import("private.action.update.fetch_version")
+import("private.action.update.nsis")
 import("utils.archive")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
@@ -185,7 +186,7 @@ function _install(sourcedir)
                 if is_host("windows") then
                     if os.isfile(win_installer_name) then
                         -- /D sets the default installation directory ($INSTDIR), overriding InstallDir and InstallDirRegKey. It must be the last parameter used in the command line and must not contain any quotes, even if the path contains spaces. Only absolute paths are supported.
-                        local params = ("/D=" .. os.programdir()):split("%s", { strict = true })
+                        local params = nsis.installdir_params(os.programdir())
                         -- @see https://github.com/xmake-io/xmake/issues/1576
                         local no_admin = try {function () return winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\XMake;NoAdmin") end}
                         if no_admin == nil then
