@@ -170,9 +170,17 @@ end
 
 -- check if the cached project of the external working directory shadows a local one
 --
--- the binding is what the external working directory mode is for and it keeps its
--- precedence, but a user sitting in a directory which is a project of its own gets no
--- hint at all that xmake is building something else into it
+-- after `xmake f -P ../projectb` in projecta, every plain `xmake` there builds projectb
+-- and projecta/xmake.lua is never loaded again:
+--
+--   projecta                          <- the working directory, a project too
+--   |-- xmake.lua                     <- shadowed
+--   |-- build                         <- projectb is built in here
+--   `-- .xmake/../cache/project       projectdir = "../projectb"
+--   projectb
+--   `-- xmake.lua                     <- loaded instead
+--
+-- the binding still wins, it is what the mode is for, we only say that it is there
 --
 -- @see https://github.com/xmake-io/xmake/issues/7762
 --
@@ -188,7 +196,6 @@ function main._check_shadowed_project()
     if path.translate(workingdir) == path.translate(projectdir) then
         return
     end
-    -- the working directory is a project of its own, so the cached one is hiding it
     if os.isfile(path.join(workingdir, xmake._NAME .. ".lua")) then
         utils.warning([[we are building the project(%s) which has been configured in this directory,
 it shadows the %s.lua of this directory, please run `%s f -P .` to build that one instead.]],
