@@ -161,7 +161,7 @@ function is_changed(dependinfo, opt)
         local opttype = type(optvalue)
         if deptype ~= opttype then
             return true
-        elseif deptype == "string" and depvalue ~= optvalue then
+        elseif deptype ~= "table" and depvalue ~= optvalue then
             if _is_show_diagnosis_info() then
                 cprint("${color.warning}[check_build_deps]: value %s != %s", depvalue, optvalue)
             end
