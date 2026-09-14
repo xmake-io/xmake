@@ -168,6 +168,34 @@ function main._projectconf(name)
     end
 end
 
+-- check if the cached project of the external working directory shadows a local one
+--
+-- the binding is what the external working directory mode is for and it keeps its
+-- precedence, but a user sitting in a directory which is a project of its own gets no
+-- hint at all that xmake is building something else into it
+--
+-- @see https://github.com/xmake-io/xmake/issues/7762
+--
+function main._check_shadowed_project()
+    if not main._projectconf("projectdir") and not main._projectconf("projectfile") then
+        return
+    end
+    local workingdir = os.workingdir()
+    local projectdir = os.projectdir()
+    if not workingdir or not projectdir then
+        return
+    end
+    if path.translate(workingdir) == path.translate(projectdir) then
+        return
+    end
+    -- the working directory is a project of its own, so the cached one is hiding it
+    if os.isfile(path.join(workingdir, xmake._NAME .. ".lua")) then
+        utils.warning([[we are building the project(%s) which has been configured in this directory,
+it shadows the %s.lua of this directory, please run `%s f -P .` to build that one instead.]],
+            projectdir, xmake._NAME, xmake._NAME)
+    end
+end
+
 -- the init function for main
 function main._init()
 
@@ -218,6 +246,11 @@ function main._init()
         -- update and enter project
         xmake._PROJECT_DIR  = path.directory(projectfile)
         xmake._PROJECT_FILE = projectfile
+
+        -- the cached project may shadow the project of this working directory
+        if not opt_projectdir and not opt_projectfile then
+            main._check_shadowed_project()
+        end
 
         -- enter the project directory
         if os.isdir(os.projectdir()) and xmake.in_main_thread() then
