@@ -708,7 +708,10 @@ function get_zig_target(toolchain)
                 target = arch .. "-linux-gnu"
             end
         elseif toolchain:is_plat("windows") then
-            target = arch .. "-windows-msvc"
+            -- zig/zigcc always use zig's bundled mingw-w64 headers for windows
+            -- targets, so the gnu ABI applies on any host. Use --cross to
+            -- target the msvc ABI explicitly with an external MSVC SDK.
+            target = arch .. "-windows-gnu"
         elseif toolchain:is_plat("mingw") then
             target = arch .. "-windows-gnu"
         end

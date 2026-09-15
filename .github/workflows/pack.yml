@@ -1,0 +1,75 @@
+name: Pack
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Pack-Linux
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Prepare local xmake
+        run: cp -rf . ../xmake-source
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: local#../xmake-source
+      - name: Install packaging tools
+        run: |
+          sudo apt update
+          sudo apt install -y devscripts rpm nsis build-essential debhelper
+          # appimagetool + makeself come from xmake-repo; installing them also
+          # initializes the repository so the pack plugins can find the tools
+          xrepo install -y appimage makeself
+          # Debian's nsis package does not ship UAC.nsh, which the makensis
+          # check in the nsis pack plugin requires
+          curl -sL -o /tmp/UAC.zip https://github.com/xmake-mirror/nsis/releases/download/v309/UAC.zip
+          sudo unzip -o /tmp/UAC.zip -d /usr/share/nsis/ 'UAC.nsh' 'Plugins/*'
+          sudo mv /usr/share/nsis/UAC.nsh /usr/share/nsis/Include/UAC.nsh
+      - name: Run linux pack validation
+        run: bash tests/plugins/pack/launcher_app/ci/linux.sh
+
+  macos:
+    runs-on: macos-latest
+    concurrency:
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Pack-macOS
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Prepare local xmake
+        run: cp -rf . ../xmake-source
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: local#../xmake-source
+      - name: Run macos pack validation
+        run: bash tests/plugins/pack/launcher_app/ci/macos.sh
+
+  # best-effort: local xmake setup is not supported on windows runners, so use
+  # a released xmake binary with this repo's lua via XMAKE_PROGRAM_DIR.
+  windows:
+    runs-on: windows-latest
+    continue-on-error: true
+    concurrency:
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Pack-Windows
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: branch@dev
+      - name: Use this repo's lua
+        run: echo "XMAKE_PROGRAM_DIR=$env:GITHUB_WORKSPACE\xmake" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Install nsis (makensis)
+        run: xrepo install -y nsis
+      - name: Run windows pack validation
+        shell: pwsh
+        run: tests/plugins/pack/launcher_app/ci/windows.ps1
