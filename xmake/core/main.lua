@@ -168,6 +168,41 @@ function main._projectconf(name)
     end
 end
 
+-- check if the cached project of the external working directory shadows a local one
+--
+-- after `xmake f -P ../projectb` in projecta, every plain `xmake` there builds projectb
+-- and projecta/xmake.lua is never loaded again:
+--
+--   projecta                          <- the working directory, a project too
+--   |-- xmake.lua                     <- shadowed
+--   |-- build                         <- projectb is built in here
+--   `-- .xmake/../cache/project       projectdir = "../projectb"
+--   projectb
+--   `-- xmake.lua                     <- loaded instead
+--
+-- the binding still wins, it is what the mode is for, we only say that it is there
+--
+-- @see https://github.com/xmake-io/xmake/issues/7762
+--
+function main._check_shadowed_project()
+    if not main._projectconf("projectdir") and not main._projectconf("projectfile") then
+        return
+    end
+    local workingdir = os.workingdir()
+    local projectdir = os.projectdir()
+    if not workingdir or not projectdir then
+        return
+    end
+    if path.translate(workingdir) == path.translate(projectdir) then
+        return
+    end
+    if os.isfile(path.join(workingdir, xmake._NAME .. ".lua")) then
+        utils.warning([[we are building the project(%s) which has been configured in this directory,
+it shadows the %s.lua of this directory, please run `%s f -P .` to build that one instead.]],
+            projectdir, xmake._NAME, xmake._NAME)
+    end
+end
+
 -- the init function for main
 function main._init()
 
@@ -218,6 +253,11 @@ function main._init()
         -- update and enter project
         xmake._PROJECT_DIR  = path.directory(projectfile)
         xmake._PROJECT_FILE = projectfile
+
+        -- the cached project may shadow the project of this working directory
+        if not opt_projectdir and not opt_projectfile then
+            main._check_shadowed_project()
+        end
 
         -- enter the project directory
         if os.isdir(os.projectdir()) and xmake.in_main_thread() then
