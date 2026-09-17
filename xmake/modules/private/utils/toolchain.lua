@@ -717,6 +717,8 @@ function get_zig_target(toolchain)
             target = arch .. "-windows-gnu"
         elseif toolchain:is_plat("wasm") then
             target = arch .. "-wasi"
+        elseif toolchain:is_plat("wasi") then
+            target = arch .. "-wasi"
         end
     end
     return target

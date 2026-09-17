@@ -99,8 +99,8 @@ function _do_run_target(target)
     -- get run arguments
     local args = table.wrap(option.get("arguments") or target:get("runargs"))
 
-    -- run wasm target
-    if target:is_plat("wasm") then
+    -- run wasm/wasi target
+    if target:is_plat("wasm", "wasi") then
         if target:has_tool("cc", "emcc") then
             _run_wasm_target_in_browser(targetfile, {rundir = rundir, addenvs = addenvs, setenvs = setenvs})
         else
