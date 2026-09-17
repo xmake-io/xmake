@@ -8,6 +8,9 @@ makefile
 Makefile
 build.ninja
 
+# WiX toolset cache
+.wix/
+
 # gcc cache
 gcm.cache
 
