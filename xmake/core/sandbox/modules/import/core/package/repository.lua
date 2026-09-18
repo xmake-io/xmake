@@ -132,8 +132,7 @@ function sandbox_core_package_repository.repositories(opt)
                 artifacts_urls = localcache.cache("repository"):get("artifacts_urls")
                 if not artifacts_urls then
                     artifacts_urls = {"https://github.com/xmake-mirror/build-artifacts.git",
-                                      "https://gitlab.com/xmake-mirror/build-artifacts.git",
-                                      "https://gitee.com/xmake-mirror/build-artifacts.git"}
+                                      "https://gitlab.com/xmake-mirror/build-artifacts.git"}
                     if network ~= "private" then
                         import("net.fasturl")
                         fasturl.add(artifacts_urls)
@@ -159,9 +158,7 @@ function sandbox_core_package_repository.repositories(opt)
             mainurls = localcache.cache("repository"):get("mainurls")
             if not mainurls then
                 mainurls = {"https://github.com/xmake-io/xmake-repo.git",
-                            "https://gitlab.com/tboox/xmake-repo.git",
-                            "https://gitcode.com/xmake-io/xmake-repo.git",
-                            "https://gitee.com/tboox/xmake-repo.git"}
+                            "https://gitlab.com/tboox/xmake-repo.git"}
                 if network ~= "private" then
                     import("net.fasturl")
                     fasturl.add(mainurls)
