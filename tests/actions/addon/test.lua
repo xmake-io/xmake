@@ -396,6 +396,32 @@ function test_autofetch_lock_missing_version(t)
     end)
 end
 
+-- an addon which was installed from a local directory is usable right away
+--
+-- it is in no repository, so there is nothing for the installer to resolve and nothing
+-- to lock, and looking for it there would only fail
+--
+-- @see https://github.com/xmake-io/xmake/issues/7773
+--
+function test_autofetch_local_addon(t)
+    _with_addons({"custom-rule"}, function ()
+        for _, requirestr in ipairs({"custom-rule", "custom-rule latest"}) do
+            local output = _run_project(([[
+add_addons(%q)
+target("hello")
+    set_kind("phony")
+    add_rules("@addon/custom-rule/hello")
+]]):format(requirestr), {"config", "-y"})
+
+            -- the rule of the addon should be used, i.e. it was found without an install
+            t:require(output:find("custom-rule: hello from custom-rule: hello", 1, true))
+
+            -- and we should not go looking for it in the repositories
+            t:require_not(output:find("this project needs the addons", 1, true))
+        end
+    end)
+end
+
 -- the declared addons are checked, e.g. the reserved names
 function test_autofetch_invalid(t)
     _with_project("autofetch-badname", function ()

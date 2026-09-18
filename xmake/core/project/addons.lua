@@ -114,24 +114,35 @@ end
 -- are all the declared addons installed already?
 --
 -- @note we need to check it in-process for every command which loads the project,
--- so we only check the locked versions here, the installer will resolve them again
+-- so we only check the versions here, the installer will resolve them again
 --
 function addons.satisfied(requires, projectdir)
-    local locked = addons.locked(projectdir)
-    if not locked then
-        return false
-    end
+    local locked = addons.locked(projectdir) or {}
     local installed = addon.addons()
     for _, requirestr in ipairs(requires) do
         local name = addons.requirename(requirestr)
-        local lockinfo = locked[name]
-        if not addons.locked_valid(requirestr, lockinfo) then
-            return false
-        end
         local addoninfo = installed[addon.dirname(name)]
-        if not addoninfo or addoninfo.version ~= lockinfo.version then
+        if not addoninfo then
             return false
         end
+        local lockinfo = locked[name]
+        if lockinfo then
+            -- the lock pins a version, it has to satisfy the declaration and be the
+            -- one which is installed
+            if not addons.locked_valid(requirestr, lockinfo) then
+                return false
+            end
+            if addoninfo.version ~= lockinfo.version then
+                return false
+            end
+        elseif addoninfo.repo then
+            -- no lock entry, but a repository provides it, so we resolve and lock it
+            return false
+        end
+
+        -- an addon which no repository provides, e.g. `xmake addon --install .`, has
+        -- nothing to resolve and nothing to lock, the installed one is the only one
+        -- there is, @see https://github.com/xmake-io/xmake/issues/7773
     end
     return true
 end
