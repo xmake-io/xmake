@@ -100,28 +100,6 @@ remote_get_content() {
     fi
 }
 
-get_host_speed() {
-    if [ `uname` == "Darwin" ]; then
-        ping -c 1 -t 1 $1 2>/dev/null | egrep -o 'time=\d+' | egrep -o "\d+" || echo "65535"
-    else
-        ping -c 1 -W 1 $1 2>/dev/null | grep -E -o 'time=[0-9]+' | grep -E -o "[0-9]+" || echo "65535"
-    fi
-}
-
-get_fast_host() {
-    if test_eq "$GITHUB_ACTIONS" "true" || test_eq "$GITHUB_ACTIONS" "1"; then
-        echo "github.com"
-    else
-        speed_gitee=$(get_host_speed "gitee.com")
-        speed_github=$(get_host_speed "github.com")
-        if [ $speed_gitee -le $speed_github ]; then
-            echo "gitee.com"
-        else
-            echo "github.com"
-        fi
-    fi
-}
-
 # get branch
 branch=__run__
 if test_nz "$1"; then
@@ -133,17 +111,11 @@ if test_nz "$1"; then
     echo "Branch: $branch"
 fi
 
-# get fasthost and git repository
+# get git repository
 if test_nq "$branch" "__local__"; then
-    fasthost=$(get_fast_host)
-    if test_eq "$fasthost" "gitee.com"; then
-        gitrepo="https://gitee.com/tboox/xmake.git"
-        gitrepo_raw="https://gitee.com/tboox/xmake/raw/master"
-    else
-        gitrepo="https://github.com/xmake-io/xmake.git"
-        #gitrepo_raw="https://github.com/xmake-io/xmake/raw/master"
-        gitrepo_raw="https://fastly.jsdelivr.net/gh/xmake-io/xmake@master"
-    fi
+    gitrepo="https://github.com/xmake-io/xmake.git"
+    #gitrepo_raw="https://github.com/xmake-io/xmake/raw/master"
+    gitrepo_raw="https://fastly.jsdelivr.net/gh/xmake-io/xmake@master"
 fi
 
 #-----------------------------------------------------------------------------
