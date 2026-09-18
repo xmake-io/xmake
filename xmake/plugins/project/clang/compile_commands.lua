@@ -110,7 +110,9 @@ function _translate_arguments(arguments)
                 arg = "-I" .. arg:sub(9)
             end
         elseif arg:find("[%-/]external:I") then
-            arg = arg:gsub("[%-/]external:I", "-I")
+            if not lsp or lsp ~= "clangd" then
+                arg = arg:gsub("[%-/]external:I", "-I")
+            end
         elseif arg:find("[%-/]external:W") or arg:find("[%-/]experimental:external") then
             arg = nil
         end
