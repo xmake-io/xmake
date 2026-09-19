@@ -420,7 +420,7 @@ function _patch_sourcebatch(target, sourcebatch)
         table.sort(sourcebatch.sourcefiles)
         memcache:set2(target:fullname(), "cached_sourcebatch", table.clone(sourcebatch))
 
-        local keys = #sourcebatch.sourcefiles > 0 and table.concat(sourcebatch.sourcefiles) or "_"
+        local keys = (#sourcebatch.sourcefiles > 0 and table.concat(sourcebatch.sourcefiles) or "_") .. target:objectdir()
         local sum = hash.strhash64(keys)
         local cached_sum = localcache:get2(target:fullname(), "sourcebatch_sum")
         if not cached_sum or cached_sum ~= sum then
