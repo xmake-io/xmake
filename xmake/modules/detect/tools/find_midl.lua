@@ -35,12 +35,20 @@ import("lib.detect.find_programver")
 --
 function main(opt)
     opt         = opt or {}
-    opt.check   = opt.check or "/confirm"
-    opt.command = opt.command or "/confirm"
-    opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.%d+%.%d+)%s") end
+    -- "-?" prints the usage and exits with 0, 
+    -- the old "/confirm" is unusable, it crashes with 0xC0000005
+    opt.check   = opt.check or "-?"
 
-    -- https://github.com/xmake-io/xmake/issues/7192
-    opt.norunfile = true
+    -- @see https://github.com/xmake-io/xmake/issues/7192
+    --
+    -- However, norunfile skips the run check, so a midl that cannot run on the 
+    -- host is accepted silently, e.g. an arm64 midl.exe when cross-compiling on
+    -- a x64 host, then it only fails later on generating the idl files,
+    --
+    --     error: cannot runv(...\Windows Kits\10\bin\10.0.26100.0\arm64\midl ...)
+    --
+    -- "-?" is a usable check, so enable the run check again.
+    opt.norunfile = false
 
     local envs = opt.envs
     if envs and envs.WindowsSdkDir and envs.WindowsSDKVersion then
@@ -56,7 +64,9 @@ function main(opt)
     local version = nil
     local program = find_program(opt.program or "midl", opt)
     if program and opt and opt.version then
-        version = find_programver(program, opt)
+        opt.command = opt.command or function () local _, info = os.iorunv(program, {"-?"}, {envs = opt.envs}); return info end
+        opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.%d+%.%d+)%s") end
+        version     = find_programver(program, opt)
     end
     return program, version
 end
