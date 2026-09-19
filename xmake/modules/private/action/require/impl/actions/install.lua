@@ -412,18 +412,9 @@ function _leave_workdir(package, oldir)
     _clear_sourcedir(package)
 end
 
--- enter package install environments
-function _enter_package_installenvs(package)
-    for _, dep in ipairs(package:orderdeps()) do
-        dep:envs_enter()
-    end
-end
-
--- enter package test environments
-function _enter_package_testenvs(package)
-
-    -- add compiler runtime library directory to $PATH
-    -- @see https://github.com/xmake-io/xmake-repo/pull/3606
+-- add compiler runtime library directory to $PATH
+-- @see https://github.com/xmake-io/xmake-repo/pull/3606
+function _enter_toolchain_runenvs(package)
     if is_host("windows") and package:is_plat("windows", "mingw") then -- bin/*.dll for windows
         local toolchains = package:toolchains()
         if not toolchains then
@@ -440,8 +431,19 @@ function _enter_package_testenvs(package)
             end
         end
     end
+end
 
-    -- enter package environments
+-- enter package install environments
+function _enter_package_installenvs(package)
+    _enter_toolchain_runenvs(package)
+    for _, dep in ipairs(package:orderdeps()) do
+        dep:envs_enter()
+    end
+end
+
+-- enter package test environments
+function _enter_package_testenvs(package)
+    _enter_toolchain_runenvs(package)
     for _, dep in ipairs(package:orderdeps()) do
         dep:envs_enter()
     end
