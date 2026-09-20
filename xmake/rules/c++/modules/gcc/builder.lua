@@ -26,7 +26,6 @@ import("core.base.semver")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("core.tool.compiler")
-import("core.project.config")
 import("core.project.depend")
 import("support")
 import(".mapper")
@@ -108,11 +107,6 @@ function _batchcmds_compile(batchcmds, target, flags, module, opt)
 
     -- do compile
     batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx", verbose = false})
-end
-
-function _module_map_cachekey(target)
-    local mode = config.mode()
-    return target:fullname() .. "module_mapper" .. (mode or "")
 end
 
 -- generate a module mapper file for build a headerunit
