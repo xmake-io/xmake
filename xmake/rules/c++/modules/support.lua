@@ -26,6 +26,7 @@ import("core.cache.memcache", {alias = "_memcache"})
 import("core.cache.localcache", {alias = "_localcache"})
 import("async.runjobs")
 import("lib.detect.find_file")
+import("core.project.config")
 import("core.project.project")
 import("core.project.config")
 
@@ -385,6 +386,21 @@ end
 -- get localcache
 function localcache()
     return _localcache.cache("cxxmodules")
+end
+
+-- get the localcache key of the given target
+--
+-- @note the cached entries hold the bmifile and the objectfile paths of the modules,
+-- and those are mode dependent, while the cache file is not: it lives in
+-- `.xmake/<plat>/<arch>/cache`, which has no mode in its path. so the mode belongs in
+-- the key, otherwise a build picks up the artifacts which the other mode recorded and
+-- writes its objects into the directory of that mode
+--
+-- @see https://github.com/xmake-io/xmake/issues/7785
+--
+function cachekey(target)
+    local mode = config.mode()
+    return mode and (target:fullname() .. "/" .. mode) or target:fullname()
 end
 
 -- get modules cache directory
