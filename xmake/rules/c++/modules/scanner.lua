@@ -422,9 +422,9 @@ function _patch_sourcebatch(target, sourcebatch)
 
         local keys = #sourcebatch.sourcefiles > 0 and table.concat(sourcebatch.sourcefiles) or "_"
         local sum = hash.strhash64(keys)
-        local cached_sum = localcache:get2(target:fullname(), "sourcebatch_sum")
+        local cached_sum = localcache:get2(support.cachekey(target), "sourcebatch_sum")
         if not cached_sum or cached_sum ~= sum then
-            localcache:set2(target:fullname(), "sourcebatch_sum", sum)
+            localcache:set2(support.cachekey(target), "sourcebatch_sum", sum)
             memcache:set2(target:fullname(), "modules.changed", true)
         end
     else
@@ -440,7 +440,7 @@ function _do_computedag(target, modules, sourcebatch)
     local changed = memcache:get2(target:fullname(), "modules.changed")
 
     if changed then
-        localcache:set2(target:fullname(), "c++.modules", modules)
+        localcache:set2(support.cachekey(target), "c++.modules", modules)
         mapper.feed(target, modules, sourcebatch.sourcefiles)
         -- check if a dependency is missing
         local modules_names = hashset.from(table.keys(mapper.get_mapper_for(target)))
@@ -479,11 +479,11 @@ function _do_computedag(target, modules, sourcebatch)
                     end
                 end
             end
-            localcache:set2(target:fullname(), "c++.build.sourcebatch", cxx_sourcebatch)
+            localcache:set2(support.cachekey(target), "c++.build.sourcebatch", cxx_sourcebatch)
         end
     else
         modules = get_modules(target)
-        local cxx_sourcebatch_cached = localcache:get2(target:fullname(), "c++.build.sourcebatch")
+        local cxx_sourcebatch_cached = localcache:get2(support.cachekey(target), "c++.build.sourcebatch")
         if cxx_sourcebatch_cached then
             local cxx_sourcebatch = target:sourcebatches()["c++.build"]
             cxx_sourcebatch.sourcefiles = cxx_sourcebatch_cached.sourcefiles
@@ -519,7 +519,7 @@ function _do_scan(target, sourcefile, opt)
     local is_std = path.basename(sourcefile) == "std" or path.basename(sourcefile) == "std.compat"
     local rescan = target:is_rebuilt() and not from_package and not is_std
     local changed = _scanner(target).scan_dependency_for(target, sourcefile, rescan, opt)
-    if changed or not support.localcache():get2(target:fullname(), "module_mapper") then
+    if changed or not support.localcache():get2(support.cachekey(target), "module_mapper") then
         support.memcache():set2(target:fullname(), "modules.changed", true)
     end
     profiler.leave(target:fullname(), "c++ modules", "scanner", "scan dependencies for", sourcefile)
@@ -530,7 +530,7 @@ function _schedule_module_dependencies_scan(target, jobgraph, sourcebatch)
 
     profiler.enter(target:fullname(), "c++ modules", "scanner", "schedule moduleinfo scanning, parsing and dag computation")
     -- if XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR is set, then we can just reuse scan artifacts from build
-    if not os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR") or not support.localcache():get2(target:fullname(), "c++.modules") then
+    if not os.getenv("XMAKE_IN_COMPILE_COMMANDS_PROJECT_GENERATOR") or not support.localcache():get2(support.cachekey(target), "c++.modules") then
         local memcache = support.memcache()
         local scangroup = get_scangroup_for(target)
         local has_scanjob = false
@@ -762,7 +762,7 @@ function sort_modules_by_dependencies(target, modules)
     local memcache = support.memcache()
     local localcache = support.localcache()
     local changed = memcache:get2(target:fullname(), "modules.changed")
-    local built_artifacts = localcache:get2(target:fullname(), "c++.modules.built_artifacts")
+    local built_artifacts = localcache:get2(support.cachekey(target), "c++.modules.built_artifacts")
     if changed or not built_artifacts then
         local built_modules = {}
         local built_headerunits = {}
@@ -876,7 +876,7 @@ function sort_modules_by_dependencies(target, modules)
         built_headerunits = table.unique(built_headerunits)
 
         built_artifacts = {modules = built_modules, headerunits = built_headerunits, objectfiles = objectfiles}
-        localcache:set2(target:fullname(), "c++.modules.built_artifacts", built_artifacts)
+        localcache:set2(support.cachekey(target), "c++.modules.built_artifacts", built_artifacts)
         memcache:set2(target:fullname(), "modules.changed", false)
     end
     assert(built_artifacts, "shouldn't assert here, please open an issue")
@@ -885,7 +885,7 @@ function sort_modules_by_dependencies(target, modules)
 end
 
 function get_modules(target)
-    local modules = support.localcache():get2(target:fullname(), "c++.modules")
+    local modules = support.localcache():get2(support.cachekey(target), "c++.modules")
     if not modules then
         local targets = support.memcache():get("targets")
         assert(targets, "module scanner did not run, maybe a custom `on_prepare()` script overrides the modules one.")

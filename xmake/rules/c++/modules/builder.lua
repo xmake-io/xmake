@@ -152,18 +152,12 @@ function _get_saved_jobdeps_for(jobgraph, buildfilejob)
     return jobdeps
 end
 
+-- @note we cannot cache it, the generator may run in the process which has just built
+-- this project, e.g. `add_rules("plugin.compile_commands.autoupdate")` runs it in its
+-- after_build, so the answer changes while we are running
 function _in_project_generator()
-    local memcache = support.memcache()
-    local in_project_generator = memcache:get("in_project_generator")
-    if in_project_generator == nil then
-        local val = os.getenv("XMAKE_IN_PROJECT_GENERATOR")
-        if val and val ~= "" then
-            in_project_generator = true
-        end
-        in_project_generator = in_project_generator or false
-        memcache:set("in_project_generator", in_project_generator)
-    end
-    return in_project_generator
+    local val = os.getenv("XMAKE_IN_PROJECT_GENERATOR")
+    return val ~= nil and val ~= ""
 end
 
 -- should we build this module or headerunit ?
