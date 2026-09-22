@@ -317,7 +317,10 @@ function _show_output(testinfo, kind)
             local logfile = path.join(autogendir, testinfo.name .. "." .. kind .. ".log")
             io.writefile(logfile, output)
             print("%s: %s", kind, logfile)
-        elseif option.get("verbose") then
+        elseif option.get("verbose") or (option.get("output-on-failure") and not testinfo.passed) then
+            -- `testinfo.passed` means the test behaved as expected, so it is false for both
+            -- the `failed` and `unexpected pass` results, and here we only show the output of the
+            -- tests that did not behave as expected when `--output-on-failure` option is set.
             io.write(kind .. ": " .. output .. "\n")
         end
     end
