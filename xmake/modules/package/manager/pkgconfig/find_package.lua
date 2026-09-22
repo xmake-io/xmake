@@ -35,6 +35,14 @@ function main(name, opt)
         return
     end
 
+    -- the .pc files may live outside the default search path of pkg-config,
+    -- e.g. add_requires("pkgconfig::ncurses", {configs = {configdirs = "/usr/local/opt/ncurses/lib/pkgconfig"}})
+    -- @see https://github.com/xmake-io/xmake/issues/7790
+    local configs = opt.configs or {}
+    if configs.configdirs then
+        opt = table.join(opt, {configdirs = configs.configdirs})
+    end
+
     -- get library info
     local libinfo = pkgconfig.libinfo(name, opt)
     if not libinfo and name:startswith("lib") then
