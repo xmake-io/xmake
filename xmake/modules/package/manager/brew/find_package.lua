@@ -63,7 +63,7 @@ function _find_package_from_pkgconfig(name, opt)
     local paths = {}
     table.insert(paths, path.join(brew_pkg_rootdir, nameinfo[1], "lib/pkgconfig"))
     table.insert(paths, path.join(brew_pkg_rootdir, nameinfo[1], "share/pkgconfig"))
-    if opt.require_version then
+    if opt.require_version and opt.require_version ~= "latest" then
         table.insert(paths, path.join(brew_pkg_rootdir, nameinfo[1], opt.require_version, "lib/pkgconfig"))
         table.insert(paths, path.join(brew_pkg_rootdir, nameinfo[1], opt.require_version, "share/pkgconfig"))
     else
