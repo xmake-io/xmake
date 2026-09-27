@@ -24,18 +24,18 @@ import("core.base.hashset")
 -- get or create a target module mapper
 function get_mapper_for(target, opt)
     local localcache = support.localcache()
-    local mapper = localcache:get2(target:fullname(), "module_mapper")
+    local mapper = localcache:get2(support.cachekey(target), "module_mapper")
     local invalidate = opt and opt.invalidate
     if not mapper or invalidate then
         mapper = {}
-        localcache:set2(target:fullname(), "module_mapper", mapper)
+        localcache:set2(support.cachekey(target), "module_mapper", mapper)
     end
     return mapper
 end
 
 function reuse_modules(target)
     local localcache = support.localcache()
-    local reused_modules = localcache:get2(target:fullname(), "reused_modules")
+    local reused_modules = localcache:get2(support.cachekey(target), "reused_modules")
     for key, from_name in pairs(reused_modules) do
         local dep = target:dep(from_name)
         assert(dep)
