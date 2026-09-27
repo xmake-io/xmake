@@ -728,11 +728,16 @@ function add_linkjobs(jobgraph, target, opt)
 end
 
 -- get link depfiles
+--
+-- @note only binary and shared targets depend on static libraries.
+-- https://github.com/xmake-io/xmake/issues/7797
 function get_linkdepfiles(target)
     local depfiles = table.clone(target:objectfiles())
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:kind() == "static" then
-            table.insert(depfiles, dep:targetfile())
+    if target:is_binary() or target:is_shared() then
+        for _, dep in ipairs(target:orderdeps()) do
+            if dep:is_static() then
+                table.insert(depfiles, dep:targetfile())
+            end
         end
     end
     local linkdepfiles = target:data("linkdepfiles")
