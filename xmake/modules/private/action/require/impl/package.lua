@@ -692,13 +692,15 @@ function _finish_requireinfo(requireinfo, package)
         local readonly = package:extraconf("configs", name, "readonly")
         if name == "runtimes" then
             -- vs_runtime is deprecated, but we need also support it now.
+            local vs_runtime_default = package:extraconf("configs", "vs_runtime", "default")
+            local vs_runtime_readonly = package:extraconf("configs", "vs_runtime", "readonly")
             if default == nil then
-                default = package:extraconf("configs", "vs_runtime", "default")
+                default = vs_runtime_default
             end
             if readonly == nil then
-                readonly = package:extraconf("configs", "vs_runtime", "readonly")
+                readonly = vs_runtime_readonly
             end
-            if default ~= nil or readonly ~= nil then
+            if vs_runtime_default ~= nil or vs_runtime_readonly ~= nil then
                 wprint("please use add_configs(\"runtimes\") instead of add_configs(\"vs_runtime\").")
             end
         end
