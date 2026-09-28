@@ -99,8 +99,17 @@ function _get_builtinvars_target(target)
                 builtinvars.VERSION_MAJOR = v:major()
                 builtinvars.VERSION_MINOR = v:minor()
                 builtinvars.VERSION_ALTER = v:patch()
+                local build = v:build()
+                if build and #build > 0 then
+                    builtinvars.VERSION_BUILD = table.concat(build, ".")
+                end
+                local prerelease = v:prerelease()
+                if prerelease and #prerelease > 0 then
+                    builtinvars.VERSION_PRERELEASE = table.concat(prerelease, ".")
+                end
             end
         end}
+        -- the build value in set_version(..., {build = ...}) overrides semver build
         if version_build then
             builtinvars.VERSION_BUILD = version_build
         end
