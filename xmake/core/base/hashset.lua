@@ -51,7 +51,7 @@ function hashset:__eq(h)
     if self:size() ~= h:size() then
         return false
     end
-    for item in h:items() do
+    for item in pairs(h._DATA) do
         if not self:has(item) then
             return false
         end
