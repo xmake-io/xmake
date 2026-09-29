@@ -51,6 +51,10 @@ function hashset:__eq(h)
     if self:size() ~= h:size() then
         return false
     end
+    -- items() skips nil, so compare its membership separately.
+    if self:has(nil) ~= h:has(nil) then
+        return false
+    end
     for item in h:items() do
         if not self:has(item) then
             return false
