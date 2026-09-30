@@ -729,11 +729,12 @@ end
 
 -- get link depfiles
 --
--- @note only binary and shared targets depend on static libraries.
+-- @note binary, shared and static targets that merge archives depend on static libraries.
+-- Static targets that merge archives must be re-archived before merging to avoid stale objects.
 -- https://github.com/xmake-io/xmake/issues/7797
 function get_linkdepfiles(target)
     local depfiles = table.clone(target:objectfiles())
-    if target:is_binary() or target:is_shared() then
+    if target:is_binary() or target:is_shared() or (target:is_static() and target:policy("build.merge_archive")) then
         for _, dep in ipairs(target:orderdeps()) do
             if dep:is_static() then
                 table.insert(depfiles, dep:targetfile())
