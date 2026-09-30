@@ -9,8 +9,8 @@ function test_isinf(t)
 end
 
 function test_isnan(t)
-    t:will_raise(function() math.isinf(nil) end)
-    t:will_raise(function() math.isinf(true) end)
+    t:will_raise(function() math.isnan(nil) end)
+    t:will_raise(function() math.isnan(true) end)
 
     t:require_not(math.isnan(0))
     t:require(math.isnan(math.nan))
