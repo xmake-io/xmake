@@ -149,7 +149,7 @@ end
 -- @return      the removed element
 --
 function list:pop()
-    self:remove_last()
+    return self:remove_last()
 end
 
 -- shift element from the front
@@ -157,7 +157,7 @@ end
 -- @return      the removed element
 --
 function list:shift()
-    self:remove_first()
+    return self:remove_first()
 end
 
 -- unshift element to the front
