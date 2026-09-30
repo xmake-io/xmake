@@ -464,6 +464,9 @@ end
 -- clone graph
 function graph:clone()
     local gh = graph.new(self:is_directed())
+    for _, v in ipairs(self:vertices()) do
+        gh:add_vertex(v)
+    end
     for _, e in ipairs(self._edges) do
         gh:add_edge(e:from(), e:to())
     end
@@ -476,6 +479,9 @@ function graph:reverse()
         return self:clone()
     end
     local gh = graph.new(self:is_directed())
+    for _, v in ipairs(self:vertices()) do
+        gh:add_vertex(v)
+    end
     for _, e in ipairs(self._edges) do
         gh:add_edge(e:to(), e:from())
     end

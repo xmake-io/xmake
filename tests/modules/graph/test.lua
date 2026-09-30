@@ -231,3 +231,35 @@ function test_find_cycle(t)
     t:require(has_cycle)
 end
 
+function test_copy_preserves_isolated_vertices(t)
+    for _, directed in ipairs({true, false}) do
+        local g = graph.new(directed)
+        g:add_vertex("isolated")
+        g:add_edge("a", "b")
+        for _, copy in ipairs({g:clone(), g:reverse()}) do
+            t:are_equal(#copy:vertices(), 3)
+            t:require(copy:has_vertex("isolated"))
+            t:are_equal(#copy:edges(), 1)
+            t:are_equal(copy:is_directed(), directed)
+            copy:remove_vertex("isolated")
+            t:require(g:has_vertex("isolated"))
+        end
+        t:require(g:clone():has_edge("a", "b"))
+        if directed then
+            t:require(g:reverse():has_edge("b", "a"))
+        end
+    end
+end
+
+function test_copy_graph_with_no_edges(t)
+    local g = graph.new(true)
+    g:add_vertex("a")
+    g:add_vertex("b")
+    for _, copy in ipairs({g:clone(), g:reverse()}) do
+        t:are_equal(#copy:vertices(), 2)
+        t:require(copy:has_vertex("a"))
+        t:require(copy:has_vertex("b"))
+        t:are_equal(#copy:edges(), 0)
+    end
+    t:are_equal(#graph.new(true):clone():vertices(), 0)
+end
