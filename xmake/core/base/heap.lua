@@ -51,7 +51,9 @@ function heap._make(add, remove, swap, length, cmp)
     local function pop(i)
         swap(i, length())
         remove()
-        movedown(i)
+        if i <= length() and moveup(i) == i then
+            movedown(i)
+        end
     end
 
     local function rebalance(i)
