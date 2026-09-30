@@ -112,7 +112,11 @@ function main(projectdir, datafile, opt)
         rcfile = os.tmpfile() .. ".lua"
         local file = io.open(rcfile, "w")
         for _, repo in ipairs(repositories) do
-            file:print("add_repositories(%q)", repo)
+            -- xrepo loads this file in its own working directory, so preserve the
+            -- base directory of local repositories declared by the project.
+            local repoconf = declarations.repository_configs and declarations.repository_configs[repo]
+            local rootdir = path.absolute(repoconf and repoconf.rootdir or projectdir, projectdir)
+            file:print("add_repositories(%q, {rootdir = %q})", repo, rootdir)
         end
         file:close()
     end
