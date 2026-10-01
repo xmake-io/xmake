@@ -37,25 +37,27 @@ function config(target, langkind, opt)
             -- fix `#pragma once` for msvc
             -- https://github.com/xmake-io/xmake/issues/2667
             -- https://github.com/xmake-io/xmake/issues/5858
-            if not os.isfile(headerfile) then
-                local langcxx = (langkind == "cxx" or langkind == "mxx")
-                local content
-                if langcxx then
-                    content = [[
-#pragma system_header
+            local langcxx = (langkind == "cxx" or langkind == "mxx")
+            local content
+            if langcxx then
+                content = [[
 #ifdef __cplusplus
 #include "%s"
 #endif // __cplusplus
-                    ]]
-                else
-                    content = [[
-#pragma system_header
+                ]]
+            else
+                content = [[
 #ifndef __cplusplus
 #include "%s"
 #endif
-                    ]]
-                end
-                io.writefile(headerfile, content:format(path.absolute(pcheaderfile):gsub("\\", "/")))
+                ]]
+            end
+            if not target:has_tool(sourcekind, "clang_cl") then
+                content = "#pragma system_header\n" .. content
+            end
+            content = content:format(path.absolute(pcheaderfile):gsub("\\", "/"))
+            if not os.isfile(headerfile) or io.readfile(headerfile) ~= content then
+                io.writefile(headerfile, content)
             end
             -- we need only to add a header wrapper in .gch directory
             -- @see https://github.com/xmake-io/xmake/issues/5858#issuecomment-2506918167
