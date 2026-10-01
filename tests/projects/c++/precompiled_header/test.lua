@@ -15,19 +15,19 @@ function test_clang_cl_dependencies(t)
     end
 
     os.tryrm("build")
-    os.exec("xmake f -c -D -y --toolchain=clang-cl --cxflags=-external:W0")
+    os.exec("xmake f -c -D -y -p windows -a %s --toolchain=clang-cl --cxflags=-external:W0", os.arch())
 
     local wrapperfile = os.files("build/.gens/main/windows/**/header.h")[1]
     assert(wrapperfile and os.isfile(wrapperfile), "precompiled header wrapper not found")
     local wrapper = io.readfile(wrapperfile)
     io.writefile(wrapperfile, "#pragma system_header\n" .. wrapper)
 
-    os.exec("xmake f -c -D -y --toolchain=clang-cl --cxflags=-external:W0")
+    os.exec("xmake f -c -D -y -p windows -a %s --toolchain=clang-cl --cxflags=-external:W0", os.arch())
     assert(io.readfile(wrapperfile) == wrapper, "stale precompiled header wrapper was not updated")
 
     local wrappermtime = os.mtime(wrapperfile)
     os.sleep(1000)
-    os.exec("xmake f -c -D -y --toolchain=clang-cl --cxflags=-external:W0")
+    os.exec("xmake f -c -D -y -p windows -a %s --toolchain=clang-cl --cxflags=-external:W0", os.arch())
     assert(os.mtime(wrapperfile) == wrappermtime, "unchanged precompiled header wrapper was rewritten")
 
     os.exec("xmake -D")
