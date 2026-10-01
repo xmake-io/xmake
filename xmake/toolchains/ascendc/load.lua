@@ -18,11 +18,23 @@
 -- @file        load.lua
 --
 
+-- imports
+import("detect.sdks.find_ascend")
+
 function main(toolchain)
     local sdkdir = toolchain:config("sdkdir")
     local hostroot = toolchain:config("hostroot")
     if not sdkdir or not hostroot then
-        raise("ascendc toolchain not checked")
+        local ascend = find_ascend(toolchain:sdkdir())
+        if ascend then
+            sdkdir = ascend.sdkdir
+            hostroot = ascend.hostroot
+            toolchain:config_set("sdkdir", sdkdir)
+            toolchain:config_set("hostroot", hostroot)
+        end
+    end
+    if not sdkdir or not hostroot then
+        return
     end
 
     -- add run environments
