@@ -22,7 +22,7 @@ function main(toolchain)
     local sdkdir = toolchain:config("sdkdir")
     local hostroot = toolchain:config("hostroot")
     if not sdkdir or not hostroot then
-        raise("ascendc toolchain not checked")
+        return
     end
 
     -- add run environments

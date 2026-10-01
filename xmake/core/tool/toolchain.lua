@@ -1008,21 +1008,22 @@ function toolchain.toolconfig(toolchains, name, opt)
     local toolconfig = cache:get2(cachekey, name)
     if toolconfig == nil then
         for _, toolchain_inst in ipairs(toolchains) do
-            if not toolchain_inst:_is_checked() then
-                utils.warning("we cannot get toolconfig(%s) in toolchain(%s) with %s/%s, because it has been not checked yet!", name, toolchain_inst:name(), toolchain_inst:plat(), toolchain_inst:arch())
-            end
-            local values = toolchain_inst:get(name)
-            if values then
-                toolconfig = toolconfig or {}
-                table.join2(toolconfig, values)
-            end
-            local after_get = opt.after_get
-            if after_get then
-                values = after_get(toolchain_inst, name)
+            if toolchain_inst:_is_checked() then
+                local values = toolchain_inst:get(name)
                 if values then
                     toolconfig = toolconfig or {}
                     table.join2(toolconfig, values)
                 end
+                local after_get = opt.after_get
+                if after_get then
+                    values = after_get(toolchain_inst, name)
+                    if values then
+                        toolconfig = toolconfig or {}
+                        table.join2(toolconfig, values)
+                    end
+                end
+            else
+                utils.warning("we cannot get toolconfig(%s) in toolchain(%s) with %s/%s, because it has been not checked yet!", name, toolchain_inst:name(), toolchain_inst:plat(), toolchain_inst:arch())
             end
         end
         cache:set2(cachekey, name, toolconfig or false)
