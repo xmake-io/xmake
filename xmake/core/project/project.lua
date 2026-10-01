@@ -298,7 +298,9 @@ function project._do_install_addons(rootinfo)
     -- we pass the declarations to the installer, it must not load this project again,
     -- @see xmake/modules/private/action/addon/impl/install_addons.lua
     local datafile = os.tmpfile()
-    local ok, errors = io.save(datafile, {addons = requires, repositories = table.wrap(rootinfo:get("repositories"))})
+    local ok, errors = io.save(datafile, {addons = requires,
+                                        repositories = table.wrap(rootinfo:get("repositories")),
+                                        repository_configs = rootinfo:extraconf("repositories")})
     if not ok then
         return {ok = false, errors = errors}
     end

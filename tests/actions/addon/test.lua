@@ -331,6 +331,49 @@ function test_autofetch(t)
     end)
 end
 
+-- local repositories must retain their base directory when installing addons through xrepo
+function test_autofetch_local_repository(t)
+    if not find_program("git") then
+        print("git not found, we skip the repository tests!")
+        return
+    end
+    for _, explicit_rootdir in ipairs({false, true}) do
+        _remove("custom-include")
+        try
+        {
+            function ()
+                _with_project("autofetch", function (projectdir)
+                    local repodir = path.join(projectdir, "repo")
+                    io.writefile(path.join(repodir, "addons", "c", "custom-include", "xmake.lua"),
+                        ("package(\"custom-include\")\n    set_kind(\"addon\")\n    set_sourcedir(%q)\n"):format(_addondir("custom-include")))
+                    local projectfile = path.join(projectdir, "xmake.lua")
+                    local declaration = 'add_repositories("addon-local-repo ./repo")\n'
+                    if explicit_rootdir then
+                        os.mkdir(path.join(projectdir, "config"))
+                        declaration = 'add_repositories("addon-local-repo ../repo", {rootdir = os.scriptdir() .. "/config"})\n'
+                    end
+                    io.writefile(projectfile, declaration .. io.readfile(projectfile))
+                    local output = os.iorunv("xmake", {"config", "-y"})
+                    t:require(output:find("custom-include: includes check is loaded", 1, true))
+                    local lockinfo = io.load(path.join(projectdir, "xmake-addons.lock"))
+                    t:are_equal(path.normalize(lockinfo["custom-include"].repo.url), path.join(os.curdir(), "repo"))
+                    os.iorunv("xmake", {"addon", "--upgrade", "-y"})
+                    t:require(os.iorunv("xmake", {"config", "-y"}):find("custom-include: includes check is loaded", 1, true))
+                end)
+            end,
+            finally
+            {
+                function (ok, errors)
+                    _remove("custom-include")
+                    if not ok then
+                        raise(errors)
+                    end
+                end
+            }
+        }
+    end
+end
+
 -- every command builds the option menu, which merges the project tasks in a best-effort way,
 -- so the commands which need not the project should never install its addons
 function test_autofetch_skipped_for_option_menu(t)

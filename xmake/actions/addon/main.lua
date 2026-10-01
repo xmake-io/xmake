@@ -232,7 +232,8 @@ end
 -- upgrade the addons which the current project declares, e.g. add_addons("esp32-devel 1.0.x")
 function _upgrade()
     local declarations = {addons = table.wrap(project.get("addons")),
-                          repositories = table.wrap(project.get("repositories"))}
+                          repositories = table.wrap(project.get("repositories")),
+                          repository_configs = project.extraconf("repositories")}
     assert(#declarations.addons > 0, "no addons are declared in this project, e.g. add_addons(\"esp32-devel\")!")
     install_addons(os.projectdir(), declarations, {upgrade = true})
 end
