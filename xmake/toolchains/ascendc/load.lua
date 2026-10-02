@@ -18,9 +18,6 @@
 -- @file        load.lua
 --
 
--- imports
-import("detect.sdks.find_ascend")
-
 function main(toolchain)
     local sdkdir = toolchain:config("sdkdir")
     local hostroot = toolchain:config("hostroot")
