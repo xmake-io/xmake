@@ -2,6 +2,8 @@
 #ifndef HEADER_H
 #define HEADER_H
 
+#include "header2.h"
+
 #include <algorithm>
 #include <deque>
 #include <iostream>
