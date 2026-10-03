@@ -85,6 +85,21 @@ function _get_nuget_info(pkg)
     return pkgname, version
 end
 
+-- collect Reference entries (HintPath to prebuilt, non-NuGet assemblies) from csharp.references
+-- e.g. set_values("csharp.references", "path/to/Foo.dll", "path/to/Bar.dll")
+function _collect_assembly_references(context)
+    local references = {}
+    for _, refpath in ipairs(table.wrap(context.target:values("csharp.references"))) do
+        refpath = tostring(refpath):trim()
+        if #refpath > 0 then
+            local refabs = path.is_absolute(refpath) and refpath or path.absolute(refpath, os.projectdir())
+            table.insert(references, {name = path.basename(refabs), hintpath = _normalize_relative(context.csprojdir, refabs)})
+        end
+    end
+    table.sort(references, function (a, b) return a.name < b.name end)
+    return references
+end
+
 -- collect PackageReference entries from nuget packages
 function _collect_nuget_references(context)
     local versions = {}
@@ -109,7 +124,7 @@ function _collect_nuget_references(context)
     return references
 end
 
--- register all item group entries (Compile, ProjectReference, PackageReference)
+-- register all item group entries (Compile, ProjectReference, Reference, PackageReference)
 function main()
     local entries = {}
     local function register(entry)
@@ -137,6 +152,22 @@ function main()
             local items = {}
             for _, reffile in ipairs(_collect_project_references(context)) do
                 table.insert(items, {attrs = {Include = reffile}})
+            end
+            return items
+        end
+    })
+
+    register({
+        kind = "item",
+        group = "reference",
+        xml = "Reference",
+        resolve_items = function (context)
+            local items = {}
+            for _, refinfo in ipairs(_collect_assembly_references(context)) do
+                table.insert(items, {
+                    attrs = {Include = refinfo.name},
+                    children = {{xml = "HintPath", value = refinfo.hintpath}}
+                })
             end
             return items
         end
