@@ -28,6 +28,7 @@ import("utils.archive")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 import(".batchcmds")
+import("plugins.pack.launcher", {alias = "launcher", rootdir = os.programdir()})
 
 -- get the rpmbuild
 function _get_rpmbuild()
@@ -149,6 +150,12 @@ function _get_specvars(package)
             end
         end
         package:set("prefixdir", prefixdir)
+        -- install the launcher wrapper in place of the real binary
+        local launcher_info = launcher.launcher_info(package)
+        if launcher_info then
+            table.insert(installcmds, string.format("mv \"%%{buildroot}/%%{_exec_prefix}/%s\" \"%%{buildroot}/%%{_exec_prefix}/%s\"", launcher_info.launcher_exe, launcher_info.real_rel))
+            table.insert(installcmds, string.format("install -Dpm0755 \"%s\" \"%%{buildroot}/%%{_exec_prefix}/%s\"", launcher_info.wrapperfile, launcher_info.launcher_exe))
+        end
         return table.concat(installcmds, "\n")
     end
     specvars.PACKAGE_BUILDCMDS = function ()
@@ -172,10 +179,10 @@ function _get_specvars(package)
                 end
             end
             local map = {
-                xmake = "xmake",
                 cmake = "cmake",
                 make = "make"
             }
+            -- xmake is not packaged as a build dependency, so it is not mapped here
             for _, program in programs:keys() do
                 local requirename = map[program]
                 if requirename then

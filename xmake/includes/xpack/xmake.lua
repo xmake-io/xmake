@@ -53,6 +53,10 @@ local apis = {
         "xpack.set_basename",
         -- set the extension of the output file
         "xpack.set_extension",
+        -- add extra arguments passed to the binary in launcher scripts
+        "xpack.add_runargs",
+        -- add environment variables exported in launcher scripts
+        "xpack.add_runenvs",
         -- add targets to be packaged
         "xpack.add_targets",
         -- add package components
