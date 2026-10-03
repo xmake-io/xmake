@@ -106,6 +106,8 @@ function main(depsdata, opt)
             end
         else
             includefile = includefile:replace(space_placeholder, ' ', plain)
+            -- make escapes `$` in dependency paths as `$$`
+            includefile = includefile:replace("$$", "$", plain)
             includefile = includefile:split("\n", plain)[1]
             if #includefile > 0 then
                 includefile = _normailize_dep(includefile, projectdir)
