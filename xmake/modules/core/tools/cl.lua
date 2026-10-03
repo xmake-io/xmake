@@ -579,7 +579,7 @@ function _preprocess(program, argv, opt)
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
 
     -- is precompiled header?
-    if objectfile:endswith(".pch") then
+    if objectfile:endswith(".pch") or objectfile:endswith(".pch.obj") then
         return false
     end
 
