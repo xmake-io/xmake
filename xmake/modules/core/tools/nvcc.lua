@@ -205,7 +205,8 @@ function nf_language(self, stdname)
         ,   cxx14       = "--std c++14"
         ,   cxx17       = "--std c++17"
         ,   cxx20       = "--std c++20"
-        ,   cxxlatest   = {"--std c++20", "--std c++17", "--std c++14", "--std c++11", "--std c++03"}
+        ,   cxx23       = "--std c++23"
+        ,   cxxlatest   = {"--std c++23", "--std c++20", "--std c++17", "--std c++14", "--std c++11", "--std c++03"}
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do
