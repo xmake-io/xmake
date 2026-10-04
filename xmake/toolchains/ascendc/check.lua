@@ -25,18 +25,21 @@ import("detect.sdks.find_ascend")
 -- check the ascendc toolchain
 function main(toolchain)
     if not toolchain:is_plat("linux") then
-        raise("Only Linux is supported for ascend toolchain")
+        wprint("Only Linux is supported for Ascend toolchain")
+        return false
     end
 
     -- locate the Ascend SDK and derive its host layout
     local ascend = find_ascend(toolchain:sdkdir())
     if not ascend then
-        raise("Ascend SDK not found")
+        wprint("Ascend SDK not found")
+        return false
     end
 
     -- llvm-ar must sit next to bisheng (used as the static linker)
     if not os.isexec(path.join(ascend.bindir, "llvm-ar")) then
-        raise("Static linker 'llvm-ar' not found for ascend toolchain")
+        wprint("Static linker 'llvm-ar' not found for Ascend toolchain")
+        return false
     end
 
     -- probe bisheng to confirm it actually runs (catches broken installs).
@@ -48,7 +51,8 @@ function main(toolchain)
         envs = {LD_LIBRARY_PATH = ld ~= "" and (ascend.libdir .. path.envsep() .. ld) or ascend.libdir},
         version = true})
     if not result or not result.program then
-        raise("'bisheng' not found, considering the installation to be broken")
+        wprint("'bisheng' not found, considering the Ascend toolchain to be broken")
+        return false
     end
 
     toolchain:config_set("sdkdir", ascend.sdkdir)
