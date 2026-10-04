@@ -121,7 +121,10 @@ function _update()
         for _, repo in ipairs(repos) do
             local repodir = repo:directory()
             if not pulled[repodir] then
-                if os.isdir(repodir) then
+                -- Directory existence is insufficient after a failed clone (#7793).
+                -- @see https://github.com/xmake-io/xmake/issues/7793
+                -- Require their own Git metadata before reset/pull; local paths are left alone.
+                if os.isdir(repo:url()) or git.support.repository_gitdir(repodir) then
                     -- only update the local repository with the remote url
                     if not os.isdir(repo:url()) then
                         -- check and update remote URL if it differs from repo:url()
@@ -137,6 +140,8 @@ function _update()
                         io.save(path.join(repodir, "updated"), {})
                     end
                 else
+                    -- Git can clone into an empty directory left by a failed attempt.
+                    -- Nonempty damaged directories fail safely instead of updating an ancestor repository.
                     vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
                     local remoteurl = proxy.mirror(repo:url()) or repo:url()
                     git.clone(remoteurl, {verbose = option.get("verbose"), branch = repo:branch(), outputdir = repodir, autocrlf = false})
