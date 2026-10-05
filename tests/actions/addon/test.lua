@@ -106,6 +106,49 @@ function _with_repo(recipes, func)
     }
 end
 
+-- run the given function with a repository which provides the given versions of an addon fixture,
+-- they are all tagged on the same commit, which we pass to it
+function _with_versions(name, versions, func)
+    if not find_program("git") then
+        print("git not found, we skip the repository tests!")
+        return
+    end
+
+    -- @note a local url is only used as a git repository if it ends with `.git`, @see devel.git.checkurl
+    local gitdir = os.tmpfile() .. ".addon.git"
+    os.tryrm(gitdir)
+    os.cp(_addondir(name), gitdir)
+    local git = {"-c", "user.name=xmake", "-c", "user.email=xmake@xmake.io",
+                 "-c", "commit.gpgsign=false", "-c", "tag.gpgsign=false"}
+    os.vrunv("git", table.join(git, {"init", "-q"}), {curdir = gitdir})
+    os.vrunv("git", table.join(git, {"add", "-A"}), {curdir = gitdir})
+    os.vrunv("git", table.join(git, {"commit", "-q", "-m", "init"}), {curdir = gitdir})
+    local commit = os.iorunv("git", {"rev-parse", "HEAD"}, {curdir = gitdir}):trim()
+    local body = {("add_urls(%q)"):format(gitdir)}
+    for _, version in ipairs(versions) do
+        os.vrunv("git", table.join(git, {"tag", "v" .. version}), {curdir = gitdir})
+        table.insert(body, ("add_versions(%q, %q)"):format(version, "v" .. version))
+    end
+    try
+    {
+        function ()
+            _with_repo({[name] = table.concat(body, "\n    ")}, function ()
+                func(commit)
+            end)
+        end,
+        finally
+        {
+            -- @note try() swallows the errors if we do not re-raise them here
+            function (ok, errors)
+                os.tryrm(gitdir)
+                if not ok then
+                    raise(errors)
+                end
+            end
+        }
+    }
+end
+
 -- run the given command in a temporary project and return its output
 function _run_project(content, argv, opt)
     opt = opt or {}
@@ -421,6 +464,38 @@ function test_autofetch_build(t)
             for _, name in ipairs(names) do
                 t:require(lockinfo[name] ~= nil)
             end
+        end)
+    end)
+end
+
+-- the declared version should be locked, even if another installed version is the active one,
+-- e.g. a package built with xmake has installed another version of this addon after it
+function test_autofetch_declared_version(t)
+    _with_versions("custom-include", {"1.0.0", "2.0.0"}, function (commit)
+        _remove("custom-include")
+        _config_project('add_addons("custom-include 2.0.0")')
+        _config_project('add_addons("custom-include 1.0.0")')
+        _with_project("autofetch-version", function (projectdir)
+            os.runv("xmake", {"config", "-y"})
+            local lockfile = path.join(projectdir, "xmake-addons.lock")
+            local lockinfo = io.load(lockfile)
+            t:are_equal(lockinfo["custom-include"].version, "2.0.0")
+
+            -- and an upgrade should lock the newest version which it declares,
+            -- even if it is installed already and another one is active
+            for _, requirestr in ipairs({"custom-include >=1.0.0", "custom-include"}) do
+                _config_project('add_addons("custom-include 1.0.0")')
+                io.writefile(path.join(projectdir, "xmake.lua"), ("add_addons(%q)\n"):format(requirestr))
+                lockinfo["custom-include"].version = "1.0.0"
+                io.save(lockfile, lockinfo)
+                os.runv("xmake", {"addon", "--upgrade", "-y"})
+                t:are_equal(io.load(lockfile)["custom-include"].version, "2.0.0")
+            end
+
+            -- a commit can be declared too
+            io.writefile(path.join(projectdir, "xmake.lua"), ("add_addons(%q)\n"):format("custom-include " .. commit))
+            os.runv("xmake", {"config", "-y"})
+            t:are_equal(io.load(lockfile)["custom-include"].version, commit:sub(1, 8))
         end)
     end)
 end

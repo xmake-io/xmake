@@ -35,6 +35,7 @@ sandbox_core_package_addon.payloads_of       = addon.payloads_of
 sandbox_core_package_addon.payloadroot       = addon.payloadroot
 sandbox_core_package_addon.addons            = addon.addons
 sandbox_core_package_addon.versions          = addon.versions
+sandbox_core_package_addon.activate          = addon.activate
 sandbox_core_package_addon.unregister        = addon.unregister
 
 -- get the manifest of the given addon directory, e.g. <sourcedir>/addon.lua

@@ -768,6 +768,21 @@ function addon.register(name, version, opt)
     return true
 end
 
+-- activate the given installed version of an addon
+--
+-- @note an installed version is not registered again when a project requires it,
+-- so another version which was installed later may still be the active one
+--
+function addon.activate(name, version)
+    -- we need to reload it, another process may have installed the other addons in the meantime
+    local registry = addon._registry({force = true})
+    local entry = registry[addon.dirname(name)]
+    if entry and entry.versions and entry.versions[version] and entry.active ~= version then
+        entry.active = version
+        addon._save(registry)
+    end
+end
+
 -- remove the given installed addon
 --
 -- @param name  the addon name
