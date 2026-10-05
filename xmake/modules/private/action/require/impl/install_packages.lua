@@ -24,7 +24,6 @@ import("core.base.hashset")
 import("core.base.scheduler")
 import("core.project.project")
 import("core.base.tty")
-import("core.package.addon")
 import("async.runjobs")
 import("utils.waiting_indicator", {alias = "waiting_indicator"})
 import("net.fasturl")
@@ -846,14 +845,6 @@ function _install_packages(requires, opt)
 
     -- disable other packages in same group
     _disable_other_packages_in_group(packages)
-
-    -- activate the required versions of the installed addons, so that the projects lock them,
-    -- @see xmake/modules/private/action/addon/impl/install_addons.lua
-    for _, instance in ipairs(packages) do
-        if instance:is_addon() and instance:exists() then
-            addon.activate(instance:name(), instance:version_str() or "latest")
-        end
-    end
 
     -- re-register and refresh all root packages to local cache,
     -- because there may be some missing optional dependencies reinstalled

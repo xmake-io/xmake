@@ -21,6 +21,7 @@
 -- imports
 import("core.project.project")
 import("core.cache.localcache")
+import("core.package.addon")
 
 -- register required package environments
 -- envs: bin path for *.dll, program ..
@@ -138,6 +139,14 @@ end
 -- @param packages  the packages table
 --
 function main(packages)
+
+    -- activate the required versions of the installed addons, so that the projects lock them,
+    -- @see xmake/modules/private/action/addon/impl/install_addons.lua
+    for _, instance in ipairs(packages) do
+        if instance:is_addon() and instance:exists() then
+            addon.activate(instance:name(), instance:version_str() or "latest")
+        end
+    end
 
     -- register to package cache for add_packages()
     for _, instance in ipairs(packages) do
