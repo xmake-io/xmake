@@ -140,8 +140,11 @@ function _update()
                         io.save(path.join(repodir, "updated"), {})
                     end
                 else
-                    -- Git can clone into an empty directory left by a failed attempt.
-                    -- Nonempty damaged directories fail safely instead of updating an ancestor repository.
+                    -- A failed/interrupted clone can leave a nonempty .git directory.
+                    -- This is a remote repository cache; local repository paths are handled above.
+                    if os.isdir(repodir) then
+                        os.rm(repodir)
+                    end
                     vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
                     local remoteurl = proxy.mirror(repo:url()) or repo:url()
                     git.clone(remoteurl, {verbose = option.get("verbose"), branch = repo:branch(), outputdir = repodir, autocrlf = false})
