@@ -83,15 +83,15 @@ function _instance:clone()
 end
 
 function _instance:normalize()
-    return path.new(path.normalize(self:str()), self._TRANSFORM)
+    return path.new(path.normalize(self:rawstr()), self._TRANSFORM)
 end
 
 function _instance:translate(opt)
-    return path.new(path.translate(self:str(), opt), self._TRANSFORM)
+    return path.new(path.translate(self:rawstr(), opt), self._TRANSFORM)
 end
 
 function _instance:unix()
-    return path.new(path.unix(self:str()), self._TRANSFORM)
+    return path.new(path.unix(self:rawstr()), self._TRANSFORM)
 end
 
 function _instance:filename()
@@ -115,19 +115,19 @@ function _instance:endswith(suffix)
 end
 
 function _instance:directory()
-    return path.new(path.directory(self:str()), self._TRANSFORM)
+    return path.new(path.directory(self:rawstr()), self._TRANSFORM)
 end
 
 function _instance:absolute(rootdir)
-    return path.new(path.absolute(self:str(), rootdir), self._TRANSFORM)
+    return path.new(path.absolute(self:rawstr(), rootdir), self._TRANSFORM)
 end
 
 function _instance:relative(rootdir)
-    return path.new(path.relative(self:str(), rootdir), self._TRANSFORM)
+    return path.new(path.relative(self:rawstr(), rootdir), self._TRANSFORM)
 end
 
 function _instance:join(...)
-    local items = {self:str()}
+    local items = {self:rawstr()}
     for _, item in ipairs(table.pack(...)) do
         table.insert(items, tostring(item))
     end
@@ -145,7 +145,7 @@ end
 -- concat two paths
 function _instance:__concat(other)
     if path.instance_of(self) then
-        return path.new(path.join(self:str(), tostring(other)), self._TRANSFORM)
+        return path.new(path.join(self:rawstr(), tostring(other)), self._TRANSFORM)
     elseif type(self) == "string" then
         return path.new(tostring(other), function (p)
             return self .. p
