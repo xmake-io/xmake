@@ -122,3 +122,22 @@ function test_case(t)
     t:are_equal(("Test 源文件🎆 Message"):lower(), "test 源文件🎆 message")
     t:are_equal(("Test 源文件🎆 Message"):upper(), "TEST 源文件🎆 MESSAGE")
 end
+
+function test_levenshtein(t)
+    t:are_equal(("kitten"):levenshtein("sitting"), 3)
+    t:are_equal((""):levenshtein("abc"), 3)
+    t:are_equal(("abc"):levenshtein(""), 3)
+    t:are_equal((""):levenshtein(""), 0)
+    t:are_equal(("a"):levenshtein("ab", {ins = 3}), 3)
+    t:are_equal(("ab"):levenshtein("a", {del = 4}), 4)
+    t:are_equal(("a"):levenshtein("b", {sub = 2}), 2)
+end
+
+function test_levenshtein_empty_costs(t)
+    local costs = {ins = 3, del = 4, sub = 2}
+    t:are_equal((""):levenshtein("abc", costs), 9)
+    t:are_equal(("abc"):levenshtein("", costs), 12)
+    t:are_equal((""):levenshtein("", costs), 0)
+    t:are_equal((""):levenshtein("abc", {ins = 0}), 0)
+    t:are_equal(("abc"):levenshtein("", {del = 0}), 0)
+end
