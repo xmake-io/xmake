@@ -500,12 +500,14 @@ end
 
 -- get sint32 little-endian value
 function _instance:s32le(offset)
-   return bit.tobit(self:u32le(offset))
+    local value = self:u32le(offset)
+    return value < 0x80000000 and value or -0x100000000 + value
 end
 
 -- get sint32 big-endian value
 function _instance:s32be(offset)
-   return bit.tobit(self:u32be(offset))
+    local value = self:u32be(offset)
+    return value < 0x80000000 and value or -0x100000000 + value
 end
 
 -- get byte or bytes slice at the given index position

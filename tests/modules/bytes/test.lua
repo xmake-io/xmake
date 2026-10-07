@@ -61,3 +61,23 @@ function test_int(t)
     t:are_equal(bytes(20):u32be_set(5, 12345678):u32be(5), 12345678)
 end
 
+
+function test_signed32(t)
+    local cases = {
+        {"\0\0\0\0", "\0\0\0\0", 0},
+        {"\1\0\0\0", "\0\0\0\1", 1},
+        {"\xff\xff\xff\x7f", "\x7f\xff\xff\xff", 2147483647},
+        {"\0\0\0\x80", "\x80\0\0\0", -2147483648},
+        {"\xfe\xff\xff\xff", "\xff\xff\xff\xfe", -2},
+        {"\xff\xff\xff\xff", "\xff\xff\xff\xff", -1}
+    }
+    for _, case in ipairs(cases) do
+        t:are_equal(bytes(case[1]):s32le(1), case[3])
+        t:are_equal(bytes(case[2]):s32be(1), case[3])
+        t:are_equal(bytes("x" .. case[1] .. "y"):s32le(2), case[3])
+        t:are_equal(bytes("x" .. case[2] .. "y"):s32be(2), case[3])
+    end
+    t:are_equal(bytes("\xff"):s8(1), -1)
+    t:are_equal(bytes("\xff\xff"):s16le(1), -1)
+    t:are_equal(bytes("\xff\xff"):s16be(1), -1)
+end
