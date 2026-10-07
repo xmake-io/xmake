@@ -100,8 +100,8 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
 
     -- excludes files
     if opt.excludes then
-        table.insert(argv, "--exclude")
         for _, exclude in ipairs(opt.excludes) do
+            table.insert(argv, "--exclude")
             table.insert(argv, exclude)
         end
     end
