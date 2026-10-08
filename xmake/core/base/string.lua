@@ -191,18 +191,46 @@ function string.ipattern(pattern, brackets)
         elseif char == '[' then
             tmp[#tmp + 1] = char
             i = i + 1
+            if pattern:sub(i, i) == '^' then
+                tmp[#tmp + 1] = '^'
+                i = i + 1
+            end
+            local first = true
             while i <= #pattern do
                 char = pattern:sub(i, i)
-                if char == '%' then
+                if char == ']' and not first then
+                    tmp[#tmp + 1] = char
+                    break
+                elseif char == '%' then
                     tmp[#tmp + 1] = char
                     tmp[#tmp + 1] = pattern:sub(i + 1, i + 1)
                     i = i + 1
+                elseif brackets and pattern:sub(i + 1, i + 1) == '-' and
+                       pattern:sub(i + 2, i + 2) ~= '' and
+                       pattern:sub(i + 2, i + 2) ~= ']' and
+                       pattern:sub(i + 2, i + 2) ~= '%' then
+                    -- Keep the range intact and add the opposite case of its ASCII letters.
+                    local last = pattern:sub(i + 2, i + 2)
+                    tmp[#tmp + 1] = char .. '-' .. last
+                    local lower, upper = char:byte(), last:byte()
+                    for byte = 65, 90 do
+                        if lower <= byte and byte <= upper then
+                            tmp[#tmp + 1] = string.char(byte + 32)
+                        end
+                        if lower <= byte + 32 and byte + 32 <= upper then
+                            tmp[#tmp + 1] = string.char(byte)
+                        end
+                    end
+                    i = i + 2
                 elseif char:match("%a") then
                     tmp[#tmp + 1] = not brackets and char or char:lower() .. char:upper()
+                elseif brackets and char == '-' then
+                    -- A literal hyphen must not join adjacent expanded letters into a range.
+                    tmp[#tmp + 1] = '%-'
                 else
                     tmp[#tmp + 1] = char
                 end
-                if char == ']' then break end
+                first = false
                 i = i + 1
             end
         -- letter, [aA]
