@@ -89,6 +89,31 @@ if xmake._ARCH:startswith("arm") then
     end
 end
 
+-- append array values in index order, then preserve remaining table entries
+local function _join_table(result, t)
+    local length = 0
+    while rawget(t, length + 1) ~= nil do
+        length = length + 1
+    end
+    local extra
+    for k, v in pairs(t) do
+        if type(k) ~= "number" then
+            result[k] = v
+        elseif k < 1 or k > length or k % 1 ~= 0 then
+            extra = extra or {}
+            table.insert(extra, v)
+        end
+    end
+    for i = 1, length do
+        table.insert(result, t[i])
+    end
+    if extra then
+        for _, v in ipairs(extra) do
+            table.insert(result, v)
+        end
+    end
+end
+
 -- join all objects and tables into a new table
 --
 -- @param ...   the tables or values to join
@@ -98,10 +123,7 @@ function table.join(...)
     local result = {}
     for _, t in ipairs({...}) do
         if type(t) == "table" and not t.__wrap_locked__ then
-            for k, v in pairs(t) do
-                if type(k) == "number" then table.insert(result, v)
-                else result[k] = v end
-            end
+            _join_table(result, t)
         else
             table.insert(result, t)
         end
@@ -118,10 +140,7 @@ end
 function table.join2(self, ...)
     for _, t in ipairs({...}) do
         if type(t) == "table" and not t.__wrap_locked__ then
-            for k, v in pairs(t) do
-                if type(k) == "number" then table.insert(self, v)
-                else self[k] = v end
-            end
+            _join_table(self, t)
         else
             table.insert(self, t)
         end
