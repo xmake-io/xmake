@@ -181,14 +181,14 @@ function _instance:read(buff, size, opt)
             end
         end
         if read == size then
-            data_or_errors = buff:slice(start, read)
+            data_or_errors = buff:slice(start, start + read - 1)
         else
             read = -1
         end
     else
         read, data_or_errors = io.pipe_read(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
         if read > 0 then
-            data_or_errors = buff:slice(start, read)
+            data_or_errors = buff:slice(start, start + read - 1)
         end
     end
     if read < 0 and data_or_errors then
