@@ -158,7 +158,7 @@ function config(url)
     if url then
 
         -- filter proxy host from the given hosts pattern
-        local host = url:match("://(.-)/") or url:match("@(.-):")
+        local host = url:match("://([^/%?#]+)") or url:match("@(.-):")
         local proxy_hosts = _proxy_hosts()
         if host and proxy_hosts then
             host = host:lower()
