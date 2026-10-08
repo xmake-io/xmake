@@ -212,7 +212,7 @@ function _instance:copy(src, start, last)
     local srcsize = src:size()
     start = start or 1
     last = last or srcsize
-    if start < 1 or start > srcsize then
+    if start < 1 or start > math.max(srcsize, 1) then
         os.raise("%s: invalid start(%d)!", self, start)
     end
     if last < start - 1 or last > srcsize + start - 1 then
@@ -222,7 +222,9 @@ function _instance:copy(src, start, last)
     if copysize > self:size() then
         os.raise("%s: cannot copy bytes, src:size(%d) must be smaller than %d!", self, copysize, self:size())
     end
-    libc.memcpy(self:cdata(), src:cdata() + start - 1, copysize)
+    if copysize > 0 then
+        libc.memcpy(self:cdata(), src:cdata() + start - 1, copysize)
+    end
     return self
 end
 
@@ -237,7 +239,7 @@ function _instance:copy2(pos, src, start, last)
     local srcsize = src:size()
     start = start or 1
     last = last or srcsize
-    if start < 1 or start > srcsize then
+    if start < 1 or start > math.max(srcsize, 1) then
         os.raise("%s: invalid start(%d)!", self, start)
     end
     if last < start - 1 or last > srcsize + start - 1 then
@@ -251,7 +253,9 @@ function _instance:copy2(pos, src, start, last)
     if copysize > leftsize then
         os.raise("%s: cannot copy bytes, src:size(%d) must be smaller than %d!", self, copysize, leftsize)
     end
-    libc.memcpy(self:cdata() + pos - 1, src:cdata() + start - 1, copysize)
+    if copysize > 0 then
+        libc.memcpy(self:cdata() + pos - 1, src:cdata() + start - 1, copysize)
+    end
     return self
 end
 
