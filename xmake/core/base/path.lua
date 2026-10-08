@@ -213,6 +213,10 @@ end
 --
 function path.directory(p, sep)
     p = tostring(p)
+    -- A bare dotfile has the current directory as its parent.
+    if p:sub(1, 1) == "." and p ~= "." and p ~= ".." and not p:find("[/\\]") then
+        return "."
+    end
     if path._directory then
         return path._directory(p, sep)
     else
