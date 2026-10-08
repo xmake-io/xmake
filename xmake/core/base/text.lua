@@ -229,7 +229,7 @@ function text._format_cell(cell, width, opt)
 end
 
 function text._format_col(col, width, opt)
-    local max_width = 0
+    local max_width = width[1]
     for i = 1, table.maxn(col) do
         local v = col[i]
         -- skip span cells
