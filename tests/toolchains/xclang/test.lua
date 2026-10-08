@@ -7,6 +7,9 @@ function _fixture(callback)
     local root = path.absolute(path.join("__tmp", "xclang-" .. hash.uuid4()))
     local files = {}
     local oldpath = os.getenv("PATH")
+    local oldprogramdir = os.getenv("XMAKE_PROGRAM_DIR")
+    -- Non-embedded xmake needs its Lua scripts after the executable is copied.
+    os.setenv("XMAKE_PROGRAM_DIR", os.programdir())
     local fixture = {}
     function fixture:write(name, content)
         local filename = path.join(root, name)
@@ -32,6 +35,7 @@ function _fixture(callback)
         catch { function (message) errors = message end }
     }
     os.setenv("PATH", oldpath)
+    os.setenv("XMAKE_PROGRAM_DIR", oldprogramdir)
     for _, filename in ipairs(files) do
         os.tryrm(filename)
     end
