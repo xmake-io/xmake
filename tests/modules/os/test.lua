@@ -218,3 +218,100 @@ function test_files_with_brackets(t)
     t:are_equal(files, {path.join(tmpdir, "a[1].lua")})
     os.tryrm(tmpdir)
 end
+
+local function _with_match_callback_files(t, func)
+    local root = os.tmpfile() .. ".match-callback"
+    local tmproot = path.absolute(os.getenv("XMAKE_TMPDIR") or os.tmpdir())
+    root = path.absolute(root)
+    assert(root:startswith(tmproot .. path.sep()), "temporary fixture must stay under the test TMP directory")
+    os.mkdir(root)
+    local filepath = path.join(root, "callback file.txt")
+    local dirpath = path.join(root, "callback dir")
+    io.writefile(filepath, "callback test")
+    io.writefile(path.join(root, "other.txt"), "other")
+    os.mkdir(dirpath)
+    func(filepath, dirpath, root)
+    os.rm(root)
+end
+
+function test_match_single_path_callback(t)
+    _with_match_callback_files(t, function (filepath, dirpath)
+        for _, match in ipairs({
+            {filepath, "f", false},
+            {filepath, "a", false},
+            {dirpath, "d", true},
+            {dirpath, "a", true}
+        }) do
+            for _, with_options in ipairs({false, true}) do
+                local called = {}
+                local callback = function (matchedpath, isdir)
+                    table.insert(called, {matchedpath, isdir})
+                    return not with_options
+                end
+                local opt = with_options and {callback = callback} or callback
+                local matches, count = os.match(match[1], match[2], opt)
+                t:are_equal(matches, {match[1]})
+                t:are_equal(count, 1)
+                t:are_equal(called, {{match[1], match[3]}})
+            end
+        end
+    end)
+end
+
+function test_match_single_path_callback_wrappers(t)
+    _with_match_callback_files(t, function (filepath, dirpath)
+        for _, match in ipairs({
+            {os.files, filepath, false},
+            {os.dirs, dirpath, true},
+            {os.filedirs, filepath, false},
+            {os.filedirs, dirpath, true}
+        }) do
+            for _, with_options in ipairs({false, true}) do
+                local called = {}
+                local callback = function (matchedpath, isdir)
+                    table.insert(called, {matchedpath, isdir})
+                    return true
+                end
+                local opt = with_options and {callback = callback} or callback
+                t:are_equal(match[1](match[2], opt), {match[2]})
+                t:are_equal(called, {{match[2], match[3]}})
+            end
+        end
+    end)
+end
+
+function test_match_callback_controls(t)
+    _with_match_callback_files(t, function (filepath, dirpath, root)
+        for _, match in ipairs({{filepath, "f"}, {dirpath, "d"}}) do
+            local matches, count = os.match(match[1], match[2])
+            t:are_equal(matches, {match[1]})
+            t:are_equal(count, 1)
+        end
+        for _, match in ipairs({{filepath, "d"}, {dirpath, "f"}, {path.join(root, "missing"), "a"}}) do
+            local calls = 0
+            local matches, count = os.match(match[1], match[2], function ()
+                calls = calls + 1
+                return true
+            end)
+            t:are_equal(matches, {})
+            t:are_equal(count, 0)
+            t:are_equal(calls, 0)
+        end
+        local called = {}
+        local matches, count = os.match(path.join(root, "*.txt"), "f", {callback = function (matchedpath, isdir)
+            t:require_not(isdir)
+            table.insert(called, matchedpath)
+            return true
+        end})
+        t:are_equal(count, 2)
+        t:are_equal(called, matches)
+        called = {}
+        matches, count = os.match(path.join(root, "*.txt"), "f", function (matchedpath, isdir)
+            t:require_not(isdir)
+            table.insert(called, matchedpath)
+            return false
+        end)
+        t:are_equal(count, 1)
+        t:are_equal(called, matches)
+    end)
+end
