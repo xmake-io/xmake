@@ -50,6 +50,10 @@ function main(reftype, url)
 
     -- init arguments
     local argv = {"ls-remote", "--" .. reftype, url or "."}
+    -- Omit peeled annotated tags, which are not separate tag names.
+    if reftype == "tags" then
+        table.insert(argv, 2, "--refs")
+    end
 
     -- trace
     if option.get("verbose") then
