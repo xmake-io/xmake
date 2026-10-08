@@ -41,13 +41,14 @@ function string:lastof(pattern, plain)
     end
 
     -- find the last substring
+    local anchored = pattern:sub(1, 1) == "^"
     local curr = 0
     repeat
         local next = self:find(pattern, curr + 1, plain)
         if next then
             curr = next
         end
-    until (not next)
+    until (not next or anchored)
 
     -- found?
     if curr > 0 then
