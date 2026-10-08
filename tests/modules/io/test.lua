@@ -174,3 +174,36 @@ function test_read_proc_cpuinfo(t)
     local data2 = io.readfile("/proc/cpuinfo")
     t:require(data2 and #data2 > 0)
 end
+
+
+function test_tail(t)
+    local function tail(filepath, linecount, opt)
+        opt = opt or {}
+        local stdout = os.iorunv(os.programfile(), {
+            "lua", path.absolute("tail.lua"), path.absolute(filepath), tostring(linecount),
+            opt.continuation or "", opt.encoding or ""
+        })
+        return (stdout:gsub("\r\n", "\n"))
+    end
+
+    t:are_equal(tail("files/utf8-crlf-neleof", -1), "123\\\n456\n789\n")
+    t:are_equal(tail("files/utf8-crlf-neleof", -3, {continuation = "\\"}), "123456\n789\n")
+    t:are_equal(tail("files/utf8-crlf-neleof", 2), "456\n789\n")
+
+    local tmpfile = os.tmpfile()
+    try
+    {
+        function ()
+            io.writefile(tmpfile, "")
+            t:are_equal(tail(tmpfile, -1), "")
+            io.writefile(tmpfile, "a\0b\0c\0\n\0x\0y\0z\0\n\0", {encoding = "binary"})
+            t:are_equal(tail(tmpfile, -1, {encoding = "utf16le"}), "abc\nxyz\n")
+        end,
+        finally
+        {
+            function ()
+                os.tryrm(tmpfile)
+            end
+        }
+    }
+end
