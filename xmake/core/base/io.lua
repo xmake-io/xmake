@@ -771,7 +771,7 @@ function io.insert(filepath, lineidx, text, opt)
     local newdata
     if type(data) == "string" then
         newdata = {}
-        for idx, line in ipairs(data:split("\n")) do
+        for idx, line in ipairs(data:split("\n", {strict = true})) do
             if idx == lineidx then
                 table.insert(newdata, text)
             end
