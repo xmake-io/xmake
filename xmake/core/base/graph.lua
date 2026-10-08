@@ -217,6 +217,12 @@ function graph:partial_topo_sort_next()
         end
     end
 
+    -- A cycle may leave the initial queue empty before any node is removed.
+    -- Pending nodes must finish before an empty queue indicates a cycle.
+    if node == nil and partial_topo_processed:size() == self._partial_topo_finished then
+        self._partial_topo_has_cycle = self._partial_topo_finished ~= #self:vertices()
+    end
+
     return node, self._partial_topo_has_cycle
 end
 
