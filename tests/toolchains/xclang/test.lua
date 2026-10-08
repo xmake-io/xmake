@@ -7,6 +7,7 @@ function _fixture(callback)
     local root = path.absolute(path.join("__tmp", "xclang-" .. hash.uuid4()))
     local files = {}
     local oldpath = os.getenv("PATH")
+    local oldsdk = os.getenv("XCLANG_SDK")
     local oldprogramdir = os.getenv("XMAKE_PROGRAM_DIR")
     -- Non-embedded xmake needs its Lua scripts after the executable is copied.
     os.setenv("XMAKE_PROGRAM_DIR", os.programdir())
@@ -35,6 +36,7 @@ function _fixture(callback)
         catch { function (message) errors = message end }
     }
     os.setenv("PATH", oldpath)
+    os.setenv("XCLANG_SDK", oldsdk)
     os.setenv("XMAKE_PROGRAM_DIR", oldprogramdir)
     for _, filename in ipairs(files) do
         os.tryrm(filename)
@@ -90,8 +92,13 @@ end
 function test_explicit_sdk_isolation(t)
     _fixture(function (fixture, root)
         local sdkdir, bindir = fixture:sdk("valid", "x86_64-w64-windows-gnu")
-        os.setenv("PATH", path.joinenv(table.join({bindir}, path.splitenv(os.getenv("PATH")))))
-        t:require(_load({plat = "mingw", arch = "x86_64"}):check())
+        -- Discovery must locate the SDK without external which/where utilities.
+        os.setenv("PATH", bindir)
+        os.setenv("XCLANG_SDK", nil)
+        local instance = _load({plat = "mingw", arch = "x86_64"})
+        t:require(instance:check())
+        t:are_equal(path.translate(instance:bindir()):lower(), path.translate(bindir):lower())
+        t:are_equal(_find_sdk(), sdkdir)
         t:require_not(_load({plat = "mingw", arch = "x86_64", sdkdir = path.join(root, "missing")}):check())
         t:require_not(_load({plat = "mingw", arch = "x86_64", bindir = path.join(root, "missing-bin")}):check())
         local llvm = fixture:sdk("ordinary-llvm", "x86_64-w64-windows-gnu", false)
@@ -105,9 +112,12 @@ end
 function _find_sdk()
     local sdkdir = os.getenv("XCLANG_SDK")
     if not sdkdir then
-        local manager = find_tool("xclang", {force = true})
-        if manager then
-            sdkdir = path.directory(path.directory(manager.program))
+        for _, dir in ipairs(path.splitenv(os.getenv("PATH") or "")) do
+            local program = path.join(path.absolute(dir), is_host("windows") and "xclang.exe" or "xclang")
+            if os.isfile(program) and find_tool("xclang", {program = program, force = true}) then
+                sdkdir = path.directory(path.directory(program))
+                break
+            end
         end
     end
     return sdkdir

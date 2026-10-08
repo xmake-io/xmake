@@ -40,21 +40,22 @@ function main(toolchain)
             end
         end
     end
+    if #paths == 0 then
+        paths = path.splitenv(os.getenv("PATH") or "")
+    end
 
     -- Locate the SDK manager instead of accepting an unrelated system clang.
+    -- Resolve PATH entries ourselves: find_tool may return only a command name
+    -- when external lookup utilities such as which/where are unavailable.
     local xclang
-    if #paths > 0 then
-        for _, dir in ipairs(paths) do
-            local program = path.join(path.absolute(dir), is_host("windows") and "xclang.exe" or "xclang")
-            if os.isfile(program) then
-                xclang = find_tool("xclang", {program = program, force = true})
-                if xclang then
-                    break
-                end
+    for _, dir in ipairs(paths) do
+        local program = path.join(path.absolute(dir), is_host("windows") and "xclang.exe" or "xclang")
+        if os.isfile(program) then
+            xclang = find_tool("xclang", {program = program, force = true})
+            if xclang then
+                break
             end
         end
-    else
-        xclang = find_tool("xclang", {force = true})
     end
     if not xclang then
         return false
