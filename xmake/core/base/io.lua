@@ -816,7 +816,7 @@ end
 function io.tail(filepath, linecount, opt)
     opt = opt or {}
     if linecount < 0 then
-        return io.cat(filepath, opt)
+        return io.cat(filepath, nil, opt)
     end
 
     -- open file
