@@ -136,7 +136,7 @@ function _curl_download(tool, url, outputfile, opt)
     -- set basic arguments
     local argv = {}
     if option.get("verbose") then
-        table.insert(argv, "-SL")
+        table.insert(argv, "-fSL")
     else
         table.insert(argv, "-fsSL")
     end
