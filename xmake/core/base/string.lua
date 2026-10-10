@@ -267,9 +267,9 @@ function string:levenshtein(str2, opt)
     local len2 = #str2
 
     if len1 == 0 then
-        return len2
+        return len2 * ins
     elseif len2 == 0 then
-        return len1
+        return len1 * del
     elseif str1 == str2 then
         return 0
     end
