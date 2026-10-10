@@ -24,7 +24,6 @@ import("core.base.semver")
 import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
-import(".filter")
 import(".batchcmds")
 
 -- check makensis, we need check some plugins
@@ -186,29 +185,6 @@ function _get_uninstallcmds(package)
     return _get_commands_string(package, batchcmds.get_uninstallcmds(package):cmds(), {install = false})
 end
 
--- get value and filter it
-function _get_filter_value(package, name)
-    local value = package:get(name)
-    if type(value) == "string" then
-        value = filter.handle(value, package)
-    end
-    return value
-end
-
--- get target file path
-function _get_target_filepath(package)
-    local targetfile
-    for _, target in ipairs(package:targets()) do
-        if target:is_binary() then
-            targetfile = target:targetfile()
-            break
-        end
-    end
-    if targetfile then
-        return _translate_filepath(package, path.join(package:bindir(), path.filename(targetfile)))
-    end
-end
-
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
@@ -225,15 +201,12 @@ function _get_specvars(package)
     specvars.PACKAGE_UNINSTALLCMDS = function ()
         return _get_uninstallcmds(package)
     end
-    specvars.PACKAGE_NSIS_DISPLAY_ICON = function ()
-        local iconpath = _get_filter_value(package, "nsis_displayicon")
-        if iconpath then
-            iconpath = path.join(package:installdir(), iconpath)
+    specvars.PACKAGE_DISPLAYICON = function ()
+        local displayicon = package:displayicon()
+        if displayicon then
+            displayicon = _translate_filepath(package, displayicon)
         end
-        if not iconpath then
-            iconpath = _get_target_filepath(package) or ""
-        end
-        return _translate_filepath(package, iconpath)
+        return displayicon or ""
     end
 
     -- install sections

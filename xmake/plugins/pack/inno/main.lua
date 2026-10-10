@@ -223,20 +223,6 @@ function _get_arch(package)
     end
 end
 
--- get target file path
-function _get_target_filepath(package)
-    local targetfile
-    for _, target in ipairs(package:targets()) do
-        if target:is_binary() then
-            targetfile = target:targetfile()
-            break
-        end
-    end
-    if targetfile then
-        return _translate_filepath(package, path.join(package:bindir(), path.filename(targetfile)))
-    end
-end
-
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
@@ -258,25 +244,25 @@ function _get_specvars(package)
     specvars.PACKAGE_INNO_APPID = hash.uuid(package:name())
     specvars.PACKAGE_INNO_ARCH = _get_arch(package)
 
-    -- icon and license file
+    -- the installer icon and license file
     local iconfile = package:get("iconfile")
     if iconfile then
-        specvars.PACKAGE_INNO_ICONFILE = path.absolute(iconfile)
-    else
-        specvars.PACKAGE_INNO_ICONFILE = ""
+        specvars.PACKAGE_ICONFILE = path.absolute(iconfile)
     end
     local licensefile = package:get("licensefile")
     if licensefile then
-        specvars.PACKAGE_INNO_LICENSEFILE = path.absolute(licensefile)
-    else
-        specvars.PACKAGE_INNO_LICENSEFILE = ""
+        specvars.PACKAGE_LICENSEFILE = path.absolute(licensefile)
     end
 
     -- the uninstall display icon
-    specvars.PACKAGE_INNO_DISPLAYICON = _get_target_filepath(package) or ""
+    local displayicon = package:displayicon()
+    if displayicon then
+        displayicon = _translate_filepath(package, displayicon)
+    end
+    specvars.PACKAGE_DISPLAYICON = displayicon or ""
 
     -- the binary directory
-    specvars.PACKAGE_INNO_BINDIR = _translate_filepath(package, package:bindir())
+    specvars.PACKAGE_BINDIR = _translate_filepath(package, package:bindir())
 
     -- collect main install/uninstall commands
     local commands = _new_commands()
