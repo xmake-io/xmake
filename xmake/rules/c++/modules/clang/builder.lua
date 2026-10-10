@@ -181,6 +181,9 @@ function _compile(target, flags, module, opt)
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = module.sourcefile, target = target, sourcekind = "cxx"})
     flags = table.join(compflags or {}, flags or {})
+    if sourcefile == module.bmifile then
+        flags = support.strip_pcm_includedirs(flags)
+    end
     -- trace
     local cmd
     if option.get("verbose") then

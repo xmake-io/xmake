@@ -137,6 +137,26 @@ function has_precompile_reduced_bmi_support(target)
     return get_modulesprecompilereducedbmiflag(target) ~= nil
 end
 
+-- Include search paths are unused when compiling a full BMI to an object.
+-- Keep this separate from BMI hash normalization: code generation flags must remain.
+function strip_pcm_includedirs(flags)
+    local result = {}
+    local skip_next = false
+    for _, flag in ipairs(flags) do
+        if skip_next then
+            skip_next = false
+        elseif flag == "-I" or flag == "/I" or flag == "-external:I" or flag == "/external:I"
+            or flag == "-isystem" or flag == "-iquote" or flag == "-idirafter" then
+            skip_next = true
+        elseif not (flag:startswith("-I") or flag:startswith("/I")
+            or flag:startswith("-external:I") or flag:startswith("/external:I")
+            or flag:startswith("-isystem") or flag:startswith("-iquote") or flag:startswith("-idirafter")) then
+            table.insert(result, flag)
+        end
+    end
+    return result
+end
+
 -- flags that doesn't affect bmi generation
 function strippeable_flags()
     -- speculative list as there is no resource that list flags that prevent reusability, this list will likely be improve over time
