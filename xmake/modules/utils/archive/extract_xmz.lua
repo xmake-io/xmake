@@ -48,7 +48,7 @@ function _extract_files(archivefile, outputdir, opt)
             if filedata then
                 io.writefile(path.join(outputdir, filepath), filedata, {encoding = "binary"})
             else
-                os.touch(filepath)
+                io.writefile(path.join(outputdir, filepath), "", {encoding = "binary"})
             end
         end
     end
