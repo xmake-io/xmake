@@ -203,6 +203,7 @@ function xpack:inputkind()
         local inputkinds = {
             wix      = "binary",
             nsis     = "binary",
+            inno     = "binary",
             zip      = "binary",
             targz    = "binary",
             tarxz    = "binary",
@@ -226,6 +227,7 @@ function xpack:outputkind()
     local outputkinds = {
         wix      = "binary",
         nsis     = "binary",
+        inno     = "binary",
         zip      = "binary",
         targz    = "binary",
         tarxz    = "binary",
@@ -383,6 +385,7 @@ function xpack:extension()
         local extensions = {
             wix      = ".msi",
             nsis     = ".exe",
+            inno     = ".exe",
             zip      = ".zip",
             targz    = ".tar.gz",
             tarxz    = ".tar.xz",
