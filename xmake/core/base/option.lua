@@ -174,7 +174,7 @@ function option.parse(argv, options, opt)
     end
 
     -- run parser
-    local pargs = cli.parsev(argv, flags)
+    local pargs = type(argv) == "string" and cli.parse(argv, flags) or cli.parsev(argv, flags)
 
     -- save parse results
     for i, arg in ipairs(pargs) do
