@@ -467,6 +467,9 @@ function os.match(pattern, mode, opt)
     -- match the single file without wildchard?
     if os.isfile(pattern) then
         if mode <= 0 then
+            if type(callback) == "function" then
+                callback(pattern, false)
+            end
             return {pattern}, 1
         else
             return {}, 0
@@ -474,6 +477,9 @@ function os.match(pattern, mode, opt)
     -- match the single directory without wildchard?
     elseif os.isdir(pattern) then
         if (mode == -1 or mode == 1) then
+            if type(callback) == "function" then
+                callback(pattern, true)
+            end
             return {pattern}, 1
         else
             return {}, 0
