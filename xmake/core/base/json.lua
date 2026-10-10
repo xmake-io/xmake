@@ -51,7 +51,7 @@ end
 
 function json._pure_kind_of(obj)
     if type(obj) ~= "table" then
-        return type(obj)
+        return obj == json.null and "nil" or type(obj)
     end
     if json.is_marked_as_array(obj) then
         return "array"

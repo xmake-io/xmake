@@ -92,3 +92,27 @@ function test_pure_json_encode(t)
     }, "\n")
     t:are_equal(json_pure_encode({name = "xmake", targets = {"foo", "bar"}}, {pretty = true, indent = 4}), pretty_expected)
 end
+
+function test_json_null_with_pure_encoder(t)
+    local decoded = json_decode([[{"missing":null,"items":[null,1,false],"nested":{"missing":null}}]])
+    for _, opt in ipairs({{pure = true}, {pretty = true}}) do
+        t:are_equal(json_decode(json_encode(decoded, opt)), decoded)
+    end
+    t:are_equal(json_encode({json_null, json_pure_null}, {pure = true}), "[null,null]")
+    t:are_equal(json_encode(json_null, {pretty = true}), "null")
+
+    local tmpfile = os.tmpfile()
+    try
+    {
+        function ()
+            json.savefile(tmpfile, decoded, {pretty = true})
+            t:are_equal(json.loadfile(tmpfile), decoded)
+        end,
+        finally
+        {
+            function ()
+                os.tryrm(tmpfile)
+            end
+        }
+    }
+end
