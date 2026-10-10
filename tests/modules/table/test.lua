@@ -44,3 +44,29 @@ function test_orderkeys(t)
     t:are_equal(table.orderkeys({[2] = 2, [1] = 1, [4] = 4, [3] = 3}, f), {2, 4, 1, 3})
     t:are_equal(table.orderkeys({[1] = 1, [2] = 2, [3] = 3, [4] = 4}), {1, 2 , 3, 4})
 end
+
+function test_clone_depth(t)
+    local source = {name = "original", nested = {items = {1, 2}}}
+    local shallow = table.clone(source)
+    t:require_not(shallow == source)
+    t:require(shallow.nested == source.nested)
+    local limited = table.clone(source, 2)
+    t:require_not(limited.nested == source.nested)
+    t:require(limited.nested.items == source.nested.items)
+    t:require(table.clone(source, 0) == source)
+    t:are_equal(table.clone("value", -1), "value")
+    t:are_equal(table.clone(nil, -1), nil)
+end
+
+function test_clone_deep(t)
+    local source = {name = "original", nested = {items = {1, 2}}}
+    local cloned = table.clone(source, -1)
+    t:are_equal(cloned, source)
+    t:require_not(cloned == source)
+    t:require_not(cloned.nested == source.nested)
+    t:require_not(cloned.nested.items == source.nested.items)
+    cloned.nested.items[1] = 3
+    t:are_equal(source.nested.items[1], 1)
+    local empty = {}
+    t:require_not(table.clone(empty, -1) == empty)
+end

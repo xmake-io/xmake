@@ -169,10 +169,10 @@ end
 function table.clone(self, depth)
     depth = depth or 1
     local result = self
-    if type(self) == "table" and depth > 0 then
+    if type(self) == "table" and (depth > 0 or depth == -1) then
         result = {}
         for k, v in pairs(self) do
-            result[k] = table.clone(v, depth - 1)
+            result[k] = table.clone(v, depth == -1 and -1 or depth - 1)
         end
     end
     return result
