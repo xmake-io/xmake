@@ -464,7 +464,11 @@ function _do_computedag(target, modules, sourcebatch)
             cxx_sourcebatch.dependfiles = {}
             cxx_sourcebatch.objectfiles = {}
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                if not support.has_module_extension(sourcefile) then
+                -- Dependency implementation units are already compiled into the library,
+                -- and reused sources get their objects from the owning target.
+                if not support.has_module_extension(sourcefile) and
+                   not support.is_bmionly(target, sourcefile) and
+                   not support.is_reused(target, sourcefile) then
                     local module = modules[sourcefile]
                     local insert = true
                     if module then
