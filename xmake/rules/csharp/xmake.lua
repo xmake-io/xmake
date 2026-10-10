@@ -108,6 +108,11 @@
 --   csharp.disable_implicit_framework_references        - DisableImplicitFrameworkReferences
 --   csharp.generate_target_framework_attribute          - GenerateTargetFrameworkAttribute
 --
+-- References:
+--   csharp.references                                   - add <Reference> entries with HintPath, for prebuilt/external
+--                                                         assemblies that aren't NuGet packages or other xmake targets
+--                                                         (list), e.g. set_values("csharp.references", "path/to/Foo.dll")
+--
 -- Custom Properties (for arbitrary csproj properties not listed above):
 --   csharp.properties                                   - add custom <PropertyGroup> entries, format: "Name=Value"
 --                                                         e.g. set_values("csharp.properties", "MyProp=value", "AnotherProp=value2")
