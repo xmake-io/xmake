@@ -151,3 +151,40 @@ function test_instance(t)
     t:are_equal(path("/tmp/a", function (p) return "--key=" .. p end):rawstr(), "/tmp/a")
     t:are_equal(path("/tmp/a", function (p) return "--key=" .. p end):clone():set("/tmp/b"):str(), "--key=/tmp/b")
 end
+
+function test_instance_transform_operations(t)
+    local rootdir = path.absolute(os.tmpdir())
+    local raw = path.join(rootdir, "include")
+    local transform = function (p) return "-I" .. p end
+    local p = path(raw, transform)
+    local cases = {
+        {p:normalize(), raw},
+        {p:translate(), raw},
+        {p:unix(), path.unix(raw)},
+        {p:directory(), rootdir},
+        {p:absolute(rootdir), raw},
+        {p:relative(rootdir), "include"},
+        {p:join("headers"), path.join(raw, "headers")},
+        {p .. "headers", path.join(raw, "headers")}
+    }
+    for _, case in ipairs(cases) do
+        t:are_equal(case[1]:rawstr(), case[2])
+        t:are_equal(case[1]:str(), "-I" .. case[2])
+    end
+    t:are_equal(p:rawstr(), raw)
+    t:are_equal(p:str(), "-I" .. raw)
+end
+
+function test_instance_operations(t)
+    local rootdir = path.absolute(os.tmpdir())
+    local raw = path.join(rootdir, "include")
+    local p = path(raw)
+    t:are_equal(p:normalize():str(), raw)
+    t:are_equal(p:translate():str(), raw)
+    t:are_equal(p:unix():str(), path.unix(raw))
+    t:are_equal(p:directory():str(), rootdir)
+    t:are_equal(p:absolute(rootdir):str(), raw)
+    t:are_equal(p:relative(rootdir):str(), "include")
+    t:are_equal(p:join("headers"):str(), path.join(raw, "headers"))
+    t:are_equal((p .. "headers"):str(), path.join(raw, "headers"))
+end
