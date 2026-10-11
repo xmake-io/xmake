@@ -36,15 +36,18 @@ function has_tool(toolname, tools)
     if toolname then
         -- We need compatibility with gcc/g++, clang/clang++ for c++ compiler/linker
         -- @see https://github.com/xmake-io/xmake/issues/6852
-        local trim_xx = false
-        if toolname == "clangxx" or toolname == "gxx" then
-            toolname = toolname:rtrim("xx")
-            trim_xx = true
+        local compat_map = {
+            clangxx = "clang",
+            gxx     = "gcc",
+        }
+        local compat = false
+        if compat_map[toolname] then
+            toolname = compat_map[toolname]
+            compat = true
         end
-        for _, v in ipairs(tools) do
-            local v = v
-            if trim_xx then
-                v = v:rtrim("xx")
+        for _, v in ipairs(table.wrap(tools)) do
+            if compat then
+                v = compat_map[v] or v
             end
             if v and toolname:find("^" .. v:gsub("%-", "%%-") .. "$") then
                 return true
@@ -74,19 +77,11 @@ function flag_belong_to_tool(flag, toolinst, extraconf)
     local for_this_tool = true
     local flagconf = extraconf and extraconf[flag]
     if type(flag) == "string" and flag:find("::", 1, true) then
-        for_this_tool = false
         local splitinfo = flag:split("::", {plain = true})
         local toolname = splitinfo[1]
-        local realname = toolinst:name()
-        -- We need compatibility with gcc/g++, clang/clang++ for c++ compiler/linker
-        -- @see https://github.com/xmake-io/xmake/issues/6852
-        if realname == "clangxx" or realname == "gxx" then
-            toolname = toolname:rtrim("xx")
-            realname = realname:rtrim("xx")
-        end
-        if toolname == realname then
+        for_this_tool = has_tool(toolinst:name(), toolname)
+        if for_this_tool then
             flag = splitinfo[2]
-            for_this_tool = true
         end
     elseif flagconf and flagconf.tools then
         for_this_tool = has_tool(toolinst:name(), flagconf.tools)
