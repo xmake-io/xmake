@@ -29,6 +29,9 @@ import("utils.progress")
 -- init it
 function init(self)
 
+    -- suppress warning
+    self:add("cxflags", "-Qunused-arguments")
+
     -- init flags map
     self:set("mapflags",
     {
