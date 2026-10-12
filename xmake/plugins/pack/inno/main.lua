@@ -65,7 +65,7 @@ function _get_component_flag(opt)
     return ""
 end
 
--- new an empty command strings
+-- new empty command strings
 function _new_commands()
     return {
         files             = {},
@@ -218,6 +218,8 @@ function _get_arch(package)
         return "ArchitecturesAllowed=arm64\nArchitecturesInstallIn64BitMode=arm64"
     elseif arch == "arm64ec" then
         return "ArchitecturesAllowed=arm64"
+    elseif arch == "arm" then
+        return "ArchitecturesAllowed=arm32compatible"
     else
         return "ArchitecturesAllowed=x86compatible"
     end
