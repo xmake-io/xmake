@@ -94,7 +94,7 @@ function _get_command_strings(package, cmd, opt)
     local component_flag = _get_component_flag(opt)
     local kind = cmd.kind
     if kind == "cp" then
-        -- https://jrsoftware.org/ishelp/topic_files.htm
+        -- https://jrsoftware.org/ishelp/topic_filessection.htm
         local srcpath = cmd.srcpath
         local dstpath = _translate_filepath(package, cmd.dstpath)
 
