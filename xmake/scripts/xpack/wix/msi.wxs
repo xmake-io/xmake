@@ -32,6 +32,9 @@
         <StandardDirectory Id="ProgramFiles6432Folder">
             <Directory Id="INSTALLFOLDER" Name="$(PackageName)"/>
         </StandardDirectory>
+        <StandardDirectory Id="ProgramMenuFolder">
+            <Directory Id="ApplicationProgramsFolder" Name="$(PackageTitle)"/>
+        </StandardDirectory>
         ${PACKAGE_WIX_CMDS}
     </Package>
 </Wix>

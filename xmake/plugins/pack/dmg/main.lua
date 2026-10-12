@@ -22,6 +22,7 @@
 import("core.base.option")
 import("lib.detect.find_tool")
 import(".batchcmds")
+import("plugins.pack.launcher", {alias = "launcher", rootdir = os.programdir()})
 
 -- pack dmg package
 function _pack_dmg(package)
@@ -44,6 +45,21 @@ function _pack_dmg(package)
     -- get install root directory
     local rootdir = package:install_rootdir()
     assert(os.isdir(rootdir), "install root directory not found: %s", rootdir)
+
+    -- install launcher wrapper if runenvs/runargs are set
+    local launcher_exe = launcher.main_executable(package)
+    if launcher_exe then
+        local binname = path.filename(launcher_exe)
+        local launcher_path = path.join(rootdir, package:get("bindir") or "bin", binname) .. ".app/Contents/MacOS/" .. binname
+        -- the real binary sits three levels above the wrapper in the .app
+        local exec_path = string.format('"$(dirname "$0")/../../../%s"', path.filename(launcher_exe))
+        local launcher_script = launcher.generate(package, exec_path)
+        if launcher_script then
+            os.mkdir(path.directory(launcher_path))
+            io.writefile(launcher_path, launcher_script)
+            os.vrunv("chmod", {"+x", launcher_path})
+        end
+    end
 
     -- get output file
     local outputfile = package:outputfile()

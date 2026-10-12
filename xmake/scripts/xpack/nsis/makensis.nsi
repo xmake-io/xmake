@@ -316,6 +316,9 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   ${Else}
     !insertmacro AddReg ${HKCU}
   ${EndIf}
+
+  ; create the start menu shortcut (with runargs/runenvs if set)
+  ${PACKAGE_NSIS_STARTMENU_SHORTCUT}
 SectionEnd
 
 ; add the binary directory to %PATH%
