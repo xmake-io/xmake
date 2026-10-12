@@ -19,7 +19,7 @@ target("foo")
     add_packages("zlib")
 
 xpack("test")
-    set_formats("nsis", "srpm", "rpm", "deb", "zip", "targz", "tarxz", "srczip", "srctargz", "srctarxz", "runself", "wix", "dmg", "appimage")
+    set_formats("nsis", "inno", "srpm", "rpm", "deb", "zip", "targz", "tarxz", "srczip", "srctargz", "srctarxz", "runself", "wix", "dmg", "appimage")
     set_title("hello")
     set_author("ruki <waruqi@gmail.com>")
     set_description("A test installer.")
@@ -77,4 +77,8 @@ xpack_component("LongPath")
     ; Enable long path
     WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1
   ${EndIf}]])
+        batchcmds:rawcmd("inno", [[
+[Registry]
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\FileSystem"; ValueType: dword; ValueName: "LongPathsEnabled"; ValueData: "1"; Components: LongPath
+]])
     end)

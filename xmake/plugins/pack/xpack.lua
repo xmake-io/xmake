@@ -97,6 +97,25 @@ function xpack:description()
     return self:get("description")
 end
 
+-- get the display icon shown in add/remove programs,
+function xpack:displayicon()
+    local iconfile = self:get("displayicon")
+    if not iconfile then
+        iconfile = self:get("nsis_displayicon")
+        if iconfile then
+            wprint("xpack.set_nsis_displayicon() has been deprecated, please use xpack.set_displayicon()")
+        end
+    end
+    if iconfile then
+        return path.normalize(path.join(self:installdir(), filter.handle(iconfile, self)))
+    end
+    for _, target in ipairs(self:targets()) do
+        if target:is_binary() then
+            return path.normalize(path.join(self:bindir(), path.filename(target:targetfile())))
+        end
+    end
+end
+
 -- get the platform of package
 function xpack:plat()
     return config.get("plat") or os.subhost()
@@ -203,6 +222,7 @@ function xpack:inputkind()
         local inputkinds = {
             wix      = "binary",
             nsis     = "binary",
+            inno     = "binary",
             zip      = "binary",
             targz    = "binary",
             tarxz    = "binary",
@@ -226,6 +246,7 @@ function xpack:outputkind()
     local outputkinds = {
         wix      = "binary",
         nsis     = "binary",
+        inno     = "binary",
         zip      = "binary",
         targz    = "binary",
         tarxz    = "binary",
@@ -383,6 +404,7 @@ function xpack:extension()
         local extensions = {
             wix      = ".msi",
             nsis     = ".exe",
+            inno     = ".exe",
             zip      = ".zip",
             targz    = ".tar.gz",
             tarxz    = ".tar.xz",

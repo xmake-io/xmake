@@ -67,7 +67,9 @@ local apis = {
         "xpack.set_prefixdir",
         -- add build requires for source inputkind
         "xpack.add_buildrequires",
-        -- set nsis display icon
+        -- set the display icon shown in add/remove programs, e.g. "bin/foo.ico", "bin/foo.exe"
+        "xpack.set_displayicon",
+        -- set nsis display icon (deprecated, use xpack.set_displayicon)
         "xpack.set_nsis_displayicon",
         -- set package component title
         "xpack_component.set_title",

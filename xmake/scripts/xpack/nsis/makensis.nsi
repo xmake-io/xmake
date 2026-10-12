@@ -288,8 +288,8 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   !macro AddReg RootKey
     WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NoAdmin"
     WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_TITLE}"
-    !if "${PACKAGE_NSIS_DISPLAY_ICON}" != ""
-    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"${PACKAGE_NSIS_DISPLAY_ICON}"'
+    !if "${PACKAGE_DISPLAYICON}" != ""
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"${PACKAGE_DISPLAYICON}"'
     !endif
     WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "${PACKAGE_DESCRIPTION}"
     WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "${PACKAGE_COPYRIGHT}"
