@@ -45,7 +45,7 @@ function has_tool(toolname, tools)
             toolname = compat_map[toolname]
             compat = true
         end
-        for _, v in ipairs(table.wrap(tools)) do
+        for _, v in ipairs(tools) do
             if compat then
                 v = compat_map[v] or v
             end
