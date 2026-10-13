@@ -3,7 +3,7 @@ inherit(".test_base")
 function _build(opt)
     local output = os.iorunv(os.programfile(), {"build", "-rvD"})
     assert(not output:find("argument unused during compilation", 1, true), output)
-    if opt.precompile_reduced_bmi then
+    if opt.precompile_reduced_bmi and opt.two_phases then
         assert(output:find("--precompile-reduced-bmi", 1, true), output)
     elseif opt.two_phases then
         assert(output:find("--precompile", 1, true), output)
@@ -16,15 +16,8 @@ function _build(opt)
 end
 
 function main(t)
-    local toolchains = is_subhost("windows") and {"clang-cl", "clang"} or {"clang"}
-    for _, toolchain in ipairs(toolchains) do
-        for _, two_phases in ipairs({true, false}) do
-            build_tests(toolchain, {compiler = toolchain, version = "19",
-                flags = {"--ccache=n"}, two_phases = two_phases,
-                precompile_reduced_bmi = false, build = _build})
-        end
-        build_tests(toolchain, {compiler = toolchain, version = "22",
-            flags = {"--ccache=n"}, two_phases = true,
-            precompile_reduced_bmi = true, build = _build})
-    end
+    run_tests({compiler = "clang", version = "19", flags = {"--ccache=n"},
+        precompile_reduced_bmi = false, build = _build})
+    run_tests({compiler = "clang", version = "23", flags = {"--ccache=n"},
+        precompile_reduced_bmi = true, build = _build})
 end
