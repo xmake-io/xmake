@@ -3,7 +3,9 @@ inherit(".test_base")
 function _build(opt)
     local output = os.iorunv(os.programfile(), {"build", "-rvD"})
     assert(not output:find("argument unused during compilation", 1, true), output)
-    if opt.two_phases then
+    if opt.precompile_reduced_bmi then
+        assert(output:find("--precompile-reduced-bmi", 1, true), output)
+    elseif opt.two_phases then
         assert(output:find("--precompile", 1, true), output)
     else
         assert(not output:find("--precompile", 1, true), output)
@@ -21,5 +23,8 @@ function main(t)
                 flags = {"--ccache=n"}, two_phases = two_phases,
                 precompile_reduced_bmi = false, build = _build})
         end
+        build_tests(toolchain, {compiler = toolchain, version = "22",
+            flags = {"--ccache=n"}, two_phases = true,
+            precompile_reduced_bmi = true, build = _build})
     end
 end

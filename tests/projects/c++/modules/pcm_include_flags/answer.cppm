@@ -4,6 +4,8 @@ module;
 
 export module answer;
 
+static_assert(FILE_VALUE == 42);
+
 export int answer() {
     return LOCAL_VALUE + SYSTEM_VALUE;
 }
