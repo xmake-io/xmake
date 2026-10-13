@@ -1923,6 +1923,11 @@ function _instance:_fetch_tool(opt)
             end
         end
     end
+    -- we need to check the installed package when fallback fetch is disabled
+    -- @see https://github.com/xmake-io/xmake-repo/pull/11033
+    if fetchinfo == false and not opt.system then
+        fetchinfo = self:manifest_load() or false
+    end
     return fetchinfo or nil
 end
 
@@ -2003,6 +2008,15 @@ function _instance:_fetch_library(opt)
                                            external = opt.external,
                                            force = opt.force})
         end
+    end
+    -- we need to check the installed package when fallback fetch is disabled
+    -- @see https://github.com/xmake-io/xmake-repo/pull/11033
+    if fetchinfo == false and not opt.system then
+        fetchinfo = self:find_package("xmake::" .. self:name(), {
+                                       require_version = opt.require_version,
+                                       cachekey = "fetch_package_xmake",
+                                       external = opt.external,
+                                       force = opt.force}) or false
     end
     return fetchinfo or nil
 end
