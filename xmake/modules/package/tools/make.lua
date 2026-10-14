@@ -63,7 +63,8 @@ function buildenvs(package)
         envs.ASFLAGS   = table.concat(asflags, ' ')
         envs.LDFLAGS   = table.concat(ldflags, ' ')
         envs.SHFLAGS   = table.concat(shflags, ' ')
-    else
+    end
+    if not package:is_plat(os.host()) or package:config("toolchains") then
         envs.CC        = _translate_bin_path(package:build_getenv("cc"))
         envs.CXX       = _translate_bin_path(package:build_getenv("cxx"))
         envs.AS        = _translate_bin_path(package:build_getenv("as"))
