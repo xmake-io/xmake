@@ -23,6 +23,7 @@ import("core.base.option")
 import("devel.git.remote")
 import("lib.detect.find_tool")
 import("net.proxy")
+import("devel.git.support")
 
 -- pull remote commits
 --
@@ -47,6 +48,7 @@ function main(opt)
 
     -- init argv
     local argv = {}
+    support.init_argv(argv, opt)
     if opt.fsmonitor then
         table.insert(argv, "-c")
         table.insert(argv, "core.fsmonitor=true")

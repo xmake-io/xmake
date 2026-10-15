@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
+import("devel.git.support")
 
 -- reset files
 --
@@ -45,6 +46,7 @@ function main(opt)
 
     -- init argv
     local argv = {}
+    support.init_argv(argv, opt)
     if opt.fsmonitor then
         table.insert(argv, "-c")
         table.insert(argv, "core.fsmonitor=true")

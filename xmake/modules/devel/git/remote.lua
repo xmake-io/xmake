@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
+import("devel.git.support")
 
 -- get remote url
 --
@@ -82,9 +83,10 @@ function set_url(url, opt)
     local git = assert(find_tool("git"), "git not found!")
 
     -- init arguments
-    local argv = {"remote", "set-url", opt.remote or "origin", url}
+    local argv = {}
+    support.init_argv(argv, opt)
+    table.join2(argv, {"remote", "set-url", opt.remote or "origin", url})
 
     -- set remote url
     os.vrunv(git.program, argv, {curdir = opt.repodir})
 end
-

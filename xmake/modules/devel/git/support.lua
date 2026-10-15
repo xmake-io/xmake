@@ -23,6 +23,40 @@ import("core.base.option")
 import("core.base.semver")
 import("lib.detect.find_tool")
 
+-- Locate this repository's metadata without discovering a parent repository (#7793).
+-- @see https://github.com/xmake-io/xmake/issues/7793
+function repository_gitdir(repodir)
+    if not os.isdir(repodir) then
+        return
+    end
+    repodir = path.absolute(repodir)
+    local gitdir = path.join(repodir, ".git")
+    -- Git itself resolves .git files used by worktrees/submodules and rejects damaged metadata.
+    if os.isfile(gitdir) or os.isfile(path.join(gitdir, "HEAD")) then
+        return gitdir
+    end
+    -- Bare repositories store their metadata directly in repodir.
+    if os.isfile(path.join(repodir, "HEAD")) and os.isdir(path.join(repodir, "objects")) and os.isdir(path.join(repodir, "refs")) then
+        return repodir
+    end
+end
+
+-- Guard modifying commands when a repository directory is explicitly supplied.
+function init_argv(argv, opt)
+    local repodir = opt and opt.repodir
+    if not repodir then
+        return
+    end
+    repodir = path.absolute(repodir)
+    local gitdir = repository_gitdir(repodir)
+    assert(gitdir, "invalid Git repository directory: %s", repodir)
+    -- Let Git enforce the directory change as well as the subprocess curdir option.
+    -- Explicit metadata also prevents ancestor discovery if the contents are damaged.
+    table.insert(argv, "-C")
+    table.insert(argv, repodir)
+    table.insert(argv, "--git-dir=" .. gitdir)
+end
+
 -- get git version
 function _git_version()
     local git_version = _g.git_version
@@ -92,4 +126,3 @@ function can_sparse_checkout()
     end
     return can or false
 end
-
