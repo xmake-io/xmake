@@ -51,7 +51,7 @@ function buildenvs(package)
         table.join2(ldflags, toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "runtime", runtimes))
         table.join2(shflags, toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes))
     end
-    if package:is_plat(os.host()) then
+    if not package:is_cross() and not package:config("toolchains") then
         if package:is_plat("linux") and package:is_arch("i386") then
             table.insert(cflags,   "-m32")
             table.insert(cxxflags, "-m32")
