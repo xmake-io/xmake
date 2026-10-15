@@ -1,0 +1,1 @@
+#define LOCAL_VALUE 20

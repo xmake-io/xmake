@@ -179,7 +179,13 @@ function _compile(target, flags, module, opt)
     local outputfile = ((opt.bmi and not opt.objectfile) or opt.headerunit) and module.bmifile or module.objectfile
     local dryrun = option.get("dry-run")
     local compinst = target:compiler("cxx")
-    local compflags = compinst:compflags({sourcefile = module.sourcefile, target = target, sourcekind = "cxx"})
+    -- A full BMI already contains the parsed source; do not generate header search flags for it.
+    -- Keep the original sourcefile to retain its file configuration and module dependency flags.
+    local excludeconfigs
+    if sourcefile == module.bmifile then
+        excludeconfigs = {"includedirs", "sysincludedirs"}
+    end
+    local compflags = compinst:compflags({sourcefile = module.sourcefile, target = target, sourcekind = "cxx", excludeconfigs = excludeconfigs})
     flags = table.join(compflags or {}, flags or {})
     -- trace
     local cmd

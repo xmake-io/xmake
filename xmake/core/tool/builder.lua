@@ -227,7 +227,9 @@ function builder:_add_flags_from_targetpkgs(flags, target)
 end
 
 -- add flags from the target
-function builder:_add_flags_from_target(flags, target)
+function builder:_add_flags_from_target(flags, target, opt)
+
+    opt = opt or {}
 
     -- no target?
     if not target then
@@ -246,12 +248,15 @@ function builder:_add_flags_from_target(flags, target)
 
     -- get flags from cache first
     local key = target:cachekey()
+    if opt.excludeconfigs then
+        key = key .. ":excludeconfigs:" .. table.concat(opt.excludeconfigs, ",")
+    end
     local targetflags = cache[key]
     if not targetflags then
 
         -- add flags from language
         targetflags = {}
-        self:_add_flags_from_language(targetflags, {target = target})
+        self:_add_flags_from_language(targetflags, {target = target, excludeconfigs = opt.excludeconfigs})
 
         -- add flags for the target
         if target_type == "target" then
@@ -276,7 +281,9 @@ function builder:_add_flags_from_target(flags, target)
 end
 
 -- add flags from the argument option
-function builder:_add_flags_from_argument(flags, target, args)
+function builder:_add_flags_from_argument(flags, target, args, opt)
+
+    opt = opt or {}
 
     -- add flags from the flag kinds (cxflags, ..)
     for _, flagkind in ipairs(self:_flagkinds()) do
@@ -288,7 +295,7 @@ function builder:_add_flags_from_argument(flags, target, args)
     end
 
     -- add flags (named) from the language
-    self:_add_flags_from_language(flags, {linkorders = args.linkorders, linkgroups = args.linkgroups, getters = {
+    self:_add_flags_from_language(flags, {excludeconfigs = opt.excludeconfigs, linkorders = args.linkorders, linkgroups = args.linkgroups, getters = {
         target = function (name)
             -- we need also to get extra from arguments
             -- @see https://github.com/xmake-io/xmake/issues/4274
@@ -443,7 +450,7 @@ function builder:_add_flags_from_language(flags, opt)
 
         -- map named flags to real flags
         local mapper = self:_tool()["nf_" .. apiname]
-        if mapper then
+        if mapper and (not opt.excludeconfigs or not table.contains(opt.excludeconfigs, flagname)) then
             local opt_ = {target = target, check = checkstate, multival = multival, mapper = mapper}
             if opt.getters then
                 local getter = opt.getters[flagscope]

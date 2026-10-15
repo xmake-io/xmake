@@ -76,7 +76,7 @@ function compiler:_add_flags_from_compiler(flags, targetkind)
 end
 
 -- add flags from the sourcefile config
-function compiler:_add_flags_from_fileconfig(flags, target, sourcefile, fileconfig)
+function compiler:_add_flags_from_fileconfig(flags, target, sourcefile, fileconfig, opt)
 
     -- add flags from the current compiler
     local add_sourceflags = self:_tool().add_sourceflags
@@ -88,7 +88,7 @@ function compiler:_add_flags_from_fileconfig(flags, target, sourcefile, fileconf
     end
 
     -- add flags from the common argument option
-    self:_add_flags_from_argument(flags, target, fileconfig)
+    self:_add_flags_from_argument(flags, target, fileconfig, opt)
 end
 
 -- load compiler tool
@@ -328,6 +328,8 @@ end
 -- @param opt   the argument options (contain all the compiler attributes of target),
 --              e.g.
 --              {target = ..., targetkind = "static", configs = {defines = "", cxflags = "", includedirs = ""}}
+--              excludeconfigs = {"includedirs", "sysincludedirs"} skips named configurations,
+--              without changing raw flags such as cxxflags and cxflags.
 --
 -- @return      flags list
 --
@@ -353,20 +355,20 @@ function compiler:compflags(opt)
     self:_add_flags_from_toolchains(flags, targetkind, target)
 
     -- add flags from target
-    self:_add_flags_from_target(flags, target)
+    self:_add_flags_from_target(flags, target, opt)
 
     -- add flags from source file configuration
     if opt.sourcefile and target and target.fileconfig then
         local fileconfig = target:fileconfig(opt.sourcefile)
         if fileconfig then
-            self:_add_flags_from_fileconfig(flags, target, opt.sourcefile, fileconfig)
+            self:_add_flags_from_fileconfig(flags, target, opt.sourcefile, fileconfig, opt)
         end
     end
 
     -- add flags from argument
     local configs = opt.configs or opt.config
     if configs then
-        self:_add_flags_from_argument(flags, target, configs)
+        self:_add_flags_from_argument(flags, target, configs, opt)
     end
 
     -- add flags from user configuration
