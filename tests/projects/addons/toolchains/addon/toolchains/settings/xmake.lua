@@ -1,0 +1,5 @@
+toolchain("settings")
+    set_kind("binary")
+    on_load(function (toolchain)
+        toolchain:add("defines", "EXAMPLE_TOOLCHAIN=42")
+    end)
