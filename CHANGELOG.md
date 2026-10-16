@@ -2,6 +2,68 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#7742](https://github.com/xmake-io/xmake/pull/7742): Support Clang reduced-BMI compilation
+* [#7791](https://github.com/xmake-io/xmake/pull/7791): Add `xmake test --output-on-failure`
+* [#7854](https://github.com/xmake-io/xmake/pull/7854): Add Inno Setup packaging and `set_displayicon` support
+* [#7758](https://github.com/xmake-io/xmake/pull/7758): Support custom downloaders and improve aria2 reliability
+* [#7792](https://github.com/xmake-io/xmake/pull/7792): Support `configs.configdirs` for `pkgconfig::` packages
+* [#7799](https://github.com/xmake-io/xmake/pull/7799): Support `VERSION_PRERELEASE` and semver `VERSION_BUILD` in config files
+* [#7808](https://github.com/xmake-io/xmake/pull/7808): Support C++23 with nvcc
+* [#7766](https://github.com/xmake-io/xmake/pull/7766): Add raddbg support on Linux
+* [#7743](https://github.com/xmake-io/xmake/pull/7743): Expose more native Lua functions through `lib.lua.*`
+* [#7752](https://github.com/xmake-io/xmake/pull/7752): Support Unicode escapes in the pure Lua JSON decoder
+
+### Changes
+
+* [#7852](https://github.com/xmake-io/xmake/pull/7852): Suppress unused-argument warnings for clang-cl
+* [#7855](https://github.com/xmake-io/xmake/pull/7855): Update MATLAB version detection through R2026b
+* [#7767](https://github.com/xmake-io/xmake/pull/7767): Warn when cached project settings shadow a local project
+* [#7780](https://github.com/xmake-io/xmake/pull/7780): Remove built-in Gitee and GitCode mirrors
+* [#7860](https://github.com/xmake-io/xmake/pull/7860): Add standalone addon distribution examples
+* [#7800](https://github.com/xmake-io/xmake/pull/7800): Improve `isnan` invalid-input tests
+* Update the bundled tbox
+* Update Ubuntu PPA targets and NetBSD CI dependencies
+* Update PowerShell installer and RPM version metadata
+* Add repository development conventions in `AGENTS.md`
+
+### Bugs fixed
+
+* [#7750](https://github.com/xmake-io/xmake/pull/7750): Fix Clang modules and compilation databases with MSVC environments
+* [#7770](https://github.com/xmake-io/xmake/pull/7770): Preserve MSVC system includes in clangd compilation databases
+* [#7849](https://github.com/xmake-io/xmake/pull/7849): Remove unused include flags when compiling Clang PCMs to objects
+* [#7788](https://github.com/xmake-io/xmake/pull/7788): Fix C++ module caches across build modes and project generation
+* [#7815](https://github.com/xmake-io/xmake/pull/7815): Fix clang-cl PCH dependency tracking
+* [#7819](https://github.com/xmake-io/xmake/pull/7819): Disable compiler caching for MSVC PCH creation
+* [#7798](https://github.com/xmake-io/xmake/pull/7798): Avoid unnecessary static re-archiving and stale merged archive members
+* [#7820](https://github.com/xmake-io/xmake/pull/7820): Prevent repository updates from resetting user projects and recover interrupted clones
+* [#7776](https://github.com/xmake-io/xmake/pull/7776): Fix recognition of locally installed addons
+* [#7809](https://github.com/xmake-io/xmake/pull/7809): Fix local-repository paths when installing and upgrading addons
+* [#7821](https://github.com/xmake-io/xmake/pull/7821): Activate the required version of installed addons
+* [#7761](https://github.com/xmake-io/xmake/pull/7761): Preserve usable MSVC environments when toolset detection fails
+* [#7813](https://github.com/xmake-io/xmake/pull/7813): Fix Ascend C toolchain detection and unchecked SDK loading
+* [#7853](https://github.com/xmake-io/xmake/pull/7853): Fix `gxx`/`gcc` tool and flag matching
+* [#7763](https://github.com/xmake-io/xmake/pull/7763): Enable C++ exceptions by default for clang-cl packages
+* [#7779](https://github.com/xmake-io/xmake/pull/7779): Include compiler runtime paths during Windows and MinGW package installation
+* [#7782](https://github.com/xmake-io/xmake/pull/7782): Fix MIDL detection when cross-compiling to ARM64
+* [#7772](https://github.com/xmake-io/xmake/pull/7772): Fix Qt debug library names on HarmonyOS
+* [#7789](https://github.com/xmake-io/xmake/pull/7789): Fix Homebrew package discovery for `latest` versions
+* [#7760](https://github.com/xmake-io/xmake/pull/7760): Fix quoted flags and Windows paths in the Conan generator
+* [#7857](https://github.com/xmake-io/xmake/pull/7857): Pass selected toolchains to Make-based package builds
+* [#7803](https://github.com/xmake-io/xmake/pull/7803): Fix incorrect `vs_runtime` deprecation warnings
+* [#7749](https://github.com/xmake-io/xmake/pull/7749): Rebuild Verilator outputs when tools or flags change
+* [#7757](https://github.com/xmake-io/xmake/pull/7757): Fix version comparison and validation in `set_xmakever`
+* [#7765](https://github.com/xmake-io/xmake/pull/7765): Detect numeric and boolean dependency changes
+* [#7816](https://github.com/xmake-io/xmake/pull/7816): Fix escaped dollar signs in GCC dependency files
+* [#7753](https://github.com/xmake-io/xmake/pull/7753): Fix square-bracket escaping in `path.pattern`
+* [#7801](https://github.com/xmake-io/xmake/pull/7801): Fix hashset equality with nil members
+* [#7810](https://github.com/xmake-io/xmake/pull/7810): Fix heap ordering after non-root removal
+* [#7811](https://github.com/xmake-io/xmake/pull/7811): Return removed values from list `pop` and `shift`
+* [#7812](https://github.com/xmake-io/xmake/pull/7812): Preserve isolated vertices in graph cloning and reversal
+* [#7825](https://github.com/xmake-io/xmake/pull/7825): Fix weighted Levenshtein distances for empty strings
+* [#7827](https://github.com/xmake-io/xmake/pull/7827): Fix recursive deep cloning with `table.clone(value, -1)`
+
 ## v3.1.1
 
 ### New features
@@ -2523,6 +2585,68 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#7742](https://github.com/xmake-io/xmake/pull/7742): 支持 Clang reduced BMI 编译
+* [#7791](https://github.com/xmake-io/xmake/pull/7791): 添加 `xmake test --output-on-failure`
+* [#7854](https://github.com/xmake-io/xmake/pull/7854): 添加 Inno Setup 打包和 `set_displayicon` 支持
+* [#7758](https://github.com/xmake-io/xmake/pull/7758): 支持自定义下载工具，改进 aria2 下载
+* [#7792](https://github.com/xmake-io/xmake/pull/7792): 支持为 `pkgconfig::` 包设置 `configs.configdirs`
+* [#7799](https://github.com/xmake-io/xmake/pull/7799): 支持配置文件中的 `VERSION_PRERELEASE` 和语义版本 `VERSION_BUILD`
+* [#7808](https://github.com/xmake-io/xmake/pull/7808): 支持 nvcc 的 C++23 标准配置
+* [#7766](https://github.com/xmake-io/xmake/pull/7766): 添加 Linux 平台的 raddbg 支持
+* [#7743](https://github.com/xmake-io/xmake/pull/7743): 通过 `lib.lua.*` 提供更多原生 Lua 函数
+* [#7752](https://github.com/xmake-io/xmake/pull/7752): 支持纯 Lua JSON 解码器的 Unicode 转义
+
+### 改进
+
+* [#7852](https://github.com/xmake-io/xmake/pull/7852): 抑制 clang-cl 的未使用参数警告
+* [#7855](https://github.com/xmake-io/xmake/pull/7855): 更新 MATLAB 版本检测，支持到 R2026b
+* [#7767](https://github.com/xmake-io/xmake/pull/7767): 提示缓存配置覆盖当前目录工程的情况
+* [#7780](https://github.com/xmake-io/xmake/pull/7780): 移除内置 Gitee 和 GitCode 镜像
+* [#7860](https://github.com/xmake-io/xmake/pull/7860): 添加独立的 addon 分发示例
+* [#7800](https://github.com/xmake-io/xmake/pull/7800): 完善 `isnan` 非法输入测试
+* 更新内置 tbox
+* 更新 Ubuntu PPA 目标和 NetBSD CI 依赖
+* 更新 PowerShell 安装脚本和 RPM 版本信息
+* 添加 `AGENTS.md` 开发规范
+
+### Bug 修复
+
+* [#7750](https://github.com/xmake-io/xmake/pull/7750): 修复 MSVC 环境下的 Clang 模块和编译数据库
+* [#7770](https://github.com/xmake-io/xmake/pull/7770): 保留 clangd 编译数据库中的 MSVC 系统头文件配置
+* [#7849](https://github.com/xmake-io/xmake/pull/7849): 移除 Clang PCM 编译为对象文件时的无用 include 参数
+* [#7788](https://github.com/xmake-io/xmake/pull/7788): 修复跨构建模式及工程生成时的 C++ 模块缓存
+* [#7815](https://github.com/xmake-io/xmake/pull/7815): 修复 clang-cl PCH 依赖跟踪
+* [#7819](https://github.com/xmake-io/xmake/pull/7819): 禁用 MSVC PCH 创建步骤的编译缓存
+* [#7798](https://github.com/xmake-io/xmake/pull/7798): 避免静态库无效重归档及合并归档残留旧成员
+* [#7820](https://github.com/xmake-io/xmake/pull/7820): 防止仓库更新误重置用户工程，并处理克隆中断残留
+* [#7776](https://github.com/xmake-io/xmake/pull/7776): 修复本地安装 addon 的识别
+* [#7809](https://github.com/xmake-io/xmake/pull/7809): 修复安装、升级 addon 时的本地仓库路径
+* [#7821](https://github.com/xmake-io/xmake/pull/7821): 激活已安装 addon 中工程要求的版本
+* [#7761](https://github.com/xmake-io/xmake/pull/7761): 工具集探测失败时保留可用的 MSVC 环境
+* [#7813](https://github.com/xmake-io/xmake/pull/7813): 修复 Ascend C 工具链探测及未确认 SDK 的加载
+* [#7853](https://github.com/xmake-io/xmake/pull/7853): 修复 `gxx`/`gcc` 工具和参数匹配
+* [#7763](https://github.com/xmake-io/xmake/pull/7763): 为 clang-cl 包默认启用 C++ 异常
+* [#7779](https://github.com/xmake-io/xmake/pull/7779): 安装 Windows、MinGW 包时添加编译器运行库路径
+* [#7782](https://github.com/xmake-io/xmake/pull/7782): 修复交叉编译到 ARM64 时的 MIDL 检测
+* [#7772](https://github.com/xmake-io/xmake/pull/7772): 修复 HarmonyOS 上的 Qt debug 库名
+* [#7789](https://github.com/xmake-io/xmake/pull/7789): 修复 Homebrew 包 `latest` 版本的查找
+* [#7760](https://github.com/xmake-io/xmake/pull/7760): 修复 Conan 生成器中的引号参数和 Windows 路径
+* [#7857](https://github.com/xmake-io/xmake/pull/7857): 向 Make 包构建传递所选工具链
+* [#7803](https://github.com/xmake-io/xmake/pull/7803): 修复误报的 `vs_runtime` 弃用警告
+* [#7749](https://github.com/xmake-io/xmake/pull/7749): Verilator 工具或参数变化时重新生成输出
+* [#7757](https://github.com/xmake-io/xmake/pull/7757): 修复 `set_xmakever` 的版本比较和校验
+* [#7765](https://github.com/xmake-io/xmake/pull/7765): 检测数值和布尔依赖值的变化
+* [#7816](https://github.com/xmake-io/xmake/pull/7816): 修复 GCC 依赖文件中的美元符号转义
+* [#7753](https://github.com/xmake-io/xmake/pull/7753): 修复 `path.pattern` 的方括号转义
+* [#7801](https://github.com/xmake-io/xmake/pull/7801): 修复含 nil 成员的 hashset 相等判断
+* [#7810](https://github.com/xmake-io/xmake/pull/7810): 修复移除非根元素后的堆排序
+* [#7811](https://github.com/xmake-io/xmake/pull/7811): 让 list 的 `pop`、`shift` 返回移除值
+* [#7812](https://github.com/xmake-io/xmake/pull/7812): 克隆、反转图时保留孤立顶点
+* [#7825](https://github.com/xmake-io/xmake/pull/7825): 修复空字符串的加权 Levenshtein 距离
+* [#7827](https://github.com/xmake-io/xmake/pull/7827): 修复 `table.clone(value, -1)` 深拷贝
 
 ## v3.1.1
 
