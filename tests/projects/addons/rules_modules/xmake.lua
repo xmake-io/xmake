@@ -6,7 +6,6 @@ target("hello")
     add_files("src/main.c")
     add_rules("@addon/example-rules-modules/message")
     on_run(function (target)
-        -- Module references use dots; rule and includes references use slashes.
         import("@addon.example-rules-modules.greeting")
         print(greeting.message(target:name()))
         os.execv(target:targetfile())

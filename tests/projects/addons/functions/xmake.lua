@@ -1,15 +1,11 @@
 add_repositories("example-functions-repo ./repo", {rootdir = os.scriptdir()})
 add_addons("example-functions")
+includes("@addon/example-functions/targets")
 
-local projectdir = os.scriptdir()
+-- Skip addon APIs during the first scan, before automatic installation.
+if example_console then
+    example_console("hello", "src/main.c")
 
--- This callback runs in the description domain, after the addon defines its helper.
-function example_configure_targets()
-    example_console("hello", path.join(projectdir, "src/main.c"))
-
-    -- The generated target can still be customized with ordinary Xmake APIs.
     target("hello")
         add_defines("EXAMPLE_NUMBER=42")
 end
-
-includes("@addon/example-functions/targets")

@@ -1,4 +1,3 @@
--- This local repository is part of the example; no manual addon installation is needed.
 add_repositories("example-includes-repo ./repo", {rootdir = os.scriptdir()})
 add_addons("example-includes")
 includes("@addon/example-includes/options")

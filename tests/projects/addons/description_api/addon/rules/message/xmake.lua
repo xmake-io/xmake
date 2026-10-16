@@ -5,7 +5,6 @@ rule("message")
         local name = target:get("example_profile")
         local profile = assert(profiles and profiles[name], "unknown example profile: %s", name)
         local message = assert(profile:get("message"), "the example profile needs a message")
-        -- These become normal compiler flags and therefore participate in rebuild checks.
         target:add("defines", 'EXAMPLE_MESSAGE="' .. message .. '"')
         target:add("defines", "EXAMPLE_TAG_COUNT=" .. #table.wrap(profile:get("tags")))
     end)

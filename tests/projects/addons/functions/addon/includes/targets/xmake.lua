@@ -1,4 +1,3 @@
--- Functions in an includes file can compose existing description APIs.
 function example_console(name, ...)
     interp_save_scope()
     target(name)
@@ -8,6 +7,3 @@ function example_console(name, ...)
     target_end()
     interp_restore_scope()
 end
-
--- The includes file calls this project-defined function after defining the helper.
-example_configure_targets()
