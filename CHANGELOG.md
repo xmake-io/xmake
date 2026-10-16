@@ -1,6 +1,6 @@
 # Changelog ([中文](#中文))
 
-## master (unreleased)
+## v3.1.2
 
 ### New features
 
@@ -2584,7 +2584,7 @@
 
 # 更新日志
 
-## master (开发中)
+## v3.1.2
 
 ### 新特性
 
