@@ -1,0 +1,5 @@
+rule("message")
+    on_load(function (target)
+        import("@self.greeting")
+        target:add("defines", greeting.define())
+    end)
