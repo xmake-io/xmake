@@ -34,11 +34,19 @@ import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 --
 function has_tool(toolname, tools)
     if toolname then
-        -- We need compatibility with gcc/g++, clang/clang++ for c++ compiler/linker
+        -- We need compatibility between C and C++ compiler/linker names
         -- @see https://github.com/xmake-io/xmake/issues/6852
         local compat_map = {
-            clangxx = "clang",
-            gxx     = "gcc",
+            clangxx  = "clang",
+            cosmocxx = "cosmocc",
+            emxx     = "emcc",
+            filxx    = "filcc",
+            gxx      = "gcc",
+            icpc     = "icc",
+            icpx     = "icx",
+            nvcxx    = "nvc",
+            zig_cxx  = "zig_cc",
+            cxx      = "cc",
         }
         local compat = false
         if compat_map[toolname] then
