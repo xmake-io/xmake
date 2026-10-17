@@ -125,7 +125,7 @@ function strip_flags(target, flags, opt)
 
     local strippeable_flags, splitted_strippeable_flags
     if not opt.requiresonly then
-        strippeable_flags, splitted_strippeable_flags =  _support(target).strippeable_flags()
+        strippeable_flags, splitted_strippeable_flags =  _support(target).strippeable_flags(target)
         if opt and opt.strip_defines then
             table.join2(splitted_strippeable_flags, {"D", "U"})
         end
