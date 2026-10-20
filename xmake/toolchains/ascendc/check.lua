@@ -25,14 +25,12 @@ import("detect.sdks.find_ascend")
 -- check the ascendc toolchain
 function main(toolchain)
     if not toolchain:is_plat("linux") then
-        wprint("Only Linux is supported for Ascend toolchain")
         return false
     end
 
     -- locate the Ascend SDK and derive its host layout
     local ascend = find_ascend(toolchain:sdkdir())
     if not ascend then
-        wprint("Ascend SDK not found")
         return false
     end
 
