@@ -119,7 +119,7 @@ end
 function _generate_headerunit_modulemapper_file(target, headerunit)
     local mapper_path = _get_modulemapper_file(target, headerunit)
     local mapper_file = io.open(mapper_path, "wb")
-    mapper_file:write("root " .. path.directory(headerunit.sourcefile) .. "\n")
+    mapper_file:write("$root " .. path.directory(headerunit.sourcefile) .. "\n")
     mapper_file:write(mapper_file, path.unix(headerunit.sourcefile) .. " " .. path.unix(path.absolute(headerunit.bmifile)) .. "\n")
     mapper_file:write("\n")
     mapper_file:close()
@@ -174,7 +174,7 @@ function _generate_modulemapper_file(target, module)
         os.rm(mapper_path)
     end
     local mapper_content = {}
-    table.insert(mapper_content, "root " .. path.unix(os.projectdir()))
+    table.insert(mapper_content, "$root " .. path.unix(os.projectdir()))
     for _, mapline in ipairs(maplines) do
         table.insert(mapper_content, mapline)
     end

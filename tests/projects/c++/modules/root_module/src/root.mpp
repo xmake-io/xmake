@@ -1,0 +1,6 @@
+// the gcc module mapper must not mistake its root directory for this module
+export module root;
+
+export int root_value() {
+    return 0;
+}
