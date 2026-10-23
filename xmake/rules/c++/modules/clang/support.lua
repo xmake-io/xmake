@@ -455,9 +455,15 @@ function get_keepsystemincludesflag(target)
     if keepsystemincludesflag == nil then
         local compinst = target:compiler("cxx")
         local clang_version = get_clang_version(target)
-        if compinst:has_flags("-E -fkeep-system-includes", "cxxflags", {flagskey = "clang_keep_system_includes", tryrun = true}) and
+        local checkflags = "-E -fkeep-system-includes"
+        local flag = "-fkeep-system-includes"
+        if target:has_tool("cxx", "clang_cl") then
+            checkflags = "/clang:-E /clang:-fkeep-system-includes"
+            flag = "/clang:-fkeep-system-includes"
+        end
+        if compinst:has_flags(checkflags, "cxxflags", {flagskey = "clang_keep_system_includes", tryrun = true}) and
             semver.compare(clang_version, "18.0") >= 0 then
-            keepsystemincludesflag = "-fkeep-system-includes"
+            keepsystemincludesflag = flag
         end
         _g.keepsystemincludesflag = keepsystemincludesflag or false
     end

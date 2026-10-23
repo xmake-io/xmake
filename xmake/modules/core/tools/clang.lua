@@ -296,6 +296,16 @@ function nf_runtime(self, runtime, opt)
                             maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, llvm_dirs.cxxlibdir))
                         end
                     end
+                    -- Some LLVM installations provide libc++.so without a linker script that
+                    -- adds libc++abi. Direct ABI references (e.g. sized delete) still need it.
+                    if self:is_plat("linux") and runtime == "c++_shared" then
+                        for _, dir in ipairs({llvm_dirs.cxxlibdir or false, llvm_dirs.libdir}) do
+                            if dir and os.isfile(path.join(dir, "libc++abi.so")) then
+                                maps["c++_shared"] = table.join(maps["c++_shared"], "-lc++abi")
+                                break
+                            end
+                        end
+                    end
                 end
                 if runtime:endswith("_static") then
                     -- -static-libstdc++ only pulls in libc++.a, not libc++abi.a, so the libc++abi
