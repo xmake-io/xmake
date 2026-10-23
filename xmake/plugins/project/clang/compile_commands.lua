@@ -329,9 +329,10 @@ end
 
 -- prepare targets
 function _prepare_targets()
-    target_cmds.prepare_targets()
+    -- register test targets to project first, then they will be prepared as root targets
     -- https://github.com/xmake-io/xmake/issues/7166
-    target_cmds.prepare_targets(_get_test_targets())
+    _get_test_targets()
+    target_cmds.prepare_targets()
 end
 
 -- generate compilation databases for clang-based tools(compile_commands.json)
