@@ -218,3 +218,16 @@ function test_files_with_brackets(t)
     t:are_equal(files, {path.join(tmpdir, "a[1].lua")})
     os.tryrm(tmpdir)
 end
+
+function test_mtime(t)
+    -- a file changed shortly after another one is newer, even within the same second
+    local tmpdir = os.tmpfile() .. ".dir"
+    local srcfile = path.join(tmpdir, "src")
+    local dstfile = path.join(tmpdir, "dst")
+    io.writefile(srcfile, "1")
+    io.writefile(dstfile, "1")
+    os.sleep(50)
+    io.writefile(srcfile, "2")
+    t:require(os.mtime(srcfile) > os.mtime(dstfile))
+    os.tryrm(tmpdir)
+end

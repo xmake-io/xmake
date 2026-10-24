@@ -43,7 +43,9 @@ tb_int_t xm_os_mtime(lua_State *lua) {
     // os.mtime(path)
     tb_file_info_t info = { 0 };
     if (tb_file_info(path, &info)) {
-        lua_pushinteger(lua, (lua_Integer)info.mtime);
+        // with sub-second precision, otherwise a file changed within the same
+        // second as its dependent was built is not detected as changed
+        lua_pushnumber(lua, (lua_Number)info.mtime + (lua_Number)info.mtime_nsec / 1000000000);
     } else {
         lua_pushinteger(lua, 0);
     }
