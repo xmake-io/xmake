@@ -3,7 +3,9 @@
 
 # Xmake cache
 .xmake/
-build/
+/build/
+/core/build/
+/tests/**/build/
 makefile
 Makefile
 build.ninja
@@ -46,8 +48,6 @@ compile_commands.json
 
 # for fortran
 /tests/**/*.mod
-
-!/xmake/actions/build/
 
 # for linux driver
 *.o
