@@ -1,0 +1,7 @@
+export module value;
+
+#if __cplusplus < 202002L
+#error Module scanning must preserve the configured C++ language standard.
+#endif
+
+export int answer() { return 42; }

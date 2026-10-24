@@ -71,13 +71,19 @@ function scan_dependency_for(target, sourcefile, rescan, opt)
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local keepsystemincludesflag = support.get_keepsystemincludesflag(target)
                 local compflags = table.clone(compflags)
-                -- exclude -fmodule* and -std=c++/gnu++* flags because
-                -- when they are set clang try to find bmi of imported modules but they don't exists in this point of compilation
+                -- Preserve the language standard for preprocessing, but do not load BMIs
+                -- of imported modules before their dependencies have been scanned.
                 table.remove_if(compflags, function(_, flag)
-                    return flag:startswith("-fmodule") or flag:startswith("-fvisibility") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++")
+                    return flag:startswith("-fmodule") or flag:startswith("-fvisibility")
                 end)
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                compflags = table.join(compflags or {}, keepsystemincludesflag or {}, {"-E", "-x", "c++", file, "-o", ifile})
+                local preprocessflags
+                if target:has_tool("cxx", "clang_cl") then
+                    preprocessflags = {"/clang:-fno-cxx-modules", "/P", "/TP", file, "/Fi" .. ifile}
+                else
+                    preprocessflags = {"-fno-cxx-modules", "-E", "-x", "c++", file, "-o", ifile}
+                end
+                compflags = table.join(compflags or {}, keepsystemincludesflag or {}, preprocessflags)
                 os.vrunv(compinst:program(), compflags, {envs = compinst:runenvs()})
                 local content = io.readfile(ifile)
                 os.rm(ifile)

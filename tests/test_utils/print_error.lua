@@ -37,7 +37,8 @@ end
 
 function main(t, message, funcs_or_filename, abort_reason)
     local funcs = _getfuncs(funcs_or_filename)
-    cprint(">>     ${red}test failed:${reset} %s", message)
+    cprint(">>     ${red}test failed:${reset} %s (%s)", path.relative(t.filename, os.workingdir()), t.funcname)
+    cprint("%s", message)
     for _, func in ipairs(funcs) do
         local line = (func.currentline >= 0) and func.currentline or func.linedefined
         local name = (func.func == t.func) and t.funcname or func.name or "(anonymous)"
