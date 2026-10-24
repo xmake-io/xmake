@@ -185,7 +185,9 @@ function _preprocess(program, argv, opt)
         end
 
         -- get preprocessor flags
-        table.insert(cppflags, flag)
+        if flag ~= "-c" then
+            table.insert(cppflags, flag)
+        end
 
         -- for c++ modules, we cannot support it for clang now
         if is_clang and flag:startswith("-fmodules") then
