@@ -29,6 +29,7 @@ import("private.utils.batchcmds")
 import("private.utils.executable_path")
 import("private.utils.target", {alias = "target_utils"})
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
+import("private.action.build.target", {alias = "target_buildutils"})
 import("actions.test.main", {rootdir = os.programdir(), alias = "test_action"})
 
 -- escape path
@@ -329,10 +330,11 @@ end
 
 -- prepare targets
 function _prepare_targets()
-    -- register test targets to project first, then they will be prepared as root targets
+    -- register test targets to project first, then prepare all targets which will be generated
     -- https://github.com/xmake-io/xmake/issues/7166
+    -- https://github.com/xmake-io/xmake/issues/7864
     _get_test_targets()
-    target_cmds.prepare_targets()
+    target_cmds.prepare_targets(target_buildutils.get_root_targets(nil, {all = true}))
 end
 
 -- generate compilation databases for clang-based tools(compile_commands.json)
