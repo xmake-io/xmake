@@ -67,15 +67,11 @@ end
 
 function _get_std_module_manifest_path(target)
     local print_module_manifest_flag = get_print_library_module_manifest_path_flag(target)
-    local clang_path = get_clang_path(target)
-    if not clang_path then
-        return
-    end
-    local clang_dir = path.directory(clang_path)
     if print_module_manifest_flag then
         local compinst = target:compiler("cxx")
-        local sysroot = "--sysroot=" .. path.join(clang_dir, "..")
-        local flags = {"-std=c++23", "-stdlib=libc++", sysroot, print_module_manifest_flag}
+        -- Let the driver locate its manifest; its executable may be a ccache wrapper.
+        -- @see https://github.com/xmake-io/xmake/issues/7875
+        local flags = {"-std=c++23", "-stdlib=libc++", print_module_manifest_flag}
         local outdata, _ = try {function()
             return os.iorunv(compinst:program(), flags, {envs = compinst:runenvs()})
         end}
@@ -85,6 +81,11 @@ function _get_std_module_manifest_path(target)
     end
     -- fallback on custom detection
     -- manifest can be found in <llvm_path>/lib subdirectory (i.e on debian it should be <llvm_path>/lib/x86_64-unknown-linux-gnu/)
+    local clang_path = get_clang_path(target)
+    if not clang_path then
+        return
+    end
+    local clang_dir = path.directory(clang_path)
     local clang_lib_path = path.join(clang_dir, "..", "lib")
     local modules_json_path = path.join(clang_lib_path, "libc++.modules.json")
     if not os.isfile(modules_json_path) then
