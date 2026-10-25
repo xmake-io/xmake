@@ -1,0 +1,5 @@
+export module mod;
+
+export int foo() {
+    return 1;
+}
