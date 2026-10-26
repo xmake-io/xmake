@@ -218,3 +218,33 @@ function test_files_with_brackets(t)
     t:are_equal(files, {path.join(tmpdir, "a[1].lua")})
     os.tryrm(tmpdir)
 end
+
+function test_mtime(t)
+    if is_host("solaris") then
+        return t:skip("Tbox uses whole-second utime timestamps on Solaris")
+    end
+    local tmpdir = os.tmpfile() .. ".dir"
+    local srcfile = path.join(tmpdir, "src")
+    local dstfile = path.join(tmpdir, "dst")
+    local second = 1700000000
+    os.mkdir(tmpdir)
+    os.touch(srcfile, {mtime = second + 0.75})
+    os.touch(dstfile, {mtime = second + 0.25})
+    t:are_equal(os.mtime(srcfile), second + 0.75)
+    t:are_equal(os.mtime(dstfile), second + 0.25)
+    t:require(os.mtime(srcfile) > os.mtime(dstfile))
+    os.touch(srcfile, {mtime = os.mtime(dstfile)})
+    t:are_equal(os.mtime(srcfile), os.mtime(dstfile))
+    os.rm(tmpdir)
+end
+
+function test_touch(t)
+    local filepath = os.tmpfile() .. ".touch"
+    local second = 1700000000
+    t:are_equal(os.mtime(filepath), 0)
+    os.touch(filepath, {atime = second, mtime = second})
+    t:are_equal(os.mtime(filepath), second)
+    os.touch(filepath)
+    t:are_equal(os.mtime(filepath), second)
+    os.rm(filepath)
+end
