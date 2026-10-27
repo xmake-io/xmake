@@ -30,6 +30,14 @@ function test_number(t)
     t:are_equal(roundtrip(math.nan), math.nan)
 end
 
+function test_number_precision(t)
+    for _, value in ipairs({1700000000.1234567, 1700000000.1234417, 140737488355312, 0x7fffffffffffffff}) do
+        t:are_equal(roundtrip(value), value)
+        t:are_equal(roundtrip({value = value}).value, value)
+        t:are_equal(roundtrip({[value] = "value"})[value], "value")
+    end
+end
+
 function test_boolean(t)
     t:are_equal(roundtrip(true), true)
     t:are_equal(roundtrip(false), false)

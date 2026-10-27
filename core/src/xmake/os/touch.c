@@ -39,9 +39,18 @@ tb_int_t xm_os_touch(lua_State *lua) {
     tb_char_t const *path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    tb_time_t atime = (tb_time_t)luaL_checknumber(lua, 2);
-    tb_time_t mtime = (tb_time_t)luaL_checknumber(lua, 3);
+    lua_Number atime = luaL_checknumber(lua, 2);
+    lua_Number mtime = luaL_checknumber(lua, 3);
+    tb_file_time_t filetime = { 0 };
+    filetime.atime = (tb_time_t)atime;
+    filetime.mtime = (tb_time_t)mtime;
+    if (filetime.atime > 0) {
+        filetime.atime_nsec = (tb_uint32_t)((atime - (lua_Number)filetime.atime) * 1000000000);
+    }
+    if (filetime.mtime > 0) {
+        filetime.mtime_nsec = (tb_uint32_t)((mtime - (lua_Number)filetime.mtime) * 1000000000);
+    }
 
-    lua_pushboolean(lua, tb_file_touch(path, atime, mtime));
+    lua_pushboolean(lua, tb_file_touch(path, &filetime));
     return 1;
 }
