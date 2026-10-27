@@ -19,9 +19,9 @@
 --
 
 -- imports
-import("core.project.config")
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
+import("detect.sdks.find_vstudio")
 
 -- find rc
 --
@@ -53,16 +53,14 @@ function main(opt)
     -- @see https://github.com/xmake-io/xmake/issues/225
     -- https://stackoverflow.com/questions/43847542/rc-exe-no-longer-found-in-vs-2015-command-prompt/45319119
     --
-    -- patch sdk bin directory to path environment
+    -- patch the host bin directory of sdk to path environment, rc.exe is executed on the host
     --
     -- e.g. C:\Program Files (x86)\Windows Kits\10\bin\10.0.17134.0\x64
     --
     local envs = opt.envs
-    if envs and envs.WindowsSdkDir and envs.WindowsSDKVersion then
-        local toolchain = opt.toolchain
-        local arch = toolchain and toolchain:arch() or config.arch()
-        local bindir = path.join(envs.WindowsSdkDir, "bin", envs.WindowsSDKVersion, arch)
-        if os.isdir(bindir) then
+    if envs then
+        local bindir = find_vstudio.get_winsdk_host_bindir(envs)
+        if bindir then
             opt.paths = table.wrap(opt.paths)
             table.insert(opt.paths, bindir)
         end

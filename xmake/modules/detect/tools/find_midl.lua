@@ -19,9 +19,9 @@
 --
 
 -- imports
-import("core.project.config")
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
+import("detect.sdks.find_vstudio")
 
 -- find midl
 --
@@ -35,27 +35,17 @@ import("lib.detect.find_programver")
 --
 function main(opt)
     opt         = opt or {}
+    -- @see https://github.com/xmake-io/xmake/issues/7192
+    --
     -- "-?" prints the usage and exits with 0, 
     -- the old "/confirm" is unusable, it crashes with 0xC0000005
     opt.check   = opt.check or "-?"
 
-    -- @see https://github.com/xmake-io/xmake/issues/7192
-    --
-    -- However, norunfile skips the run check, so a midl that cannot run on the 
-    -- host is accepted silently, e.g. an arm64 midl.exe when cross-compiling on
-    -- a x64 host, then it only fails later on generating the idl files,
-    --
-    --     error: cannot runv(...\Windows Kits\10\bin\10.0.26100.0\arm64\midl ...)
-    --
-    -- "-?" is a usable check, so enable the run check again.
-    opt.norunfile = false
-
+    -- patch the host bin directory of sdk to path environment, midl.exe is executed on the host
     local envs = opt.envs
-    if envs and envs.WindowsSdkDir and envs.WindowsSDKVersion then
-        local toolchain = opt.toolchain
-        local arch = toolchain and toolchain:arch() or config.arch()
-        local bindir = path.join(envs.WindowsSdkDir, "bin", envs.WindowsSDKVersion, arch)
-        if os.isdir(bindir) then
+    if envs then
+        local bindir = find_vstudio.get_winsdk_host_bindir(envs)
+        if bindir then
             opt.paths = table.wrap(opt.paths)
             table.insert(opt.paths, bindir)
         end

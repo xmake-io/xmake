@@ -104,6 +104,40 @@ function get_vcvars()
     return realvcvars
 end
 
+-- get the host architectures in priority order, arm64 windows can also run x64 and x86 programs by emulation
+function _get_host_archs()
+    local host_arch = os.arch()
+    if host_arch == "arm64" then
+        return {"arm64", "x64", "x86"}
+    elseif host_arch == "x64" then
+        return {"x64", "x86"}
+    end
+    return {host_arch}
+end
+
+-- get the windows sdk bin directory of the host programs
+--
+-- e.g. C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64
+--
+-- @param vcvars    the vcvars or runenvs of toolchain, e.g. {WindowsSdkDir = .., WindowsSDKVersion = ..}
+--
+-- @return          the bin directory
+--
+function get_winsdk_host_bindir(vcvars)
+    local bindir = vcvars.WindowsSdkVerBinPath
+    if not bindir and vcvars.WindowsSdkDir and vcvars.WindowsSDKVersion then
+        bindir = path.join(vcvars.WindowsSdkDir, "bin", vcvars.WindowsSDKVersion)
+    end
+    if bindir then
+        for _, arch in ipairs(_get_host_archs()) do
+            local dir = path.join(bindir, arch)
+            if os.isdir(dir) then
+                return dir
+            end
+        end
+    end
+end
+
 function find_build_tools(opt)
     opt = opt or {}
 
