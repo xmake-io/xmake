@@ -22,9 +22,10 @@
 -- define module: serialize
 local serialize  = serialize or {}
 local stub       = serialize._stub or {}
+local is_luajit  = xmake._LUAJIT
 serialize._stub  = stub
 serialize._dump  = serialize._dump or string._dump or string.dump
-serialize._BCTAG = xmake._LUAJIT and "\27LJ" or "\27Lua"
+serialize._BCTAG = is_luajit and "\27LJ" or "\27Lua"
 stub.isstub      = setmetatable({}, { __tostring = function() return "stub indentifier" end })
 stub.__index     = stub
 
@@ -141,6 +142,7 @@ function serialize._maketable(obj, opt, level, pathsegs, reftab)
         local makepairs = opt.orderkeys and table.orderpairs or pairs
         for k, v in makepairs(serialized) do
             local format
+            local key = k
             -- serialize key
             if type(k) == "string" then
                 if keywords:has(k) or not k:match("^[%a_][%w_]*$") then
@@ -150,9 +152,10 @@ function serialize._maketable(obj, opt, level, pathsegs, reftab)
                 end
             else -- type(k) == "number"
                 format = nformat
+                key = is_luajit and serialize._make(k, opt) or k
             end
             -- concat k = v
-            table.insert(bodystrs, string.format(format, k, v))
+            table.insert(bodystrs, string.format(format, key, v))
         end
     end
 
@@ -261,6 +264,11 @@ function serialize._make(obj, opt)
             return "inf"
         elseif inf_val == -1 then -- fix -huge for Solaris
             return "-inf"
+        end
+        if is_luajit then
+            -- LuaJIT's tostring can round timestamps and pointer-sized numbers.
+            local str = tostring(obj)
+            return tonumber(str) == obj and str or string.format("%.17g", obj)
         end
         return serialize._makedefault(obj, opt)
     elseif type(obj) == "table" then
