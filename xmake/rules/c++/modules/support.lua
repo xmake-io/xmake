@@ -343,7 +343,9 @@ function find_quote_header_file(sourcefile, file)
 end
 
 function find_angle_header_file(target, file)
-    local headerpaths = _support(target).toolchain_includedirs(target)
+    -- Keep project include paths out of the toolchain's shared directory cache.
+    -- @see https://github.com/xmake-io/xmake/issues/7880
+    local headerpaths = table.clone(_support(target).toolchain_includedirs(target))
     for _, dep in ipairs(target:orderdeps()) do
         local includedirs = table.join(dep:get("sysincludedirs") or {}, dep:get("includedirs") or {})
         table.join2(headerpaths, includedirs)
