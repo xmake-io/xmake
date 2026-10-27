@@ -46,15 +46,24 @@ function _make_headerunitflags(target, headerunit_mapper, headerunit)
                      module_headerflag .. headertype})
 end
 
+-- System-header lookup must retain subdirectories, including for relative include dirs.
+-- @see https://github.com/xmake-io/xmake/issues/7880
+function _get_headerunit_sourcefile(module)
+    if module.method == "include-angle" then
+        return path.absolute(module.sourcefile)
+    end
+    return path.filename(module.sourcefile)
+end
+
 -- do compile
 function _compile(target, flags, module, opt)
 
     opt = opt or {}
-    local sourcefile = opt.headerunit and path.filename(module.sourcefile) or module.sourcefile
+    local sourcefile = opt.headerunit and _get_headerunit_sourcefile(module) or module.sourcefile
     local outputfile = opt.headerunit and module.bmifile or module.objectfile
     local dryrun = option.get("dry-run")
     local compinst = target:compiler("cxx")
-    local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
+    local compflags = compinst:compflags({sourcefile = module.sourcefile, target = target, sourcekind = "cxx"})
     flags = table.join(compflags or {}, flags or {})
 
     -- trace
@@ -83,10 +92,10 @@ end
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
 function _batchcmds_compile(batchcmds, target, flags, module, opt)
-    local sourcefile = opt.headerunit and path.filename(module.sourcefile) or module.sourcefile
+    local sourcefile = opt.headerunit and _get_headerunit_sourcefile(module) or module.sourcefile
     local outputfile = opt.headerunit and module.bmifile or module.objectfile
     local compinst = target:compiler("cxx")
-    local compflags = compinst:compflags({sourcefile = sourcefile, target = target, sourcekind = "cxx"})
+    local compflags = compinst:compflags({sourcefile = module.sourcefile, target = target, sourcekind = "cxx"})
     flags = table.join("-c", compflags or {}, flags or {}, {"-o", outputfile, sourcefile})
 
     -- trace
@@ -120,7 +129,8 @@ function _generate_headerunit_modulemapper_file(target, headerunit)
     local mapper_path = _get_modulemapper_file(target, headerunit)
     local mapper_file = io.open(mapper_path, "wb")
     mapper_file:write("$root " .. path.directory(headerunit.sourcefile) .. "\n")
-    mapper_file:write(mapper_file, path.unix(headerunit.sourcefile) .. " " .. path.unix(path.absolute(headerunit.bmifile)) .. "\n")
+    local sourcefile = headerunit.method == "include-angle" and _get_headerunit_sourcefile(headerunit) or headerunit.sourcefile
+    mapper_file:write(path.unix(sourcefile) .. " " .. path.unix(path.absolute(headerunit.bmifile)) .. "\n")
     mapper_file:write("\n")
     mapper_file:close()
     return mapper_path
@@ -143,6 +153,10 @@ function _get_maplines(target, module)
         local name = dep_name
         if dep_module_mapped.headerunit then
             name = dep_module_mapped.method == "include-angle" and dep_module_mapped.sourcefile or path.join("./", path.directory(module.sourcefile), dep_name)
+            -- GCC mapper keys distinguish relative header paths from named modules with ./.
+            if dep_module_mapped.method == "include-angle" and not path.is_absolute(name) then
+                name = path.join("./", name)
+            end
         end
         mapline = path.unix(name) .. " " .. path.unix(path.absolute(dep_module_mapped.bmifile))
         table.insert(maplines, mapline)
