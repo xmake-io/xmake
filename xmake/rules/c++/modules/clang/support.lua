@@ -138,7 +138,7 @@ function has_precompile_reduced_bmi_support(target)
 end
 
 -- flags that doesn't affect bmi generation
-function strippeable_flags()
+function strippeable_flags(target)
     -- speculative list as there is no resource that list flags that prevent reusability, this list will likely be improve over time
     -- @see https://clang.llvm.org/docs/StandardCPlusPlusModules.html#consistency-requirement
     local strippable_flags = {
@@ -158,6 +158,12 @@ function strippeable_flags()
         "cxx-isystem",
         "framework"
     }
+    if target:has_tool("cxx", "clang_cl") then
+        -- clang-cl uses MSVC spellings for PDB output, system includes and warnings.
+        -- Keep language/runtime options (e.g. /permissive-, /MD) in the comparison.
+        table.insert(strippable_flags, "external:W")
+        table.join2(splitted_strippeable_flags, {"Fd", "external:I"})
+    end
     return strippable_flags, splitted_strippeable_flags
 end
 
