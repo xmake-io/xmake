@@ -46,13 +46,18 @@ function _make_headerunitflags(target, headerunit_mapper, headerunit)
                      module_headerflag .. headertype})
 end
 
--- System-header lookup must retain subdirectories, including for relative include dirs.
+-- Use the import spelling so GCC retains the include-search position for include_next.
 -- @see https://github.com/xmake-io/xmake/issues/7880
 function _get_headerunit_sourcefile(module)
     if module.method == "include-angle" then
-        return path.absolute(module.sourcefile)
+        return module.lookupname or path.filename(module.sourcefile)
     end
     return path.filename(module.sourcefile)
+end
+
+-- GCC mapper keys distinguish relative header paths from named modules with ./.
+function _get_headerunit_mappername(sourcefile)
+    return path.is_absolute(sourcefile) and sourcefile or path.join("./", sourcefile)
 end
 
 -- do compile
@@ -129,7 +134,7 @@ function _generate_headerunit_modulemapper_file(target, headerunit)
     local mapper_path = _get_modulemapper_file(target, headerunit)
     local mapper_file = io.open(mapper_path, "wb")
     mapper_file:write("$root " .. path.directory(headerunit.sourcefile) .. "\n")
-    local sourcefile = headerunit.method == "include-angle" and _get_headerunit_sourcefile(headerunit) or headerunit.sourcefile
+    local sourcefile = _get_headerunit_mappername(headerunit.sourcefile)
     mapper_file:write(path.unix(sourcefile) .. " " .. path.unix(path.absolute(headerunit.bmifile)) .. "\n")
     mapper_file:write("\n")
     mapper_file:close()
@@ -152,11 +157,7 @@ function _get_maplines(target, module)
         local mapline
         local name = dep_name
         if dep_module_mapped.headerunit then
-            name = dep_module_mapped.method == "include-angle" and dep_module_mapped.sourcefile or path.join("./", path.directory(module.sourcefile), dep_name)
-            -- GCC mapper keys distinguish relative header paths from named modules with ./.
-            if dep_module_mapped.method == "include-angle" and not path.is_absolute(name) then
-                name = path.join("./", name)
-            end
+            name = dep_module_mapped.method == "include-angle" and _get_headerunit_mappername(dep_module_mapped.sourcefile) or path.join("./", path.directory(module.sourcefile), dep_name)
         end
         mapline = path.unix(name) .. " " .. path.unix(path.absolute(dep_module_mapped.bmifile))
         table.insert(maplines, mapline)
