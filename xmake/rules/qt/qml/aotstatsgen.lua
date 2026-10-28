@@ -33,5 +33,6 @@ function main(listfile, ...)
             table.insert(files, file)
         end
     end
+    os.mkdir(path.directory(listfile))
     io.writefile(listfile, table.concat(files, "\n") .. "\n")
 end

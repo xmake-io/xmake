@@ -115,7 +115,7 @@ function get_absfile(target, sourcefile)
 end
 
 -- is the given file inside the given directory?
-function _is_inside(absfile, dir)
+function is_inside(absfile, dir)
     local rel = path.relative(absfile, dir)
     local relunix = path.unix(rel)
     return not path.is_absolute(rel) and relunix ~= ".." and not relunix:startswith("../")
@@ -126,7 +126,7 @@ function get_alias(target, sourcefile)
     local scriptdir = path.absolute(target:scriptdir())
     local projectdir = path.absolute(os.projectdir())
     local absfile = get_absfile(target, sourcefile)
-    if _is_inside(absfile, scriptdir) then
+    if is_inside(absfile, scriptdir) then
         return path.unix(path.relative(absfile, scriptdir)), absfile
     end
     -- the file is outside of the module directory, use the project directory
@@ -142,7 +142,7 @@ function get_mangled_name(target, sourcefile)
     local absfile = get_absfile(target, sourcefile)
     local scriptdir = path.absolute(target:scriptdir())
     local name
-    if _is_inside(absfile, scriptdir) then
+    if is_inside(absfile, scriptdir) then
         name = path.unix(path.relative(absfile, scriptdir))
     else
         name = hash.strhash32(absfile) .. "_" .. path.filename(absfile)

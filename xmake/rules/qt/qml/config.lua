@@ -60,7 +60,7 @@ function _collect_files(target, setting)
 end
 
 -- check the tools and the version requirements
-function _check_tools(target, setting, need_cachegen)
+function _check_tools(target, setting, need_cachegen, need_importscanner)
     local sdkver = utils.get_sdkver(target)
     local tools = {}
     if need_cachegen then
@@ -86,6 +86,11 @@ function _check_tools(target, setting, need_cachegen)
         tools.moc = target:data("qt.moc") or utils.find_tool(target, "moc")
         assert(tools.moc and os.isexec(tools.moc), "qt.qml: moc not found!")
         utils.check_tool_version(target, tools.moc, "moc")
+    end
+    if need_importscanner then
+        -- the import scanner provides the dependency graph of the module
+        tools.importscanner = assert(utils.find_tool(target, "qmlimportscanner"),
+            "qt.qml: qmlimportscanner not found in the Qt SDK(%s)!", table.concat(utils.get_tool_dirs(target), ", "))
     end
     return tools
 end
@@ -184,9 +189,17 @@ function main(target)
     local qmls, qmldirs = _collect_files(target, setting)
     local has_resources = #_get_sourcefiles(target, "qt.qml.resource") > 0
     local need_cachegen = setting.cachegen and #qmls > 0
+    local has_qmls = false
+    for _, file in ipairs(qmls) do
+        if path.extension(file.sourcefile):lower() == ".qml" then
+            has_qmls = true
+            break
+        end
+    end
+    local need_importscanner = need_cachegen or (setting.type_compiler and has_qmls)
 
     -- check the tools and version requirements
-    local tools = _check_tools(target, setting, need_cachegen)
+    local tools = _check_tools(target, setting, need_cachegen, need_importscanner)
     local aot = _resolve_aotstats(target, setting, tools, need_cachegen)
 
     local paths = _get_paths(target)
