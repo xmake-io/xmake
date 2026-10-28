@@ -345,7 +345,7 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     local makefile = path.join(autogendir, targetname .. "." .. makefile_type)
     local dependfile = makefile .. ".d"
 
-    local argv = { "--cc", "--make", makefile_type, "--prefix", targetname, "--Mdir", path(autogendir) }
+    local argv = { "--cc", "--make", makefile_type, "--prefix", targetname }
     local flags = _get_verilator_flags(target)
     if flags then
         table.join2(argv, flags)
@@ -355,7 +355,8 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
         table.join2(argv, language_flags)
     end
     -- argv only contains command arguments passed to verilator
-    local depvalues = {verilator, table.clone(argv)}
+    local depvalues = table.join(argv, {verilator, autogendir})
+    table.join2(argv, {"--Mdir", path(autogendir)})
     local sourcefiles = sourcebatch.sourcefiles
     for _, sourcefile in ipairs(sourcefiles) do
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.verilog %s", sourcefile)
