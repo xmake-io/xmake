@@ -151,6 +151,9 @@ function builder:_inherit_flags_from_targetdeps(flags, target)
     local total = #orderdeps
     for idx, _ in ipairs(orderdeps) do
         local dep = orderdeps[total + 1 - idx]
+        -- Public/interface packages carry raw flags as well as named settings.
+        -- For example, a header-only dependency may require /permissive-.
+        self:_add_flags_from_targetpkgs(flags, dep, {interface = true})
         for _, flagkind in ipairs(self:_flagkinds()) do
             self:_add_flags_from_flagkind(flags, dep, flagkind, {interface = true})
         end
@@ -206,17 +209,17 @@ function builder:_add_flags_from_targetopts(flags, target)
 end
 
 -- add flags from the target packages
-function builder:_add_flags_from_targetpkgs(flags, target)
+function builder:_add_flags_from_targetpkgs(flags, target, opt)
     local kind = self:kind()
     for _, flagkind in ipairs(self:_flagkinds()) do
         -- attempt to add special lanugage flags from package first, e.g. gcldflags, dcarflags
         -- @see https://github.com/xmake-io/xmake-repo/issues/5255
         local result
         if kind:endswith("ld") or kind:endswith("sh") then
-            result = target:get_from(kind .. "flags", "package::*")
+            result = target:get_from(kind .. "flags", "package::*", opt)
         end
         if not result then
-            result = target:get_from(flagkind, "package::*")
+            result = target:get_from(flagkind, "package::*", opt)
         end
         if result then
             for _, values in ipairs(table.wrap(result)) do
