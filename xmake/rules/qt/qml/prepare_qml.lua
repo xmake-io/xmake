@@ -15,69 +15,123 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      24bit-xjkp
--- @file        build.lua
+-- @file        prepare_qml.lua
 --
 
--- imports
 import("core.base.option")
 import("core.base.json")
 import("private.utils.batchcmds", {alias = "batchcmds_utils"})
 import("utils.progress")
 import("utils")
-
--- get the path of the helper lua scripts, they are run by `batchcmds:lua()`
-function _get_script(scriptname)
-    return path.join(os.programdir(), "rules", "qt", "qml", scriptname)
-end
+import("qrc")
 
 -- is the given file compiled by qmltc?
 function _is_qmltc_file(sourcefile)
     return path.extension(sourcefile):lower() == ".qml"
 end
 
+-- collect the qml files and the qmldir files of the module
+function _collect_files(target, setting, sourcefiles)
+    local qmls = {}
+    local qmldirs = {}
+    for _, sourcefile in ipairs(sourcefiles) do
+        local alias, absfile = utils.get_alias(target, sourcefile)
+        local filename = path.filename(sourcefile):lower()
+        if filename == "qmldir" or path.extension(filename) == ".qmldir" then
+            table.insert(qmldirs, {sourcefile = sourcefile, absfile = absfile})
+        else
+            table.insert(qmls, {
+                sourcefile    = sourcefile,
+                absfile       = absfile,
+                alias         = alias,
+                resource_path = utils.get_prefix(setting.uri) .. alias
+            })
+        end
+    end
+    if #qmldirs > 1 then
+        wprint("qt.qml: multiple qmldir files are found in target(%s), only '%s' is packaged, " ..
+            "all of them are used for imports", target:name(), qmldirs[1].sourcefile)
+    end
+    return qmls, qmldirs
+end
+
+-- write the module qrc and the file lists used by qmlcachegen/qmltc
+function _write_files(target, setup)
+    local setting = setup.setting
+    local paths = setup.paths
+    local qmls = setup.qmls
+    local qmldirs = setup.qmldirs
+    local qrcdata = {
+        prefix  = utils.get_prefix(setting.uri),
+        discard = setting.discard and true or false,
+        qmldir  = qmldirs[1] and qmldirs[1].absfile or nil,
+        entries = {}
+    }
+    for _, file in ipairs(qmls) do
+        table.insert(qrcdata.entries, {alias = file.alias, path = file.absfile})
+    end
+    qrc.write_if_changed(paths.qrcfile, qrc.render_qrc(qrcdata))
+    if setup.need_cachegen then
+        local rsp = {}
+        for _, resource in ipairs(setup.resources) do
+            table.insert(rsp, "--resource")
+            table.insert(rsp, resource)
+        end
+        for _, file in ipairs(qmls) do
+            table.insert(rsp, file.resource_path)
+        end
+        qrc.write_if_changed(paths.loaderrsp, table.concat(rsp, "\n") .. "\n")
+    end
+    if setup.need_qmltc then
+        -- qmltc uses the file map to include the headers of the other components
+        local mapdata = {entries = {}}
+        for _, file in ipairs(qmls) do
+            if _is_qmltc_file(file.sourcefile) then
+                table.insert(mapdata.entries, {
+                    alias = utils.get_qmltc_name(target, file.sourcefile) .. ".h",
+                    path  = file.absfile
+                })
+            end
+        end
+        qrc.write_if_changed(paths.qmltcmap, qrc.render_qrc(mapdata))
+    end
+end
+
 -- get the qmltc generated files of the given qml file
 function _get_qmltc_files(target, setup, sourcefile)
     local name = utils.get_qmltc_name(target, sourcefile)
     return {
-        header = path.join(setup.paths.qmltc, name .. ".h"),
-        impl   = path.join(setup.paths.qmltc, name .. ".cpp"),
-        moc    = path.join(setup.paths.qmltc, "moc_" .. name .. ".cpp")
+        header = path.join(setup.paths.qmltcdir, name .. ".h"),
+        impl   = path.join(setup.paths.qmltcdir, name .. ".cpp")
     }
 end
 
--- get the generated c++ sources
-function _get_cppfiles(target, setup)
+-- add the generated sources to the target
+--
+-- They are compiled by the c++ rule in the build phase, the qmltc headers are
+-- handled by the qt.moc rule, so we can reuse its moc detection and moc flags.
+function _add_generated_files(target, setup, qmltc_files)
     local cppfiles = {}
+    local headers = {}
     if setup.need_cachegen then
         for _, file in ipairs(setup.qmls) do
             table.insert(cppfiles, utils.get_autogen_file(target, "qmlcachegen", file.sourcefile, ".cpp"))
         end
         table.insert(cppfiles, setup.paths.loadercpp)
     end
-    if setup.setting.type_compiler then
-        for _, file in ipairs(setup.qmls) do
-            if _is_qmltc_file(file.sourcefile) then
-                local files = _get_qmltc_files(target, setup, file.sourcefile)
-                table.insert(cppfiles, files.impl)
-                table.insert(cppfiles, files.moc)
-            end
-        end
+    for _, file in ipairs(qmltc_files) do
+        local files = _get_qmltc_files(target, setup, file.sourcefile)
+        table.insert(cppfiles, files.impl)
+        table.insert(headers, files.header)
     end
-    return cppfiles
-end
-
--- add the generated c++ sources to the target, xmake rescans the job graph for
--- the build phase, so the c++.build rule compiles them
-function _add_cppfiles(target, setup)
-    local cppfiles = _get_cppfiles(target, setup)
     if #cppfiles > 0 then
         target:add("files", cppfiles, {always_added = true})
     end
-end
-
--- get the file which caches the imports of the given source file
-function _get_scanfile(target, sourcefile)
-    return utils.get_autogen_file(target, "qmlimportscanner", sourcefile, ".json")
+    -- the qt.moc rule reads the header to check Q_PRIVATE_SLOT, but the header does
+    -- not exist in the dry run because the generation jobs are not executed
+    if #headers > 0 and not option.get("dry-run") then
+        target:add("files", headers, {rules = {"qt.moc", override = true}, always_added = true})
+    end
 end
 
 -- add a dependency file, the order is stable, so the dependency cache can compare the list
@@ -139,10 +193,11 @@ end
 function _get_depfiles(target, setup, file)
     local depfiles = {file.absfile}
     local depset = {[file.absfile] = true}
+    local scanfile = utils.get_autogen_file(target, "qmlimportscanner", file.sourcefile, ".json")
     local imports = try
     {
         function ()
-            return json.loadfile(_get_scanfile(target, file.sourcefile))
+            return json.loadfile(scanfile)
         end
     }
     if type(imports) == "table" then
@@ -181,15 +236,20 @@ function _get_depfiles(target, setup, file)
     return depfiles
 end
 
--- write the qml qrc file from the manifest, the qt.qrc rule compiles it later
-function _add_qrcgen(target, cmds, setup, opt)
-    local qrcfile = setup.paths.qrcfile
-    cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qml.qrc %s", path.filename(qrcfile))
-    cmds:lua(_get_script("qrcgen.lua"), {qrcfile, setup.paths.manifestfile})
-    cmds:add_depfiles(setup.depfiles)
-    cmds:add_depvalues(setup.depvalues)
-    cmds:set_depmtime(os.mtime(qrcfile))
-    cmds:set_depcache(target:dependfile(qrcfile))
+-- get the arguments shared by qmlcachegen and qmltc
+function _add_import_args(args, setup)
+    for _, dir in ipairs(setup.importdirs) do
+        table.insert(args, "-I")
+        table.insert(args, dir)
+    end
+    for _, qmldir in ipairs(setup.qmldirs) do
+        table.insert(args, "-i")
+        table.insert(args, qmldir.absfile)
+    end
+    for _, resource in ipairs(setup.resources) do
+        table.insert(args, "--resource")
+        table.insert(args, resource)
+    end
 end
 
 -- scan the imports of the given qml/js file with qmlimportscanner, called by `batchcmds:call()`
@@ -205,41 +265,36 @@ function _scan_imports(scanfile, scanner, qmlfile, importdirs)
     {
         function ()
             return os.iorunv(scanner, args)
-        end
+        end,
+        catch
+        {
+            function (errors)
+                -- remove the stale result, it would be reused by the next builds because
+                -- the source file is not changed, and the dependency graph would be frozen
+                os.tryrm(scanfile)
+                wprint("qt.qml: qmlimportscanner failed to scan %s: %s", qmlfile, errors)
+            end
+        }
     }
     if outdata and outdata ~= "" then
         os.mkdir(path.directory(scanfile))
         io.writefile(scanfile, outdata)
+    else
+        -- do not keep a stale dependency graph when the scanner produced no output
+        os.tryrm(scanfile)
+        wprint("qt.qml: qmlimportscanner returned no output for %s", qmlfile)
     end
 end
 
 -- add the import scan job of the given qml/js file, the result is the dependency graph of the module
 function _add_scan(target, cmds, setup, file, opt)
-    local scanfile = _get_scanfile(target, file.sourcefile)
+    local scanfile = utils.get_autogen_file(target, "qmlimportscanner", file.sourcefile, ".json")
     cmds:show_progress(opt.progress, "${color.build.object}scanning.qt.qml.imports %s", file.sourcefile)
-    cmds:call(_scan_imports, {scanfile, setup.tools.importscanner, file.absfile, setup.importdirs})
+    cmds:call(_scan_imports, {scanfile, setup.tools.importscanner.program, file.absfile, setup.importdirs})
     cmds:add_depfiles(file.absfile)
-    cmds:add_depvalues(setup.tools.importscanner, setup.importdirs)
+    cmds:add_depvalues(setup.tools.importscanner.program, setup.importdirs)
     cmds:set_depmtime(os.mtime(scanfile))
     cmds:set_depcache(target:dependfile(scanfile))
-end
-
--- get the qmlcachegen/qmltc arguments shared by the tools
-function _add_import_args(args, setup)
-    for _, dir in ipairs(setup.importdirs) do
-        table.insert(args, "-I")
-        table.insert(args, dir)
-    end
-    for _, qmldir in ipairs(setup.qmldirs) do
-        table.insert(args, "-i")
-        table.insert(args, qmldir.absfile)
-    end
-    for _, resource in ipairs(setup.resources) do
-        if os.isfile(resource) then
-            table.insert(args, "--resource")
-            table.insert(args, resource)
-        end
-    end
 end
 
 -- generate the c++ source of the given qml/js/mjs file
@@ -259,9 +314,9 @@ function _add_cachegen(target, cmds, setup, file, opt)
     table.insert(args, file.absfile)
     cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmlcachegen %s", file.sourcefile)
     cmds:mkdir(path.directory(cppfile))
-    cmds:vrunv(setup.tools.cachegen, args)
+    cmds:vrunv(setup.tools.cachegen.program, args)
     cmds:add_depfiles(_get_depfiles(target, setup, file))
-    cmds:add_depvalues(setup.tools.cachegen, args)
+    cmds:add_depvalues(setup.tools.cachegen.program, args)
     cmds:set_depmtime(os.mtime(cppfile))
     -- the dependency cache is maintained for every qml source file
     cmds:set_depcache(target:dependfile(file.absfile))
@@ -274,11 +329,23 @@ function _add_loader(target, cmds, setup, opt)
         "-o", cppfile, "@" .. setup.paths.loaderrsp}
     cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmlcachegen %s", path.filename(cppfile))
     cmds:mkdir(path.directory(cppfile))
-    cmds:vrunv(setup.tools.cachegen, args)
+    cmds:vrunv(setup.tools.cachegen.program, args)
     cmds:add_depfiles(setup.paths.loaderrsp)
-    cmds:add_depvalues(setup.tools.cachegen, args)
+    cmds:add_depvalues(setup.tools.cachegen.program, args)
     cmds:set_depmtime(os.mtime(cppfile))
     cmds:set_depcache(target:dependfile(cppfile))
+end
+
+-- write the existing sidecar files to the given list file, called by `batchcmds:call()`
+function _write_aotstats_list(listfile, sidecars)
+    local files = {}
+    for _, file in ipairs(sidecars) do
+        if os.isfile(file) then
+            table.insert(files, file)
+        end
+    end
+    os.mkdir(path.directory(listfile))
+    io.writefile(listfile, #files > 0 and (table.concat(files, "\n") .. "\n") or "")
 end
 
 -- aggregate and format the aot compilation statistics
@@ -290,9 +357,10 @@ function _add_aotstats(target, cmds, setup, opt)
             table.insert(sidecars, sidecar)
         end
     end
-    -- only qml components produce stats, e.g. a module with only .js files has none
+    local paths = setup.paths
     if #sidecars == 0 then
-        for _, filepath in ipairs({setup.paths.aotstats, setup.paths.aotstatstxt, setup.paths.aotstatslist}) do
+        -- only qml components produce stats, e.g. a module with only .js files has none
+        for _, filepath in ipairs({paths.aotstats, paths.aotstatstxt, paths.aotstatslist}) do
             if os.isfile(filepath) then
                 cmds:rm(filepath)
             end
@@ -300,30 +368,33 @@ function _add_aotstats(target, cmds, setup, opt)
         return
     end
     cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qml.aotstats %s",
-        path.filename(setup.paths.aotstats))
-    cmds:lua(_get_script("aotstatsgen.lua"), table.join({setup.paths.aotstatslist}, sidecars))
-    cmds:vrunv(setup.aot.tool, {"aggregate", setup.paths.aotstatslist, setup.paths.aotstats})
-    cmds:vrunv(setup.aot.tool, {"format", setup.paths.aotstats, setup.paths.aotstatstxt})
+        path.filename(paths.aotstats))
+    cmds:call(_write_aotstats_list, {paths.aotstatslist, sidecars})
+    cmds:vrunv(setup.aot.tool.program, {"aggregate", paths.aotstatslist, paths.aotstats})
+    cmds:vrunv(setup.aot.tool.program, {"format", paths.aotstats, paths.aotstatstxt})
     -- rebuild the report if any sidecar file has been regenerated
     cmds:add_depfiles(sidecars)
-    cmds:add_depvalues(setup.aot.tool)
-    local reportexists = os.isfile(setup.paths.aotstats) and os.isfile(setup.paths.aotstatstxt)
-    cmds:set_depmtime(reportexists and os.mtime(setup.paths.aotstats) or 0)
-    cmds:set_depcache(target:dependfile(setup.paths.aotstats))
+    cmds:add_depvalues(setup.aot.tool.program, paths.aotstatslist, paths.aotstats, paths.aotstatstxt)
+    local reportexists = os.isfile(paths.aotstats) and os.isfile(paths.aotstatstxt)
+    cmds:set_depmtime(reportexists and os.mtime(paths.aotstats) or 0)
+    cmds:set_depcache(target:dependfile(paths.aotstats))
 end
 
 -- generate the qmltc source of the given qml file
 function _add_qmltc(target, cmds, setup, file, opt)
     local files = _get_qmltc_files(target, setup, file.sourcefile)
     local args = {"--bare", "--header", files.header, "--impl", files.impl, "--module", setup.setting.uri}
-    -- qmltc puts the generated types into an anonymous namespace without a namespace,
-    -- so components cannot include each other, use the module uri like Qt CMake does
     local namespace = setup.setting.namespace
-    if namespace == "" then
+    if namespace == nil then
+        -- qmltc puts the generated types into an anonymous namespace by default and
+        -- then components cannot include each other, use the module uri like Qt CMake does
         namespace = setup.setting.uri:gsub("%.", "::")
     end
-    table.insert(args, "--namespace")
-    table.insert(args, namespace)
+    -- an empty namespace disables `--namespace`, e.g. to keep the anonymous namespace
+    if namespace ~= "" then
+        table.insert(args, "--namespace")
+        table.insert(args, namespace)
+    end
     _add_import_args(args, setup)
     -- the file map is used by qmltc to include the headers of other components
     table.insert(args, "--resource")
@@ -331,10 +402,10 @@ function _add_qmltc(target, cmds, setup, file, opt)
     table.insert(args, file.absfile)
     cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmltc %s", file.sourcefile)
     cmds:mkdir(path.directory(files.header))
-    cmds:vrunv(setup.tools.qmltc, args)
+    cmds:vrunv(setup.tools.qmltc.program, args)
     cmds:add_depfiles(_get_depfiles(target, setup, file))
     cmds:add_depfiles(setup.paths.qmltcmap)
-    cmds:add_depvalues(setup.tools.qmltc, args)
+    cmds:add_depvalues(setup.tools.qmltc.program, args)
     -- qmltc keeps the mtime of an unchanged output, so we track the last run by the depend file
     local dependfile = target:dependfile(files.header)
     local outputsexist = os.isfile(files.header) and os.isfile(files.impl)
@@ -342,22 +413,9 @@ function _add_qmltc(target, cmds, setup, file, opt)
     cmds:set_depcache(dependfile)
 end
 
--- generate the moc source of the given qmltc header
-function _add_qmltc_moc(target, cmds, setup, file, opt)
-    local files = _get_qmltc_files(target, setup, file.sourcefile)
-    local mocflags = table.join(utils.get_moc_flags(target), {
-        "-I" .. path.unix(path.directory(files.header)), "-o", files.moc, files.header})
-    cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmltc.moc %s", file.sourcefile)
-    cmds:vrunv(setup.tools.moc, mocflags)
-    cmds:add_depfiles(files.header)
-    cmds:add_depvalues(setup.tools.moc, mocflags)
-    cmds:set_depmtime(os.mtime(files.moc))
-    cmds:set_depcache(target:dependfile(files.moc))
-end
-
 -- add a generation job, the commands are skipped if the dependencies are not changed
 function _add_job(jobgraph, name, target, run)
-    jobgraph:add(name, function (index, total, opt)
+    jobgraph:add(name, function (_, _, opt)
         progress.set_target(opt.progress, target)
         local cmds = batchcmds_utils.new({target = target})
         run(cmds, opt)
@@ -369,36 +427,88 @@ end
 --
 -- The import scanner, qmlcachegen and qmltc jobs are scheduled in different groups,
 -- so the qmlcachegen and qmltc jobs run in parallel after the imports are scanned.
-function prepare(target, jobgraph, sourcebatch, opt)
-    local setup = target:data("qt.qml.setup")
-    if not setup then
+function main(target, jobgraph, sourcebatch, opt)
+    -- keep the generated files deterministic, so their content does not change
+    -- between builds and the jobs do not rerun without a reason
+    local sourcefiles = table.unique(sourcebatch.sourcefiles)
+    table.sort(sourcefiles)
+    if #sourcefiles == 0 then
         return
     end
-
-    -- the generated c++ sources are compiled by the c++.build rule in the build phase
-    _add_cppfiles(target, setup)
-
-    local prefix = target:fullname() .. "/qt.qml"
-    local qrcjob = prefix .. "/qrc"
-    _add_job(jobgraph, qrcjob, target, function (cmds, jobopt)
-        _add_qrcgen(target, cmds, setup, jobopt)
-    end)
-
-    -- the import scanner is only needed for the generated sources, qmltc only
-    -- compiles the .qml files
-    local scanfiles = {}
-    if setup.need_cachegen then
-        scanfiles = setup.qmls
-    elseif setup.setting.type_compiler then
-        for _, file in ipairs(setup.qmls) do
+    local setting = utils.get_setting(target)
+    local needs = utils.get_needs(setting, sourcefiles)
+    local qmls, qmldirs = _collect_files(target, setting, sourcefiles)
+    local tools = utils.get_tools(target, setting, needs)
+    local aot = utils.get_aot(target, setting, tools, needs)
+    local paths = utils.get_paths(target)
+    local dryrun = option.get("dry-run")
+    local resourcebatch = target:sourcebatches()["qt.qml.resource"]
+    local has_resources = resourcebatch ~= nil and #resourcebatch.sourcefiles > 0
+    local resources = {paths.qrcfile}
+    if has_resources then
+        table.insert(resources, paths.resourceqrc)
+    end
+    local qmltc_sources = {}
+    if setting.type_compiler then
+        for _, file in ipairs(qmls) do
             if _is_qmltc_file(file.sourcefile) then
-                table.insert(scanfiles, file)
+                table.insert(qmltc_sources, file)
             end
         end
     end
-    local scangroup
+    local setup = {
+        setting       = setting,
+        tools         = tools,
+        aot           = aot,
+        paths         = paths,
+        qmls          = qmls,
+        qmldirs       = qmldirs,
+        importdirs    = utils.get_importdirs(target, setting),
+        resources     = resources,
+        module_id     = setting.uri .. "(" .. target:name() .. ")",
+        need_cachegen = needs.cachegen,
+        need_qmltc    = needs.type_compiler and #qmltc_sources > 0
+    }
+
+    -- write the qrc file and the file lists in the prepare phase, the qrc files are
+    -- compiled by the qt.qrc rule in the build phase
+    --
+    -- the dry run does not generate anything, and we also do not add the qrc file to
+    -- the target, because the qt.qrc rule needs to read the qrc file to get its
+    -- resource files, even in the dry run
+    if not dryrun then
+        _write_files(target, setup)
+        target:add("files", paths.qrcfile, {always_added = true})
+        -- remove the stale AOT report if the AOT compilation has been disabled
+        if not aot.enabled then
+            for _, filepath in ipairs({paths.aotstats, paths.aotstatstxt, paths.aotstatslist}) do
+                if os.isfile(filepath) then
+                    os.rm(filepath)
+                end
+            end
+        end
+    end
+
+    -- the generated c++ sources are compiled by the c++ rule in the build phase,
+    -- the qmltc headers are moc'ed by the qt.moc rule
+    _add_generated_files(target, setup, qmltc_sources)
+    if #qmltc_sources > 0 and not dryrun then
+        target:add("includedirs", paths.qmltcdir)
+    end
+
+    local prefix = target:fullname() .. "/qt.qml"
+    local need_qmltc = setup.need_qmltc
+
+    -- the import scanner is only needed by the generated sources, qmltc only
+    -- compiles the .qml files
+    local scanfiles = {}
+    if setup.need_cachegen then
+        scanfiles = qmls
+    elseif need_qmltc then
+        scanfiles = qmltc_sources
+    end
+    local scangroup =  prefix .. "/qmlimportscanner"
     if #scanfiles > 0 then
-        scangroup = prefix .. "/qmlimportscanner"
         jobgraph:group(scangroup, function ()
             for _, file in ipairs(scanfiles) do
                 _add_job(jobgraph, scangroup .. "/" .. file.sourcefile, target, function (cmds, jobopt)
@@ -411,7 +521,7 @@ function prepare(target, jobgraph, sourcebatch, opt)
     if setup.need_cachegen then
         local cachegengroup = prefix .. "/qmlcachegen"
         jobgraph:group(cachegengroup, function ()
-            for _, file in ipairs(setup.qmls) do
+            for _, file in ipairs(qmls) do
                 _add_job(jobgraph, cachegengroup .. "/" .. file.sourcefile, target, function (cmds, jobopt)
                     _add_cachegen(target, cmds, setup, file, jobopt)
                 end)
@@ -421,9 +531,8 @@ function prepare(target, jobgraph, sourcebatch, opt)
             end)
         end)
         -- qmlcachegen reads the qrc files and the scan output
-        jobgraph:add_orders(qrcjob, cachegengroup)
         jobgraph:add_orders(scangroup, cachegengroup)
-        if setup.aot.enabled then
+        if aot.enabled then
             local aotstatsjob = prefix .. "/aotstats"
             _add_job(jobgraph, aotstatsjob, target, function (cmds, jobopt)
                 _add_aotstats(target, cmds, setup, jobopt)
@@ -432,34 +541,16 @@ function prepare(target, jobgraph, sourcebatch, opt)
         end
     end
 
-    if setup.setting.type_compiler then
-        local qmltc_files = {}
-        for _, file in ipairs(setup.qmls) do
-            if _is_qmltc_file(file.sourcefile) then
-                table.insert(qmltc_files, file)
+    if need_qmltc then
+        local qmltcgroup = prefix .. "/qmltc"
+        jobgraph:group(qmltcgroup, function ()
+            for _, file in ipairs(qmltc_sources) do
+                _add_job(jobgraph, qmltcgroup .. "/" .. file.sourcefile, target, function (cmds, jobopt)
+                    _add_qmltc(target, cmds, setup, file, jobopt)
+                end)
             end
-        end
-        if #qmltc_files > 0 then
-            local qmltcgroup = prefix .. "/qmltc"
-            local mocgroup = prefix .. "/qmltc.moc"
-            jobgraph:group(qmltcgroup, function ()
-                for _, file in ipairs(qmltc_files) do
-                    _add_job(jobgraph, qmltcgroup .. "/" .. file.sourcefile, target, function (cmds, jobopt)
-                        _add_qmltc(target, cmds, setup, file, jobopt)
-                    end)
-                end
-            end)
-            jobgraph:group(mocgroup, function ()
-                for _, file in ipairs(qmltc_files) do
-                    _add_job(jobgraph, mocgroup .. "/" .. file.sourcefile, target, function (cmds, jobopt)
-                        _add_qmltc_moc(target, cmds, setup, file, jobopt)
-                    end)
-                end
-            end)
-            -- qmltc reads the qrc files and the scan output, moc needs the qmltc headers
-            jobgraph:add_orders(qrcjob, qmltcgroup)
-            jobgraph:add_orders(scangroup, qmltcgroup)
-            jobgraph:add_orders(qmltcgroup, mocgroup)
-        end
+        end)
+        -- qmltc reads the qml files and the scan output, its headers are moc'ed by qt.moc
+        jobgraph:add_orders(scangroup, qmltcgroup)
     end
 end

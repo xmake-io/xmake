@@ -18,9 +18,6 @@
 -- @file        qrc.lua
 --
 
--- imports
-import("core.base.json")
-
 -- escape the given text for xml
 function _escape(str)
     return (tostring(str):gsub("[&<>\"']", {
@@ -32,16 +29,11 @@ function _escape(str)
     }))
 end
 
--- render the manifest of the QML module
-function render_manifest(manifest)
-    return json.encode(manifest, {pure = true, pretty = true}) .. "\n"
-end
-
 -- render the qrc file of the QML module
-function render_qrc(manifest)
+function render_qrc(qrcdata)
     local lines = {"<RCC>"}
-    local prefix = manifest.prefix
-    local entries = manifest.entries or {}
+    local prefix = qrcdata.prefix
+    local entries = qrcdata.entries or {}
     if #entries > 0 then
         if prefix then
             table.insert(lines, string.format("  <qresource prefix=\"%s\">", _escape(prefix)))
@@ -49,17 +41,17 @@ function render_qrc(manifest)
             table.insert(lines, "  <qresource>")
         end
         for _, entry in ipairs(entries) do
-            local empty = manifest.discard and " empty=\"true\"" or ""
+            local empty = qrcdata.discard and " empty=\"true\"" or ""
             table.insert(lines, string.format("    <file alias=\"%s\"%s>%s</file>",
                 _escape(entry.alias), empty, _escape(entry.path)))
         end
         table.insert(lines, "  </qresource>")
     end
     -- the qmldir must be available at :/qt/qml/<uri>/qmldir
-    if manifest.qmldir then
+    if qrcdata.qmldir then
         assert(prefix, "qrc: the qml module prefix is required for the qmldir file!")
         table.insert(lines, string.format("  <qresource prefix=\"%s\">", _escape(prefix:gsub("/$", ""))))
-        table.insert(lines, string.format("    <file alias=\"qmldir\">%s</file>", _escape(manifest.qmldir)))
+        table.insert(lines, string.format("    <file alias=\"qmldir\">%s</file>", _escape(qrcdata.qmldir)))
         table.insert(lines, "  </qresource>")
     end
     table.insert(lines, "</RCC>")

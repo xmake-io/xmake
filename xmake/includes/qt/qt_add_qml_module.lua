@@ -20,6 +20,22 @@
 
 -- add a QML module, the equivalent of Qt CMake's qt_add_qml_module()
 --
+-- @param ...   the file patterns and the last argument table contains the options:
+--              - uri          the module uri, default: target:name()
+--              - cachegen     enable qmlcachegen AOT, default: true
+--              - only_bytecode  pass --only-bytecode to qmlcachegen, requires cachegen
+--              - type_compiler  compile the .qml files with qmltc, default: false
+--              - namespace    the qmltc namespace, default: nil (auto-generated from the
+--                             uri), "" disables --namespace (keep the anonymous namespace)
+--              - discard      do not pack the qml file contents into the qrc
+--              - aot_stats    dump the AOT statistics: nil (auto), true (required), false
+--              - import       the extra QML import directories
+--
+--              The files are classified by their extension: .qml/.js/.mjs/.qmldir and
+--              the qmldir files are processed by the qt.qml rule, the other files with
+--              a known extension are packed as resources by the qt.qml.resource rule,
+--              unknown patterns are passed to the native add_files().
+--
 -- @code
 -- includes("@builtin/qt")
 -- target("myapp")
@@ -28,6 +44,7 @@
 -- @endcode
 --
 function qt_add_qml_module(...)
+    add_rules("qt.qml", "qt.qrc", "qt.moc")
 
     -- the last argument table contains the options
     local args = table.pack(...)
@@ -37,58 +54,46 @@ function qt_add_qml_module(...)
         args.n = args.n - 1
     end
 
-    -- classify the files by their extension, unknown patterns are passed to xmake's
-    -- native add_files() so that xmake reports unmatched/unknown source files itself
-    local qmlfiles = {}
-    local resfiles = {}
+    -- Since the qmldir file may not have a suffix and the resource files may have any suffix,
+    -- manual implementation of file classification is required.
+    local qml_files = {}
+    local res_files = {}
     local unknown = {}
-    local function _classify(file)
-        for _, pattern in ipairs(table.wrap(file)) do
-            local extension = path.extension(pattern):lower()
-            local filename = path.filename(pattern):lower()
-            if extension == ".qml" or extension == ".js" or extension == ".mjs" or
-                extension == ".qmldir" or filename == "qmldir" then
-                table.insert(qmlfiles, pattern)
-            elseif extension ~= "" and not extension:find("*", 1, true) then
-                table.insert(resfiles, pattern)
-            else
-                table.insert(unknown, pattern)
-            end
+    local qml_extension = { ".qml", ".js", ".mjs", ".qmldir" }
+    local function _classify(pattern)
+        local extension = path.extension(pattern):lower()
+        local filename = path.filename(pattern):lower()
+        if table.contains(qml_extension, extension) or filename == "qmldir" then
+            table.insert(qml_files, pattern)
+        elseif extension ~= "" and not extension:find("*", 1, true) then
+            table.insert(res_files, pattern)
+        else
+            table.insert(unknown, pattern)
         end
     end
     for i = 1, args.n do
-        _classify(args[i])
-    end
-
-    -- activate the qt.qml rule, it provides on_load()/on_config()
-    add_rules("qt.qml")
-
-    -- inject the module settings
-    if opt.uri then
-        add_values("qt.qml.uri", opt.uri)
-    end
-    local values = {
-        {"cachegen", opt.cachegen},
-        {"only_bytecode", opt.only_bytecode},
-        {"type_compiler", opt.type_compiler},
-        {"namespace", opt.namespace},
-        {"discard", opt.discard},
-        {"aot_stats", opt.aot_stats}
-    }
-    for _, value in ipairs(values) do
-        if value[2] ~= nil then
-            add_values("qt.qml." .. value[1], value[2])
+        for _, pattern in ipairs(table.wrap(args[i])) do
+            _classify(pattern)
         end
     end
-    if opt.import then
-        add_values("qt.qml.import", opt.import)
+
+    -- inject the module settings
+    local value_names = {
+        "uri", "cachegen", "only_bytecode", "type_compiler", "namespace", "discard", "aot_stats", "import"
+    }
+    for _, value_name in ipairs(value_names) do
+        if opt[value_name] ~= nil then
+            add_values("qt.qml." .. value_name, opt[value_name])
+        end
     end
 
-    if #qmlfiles > 0 then
-        add_files(qmlfiles, {rules = "qt.qml"})
+    -- bind the files explicitly, `override` prevents the rules from being added
+    -- again by their extensions, because qt.qml sets file extensions
+    if #qml_files > 0 then
+        add_files(qml_files, { rules = { "qt.qml", override = true } })
     end
-    if #resfiles > 0 then
-        add_files(resfiles, {rules = "qt.qml.resource"})
+    if #res_files > 0 then
+        add_files(res_files, { rules = { "qt.qml.resource", override = true } })
     end
     if #unknown > 0 then
         add_files(unknown)

@@ -15,21 +15,40 @@
 -- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      24bit-xjkp
--- @file        qrcgen.lua
+-- @file        find_qmlcachegen.lua
 --
 
 -- imports
-import("core.base.json")
-import("qrc")
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
--- generate the qml qrc file from the manifest, called by `batchcmds:lua()`
+-- find qmlcachegen
 --
--- @param qrcfile       the output qrc file
--- @param manifestfile  the manifest file of the QML module
+-- @param opt   the argument options, e.g. {version = true, paths = {}}
 --
-function main(qrcfile, manifestfile)
-    local manifest = json.loadfile(manifestfile)
-    -- always rewrite the qrc to update its mtime, so that rcc will be recompiled
-    os.mkdir(path.directory(qrcfile))
-    io.writefile(qrcfile, qrc.render_qrc(manifest))
+-- @return      program, version
+--
+-- @code
+--
+-- local qmlcachegen = find_qmlcachegen()
+-- local qmlcachegen, version = find_qmlcachegen({version = true})
+--
+-- @endcode
+--
+function main(opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- find program
+    local program = find_program(opt.program or "qmlcachegen", opt)
+
+    -- find program version
+    local version = nil
+    if program and opt.version then
+        version = find_programver(program, opt)
+    end
+
+    -- ok?
+    return program, version
 end
