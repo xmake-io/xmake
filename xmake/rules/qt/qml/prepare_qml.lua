@@ -1,4 +1,4 @@
---!A cross-platform build utility based on Lua
+-- !A cross-platform build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
 import("core.base.option")
 import("core.base.json")
-import("private.utils.batchcmds", {alias = "batchcmds_utils"})
+import("private.utils.batchcmds", { alias = "batchcmds_utils" })
 import("utils.progress")
 import("utils")
 import("qrc")
@@ -38,7 +38,7 @@ function _collect_files(target, setting, sourcefiles)
         local alias, absfile = utils.get_alias(target, sourcefile)
         local filename = path.filename(sourcefile):lower()
         if filename == "qmldir" or path.extension(filename) == ".qmldir" then
-            table.insert(qmldirs, {sourcefile = sourcefile, absfile = absfile})
+            table.insert(qmldirs, { sourcefile = sourcefile, absfile = absfile })
         else
             table.insert(qmls, {
                 sourcefile    = sourcefile,
@@ -49,13 +49,15 @@ function _collect_files(target, setting, sourcefiles)
         end
     end
     if #qmldirs > 1 then
-        wprint("qt.qml: multiple qmldir files are found in target(%s), only '%s' is packaged, " ..
-            "all of them are used for imports", target:name(), qmldirs[1].sourcefile)
+        wprint(
+            "qt.qml: multiple qmldir files are found in target(%s), only '%s' is packaged, " .. "all of them are used for imports",
+            target:name(), qmldirs[1].sourcefile
+        )
     end
     return qmls, qmldirs
 end
 
--- write the module qrc and the file lists used by qmlcachegen/qmltc
+-- write the module qrc and the file map used by qmltc
 function _write_files(target, setup)
     local setting = setup.setting
     local paths = setup.paths
@@ -68,23 +70,12 @@ function _write_files(target, setup)
         entries = {}
     }
     for _, file in ipairs(qmls) do
-        table.insert(qrcdata.entries, {alias = file.alias, path = file.absfile})
+        table.insert(qrcdata.entries, { alias = file.alias, path = file.absfile })
     end
     qrc.write_if_changed(paths.qrcfile, qrc.generate_qrc(qrcdata))
-    if setup.need_cachegen then
-        local rsp = {}
-        for _, resource in ipairs(setup.resources) do
-            table.insert(rsp, "--resource")
-            table.insert(rsp, resource)
-        end
-        for _, file in ipairs(qmls) do
-            table.insert(rsp, file.resource_path)
-        end
-        qrc.write_if_changed(paths.loaderrsp, table.concat(rsp, "\n") .. "\n")
-    end
     if setup.need_qmltc then
         -- qmltc uses the file map to include the headers of the other components
-        local mapdata = {entries = {}}
+        local mapdata = { entries = {} }
         for _, file in ipairs(qmls) do
             if _is_qmltc_file(file.sourcefile) then
                 table.insert(mapdata.entries, {
@@ -125,12 +116,12 @@ function _add_generated_files(target, setup, qmltc_files)
         table.insert(headers, files.header)
     end
     if #cppfiles > 0 then
-        target:add("files", cppfiles, {always_added = true})
+        target:add("files", cppfiles, { always_added = true })
     end
     -- the qt.moc rule reads the header to check Q_PRIVATE_SLOT, but the header does
     -- not exist in the dry run because the generation jobs are not executed
     if #headers > 0 and not option.get("dry-run") then
-        target:add("files", headers, {rules = {"qt.moc", override = true}, always_added = true})
+        target:add("files", headers, { rules = { "qt.moc", override = true }, always_added = true })
     end
 end
 
@@ -179,7 +170,7 @@ function _get_directorydeps(setup, dir)
     end
     if not found then
         -- the directory is outside of the module, track all qml/js files in it
-        for _, pattern in ipairs({"**.qml", "**.js", "**.mjs"}) do
+        for _, pattern in ipairs({ "**.qml", "**.js", "**.mjs" }) do
             table.join2(deps, os.files(path.join(dir, pattern)))
         end
     end
@@ -191,11 +182,10 @@ end
 -- Every qml file only depends on itself, the files it imports and the qmldir
 -- files of the module, so only the affected c++ sources are regenerated.
 function _get_depfiles(target, setup, file)
-    local depfiles = {file.absfile}
-    local depset = {[file.absfile] = true}
+    local depfiles = { file.absfile }
+    local depset = { [file.absfile] = true }
     local scanfile = utils.get_autogen_file(target, "qmlimportscanner", file.sourcefile, ".json")
-    local imports = try
-    {
+    local imports = try {
         function ()
             return json.loadfile(scanfile)
         end
@@ -216,7 +206,7 @@ function _get_depfiles(target, setup, file)
                 if not path.is_absolute(jsfile) then
                     jsfile = path.join(path.directory(file.absfile), jsfile)
                 end
-                importdeps = os.isfile(jsfile) and {jsfile} or {}
+                importdeps = os.isfile(jsfile) and { jsfile } or {}
             end
             for _, depfile in ipairs(importdeps or {}) do
                 _add_depfile(depfiles, depset, depfile)
@@ -239,16 +229,13 @@ end
 -- get the arguments shared by qmlcachegen and qmltc
 function _add_import_args(args, setup)
     for _, dir in ipairs(setup.importdirs) do
-        table.insert(args, "-I")
-        table.insert(args, dir)
+        table.join2(args, { "-I", dir })
     end
     for _, qmldir in ipairs(setup.qmldirs) do
-        table.insert(args, "-i")
-        table.insert(args, qmldir.absfile)
+        table.join2(args, { "-i", qmldir.absfile })
     end
     for _, resource in ipairs(setup.resources) do
-        table.insert(args, "--resource")
-        table.insert(args, resource)
+        table.join2(args, { "--resource", resource })
     end
 end
 
@@ -256,18 +243,14 @@ end
 function _scan_imports(scanfile, scanner, qmlfile, importdirs)
     local args = {}
     for _, dir in ipairs(importdirs) do
-        table.insert(args, "-importPath")
-        table.insert(args, dir)
+        table.join2(args, { "-importPath", dir })
     end
-    table.insert(args, "-qmlFiles")
-    table.insert(args, qmlfile)
-    local outdata = try
-    {
+    table.join2(args, { "-qmlFiles", qmlfile })
+    local outdata = try {
         function ()
             return os.iorunv(scanner, args)
         end,
-        catch
-        {
+        catch {
             function (errors)
                 -- remove the stale result, it would be reused by the next builds because
                 -- the source file is not changed, and the dependency graph would be frozen
@@ -290,7 +273,7 @@ end
 function _add_scan(target, cmds, setup, file, opt)
     local scanfile = utils.get_autogen_file(target, "qmlimportscanner", file.sourcefile, ".json")
     cmds:show_progress(opt.progress, "${color.build.object}scanning.qt.qml.imports %s", file.sourcefile)
-    cmds:call(_scan_imports, {scanfile, setup.tools.importscanner.program, file.absfile, setup.importdirs})
+    cmds:call(_scan_imports, { scanfile, setup.tools.importscanner.program, file.absfile, setup.importdirs })
     cmds:add_depfiles(file.absfile)
     cmds:add_depvalues(setup.tools.importscanner.program, setup.importdirs)
     cmds:set_depmtime(os.mtime(scanfile))
@@ -300,17 +283,14 @@ end
 -- generate the c++ source of the given qml/js/mjs file
 function _add_cachegen(target, cmds, setup, file, opt)
     local cppfile = utils.get_autogen_file(target, "qmlcachegen", file.sourcefile, ".cpp")
-    local args = {"--bare", "--resource-path", file.resource_path}
+    local args = { "--bare", "--resource-path", file.resource_path, "-o", cppfile }
     _add_import_args(args, setup)
     if setup.setting.only_bytecode then
         table.insert(args, "--only-bytecode")
     end
     if setup.aot.enabled then
-        table.insert(args, "--dump-aot-stats")
-        table.insert(args, "--module-id=" .. setup.module_id)
+        table.join2(args, "--dump-aot-stats", "--module-id=" .. setup.module_id)
     end
-    table.insert(args, "-o")
-    table.insert(args, cppfile)
     table.insert(args, file.absfile)
     cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmlcachegen %s", file.sourcefile)
     cmds:mkdir(path.directory(cppfile))
@@ -325,13 +305,26 @@ end
 -- generate the qmlcache_loader
 function _add_loader(target, cmds, setup, opt)
     local cppfile = setup.paths.loadercpp
-    local args = {"--resource-name", "qmlcache_" .. target:name(),
-        "-o", cppfile, "@" .. setup.paths.loaderrsp}
+    local args = { "--resource-name", "qmlcache_" .. target:name(), "-o", cppfile }
+    for _, resource in ipairs(setup.resources) do
+        table.join2(args, { "--resource", resource })
+    end
+    for _, file in ipairs(setup.qmls) do
+        table.insert(args, file.resource_path)
+    end
+    -- qmlcachegen reads the argument file line by line, so we must keep the raw arguments.
+    local depvalues = table.clone(args)
+    if is_host("windows") then
+        args = winos.cmdargv(args, { raw = true })
+    end
     cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmlcachegen %s", path.filename(cppfile))
     cmds:mkdir(path.directory(cppfile))
     cmds:vrunv(setup.tools.cachegen.program, args)
-    cmds:add_depfiles(setup.paths.loaderrsp)
-    cmds:add_depvalues(setup.tools.cachegen.program, args)
+    -- the qrc files are the inputs of the loader, they are only rewritten when the
+    -- module file list is changed, the resource paths themselves are tracked as
+    -- the depvalues of the command
+    cmds:add_depfiles(setup.resources)
+    cmds:add_depvalues(setup.tools.cachegen.program, depvalues)
     cmds:set_depmtime(os.mtime(cppfile))
     cmds:set_depcache(target:dependfile(cppfile))
 end
@@ -360,18 +353,19 @@ function _add_aotstats(target, cmds, setup, opt)
     local paths = setup.paths
     if #sidecars == 0 then
         -- only qml components produce stats, e.g. a module with only .js files has none
-        for _, filepath in ipairs({paths.aotstats, paths.aotstatstxt, paths.aotstatslist}) do
+        for _, filepath in ipairs({ paths.aotstats, paths.aotstatstxt, paths.aotstatslist }) do
             if os.isfile(filepath) then
                 cmds:rm(filepath)
             end
         end
         return
     end
-    cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qml.aotstats %s",
-        path.filename(paths.aotstats))
-    cmds:call(_write_aotstats_list, {paths.aotstatslist, sidecars})
-    cmds:vrunv(setup.aot.tool.program, {"aggregate", paths.aotstatslist, paths.aotstats})
-    cmds:vrunv(setup.aot.tool.program, {"format", paths.aotstats, paths.aotstatstxt})
+    cmds:show_progress(
+        opt.progress, "${color.build.object}generating.qt.qml.aotstats %s", path.filename(paths.aotstats)
+    )
+    cmds:call(_write_aotstats_list, { paths.aotstatslist, sidecars })
+    cmds:vrunv(setup.aot.tool.program, { "aggregate", paths.aotstatslist, paths.aotstats })
+    cmds:vrunv(setup.aot.tool.program, { "format", paths.aotstats, paths.aotstatstxt })
     -- rebuild the report if any sidecar file has been regenerated
     cmds:add_depfiles(sidecars)
     cmds:add_depvalues(setup.aot.tool.program, paths.aotstatslist, paths.aotstats, paths.aotstatstxt)
@@ -383,7 +377,11 @@ end
 -- generate the qmltc source of the given qml file
 function _add_qmltc(target, cmds, setup, file, opt)
     local files = _get_qmltc_files(target, setup, file.sourcefile)
-    local args = {"--bare", "--header", files.header, "--impl", files.impl, "--module", setup.setting.uri}
+    -- the file map is used by qmltc to include the headers of other components
+    local args = {
+        "--bare", "--header", files.header, "--impl", files.impl, "--module", setup.setting.uri, "--resource",
+        setup.paths.qmltcmap
+    }
     local namespace = setup.setting.namespace
     if namespace == nil then
         -- qmltc puts the generated types into an anonymous namespace by default and
@@ -392,13 +390,9 @@ function _add_qmltc(target, cmds, setup, file, opt)
     end
     -- an empty namespace disables `--namespace`, e.g. to keep the anonymous namespace
     if namespace ~= "" then
-        table.insert(args, "--namespace")
-        table.insert(args, namespace)
+        table.join2(args, { "--namespace", namespace })
     end
     _add_import_args(args, setup)
-    -- the file map is used by qmltc to include the headers of other components
-    table.insert(args, "--resource")
-    table.insert(args, setup.paths.qmltcmap)
     table.insert(args, file.absfile)
     cmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmltc %s", file.sourcefile)
     cmds:mkdir(path.directory(files.header))
@@ -417,9 +411,9 @@ end
 function _add_job(jobgraph, name, target, run)
     jobgraph:add(name, function (_, _, opt)
         progress.set_target(opt.progress, target)
-        local cmds = batchcmds_utils.new({target = target})
+        local cmds = batchcmds_utils.new({ target = target })
         run(cmds, opt)
-        cmds:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
+        cmds:runcmds({ changed = target:is_rebuilt(), dryrun = option.get("dry-run") })
     end)
 end
 
@@ -444,7 +438,7 @@ function main(target, jobgraph, sourcebatch, opt)
     local dryrun = option.get("dry-run")
     local resourcebatch = target:sourcebatches()["qt.qml.resource"]
     local has_resources = resourcebatch ~= nil and #resourcebatch.sourcefiles > 0
-    local resources = {paths.qrcfile}
+    local resources = { paths.qrcfile }
     if has_resources then
         table.insert(resources, paths.resourceqrc)
     end
@@ -478,10 +472,10 @@ function main(target, jobgraph, sourcebatch, opt)
     -- resource files, even in the dry run
     if not dryrun then
         _write_files(target, setup)
-        target:add("files", paths.qrcfile, {always_added = true})
+        target:add("files", paths.qrcfile, { always_added = true })
         -- remove the stale AOT report if the AOT compilation has been disabled
         if not aot.enabled then
-            for _, filepath in ipairs({paths.aotstats, paths.aotstatstxt, paths.aotstatslist}) do
+            for _, filepath in ipairs({ paths.aotstats, paths.aotstatstxt, paths.aotstatslist }) do
                 if os.isfile(filepath) then
                     os.rm(filepath)
                 end
@@ -507,7 +501,7 @@ function main(target, jobgraph, sourcebatch, opt)
     elseif need_qmltc then
         scanfiles = qmltc_sources
     end
-    local scangroup =  prefix .. "/qmlimportscanner"
+    local scangroup = prefix .. "/qmlimportscanner"
     if #scanfiles > 0 then
         jobgraph:group(scangroup, function ()
             for _, file in ipairs(scanfiles) do

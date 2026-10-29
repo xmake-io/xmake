@@ -60,9 +60,10 @@ function get_setting(target)
     for _, value in ipairs(table.wrap(target:values("qt.qml.import"))) do
         table.join2(setting.imports, table.wrap(value))
     end
-    -- only bytecode also requires qmlcachegen
-    if setting.only_bytecode then
-        setting.cachegen = true
+    -- qmlcachegen is required by only_bytecode, ignore it when cachegen is disabled,
+    -- load.lua warns the user about it
+    if setting.only_bytecode == true and not setting.cachegen then
+        setting.only_bytecode = false
     end
     return setting
 end
@@ -175,7 +176,6 @@ function get_paths(target)
     return {
         qrcfile      = path.join(gendir, "qml_module.qrc"),
         resourceqrc  = path.join(gendir, "qml_resource.qrc"),
-        loaderrsp    = path.join(cachegendir, target:name() .. "_qml_loader_file_list.rsp"),
         loadercpp    = path.join(cachegendir, target:name() .. "_qmlcache_loader.cpp"),
         aotstats     = path.join(cachegendir, target:name() .. ".aotstats"),
         aotstatstxt  = path.join(cachegendir, target:name() .. ".aotstats.txt"),

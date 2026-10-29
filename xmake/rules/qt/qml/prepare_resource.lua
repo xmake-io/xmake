@@ -26,7 +26,7 @@ import("qrc")
 -- The resource qrc is generated while the prepare job graph is being built,
 -- so the qmlcachegen/qmltc jobs of qt.qml, which read it with `--resource`,
 -- always see the final file. `jobgraph` is unused here.
-function main(target, jobgraph, sourcebatch, opt)
+function main(target, _jobgraph, sourcebatch, _)
     -- keep the generated qrc deterministic
     local sourcefiles = table.unique(sourcebatch.sourcefiles)
     table.sort(sourcefiles)

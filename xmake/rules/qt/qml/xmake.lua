@@ -35,11 +35,8 @@ rule("qt.qml.resource")
 --
 -- target("app")
 --     add_rules("qt.quickapp", "qt.qml")
---     add_files("*.qml")
+--     add_files("*.qml", "*.js", "*.mjs")
 --     add_values("qt.qml.uri", "MyApp")
---
--- The `.js/.mjs` extensions are also claimed by this rule, if a target has unrelated
--- js files, bind them to another rule explicitly.
 --
 rule("qt.qml")
     -- qt.env provides the Qt SDK, qt.qrc provides the rcc tool for the generated

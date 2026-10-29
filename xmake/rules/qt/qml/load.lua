@@ -52,8 +52,9 @@ function main(target)
     if setting.namespace and #setting.namespace > 0 and not setting.type_compiler then
         wprint("qt.qml: qt.qml.namespace is ignored because qt.qml.type_compiler is disabled")
     end
-    if setting.only_bytecode and not utils.get_option(target, "qt.qml.cachegen", true) then
-        wprint("qt.qml: qt.qml.only_bytecode requires qmlcachegen, qt.qml.cachegen is forced to true")
+    -- only_bytecode is disabled by get_setting() in this case, warn the user once
+    if utils.get_option(target, "qt.qml.only_bytecode", false) and not setting.cachegen then
+        wprint("qt.qml: qt.qml.only_bytecode is ignored because qt.qml.cachegen is disabled")
     end
 
     -- the qmldir file has no extension and cannot be dispatched by set_extensions(),
