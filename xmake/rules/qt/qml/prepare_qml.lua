@@ -70,7 +70,7 @@ function _write_files(target, setup)
     for _, file in ipairs(qmls) do
         table.insert(qrcdata.entries, {alias = file.alias, path = file.absfile})
     end
-    qrc.write_if_changed(paths.qrcfile, qrc.render_qrc(qrcdata))
+    qrc.write_if_changed(paths.qrcfile, qrc.generate_qrc(qrcdata))
     if setup.need_cachegen then
         local rsp = {}
         for _, resource in ipairs(setup.resources) do
@@ -93,7 +93,7 @@ function _write_files(target, setup)
                 })
             end
         end
-        qrc.write_if_changed(paths.qmltcmap, qrc.render_qrc(mapdata))
+        qrc.write_if_changed(paths.qmltcmap, qrc.generate_qrc(mapdata))
     end
 end
 

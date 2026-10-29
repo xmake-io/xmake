@@ -18,44 +18,52 @@
 -- @file        qrc.lua
 --
 
--- escape the given text for xml
-function _escape(str)
-    return (tostring(str):gsub("[&<>\"']", {
-        ["&"] = "&amp;",
-        ["<"] = "&lt;",
-        [">"] = "&gt;",
-        ["\""] = "&quot;",
-        ["'"] = "&apos;"
-    }))
+-- imports
+import("core.base.xml")
+
+-- create the <file> node of the given qrc entry
+function _new_file_node(alias, filepath, empty)
+    local attrs = {alias = alias}
+    if empty then
+        attrs.empty = "true"
+    end
+    return xml.new({name = "file", attrs = attrs, children = {xml.text(filepath)}})
 end
 
--- render the qrc file of the QML module
-function render_qrc(qrcdata)
-    local lines = {"<RCC>"}
+-- generate the qrc file of the QML module
+--
+-- The qrc file is an XML document, so we build a node tree and let the xml module
+-- escape the paths and generate the text, e.g. a path containing `&` or `<` would
+-- break the qrc otherwise. The xml module also sorts the attributes, so the same
+-- input always gives the same qrc and write_if_changed() can skip unchanged files.
+-- The two-space indent keeps the output identical to the previous hand-written
+-- layout, so existing qrc files are not rewritten after this change.
+function generate_qrc(qrcdata)
     local prefix = qrcdata.prefix
     local entries = qrcdata.entries or {}
+    local resources = {}
     if #entries > 0 then
-        if prefix then
-            table.insert(lines, string.format("  <qresource prefix=\"%s\">", _escape(prefix)))
-        else
-            table.insert(lines, "  <qresource>")
-        end
+        local files = {}
         for _, entry in ipairs(entries) do
-            local empty = qrcdata.discard and " empty=\"true\"" or ""
-            table.insert(lines, string.format("    <file alias=\"%s\"%s>%s</file>",
-                _escape(entry.alias), empty, _escape(entry.path)))
+            table.insert(files, _new_file_node(entry.alias, entry.path, qrcdata.discard))
         end
-        table.insert(lines, "  </qresource>")
+        table.insert(resources, xml.new({
+            name     = "qresource",
+            attrs    = prefix and {prefix = prefix} or nil,
+            children = files
+        }))
     end
     -- the qmldir must be available at :/qt/qml/<uri>/qmldir
     if qrcdata.qmldir then
         assert(prefix, "qrc: the qml module prefix is required for the qmldir file!")
-        table.insert(lines, string.format("  <qresource prefix=\"%s\">", _escape(prefix:gsub("/$", ""))))
-        table.insert(lines, string.format("    <file alias=\"qmldir\">%s</file>", _escape(qrcdata.qmldir)))
-        table.insert(lines, "  </qresource>")
+        table.insert(resources, xml.new({
+            name     = "qresource",
+            attrs    = {prefix = prefix:gsub("/$", "")},
+            children = {_new_file_node("qmldir", qrcdata.qmldir)}
+        }))
     end
-    table.insert(lines, "</RCC>")
-    return table.concat(lines, "\n") .. "\n"
+    local doc = xml.new({name = "RCC", children = resources})
+    return assert(xml.encode(doc, {pretty = true, indent = 2})) .. "\n"
 end
 
 -- write the file only if its content is changed

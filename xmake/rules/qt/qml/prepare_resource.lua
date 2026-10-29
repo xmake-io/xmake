@@ -47,7 +47,7 @@ function main(target, jobgraph, sourcebatch, opt)
     local paths = utils.get_paths(target)
     -- the dry run does not generate anything, see prepare_qml.lua
     if not option.get("dry-run") then
-        qrc.write_if_changed(paths.resourceqrc, qrc.render_qrc(qrcdata))
+        qrc.write_if_changed(paths.resourceqrc, qrc.generate_qrc(qrcdata))
         target:add("files", paths.resourceqrc, { always_added = true })
     end
 end
