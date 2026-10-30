@@ -127,6 +127,8 @@ function _parse_moduleinfo(target, moduleinfo)
                 module.method = provide["lookup-method"] or "by-name"
 
                 if module.headerunit then
+                    -- Retain the import spelling before canonical header units are named by path.
+                    module.lookupname = module.name
                     local key = support.get_headerunit_key(target, module.sourcefile)
                     module.key = key
                 end
