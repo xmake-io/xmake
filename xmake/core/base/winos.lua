@@ -170,6 +170,9 @@ end
 --
 -- @param argv  the arguments list
 -- @param opt   the options, e.g. {program = "cl.exe", wrapflag = "@"}
+--              set `raw = true` to write one argument per line without escaping,
+--              it is required by the tools which read the argument file line by
+--              line, e.g. Qt's qmlcachegen/qmltc/qmllint
 -- @return      the program, the new arguments list (may use @file)
 --
 function winos.cmdargv(argv, opt)
@@ -187,7 +190,14 @@ function winos.cmdargv(argv, opt)
     if argn > limit then
         opt = opt or {}
         local argsfile = os.tmpfile(opt.tmpkey or os.args(argv)) .. ".args.txt"
-        local f = io.open(argsfile, 'w', {encoding = os.is_host("windows") and "ansi"})
+        -- the raw arguments are read as UTF-8 by the tools which parse the argument
+        -- file line by line, e.g. qmlcachegen, so we must not convert them to the
+        -- ANSI code page
+        local encoding
+        if os.is_host("windows") and not opt.raw then
+            encoding = "ansi"
+        end
+        local f = io.open(argsfile, 'w', {encoding = encoding})
         if f then
             -- we need to split args file to solve `fatal error LNK1170: line in command file contains 131071 or more characters`
             -- @see https://github.com/xmake-io/xmake/issues/812
@@ -198,26 +208,34 @@ function winos.cmdargv(argv, opt)
                 if arg1 then
                     arg1 = tostring(arg1)
                 end
-                -- we need to ensure `/name value` in same line,
-                -- otherwise cl.exe will prompt that the corresponding parameter value cannot be found
-                --
-                -- e.g.
-                --
-                -- /sourceDependencies xxxx.json
-                -- -Dxxx
-                -- foo.obj
-                --
-
-                -- if host is not Windows, paths may start with '/', which conflicts with '/<argname>'
-                -- note that checking if the next argument ends with '.json' will only work for /sourceDependencies
-                -- other arguments will remain broken, perhaps we should discuss a better solution
-                if idx + 1 <= #argv and arg:find("^[-/]") and (os.is_host("windows") and (not arg1:find("^[-/]")) or (arg1:endswith(".json"))) then
-                    f:write(os.args(arg, {escape = opt.escape}) .. " ")
-                    f:write(os.args(arg1, {escape = opt.escape}) .. "\n")
-                    idx = idx + 2
-                else
-                    f:write(os.args(arg, {escape = opt.escape}) .. "\n")
+                -- the tools which parse the argument file line by line (e.g. Qt's
+                -- qmlcachegen) do not unquote the arguments, keep every argument in
+                -- its own line and do not escape it
+                if opt.raw then
+                    f:write(arg, "\n")
                     idx = idx + 1
+                else
+                    -- we need to ensure `/name value` in same line,
+                    -- otherwise cl.exe will prompt that the corresponding parameter value cannot be found
+                    --
+                    -- e.g.
+                    --
+                    -- /sourceDependencies xxxx.json
+                    -- -Dxxx
+                    -- foo.obj
+                    --
+
+                    -- if host is not Windows, paths may start with '/', which conflicts with '/<argname>'
+                    -- note that checking if the next argument ends with '.json' will only work for /sourceDependencies
+                    -- other arguments will remain broken, perhaps we should discuss a better solution
+                    if idx + 1 <= #argv and arg:find("^[-/]") and (os.is_host("windows") and (not arg1:find("^[-/]")) or (arg1:endswith(".json"))) then
+                        f:write(os.args(arg, {escape = opt.escape}) .. " ")
+                        f:write(os.args(arg1, {escape = opt.escape}) .. "\n")
+                        idx = idx + 2
+                    else
+                        f:write(os.args(arg, {escape = opt.escape}) .. "\n")
+                        idx = idx + 1
+                    end
                 end
             end
             f:close()

@@ -1,0 +1,4 @@
+module MyApp
+prefer :/qt/qml/MyApp/
+Main 1.0 Main.qml
+MyButton 1.0 MyButton.qml
