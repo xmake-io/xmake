@@ -18,8 +18,8 @@
 -- @file        emcc.lua
 --
 
--- inherit gcc
-inherit("gcc")
+-- inherit clang
+inherit("clang")
 
 -- make the optimize flag
 --
