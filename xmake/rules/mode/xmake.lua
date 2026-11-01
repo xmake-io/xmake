@@ -54,7 +54,7 @@ rule("mode.release")
 
             -- enable optimization
             if not target:get("optimize") then
-                if target:is_plat("android", "iphoneos") then
+                if target:is_plat("android", "iphoneos", "wasm") then
                     target:set("optimize", "smallest")
                 else
                     target:set("optimize", "fastest")
@@ -86,7 +86,7 @@ rule("mode.releasedbg")
 
             -- enable optimization
             if not target:get("optimize") then
-                if target:is_plat("android", "iphoneos") then
+                if target:is_plat("android", "iphoneos", "wasm") then
                     target:set("optimize", "smallest")
                 else
                     target:set("optimize", "fastest")
@@ -149,7 +149,7 @@ rule("mode.profile")
 
             -- enable optimization
             if not target:get("optimize") then
-                if target:is_plat("android", "iphoneos") then
+                if target:is_plat("android", "iphoneos", "wasm") then
                     target:set("optimize", "smallest")
                 else
                     target:set("optimize", "fastest")
@@ -220,7 +220,7 @@ rule("mode.asan")
 
             -- enable optimization
             if not target:get("optimize") then
-                if target:is_plat("android", "iphoneos") then
+                if target:is_plat("android", "iphoneos", "wasm") then
                     target:set("optimize", "smallest")
                 else
                     target:set("optimize", "fastest")
@@ -249,7 +249,7 @@ rule("mode.tsan")
 
             -- enable optimization
             if not target:get("optimize") then
-                if target:is_plat("android", "iphoneos") then
+                if target:is_plat("android", "iphoneos", "wasm") then
                     target:set("optimize", "smallest")
                 else
                     target:set("optimize", "fastest")
@@ -278,7 +278,7 @@ rule("mode.msan")
 
             -- enable optimization
             if not target:get("optimize") then
-                if target:is_plat("android", "iphoneos") then
+                if target:is_plat("android", "iphoneos", "wasm") then
                     target:set("optimize", "smallest")
                 else
                     target:set("optimize", "fastest")
@@ -307,7 +307,7 @@ rule("mode.lsan")
 
             -- enable optimization
             if not target:get("optimize") then
-                if target:is_plat("android", "iphoneos") then
+                if target:is_plat("android", "iphoneos", "wasm") then
                     target:set("optimize", "smallest")
                 else
                     target:set("optimize", "fastest")
@@ -336,7 +336,7 @@ rule("mode.ubsan")
 
             -- enable optimization
             if not target:get("optimize") then
-                if target:is_plat("android", "iphoneos") then
+                if target:is_plat("android", "iphoneos", "wasm") then
                     target:set("optimize", "smallest")
                 else
                     target:set("optimize", "fastest")
@@ -365,7 +365,7 @@ rule("mode.valgrind")
 
             -- enable optimization
             if not target:get("optimize") then
-                if target:is_plat("android", "iphoneos") then
+                if target:is_plat("android", "iphoneos", "wasm") then
                     target:set("optimize", "smallest")
                 else
                     target:set("optimize", "fastest")
