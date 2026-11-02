@@ -408,10 +408,19 @@ function get_modulesreducedbmiflag(target)
     local modulesreducedbmiflag = _g.modulesreducedbmiflag
     if modulesreducedbmiflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fmodules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
-            modulesreducedbmiflag = "-fmodules-reduced-bmi"
-        elseif compinst:has_flags("-fexperimental-modules-reduced-bmi", "cxxflags", {flagskey = "clang_modules_reduced_bmi"}) then
-            modulesreducedbmiflag = "-fexperimental-modules-reduced-bmi"
+        local flags, extraflags
+        if target:has_tool("cxx", "clang_cl") then
+            flags = {"/clang:-fmodules-reduced-bmi", "/clang:-fexperimental-modules-reduced-bmi"}
+            -- clang-cl only warns about unknown arguments, so turn that warning into an error for the probe
+            extraflags = "-Werror=unknown-argument"
+        else
+            flags = {"-fmodules-reduced-bmi", "-fexperimental-modules-reduced-bmi"}
+        end
+        for _, flag in ipairs(flags) do
+            if compinst:has_flags(extraflags and {flag, extraflags} or flag, "cxxflags") then
+                modulesreducedbmiflag = flag
+                break
+            end
         end
         _g.modulesreducedbmiflag = modulesreducedbmiflag or false
     end
@@ -422,15 +431,19 @@ function get_modulesprecompilereducedbmiflag(target)
     local modulesprecompilereducedbmiflag = _g.modulesprecompilereducedbmiflag
     if modulesprecompilereducedbmiflag == nil then
         local compinst = target:compiler("cxx")
-        local checkflags = "--precompile-reduced-bmi"
+        local flag, checkflags
         if target:has_tool("cxx", "clang_cl") then
+            flag = "/clang:--precompile-reduced-bmi"
             -- clang_cl.has_flags() appends -c and treats unused-argument warnings as errors,
             -- but --precompile-reduced-bmi does not use -c. Ignore that specific warning and
             -- treat unknown-argument warnings as errors to reject unsupported flags.
-            checkflags = {checkflags, "-Wno-unused-command-line-argument", "-Werror=unknown-argument"}
+            checkflags = {flag, "-Wno-unused-command-line-argument", "-Werror=unknown-argument"}
+        else
+            flag = "--precompile-reduced-bmi"
+            checkflags = flag
         end
         if compinst:has_flags(checkflags, "cxxflags", {flagskey = "clang_modules_precompile_reduced_bmi", tryrun = true}) then
-            modulesprecompilereducedbmiflag = "--precompile-reduced-bmi"
+            modulesprecompilereducedbmiflag = flag
         end
         _g.modulesprecompilereducedbmiflag = modulesprecompilereducedbmiflag or false
     end
