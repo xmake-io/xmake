@@ -19,3 +19,4 @@
 --
 
 includes("@builtin/qt/qt_add_static_plugins.lua")
+includes("@builtin/qt/qt_add_qml_module.lua")
