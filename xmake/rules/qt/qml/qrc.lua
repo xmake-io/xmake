@@ -23,6 +23,9 @@ import("core.base.xml")
 import("core.project.depend")
 
 -- create the <file> node of the given qrc entry
+--
+-- `empty` can be set per entry, so that a generated metadata file (the module qmldir)
+-- is still packed when the QML sources are discarded.
 function _new_file_node(alias, filepath, empty)
     local attrs = { alias = alias }
     if empty then
@@ -46,7 +49,11 @@ function _generate_qrc(qrcdata)
     if #entries > 0 then
         local files = {}
         for _, entry in ipairs(entries) do
-            table.insert(files, _new_file_node(entry.alias, entry.path, qrcdata.discard))
+            local empty = entry.empty
+            if empty == nil then
+                empty = qrcdata.discard
+            end
+            table.insert(files, _new_file_node(entry.alias, entry.path, empty))
         end
         table.insert(
             resources,
@@ -69,7 +76,8 @@ end
 function _get_depvalues(qrcdata)
     local values = { qrcdata.prefix, qrcdata.discard and true or false }
     for _, entry in ipairs(qrcdata.entries) do
-        table.insert(values, { entry.alias, entry.path })
+        -- tostring() keeps nil, false and true distinguishable
+        table.insert(values, { entry.alias, entry.path, tostring(entry.empty) })
     end
     return values
 end
