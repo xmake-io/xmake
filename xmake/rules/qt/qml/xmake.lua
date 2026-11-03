@@ -103,7 +103,7 @@ rule("qt.qml")
     -- The prepare phase is split into the standard stages:
     --   before: write the module qrc/qmltc file map/qmldir and generate the qmlcache_loader
     --   on:     run qmlcachegen/qmltc for each source file
-    --   after:  register the generated files to the target
+    --   after:  generate the AOT report and register the generated files to the target
     --
     -- `on_prepare_file` supports `{jobgraph = true}`, so it is called once per module
     -- file at graph construction time and adds the qmlcachegen/qmltc jobs to the file

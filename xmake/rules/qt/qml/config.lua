@@ -22,6 +22,7 @@
 import("utils")
 import("cachegen")
 import("qmltc")
+import("aotstats")
 
 -- find and check the tools needed by the module
 function main(target)
@@ -32,6 +33,11 @@ function main(target)
     end
     if setting.type_compiler then
         tools.qmltc = qmltc.get_tool(target)
+    end
+    -- the AOT statistics require qmlcachegen, `aot_stats = nil` only registers the
+    -- tool when the SDK supports the report
+    if tools.cachegen and not setting.only_bytecode and setting.aot_stats ~= false then
+        tools.aotstats = aotstats.get_tool(target, setting, tools.cachegen)
     end
     target:data_set("qt.qml.tools", tools)
 end
