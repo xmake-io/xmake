@@ -36,6 +36,12 @@ function main(target)
     for _, importdir in ipairs(setting.imports) do
         assert(type(importdir) == "string", "qt.qml: qt.qml.import must be a list of directories")
     end
+    -- without qmlcachegen the QML sources are neither compiled nor packed into the qrc,
+    -- so enabling discard would leave the module without any QML content
+    assert(
+        not (setting.discard and not setting.cachegen),
+        "qt.qml: qt.qml.discard requires qt.qml.cachegen, otherwise the QML files are neither compiled nor packed"
+    )
 
     -- only_bytecode is disabled by get_setting() in this case, warn the user once
     if utils.get_option(target, "qt.qml.only_bytecode", false) and not setting.cachegen then

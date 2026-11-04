@@ -68,6 +68,17 @@ function get_args(setup, file)
     return args
 end
 
+-- get the dependency files of the given qml/js/mjs file
+--
+-- qmlcachegen reads the qrc files with `--resource`, so every output depends on
+-- them. Adding or removing a module file regenerates all outputs, while editing
+-- one file only regenerates its output, matching Qt CMake's granularity.
+function get_depfiles(setup, file)
+    local depfiles = { file.absfile }
+    table.join2(depfiles, setup.resources)
+    return depfiles
+end
+
 -- add the generation commands of the given qml/js/mjs file to batchcmds
 function add_generate(batchcmds, setup, file, opt)
     local cppfile = get_output(setup.target, file.sourcefile)
@@ -75,7 +86,7 @@ function add_generate(batchcmds, setup, file, opt)
     batchcmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmlcachegen %s", file.sourcefile)
     batchcmds:mkdir(path.directory(cppfile))
     batchcmds:vrunv(setup.tools.cachegen.program, args)
-    batchcmds:add_depfiles(file.absfile)
+    batchcmds:add_depfiles(get_depfiles(setup, file))
     batchcmds:add_depvalues(setup.tools.cachegen.program, args)
     batchcmds:set_depmtime(os.mtime(cppfile))
     batchcmds:set_depcache(setup.target:dependfile(cppfile))
