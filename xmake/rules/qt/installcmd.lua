@@ -81,17 +81,17 @@ function main(target, batchcmds, opt)
         -- install other shared libraries (e.g. from packages)
         pack_batchcmds.install_target_shared_libraries(target, batchcmds, {bindir = installdir, package = package})
     else
-        -- Linux: copy all files from bindir (plugins, translations, etc. should be handled separately)
-        local bindir = target:bindir()
-        if bindir and os.isdir(bindir) then
-            local package_bindir = package:installdir("bin")
-            -- copy all files and directories from bindir
-            batchcmds:cp(path.join(bindir, "*"), package_bindir, {rootdir = bindir})
-            
-            -- install shared libraries
-            local package_libdir = package:installdir("lib")
-            pack_batchcmds.install_target_shared_libraries(target, batchcmds, {bindir = package_libdir, package = package})
+        -- Linux: copy target binary and libraries
+        local package_bindir = package:installdir("bin")
+        batchcmds:mkdir(package_bindir)
+        batchcmds:cp(target:targetfile(), path.join(package_bindir, target:filename()))
+        if os.isfile(target:symbolfile()) then
+            batchcmds:cp(target:symbolfile(), path.join(package_bindir, path.filename(target:symbolfile())))
         end
+
+        -- install shared libraries
+        local package_libdir = package:installdir("lib")
+        pack_batchcmds.install_target_shared_libraries(target, batchcmds, {bindir = package_libdir, package = package})
     end
 
     -- install target files (resources, etc.)

@@ -75,18 +75,11 @@ function main(target, batchcmds, opt)
             -- but at least we remove the main binaries
         end
     else
-        -- Linux: remove all files from bin directory
-        local bindir = target:bindir()
-        if bindir and os.isdir(bindir) then
-            local package_bindir = package:installdir("bin")
-            -- remove all files and directories from package bindir
-            for _, item in ipairs(os.filedirs(path.join(package_bindir, "*"))) do
-                if os.isfile(item) then
-                    batchcmds:rm(item, {emptydirs = true})
-                elseif os.isdir(item) then
-                    batchcmds:rmdir(item, {emptydirs = true})
-                end
-            end
+        -- Linux: remove target binary from package bin directory
+        local package_bindir = package:installdir("bin")
+        batchcmds:rm(path.join(package_bindir, target:filename()), {emptydirs = true})
+        if os.isfile(target:symbolfile()) then
+            batchcmds:rm(path.join(package_bindir, path.filename(target:symbolfile())), {emptydirs = true})
         end
     end
 end
