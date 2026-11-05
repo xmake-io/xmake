@@ -393,16 +393,41 @@ end
 -- get the localcache key of the given target
 --
 -- @note the cached entries hold the bmifile and the objectfile paths of the modules,
--- and those are mode dependent, while the cache file is not: it lives in
--- `.xmake/<plat>/<arch>/cache`, which has no mode in its path. so the mode belongs in
--- the key, otherwise a build picks up the artifacts which the other mode recorded and
--- writes its objects into the directory of that mode
+-- and those depend on target plat/arch, mode, autogendir, objectdir, and compiler, while
+-- the cache file lives in `.xmake/<host>/<host_arch>/cache`.
 --
 -- @see https://github.com/xmake-io/xmake/issues/7785
 --
 function cachekey(target)
     local mode = config.mode()
-    return mode and (target:fullname() .. "/" .. mode) or target:fullname()
+    local plat = target:plat()
+    local arch = target:arch()
+    local autogendir = target:autogendir()
+    local objectdir = target:objectdir()
+    local program, toolname = target:tool("cxx")
+    local key = target:fullname()
+    if autogendir then
+        key = key .. "/" .. autogendir
+    end
+    if objectdir then
+        key = key .. "/" .. objectdir
+    end
+    if plat then
+        key = key .. "/" .. plat
+    end
+    if arch then
+        key = key .. "/" .. arch
+    end
+    if mode then
+        key = key .. "/" .. mode
+    end
+    if program then
+        key = key .. "/" .. program
+    end
+    if toolname then
+        key = key .. "/" .. toolname
+    end
+    return key
 end
 
 -- get modules cache directory
