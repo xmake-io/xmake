@@ -39,7 +39,7 @@ end
 -- input always gives the same qrc and write_if_changed() can skip unchanged files.
 -- The two-space indent keeps the output identical to the previous hand-written
 -- layout, so existing qrc files are not rewritten after this change.
-local function generate_qrc(qrcdata)
+function _generate_qrc(qrcdata)
     local prefix = qrcdata.prefix
     local entries = qrcdata.entries or {}
     local resources = {}
@@ -66,7 +66,7 @@ end
 -- depend.is_changed() compares one level of nested arrays element-wise. The entries
 -- are converted to arrays in a fixed field order because table.values() is not
 -- ordered, which would make the values change on every build.
-local function _get_depvalues(qrcdata)
+function _get_depvalues(qrcdata)
     local values = { qrcdata.prefix, qrcdata.discard and true or false }
     for _, entry in ipairs(qrcdata.entries) do
         table.insert(values, { entry.alias, entry.path })
@@ -77,7 +77,7 @@ end
 function write_if_changed(filepath, qrcdata, is_rebuilt)
     depend.on_changed(function ()
         os.mkdir(path.directory(filepath))
-        io.writefile(filepath, generate_qrc(qrcdata))
+        io.writefile(filepath, _generate_qrc(qrcdata))
     end, {
         dependfile = filepath .. ".d",
         files      = filepath,

@@ -24,7 +24,7 @@ import("qrc")
 import("cachegen")
 
 -- create the module file entry of the given source file
-local function _new_file(target, setting, sourcefile)
+function _new_file(target, setting, sourcefile)
     local alias, absfile = utils.get_alias(target, sourcefile)
     return {
         sourcefile    = sourcefile,
@@ -35,7 +35,7 @@ local function _new_file(target, setting, sourcefile)
 end
 
 -- collect the module files and their resource paths, keyed by source file
-local function _collect_files(target, setting, sourcefiles)
+function _collect_files(target, setting, sourcefiles)
     local files = {}
     for _, sourcefile in ipairs(sourcefiles) do
         files[sourcefile] = _new_file(target, setting, sourcefile)
@@ -44,7 +44,7 @@ local function _collect_files(target, setting, sourcefiles)
 end
 
 -- write the module qrc
-local function _write_files(target, setup)
+function _write_files(target, setup)
     local qrcdata = {
         prefix  = utils.get_prefix(setup.setting.uri),
         discard = setup.setting.discard and true or false,
@@ -60,7 +60,7 @@ end
 --
 -- The setup contains the complete module data, so it is created once and cached on
 -- the target. The per-file prepare callback only reads it.
-local function _get_setup(target, sourcebatch)
+function _get_setup(target, sourcebatch)
     local setup = target:data("qt.qml.setup")
     if setup then
         return setup

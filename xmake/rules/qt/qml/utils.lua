@@ -43,8 +43,11 @@ function get_setting(target)
         discard       = get_option(target, "qt.qml.discard", false),
         imports       = {}
     }
-    for _, value in ipairs(table.wrap(target:values("qt.qml.import"))) do
-        table.join2(setting.imports, table.wrap(value))
+    for _, importdir in ipairs(target:values("qt.qml.import")) do
+        -- relative import directories are declared in the target script, e.g.
+        -- sub/xmake.lua, so resolve them against the script directory instead
+        -- of the project root before passing them to the QML tools
+        table.insert(setting.imports, path.absolute(importdir, target:scriptdir()))
     end
     -- qmlcachegen is required by only_bytecode, ignore it when cachegen is disabled,
     -- load.lua warns the user about it
@@ -83,7 +86,6 @@ function get_alias(target, sourcefile)
     return alias, absfile
 end
 
--- get the mangled name of the given file, e.g. src/Main.qml -> src/Main_qml
 function get_mangled_name(target, sourcefile)
     local absfile = path.absolute(sourcefile, os.projectdir())
     local scriptdir = target:scriptdir()
@@ -94,7 +96,7 @@ function get_mangled_name(target, sourcefile)
     else
         name = hash.strhash32(absfile) .. "_" .. path.filename(absfile)
     end
-    return name:gsub("%.", "_")
+    return name
 end
 
 -- get the autogen directory of the given generator
@@ -129,7 +131,7 @@ function get_paths(target)
 end
 
 -- is the given tool inside the SDK directories?
-local function _is_in_tool_dirs(tool, dirs)
+function _is_in_tool_dirs(tool, dirs)
     for _, dir in ipairs(dirs) do
         if is_inside(tool, dir) then
             return true
@@ -141,9 +143,21 @@ end
 -- find a tool in the selected SDK only
 function find_sdk_tool(target, name)
     local qt = target:data("qt")
-    -- host tools first, e.g. for cross compilation
-    local dirs = { qt.libexecdir_host, qt.bindir_host, qt.libexecdir, qt.bindir }
-    local opt = { paths = dirs }
+    -- host tools first, e.g. for cross compilation, the SDK may not provide all
+    -- directories (e.g. a host libexecdir for a native Qt build)
+    local dirs = {}
+    for _, key in ipairs({ "libexecdir_host", "bindir_host", "libexecdir", "bindir" }) do
+        if qt[key] then
+            table.insert(dirs, qt[key])
+        end
+    end
+    local opt = {
+        paths = dirs,
+        -- find_program caches results by tool name only by default. Include the SDK
+        -- directories so that switching from SDK A to SDK B does not reuse A's cached
+        -- program and then reject it in the directory check below.
+        cachekey = "qt.qml." .. name .. "." .. hash.strhash32(table.concat(dirs, "\n"))
+    }
     if name == "qmlcachegen" then
         opt.version = true
     end
