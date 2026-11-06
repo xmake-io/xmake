@@ -38,7 +38,8 @@ function import_implementation_of(target, name)
     local cachekey = tostring(target)
     local implementation = memcache():get2(name, cachekey)
     if implementation == nil then
-        if target:has_tool("cxx", "clang", "clangxx", "clang_cl") then
+        -- Note: em<suffix> uses clang.
+        if target:has_tool("cxx", "clang", "clangxx", "clang_cl", "emcc", "em++") then
             implementation = import("clang." .. name, {anonymous = true})
         elseif target:has_tool("cxx", "gcc", "gxx") then
             implementation = import("gcc." .. name, {anonymous = true})
@@ -46,7 +47,7 @@ function import_implementation_of(target, name)
             implementation = import("msvc." .. name, {anonymous = true})
         else
             local _, toolname = target:tool("cxx")
-            raise("compiler(%s): does not implementation c++ module!", toolname)
+            raise("compiler(%s): does not implement C++ module support!", toolname)
         end
         memcache():set2(name, cachekey, implementation)
     end
