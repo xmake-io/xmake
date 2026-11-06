@@ -286,8 +286,8 @@ function get_clang_scan_deps(target)
                 if toolname:startswith("em") then
                     result = {
                         program = path.join(
-                            path.directory(program), "..", "bin",
-                            "clang-scan-deps" .. path.extension(program)
+                            path.directory(program),
+                            "emscan-deps" .. path.extension(program)
                         )
                     }
                 end
