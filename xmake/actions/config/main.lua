@@ -318,6 +318,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         -- clear cached configuration
         if option.get("clean") then
             localcache.clear("config")
+            localcache.clear("cxxmodules")
         end
 
         -- clear some local caches
