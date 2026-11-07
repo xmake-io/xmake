@@ -230,7 +230,7 @@ function get_clang_version(target)
     local clang_version = _g.clang_version
     if not clang_version then
         local program, toolname = target:tool("cxx")
-        if program and toolname:startswith("clang") then
+        if program and (toolname:startswith("clang") or toolname:startswith("emcc")) then
             local compinst = target:compiler("cxx")
             local envs = compinst and compinst:runenvs() or os.getenvs()
             local clang = find_tool(toolname, {program = program, version = true,
