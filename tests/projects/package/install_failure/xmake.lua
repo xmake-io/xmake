@@ -1,9 +1,6 @@
 set_policy("network.mode", "private")
 
-option("case")
-    set_default("dependency")
-    set_showmenu(true)
-option_end()
+option("case", {default = "dependency"})
 
 local case = get_config("case") or "dependency"
 local fetching = case:startswith("fetch_")
