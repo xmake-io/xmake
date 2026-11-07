@@ -34,6 +34,26 @@ import("private.action.require.impl.actions.check", {alias = "action_check"})
 import("private.action.require.impl.actions.install", {alias = "action_install"})
 import("private.action.require.impl.actions.download", {alias = "action_download"})
 
+-- Stop package polling cooperatively when runjobs aborts a group.
+function _run_package_jobs(name, jobfunc, opt)
+    local state = {aborted = false}
+    runjobs(name, function (index)
+        try
+        {
+            function ()
+                jobfunc(index, state)
+            end,
+            catch
+            {
+                function (errors)
+                    state.aborted = true
+                    raise(errors)
+                end
+            }
+        }
+    end, opt)
+end
+
 -- sort packages urls
 function _sort_packages_urls(packages)
 
@@ -303,11 +323,14 @@ function _fetch_packages(packages_fetch, installdeps)
     local working_count = 0
     local fetching_count = 0
     local parallelize = true
-    runjobs("fetch_packages", function (index)
+    _run_package_jobs("fetch_packages", function (index, state)
 
         -- fetch a new package
         local instance = nil
         while instance == nil and #packages_pending > 0 do
+            if state.aborted then
+                return
+            end
             for idx, pkg in ipairs(packages_pending) do
 
                 -- all dependencies has been fetched? we fetch it now
@@ -339,7 +362,7 @@ function _fetch_packages(packages_fetch, installdeps)
                 os.sleep(100)
             end
         end
-        if instance then
+        if instance and not state.aborted then
 
             -- update working count
             working_count = working_count + 1
@@ -350,6 +373,9 @@ function _fetch_packages(packages_fetch, installdeps)
             end
             if not parallelize then
                 while fetching_count > 0 do
+                    if state.aborted then
+                        return
+                    end
                     os.sleep(100)
                 end
             end
@@ -431,11 +457,14 @@ function _do_install_packages(packages_install, packages_download, installdeps)
     local working_count = 0
     local installing_count = 0
     local parallelize = true
-    runjobs("install_packages", function (index)
+    _run_package_jobs("install_packages", function (index, state)
 
         -- fetch a new package
         local instance = nil
         while instance == nil and #packages_pending > 0 do
+            if state.aborted then
+                return
+            end
             for idx, pkg in ipairs(packages_pending) do
 
                 -- all dependencies has been installed? we install it now
@@ -479,7 +508,7 @@ function _do_install_packages(packages_install, packages_download, installdeps)
                 os.sleep(100)
             end
         end
-        if instance then
+        if instance and not state.aborted then
 
             -- update working count
             working_count = working_count + 1
@@ -494,6 +523,9 @@ function _do_install_packages(packages_install, packages_download, installdeps)
                 end
                 if not parallelize then
                     while installing_count > 0 do
+                        if state.aborted then
+                            return
+                        end
                         os.sleep(100)
                     end
                 end
@@ -506,6 +538,9 @@ function _do_install_packages(packages_install, packages_download, installdeps)
 
                 -- install package from the multiple schemes
                 for _, scheme in ipairs(instance:schemes_orderlist()) do
+                    if state.aborted then
+                        return
+                    end
                     instance:prepare_install_scheme(scheme)
 
                     -- download this package first
