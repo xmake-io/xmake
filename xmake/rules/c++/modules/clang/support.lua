@@ -234,7 +234,7 @@ function get_clang_version(target)
             local compinst = target:compiler("cxx")
             local envs = compinst and compinst:runenvs() or os.getenvs()
             local clang = find_tool(toolname, {program = program, version = true,
-                envs = envs, cachekey = "modules_support_clang_" .. toolname, command = "-v"})
+                envs = envs, cachekey = "modules_support_clang_" .. toolname})
             if clang then
                 clang_version = clang.version
             end
