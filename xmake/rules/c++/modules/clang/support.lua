@@ -233,22 +233,8 @@ function get_clang_version(target)
         if program and (toolname:startswith("clang") or toolname:startswith("emcc")) then
             local compinst = target:compiler("cxx")
             local envs = compinst and compinst:runenvs() or os.getenvs()
-            local opt = {program = program, version = true, envs = envs,
-                cachekey = "modules_support_clang_" .. toolname}
-            
-            -- em<suffix> -v returns the SDK version before clang (example output):
-            -- emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.0 (afa15e0c56d1292e073c2c91bafc1d5e0cdf0dd3)
-            -- clang version 23.0.0git (https:/github.com/llvm/llvm-project c6c2ad52586c28e74a724570985a48dc0022d250)
-            -- <More lines...>
-            -- We do not want the version of the SDK, but the compiler (clang).
-            -- As long as the user uses emsdk to install Emscripten, this will work.
-            if toolname:startswith("em") then
-                opt.program = path.join(
-                    path.directory(program), "..", "bin",
-                    "clang++" .. path.extension(program)
-                )
-            end
-            local clang = find_tool(toolname, opt)
+            local clang = find_tool(toolname, {program = program, version = true,
+                envs = envs, cachekey = "modules_support_clang_" .. toolname, command = "-v"})
             if clang then
                 clang_version = clang.version
             end
@@ -264,35 +250,21 @@ function get_clang_scan_deps(target)
     local clang_scan_deps = _g.clang_scan_deps
     if not clang_scan_deps then
         local program, toolname = target:tool("cxx")
-        if program then
-            local result
+        if program and toolname:startswith("clang") then
+            local dir = path.directory(program)
+            local basename = path.basename(program)
+            if basename == "clang-cl" then
+                basename = "clang"
+            end
+            local extension = path.extension(program)
+            program = (basename:gsub("%+%+", ""):gsub("clang", "clang-scan-deps")) .. extension
+            if dir and dir ~= "." and os.isdir(dir) then
+                program = path.join(dir, program)
+            end
             local compinst = target:compiler("cxx")
             local envs = compinst and compinst:runenvs() or os.getenvs()
-
-            if toolname:startswith("clang") then
-                local dir = path.directory(program)
-                local basename = path.basename(program)
-                if basename == "clang-cl" then
-                    basename = "clang"
-                end
-                local extension = path.extension(program)
-                program = (basename:gsub("%+%+", ""):gsub("clang", "clang-scan-deps")) .. extension
-                if dir and dir ~= "." and os.isdir(dir) then
-                    program = path.join(dir, program)
-                end
-                result = find_tool("clang-scan-deps",
-                    {program = program, version = false, envs = envs})
-            else
-                if toolname:startswith("em") then
-                    result = {
-                        program = path.join(
-                            path.directory(program),
-                            "emscan-deps" .. path.extension(program)
-                        )
-                    }
-                end
-            end
-
+            local result = find_tool("clang-scan-deps",
+                {program = program, version = true, envs = envs})
             if not result then
                 -- find a system wide alternative
                 result = find_tool("clang-scan-deps", {version = true, envs = envs})
