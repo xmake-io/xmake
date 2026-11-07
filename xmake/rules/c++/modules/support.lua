@@ -38,8 +38,7 @@ function import_implementation_of(target, name)
     local cachekey = tostring(target)
     local implementation = memcache():get2(name, cachekey)
     if implementation == nil then
-        -- Note: em<suffix> uses clang.
-        if target:has_tool("cxx", "clang", "clangxx", "clang_cl", "emcc", "em++") then
+        if target:has_tool("cxx", "clang", "clangxx", "clang_cl", "emcc", "emxx") then
             implementation = import("clang." .. name, {anonymous = true})
         elseif target:has_tool("cxx", "gcc", "gxx") then
             implementation = import("gcc." .. name, {anonymous = true})
