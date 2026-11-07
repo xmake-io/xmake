@@ -286,50 +286,47 @@ function _show_upgraded_packages(packages)
     cprint("${bright}%d packages are upgraded!", upgraded_count)
 end
 
--- Build dependency jobs; runtime admission preserves serial and alternative-package behavior.
+-- Build dependency jobs and preserve alternative-package selection.
 function _get_package_jobs(name, packages, installdeps, jobfunc, opt)
     opt = opt or {}
     local jobs = jobgraph.new(name)
-    local semaphore = scheduler.co_semaphore(name .. "/admission", 0)
-    local running_count = 0
-    local waiting_count = 0
-    local parallelize = true
     local failed = false
     local packages_in_group = {}
-    local function wait()
-        waiting_count = waiting_count + 1
-        semaphore:wait(-1)
-        waiting_count = waiting_count - 1
+    local waiters = {}
+    local function wait(waiter)
+        waiter = waiter or scheduler.co_semaphore(name .. "/admission", 0)
+        table.insert(waiters, waiter)
+        waiter:wait(-1)
+        return waiter
+    end
+    local function notify()
+        if #waiters > 0 then
+            -- Each waiter gets its own signal; a re-wait cannot consume another job's wakeup.
+            local pending = waiters
+            waiters = {}
+            for _, waiter in ipairs(pending) do
+                waiter:post(1)
+            end
+        end
     end
     for _, instance in ipairs(packages) do
         jobs:add(tostring(instance), function (index)
             local group = opt.groups and instance:group()
-            while group and packages_in_group[group] == 0 and not failed do
-                wait()
-            end
-            if failed or (group and packages_in_group[group]) then
-                return
-            end
-
-            -- Keep the existing admission order, without polling or imposing extra DAG edges.
-            if not instance:is_parallelize() then
-                parallelize = false
-            end
-            if not parallelize then
-                while running_count > 0 and not failed do
-                    wait()
-                end
-            end
-            if failed then
-                return
-            end
-            running_count = running_count + 1
-            if group then
-                packages_in_group[group] = 0
-            end
+            local reserved = false
+            local waiter
             try
             {
                 function ()
+                    while group and packages_in_group[group] == 0 and not failed do
+                        waiter = wait(waiter)
+                    end
+                    if failed or (group and packages_in_group[group]) then
+                        return
+                    end
+                    if group then
+                        packages_in_group[group] = 0
+                        reserved = true
+                    end
                     jobfunc(instance, index)
                     if group then
                         packages_in_group[group] = instance:exists() and 1 or -1
@@ -339,19 +336,17 @@ function _get_package_jobs(name, packages, installdeps, jobfunc, opt)
                 {
                     function (ok, errors)
                         failed = failed or not ok
-                        parallelize = true
-                        running_count = running_count - 1
-                        -- Wake admitted waiters on both completion and failure.
-                        if waiting_count > 0 then
-                            semaphore:post(waiting_count)
+                        if reserved and not ok then
+                            packages_in_group[group] = -1
                         end
+                        notify()
                         if not ok then
                             raise(errors)
                         end
                     end
                 }
             }
-        end)
+        end, {parallelize = instance:is_parallelize()})
     end
     for _, instance in ipairs(packages) do
         local name = tostring(instance)

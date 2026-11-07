@@ -48,7 +48,8 @@ end
 
 function main()
     for _, case in ipairs({"dependency", "serial", "empty_error", "fetch_dependency", "fetch_serial",
-                           "parallel_success", "serial_success", "optional"}) do
+                           "mixed_serial", "fetch_mixed_serial", "process_dependency", "process_serial", "group", "group_serial",
+                           "immediate", "parallel_success", "serial_success", "optional"}) do
         _run_case(case)
     end
 end

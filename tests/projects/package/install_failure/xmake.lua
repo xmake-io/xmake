@@ -9,7 +9,7 @@ local successful = case:endswith("success")
 
 package("abort_a")
     set_kind("binary")
-    set_parallelize(not serial)
+    set_parallelize(not serial or case == "mixed_serial" or case == "fetch_mixed_serial")
     if fetching then
         on_fetch(function ()
             os.sleep(100)
@@ -17,7 +17,11 @@ package("abort_a")
         end)
     end
     on_install(function (package)
-        os.sleep(100)
+        if case:startswith("process_") then
+            os.runv(os.programfile(), {"lua", "-c", "raise('expected install failure')"})
+        elseif case ~= "immediate" then
+            os.sleep(100)
+        end
         if case == "empty_error" then
             raise()
         end
@@ -40,7 +44,9 @@ package("abort_b")
     end)
 package_end()
 
-if case:endswith("dependency") then
+if case:startswith("group") then
+    add_requires("abort_a", "abort_b", {group = "alternatives"})
+elseif case:endswith("dependency") then
     add_requires("abort_b")
 else
     add_requires("abort_a", {optional = case == "optional"})
