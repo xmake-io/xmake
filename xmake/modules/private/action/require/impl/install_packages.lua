@@ -25,6 +25,7 @@ import("core.base.scheduler")
 import("core.project.project")
 import("core.base.tty")
 import("async.runjobs")
+import("async.jobgraph")
 import("utils.waiting_indicator", {alias = "waiting_indicator"})
 import("net.fasturl")
 import("private.action.require.impl.package")
@@ -285,107 +286,103 @@ function _show_upgraded_packages(packages)
     cprint("${bright}%d packages are upgraded!", upgraded_count)
 end
 
+-- Build dependency jobs and preserve alternative-package selection.
+function _get_package_jobs(name, packages, installdeps, jobfunc, opt)
+    opt = opt or {}
+    local jobs = jobgraph.new(name)
+    local failed = false
+    local packages_in_group = {}
+    local waiters = {}
+    local function wait(waiter)
+        waiter = waiter or scheduler.co_semaphore(name .. "/admission", 0)
+        table.insert(waiters, waiter)
+        waiter:wait(-1)
+        return waiter
+    end
+    local function notify()
+        if #waiters > 0 then
+            -- Each waiter gets its own signal; a re-wait cannot consume another job's wakeup.
+            local pending = waiters
+            waiters = {}
+            for _, waiter in ipairs(pending) do
+                waiter:post(1)
+            end
+        end
+    end
+    for _, instance in ipairs(packages) do
+        jobs:add(tostring(instance), function (index)
+            local group = opt.groups and instance:group()
+            local reserved = false
+            local waiter
+            try
+            {
+                function ()
+                    while group and packages_in_group[group] == 0 and not failed do
+                        waiter = wait(waiter)
+                    end
+                    if failed or (group and packages_in_group[group]) then
+                        return
+                    end
+                    if group then
+                        packages_in_group[group] = 0
+                        reserved = true
+                    end
+                    jobfunc(instance, index)
+                    if group then
+                        packages_in_group[group] = instance:exists() and 1 or -1
+                    end
+                end,
+                finally
+                {
+                    function (ok, errors)
+                        failed = failed or not ok
+                        if reserved and not ok then
+                            packages_in_group[group] = -1
+                        end
+                        notify()
+                        if not ok then
+                            raise(errors)
+                        end
+                    end
+                }
+            }
+        end, {parallelize = instance:is_parallelize()})
+    end
+    for _, instance in ipairs(packages) do
+        local name = tostring(instance)
+        for _, dep in ipairs(installdeps[name]) do
+            local depname = tostring(dep)
+            if jobs:has(depname) then
+                jobs:add_orders(depname, name)
+            end
+        end
+    end
+    return jobs
+end
+
 -- fetch packages
 function _fetch_packages(packages_fetch, installdeps)
 
-    -- init installed packages
-    local packages_fetched = {}
-    for _, instance in ipairs(packages_fetch) do
-        packages_fetched[tostring(instance)] = false
-    end
-
     -- save terminal mode for stdout, @see https://github.com/xmake-io/xmake/issues/1924
     local term_mode_stdout = tty.term_mode("stdout")
+    local jobs = _get_package_jobs("fetch_packages", packages_fetch, installdeps, function (instance)
+        local oldenvs = os.getenvs()
+        instance:envs_enter()
+        instance:lock()
+        instance:fetch()
+        instance:unlock()
+        os.setenvs(oldenvs)
 
-    -- do fetch
-    local packages_fetching = {}
-    local packages_pending = table.copy(packages_fetch)
-    local working_count = 0
-    local fetching_count = 0
-    local parallelize = true
-    runjobs("fetch_packages", function (index)
-
-        -- fetch a new package
-        local instance = nil
-        while instance == nil and #packages_pending > 0 do
-            for idx, pkg in ipairs(packages_pending) do
-
-                -- all dependencies has been fetched? we fetch it now
-                local ready = true
-                local dep_not_ready = nil
-                for _, dep in pairs(installdeps[tostring(pkg)]) do
-                    local fetched = packages_fetched[tostring(dep)]
-                    if fetched == false then
-                        ready = false
-                        dep_not_ready = dep
-                        break
-                    end
-                end
-
-                -- get a package with the ready status
-                if ready then
-                    instance = pkg
-                    table.remove(packages_pending, idx)
-                    break
-                elseif working_count == 0 then
-                    if #packages_pending == 1 and dep_not_ready then
-                        raise("package(%s): cannot be fetched, there are dependencies(%s) that cannot be fetched!", pkg:displayname(), dep_not_ready:displayname())
-                    elseif #packages_pending == 1 then
-                        raise("package(%s): cannot be fetched!", pkg:displayname())
-                    end
-                end
-            end
-            if instance == nil and #packages_pending > 0 then
-                os.sleep(100)
-            end
+        -- fix terminal mode to avoid some subprocess to change it
+        -- @see https://github.com/xmake-io/xmake/issues/1924
+        -- https://github.com/xmake-io/xmake/issues/2329
+        if term_mode_stdout ~= tty.term_mode("stdout") then
+            tty.term_mode("stdout", term_mode_stdout)
         end
-        if instance then
-
-            -- update working count
-            working_count = working_count + 1
-
-            -- disable parallelize?
-            if not instance:is_parallelize() then
-                parallelize = false
-            end
-            if not parallelize then
-                while fetching_count > 0 do
-                    os.sleep(100)
-                end
-            end
-            fetching_count = fetching_count + 1
-
-            -- fetch this package
-            packages_fetching[index] = instance
-            local oldenvs = os.getenvs()
-            instance:envs_enter()
-            instance:lock()
-            instance:fetch()
-            instance:unlock()
-            os.setenvs(oldenvs)
-
-            -- fix terminal mode to avoid some subprocess to change it
-            --
-            -- @see https://github.com/xmake-io/xmake/issues/1924
-            -- https://github.com/xmake-io/xmake/issues/2329
-            if term_mode_stdout ~= tty.term_mode("stdout") then
-                tty.term_mode("stdout", term_mode_stdout)
-            end
-
-            -- next
-            parallelize = true
-            fetching_count = fetching_count - 1
-            packages_fetching[index] = nil
-            packages_fetched[tostring(instance)] = true
-
-            -- update working count
-            working_count = working_count - 1
-        end
-        packages_fetching[index] = nil
-
-    end, {total = #packages_fetch,
-          comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
-          isolate = true})
+    end)
+    runjobs("fetch_packages", jobs, {
+        comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
+        isolate = true})
 end
 
 -- should fetch package?
@@ -413,12 +410,6 @@ function _do_install_packages(packages_install, packages_download, installdeps)
     -- we need to hide wait characters if is not a tty
     local show_wait = io.isatty()
 
-    -- init installed packages
-    local packages_installed = {}
-    for _, instance in ipairs(packages_install) do
-        packages_installed[tostring(instance)] = false
-    end
-
     -- save terminal mode for stdout, @see https://github.com/xmake-io/xmake/issues/1924
     local term_mode_stdout = tty.term_mode("stdout")
 
@@ -426,137 +417,54 @@ function _do_install_packages(packages_install, packages_download, installdeps)
     local waiting_indicator_helper = show_wait and waiting_indicator.new() or nil
     local packages_installing = {}
     local packages_downloading = {}
-    local packages_pending = table.copy(packages_install)
-    local packages_in_group = {}
-    local working_count = 0
-    local installing_count = 0
-    local parallelize = true
-    runjobs("install_packages", function (index)
-
-        -- fetch a new package
-        local instance = nil
-        while instance == nil and #packages_pending > 0 do
-            for idx, pkg in ipairs(packages_pending) do
-
-                -- all dependencies has been installed? we install it now
-                local ready = true
-                local dep_not_found = nil
-                for _, dep in pairs(installdeps[tostring(pkg)]) do
-                    local installed = packages_installed[tostring(dep)]
-                    if installed == false or (installed == nil and _should_install_package(dep) and not dep:is_optional()) then
-                        ready = false
-                        dep_not_found = dep
-                        break
-                    end
-                end
-                local group = pkg:group()
-                if ready and group then
-                    -- this group has been installed? skip it
-                    local group_status = packages_in_group[group]
-                    if group_status == 1 then
-                        table.remove(packages_pending, idx)
-                        break
-                    -- this group is installing? wait it
-                    elseif group_status == 0 then
-                        ready = false
-                    end
-                end
-
-                -- get a package with the ready status
-                if ready then
-                    instance = pkg
-                    table.remove(packages_pending, idx)
-                    break
-                elseif working_count == 0 then
-                    if #packages_pending == 1 and dep_not_found then
-                        raise("package(%s): cannot be installed, there are dependencies(%s) that cannot be installed!", pkg:displayname(), dep_not_found:displayname())
-                    elseif #packages_pending == 1 then
-                        raise("package(%s): cannot be installed!", pkg:displayname())
-                    end
-                end
-            end
-            if instance == nil and #packages_pending > 0 then
-                os.sleep(100)
+    local jobs
+    jobs = _get_package_jobs("install_packages", packages_install, installdeps, function (instance, index)
+        -- A required dependency outside this graph must already be available.
+        for _, dep in ipairs(installdeps[tostring(instance)]) do
+            if not jobs:has(tostring(dep)) and _should_install_package(dep) and not dep:is_optional() then
+                raise("package(%s): cannot be installed, there are dependencies(%s) that cannot be installed!",
+                    instance:displayname(), dep:displayname())
             end
         end
-        if instance then
 
-            -- update working count
-            working_count = working_count + 1
+        -- install package from the multiple schemes
+        for _, scheme in ipairs(instance:schemes_orderlist()) do
+            instance:prepare_install_scheme(scheme)
 
-            -- only install the first package in same group
-            local group = instance:group()
-            if not group or not packages_in_group[group] then
-
-                -- disable parallelize?
-                if not instance:is_parallelize() then
-                    parallelize = false
-                end
-                if not parallelize then
-                    while installing_count > 0 do
-                        os.sleep(100)
-                    end
-                end
-                installing_count = installing_count + 1
-
-                -- mark this group as 'installing'
-                if group then
-                    packages_in_group[group] = 0
-                end
-
-                -- install package from the multiple schemes
-                for _, scheme in ipairs(instance:schemes_orderlist()) do
-                    instance:prepare_install_scheme(scheme)
-
-                    -- download this package first
-                    local downloaded = true
-                    if packages_download[tostring(instance)] then
-                        packages_downloading[index] = instance
-                        packages_installing[index] = nil
-                        action_check(instance)
-                        downloaded = action_download(instance)
-                        packages_downloading[index] = nil
-                    end
-
-                    packages_installing[index] = instance
-                    if downloaded then
-                        if action_install(instance) then
-                            -- install ok
-                            break
-                        end
-                    end
-                end
-
-                -- reset package status cache
-                _g.package_status_cache = nil
-
-                -- register it to local cache if it is root required package
-                --
-                -- @note we need to register the package in time,
-                -- because other packages may be used, e.g. toolchain/packages
-                if instance:is_toplevel() then
-                    register_packages({instance})
-                end
-
-                -- mark this group as 'installed' or 'failed'
-                if group then
-                    packages_in_group[group] = instance:exists() and 1 or -1
-                end
-
-                -- next
-                parallelize = true
-                installing_count = installing_count - 1
+            -- download this package first
+            local downloaded = true
+            if packages_download[tostring(instance)] then
+                packages_downloading[index] = instance
                 packages_installing[index] = nil
-                packages_installed[tostring(instance)] = true
+                action_check(instance)
+                downloaded = action_download(instance)
+                packages_downloading[index] = nil
             end
 
-            -- update working count
-            working_count = working_count - 1
+            packages_installing[index] = instance
+            if downloaded then
+                if action_install(instance) then
+                    -- install ok
+                    break
+                end
+            end
         end
+
+        -- reset package status cache
+        _g.package_status_cache = nil
+
+        -- register it to local cache if it is root required package
+        --
+        -- @note we need to register the package in time,
+        -- because other packages may be used, e.g. toolchain/packages
+        if instance:is_toplevel() then
+            register_packages({instance})
+        end
+
         packages_installing[index] = nil
         packages_downloading[index] = nil
-
-    end, {total = #packages_install,
+    end, {groups = true})
+    runjobs("install_packages", jobs, {
           comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
           isolate = true,
           on_timer = function (running_jobs_indices)
