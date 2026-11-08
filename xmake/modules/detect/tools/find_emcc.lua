@@ -72,6 +72,14 @@ function main(opt)
     -- find program version
     local version = nil
     if program and opt and opt.version then
+        opt.command = opt.command or function()
+            local _, out = os.iorunv(program, {"-v"}, {envs = opt.envs})
+            return out
+        end
+    
+        -- this will make find_programver always return the version
+        -- of used Clang in most cases (with opt.parse omitted). TODO?
+        opt.parse = opt.parse or "clang version (%d+[.]%d+[.]%d+)"
         version = find_programver(program, opt)
     end
     return program, version
