@@ -94,7 +94,7 @@ function scan_dependency_for(target, sourcefile, rescan, opt)
 
         local rawdependinfo = io.readfile(jsonfile)
         return {moduleinfo = rawdependinfo}
-    end, {dependfile = dependfile, files = {sourcefile}, changed = rescan, values = compflags})
+    end, {dependfile = dependfile, files = {sourcefile}, changed = rescan, values = {compinst:program(), compflags}})
     return changed
 end
 
