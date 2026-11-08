@@ -44,17 +44,17 @@ function test_group_bridge_updates_with_new_job(t)
 end
 
 
-function _check_parallelize(t, names, deps)
+function _check_fence(t, names, deps)
     local jobs = jobgraph.new()
     local running = 0
     local maximum = 0
     local exclusive = false
     local finished = {}
     for _, name in ipairs(names) do
-        local serial = name:startswith("serial")
+        local fence = name:startswith("fence")
         jobs:add(name, function ()
             assert(not exclusive, name .. " overlaps an exclusive job")
-            if serial then
+            if fence then
                 assert(running == 0, name .. " overlaps a running job")
                 exclusive = true
             end
@@ -67,53 +67,53 @@ function _check_parallelize(t, names, deps)
             running = running - 1
             exclusive = false
             finished[name] = true
-        end, {parallelize = not serial})
+        end, {fence = fence})
     end
     for name, before in pairs(deps) do
         for _, dep in ipairs(before) do
             jobs:add_orders(dep, name)
         end
     end
-    import("async.runjobs")("jobgraph_parallelize", jobs, {comax = 4})
+    import("async.runjobs")("jobgraph_fence", jobs, {comax = 4})
     t:are_equal(running, 0)
     t:are_equal(#table.keys(finished), #names)
     return maximum
 end
 
-function test_parallelize(t)
-    t:are_equal(_check_parallelize(t, {"a", "b", "c", "d", "e"}), 4)
-    _check_parallelize(t, {"serial_first", "a", "b", "c", "d"})
-    _check_parallelize(t, {"a", "b", "serial_middle", "c", "d"})
-    _check_parallelize(t, {"a", "b", "c", "d", "serial_last"})
-    t:are_equal(_check_parallelize(t, {"serial_a", "serial_b", "serial_c"}), 1)
-    _check_parallelize(t, {"a", "b", "serial_a", "c", "serial_b", "d"}, {
-        serial_a = {"a", "b"}, c = {"serial_a"}, serial_b = {"c"}, d = {"serial_b"}
+function test_fence(t)
+    t:are_equal(_check_fence(t, {"a", "b", "c", "d", "e"}), 4)
+    _check_fence(t, {"fence_first", "a", "b", "c", "d"})
+    _check_fence(t, {"a", "b", "fence_middle", "c", "d"})
+    _check_fence(t, {"a", "b", "c", "d", "fence_last"})
+    t:are_equal(_check_fence(t, {"fence_a", "fence_b", "fence_c"}), 1)
+    _check_fence(t, {"a", "b", "fence_a", "c", "fence_b", "d"}, {
+        fence_a = {"a", "b"}, c = {"fence_a"}, fence_b = {"c"}, d = {"fence_b"}
     })
 end
 
-function test_parallelize_failure(t)
+function test_fence_failure(t)
     import("async.runjobs")
-    for _, fail_serial in ipairs({false, true}) do
+    for _, fail_fence in ipairs({false, true}) do
         local jobs = jobgraph.new()
         local after_ran = false
         jobs:add("before", function ()
             os.sleep(10)
-            if not fail_serial then
+            if not fail_fence then
                 raise("expected parallel job failure")
             end
         end)
         jobs:add("exclusive", function ()
             os.sleep(10)
-            if fail_serial then
+            if fail_fence then
                 raise("expected exclusive job failure")
             end
-        end, {parallelize = false})
+        end, {fence = true})
         jobs:add("after", function ()
             after_ran = true
         end)
         t:will_raise(function ()
-            runjobs("jobgraph_parallelize_failure", jobs, {comax = 4})
-        end, fail_serial and "expected exclusive job failure" or "expected parallel job failure")
+            runjobs("jobgraph_fence_failure", jobs, {comax = 4})
+        end, fail_fence and "expected exclusive job failure" or "expected parallel job failure")
         t:require_not(after_ran)
     end
 end

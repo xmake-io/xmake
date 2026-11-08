@@ -346,7 +346,7 @@ function _get_package_jobs(name, packages, installdeps, jobfunc, opt)
                     end
                 }
             }
-        end, {parallelize = instance:is_parallelize()})
+        end, {fence = not instance:is_parallelize()})
     end
     for _, instance in ipairs(packages) do
         local name = tostring(instance)
