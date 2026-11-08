@@ -101,6 +101,7 @@ function _run_case(case, verbose)
                 }
             })
             local output = case .. "\n" .. (io.readfile(stdout) or "") .. (io.readfile(stderr) or "")
+            assert(errors ~= "wait process timeout", tostring(errors) .. "\n" .. output)
             assert(status == 0, tostring(errors) .. "\n" .. output)
             _check_events(workdir, case, (verbose or case == "serial") and 1 or 4)
         end,
