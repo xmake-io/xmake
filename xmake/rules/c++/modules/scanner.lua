@@ -325,7 +325,7 @@ function _are_flags_compatible(target, other, sourcefile)
 
     -- strip unrelevent flags
     flags1 = support.strip_flags(target, flags1, {strip_defines = strip_defines})
-    flags2 = support.strip_flags(target, flags2, {strip_defines = strip_defines})
+    flags2 = support.strip_flags(other, flags2, {strip_defines = strip_defines})
 
     if #flags1 ~= #flags2 then
         return false

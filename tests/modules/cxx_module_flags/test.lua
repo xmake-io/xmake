@@ -17,6 +17,19 @@ function test_clang_cl_output_and_external_flags(t)
     })
 end
 
+function test_clang_cl_msvc_and_prefixed_flags(t)
+    local flags = {
+        "-Fo", "output.obj", "-Foproducer.obj", "/imsvc", "sysdir", "-imsvcother",
+        "/nologo", "/FS", "/Z7", "/Zi", "/TP", "/MP",
+        "/clang:-O2", "/clang:-g", "/clang:-Wall", "/clang:-fPIC", "/clang:-fmodule-file=sample.pcm",
+        "/clang:-isystem", "clangsystm",
+        "/MDd", "/std:c++20", "/EHsc", "/permissive-", "--target=x86_64-pc-windows-msvc"
+    }
+    t:are_equal(support.strip_flags(_target("clang_cl"), flags, {}), {
+        "/MDd", "/std:c++20", "/EHsc", "/permissive-", "--target=x86_64-pc-windows-msvc"
+    })
+end
+
 function test_clang_flags_are_unchanged(t)
     local flags = {"-g", "-O2", "-I", "include", "-isystemother", "-std=c++20", "-fno-exceptions", "-fno-rtti"}
     t:are_equal(support.strip_flags(_target("clang"), flags, {}), {"-std=c++20", "-fno-exceptions", "-fno-rtti"})
