@@ -36,6 +36,8 @@ function main(target)
     end
     local namespace = setting.namespace
     assert(namespace == nil or type(namespace) == "string", "qt.qml: qt.qml.namespace must be a string or nil")
+    local aot_stats = setting.aot_stats
+    assert(aot_stats == nil or type(aot_stats) == "boolean", "qt.qml: qt.qml.aot_stats must be a boolean or nil")
     assert(type(setting.version) == "string", "qt.qml: qt.qml.version must be a string")
     assert(
         semver.is_valid(setting.version),
@@ -58,5 +60,9 @@ function main(target)
     -- only_bytecode is disabled by get_setting() in this case, warn the user once
     if utils.get_option(target, "qt.qml.only_bytecode", false) and not setting.cachegen then
         wprint("qt.qml: qt.qml.only_bytecode is ignored because qt.qml.cachegen is disabled")
+    end
+    -- the AOT report requires qmlcachegen and cannot be combined with only_bytecode
+    if setting.aot_stats and (not setting.cachegen or setting.only_bytecode) then
+        wprint("qt.qml: qt.qml.aot_stats is ignored because the AOT compilation is disabled")
     end
 end

@@ -44,6 +44,7 @@ function get_setting(target)
         type_compiler = get_option(target, "qt.qml.type_compiler", false),
         namespace     = get_option(target, "qt.qml.namespace"),
         discard       = get_option(target, "qt.qml.discard", false),
+        aot_stats     = get_option(target, "qt.qml.aot_stats"),
         imports       = {}
     }
     for _, importdir in ipairs(target:values("qt.qml.import")) do
@@ -175,6 +176,9 @@ function find_sdk_tool(target, name)
     }
     if name == "qmlcachegen" or name == "qmltc" then
         opt.version = true
+    elseif name == "qmlaotstats" then
+        -- qmlaotstats doesn't support `--version`, use `--help` to check it
+        opt.check = "--help"
     end
     local tool = find_tool(name, opt)
     if tool and tool.program then

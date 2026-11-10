@@ -24,6 +24,7 @@ import("utils.progress", { alias = "progress_utils" })
 import("qrc")
 import("cachegen")
 import("qmltc")
+import("aotstats")
 
 -- create the module file entry of the given source file
 function _new_file(target, setting, sourcefile)
@@ -88,12 +89,14 @@ function _get_setup(target, sourcebatch)
         tools          = tools,
         paths          = paths,
         cachegenpaths  = cachegen.get_paths(target),
+        aotpaths       = tools.aotstats and aotstats.get_paths(target),
         qmltcpaths     = qmltc.get_paths(target),
         qmls           = _collect_files(target, setting, sourcefiles),
         importdirs     = table.join(target:data("qt").qmldir, setting.imports),
         need_cachegen  = tools.cachegen ~= nil,
         need_qmltc     = tools.qmltc ~= nil,
         qmldir_version = qmltc.get_qmldir_version(setting),
+        module_id      = setting.uri .. "(" .. target:name() .. ")",
         resources      = { paths.qrcfile }
     }
     local resourcebatch = target:sourcebatches()["qt.qml.resource"]
@@ -175,7 +178,7 @@ function on_preparecmd(target, batchcmds, sourcefile, opt)
 end
 
 -- register the generated sources and generate the AOT report after all files are generated
-function after_prepare(target, _batchcmds, sourcebatch, _)
+function after_prepare(target, batchcmds, sourcebatch, opt)
     local sourcefiles = sourcebatch.sourcefiles
     local setup = assert(target:data("qt.qml.setup"), "qt.qml: setup is not initialized")
 
@@ -195,4 +198,12 @@ function after_prepare(target, _batchcmds, sourcebatch, _)
     end
     target:add("files", cppfiles)
     target:add("files", headers)
+
+    -- aggregate and format the aot compilation statistics of the whole module,
+    -- even when only a subset of the files is built
+    local aotfiles = {}
+    for _, file in ipairs(utils.get_file_list(setup.qmls)) do
+        table.insert(aotfiles, file.sourcefile)
+    end
+    aotstats.add_report(target, setup, batchcmds, aotfiles, opt)
 end

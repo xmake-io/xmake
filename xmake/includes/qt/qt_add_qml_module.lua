@@ -30,6 +30,7 @@
 --              - namespace    the qmltc namespace, default: nil (auto-generated from the
 --                             uri), "" disables --namespace (keep the anonymous namespace)
 --              - discard      do not pack the qml file contents into the qrc
+--              - aot_stats    dump the AOT statistics: nil (auto), true (required), false
 --              - import       the extra QML import directories
 --
 --              The files are dispatched by the extensions of the rules: the qt.qml rule
@@ -60,7 +61,7 @@ function qt_add_qml_module(...)
 
     -- inject the module settings
     local value_names = {
-        "uri", "version", "cachegen", "only_bytecode", "type_compiler", "namespace", "discard", "import"
+        "uri", "version", "cachegen", "only_bytecode", "type_compiler", "namespace", "discard", "aot_stats", "import"
     }
     for _, value_name in ipairs(value_names) do
         if opt[value_name] ~= nil then

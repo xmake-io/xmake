@@ -67,6 +67,9 @@ function get_args(setup, file)
     if setup.setting.only_bytecode then
         table.insert(args, "--only-bytecode")
     end
+    if setup.tools.aotstats then
+        table.join2(args, "--dump-aot-stats", "--module-id=" .. setup.module_id)
+    end
     table.insert(args, file.absfile)
     return args
 end
