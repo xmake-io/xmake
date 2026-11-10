@@ -25,6 +25,7 @@ rule("qt.moc")
 
     on_config(function (target)
         import("lib.detect.find_file")
+        import("utils")
 
         -- get qt
         local qt = assert(target:data("qt"), "Qt not found!")
@@ -40,12 +41,27 @@ rule("qt.moc")
 
         -- save moc
         target:data_set("qt.moc", moc)
+
+        -- automatically detect header files with Qt meta-object macros
+        if target:policy("build.qt.automoc") then
+            local moc_headers = utils.detect_moc_headers(target)
+            if #moc_headers > 0 then
+                target:add("files", moc_headers)
+            end
+        end
     end)
 
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
         import("core.tool.compiler")
+        import("utils")
 
         local moc = target:data("qt.moc")
+
+        -- if sourcefile has no Qt meta-object macros, skip it!
+        -- this avoids generating empty moc files and compiling empty object files
+        if not utils.need_moc(target, sourcefile) then
+            return
+        end
 
         -- get c++ source file for moc
         --
@@ -106,8 +122,7 @@ rule("qt.moc")
         batchcmds:vrunv(moc, table.join(user_flags, flags, path(sourcefile), "-o", path(sourcefile_moc)))
 
         -- we need to compile this moc_xxx.cpp file if exists Q_PRIVATE_SLOT, @see https://github.com/xmake-io/xmake/issues/750
-        local mocdata = io.readfile(sourcefile)
-        if mocdata and mocdata:find("Q_PRIVATE_SLOT") or sourcefile_moc:endswith(".moc") then
+        if utils.has_q_private_slot(sourcefile) or sourcefile_moc:endswith(".moc") then
             -- add includedirs of sourcefile_moc
             target:add("includedirs", path.directory(sourcefile_moc))
 
