@@ -18,10 +18,11 @@
 -- @file        xmake.lua
 --
 
+-- `.vlt` is the extension of verilator control files, see https://verilator.org/guide/latest/control.html
 -- @see https://github.com/xmake-io/xmake/issues/3257
 rule("verilator.binary")
     add_deps("c++")
-    set_extensions(".v", ".sv")
+    set_extensions(".v", ".sv", ".vlt")
     on_load(function (target)
         target:set("kind", "binary")
     end)
@@ -46,7 +47,7 @@ rule("verilator.binary")
 
 rule("verilator.static")
     add_deps("c++")
-    set_extensions(".v", ".sv")
+    set_extensions(".v", ".sv", ".vlt")
     on_load(function (target)
         target:set("kind", "static")
     end)
@@ -69,7 +70,7 @@ rule("verilator.static")
 
 rule("verilator.shared")
     add_deps("c++")
-    set_extensions(".v", ".sv")
+    set_extensions(".v", ".sv", ".vlt")
     on_load(function (target)
         target:set("kind", "shared")
     end)
