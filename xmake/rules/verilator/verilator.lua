@@ -374,7 +374,9 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     batchcmds:vrunv(verilator, argv, { envs = toolchain:runenvs() })
     batchcmds:add_depvalues(depvalues)
     batchcmds:add_depfiles(sourcefiles)
-    batchcmds:set_depmtime(os.mtime(makefile))
+    -- Verilator has a hash-based cache, so the make file won't be regenerated if we just touch the source file.
+    -- Use `os.mtime(makefile)` will cause endless rebuilding in this case.
+    batchcmds:set_depmtime(os.mtime(dependfile))
     batchcmds:set_depcache(dependfile)
 end
 
