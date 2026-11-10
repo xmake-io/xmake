@@ -38,8 +38,11 @@ end
 function get_setting(target)
     local setting = {
         uri           = get_option(target, "qt.qml.uri", target:name()),
+        version       = get_option(target, "qt.qml.version", "1.0"),
         cachegen      = get_option(target, "qt.qml.cachegen", true),
         only_bytecode = get_option(target, "qt.qml.only_bytecode", false),
+        type_compiler = get_option(target, "qt.qml.type_compiler", false),
+        namespace     = get_option(target, "qt.qml.namespace"),
         discard       = get_option(target, "qt.qml.discard", false),
         imports       = {}
     }
@@ -55,6 +58,11 @@ function get_setting(target)
         setting.only_bytecode = false
     end
     return setting
+end
+
+-- is the given file compiled by qmltc?
+function is_qmltc_file(sourcefile)
+    return path.extension(sourcefile):lower() == ".qml"
 end
 
 -- get the resource prefix of the QML module, e.g. /qt/qml/MyApp/
@@ -86,7 +94,19 @@ function get_alias(target, sourcefile)
     return alias, absfile
 end
 
-function get_mangled_name(target, sourcefile)
+-- get the autogen directory of the given generator
+function get_autogen_dir(target, name)
+    return path.join(path.absolute(target:autogendir(), os.projectdir()), "rules", "qt", name)
+end
+
+-- get the generated file of the given source file, e.g.
+-- <autogendir>/rules/qt/qmlcachegen/src/Main.qml.cpp
+--
+-- The source file name is kept as-is, so the generated header of `Main.qml` is
+-- `Main.qml.h`. `opt.flat` flattens the source path and appends a hash to the
+-- file name, qmltc includes the generated headers by their file name only.
+function get_autogen_file(target, dir, sourcefile, extension, opt)
+    opt = opt or {}
     local absfile = path.absolute(sourcefile, os.projectdir())
     local scriptdir = target:scriptdir()
     ---@type string
@@ -96,18 +116,10 @@ function get_mangled_name(target, sourcefile)
     else
         name = hash.strhash32(absfile) .. "_" .. path.filename(absfile)
     end
-    return name
-end
-
--- get the autogen directory of the given generator
-function get_autogen_dir(target, name)
-    return path.join(path.absolute(target:autogendir(), os.projectdir()), "rules", "qt", name)
-end
-
--- get the generated file of the given source file, e.g.
--- <autogendir>/rules/qt/qmlcachegen/src/Main_qml.cpp
-function get_autogen_file(target, dir, sourcefile, extension)
-    return path.join(get_autogen_dir(target, dir), get_mangled_name(target, sourcefile) .. extension)
+    if opt.flat and name:find("/", 1, true) then
+        name = name:gsub("/", "_") .. "_" .. hash.strhash32(name)
+    end
+    return path.join(get_autogen_dir(target, dir), name .. extension)
 end
 
 -- get the module files in a stable order
@@ -124,9 +136,12 @@ end
 -- get the generated files and directories of the QML module
 function get_paths(target)
     local gendir = get_autogen_dir(target, "qml")
+    -- use the target fullname in the qrc file names, otherwise the rcc generated
+    -- symbols collide when one executable links multiple QML module targets
+    local name = hash.strhash32(target:fullname())
     return {
-        qrcfile     = path.join(gendir, "qml_module.qrc"),
-        resourceqrc = path.join(gendir, "qml_resource.qrc")
+        qrcfile     = path.join(gendir, "qml_module_" .. name .. ".qrc"),
+        resourceqrc = path.join(gendir, "qml_resource_" .. name .. ".qrc")
     }
 end
 
@@ -158,7 +173,7 @@ function find_sdk_tool(target, name)
         -- program and then reject it in the directory check below.
         cachekey = "qt.qml." .. name .. "." .. hash.strhash32(table.concat(dirs, "\n"))
     }
-    if name == "qmlcachegen" then
+    if name == "qmlcachegen" or name == "qmltc" then
         opt.version = true
     end
     local tool = find_tool(name, opt)
@@ -181,11 +196,17 @@ function has_tool_option(tool, flags)
     return has_flags(tool.name, flags, { program = tool.program, version = true })
 end
 
--- add the import and resource arguments of qmlcachegen
+-- add the arguments shared by qmlcachegen and qmltc
 function add_import_args(args, setup)
     for _, dir in ipairs(setup.importdirs) do
         table.insert(args, "-I")
         table.insert(args, dir)
+    end
+    -- The qmldir generated for qmltc also lets qmlcachegen resolve the types of
+    -- the same module, Qt CMake passes it to both tools.
+    if setup.need_qmltc then
+        table.insert(args, "-i")
+        table.insert(args, setup.qmltcpaths.qmldir)
     end
     for _, resource in ipairs(setup.resources) do
         table.insert(args, "--resource")

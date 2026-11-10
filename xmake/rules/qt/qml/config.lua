@@ -21,6 +21,7 @@
 -- imports
 import("utils")
 import("cachegen")
+import("qmltc")
 
 -- find and check the tools needed by the module
 function main(target)
@@ -28,6 +29,9 @@ function main(target)
     local tools = {}
     if setting.cachegen then
         tools.cachegen = cachegen.get_tool(target, setting)
+    end
+    if setting.type_compiler then
+        tools.qmltc = qmltc.get_tool(target)
     end
     target:data_set("qt.qml.tools", tools)
 end

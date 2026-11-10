@@ -20,8 +20,10 @@
 
 -- imports
 import("utils")
+import("utils.progress", { alias = "progress_utils" })
 import("qrc")
 import("cachegen")
+import("qmltc")
 
 -- create the module file entry of the given source file
 function _new_file(target, setting, sourcefile)
@@ -43,17 +45,28 @@ function _collect_files(target, setting, sourcefiles)
     return files
 end
 
--- write the module qrc
+-- write the module qrc and the files used by qmltc
 function _write_files(target, setup)
     local qrcdata = {
         prefix  = utils.get_prefix(setup.setting.uri),
         discard = setup.setting.discard and true or false,
         entries = {}
     }
+    local is_rebuilt = target:is_rebuilt()
     for _, file in ipairs(utils.get_file_list(setup.qmls)) do
         table.insert(qrcdata.entries, { alias = file.alias, path = file.absfile })
     end
-    qrc.write_if_changed(setup.paths.qrcfile, qrcdata, target:is_rebuilt())
+    if setup.need_qmltc then
+        qmltc.write_files(setup, is_rebuilt)
+        -- the qmldir is needed at run time to import the module itself, it must be
+        -- packed even when the QML sources are discarded
+        table.insert(qrcdata.entries, {
+            alias = "qmldir",
+            path  = setup.qmltcpaths.resourceqmldir,
+            empty = false
+        })
+    end
+    qrc.write_if_changed(setup.paths.qrcfile, qrcdata, is_rebuilt)
 end
 
 -- get the module setup shared by the prepare stages
@@ -70,15 +83,18 @@ function _get_setup(target, sourcebatch)
     local tools = target:data("qt.qml.tools") or {}
     local paths = utils.get_paths(target)
     setup = {
-        target        = target,
-        setting       = setting,
-        tools         = tools,
-        paths         = paths,
-        cachegenpaths = cachegen.get_paths(target),
-        qmls          = _collect_files(target, setting, sourcefiles),
-        importdirs    = table.join(target:data("qt").qmldir, setting.imports),
-        need_cachegen = tools.cachegen ~= nil,
-        resources     = { paths.qrcfile }
+        target         = target,
+        setting        = setting,
+        tools          = tools,
+        paths          = paths,
+        cachegenpaths  = cachegen.get_paths(target),
+        qmltcpaths     = qmltc.get_paths(target),
+        qmls           = _collect_files(target, setting, sourcefiles),
+        importdirs     = table.join(target:data("qt").qmldir, setting.imports),
+        need_cachegen  = tools.cachegen ~= nil,
+        need_qmltc     = tools.qmltc ~= nil,
+        qmldir_version = qmltc.get_qmldir_version(setting),
+        resources      = { paths.qrcfile }
     }
     local resourcebatch = target:sourcebatches()["qt.qml.resource"]
     if resourcebatch and not table.empty(resourcebatch.sourcefiles) then
@@ -104,26 +120,79 @@ function before_prepare(target, batchcmds, sourcebatch, opt)
     end
 end
 
--- prepare the given qml/js file with batchcmds
+-- get the job name of the given tool and source file
+function _get_jobname(target, tool, sourcefile)
+    return target:fullname() .. "/rule/qt.qml/" .. tool .. "/" .. sourcefile
+end
+
+-- add a direct generation job for the given tool and source file
 --
--- This is the default path, and it is also used when the commands are collected
--- instead of being run, e.g. by the project generators.
-function on_preparecmd_file(target, batchcmds, sourcefile, opt)
-    local setup = assert(target:data("qt.qml.setup"), "qt.qml: setup is not initialized")
-    if setup.need_cachegen then
+-- The setup is read when the job runs, because the jobgraph is built before the
+-- before_prepare job has created the cached setup.
+function _add_job(target, jobgraph, tool, sourcefile, run)
+    jobgraph:add(_get_jobname(target, tool, sourcefile), function (_, _, jobopt)
+        progress_utils.set_target(jobopt.progress, target)
+        local setup = assert(target:data("qt.qml.setup"), "qt.qml: setup is not initialized")
         local file = assert(setup.qmls[sourcefile], "qt.qml: unknown module file %s", sourcefile)
-        cachegen.add_generate(batchcmds, setup, file, opt)
+        run(setup, file, jobopt)
+    end)
+end
+
+-- prepare the given qml/js file with a jobgraph
+--
+-- `on_prepare_file` is called once for every module file, so only the jobs of this
+-- file are added. The rule always uses the jobgraph form, so qmlcachegen and qmltc
+-- (when both are needed) can run in parallel for the same file.
+function on_prepare(target, jobgraph, sourcefile, _)
+    local tools = target:data("qt.qml.tools") or {}
+    local prefix = target:fullname() .. "/qt.qml"
+    if tools.cachegen then
+        jobgraph:group(prefix .. "/qmlcachegen", function ()
+            _add_job(target, jobgraph, "qmlcachegen", sourcefile, cachegen.generate)
+        end)
+    end
+    if tools.qmltc and utils.is_qmltc_file(sourcefile) then
+        jobgraph:group(prefix .. "/qmltc", function ()
+            _add_job(target, jobgraph, "qmltc", sourcefile, qmltc.generate)
+        end)
     end
 end
 
--- register the generated sources after all files are generated
+-- prepare the given qml/js file with batchcmds
+--
+-- This is used when the commands are collected instead of being run, e.g. by the
+-- project generators. Normal builds use the jobgraph form above.
+function on_preparecmd(target, batchcmds, sourcefile, opt)
+    local setup = assert(target:data("qt.qml.setup"), "qt.qml: setup is not initialized")
+    if setup.need_cachegen then
+        local file = assert(setup.qmls[sourcefile], "qt.qml: unknown module file %s", sourcefile)
+        cachegen.generate_cmd(batchcmds, setup, file, opt)
+    end
+    if setup.need_qmltc and utils.is_qmltc_file(sourcefile) then
+        local file = assert(setup.qmls[sourcefile], "qt.qml: unknown module file %s", sourcefile)
+        qmltc.generate_cmd(batchcmds, setup, file, opt)
+    end
+end
+
+-- register the generated sources and generate the AOT report after all files are generated
 function after_prepare(target, _batchcmds, sourcebatch, _)
     local sourcefiles = sourcebatch.sourcefiles
     local setup = assert(target:data("qt.qml.setup"), "qt.qml: setup is not initialized")
 
     -- The generated files already exist at this point, so they can be added to the target
-    -- without `always_added`; the c++ rule compiles them.
+    -- without `always_added`. The c++ rule compiles them and the qt.moc rule handles the
+    -- qmltc headers.
+    local cppfiles = {}
+    local headers = {}
     if setup.need_cachegen then
-        target:add("files", cachegen.get_generated_files(target, setup, sourcefiles))
+        table.join2(cppfiles, cachegen.get_generated_files(target, setup, sourcefiles))
     end
+    if setup.need_qmltc then
+        local qmltcfiles = qmltc.get_generated_files(setup, sourcefiles)
+        table.join2(cppfiles, qmltcfiles.cppfiles)
+        table.join2(headers, qmltcfiles.headers)
+        target:add("includedirs", setup.qmltcpaths.qmltcdir)
+    end
+    target:add("files", cppfiles)
+    target:add("files", headers)
 end
