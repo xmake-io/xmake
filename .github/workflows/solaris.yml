@@ -20,11 +20,6 @@ jobs:
             const fs = require('fs');
             const outputFile = process.env.GITHUB_OUTPUT;
 
-            // Temporarily force Solaris tests while validating the SIGCHLD fix.
-            fs.appendFileSync(outputFile, `should-run=true\n`);
-            core.info('Solaris tests forced; random skipping is temporarily disabled.');
-            return;
-
             // Always run for release events
             if (context.eventName === 'release') {
               fs.appendFileSync(outputFile, `should-run=true\n`);
