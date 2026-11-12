@@ -51,6 +51,8 @@ function policy.policies()
             ["build.across_targets_in_parallel"]  = {description = "Enable compile the source files for each target in parallel.", default = true, type = "boolean"},
             -- Merge archive intead of linking for all dependent targets
             ["build.merge_archive"]               = {description = "Enable merge archive intead of linking for all dependent targets.", default = false, type = "boolean"},
+            -- Enable Qt automoc
+            ["build.qt.automoc"]                  = {description = "Enable automatic detection and MOC processing for headers containing Qt macros.", default = false, type = "boolean"},
             -- C/C++ build cache
             ["build.ccache"]                      = {description = "Enable C/C++ build cache.", type = "boolean"},
             -- Use global storage if build.ccache is enabled
