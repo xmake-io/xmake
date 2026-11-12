@@ -462,6 +462,10 @@ function interpreter:_clear()
     -- clear it
     self._PRIVATE._SCOPES = {}
     self._PRIVATE._MTIMES = {}
+    self._PRIVATE._SCOPES_SAVED = {}
+    self._PRIVATE._NAMESPACE = {}
+    self._PRIVATE._NAMESPACE_STR = nil
+    self._PRIVATE._NAMESPACES = nil
 end
 
 -- filter values
