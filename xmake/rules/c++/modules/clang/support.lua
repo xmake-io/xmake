@@ -158,11 +158,27 @@ function strippeable_flags(target)
         "cxx-isystem",
         "framework"
     }
-    if target:has_tool("cxx", "clang_cl") then
-        -- clang-cl uses MSVC spellings for PDB output, system includes and warnings.
+    if target and target:has_tool("cxx", "clang_cl") then
+        -- clang-cl uses MSVC spellings for PDB/object output, system includes and warnings.
         -- Keep language/runtime options (e.g. /permissive-, /MD) in the comparison.
-        table.insert(strippable_flags, "external:W")
-        table.join2(splitted_strippeable_flags, {"Fd", "external:I"})
+        table.join2(strippable_flags, {
+            "TP",
+            "errorReport",
+            "nologo",
+            "MP",
+            "Fp",
+            "Fm",
+            "Fe",
+            "FS",
+            "FC",
+            "Zi",
+            "Z7",
+            "diagnostics",
+            "cgthreads",
+            "analyze",
+            "external:W"
+        })
+        table.join2(splitted_strippeable_flags, {"Fd", "Fo", "imsvc", "external:I"})
     end
     return strippable_flags, splitted_strippeable_flags
 end
