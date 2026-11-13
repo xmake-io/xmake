@@ -93,11 +93,79 @@ function _get_file_patterns(sourcefiles)
     return patterns
 end
 
--- tell if the source batch is a c/c++/objc/objc++/cuda source batch
+-- tell if the source batch is a c/c++/objc/objc++/cuda/qt source batch
 function _source_batch_should_format(sourcebatch)
     local rulename = sourcebatch.rulename
-    local matched_rules = {"c.build", "c++.build", "c++.build.modules", "cuda.build", "objc.build", "objc++.build"}
+    local matched_rules = {"c.build", "c++.build", "c++.build.modules", "cuda.build", "objc.build", "objc++.build", "qt.moc", "qt.qmltyperegistrar"}
     return table.contains(matched_rules, rulename)
+end
+
+-- check whether a file is inside the given directory
+function _is_in_directory(file, dir)
+    if not file or not dir then
+        return false
+    end
+    file = path.normalize(file)
+    dir = path.normalize(dir)
+    if not os.fscase() then
+        file = file:lower()
+        dir = dir:lower()
+    end
+    local sep = path.sep()
+    if not dir:endswith(sep) then
+        dir = dir .. sep
+    end
+    return file:startswith(dir)
+end
+
+-- add a source file if valid, matched, and not duplicated
+function _add_sourcefile(sourcefiles, sourcefiles_set, file, projectdir, autogendir, filepatterns)
+    local abs_file = path.normalize(path.absolute(file, projectdir))
+    if autogendir and _is_in_directory(abs_file, autogendir) then
+        return
+    end
+    local key = not os.fscase() and abs_file:lower() or abs_file
+    if sourcefiles_set:has(key) then
+        return
+    end
+    if filepatterns then
+        local rel_file = path.relative(abs_file, projectdir)
+        local matched = _match_sourcefiles(rel_file, filepatterns)
+        if matched == nil then
+            matched = _match_sourcefiles(abs_file, filepatterns)
+        end
+        if not matched then
+            return
+        end
+    end
+    if not os.isfile(abs_file) then
+        return
+    end
+    sourcefiles_set:insert(key)
+    table.insert(sourcefiles, abs_file)
+end
+
+-- collect source files to format
+function _collect_sourcefiles(targets, projectdir, filepatterns)
+    local sourcefiles = {}
+    local sourcefiles_set = hashset.new()
+    for _, target in ipairs(targets) do
+        local autogendir = target:autogendir({root = true})
+        if autogendir then
+            autogendir = path.normalize(path.absolute(autogendir, projectdir))
+        end
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            if _source_batch_should_format(sourcebatch) then
+                for _, source in ipairs(sourcebatch.sourcefiles) do
+                    _add_sourcefile(sourcefiles, sourcefiles_set, source, projectdir, autogendir, filepatterns)
+                end
+            end
+        end
+        for _, header in ipairs(target:headerfiles()) do
+            _add_sourcefile(sourcefiles, sourcefiles_set, header, projectdir, autogendir, filepatterns)
+        end
+    end
+    return sourcefiles
 end
 
 -- main
@@ -165,37 +233,10 @@ function main()
     end
 
     -- collect sourcefiles
-    local sourcefiles = {}
     local targetnames, group_pattern = action_utils.get_targets_and_group()
     local targets = action_utils.get_targets(targetnames, {group_pattern = group_pattern})
-    if option.get("files") then
-        local filepatterns = _get_file_patterns(option.get("files"))
-        for _, target in ipairs(targets) do
-            for _, source in ipairs(target:sourcefiles()) do
-                if _match_sourcefiles(source, filepatterns) then
-                    table.insert(sourcefiles, path.absolute(source, projectdir))
-                end
-            end
-            for _, header in ipairs(target:headerfiles()) do
-                if _match_sourcefiles(header, filepatterns) then
-                    table.insert(sourcefiles, path.absolute(header, projectdir))
-                end
-            end
-        end
-    else
-        for _, target in ipairs(targets) do
-            for _, sourcebatch in pairs(target:sourcebatches()) do
-                if _source_batch_should_format(sourcebatch) then
-                    for _, source in ipairs(sourcebatch.sourcefiles) do
-                        table.insert(sourcefiles, path.absolute(source, projectdir))
-                    end
-                end
-            end
-            for _, header in ipairs(target:headerfiles()) do
-                table.insert(sourcefiles, path.absolute(header, projectdir))
-            end
-        end
-    end
+    local filepatterns = option.get("files") and _get_file_patterns(option.get("files")) or nil
+    local sourcefiles = _collect_sourcefiles(targets, projectdir, filepatterns)
 
     -- format files in parallel
     if #sourcefiles > 0 then
