@@ -133,6 +133,10 @@ function _load_require(require_str, requires_extra, opt)
         wprint("add_requires(%s): vs_runtime is deprecated, please use runtimes!", require_str)
     end
 
+    if require_extra.group ~= nil then
+        wprint("add_requires(\"%s\"): group is deprecated and ignored; select dependency packages explicitly.", require_str)
+    end
+
     -- check require options
     local extra_options = hashset.of("plat", "arch", "kind", "host", "targetos",
     "alias", "group", "system", "option", "default", "optional", "debug",
@@ -166,7 +170,6 @@ function _load_require(require_str, requires_extra, opt)
         targetos         = require_extra.targetos,  -- require package in the given target os
         kind             = require_extra.kind,      -- default: library, set package kind, e.g. binary, library, we can set `kind = "binary"` to only detect binary program and ignore library.
         alias            = require_extra.alias,     -- set package alias name
-        group            = require_extra.group,     -- only uses the first package in same group
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
         configs          = require_build_configs,   -- the required building configurations

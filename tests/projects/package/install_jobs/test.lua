@@ -4,22 +4,19 @@ function _check_events(workdir, case, limit)
     local maximum = {fetch = 0, install = 0}
     local starts = {fetch = {}, install = {}}
     local serials = {}
-    if case:startswith("mixed") or case == "group_mixed" then
+    if case:startswith("mixed") then
         serials.jobs_c = true
         if case == "mixed_multiple" then
             serials.jobs_e = true
         end
     end
     local deps = {jobs_b = {"jobs_a"}, jobs_c = {"jobs_a"}, jobs_d = {"jobs_b", "jobs_c"}}
-    if case == "group_dependency" then
-        deps = {jobs_a = {"jobs_c"}}
-    end
     for _, line in ipairs(io.readfile(path.join(workdir, "events.log")):split("\n", {plain = true})) do
         local phase, event, name = line:match("(%S+) (%S+) (%S+)")
         if phase then
             if event == "start" then
                 assert(not active[phase][name], line)
-                if case == "diamond" or case == "mixed_dependency" or case == "group_dependency" then
+                if case == "diamond" or case == "mixed_dependency" then
                     for _, dep in ipairs(deps[name]) do
                         assert(finished[phase][dep], line .. " before " .. dep)
                     end
@@ -29,17 +26,6 @@ function _check_events(workdir, case, limit)
                 end
                 if serials[name] then
                     assert(#table.keys(active[phase]) == 0, case .. ": " .. line .. " overlaps " .. table.concat(table.keys(active[phase]), ","))
-                end
-                if case:startswith("group") and phase == "install" then
-                    if name == "jobs_a" then
-                        assert(not active[phase].jobs_b, line)
-                    elseif name == "jobs_b" then
-                        assert(not active[phase].jobs_a, line)
-                    elseif case == "group_two" and name == "jobs_c" then
-                        assert(not active[phase].jobs_d, line)
-                    elseif case == "group_two" and name == "jobs_d" then
-                        assert(not active[phase].jobs_c, line)
-                    end
                 end
                 active[phase][name] = true
                 starts[phase][name] = (starts[phase][name] or 0) + 1
@@ -55,21 +41,10 @@ function _check_events(workdir, case, limit)
     end
     for _, phase in ipairs({"fetch", "install"}) do
         assert(#table.keys(active[phase]) == 0, phase)
-        local count = (case:startswith("group") or case == "installed") and phase == "install" and 5 or 6
-        if case == "group_two" and phase == "install" then
-            count = 4
-        end
+        local count = case == "installed" and phase == "install" and 5 or 6
         assert(#table.keys(finished[phase]) == count, phase .. " " .. case)
         if case == "parallel" then
             assert(maximum[phase] == limit, phase .. " parallelism changed")
-        elseif case:startswith("group") and phase == "install" then
-            assert((starts[phase].jobs_a or 0) + (starts[phase].jobs_b or 0) == 1)
-            if case == "group_dependency" or case == "group_installed" then
-                assert(starts[phase].jobs_b == 1 and not starts[phase].jobs_a)
-            elseif case == "group_two" then
-                assert((starts[phase].jobs_c or 0) + (starts[phase].jobs_d or 0) == 1)
-                assert(maximum[phase] >= 2, "independent package groups were serialized")
-            end
         elseif case == "schemes" and phase == "install" then
             assert(starts[phase].jobs_a == 2)
             assert(os.isfile(path.join(workdir, "scheme-first")))
@@ -119,8 +94,7 @@ end
 
 function main()
     for _, case in ipairs({"parallel", "serial", "mixed", "mixed_middle", "mixed_last", "mixed_multiple",
-                           "mixed_dependency", "group_mixed", "diamond", "group", "group_failure",
-                           "group_dependency", "group_installed", "group_two", "schemes", "optional", "installed"}) do
+                           "mixed_dependency", "diamond", "schemes", "optional", "installed"}) do
         _run_case(case)
     end
     _run_case("parallel", "v")

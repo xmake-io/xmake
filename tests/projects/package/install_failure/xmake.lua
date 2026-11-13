@@ -44,9 +44,7 @@ package("abort_b")
     end)
 package_end()
 
-if case:startswith("group") then
-    add_requires("abort_a", "abort_b", {group = "alternatives"})
-elseif case:endswith("dependency") then
+if case:endswith("dependency") then
     add_requires("abort_b")
 else
     add_requires("abort_a", {optional = case == "optional"})

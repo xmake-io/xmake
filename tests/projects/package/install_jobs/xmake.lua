@@ -3,13 +3,13 @@ option("case", {default = "parallel"})
 
 local case = get_config("case") or "parallel"
 local names = {"jobs_a", "jobs_b", "jobs_c", "jobs_d", "jobs_e", "jobs_f"}
-if case == "mixed" or case == "group_mixed" then
+if case == "mixed" then
     names = {"jobs_c", "jobs_a", "jobs_b", "jobs_d", "jobs_e", "jobs_f"}
 elseif case == "mixed_last" then
     names = {"jobs_a", "jobs_b", "jobs_d", "jobs_e", "jobs_f", "jobs_c"}
 end
 for _, name in ipairs(names) do
-    local serial = case == "serial" or ((case:startswith("mixed") or case == "group_mixed") and name == "jobs_c")
+    local serial = case == "serial" or (case:startswith("mixed") and name == "jobs_c")
         or (case == "mixed_multiple" and name == "jobs_e")
     package(name)
         set_kind("binary")
@@ -22,8 +22,6 @@ for _, name in ipairs(names) do
             end
         elseif (case == "optional" or case == "installed") and name == "jobs_b" then
             add_deps("jobs_a", {optional = case == "optional"})
-        elseif case == "group_dependency" and name == "jobs_a" then
-            add_deps("jobs_c")
         end
         if case == "schemes" and name == "jobs_a" then
             add_schemes("first", "second")
@@ -36,7 +34,7 @@ for _, name in ipairs(names) do
                 os.sleep(100)
                 events.record("fetch", "finish", package)
             end
-            if (case == "installed" or case == "group_installed") and package:name() == "jobs_a" then
+            if case == "installed" and package:name() == "jobs_a" then
                 return {program = "already-installed"}
             end
         end)
@@ -51,9 +49,6 @@ for _, name in ipairs(names) do
                     events.record("install", "finish", package)
                     raise("expected first scheme failure")
                 end
-            elseif case == "group_failure" and (package:name() == "jobs_a" or package:name() == "jobs_b") then
-                events.record("install", "finish", package)
-                raise("expected group failure")
             elseif case == "optional" and package:name() == "jobs_a" then
                 events.record("install", "finish", package)
                 raise("expected optional failure")
@@ -64,15 +59,7 @@ for _, name in ipairs(names) do
     package_end()
 end
 
-if case:startswith("group") then
-    add_requires("jobs_a", "jobs_b", {group = "alternatives", optional = true})
-    if case == "group_two" then
-        add_requires("jobs_c", "jobs_d", {group = "other-alternatives", optional = true})
-        add_requires("jobs_e", "jobs_f")
-    else
-        add_requires("jobs_c", "jobs_d", "jobs_e", "jobs_f")
-    end
-elseif case == "optional" then
+if case == "optional" then
     add_requires("jobs_b", "jobs_c", "jobs_d", "jobs_e", "jobs_f")
 else
     add_requires(table.unpack(names))

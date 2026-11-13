@@ -191,7 +191,6 @@ function _get_confirm(packages, opt)
 
             -- get packages for each repositories
             local packages_repo = {}
-            local packages_group = {}
             for _, instance in ipairs(packages) do
                 -- achive packages by repository
                 local reponame = instance:repo() and instance:repo():name() or (instance:is_system() and "system" or "")
@@ -200,13 +199,6 @@ function _get_confirm(packages, opt)
                 end
                 packages_repo[reponame] = packages_repo[reponame] or {}
                 table.insert(packages_repo[reponame], instance)
-
-                -- achive packages by group
-                local group = instance:group()
-                if group then
-                    packages_group[group] = packages_group[group] or {}
-                    table.insert(packages_group[group], instance)
-                end
             end
 
             -- show tips
@@ -221,34 +213,12 @@ function _get_confirm(packages, opt)
                 if reponame ~= "" then
                     print("in %s:", reponame)
                 end
-                local packages_showed = {}
                 for _, instance in ipairs(packages) do
-                    if not packages_showed[tostring(instance)] then
-                        local group = instance:group()
-                        if group and packages_group[group] and #packages_group[group] > 1 then
-                            for idx, package_in_group in ipairs(packages_group[group]) do
-                                cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or",
-                                    package_in_group:displayname(), package_in_group:version_str() or "",
-                                    package.get_configs_str(package_in_group))
-                                for _, tip in ipairs(package_in_group:get("installtips")) do
-                                    if idx == 1 then
-                                        cprint("     ${yellow}*${clear} %s", tip)
-                                    else
-                                        cprint("        ${yellow}*${clear} %s", tip)
-                                    end
-                                end
-                                packages_showed[tostring(package_in_group)] = true
-                            end
-                            packages_group[group] = nil
-                        else
-                            cprint("  ${yellow}->${clear} %s %s ${dim}%s",
-                                instance:displayname(), instance:version_str() or "",
-                                package.get_configs_str(instance))
-                            for _, tip in ipairs(instance:get("installtips")) do
-                                cprint("     ${yellow}*${clear} %s", tip)
-                            end
-                            packages_showed[tostring(instance)] = true
-                        end
+                    cprint("  ${yellow}->${clear} %s %s ${dim}%s",
+                        instance:displayname(), instance:version_str() or "",
+                        package.get_configs_str(instance))
+                    for _, tip in ipairs(instance:get("installtips")) do
+                        cprint("     ${yellow}*${clear} %s", tip)
                     end
                 end
             end
@@ -286,66 +256,12 @@ function _show_upgraded_packages(packages)
     cprint("${bright}%d packages are upgraded!", upgraded_count)
 end
 
--- Build dependency jobs and preserve alternative-package selection.
-function _get_package_jobs(name, packages, installdeps, jobfunc, opt)
-    opt = opt or {}
+-- Build package jobs and their installation dependencies.
+function _get_package_jobs(name, packages, installdeps, jobfunc)
     local jobs = jobgraph.new(name)
-    local failed = false
-    local packages_in_group = {}
-    local waiters = {}
-    local function wait(waiter)
-        waiter = waiter or scheduler.co_semaphore(name .. "/admission", 0)
-        table.insert(waiters, waiter)
-        waiter:wait(-1)
-        return waiter
-    end
-    local function notify()
-        if #waiters > 0 then
-            -- Each waiter gets its own signal; a re-wait cannot consume another job's wakeup.
-            local pending = waiters
-            waiters = {}
-            for _, waiter in ipairs(pending) do
-                waiter:post(1)
-            end
-        end
-    end
     for _, instance in ipairs(packages) do
         jobs:add(tostring(instance), function (index)
-            local group = opt.groups and instance:group()
-            local reserved = false
-            local waiter
-            try
-            {
-                function ()
-                    while group and packages_in_group[group] == 0 and not failed do
-                        waiter = wait(waiter)
-                    end
-                    if failed or (group and packages_in_group[group]) then
-                        return
-                    end
-                    if group then
-                        packages_in_group[group] = 0
-                        reserved = true
-                    end
-                    jobfunc(instance, index)
-                    if group then
-                        packages_in_group[group] = instance:exists() and 1 or -1
-                    end
-                end,
-                finally
-                {
-                    function (ok, errors)
-                        failed = failed or not ok
-                        if reserved and not ok then
-                            packages_in_group[group] = -1
-                        end
-                        notify()
-                        if not ok then
-                            raise(errors)
-                        end
-                    end
-                }
-            }
+            jobfunc(instance, index)
         end, {fence = not instance:is_parallelize()})
     end
     for _, instance in ipairs(packages) do
@@ -463,7 +379,7 @@ function _do_install_packages(packages_install, packages_download, installdeps)
 
         packages_installing[index] = nil
         packages_downloading[index] = nil
-    end, {groups = true})
+    end)
     runjobs("install_packages", jobs, {
           comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
           isolate = true,
@@ -541,25 +457,6 @@ function _do_install_packages(packages_install, packages_download, installdeps)
             io.flush()
         end
     end})
-end
-
--- only enable the first package in same group and root packages
-function _disable_other_packages_in_group(packages)
-    local registered_in_group = {}
-    for _, instance in ipairs(packages) do
-        local group = instance:group()
-        if instance:is_toplevel() and group then
-            local required_package = project.required_package(instance:alias() or instance:name())
-            if required_package then
-                if not registered_in_group[group] and required_package:enabled() then
-                    registered_in_group[group] = true
-                elseif required_package:enabled() then
-                    required_package:enable(false)
-                    required_package:save()
-                end
-            end
-        end
-    end
 end
 
 -- sort packages for installation dependencies
@@ -750,9 +647,6 @@ function _install_packages(requires, opt)
 
     -- install all required packages from repositories
     _do_install_packages(packages_install, packages_download, installdeps)
-
-    -- disable other packages in same group
-    _disable_other_packages_in_group(packages)
 
     -- re-register and refresh all root packages to local cache,
     -- because there may be some missing optional dependencies reinstalled
