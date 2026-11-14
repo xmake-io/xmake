@@ -136,7 +136,17 @@ function _check_try_running(flags, opt, islinker)
 
     -- check flags for compiler
     -- @note we cannot use os.nuldev() as the output file, maybe run failed for some flags, e.g. --coverage
-    return _try_running(opt.program, table.join(flags, "-S", "-o", tmpfile, sourcefile), opt)
+    local args = table.join(flags, "-S", "-o", tmpfile, sourcefile)
+    local ok, errors = _try_running(opt.program, args, opt)
+    -- some flags are only accepted together with a newer standard, e.g. gcc 16 needs -std=c++26 for -freflection:
+    -- "cc1plus: error: '-freflection' only supported with '-std=c++26' or '-std=gnu++26'"
+    -- the sentence is translated by gettext, the quoted standard is not, so only match the standard
+    -- @see https://github.com/xmake-io/xmake/issues/7796
+    local std = not ok and errors and errors:match("(%-std=[%w+]+)")
+    if std then
+        return _try_running(opt.program, table.join(std, args), opt)
+    end
+    return ok, errors
 end
 
 -- has_flags(flags)?
