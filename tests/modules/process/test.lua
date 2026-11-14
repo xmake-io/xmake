@@ -3,6 +3,16 @@ import("core.base.scheduler")
 
 local inftimeout = 5000
 
+function test_exit_status_with_timeout(t)
+    for _, exitcode in ipairs({0, 42, 0, 42}) do
+        local status, errors = os.execv(os.programfile(), {
+            "lua", "-c", "os.sleep(100); os.exit(" .. exitcode .. ")"
+        }, {try = true, timeout = inftimeout, stdout = os.nuldev(), stderr = os.nuldev()})
+        assert(errors ~= "wait process timeout", "missed process exit notification: " .. exitcode)
+        t:are_equal(status, exitcode)
+    end
+end
+
 function test_single_process(t)
 
     local stdout = os.tmpfile()

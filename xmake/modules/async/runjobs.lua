@@ -220,6 +220,9 @@ function _run_jobs(state, name, opt)
     state.abort = false
     state.abort_errors = nil
     state.finished_count = 0
+    state.running_count = 0
+    state.fence_pending = nil
+    state.fence_running = false
     state.curdir = opt.curdir
     state.waiting_count = 0
     state.distcc_waiting_count = 0
@@ -375,6 +378,28 @@ function _waiting_indicator_loop(state)
     state.waiting_indicator_semaphore = nil
 end
 
+-- Admit a fence job only after active jobs finish, and stop dequeuing past it.
+function _get_free_job(state)
+    if state.fence_running then
+        return
+    end
+    local job = state.fence_pending or state.jobs:getfree()
+    if not job then
+        return
+    end
+    if job.fence then
+        if state.running_count > 0 then
+            state.fence_pending = job
+            return
+        end
+        state.fence_pending = nil
+        state.fence_running = true
+    end
+    -- Reserve before waking other workers: semaphore:post() may resume them immediately.
+    state.running_count = state.running_count + 1
+    return job
+end
+
 -- consume jobs
 function _consume_jobs_loop(state, run_in_remote)
     local jobs = state.jobs
@@ -391,7 +416,7 @@ function _consume_jobs_loop(state, run_in_remote)
         local job_func = jobs_cb
         local job_distcc = false
         if not job_func then
-            job = jobs:getfree()
+            job = _get_free_job(state)
             if job then
                 if job.distcc then
                     job_distcc = true
@@ -500,6 +525,10 @@ function _consume_jobs_loop(state, run_in_remote)
                 function ()
                     if job then
                         jobs:remove(job)
+                        state.running_count = state.running_count - 1
+                        if job.fence then
+                            state.fence_running = false
+                        end
                     end
                 end
             }

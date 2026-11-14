@@ -110,14 +110,15 @@ end
 --
 -- @param name      the job name
 -- @param run       the job run command/script
--- @param opt       the job options, e.g. {groups = {"xxx"}}
+-- @param opt       the job options, e.g. {groups = {"xxx"}, fence = true}
+--                  - fence: true waits for active jobs and runs this job alone in its runjobs group
 --
 function jobgraph:add(name, run, opt)
     opt = opt or {}
     local dag = self._dag
     local jobs = self._jobs
     if not jobs[name] then
-        local job = {name = name, run = run, distcc = opt.distcc}
+        local job = {name = name, run = run, distcc = opt.distcc, fence = opt.fence}
         jobs[name] = job
         dag:add_vertex(job)
         self._size = self._size + 1
