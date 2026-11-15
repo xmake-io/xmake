@@ -9,9 +9,12 @@ function _with_temp_project(callback)
         end,
         finally
         {
-            function ()
+            function (ok, errors)
                 os.cd(olddir)
                 os.tryrm(tempdir)
+                if not ok then
+                    raise(errors)
+                end
             end
         }
     }
