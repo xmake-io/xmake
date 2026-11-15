@@ -72,7 +72,9 @@ function _check_try_running(flags, opt)
     -- compile the source file
     local objectfile = os.tmpfile() .. ".obj"
     local binaryfile = os.tmpfile() .. ".exe"
-    local cl = find_tool("cl", {envs = opt.envs})
+    -- Isolate compiler detection per linker to avoid a cached cl from another architecture.
+    -- @see https://github.com/xmake-io/xmake/issues/7858
+    local cl = find_tool("cl", {envs = opt.envs, cachekey = "link_has_flags_" .. opt.program})
     if cl then
         os.runv(cl.program, {"-c", "-nologo", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
     end
@@ -118,4 +120,3 @@ function main(flags, opt)
     -- try running to check it
     return _check_try_running(flags, opt)
 end
-
