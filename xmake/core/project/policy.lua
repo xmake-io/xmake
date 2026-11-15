@@ -206,6 +206,8 @@ function policy.policies()
             ["test.stop_on_first_failure"]        = {description = "Stop to test on the first failure", default = false, type = "boolean"},
             -- Return zero as exit code on failure
             ["test.return_zero_on_failure"]       = {description = "Return zero as the exit code on failure", default = false, type = "boolean"},
+            -- Respect target default setting when running tests
+            ["test.respect_default"]              = {description = "Respect target default setting when running tests", default = false, type = "boolean"},
             -- Show diagnosis info for checking build dependencies
             ["diagnosis.check_build_deps"]        = {description = "Show diagnosis info for checking build dependencies", default = false, type = "boolean"},
             -- Set the network mode, e.g. public/private

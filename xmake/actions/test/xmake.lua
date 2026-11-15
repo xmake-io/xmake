@@ -25,6 +25,7 @@ task("test")
         usage = "xmake test [options] [tests]",
         description = "Run the project tests.",
         options = {
+            {'a', "all",     "k",  nil,   "Run all tests."},
             {'g', "group",   "kv", nil,   "Run all tests of the given group. It supports path pattern matching.",
                                           "e.g.",
                                           "    xmake test -g test",

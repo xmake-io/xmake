@@ -512,6 +512,7 @@ function get_tests()
         group_pattern = "^" .. path.pattern(group_pattern) .. "$"
     end
     for _, target in ipairs(project.ordertargets()) do
+        local respect_default = target:policy("test.respect_default")
         for _, name in ipairs(target:get("tests")) do
             local extra = target:extraconf("tests", name)
             local testname = target:name() .. "/" .. name
@@ -557,6 +558,9 @@ function get_tests()
                     testinfo.target = target_new
                 end
             end
+            if testinfo.default == nil then
+                testinfo.default = not (respect_default and not target:is_default())
+            end
             if not testinfo.group then
                 testinfo.group = target:get("group")
             end
@@ -594,6 +598,14 @@ function main()
                 if name:match(pattern) then
                     tests_new[name] = testinfo
                 end
+            end
+        end
+        tests = tests_new
+    elseif not option.get("all") and not option.get("group") then
+        local tests_new = {}
+        for name, testinfo in pairs(tests) do
+            if testinfo.default ~= false then
+                tests_new[name] = testinfo
             end
         end
         tests = tests_new
