@@ -54,24 +54,6 @@ function _check_from_arglist(flags, opt)
     return allflags[flag]
 end
 
--- find the cl.exe that matches the linker
---
--- we cannot rely on find_tool("cl") here, because its result is cached by name only (not by envs),
--- so it may return the compiler of another arch (e.g. host x64 cl.exe when targeting arm64),
--- and then link fails with LNK1112 (module machine type conflicts with target machine type).
---
--- cl.exe always lives next to link.exe in the same toolchain bin directory.
-function _find_cl(opt)
-    if path.is_absolute(opt.program) then
-        local cl = path.join(path.directory(opt.program), "cl.exe")
-        if os.isfile(cl) then
-            return cl
-        end
-    end
-    local cl = find_tool("cl", {envs = opt.envs})
-    return cl and cl.program
-end
-
 -- try running to check flags
 function _check_try_running(flags, opt)
 
@@ -90,9 +72,11 @@ function _check_try_running(flags, opt)
     -- compile the source file
     local objectfile = os.tmpfile() .. ".obj"
     local binaryfile = os.tmpfile() .. ".exe"
-    local cl = _find_cl(opt)
+    -- Isolate compiler detection per linker to avoid a cached cl from another architecture.
+    -- @see https://github.com/xmake-io/xmake/issues/7858
+    local cl = find_tool("cl", {envs = opt.envs, cachekey = "link_has_flags_" .. opt.program})
     if cl then
-        os.runv(cl, {"-c", "-nologo", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
+        os.runv(cl.program, {"-c", "-nologo", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
     end
 
     -- try link it
@@ -136,4 +120,3 @@ function main(flags, opt)
     -- try running to check it
     return _check_try_running(flags, opt)
 end
-
