@@ -118,6 +118,51 @@ function _get_flags_from_target(target, name)
     return target_utils.translate_flags_in_tool(target, name, flags)
 end
 
+function _translate_cx_language(language)
+    if not language then
+        return
+    end
+
+    language = language:replace("c++", "cxx", {plain = true})
+
+    local stdcpp = {
+        cxx11 = "stdcpp11",
+        cxx14 = "stdcpp14",
+        cxx17 = "stdcpp17",
+        cxx1z = "stdcpp17",
+        cxx20 = "stdcpp20",
+        cxx2a = "stdcpp20",
+        cxx23 = "stdcpplatest",
+        cxx2b = "stdcpplatest",
+        cxxlatest = "stdcpplatest",
+        gnuxx11 = "stdcpp11",
+        gnuxx14 = "stdcpp14",
+        gnuxx17 = "stdcpp17",
+        gnuxx1z = "stdcpp17",
+        gnuxx20 = "stdcpp20",
+        gnuxx2a = "stdcpp20",
+        gnuxx23 = "stdcpplatest",
+        gnuxx2b = "stdcpplatest",
+    }
+    local stdc = {
+        c11   = "stdc11",
+        c17   = "stdc17",
+        gnu11 = "stdc11",
+        gnu17 = "stdc17",
+    }
+
+    for k,v in pairs(stdcpp) do
+        if language:find(k) then
+            return v, "cxx"
+        end
+    end
+    for k,v in pairs(stdc) do
+        if language:find(k) then
+            return v, "c"
+        end
+    end
+end
+
 -- make target info
 function _make_targetinfo(mode, arch, target)
 
@@ -405,6 +450,17 @@ function _make_filter(filepath, target, vcxprojdir)
     return filter
 end
 
+function _make_file_language_standard(target, file)
+    if target.fileconfigs and target.fileconfigs[file] then
+        local tr, lang = _translate_cx_language(target.fileconfigs[file].languages)
+        if lang == "cxx" then
+            return "<LanguageStandard>" .. tr .. "</LanguageStandard>"
+        elseif lang == "c" then
+            return "<LanguageStandard_C>" .. tr .. "</LanguageStandard_C>"
+        end
+    end
+end
+
 
 -- make vstudio project
 function main(outputdir, vsinfo)
@@ -540,6 +596,11 @@ function main(outputdir, vsinfo)
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
                 _target.extrafiles = table.unique(table.join(_target.extrafiles or {}, (target:extrafiles())))
 
+                _target.fileconfigs = {}
+                for _,v in pairs(target:sourcefiles()) do
+                    _target.fileconfigs[v] = target:fileconfig(v)
+                end
+
                 -- sort them to stabilize generation
                 table.sort(_target.sourcefiles)
                 table.sort(_target.headerfiles)
@@ -586,7 +647,8 @@ function main(outputdir, vsinfo)
             {
                 -- @see https://github.com/xmake-io/xmake/issues/2077
                 path = path.is_absolute(escaped_f) and escaped_f or "$(XmakeProjectDir)\\" .. escaped_f,
-                dir = vsutils.escape(dir)
+                dir = vsutils.escape(dir),
+                languagestandard = _make_file_language_standard(target, f)
             }
             while dir and dir ~= "." do
                 if not dirs[dir] then
