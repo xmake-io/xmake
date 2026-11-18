@@ -121,7 +121,7 @@ add_requires("tbox 1.6.*", "zlib", "libpng ~1.6")
 
 官方的xmake包管理仓库: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
-<img src="https://github.com/xmake-io/xmake-docs/raw/master/assets/img/index/package.gif" width="650px" />
+<img src="https://github.com/xmake-io/xmake-docs/raw/master/docs/public/assets/img/index/package.gif" width="650px" />
 
 ## 命令行使用
 

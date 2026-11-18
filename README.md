@@ -119,7 +119,7 @@ Adds a requirement of tbox v1.6, zlib (any version), and libpng v1.6.
 The official xmake package repository exists at: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
 <p align="center">
-<img src="https://github.com/xmake-io/xmake-docs/raw/master/assets/img/index/package.gif" width="650px" />
+<img src="https://github.com/xmake-io/xmake-docs/raw/master/docs/public/assets/img/index/package.gif" width="650px" />
 </p>
 
 ## Command line interface reference
