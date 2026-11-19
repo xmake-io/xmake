@@ -1,3 +1,4 @@
     <ClCompile Include="#path#">
       <CompileAs>CompileAsC</CompileAs>
+      #languagestandard#
     </ClCompile>
