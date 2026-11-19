@@ -151,12 +151,12 @@ function _translate_cx_language(language)
         gnu17 = "stdc17",
     }
 
-    for k,v in pairs(stdcpp) do
+    for k, v in pairs(stdcpp) do
         if language:find(k) then
             return v, "cxx"
         end
     end
-    for k,v in pairs(stdc) do
+    for k, v in pairs(stdc) do
         if language:find(k) then
             return v, "c"
         end
@@ -596,15 +596,15 @@ function main(outputdir, vsinfo)
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
                 _target.extrafiles = table.unique(table.join(_target.extrafiles or {}, (target:extrafiles())))
 
-                _target.fileconfigs = {}
-                for _,v in pairs(target:sourcefiles()) do
-                    _target.fileconfigs[v] = target:fileconfig(v)
-                end
-
                 -- sort them to stabilize generation
                 table.sort(_target.sourcefiles)
                 table.sort(_target.headerfiles)
                 table.sort(_target.extrafiles)
+
+                _target.fileconfigs = {}
+                for _, v in ipairs(_target.sourcefiles) do
+                    _target.fileconfigs[v] = target:fileconfig(v)
+                end
 
                 -- save file groups
                 _target.filegroups = table.unique(table.join(_target.filegroups or {}, target:get("filegroups")))
