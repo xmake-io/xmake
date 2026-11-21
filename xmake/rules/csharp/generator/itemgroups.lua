@@ -18,6 +18,8 @@
 -- @file        itemgroups.lua
 --
 
+import("rules.csharp.references", {alias = "get_references", rootdir = os.programdir()})
+
 -- normalize path to relative and use forward slashes
 function _normalize_relative(fromdir, targetpath)
     local relpath = path.relative(targetpath, fromdir) or targetpath
@@ -85,21 +87,6 @@ function _get_nuget_info(pkg)
     return pkgname, version
 end
 
--- collect Reference entries (HintPath to prebuilt, non-NuGet assemblies) from csharp.references
--- e.g. set_values("csharp.references", "path/to/Foo.dll", "path/to/Bar.dll")
-function _collect_assembly_references(context)
-    local references = {}
-    for _, refpath in ipairs(table.wrap(context.target:values("csharp.references"))) do
-        refpath = tostring(refpath):trim()
-        if #refpath > 0 then
-            local refabs = path.is_absolute(refpath) and refpath or path.absolute(refpath, os.projectdir())
-            table.insert(references, {name = path.basename(refabs), hintpath = _normalize_relative(context.csprojdir, refabs)})
-        end
-    end
-    table.sort(references, function (a, b) return a.name < b.name end)
-    return references
-end
-
 -- collect PackageReference entries from nuget packages
 function _collect_nuget_references(context)
     local versions = {}
@@ -163,11 +150,12 @@ function main()
         xml = "Reference",
         resolve_items = function (context)
             local items = {}
-            for _, refinfo in ipairs(_collect_assembly_references(context)) do
-                table.insert(items, {
-                    attrs = {Include = refinfo.name},
-                    children = {{xml = "HintPath", value = refinfo.hintpath}}
-                })
+            for _, refinfo in ipairs(get_references(context.target)) do
+                local item = {attrs = {Include = refinfo.name}}
+                if refinfo.assemblyfile then
+                    item.children = {{xml = "HintPath", value = _normalize_relative(context.csprojdir, refinfo.assemblyfile)}}
+                end
+                table.insert(items, item)
             end
             return items
         end

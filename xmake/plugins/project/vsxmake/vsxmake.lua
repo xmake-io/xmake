@@ -90,6 +90,9 @@ function _buildparams(info, target, default)
             if v == nil and i._deps then
                 v = i._deps[k]
             end
+            if v == nil and i._references then
+                v = i._references[k]
+            end
             if v == nil and i._groups then
                 v = i._groups[k]
             end
@@ -134,6 +137,9 @@ function _buildparams(info, target, default)
         end
         if args.dep then
             table.insert(r, info._targets[target].deps)
+        end
+        if args.reference then
+            table.insert(r, info._targets[target].references or {})
         end
         if args.filec then
             local files = info._targets[target].sourcefiles

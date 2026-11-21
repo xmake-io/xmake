@@ -43,6 +43,9 @@
   <ItemGroup>
 #Import(File.cs)#
   </ItemGroup>
+  <ItemGroup>
+#Import(Reference)#
+  </ItemGroup>
   <!-- <ItemGroup>
 #Import(ProjectRef)#
   </ItemGroup> -->
