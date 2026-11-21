@@ -21,6 +21,7 @@
 -- imports
 import("core.project.depend")
 import("generator.csproj", {rootdir = os.scriptdir(), alias = "generate_csproj"})
+import("references", {rootdir = os.scriptdir(), alias = "get_references"})
 
 function main(target)
 
@@ -38,12 +39,22 @@ function main(target)
         end
     end
 
+    local references = {}
+    local assemblyfiles = {}
+    for _, refinfo in ipairs(get_references(target)) do
+        table.insert(references, refinfo.name .. "=" .. (refinfo.assemblyfile or ""))
+        if refinfo.assemblyfile then
+            table.insert(assemblyfiles, refinfo.assemblyfile)
+        end
+    end
+
     -- generate csproj incrementally
     depend.on_changed(function ()
         generate_csproj(target, csprojfile)
-    end, {dependfile = dependfile, files = sourcefiles, values = depcsproj})
+    end, {dependfile = dependfile, files = sourcefiles, values = table.join(depcsproj, references)})
 
     target:data_set("csharp.csproj", csprojfile)
+    target:data_set("csharp.assemblyfiles", assemblyfiles)
 
     -- add native shared library search paths for P/Invoke
     for _, dep in ipairs(target:orderdeps()) do

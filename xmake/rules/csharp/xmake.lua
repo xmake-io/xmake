@@ -109,9 +109,12 @@
 --   csharp.generate_target_framework_attribute          - GenerateTargetFrameworkAttribute
 --
 -- References:
---   csharp.references                                   - add <Reference> entries with HintPath, for prebuilt/external
---                                                         assemblies that aren't NuGet packages or other xmake targets
---                                                         (list), e.g. set_values("csharp.references", "path/to/Foo.dll")
+--   prebuilt assemblies that are neither NuGet packages nor xmake targets are referenced with
+--   add_links/add_linkdirs, the same as native libraries, e.g.
+--
+--     add_linkdirs("lib")
+--     add_links("MyLib")                  -- lib/MyLib.dll, <Reference> with <HintPath>
+--     add_links("System.Windows.Forms")   -- not found in linkdirs, <Reference> resolved by MSBuild
 --
 -- Custom Properties (for arbitrary csproj properties not listed above):
 --   csharp.properties                                   - add custom <PropertyGroup> entries, format: "Name=Value"

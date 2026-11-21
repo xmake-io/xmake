@@ -1,0 +1,3 @@
+    <Reference Include="#refname#" Condition="'$(Configuration)|$(Platform)'=='#refmode#|#refvsarch#'">@refhashint=true;
+      <HintPath>#refhintpath#</HintPath>
+    @</Reference>

@@ -37,6 +37,7 @@ import("private.action.run.runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
+import("rules.csharp.references", {alias = "get_csharp_references", rootdir = os.programdir()})
 
 -- strip dot directories, e.g. ..\..\.. => ..
 -- @see https://github.com/xmake-io/xmake/issues/2039
@@ -567,6 +568,28 @@ function main(outputdir, vsinfo)
 
                 -- save deps
                 _target.deps = table.unique(table.join(_target.deps or {}, table.orderkeys(target:deps()), nil))
+
+                if _target.projkind == "csharp" then
+                    _target._references = _target._references or {}
+                    for _, refinfo in ipairs(get_csharp_references(target)) do
+                        local refhintpath
+                        if refinfo.assemblyfile then
+                            refhintpath = path.relative(refinfo.assemblyfile, project.directory())
+                            refhintpath = vsutils.escape(refhintpath)
+                            if not path.is_absolute(refhintpath) then
+                                refhintpath = "$(XmakeProjectDir)\\" .. refhintpath
+                            end
+                        end
+                        _target._references[mode .. "|" .. arch .. "|" .. refinfo.name] = {
+                            refname = vsutils.escape(refinfo.name),
+                            refmode = mode,
+                            refvsarch = targetinfo.vsarch,
+                            refhintpath = refhintpath or "",
+                            refhashint = refhintpath and "true" or "false"
+                        }
+                    end
+                    _target.references = table.orderkeys(_target._references)
+                end
             end
         end
     end
