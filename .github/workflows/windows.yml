@@ -26,9 +26,8 @@ jobs:
           submodules: true
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
-          # this is not supported, use dev branch instead
-          # xmake-version: local#
-          xmake-version: branch@dev
+          # Temporarily use a prebuilt release to skip rebuilding dev's old PDCurses.
+          xmake-version: '3.1.2'
       - uses: dlang-community/setup-dlang@v1
         with:
           compiler: dmd-latest
