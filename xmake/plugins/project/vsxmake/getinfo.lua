@@ -151,15 +151,14 @@ function _translate_cx_language(language)
         gnu17 = "stdc17",
     }
 
-    for k, v in pairs(stdcpp) do
-        if language:find(k) then
-            return v, "cxx"
-        end
+    local cxx = stdcpp[language]
+    if cxx then
+        return cxx, "cxx"
     end
-    for k, v in pairs(stdc) do
-        if language:find(k) then
-            return v, "c"
-        end
+
+    local c = stdc[language]
+    if c then
+        return c, "c"
     end
 end
 
