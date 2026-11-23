@@ -1,0 +1,28 @@
+name: Set up LLVM for Windows
+description: Install LLVM 22 for the Visual Studio 2026 STL
+runs:
+  using: composite
+  steps:
+    - shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $installer = Join-Path $env:RUNNER_TEMP 'LLVM-22.1.8-win64.exe'
+        $installDir = Join-Path $env:RUNNER_TEMP 'LLVM-22.1.8'
+        $url = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.8/LLVM-22.1.8-win64.exe'
+        Invoke-WebRequest $url -OutFile $installer -MaximumRetryCount 3 -RetryIntervalSec 10
+        $sha256 = '16e5709785fef73c854646241c4a92c5cd574318d1b33c63330dd7721903e55c'
+        if ((Get-FileHash $installer -Algorithm SHA256).Hash -ne $sha256) {
+          throw 'LLVM installer SHA256 mismatch'
+        }
+        $process = Start-Process $installer -ArgumentList "/S /D=$installDir" -Wait -PassThru
+        if ($process.ExitCode -ne 0) {
+          throw "LLVM installer failed: $($process.ExitCode)"
+        }
+        $bin = Join-Path $installDir 'bin'
+        $version = & (Join-Path $bin 'clang++.exe') --version
+        $compilerExitCode = $LASTEXITCODE
+        $version
+        if ($compilerExitCode -ne 0 -or ($version -join "`n") -notmatch '\bclang version 22\.1\.8\b') {
+          throw 'Expected Clang 22.1.8 after installation'
+        }
+        $bin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append

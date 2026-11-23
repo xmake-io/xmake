@@ -76,9 +76,8 @@ jobs:
           submodules: true
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
-          # this is not supported, use dev branch instead
-          # xmake-version: local#
-          xmake-version: branch@dev
+          # Temporarily use a prebuilt release to skip rebuilding dev's old PDCurses.
+          xmake-version: '3.1.2'
       - uses: dlang-community/setup-dlang@v1
         with:
           compiler: dmd-latest
@@ -110,6 +109,10 @@ jobs:
           (Get-FileHash ../artifacts/${{env.RELEASE_NAME}}/xmake.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
           Copy-Item shafile ../artifacts/${{env.RELEASE_NAME}}
           cd ..
+
+      - name: Update LLVM for VS 2026
+        if: matrix.os == 'windows-2025'
+        uses: ./.github/actions/setup-windows-llvm
 
       - name: Tests
         run: |
