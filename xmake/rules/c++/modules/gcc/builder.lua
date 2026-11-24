@@ -129,15 +129,24 @@ function _module_map_cachekey(target)
     return target:fullname() .. "module_mapper" .. (mode or "")
 end
 
+-- write the mapper file only if its content has changed
+--
+-- the mapper file is recorded as a dependency of the object files by the compiler depfiles,
+-- so we must not rewrite it with the same content, otherwise the new mtime will make all
+-- dependent object files be rebuilt, e.g. after running project generators.
+function _write_mapper_file_if_changed(mapper_path, mapper_content)
+    if not os.isfile(mapper_path) or io.readfile(mapper_path, {encoding = "binary"}) ~= mapper_content then
+        io.writefile(mapper_path, mapper_content, {encoding = "binary"})
+    end
+end
+
 -- generate a module mapper file for build a headerunit
 function _generate_headerunit_modulemapper_file(target, headerunit)
     local mapper_path = _get_modulemapper_file(target, headerunit)
-    local mapper_file = io.open(mapper_path, "wb")
-    mapper_file:write("$root " .. path.directory(headerunit.sourcefile) .. "\n")
     local sourcefile = _get_headerunit_mappername(headerunit.sourcefile)
-    mapper_file:write(path.unix(sourcefile) .. " " .. path.unix(path.absolute(headerunit.bmifile)) .. "\n")
-    mapper_file:write("\n")
-    mapper_file:close()
+    local mapper_content = "$root " .. path.directory(headerunit.sourcefile) .. "\n" ..
+                           path.unix(sourcefile) .. " " .. path.unix(path.absolute(headerunit.bmifile)) .. "\n\n"
+    _write_mapper_file_if_changed(mapper_path, mapper_content)
     return mapper_path
 end
 
@@ -185,18 +194,13 @@ end
 function _generate_modulemapper_file(target, module)
     local maplines = _get_maplines(target, module)
     local mapper_path = _get_modulemapper_file(target, module)
-    if os.isfile(mapper_path) then
-        os.rm(mapper_path)
-    end
     local mapper_content = {}
     table.insert(mapper_content, "$root " .. path.unix(os.projectdir()))
     for _, mapline in ipairs(maplines) do
         table.insert(mapper_content, mapline)
     end
     mapper_content = table.concat(mapper_content, "\n") .. "\n"
-    if not os.isfile(mapper_path) or io.readfile(mapper_path, {encoding = "binary"}) ~= mapper_content then
-        io.writefile(mapper_path, mapper_content, {encoding = "binary"})
-    end
+    _write_mapper_file_if_changed(mapper_path, mapper_content)
     return mapper_path
 end
 
