@@ -49,27 +49,33 @@ function _get_extension(opt)
     return opt.flagkind == "cxxflags" and ".cpp" or (table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c")
 end
 
--- get the warning/error output from cl, ignoring the source filename echo
+-- get the "unsupported flag" output from cl
 --
--- when vstool.iorunv enables VS_UNICODE_OUTPUT, cl will write all its diagnostics
--- (including the D9002 warning for unknown flags, whose exit code is still 0) to
--- stdout instead of stderr, so we only need to check outdata here. and the hard
--- errors (non-zero exit) will be raised by vstool.iorunv and handled by the catch.
+-- only two codes mean that the driver has no such option: D9002 (ignoring unknown
+-- option, cl drops it, compiles the stub and exits 0, so the text is the only place
+-- this answer exists) and D8043 (unknown option, the same answer once an unknown
+-- option is an error, e.g. under /options:strict).
+-- any other diagnostic is not an answer about support, e.g.
+-- `warning C5072: ASAN enabled without debug information emission`, which cl prints
+-- whenever -fsanitize=address is used without -Zi/-ZI/-Z7, and D9014/D9025/D9035 for
+-- the bad values or the deprecated status of recognized options.
 --
--- but cl also echoes the source filename to stdout on every compile (even on success,
--- since -nologo only suppresses the banner), so we need to filter it out, the rest is
--- the real warnings/errors for unsupported flags.
+-- cl also echoes the source filename on every compile (-nologo only suppresses the
+-- banner), so we filter it out too.
 --
--- e.g.
---   cl_has_flags_xxx.c                                              <-- the filename echo, skip it
---   cl : Command line warning D9002 : ignoring unknown option '-xx' <-- a real diagnostic
+-- the diagnostics reach us as outdata rather than stderr, because vstool redirects cl
+-- through VS_UNICODE_OUTPUT. matching the code instead of the message words also
+-- keeps this working on a localized cl.
+--
+-- @see https://github.com/xmake-io/xmake/issues/7822
 --
 function _get_output(outdata, sourcefile)
     local filename = path.filename(sourcefile)
     local output = {}
     for _, line in ipairs((outdata or ""):split("\n", {plain = true})) do
         line = line:rtrim()
-        if #line > 0 and not line:endswith(filename) then
+        if #line > 0 and not line:endswith(filename)
+            and (line:find("D9002", 1, true) or line:find("D8043", 1, true)) then
             table.insert(output, line)
         end
     end
