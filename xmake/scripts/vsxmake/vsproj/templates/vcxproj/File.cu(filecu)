@@ -1,1 +1,3 @@
-    <CudaCompile Include="#path#" />
+    <CudaCompile Include="#path#">
+      #languagestandard#
+    </CudaCompile>
