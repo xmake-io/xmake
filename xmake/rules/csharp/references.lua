@@ -18,27 +18,25 @@
 -- @file        references.lua
 --
 
+import("private.utils.target", {alias = "target_utils"})
+
 function _get_linkdirs(target)
     local linkdirs = {}
-    for _, values in ipairs(table.wrap(target:get_from("linkdirs", {"self", "option::*"}))) do
-        for _, linkdir in ipairs(table.wrap(values)) do
-            table.insert(linkdirs, path.absolute(linkdir, os.projectdir()))
-        end
+    for _, linkdir in ipairs(target_utils.get_values_from_target(target, "linkdirs")) do
+        table.insert(linkdirs, path.absolute(linkdir, os.projectdir()))
     end
     return table.unique(linkdirs)
 end
 
 function _get_links(target)
     local links = {}
-    for _, values in ipairs(table.wrap(target:get_from("links", {"self", "option::*"}))) do
-        for _, link in ipairs(table.wrap(values)) do
-            link = tostring(link):trim()
-            if link:lower():endswith(".dll") then
-                link = link:sub(1, -5)
-            end
-            if #link > 0 then
-                table.insert(links, link)
-            end
+    for _, link in ipairs(target_utils.get_values_from_target(target, "links")) do
+        link = tostring(link):trim()
+        if link:lower():endswith(".dll") then
+            link = link:sub(1, -5)
+        end
+        if #link > 0 then
+            table.insert(links, link)
         end
     end
     return table.unique(links)
