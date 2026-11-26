@@ -37,6 +37,7 @@ import("private.action.run.runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
+import("rules.csharp.references", {alias = "get_csharp_references", rootdir = os.programdir()})
 
 -- strip dot directories, e.g. ..\..\.. => ..
 -- @see https://github.com/xmake-io/xmake/issues/2039
@@ -449,6 +450,29 @@ function _make_filter(filepath, target, vcxprojdir)
     return filter
 end
 
+-- make C# assembly references for the current configuration
+function _make_csharp_references(target, mode, arch, vsarch, references)
+    references = references or {}
+    for _, refinfo in ipairs(get_csharp_references(target)) do
+        local refhintpath
+        if refinfo.assemblyfile then
+            refhintpath = path.relative(refinfo.assemblyfile, project.directory())
+            refhintpath = vsutils.escape(refhintpath)
+            if not path.is_absolute(refhintpath) then
+                refhintpath = "$(XmakeProjectDir)\\" .. refhintpath
+            end
+        end
+        references[mode .. "|" .. arch .. "|" .. refinfo.name] = {
+            refname = vsutils.escape(refinfo.name),
+            refmode = mode,
+            refvsarch = vsarch,
+            refhintpath = refhintpath or "",
+            refhashint = refhintpath and "true" or "false"
+        }
+    end
+    return references
+end
+
 function _make_file_language_standard(target, file)
     if target.fileconfigs and target.fileconfigs[file] then
         local tr, lang = _translate_cx_language(target.fileconfigs[file].languages)
@@ -459,7 +483,6 @@ function _make_file_language_standard(target, file)
         end
     end
 end
-
 
 -- make vstudio project
 function main(outputdir, vsinfo)
@@ -627,6 +650,11 @@ function main(outputdir, vsinfo)
 
                 -- save deps
                 _target.deps = table.unique(table.join(_target.deps or {}, table.orderkeys(target:deps()), nil))
+
+                if _target.projkind == "csharp" then
+                    _target._references = _make_csharp_references(target, mode, arch, targetinfo.vsarch, _target._references)
+                    _target.references = table.orderkeys(_target._references)
+                end
             end
         end
     end

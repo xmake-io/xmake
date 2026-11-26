@@ -68,7 +68,7 @@ function build_sourcefiles(target, sourcebatch, opt)
 
     -- update files and values to the dependent file
     dependinfo.values = depvalues
-    table.join2(dependinfo.files, sourcefiles, csprojfile)
+    table.join2(dependinfo.files, sourcefiles, csprojfile, target:data("csharp.assemblyfiles"))
     depend.save(dependinfo, dependfile)
 end
 
