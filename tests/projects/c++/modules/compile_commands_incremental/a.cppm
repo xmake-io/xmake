@@ -1,5 +1,5 @@
 export module a;
 
 namespace a {
-export int foo() noexcept;
+    export int foo() noexcept;
 }
