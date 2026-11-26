@@ -1,7 +1,7 @@
 module a;
 
 namespace a {
-int foo() noexcept {
-    return 42;
-}
+    int foo() noexcept {
+        return 42;
+    }
 }
