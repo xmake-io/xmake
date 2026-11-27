@@ -2,8 +2,8 @@ import("rules.qt.moc.utils", {rootdir = os.programdir()})
 
 function _with_temp_project(callback)
     local tempdir = os.tmpfile()
-    os.mkdir(tempdir)
-    local olddir = os.cd(tempdir)
+    os.mkdir(path.join(tempdir, "project"))
+    local olddir = os.cd(path.join(tempdir, "project"))
     try
     {
         function ()
@@ -23,51 +23,33 @@ function _with_temp_project(callback)
 end
 
 function _mock_target(opt)
-    opt = opt or {}
     local data_store = {}
     local target = {}
+    local includedirs, sources = {}, {}
+    for _, item in ipairs(opt.includedirs_sources or {{source = "self", dirs = opt.includedirs or {}}}) do
+        table.insert(includedirs, item.dirs)
+        table.insert(sources, item.source)
+    end
 
     function target:headerfiles()
-        return opt.headerfiles or {}
+        return opt.headerfiles
     end
 
     function target:sourcefiles()
-        return opt.sourcefiles or {}
-    end
-
-    function target:values(name)
-        if name == "qt.moc.macros" then
-            return opt.macros
-        end
+        return opt.sourcefiles
     end
 
     function target:get(name)
         if name == "qt.moc.macros" then
             return opt.macros
-        elseif name == "includedirs" then
-            return opt.includedirs
-        elseif name == "qt.moc.flags" then
-            return opt.moc_flags
         end
     end
+    target.values = target.get
 
-    function target:get_from(name, sources)
-        if name ~= "includedirs" then
-            return nil
+    function target:get_from(name)
+        if name == "includedirs" then
+            return includedirs, sources
         end
-        if opt.includedirs_sources then
-            local vals = {}
-            local srcs = {}
-            for _, item in ipairs(opt.includedirs_sources) do
-                table.insert(vals, item.dirs)
-                table.insert(srcs, item.source)
-            end
-            return vals, srcs
-        end
-        if opt.includedirs and #opt.includedirs > 0 then
-            return {opt.includedirs}, {"self"}
-        end
-        return nil
     end
 
     function target:rule()
@@ -193,30 +175,28 @@ end
 
 function test_external_and_package_headers_excluded(t)
     _with_temp_project(function (extdir)
-        io.writefile("ext_bridge.h", '#include "secret_leaf.h"')
-        _with_temp_project(function ()
-            _write_files({
-                ["src/main.cpp"] = '#include "ext_bridge.h"\n#include "dep_bridge.h"\n#include "pkg_bridge.h"\n#include "dep_pkg_bridge.h"',
-                ["include/secret_leaf.h"] = "class SecretLeaf { Q_OBJECT };",
-                ["dep_inc/dep_bridge.h"] = '#include "dep_leaf.h"',
-                ["include/dep_leaf.h"] = "class DepLeaf { Q_OBJECT };",
-                ["pkg_inc/pkg_bridge.h"] = '#include "pkg_leaf.h"',
-                ["include/pkg_leaf.h"] = "class PkgLeaf { Q_OBJECT };",
-                ["dep_pkg_inc/dep_pkg_bridge.h"] = '#include "dep_pkg_leaf.h"',
-                ["include/dep_pkg_leaf.h"] = "class DepPkgLeaf { Q_OBJECT };"
-            })
-            local target = _mock_target({
-                headerfiles = {"include/secret_leaf.h", "include/dep_leaf.h", "include/pkg_leaf.h", "include/dep_pkg_leaf.h"},
-                sourcefiles = {"src/main.cpp"},
-                includedirs_sources = {
-                    {source = "self", dirs = {"include", extdir}},
-                    {source = "dep::core", dirs = {"dep_inc"}},
-                    {source = "package::qt5core", dirs = {"pkg_inc"}},
-                    {source = "dep::core/package::qt5widgets", dirs = {"dep_pkg_inc"}}
-                }
-            })
-            t:are_equal(utils.detect_moc_headers(target), {"include/dep_leaf.h"})
-        end)
+        io.writefile(path.join(extdir, "ext_bridge.h"), '#include "secret_leaf.h"')
+        _write_files({
+            ["src/main.cpp"] = '#include "ext_bridge.h"\n#include "dep_bridge.h"\n#include "pkg_bridge.h"\n#include "dep_pkg_bridge.h"',
+            ["include/secret_leaf.h"] = "class SecretLeaf { Q_OBJECT };",
+            ["dep_inc/dep_bridge.h"] = '#include "dep_leaf.h"',
+            ["include/dep_leaf.h"] = "class DepLeaf { Q_OBJECT };",
+            ["pkg_inc/pkg_bridge.h"] = '#include "pkg_leaf.h"',
+            ["include/pkg_leaf.h"] = "class PkgLeaf { Q_OBJECT };",
+            ["dep_pkg_inc/dep_pkg_bridge.h"] = '#include "dep_pkg_leaf.h"',
+            ["include/dep_pkg_leaf.h"] = "class DepPkgLeaf { Q_OBJECT };"
+        })
+        local target = _mock_target({
+            headerfiles = {"include/secret_leaf.h", "include/dep_leaf.h", "include/pkg_leaf.h", "include/dep_pkg_leaf.h"},
+            sourcefiles = {"src/main.cpp"},
+            includedirs_sources = {
+                {source = "self", dirs = {"include", extdir}},
+                {source = "dep::core", dirs = {"dep_inc"}},
+                {source = "package::qt5core", dirs = {"pkg_inc"}},
+                {source = "dep::core/package::qt5widgets", dirs = {"dep_pkg_inc"}}
+            }
+        })
+        t:are_equal(utils.detect_moc_headers(target), {"include/dep_leaf.h"})
     end)
 end
 
