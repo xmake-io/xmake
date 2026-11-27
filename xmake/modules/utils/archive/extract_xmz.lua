@@ -23,6 +23,27 @@ import("core.base.option")
 import("core.base.bytes")
 import("core.compress.lz4")
 
+-- validate that a decompressed entry path stays within outputdir
+--
+-- rejects absolute paths and any entry that resolves outside outputdir
+-- (e.g. via "../" traversal), to prevent a crafted .xmz archive from
+-- writing files anywhere on disk (zip-slip / CWE-22)
+function _safe_entrypath(outputdir, filepath)
+    if not filepath or filepath == "" then
+        return nil
+    end
+    if path.is_absolute(filepath) then
+        return nil
+    end
+    local joined = path.join(outputdir, filepath)
+    local outputdir_abs = path.absolute(outputdir) .. path.sep()
+    local joined_abs = path.absolute(joined)
+    if joined_abs ~= path.absolute(outputdir) and not joined_abs:startswith(outputdir_abs) then
+        return nil
+    end
+    return joined
+end
+
 -- extract files
 function _extract_files(archivefile, outputdir, opt)
     local inputfile = io.open(archivefile, "rb")
@@ -44,11 +65,15 @@ function _extract_files(archivefile, outputdir, opt)
         end
         readsize = readsize + 4 + size
         if filepath then
+            local safepath = _safe_entrypath(outputdir, filepath)
+            if not safepath then
+                raise("invalid entry path in archive: %s", filepath)
+            end
             vprint("extracting %s, %d bytes", filepath, filedata and #filedata or 0)
             if filedata then
-                io.writefile(path.join(outputdir, filepath), filedata, {encoding = "binary"})
+                io.writefile(safepath, filedata, {encoding = "binary"})
             else
-                os.touch(filepath)
+                os.touch(safepath)
             end
         end
     end
