@@ -26,6 +26,9 @@ local queue = queue or object {_init = {"_first", "_last"}} {1, 0}
 
 -- clear all elements
 function queue:clear()
+    for i = self._first, self._last do
+        self[i] = nil
+    end
     self._first = 1
     self._last = 0
 end
