@@ -33,6 +33,12 @@ function _get_cache_key(sourcefile, custom_macros)
     return sourcefile .. "::" .. tostring(custom_macros)
 end
 
+-- use the same key for relative/absolute aliases and case-insensitive filesystems
+function _normalize_path(filepath, rootdir)
+    local normalized = path.normalize(path.absolute(filepath, rootdir))
+    return os.fscase() and normalized or normalized:lower()
+end
+
 -- strip C/C++ comments from source content
 function _strip_comments(content)
     -- strip block comments /* ... */
@@ -47,6 +53,8 @@ function get_file_info(sourcefile, custom_macros)
     if not sourcefile then
         return {has_moc = false, has_private_slot = false}
     end
+
+    sourcefile = _normalize_path(sourcefile)
 
     -- safe check: do not call io.readfile if file does not exist (e.g. always_added generated headers)
     -- do not cache not_found into memcache to avoid caching mutable file existence across build stages
@@ -95,7 +103,7 @@ function get_file_info(sourcefile, custom_macros)
 
     local has_moc = raw.has_standard_moc
     if not has_moc and custom_macros and raw.clean_content then
-        for _, macro in ipairs(table.wrap(custom_macros)) do
+        for _, macro in ipairs(custom_macros) do
             if raw.clean_content:find("%f[%w_]" .. macro .. "%f[^%w_]") then
                 has_moc = true
                 break
@@ -140,36 +148,150 @@ end
 function _get_source_basenames(sourcefiles)
     local basenames = hashset.new()
     for _, sourcefile in ipairs(sourcefiles) do
-        if not sourcefile:endswith(".h") and not sourcefile:endswith(".hpp") then
+        local ext = path.extension(sourcefile):lower()
+        if ext ~= ".h" and ext ~= ".hpp" then
             basenames:insert(path.basename(sourcefile))
         end
     end
     return basenames
 end
 
--- scan source files for #include statements matching candidate basenames
-function _scan_included_basenames(sourcefiles, candidate_basenames)
-    local included_basenames = hashset.new()
-    for _, sourcefile in ipairs(sourcefiles) do
-        if not sourcefile:endswith(".h") and not sourcefile:endswith(".hpp") and os.isfile(sourcefile) then
-            local content = io.readfile(sourcefile)
-            if content and content:find("#include", 1, true) then
-                for inc in content:gmatch('#include%s+["<]([^">]+)[">]') do
-                    local inc_base = path.basename(inc)
-                    if inc_base:startswith("moc_") then
-                        inc_base = inc_base:sub(5)
+-- reuse the macro scanner's stripped content when available
+function _get_file_includes(filepath)
+    local includes = memcache.get("qt.moc.includes", filepath)
+    if includes == nil then
+        local raw = memcache.get("qt.moc.rawfile", filepath)
+        local content = raw and raw.clean_content or _strip_comments(io.readfile(filepath))
+        includes = {}
+        if content:find("include", 1, true) then
+            for line in content:gmatch("[^\r\n]+") do
+                local bracket, inc = line:match('^%s*#%s*include%s*(["<])([^">]+)[">]')
+                if inc then
+                    table.insert(includes, {path = inc, is_angle = bracket == "<"})
+                end
+            end
+        end
+        memcache.set("qt.moc.includes", filepath, includes)
+    end
+    return includes
+end
+
+-- do not recursively scan Qt/package include trees
+function _get_local_includedirs(target)
+    local dirs = {}
+    local values, sources = target:get_from("includedirs", "*")
+    for idx, value in ipairs(values) do
+        if not sources[idx]:find("package::", 1, true) then
+            for _, dir in ipairs(value) do
+                table.insert(dirs, _normalize_path(dir))
+            end
+        end
+    end
+    return table.unique(dirs)
+end
+
+function _resolve_include_file(inc, curdir, includedirs, cache)
+    if not inc.is_angle then
+        local filepath = _normalize_path(inc.path, curdir)
+        if os.isfile(filepath) then
+            return filepath
+        end
+    end
+    local resolved = cache[inc.path]
+    if resolved == nil then
+        resolved = false
+        for _, dir in ipairs(includedirs) do
+            local filepath = _normalize_path(inc.path, dir)
+            if os.isfile(filepath) then
+                resolved = filepath
+                break
+            end
+        end
+        cache[inc.path] = resolved
+    end
+    return resolved or nil
+end
+
+-- preserve fallback matching for generated moc_*.cpp and unresolved header includes
+function _match_include(inc, candidates)
+    local name = path.normalize(inc)
+    if not os.fscase() then
+        name = name:lower()
+    end
+    local basename = path.basename(name)
+    local is_moc = basename:startswith("moc_") and path.extension(name) == ".cpp"
+    if is_moc then
+        basename = basename:sub(5)
+    elseif path.extension(name) ~= ".h" and path.extension(name) ~= ".hpp" then
+        return
+    end
+    local files = candidates[basename]
+    if not files then
+        return
+    end
+    local matches = {}
+    local incdir = path.directory(name)
+    for _, filepath in ipairs(files) do
+        local candidate = is_moc and path.directory(filepath) or filepath
+        local suffix = is_moc and incdir or name
+        if incdir == "." or candidate == suffix or candidate:endswith(path.sep() .. suffix) then
+            table.insert(matches, filepath)
+        end
+    end
+    return matches
+end
+
+-- traverse only reachable local headers, once per target, when basename matching is insufficient
+function _scan_included_headers(target, sourcefiles, headerfiles_keys, unmatched_entries)
+    local remaining = #unmatched_entries
+    local unmatched = {}
+    local candidates = {}
+    for _, entry in ipairs(unmatched_entries) do
+        unmatched[entry.key] = true
+        local basename = path.basename(entry.key)
+        candidates[basename] = candidates[basename] or {}
+        table.insert(candidates[basename], entry.key)
+    end
+    local includedirs = _get_local_includedirs(target)
+    local rootdir = _normalize_path(os.curdir())
+    local rootprefix = rootdir:endswith(path.sep()) and rootdir or rootdir .. path.sep()
+    local found = hashset.new()
+    local visited = hashset.new()
+    local cache = {}
+    local queue = table.clone(sourcefiles)
+    local head = 1
+    while head <= #queue and remaining > 0 do
+        local filepath = _normalize_path(queue[head])
+        head = head + 1
+        if not visited:has(filepath) and os.isfile(filepath) then
+            visited:insert(filepath)
+            local curdir = path.directory(filepath)
+            for _, inc in ipairs(_get_file_includes(filepath)) do
+                local resolved = _resolve_include_file(inc, curdir, includedirs, cache)
+                local matches = resolved and {resolved} or _match_include(inc.path, candidates)
+                for _, matched in ipairs(matches) do
+                    if unmatched[matched] then
+                        found:insert(matched)
+                        unmatched[matched] = nil
+                        remaining = remaining - 1
                     end
-                    if candidate_basenames:has(inc_base) then
-                        included_basenames:insert(inc_base)
+                    local ext = path.extension(matched):lower()
+                    local is_header = headerfiles_keys:has(matched)
+                    if (is_header or matched:startswith(rootprefix)) and
+                       (is_header or ext == ".h" or ext == ".hpp" or ext == ".hh" or
+                        ext == ".hxx" or ext == ".h++" or ext == ".inl" or ext == "") then
+                        if not visited:has(matched) then
+                            table.insert(queue, matched)
+                        end
                     end
                 end
-                if included_basenames:size() == candidate_basenames:size() then
+                if remaining == 0 then
                     break
                 end
             end
         end
     end
-    return included_basenames
+    return found
 end
 
 -- automatically detect header files with Qt meta-object macros
@@ -186,36 +308,37 @@ function detect_moc_headers(target)
 
     local custom_macros = target:values("qt.moc.macros") or target:get("qt.moc.macros")
     local sourcefiles = target:sourcefiles()
-    local sourcefiles_set = hashset.from(sourcefiles)
+    local sourcefiles_set = hashset.new()
+    for _, sourcefile in ipairs(sourcefiles) do
+        sourcefiles_set:insert(_normalize_path(sourcefile))
+    end
     local source_basenames = _get_source_basenames(sourcefiles)
 
     local moc_headers = {}
-    local unmatched_headers = {}
+    local unmatched_entries = {}
+    local headerfiles_keys = hashset.new()
     for _, headerfile in ipairs(headerfiles) do
         local ext = path.extension(headerfile):lower()
-        if (ext == ".h" or ext == ".hpp") and not sourcefiles_set:has(headerfile) then
-            if has_qt_moc_macros(headerfile, custom_macros) then
+        if ext == ".h" or ext == ".hpp" then
+            local key = _normalize_path(headerfile)
+            headerfiles_keys:insert(key)
+            if not sourcefiles_set:has(key) and has_qt_moc_macros(headerfile, custom_macros) then
                 local basename = path.basename(headerfile)
                 if source_basenames:has(basename) then
                     table.insert(moc_headers, headerfile)
                 else
-                    table.insert(unmatched_headers, headerfile)
+                    table.insert(unmatched_entries, {file = headerfile, key = key})
                 end
             end
         end
     end
 
-    -- lazily scan source files for #include if headers with Qt macros have no same-basename source
-    if #unmatched_headers > 0 then
-        local unmatched_basenames = hashset.new()
-        for _, headerfile in ipairs(unmatched_headers) do
-            unmatched_basenames:insert(path.basename(headerfile))
-        end
-
-        local included_basenames = _scan_included_basenames(sourcefiles, unmatched_basenames)
-        for _, headerfile in ipairs(unmatched_headers) do
-            if included_basenames:has(path.basename(headerfile)) then
-                table.insert(moc_headers, headerfile)
+    -- lazily traverse #include graph if headers with Qt macros have no same-basename source
+    if #unmatched_entries > 0 then
+        local found_keys = _scan_included_headers(target, sourcefiles, headerfiles_keys, unmatched_entries)
+        for _, entry in ipairs(unmatched_entries) do
+            if found_keys:has(entry.key) then
+                table.insert(moc_headers, entry.file)
             end
         end
     end
